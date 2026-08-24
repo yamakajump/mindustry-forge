@@ -13,6 +13,7 @@ answer rather than a blueprint copied off somebody who already knew one.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import random
 import sys
@@ -27,12 +28,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from forge import objective as objectives
+from forge import schematic
 from forge import spec as specs
 from forge.bench import Bench, choose_area, prepare
 from forge.bridge import Bridge
-from forge.evolve import Population
+from forge.evolve import Population, standing
 from forge.server import ServerProcess, install_plugin
-from forge.server_setup import setup_server
+from forge.server_setup import MINDUSTRY_VERSION, setup_server
 from forge.watch import Run, serve
 
 #: Defaults only. Both are overridable because a machine can run more than one forge at a
@@ -201,8 +203,28 @@ def main() -> None:
     # Written whether or not anything worked. A run that found nothing is exactly the run
     # worth reading afterwards, and an early return left nothing to read.
     args.out.mkdir(parents=True, exist_ok=True)
-    written = args.out / f"{spec.name}-{args.objective}.json"
+    stem = f"{spec.name}-{args.objective}"
+
+    # The string a player pastes, and the only shape in which a result leaves this
+    # repository. Provenance travels in the JSON beside it rather than inside it: a design
+    # is never more than a claim about the world it was measured on, and a catalogue that
+    # has forgotten which world cannot tell whether its entries still hold.
+    pasteable = ""
+    if best is not None and best.used():
+        pasteable = schematic.to_base64(
+            best, name=f"{spec.name} / {args.objective}",
+            description=(f"{best.delivered} {spec.target} in {spec.ticks / 60:.0f}s, "
+                         f"{standing(best)} blocks, found by mindustry-forge"),
+        )
+        (args.out / f"{stem}.msch").write_bytes(base64.b64decode(pasteable))
+        print()
+        print("paste into the game with ctrl+v:")
+        print(pasteable)
+
+    written = args.out / f"{stem}.json"
     written.write_text(json.dumps({
+        "schematic": pasteable,
+        "engine": MINDUSTRY_VERSION,
         "spec": spec.name, "target": spec.target, "objective": args.objective,
         "genome": args.genome, "map": args.map, "world_seed": args.world_seed,
         "area": [area.x, area.y, spec.width, spec.height], "core": list(area.core),

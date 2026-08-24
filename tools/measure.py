@@ -30,6 +30,7 @@ import numpy as np
 # See tools/optimise.py: the script's own directory is what lands on the import path.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from forge import schematic
 from forge import spec as specs
 from forge.bench import Area, Bench, choose_area, prepare
 from forge.bridge import Bridge
@@ -207,6 +208,15 @@ def main() -> None:
             print()
             print(design.render())
             print()
+            if design.used():
+                print("paste into the game with ctrl+v:")
+                print(schematic.to_base64(
+                    design, name=f"{spec.name} / {source}",
+                    description=(f"{design.delivered} {spec.target} in "
+                                 f"{spec.ticks / 60:.0f}s, "
+                                 f"{design.blocks_standing} blocks"),
+                ))
+                print()
 
 
 if __name__ == "__main__":
