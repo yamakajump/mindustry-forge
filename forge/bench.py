@@ -10,9 +10,11 @@ Three things the bench has to get right, and each of them was got wrong first:
 - **Score one named item.** Scoring "anything delivered" makes the answer sand, which
   covers most of the map and sits next to the base. The winning design was drills and no
   conveyor at all: correct, optimal, and silent on the question being asked.
-- **Put the material out of reach.** A drill touching the output delivers into it directly,
-  because the engine pushes to any adjacent building. With ore against the edge, no line
-  is needed and none is found.
+- **Put the material out of reach, in the world and not on paper.** A drill touching the
+  output delivers into it directly, because the engine pushes to any adjacent building, so
+  with ore against the output no line is needed and none is found. Blanking that ore out of
+  the *scoring* does not help: it stays on the map and a drill can still sit on it. It has
+  to be scraped off, which is what `prepare` does.
 - **Spare exactly the tiles the output stands on, no more.** Sparing a radius instead
   leaves the ring around it unbuildable, so the last tile of every line, the one that has
   to touch the output, is silently skipped and no design can deliver however right it is.
@@ -50,7 +52,13 @@ class Area:
 
 def footprint(spatial: np.ndarray, channels: list[str], core: tuple[int, int],
               reach: int = 4) -> frozenset[tuple[int, int]]:
-    """Exactly the tiles the core stands on."""
+    """Every friendly building within `reach` of the core, which on a fresh map is the core.
+
+    Named for what it is rather than for what it is used for. On a map that already has
+    buildings near the base it would spare those too, which is not what a caller reading
+    "the core's footprint" would expect, and the bench runs on fresh maps precisely so
+    that the two coincide.
+    """
     plane = spatial[channels.index("block_ally")]
     cx, cy = core
     rows, columns = plane.shape
@@ -63,7 +71,13 @@ def footprint(spatial: np.ndarray, channels: list[str], core: tuple[int, int],
 
 
 def reachable(plane: np.ndarray, core: tuple[int, int], keep_out: int) -> np.ndarray:
-    """The material plane with everything too close to the output blanked out."""
+    """The material plane with everything too close to the output blanked out.
+
+    Only for ranking where the work area should go. Blanking a plane does not move a
+    single tile of ore, and an earlier version of this bench relied on it as though it
+    did: the ore stayed on the map, a drill could still sit on it, and one drill against
+    the output delivered with no line at all. `prepare` is what makes the promise true.
+    """
     if keep_out <= 0:
         return plane
     out = plane.copy()
@@ -72,6 +86,20 @@ def reachable(plane: np.ndarray, core: tuple[int, int], keep_out: int) -> np.nda
     ys, xs = np.ogrid[:rows, :columns]
     out[np.maximum(np.abs(xs - cx), np.abs(ys - cy)) <= keep_out] = 0
     return out
+
+
+def prepare(bridge: Bridge, core: tuple[int, int], material: str | None,
+            keep_out: int = 3) -> int:
+    """Take the wanted material away from the output, once, before anything is measured.
+
+    This is a property of the world rather than a rule of the scoring, which matters: an
+    objective that had to know about it would be an objective that could forget, and every
+    later objective would have to remember too. Done here, the map simply is what the
+    bench says it is, and the count comes back so a run can say how much it moved.
+    """
+    if material is None or keep_out <= 0:
+        return 0
+    return int(bridge.clear_ore(core[0], core[1], keep_out, material).get("cleared", 0))
 
 
 def choose_area(spatial: np.ndarray, channels: list[str], core: tuple[int, int],

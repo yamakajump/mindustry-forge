@@ -277,6 +277,18 @@ class Bridge:
             "item": item, "amount": int(amount),
         })
 
+    def clear_ore(self, x: int, y: int, radius: int, item: str) -> dict[str, Any]:
+        """Scrape a named ore off the map around a point.
+
+        A bench that asks for a conveyor line has to make one necessary, and ore lying
+        against the output makes it unnecessary: the engine pushes from a drill into any
+        adjacent building, so one drill on that ore delivers with no line at all.
+        """
+        return self.request({
+            "cmd": "clear_ore", "x": int(x), "y": int(y),
+            "radius": int(radius), "item": item,
+        })
+
     def sectors(self) -> dict[str, Any]:
         """Every procedural sector on Serpulo, with the threat the game assigned it."""
         return self.request({"cmd": "sectors"})
