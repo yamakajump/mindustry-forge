@@ -60,13 +60,24 @@ def throughput(block_cost: float = 0.05) -> Callable[[Measurement], float]:
 
     The default objective. The penalty is there to break ties rather than to shape the
     answer: without any, two designs that deliver the same are equal and the population
-    drifts towards whichever sprawling one was found first and never tidies it. Read it
-    against what a delivery is currently worth: at 0.05 a block costs more than it earns
-    while deliveries are in single figures, and nothing at all once they reach hundreds.
+    drifts towards whichever sprawling one was found first and never tidies it.
+
+    It can never take more than half of what a design delivered, and that ceiling is the
+    whole safety of it. Unbounded, the same term made building nothing optimal: a coefficient
+    read against deliveries of a few hundred costs more than it earns when deliveries are
+    still in single figures, which is exactly when the search is fragile, and the fittest
+    design in an early generation becomes the empty rectangle.
     """
 
     def score(m: Measurement) -> float:
-        return m.delivered + _hint(m) - block_cost * m.blocks
+        # Capped against what the design earned, partial credit included, and not against
+        # the delivery alone. Against the delivery alone the ceiling is zero for anything
+        # that delivered nothing, which is precisely the hoarder: it hands back every
+        # block it was standing on for free, and one hoarding design then ties a design
+        # that genuinely works. Earned, the ceiling still saves a real producer from
+        # being charged into last place, and still charges a hoarder for its sprawl.
+        earned = m.delivered + _hint(m)
+        return earned - min(block_cost * m.blocks, earned * 0.5)
 
     return score
 
@@ -111,7 +122,7 @@ def density() -> Callable[[Measurement], float]:
     return score
 
 
-def rate_at_most(blocks: int) -> Callable[[Measurement], float]:
+def rate_at_most(blocks: int = 20) -> Callable[[Measurement], float]:
     """As much as possible, inside a budget.
 
     A hard ceiling rather than a penalty, because a budget is usually a real constraint:

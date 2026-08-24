@@ -319,12 +319,19 @@ def cross_designs(first: Design, second: Design, rng: random.Random) -> Design:
     return Design(first.width, first.height, first.palette, machines[:12], lines[:12])
 
 
-def mutate_design(design: Design, rng: random.Random, rate: float = 0.35) -> Design:
+def mutate_design(design: Design, rng: random.Random, rate: float = 0.35,
+                  add: float = 0.3, drop: float = 0.2, reach: int = 2) -> Design:
     """Nudge a part, add one, or drop one.
 
     Nudging matters more than it looks. A drill one tile off its ore delivers nothing and
     is one step from delivering everything; a mutation that could only replace it outright
     would have to find the patch again from scratch.
+
+    The three operators are separate knobs so each can be watched on its own. They were
+    constants, and the nudge could not then be checked without the other two confusing it:
+    if adding fires and dropping removes the original, the count is unchanged and the part
+    at index zero is a brand new machine somewhere else entirely, which reads as a nudge
+    that crossed the map.
     """
     changed = design.copy()
     kinds, tracks = producers(changed.palette), carriers(changed.palette)
@@ -333,7 +340,7 @@ def mutate_design(design: Design, rng: random.Random, rate: float = 0.35) -> Des
         return rng.randrange(changed.width), rng.randrange(changed.height)
 
     def nudge(value: int, limit: int) -> int:
-        return min(max(value + rng.randint(-2, 2), 0), limit - 1)
+        return min(max(value + rng.randint(-reach, reach), 0), limit - 1)
 
     for index, machine in enumerate(changed.machines):
         if rng.random() < rate:
@@ -349,13 +356,13 @@ def mutate_design(design: Design, rng: random.Random, rate: float = 0.35) -> Des
                 line.horizontal_first if rng.random() > 0.25 else not line.horizontal_first,
             )
 
-    if kinds and rng.random() < 0.3 and len(changed.machines) < 12:
+    if kinds and rng.random() < add and len(changed.machines) < 12:
         changed.machines.append(Machine(*point(), rng.choice(kinds)))
-    if rng.random() < 0.3 and len(changed.lines) < 12:
+    if rng.random() < add and len(changed.lines) < 12:
         changed.lines.append(Line(*point(), *point(), rng.choice(tracks), rng.random() < 0.5))
-    if rng.random() < 0.2 and len(changed.machines) > 1:
+    if rng.random() < drop and len(changed.machines) > 1:
         changed.machines.pop(rng.randrange(len(changed.machines)))
-    if rng.random() < 0.2 and len(changed.lines) > 1:
+    if rng.random() < drop and len(changed.lines) > 1:
         changed.lines.pop(rng.randrange(len(changed.lines)))
 
     return changed

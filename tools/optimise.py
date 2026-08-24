@@ -15,9 +15,16 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import sys
 import time
 import webbrowser
 from pathlib import Path
+
+# Python puts the *script's* directory on the import path, not the one it was run from,
+# so `python tools/optimise.py` searches tools/ for a package that lives beside it and
+# fails before argparse is ever reached. Adding the repository root keeps the documented
+# command working from a fresh clone, with no install step and no PYTHONPATH to remember.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from forge import objective as objectives
 from forge import spec as specs
@@ -28,6 +35,9 @@ from forge.server import ServerProcess, install_plugin
 from forge.server_setup import setup_server
 from forge.watch import Run, serve
 
+#: Defaults only. Both are overridable because a machine can run more than one forge at a
+#: time, and because `mindustry-ai` speaks to the same plugin over the same numbers: two
+#: runs started minutes apart on one laptop is the ordinary case, not the exotic one.
 BRIDGE_PORT = 7970
 GAME_PORT = 6570
 
@@ -69,7 +79,15 @@ def main() -> None:
                         help="tiles around the output whose material is scraped off the "
                              "map, so that a line is the only way to deliver anything")
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--port", type=int, default=8900)
+    parser.add_argument("--port", type=int, default=8900,
+                        help="where to serve the live view")
+    parser.add_argument("--bridge-port", type=int, default=BRIDGE_PORT,
+                        help="the agent socket. Change it to run two forges at once, or "
+                             "to sit beside a run of mindustry-ai, which uses the same "
+                             "plugin and the same default")
+    parser.add_argument("--game-port", type=int, default=GAME_PORT,
+                        help="the port the server hosts on. Every instance binds one even "
+                             "when nothing connects, so parallel runs need distinct ones")
     parser.add_argument("--no-open", dest="open", action="store_false", default=True)
     parser.add_argument("--out", type=Path, default=Path("designs"))
     parser.add_argument("--jar", type=Path, default=None)
@@ -93,11 +111,27 @@ def main() -> None:
     if args.open:
         webbrowser.open(url)
 
-    with ServerProcess(directory, jvm_args=[f"-Dmindustryai.port={BRIDGE_PORT}"],
-                       port=GAME_PORT) as server:
-        server.wait_for(rf"listening on 127\.0\.0\.1:{BRIDGE_PORT}", timeout=120)
+    with ServerProcess(directory, jvm_args=[f"-Dmindustryai.port={args.bridge_port}"],
+                       port=args.game_port) as server:
+        # Two outcomes, waited on together. The plugin logs a failure to bind and lets the
+        # server carry on running, which looks entirely healthy from outside: waiting only
+        # for success turns a busy port into two minutes of silence and a timeout that
+        # names the wrong problem.
+        opened = server.wait_for(
+            rf"listening on 127\.0\.0\.1:{args.bridge_port}"
+            rf"|could not listen on port {args.bridge_port}",
+            timeout=120,
+        )
+        if "could not listen" in opened:
+            raise SystemExit(
+                f"the agent socket {args.bridge_port} is already taken, so this server "
+                f"came up without a bridge. Something else is on it: another forge, or a "
+                f"run of mindustry-ai, which uses the same plugin and the same default "
+                f"port. Pass --bridge-port (and --game-port) to sit beside it.\n"
+                f"  {opened}"
+            )
 
-        with Bridge(port=BRIDGE_PORT, tensor=True, timeout=120.0) as bridge:
+        with Bridge(port=args.bridge_port, tensor=True, timeout=120.0) as bridge:
             # Sandbox, so a candidate is never refused for being unaffordable. What is
             # being searched for is a shape that works, and making the search pay for
             # copper would only teach it to be small.

@@ -53,6 +53,21 @@ def test_a_design_that_delivers_enough_beats_any_hoarder_of_equal_size():
     assert score(worker) > score(hoarder)
 
 
+def test_building_something_that_barely_works_beats_building_nothing():
+    """The other half of the same knob, and the two pull against each other.
+
+    Uncapped, the block cost made emptiness optimal: three delivered across seventy
+    blocks scored below the empty rectangle, and an early generation is exactly where a
+    search cannot afford to be told that the answer is to stop. Capped against delivery
+    alone it swung the other way, because a design that delivers nothing then pays
+    nothing for its blocks. The ceiling has to sit on what was earned.
+    """
+    score = throughput(block_cost=0.05)
+
+    assert score(measured(3, 70)) > score(measured(0, 0))
+    assert score(measured(3, 70)) > 0
+
+
 @pytest.mark.parametrize("objective", [compact(), density()], ids=["compact", "density"])
 def test_delivering_nothing_cannot_win_however_small(objective):
     """A gate, not a penalty. The empty rectangle is very small and very useless."""
