@@ -32,12 +32,14 @@ FED = Spec(
 class FakeBridge:
     """Records what it was asked, answers what it was told to answer."""
 
-    def __init__(self, produced=None, held=None, refuse=None, cleared=0):
+    def __init__(self, produced=None, held=None, refuse=None, cleared=0, held_by_box=None):
         self.calls = []
         self.produced = list(produced or [0, 0])
         self.held = held or {}
         self.refuse = refuse or set()
         self.cleared = cleared
+        #: What a specific rectangle holds, when it differs from the area as a whole.
+        self.held_by_box = held_by_box or {}
 
     def act(self, action):
         self.calls.append(
@@ -63,7 +65,8 @@ class FakeBridge:
 
     def region(self, x, y, width, height):
         self.calls.append(("region", x, y, width, height, None))
-        return {"held": dict(self.held)}
+        held = self.held_by_box.get((x, y, width, height), self.held)
+        return {"held": dict(held)}
 
     def placements(self):
         return [c for c in self.calls if c[0] == "act" and c[1] == "place"]
@@ -313,6 +316,54 @@ def test_a_counter_that_went_backwards_reads_as_nothing_delivered():
     Bench(bridge, MINING, area_of()).run(candidate)
 
     assert candidate.delivered == 0
+
+
+def test_the_output_keeps_its_own_stock_out_of_the_count():
+    """The work area covers a core holding hundreds of the item being counted.
+
+    Measured on a hand-built line standing six blocks, the raw figure read 210 held when
+    thirty is the physical maximum for that many carriers. Left in, every candidate
+    collects the same large number, the partial credit stops telling any two of them apart
+    and becomes a constant, which is the one thing a gradient must never be.
+    """
+    spared = frozenset({(12, 12), (13, 12), (12, 13), (13, 13)})
+    area = Area(x=10, y=10, width=5, height=5, core=(12, 12), spared=spared, material=4)
+    bridge = FakeBridge(produced=[0, 5], held={"copper": 218},
+                        held_by_box={(12, 12, 2, 2): {"copper": 210}})
+    candidate = design_with_a_drill_and_a_line()
+
+    Bench(bridge, MINING, area).run(candidate)
+
+    assert candidate.stuck == 8
+
+
+def test_an_output_holding_more_than_the_area_reads_as_nothing_stuck():
+    """Both figures are the engine's own, and a design cannot hold a negative amount."""
+    spared = frozenset({(12, 12)})
+    area = Area(x=10, y=10, width=5, height=5, core=(12, 12), spared=spared, material=4)
+    bridge = FakeBridge(produced=[0, 1], held={"copper": 5},
+                        held_by_box={(12, 12, 1, 1): {"copper": 900}})
+    candidate = design_with_a_drill_and_a_line()
+
+    Bench(bridge, MINING, area).run(candidate)
+
+    assert candidate.stuck == 0
+
+
+def test_an_area_sparing_nothing_asks_about_no_output():
+    """A specification fed from its ports has no core inside it to discount."""
+    bridge = FakeBridge(produced=[0, 1], held={"copper": 12})
+    Bench(bridge, MINING, area_of()).run(design_with_a_drill_and_a_line())
+
+    assert len([call for call in bridge.calls if call[0] == "region"]) == 1
+
+
+def test_the_output_box_is_the_rectangle_the_spared_tiles_fill():
+    spared = frozenset({(19, 19), (21, 21), (20, 20)})
+    area = Area(x=10, y=10, width=20, height=20, core=(20, 20), spared=spared, material=0)
+
+    assert area.output_box() == (19, 19, 3, 3)
+    assert area_of().output_box() is None
 
 
 def test_only_the_wanted_item_counts_as_stuck():

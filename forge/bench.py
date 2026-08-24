@@ -49,6 +49,19 @@ class Area:
     def contains(self, x: int, y: int) -> bool:
         return self.x <= x < self.x + self.width and self.y <= y < self.y + self.height
 
+    def output_box(self) -> tuple[int, int, int, int] | None:
+        """The rectangle the output occupies, or None if nothing is being spared.
+
+        Needed because the work area has to cover the output and the output is full of
+        the very item being counted: anything measuring the area has to be able to take
+        it back out again.
+        """
+        if not self.spared:
+            return None
+        xs = [x for x, _ in self.spared]
+        ys = [y for _, y in self.spared]
+        return min(xs), min(ys), max(xs) - min(xs) + 1, max(ys) - min(ys) + 1
+
 
 def footprint(spatial: np.ndarray, channels: list[str], core: tuple[int, int],
               reach: int = 4) -> frozenset[tuple[int, int]]:
@@ -188,13 +201,33 @@ class Bench:
         before = self.delivered(self.bridge.observe())
         after = self.delivered(self.bridge.step(repeat=self.spec.ticks))
 
-        # Material sitting inside the design, going nowhere. A line one tile short of the
-        # output delivers exactly as much as an empty rectangle, so without this the
-        # search has a flat zero to climb and climbs nothing.
-        region = self.bridge.region(self.area.x, self.area.y,
-                                    self.area.width, self.area.height)
-        candidate.stuck = int(region["held"].get(self.spec.target, 0))
+        candidate.stuck = self.held(self.spec.target)
         candidate.delivered = max(0, after - before)
+
+    def held(self, item: str) -> int:
+        """Material sitting inside the design, going nowhere.
+
+        A line one tile short of the output delivers exactly as much as an empty
+        rectangle, so without this the search has a flat zero to climb and climbs nothing.
+
+        The output's own stock is taken back out, and that subtraction is the whole
+        measurement. The work area has to cover the output, the output is a core holding
+        hundreds of the item being counted, and the raw figure is therefore dominated by
+        stock no design ever touched: measured on a hand-built line standing six blocks,
+        it read 210 held where thirty is the physical maximum. Every candidate collected
+        the same large number, so the partial credit stopped distinguishing between them
+        and became a constant, which is the one thing a gradient must never be.
+        """
+        inside = self.bridge.region(self.area.x, self.area.y,
+                                    self.area.width, self.area.height)
+        total = int(inside["held"].get(item, 0))
+
+        box = self.area.output_box()
+        if box is not None:
+            output = self.bridge.region(*box)
+            total -= int(output["held"].get(item, 0))
+
+        return max(0, total)
 
 
 def _produces(block: str) -> bool:
