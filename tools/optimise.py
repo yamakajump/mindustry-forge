@@ -156,23 +156,28 @@ def main() -> None:
     print()
     if best is None or not best.delivered:
         print("Nothing delivered anything. Either the work area has no workable design in")
-        print("it, or the time budget is too short for one to show.")
-        return
+        print("it, the time budget is too short for one to show, or there were too few")
+        print("generations: on this bench the first delivery has taken ten of them.")
+    else:
+        print(f"{best.delivered} {spec.target} in {spec.ticks / 60:.0f} seconds, "
+              f"{best.used()} blocks")
+        print()
+        print(best.render())
 
-    print(f"{best.delivered} {spec.target} in {spec.ticks / 60:.0f} seconds, "
-          f"{best.used()} blocks")
-    print()
-    print(best.render())
-
+    # Written whether or not anything worked. A run that found nothing is exactly the run
+    # worth reading afterwards, and an early return left nothing to read.
     args.out.mkdir(parents=True, exist_ok=True)
     written = args.out / f"{spec.name}-{args.objective}.json"
     written.write_text(json.dumps({
         "spec": spec.name, "target": spec.target, "objective": args.objective,
         "genome": args.genome, "map": args.map, "world_seed": args.world_seed,
         "area": [area.x, area.y, spec.width, spec.height], "core": list(area.core),
-        "ticks": spec.ticks, "delivered": best.delivered, "blocks": best.used(),
-        "text": best.render(),
-        "cells": [[x, y, block, rotation] for x, y, block, rotation in best.cells()],
+        "ticks": spec.ticks,
+        "delivered": best.delivered if best else 0,
+        "blocks": best.used() if best else 0,
+        "text": best.render() if best else "",
+        "cells": ([[x, y, block, rotation] for x, y, block, rotation in best.cells()]
+                  if best else []),
         "history": run.snapshot()["history"],
     }, indent=2), encoding="utf-8")
     print(f"written to {written}")
