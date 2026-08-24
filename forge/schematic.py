@@ -64,14 +64,30 @@ def unpack_point(packed: int) -> tuple[int, int]:
     return (packed >> 16) & 0xFFFF, packed & 0xFFFF
 
 
-def cropped(layout) -> tuple[int, int, int, int, list]:
+def cells_of(design) -> list:
+    """The cells to write down: the ones that stood, if the bench has spoken.
+
+    A design asks for more than it gets whenever a block lands on a tile something else
+    already holds, and only the accepted ones were part of what was measured. Writing the
+    requested ones publishes a schematic that is not the design the number belongs to:
+    seen on a real run, seventeen cells asked for and twelve standing, so a catalogue
+    would have handed a player five blocks of fiction.
+    """
+    placed = getattr(design, "placed", None)
+    if placed:
+        return list(placed)
+    layout = design.to_layout() if hasattr(design, "to_layout") else design
+    return list(layout.cells())
+
+
+def cropped(cells) -> tuple[int, int, int, int, list]:
     """The design's own bounding box, and its cells moved into it.
 
     A design occupies a corner of a work area that is mostly empty, and a schematic
     carrying that emptiness would paste as a rectangle of nothing with a factory in one
     corner. What a player wants is the build, so the box is tightened onto it.
     """
-    cells = list(layout.cells())
+    cells = list(cells)
     if not cells:
         return 0, 0, 0, 0, []
 
@@ -84,8 +100,7 @@ def cropped(layout) -> tuple[int, int, int, int, list]:
 
 def write(design, name: str = "forge", description: str = "") -> bytes:
     """Serialise a design as `.msch` bytes."""
-    layout = design.to_layout() if hasattr(design, "to_layout") else design
-    _, _, width, height, cells = cropped(layout)
+    _, _, width, height, cells = cropped(cells_of(design))
 
     if not cells:
         raise ValueError("an empty design has nothing to write")

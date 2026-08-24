@@ -195,3 +195,22 @@ def test_a_layout_may_be_written_directly_and_not_only_a_design():
     assert from_base64(base64.b64encode(write(grid)).decode())["tiles"] == [
         (0, 0, "router", 0)
     ]
+
+
+def test_a_measured_design_is_written_as_what_stood_not_as_what_it_asked_for():
+    """The number and the schematic have to describe the same object."""
+    design = a_line()
+    design.placed = [(2, 2, "router", 3)]
+
+    back = from_base64(to_base64(design))
+
+    assert back["tiles"] == [(0, 0, "router", 3)]
+    assert back["palette"] == ["router"]
+
+
+def test_an_unmeasured_design_falls_back_to_what_it_asked_for():
+    """Before the bench has spoken there is no other list to write."""
+    design = a_line()
+
+    assert design.placed is None
+    assert len(from_base64(to_base64(design))["tiles"]) == design.used()

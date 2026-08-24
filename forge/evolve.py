@@ -101,6 +101,7 @@ class Population:
             kept.delivered = original.delivered
             kept.blocks_standing = original.blocks_standing
             kept.stuck = original.stuck
+            kept.placed = original.placed
             survivors.append(kept)
 
         breed = cross_designs if self.genome == "parts" else cross

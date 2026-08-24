@@ -292,7 +292,26 @@ def test_only_the_blocks_the_engine_accepted_are_charged_for():
     placed = Bench(bridge, MINING, area_of()).stamp(design_with_a_drill_and_a_line())
 
     assert len(bridge.placements()) == 6
-    assert placed == 4
+    assert len(placed) == 4
+
+
+def test_the_bench_records_which_blocks_stood_and_not_merely_how_many():
+    """The accepted cells are the design that was measured, and the one to publish.
+
+    Exporting the requested cells instead ships a schematic carrying blocks that never
+    stood: measured on a real run, seventeen cells were asked for and twelve held, so the
+    catalogue would have handed a player five blocks of fiction.
+    """
+    bridge = FakeBridge(produced=[0, 5], refuse={(10, 10), (11, 10)})
+    candidate = design_with_a_drill_and_a_line()
+
+    Bench(bridge, MINING, area_of()).run(candidate)
+
+    assert candidate.blocks_standing == len(candidate.placed) == 4
+    assert (10, 0, "conveyor", 0) not in candidate.placed
+    assert (1, 1, "mechanical-drill", 0) in candidate.placed
+    assert all(0 <= x < MINING.width and 0 <= y < MINING.height
+               for x, y, _, _ in candidate.placed)
 
 
 # Measuring ------------------------------------------------------------------------------------
