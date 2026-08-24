@@ -156,6 +156,7 @@ public class StepLoop implements ApplicationListener {
                 case "scene" -> handleScene();
                 case "region" -> handleRegion(message);
                 case "give" -> handleGive(message);
+                case "clear_ore" -> handleClearOre(message);
                 case "close" -> handleClose();
                 default -> server.reply(error("unknown command: " + command.asString()));
             }
@@ -356,6 +357,50 @@ public class StepLoop implements ApplicationListener {
      * rate is whatever the schedule says rather than whatever the container happened to
      * have left.
      */
+    /**
+     * Scrape a named ore off the map around a point.
+     *
+     * <p>A bench that asks "find me a conveyor line" has to make a conveyor line
+     * necessary, and ore lying against the output makes it unnecessary: the engine pushes
+     * from a drill into any adjacent building, so one drill on that ore delivers with no
+     * line at all. It is the correct answer to a question nobody asked, and a search will
+     * find it in two generations and never look further.
+     *
+     * <p>Blanking the ore out of the *scoring* is not enough and was the bug this
+     * replaces: the ore stayed on the map, so a drill could still sit on it. This changes
+     * the world, once, before the first candidate, which is the only way the promise
+     * holds.
+     */
+    private void handleClearOre(Jval message) {
+        int x = message.get("x") == null ? 0 : message.get("x").asInt();
+        int y = message.get("y") == null ? 0 : message.get("y").asInt();
+        int radius = message.get("radius") == null ? 0 : message.get("radius").asInt();
+        String itemName = message.get("item") == null ? "" : message.get("item").asString();
+
+        var item = Vars.content.item(itemName);
+        if (item == null) {
+            server.reply(error("no such item: " + itemName));
+            return;
+        }
+
+        int cleared = 0;
+        for (int tx = x - radius; tx <= x + radius; tx++) {
+            for (int ty = y - radius; ty <= y + radius; ty++) {
+                var tile = Vars.world.tile(tx, ty);
+                if (tile == null || tile.drop() != item) {
+                    continue;
+                }
+                tile.setOverlayNet(mindustry.content.Blocks.air);
+                cleared++;
+            }
+        }
+
+        Jval reply = Jval.newObject();
+        reply.put("ok", true);
+        reply.put("cleared", cleared);
+        server.reply(reply.toString());
+    }
+
     private void handleGive(Jval message) {
         int x = message.get("x") == null ? 0 : message.get("x").asInt();
         int y = message.get("y") == null ? 0 : message.get("y").asInt();

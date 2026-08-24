@@ -21,7 +21,7 @@ from pathlib import Path
 
 from forge import objective as objectives
 from forge import spec as specs
-from forge.bench import Bench, choose_area
+from forge.bench import Bench, choose_area, prepare
 from forge.bridge import Bridge
 from forge.evolve import Population
 from forge.server import ServerProcess, install_plugin
@@ -65,6 +65,9 @@ def main() -> None:
     parser.add_argument("--world-seed", type=int, default=16,
                         help="pins the ore. Mindustry repaints it on every load, so "
                              "without this two runs are not comparable")
+    parser.add_argument("--keep-out", type=int, default=3,
+                        help="tiles around the output whose material is scraped off the "
+                             "map, so that a line is the only way to deliver anything")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--port", type=int, default=8900)
     parser.add_argument("--no-open", dest="open", action="store_false", default=True)
@@ -102,13 +105,23 @@ def main() -> None:
             server.command("bridge-speed max", r"speed set")
 
             core = (int(observation["core_x"]), int(observation["core_y"]))
-            area = choose_area(observation["spatial"], bridge.channels, core, spec,
-                               material_for(spec))
+            material = material_for(spec)
 
+            # Before anything is measured, and before the area is chosen against a map
+            # that is about to change under it.
+            scraped = prepare(bridge, core, material, args.keep_out)
+            if scraped:
+                observation = bridge.observe()
+
+            area = choose_area(observation["spatial"], bridge.channels, core, spec,
+                               material, args.keep_out)
+
+            print(f"scraped : {scraped} tiles of {material or 'nothing'} within "
+                  f"{args.keep_out} of the output, so a line is the only way to deliver")
             print(f"area    : {spec.width}x{spec.height} at ({area.x}, {area.y}), "
                   f"{area.material} tiles of usable material")
             print()
-            if material_for(spec) is not None and area.material == 0:
+            if material is not None and area.material == 0:
                 raise SystemExit(
                     "no usable material in the work area: nothing here can deliver "
                     "anything, and the search would be measuring noise. Try another "
