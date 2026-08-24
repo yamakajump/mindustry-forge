@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# The Mindustry server the bench runs against: downloaded, not authored.
+mindustry-forge/
+bridge/build/
+bridge/.gradle/
+
+# Designs a run produced. Interesting, but they are output, not source.
+designs/
+
+# Project notes carry amounts and contacts. They have no place in history.
+.claude/projet/
