@@ -31,10 +31,21 @@ from forge.objective import Measurement
 from forge.spec import Spec
 
 
+def standing(candidate) -> int:
+    """How big the design really is: what the engine accepted, not what it asked for.
+
+    The two part company the moment a block lands on a tile something else already holds,
+    and every refusal widens the gap. Kept in one place because scoring on one figure and
+    publishing the other advertises a seventeen block schematic that stands twelve, which
+    is a lie in exactly the column a reader is choosing on.
+    """
+    return candidate.blocks_standing or candidate.used()
+
+
 def measurement_of(candidate, spec: Spec) -> Measurement:
     return Measurement(
         delivered=candidate.delivered or 0,
-        blocks=candidate.blocks_standing or candidate.used(),
+        blocks=standing(candidate),
         stuck=candidate.stuck,
         ticks=spec.ticks,
     )
@@ -115,7 +126,7 @@ class Population:
         return {
             "generation": self.generation,
             "best_delivered": best.delivered if best else 0,
-            "best_blocks": best.used() if best else 0,
+            "best_blocks": standing(best) if best else 0,
             "best_score": round(max(scores), 3) if scores else 0.0,
             "mean_score": round(sum(scores) / len(scores), 3) if scores else 0.0,
             "working": sum(1 for m in self.members if (m.delivered or 0) > 0),

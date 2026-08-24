@@ -194,7 +194,7 @@ def main() -> None:
         print("generations: on this bench the first delivery has taken ten of them.")
     else:
         print(f"{best.delivered} {spec.target} in {spec.ticks / 60:.0f} seconds, "
-              f"{best.used()} blocks")
+              f"{best.blocks_standing or best.used()} blocks")
         print()
         print(best.render())
 
@@ -208,7 +208,7 @@ def main() -> None:
         "area": [area.x, area.y, spec.width, spec.height], "core": list(area.core),
         "ticks": spec.ticks,
         "delivered": best.delivered if best else 0,
-        "blocks": best.used() if best else 0,
+        "blocks": (best.blocks_standing or best.used()) if best else 0,
         "text": best.render() if best else "",
         "cells": ([[x, y, block, rotation] for x, y, block, rotation in best.cells()]
                   if best else []),

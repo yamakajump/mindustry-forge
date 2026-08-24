@@ -18,7 +18,7 @@ import random
 
 import pytest
 
-from forge.evolve import Population, measurement_of
+from forge.evolve import Population, measurement_of, standing
 from forge.objective import Measurement, throughput
 from forge.spec import COPPER_LINE
 
@@ -166,3 +166,31 @@ def test_a_run_is_reproducible_from_its_seed():
         return [m.render() for m in population.members]
 
     assert run() == run()
+
+
+def test_the_report_prints_the_blocks_that_stood_not_the_blocks_asked_for():
+    """The figure scored and the figure published have to be the same figure.
+
+    A design whose blocks were partly refused asks for more than it stands. Scoring the
+    accepted count and printing the requested one advertises a seventeen block schematic
+    that holds twelve, which is a lie in exactly the column a reader chooses on.
+    """
+    population = populated(size=4, elite=1)
+    measure_all(population, [0, 0, 30, 0])
+    best = population.best()
+    best.blocks_standing = 12
+
+    report = population.report()
+
+    assert report["best_blocks"] == 12
+    assert best.used() != 12
+
+
+def test_a_candidate_the_bench_never_charged_falls_back_to_what_it_asked_for():
+    """Before the engine has spoken, the requested count is the only figure there is."""
+    population = populated(size=4, elite=1)
+    measure_all(population, [0, 0, 30, 0])
+    best = population.best()
+    best.blocks_standing = 0
+
+    assert standing(best) == best.used()
