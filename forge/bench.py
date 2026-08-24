@@ -171,14 +171,19 @@ class Bench:
             self.bridge.give(self.area.x + x, self.area.y + y, port.item,
                              int(port.rate * self.spec.ticks / 60))
 
-    def stamp(self, candidate) -> int:
-        """Place a design, and report how many of its blocks the engine accepted.
+    def stamp(self, candidate) -> list:
+        """Place a design, and report which of its blocks the engine accepted.
 
         Producers first. One needs several clear tiles and a carrier laid on a tile it
         wanted makes it impossible, leaving a line fed by nothing.
+
+        Which ones, and not how many, because the accepted cells are the design that was
+        actually measured. Exporting the requested ones instead publishes a schematic
+        carrying blocks that never stood, and it is the exported schematic a player
+        pastes.
         """
         cells = sorted(candidate.cells(), key=lambda cell: 0 if _produces(cell[2]) else 1)
-        placed = 0
+        placed = []
         for x, y, block, rotation in cells:
             tx, ty = self.area.x + x, self.area.y + y
             if (tx, ty) in self.area.spared:
@@ -186,7 +191,8 @@ class Bench:
             outcome = self.bridge.act({
                 "type": "place", "block": block, "x": tx, "y": ty, "rotation": rotation,
             })["action"]
-            placed += bool(outcome.get("applied"))
+            if outcome.get("applied"):
+                placed.append((x, y, block, rotation))
         return placed
 
     def delivered(self, observation: dict) -> int:
@@ -195,7 +201,8 @@ class Bench:
     def run(self, candidate) -> None:
         """Measure one candidate and write the result onto it."""
         self.clear()
-        candidate.blocks_standing = self.stamp(candidate)
+        candidate.placed = self.stamp(candidate)
+        candidate.blocks_standing = len(candidate.placed)
         self.supply()
 
         before = self.delivered(self.bridge.observe())

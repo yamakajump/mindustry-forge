@@ -59,6 +59,10 @@ class Layout:
     delivered: int | None = None
     blocks_standing: int = 0
     stuck: int = 0
+    #: The cells the engine actually accepted, filled in by the bench. A design asks for
+    #: more than it gets whenever a block lands on an occupied tile, and publishing what
+    #: was asked for would ship a schematic that is not the one that was measured.
+    placed: list | None = None
 
     def __post_init__(self) -> None:
         expected = self.width * self.height
@@ -233,6 +237,10 @@ class Design:
     delivered: int | None = None
     blocks_standing: int = 0
     stuck: int = 0
+    #: The cells the engine actually accepted, filled in by the bench. A design asks for
+    #: more than it gets whenever a block lands on an occupied tile, and publishing what
+    #: was asked for would ship a schematic that is not the one that was measured.
+    placed: list | None = None
 
     def copy(self) -> Design:
         return Design(self.width, self.height, self.palette,

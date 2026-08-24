@@ -232,8 +232,7 @@ def main() -> None:
         "delivered": best.delivered if best else 0,
         "blocks": (best.blocks_standing or best.used()) if best else 0,
         "text": best.render() if best else "",
-        "cells": ([[x, y, block, rotation] for x, y, block, rotation in best.cells()]
-                  if best else []),
+        "cells": ([list(cell) for cell in schematic.cells_of(best)] if best else []),
         "history": run.snapshot()["history"],
     }, indent=2), encoding="utf-8")
     print(f"written to {written}")
