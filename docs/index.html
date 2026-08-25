@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mindustry-forge — measured schematics</title>
+<meta name="description" content="Mindustry schematics with numbers that were measured by
+running the game, on one pinned world, rather than claimed.">
+<style>
+  :root {
+    --ink: #e8e6e1;
+    --dim: #8b8781;
+    --line: #2a2926;
+    --panel: #171614;
+    --page: #0e0d0c;
+    --hot: #ffd37f;
+    --ok: #9fd98c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 15px/1.6 ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 60rem; margin: 0 auto; padding: 3rem 1.25rem 6rem; }
+  h1 { font-size: 1.6rem; margin: 0 0 .3rem; letter-spacing: -0.01em; }
+  h2 {
+    font-size: 1.05rem; margin: 3rem 0 .2rem; letter-spacing: .02em;
+  }
+  h2 .target { color: var(--dim); font-weight: 400; }
+  .lede { color: var(--dim); margin: 0 0 2rem; max-width: 42rem; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+  a { color: var(--hot); }
+
+  .conditions {
+    display: flex; flex-wrap: wrap; gap: 1.25rem;
+    font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--dim); border: 1px solid var(--line); border-radius: 6px;
+    padding: .6rem .9rem; margin: 1.5rem 0 0;
+  }
+  .conditions b { color: var(--ink); font-weight: 500; }
+
+  .board { margin-top: 1rem; border: 1px solid var(--line); border-radius: 8px;
+           overflow: hidden; background: var(--panel); }
+  .board h3 {
+    margin: 0; padding: .7rem .9rem; font-size: .82rem; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--dim); border-bottom: 1px solid var(--line);
+    font-weight: 600;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td {
+    padding: .6rem .9rem; text-align: right; border-bottom: 1px solid var(--line);
+    font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  th { color: var(--dim); font-weight: 500; font-size: 11px; letter-spacing: .06em;
+       text-transform: uppercase; }
+  th:first-child, td:first-child { text-align: left; }
+  th:nth-child(2), td:nth-child(2) { text-align: left; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #1d1c19; }
+  .rank { color: var(--dim); width: 2.5rem; }
+  tr.top .rank, tr.top .who { color: var(--hot); }
+  .who { max-width: 14rem; overflow: hidden; text-overflow: ellipsis;
+         white-space: nowrap; }
+  .forge { color: var(--dim); font-style: italic; }
+
+  button {
+    font: 12px ui-monospace, monospace; color: var(--ink); background: #24231f;
+    border: 1px solid #34322d; border-radius: 5px; padding: .3rem .6rem;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--hot); color: var(--hot); }
+  button.done { color: var(--ok); border-color: var(--ok); }
+
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line);
+           color: var(--dim); font-size: 13px; }
+  code { background: #1d1c19; padding: .1rem .35rem; border-radius: 3px;
+         font-size: .9em; }
+  .empty { color: var(--dim); padding: 2rem 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>mindustry-forge</h1>
+  <p class="lede">
+    Mindustry schematics whose numbers were <strong>measured, not claimed</strong>. Every
+    design here was stamped into a real game on one pinned world and given the same
+    seconds, and what you see is what the engine counted arriving at the core. Copy one and
+    paste it into your game with <code>ctrl+v</code>.
+  </p>
+
+  <div id="board"></div>
+
+  <footer>
+    <p>
+      Beat one of these and it goes on the board. Submissions are re-measured
+      automatically on the same bench, so nobody has to take your word for it, or mine.
+      <a href="https://github.com/yamakajump/mindustry-forge">Source and how to submit</a>.
+    </p>
+    <p id="stamp"></p>
+  </footer>
+</main>
+
+<script>
+const OBJECTIVES = {
+  throughput: "most delivered",
+  density:    "most delivered per block",
+  compact:    "smallest that works",
+  budget:     "most delivered inside a block budget",
+};
+
+const board = document.getElementById("board");
+
+fetch("catalogue.json", { cache: "no-cache" })
+  .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(render)
+  .catch(err => {
+    board.innerHTML = `<p class="empty">The catalogue could not be loaded (${err}).</p>`;
+  });
+
+function render(payload) {
+  const entries = payload.entries || [];
+  if (!entries.length) {
+    board.innerHTML = `<p class="empty">Nothing in the catalogue yet.</p>`;
+    return;
+  }
+
+  const conditions = entries[0].conditions;
+  const specs = [...new Set(entries.map(e => e.spec))].sort();
+
+  board.innerHTML = specs.map(spec => {
+    const mine = entries.filter(e => e.spec === spec);
+    const objectives = [...new Set(mine.map(e => e.objective))].sort();
+    return `
+      <h2>${escape(spec)}</h2>
+      ${objectives.map(objective => table(mine.filter(e => e.objective === objective),
+                                          objective)).join("")}
+    `;
+  }).join("") + conditionsBar(conditions);
+
+  document.getElementById("stamp").textContent =
+    `${entries.length} entries, measured on Mindustry ${conditions.engine}.`;
+
+  board.querySelectorAll("button[data-schematic]").forEach(button => {
+    button.addEventListener("click", () => copy(button));
+  });
+}
+
+function table(rows, objective) {
+  rows = rows.slice().sort((a, b) => rank(b, objective) - rank(a, objective));
+  return `
+    <section class="board">
+      <h3>${escape(objective)} &middot; ${OBJECTIVES[objective] || ""}</h3>
+      <table>
+        <thead><tr>
+          <th class="rank">#</th><th>by</th><th>delivered</th><th>blocks</th>
+          <th>per block</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${rows.map((entry, index) => `
+            <tr class="${index === 0 ? "top" : ""}">
+              <td class="rank">${index + 1}</td>
+              <td class="who ${entry.author === "mindustry-forge" ? "forge" : ""}"
+                  title="${escape(entry.notes || "")}">${escape(entry.author)}</td>
+              <td>${entry.delivered}</td>
+              <td>${entry.blocks}</td>
+              <td>${(entry.delivered / Math.max(1, entry.blocks)).toFixed(2)}</td>
+              <td><button data-schematic="${escape(entry.schematic)}">copy</button></td>
+            </tr>`).join("")}
+        </tbody>
+      </table>
+    </section>`;
+}
+
+// Mirrors forge/objective.py closely enough to order a table. The authoritative score is
+// the one the bench computed; this only has to agree about which row goes on top.
+function rank(entry, objective) {
+  const perBlock = entry.delivered / Math.max(1, entry.blocks);
+  if (objective === "density") return perBlock;
+  if (objective === "compact") return entry.delivered > 0 ? 1000 - entry.blocks : -1000;
+  return entry.delivered - 0.05 * entry.blocks;
+}
+
+function conditionsBar(c) {
+  return `<div class="conditions">
+    <span>map <b>${escape(c.map)}</b></span>
+    <span>seed <b>${c.world_seed}</b></span>
+    <span>time <b>${(c.ticks / 60).toFixed(0)}s</b></span>
+    <span>engine <b>${escape(c.engine)}</b></span>
+    <span>ore cleared within <b>${c.keep_out}</b> of the core</span>
+  </div>`;
+}
+
+async function copy(button) {
+  try {
+    await navigator.clipboard.writeText(button.dataset.schematic);
+  } catch {
+    const box = document.createElement("textarea");
+    box.value = button.dataset.schematic;
+    document.body.appendChild(box);
+    box.select();
+    document.execCommand("copy");
+    box.remove();
+  }
+  button.textContent = "copied";
+  button.classList.add("done");
+  setTimeout(() => { button.textContent = "copy"; button.classList.remove("done"); }, 1600);
+}
+
+function escape(text) {
+  return String(text).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+</script>
+</body>
+</html>
