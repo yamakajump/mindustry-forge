@@ -1,0 +1,16 @@
+{
+  "engine": "v159.7",
+  "blocks": {
+    "conveyor": [
+      "conveyor-0-0.png"
+    ],
+    "mechanical-drill": [
+      "mechanical-drill.png",
+      "mechanical-drill-rotator.png",
+      "mechanical-drill-top.png"
+    ],
+    "router": [
+      "router.png"
+    ]
+  }
+}

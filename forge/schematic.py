@@ -39,6 +39,32 @@ MAX_SIDE = 32767
 #: Type id for a null object in TypeIO. Every block a layout holds is unconfigured.
 CONFIG_NULL = b"\x00"
 
+#: How many tiles a side each block covers, read off the engine's own `Block.size` rather
+#: than eyeballed. Anything not named here covers one tile, which is true of every carrier.
+#:
+#: It matters for the declared width and height and nothing else, since a schematic stores
+#: only a block's anchor tile. A design whose rightmost block is a two-wide drill overflows
+#: the box its own coordinates suggest, and used to be declared one short: a 1x7 schematic
+#: holding a 2x2 drill, which is not a shape.
+BLOCK_SIZES = {
+    "distributor": 2, "mechanical-drill": 2, "pneumatic-drill": 2, "laser-drill": 3,
+    "graphite-press": 2, "silicon-smelter": 2, "kiln": 2, "thermal-generator": 2,
+}
+
+
+def size_of(block: str) -> int:
+    return BLOCK_SIZES.get(block, 1)
+
+
+def anchor_offset(size: int) -> int:
+    """Mindustry's `sizeOffset`: where a block sits relative to its stored tile.
+
+    `-(size - 1) / 2` in Java, which truncates toward zero rather than flooring, so the
+    division is written the same way here. An even-sized block puts its corner on the
+    tile; an odd-sized one straddles it.
+    """
+    return int(-(size - 1) / 2)
+
 
 def _utf(text: str) -> bytes:
     """Java's writeUTF: a two byte length, then the bytes.
@@ -91,11 +117,20 @@ def cropped(cells) -> tuple[int, int, int, int, list]:
     if not cells:
         return 0, 0, 0, 0, []
 
-    xs = [x for x, _, _, _ in cells]
-    ys = [y for _, y, _, _ in cells]
-    left, bottom = min(xs), min(ys)
+    # Measured on what each block covers, not on where its anchor tile happens to sit.
+    spans = []
+    for x, y, block, _ in cells:
+        size = size_of(block)
+        offset = anchor_offset(size)
+        spans.append((x + offset, y + offset, size))
+
+    left = min(x for x, _, _ in spans)
+    bottom = min(y for _, y, _ in spans)
+    right = max(x + size - 1 for x, _, size in spans)
+    top = max(y + size - 1 for _, y, size in spans)
+
     moved = [(x - left, y - bottom, block, rotation) for x, y, block, rotation in cells]
-    return left, bottom, max(xs) - left + 1, max(ys) - bottom + 1, moved
+    return left, bottom, right - left + 1, top - bottom + 1, moved
 
 
 def write(design, name: str = "forge", description: str = "") -> bytes:
