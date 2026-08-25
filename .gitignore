@@ -3,6 +3,9 @@ __pycache__/
 .venv/
 .pytest_cache/
 
+# Build metadata, written by `pip install -e .`
+*.egg-info/
+
 # The Mindustry server the bench runs against: downloaded, not authored.
 mindustry-forge/
 bridge/build/

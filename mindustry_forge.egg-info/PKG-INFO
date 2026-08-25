@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: mindustry-forge
-Version: 0.1.0
-Summary: Search for Mindustry schematics, scored by running the game
-Requires-Python: >=3.11
-Requires-Dist: numpy>=1.26
-Provides-Extra: dev
-Requires-Dist: pytest>=8; extra == "dev"
