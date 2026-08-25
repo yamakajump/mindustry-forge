@@ -1,0 +1,214 @@
+{
+  "format": 1,
+  "entries": [
+    {
+      "spec": "copper-line",
+      "objective": "compact",
+      "author": "mindustry-forge",
+      "schematic": "bXNjaAF4nCXKTQ6CMBCG4Y+GX3FhTNzPASRKDInXgVK0sbSkgAm3lzqz6NN3MjjiIBDbdlS4SDdNyldGW0U3km6cWrmg7NUsvZ4W7SyauiE+I23pcZ+vVD+pM05+9u/gVttTt9Gobb/Oi9+qwfmXEjiNSr5bq2Vrqt5rY5BLZ79qcx7AGSjxnwwiUDAZYl4n4RFMGYh2BES0X8aIAkkgR8qVcmVcGVfOlXMVXDs/5JgrWw==",
+      "delivered": 15,
+      "blocks": 18,
+      "conditions": {
+        "map": "Ancient_Caldera",
+        "world_seed": 16,
+        "ticks": 1800,
+        "keep_out": 3,
+        "engine": "v159.7"
+      },
+      "origin": [
+        -9,
+        -11
+      ],
+      "stuck": 12,
+      "name": "copper-line / compact",
+      "notes": "20 generations of 30, parts genome, seed 0",
+      "options": {}
+    },
+    {
+      "spec": "copper-line",
+      "objective": "compact",
+      "author": "by hand, three drills",
+      "schematic": "bXNjaAF4nCXNvQ7CIBSG4VNKf9TFxcnlJK5ttDp5OS0lKZFCA41J797iN8Cb8yQHSNJRkHT9rOmm/LLo0FrjNN952Hjq3djwOgWteQzG2kinUUcVzLIa7+javRlLbBy/HrHhZ8eD9eoTBZ1nrfYXjOpt+9+mWnn31ZsPRHTZD2XpEikZ5WlOkKcIJEeIJFACJbAAFsACWAJLYAmsgBWwAtbIIf2epfwAYicl+A==",
+      "delivered": 19,
+      "blocks": 21,
+      "conditions": {
+        "map": "Ancient_Caldera",
+        "world_seed": 16,
+        "ticks": 1800,
+        "keep_out": 3,
+        "engine": "v159.7"
+      },
+      "origin": [
+        -3,
+        -9
+      ],
+      "stuck": 1,
+      "name": "copper-line / by hand, three drills",
+      "notes": "built by hand, 3 drill(s)",
+      "options": {}
+    },
+    {
+      "spec": "copper-line",
+      "objective": "compact",
+      "author": "by hand, one drill",
+      "schematic": "bXNjaAF4nC3LQQrCMBCF4ZdYq+DGtas5QIsVwfukyYCDaaYkIvT2RuLA8PEWPwwOFl1yC4O8rivnMUpiutK80dOlMJDWGbLEiFPg4rOsb9GEy236FySJ7lMZ6EFzVP8qFueFfa3Fuzi29ug1fXjTDKBHO1PfwvzYNbrGvtHDfAH7GCPU",
+      "delivered": 10,
+      "blocks": 6,
+      "conditions": {
+        "map": "Ancient_Caldera",
+        "world_seed": 16,
+        "ticks": 1800,
+        "keep_out": 3,
+        "engine": "v159.7"
+      },
+      "origin": [
+        -1,
+        -8
+      ],
+      "stuck": 0,
+      "name": "copper-line / by hand, one drill",
+      "notes": "built by hand, 1 drill(s)",
+      "options": {}
+    },
+    {
+      "spec": "copper-line",
+      "objective": "density",
+      "author": "by hand, one drill",
+      "schematic": "bXNjaAF4nC3LQQrCMBCF4ZdYq+DGtas5QIsVwfukyYCDaaYkIvT2RuLA8PEWPwwOFl1yC4O8rivnMUpiutK80dOlMJDWGbLEiFPg4rOsb9GEy236FySJ7lMZ6EFzVP8qFueFfa3Fuzi29ug1fXjTDKBHO1PfwvzYNbrGvtHDfAH7GCPU",
+      "delivered": 10,
+      "blocks": 6,
+      "conditions": {
+        "map": "Ancient_Caldera",
+        "world_seed": 16,
+        "ticks": 1800,
+        "keep_out": 3,
+        "engine": "v159.7"
+      },
+      "origin": [
+        -1,
+        -8
+      ],
+      "stuck": 0,
+      "name": "copper-line / by hand, one drill",
+      "notes": "built by hand, 1 drill(s)",
+      "options": {}
+    },
+    {
+      "spec": "copper-line",
+      "objective": "density",
+      "author": "mindustry-forge",
+      "schematic": "bXNjaAF4nCXKSw7CMAwE0GnTH2IDC/Y+ABV/cZ42CRCRJlWaLnp7UjyWrHmWUWKTo3DdoHGQfhx1aK1xmk6ktJtMXLBVepLBjNF4h8f1TvxGxtHtPB3p8qTeevlN9eVnp6hfaDBOzVMMS/vy4a1z7AYtP50zsrOtCsZaVMHPUQcAe0DgnyxNSoGcLdaTSMqytATEKsEqWAWrZJWsilWxalbNalgNsh/yNyoo",
+      "delivered": 24,
+      "blocks": 17,
+      "conditions": {
+        "map": "Ancient_Caldera",
+        "world_seed": 16,
+        "ticks": 1800,
+        "keep_out": 3,
+        "engine": "v159.7"
+      },
+      "origin": [
+        -2,
+        -10
+      ],
+      "stuck": 3,
+      "name": "copper-line / density",
+      "notes": "20 generations of 30, parts genome, seed 0",
+      "options": {}
+    },
+    {
+      "spec": "copper-line",
+      "objective": "density",
+      "author": "by hand, three drills",
+      "schematic": "bXNjaAF4nCXNvQ7CIBSG4VNKf9TFxcnlJK5ttDp5OS0lKZFCA41J797iN8Cb8yQHSNJRkHT9rOmm/LLo0FrjNN952Hjq3djwOgWteQzG2kinUUcVzLIa7+javRlLbBy/HrHhZ8eD9eoTBZ1nrfYXjOpt+9+mWnn31ZsPRHTZD2XpEikZ5WlOkKcIJEeIJFACJbAAFsACWAJLYAmsgBWwAtbIIf2epfwAYicl+A==",
+      "delivered": 19,
+      "blocks": 21,
+      "conditions": {
+        "map": "Ancient_Caldera",
+        "world_seed": 16,
+        "ticks": 1800,
+        "keep_out": 3,
+        "engine": "v159.7"
+      },
+      "origin": [
+        -3,
+        -9
+      ],
+      "stuck": 1,
+      "name": "copper-line / by hand, three drills",
+      "notes": "built by hand, 3 drill(s)",
+      "options": {}
+    },
+    {
+      "spec": "copper-line",
+      "objective": "throughput",
+      "author": "mindustry-forge",
+      "schematic": "bXNjaAF4nC2Nwa7CIBBFr6Wi1WfiyricD7BRa94HVYqWSKGhdOHfC46z4HBy72Sww7ZA6dpB46j8OOpQW+M0nSn2wc/Pfpwjtp2eVDBjNN7hv7kSN8k4ul2mEzUN3a1Xr/R9+Nl1dH/TYFw3TzG864cPT11gP2jVt86o1tZdMNZCpgNRBwAH4A/f2WCRsUaRISEyBEpOZX7KlKZWlZuLtFdAZIiMKqVfK9mWbEs2ySbZVmwrtjXbDxVjA/EBYm4sZw==",
+      "delivered": 21,
+      "blocks": 22,
+      "conditions": {
+        "map": "Ancient_Caldera",
+        "world_seed": 16,
+        "ticks": 1800,
+        "keep_out": 3,
+        "engine": "v159.7"
+      },
+      "origin": [
+        -10,
+        -10
+      ],
+      "stuck": 6,
+      "name": "copper-line / throughput",
+      "notes": "20 generations of 30, parts genome, seed 0",
+      "options": {
+        "block_cost": 0.05
+      }
+    },
+    {
+      "spec": "copper-line",
+      "objective": "throughput",
+      "author": "by hand, three drills",
+      "schematic": "bXNjaAF4nCXNvQ7CIBSG4VNKf9TFxcnlJK5ttDp5OS0lKZFCA41J797iN8Cb8yQHSNJRkHT9rOmm/LLo0FrjNN952Hjq3djwOgWteQzG2kinUUcVzLIa7+javRlLbBy/HrHhZ8eD9eoTBZ1nrfYXjOpt+9+mWnn31ZsPRHTZD2XpEikZ5WlOkKcIJEeIJFACJbAAFsACWAJLYAmsgBWwAtbIIf2epfwAYicl+A==",
+      "delivered": 19,
+      "blocks": 21,
+      "conditions": {
+        "map": "Ancient_Caldera",
+        "world_seed": 16,
+        "ticks": 1800,
+        "keep_out": 3,
+        "engine": "v159.7"
+      },
+      "origin": [
+        -3,
+        -9
+      ],
+      "stuck": 1,
+      "name": "copper-line / by hand, three drills",
+      "notes": "built by hand, 3 drill(s)",
+      "options": {}
+    },
+    {
+      "spec": "copper-line",
+      "objective": "throughput",
+      "author": "by hand, one drill",
+      "schematic": "bXNjaAF4nC3LQQrCMBCF4ZdYq+DGtas5QIsVwfukyYCDaaYkIvT2RuLA8PEWPwwOFl1yC4O8rivnMUpiutK80dOlMJDWGbLEiFPg4rOsb9GEy236FySJ7lMZ6EFzVP8qFueFfa3Fuzi29ug1fXjTDKBHO1PfwvzYNbrGvtHDfAH7GCPU",
+      "delivered": 10,
+      "blocks": 6,
+      "conditions": {
+        "map": "Ancient_Caldera",
+        "world_seed": 16,
+        "ticks": 1800,
+        "keep_out": 3,
+        "engine": "v159.7"
+      },
+      "origin": [
+        -1,
+        -8
+      ],
+      "stuck": 0,
+      "name": "copper-line / by hand, one drill",
+      "notes": "built by hand, 1 drill(s)",
+      "options": {}
+    }
+  ]
+}
