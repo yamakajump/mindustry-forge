@@ -149,8 +149,12 @@ function render(payload) {
   });
 }
 
+// Rows arrive in the order the bench put them in and are not re-sorted here. An earlier
+// version ranked them again in the browser with a simplified copy of the objectives, and
+// the copy quietly disagreed: `compact` refuses anything under a delivery rate, the copy
+// had no gate, and a design the bench had eliminated was shown sitting in first place.
+// One scoring rule, in forge/objective.py, and this file only draws what it is handed.
 function table(rows, objective) {
-  rows = rows.slice().sort((a, b) => rank(b, objective) - rank(a, objective));
   return `
     <section class="board">
       <h3>${escape(objective)} &middot; ${OBJECTIVES[objective] || ""}</h3>
@@ -173,15 +177,6 @@ function table(rows, objective) {
         </tbody>
       </table>
     </section>`;
-}
-
-// Mirrors forge/objective.py closely enough to order a table. The authoritative score is
-// the one the bench computed; this only has to agree about which row goes on top.
-function rank(entry, objective) {
-  const perBlock = entry.delivered / Math.max(1, entry.blocks);
-  if (objective === "density") return perBlock;
-  if (objective === "compact") return entry.delivered > 0 ? 1000 - entry.blocks : -1000;
-  return entry.delivered - 0.05 * entry.blocks;
 }
 
 function conditionsBar(c) {
