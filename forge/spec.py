@@ -84,6 +84,14 @@ class Spec:
     palette: tuple[str, ...]
     inputs: tuple[Port, ...] = ()
     outputs: tuple[Port, ...] = ()
+    #: The ore a design has to be sat on, when it has to mine at all.
+    #:
+    #: A property of the question rather than a rule in a tool: a specification with no
+    #: inputs is fed by nothing and its work area is worthless unless it covers the right
+    #: ore, and only the specification knows which. This lived as `if name == "copper-line"`
+    #: in a command line script, where every new specification would have had to remember
+    #: to edit it.
+    material: str | None = None
     width: int = 12
     height: int = 12
     #: Game ticks each candidate is given to prove itself. Sixty is one second.
@@ -106,6 +114,11 @@ class Spec:
         """The item the design exists to produce."""
         return self.outputs[0].item
 
+    @property
+    def mined(self) -> str | None:
+        """What has to be under the design, or None when it is fed from its ports."""
+        return None if self.inputs else self.material
+
     def area(self) -> int:
         return self.width * self.height
 
@@ -116,6 +129,7 @@ COPPER_LINE = Spec(
     name="copper-line",
     palette=("air", "conveyor", "mechanical-drill", "junction", "router"),
     outputs=(Port("copper", Side.TOP),),
+    material="copper",
     width=13, height=13,
     notes="Mine copper and get it to the edge. No inputs: the ore is under the floor.",
 )
@@ -126,6 +140,7 @@ GRAPHITE = Spec(
     name="graphite",
     palette=("air", "conveyor", "mechanical-drill", "graphite-press", "junction", "router"),
     outputs=(Port("graphite", Side.TOP),),
+    material="coal",
     width=14, height=14,
     notes="Coal comes out of the ground, a press eats two and makes one graphite.",
 )

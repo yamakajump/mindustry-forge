@@ -196,3 +196,28 @@ def read(payload: bytes) -> dict:
 
 def from_base64(text: str) -> dict:
     return read(base64.b64decode(text))
+
+
+def as_layout(parsed: dict, width: int, height: int,
+              offset: tuple[int, int] = (0, 0)):
+    """Put a parsed schematic back onto a grid, so the bench can stamp it again.
+
+    The offset is where its lower left corner goes. A schematic is cropped to its own
+    bounding box and has therefore forgotten where it stood, which is exactly why a
+    catalogue entry carries that offset: a design measured against an output it can no
+    longer reach is a design that measures zero.
+
+    Tiles falling outside the grid are dropped, and the caller is expected to notice by
+    comparing what came back against how many tiles went in. Silently accepting a design
+    that half fits would re-measure something other than what was submitted.
+    """
+    from forge.layout import empty
+
+    palette = ("air",) + tuple(parsed["palette"])
+    grid = empty(width, height, palette)
+    for x, y, block, rotation in parsed["tiles"]:
+        tx, ty = x + offset[0], y + offset[1]
+        if 0 <= tx < width and 0 <= ty < height:
+            grid.blocks[ty * width + tx] = palette.index(block)
+            grid.rotations[ty * width + tx] = rotation
+    return grid

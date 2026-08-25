@@ -16,6 +16,7 @@ import pytest
 
 from forge.layout import Design, Line, Machine, empty
 from forge.schematic import (
+    as_layout,
     HEADER,
     VERSION,
     from_base64,
@@ -214,3 +215,23 @@ def test_an_unmeasured_design_falls_back_to_what_it_asked_for():
 
     assert design.placed is None
     assert len(from_base64(to_base64(design))["tiles"]) == design.used()
+
+
+def test_a_schematic_can_be_put_back_on_a_grid_where_it_stood():
+    design = a_line()
+    parsed = from_base64(to_base64(design))
+
+    grid = as_layout(parsed, 8, 8, offset=(1, 1))
+
+    assert {(x, y, b, r) for x, y, b, r in grid.cells()} == {
+        (x, y, b, r) for x, y, b, r in design.cells()
+    }
+
+
+def test_tiles_that_fall_off_the_grid_are_dropped_and_countable():
+    """The caller compares the counts: a design that half fits is not that design."""
+    parsed = from_base64(to_base64(a_line()))
+
+    grid = as_layout(parsed, 8, 8, offset=(6, 6))
+
+    assert grid.used() < len(parsed["tiles"])

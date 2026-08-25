@@ -8,6 +8,10 @@ Every candidate is stamped into a real Mindustry world, given a few seconds, and
 what the engine says came out. Nothing here is told what a conveyor is for. The rules of
 the game are the whole of the fitness function, so whatever comes back is the forge's own
 answer rather than a blueprint copied off somebody who already knew one.
+
+A run leaves two files behind: the record, with the whole history so the run can be read
+after it ends, and the catalogue entry, which is what `tools/publish.py` puts in the
+warehouse.
 """
 
 from __future__ import annotations
@@ -18,7 +22,6 @@ import json
 import random
 import sys
 import time
-import webbrowser
 from pathlib import Path
 
 # Python puts the *script's* directory on the import path, not the one it was run from,
@@ -27,30 +30,42 @@ from pathlib import Path
 # command working from a fresh clone, with no install step and no PYTHONPATH to remember.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from forge import catalogue
 from forge import objective as objectives
 from forge import schematic
+from forge import session
 from forge import spec as specs
-from forge.bench import Bench, choose_area, prepare
-from forge.bridge import Bridge
 from forge.evolve import Population, standing
-from forge.server import ServerProcess, install_plugin
-from forge.server_setup import MINDUSTRY_VERSION, setup_server
 from forge.watch import Run, serve
 
-#: Defaults only. Both are overridable because a machine can run more than one forge at a
-#: time, and because `mindustry-ai` speaks to the same plugin over the same numbers: two
-#: runs started minutes apart on one laptop is the ordinary case, not the exotic one.
-BRIDGE_PORT = 7970
-GAME_PORT = 6570
+
+def entry_for(best, spec, args, run_session) -> catalogue.Entry:
+    """The design, written down the way the warehouse wants it."""
+    left, bottom, _, _, _ = schematic.cropped(schematic.cells_of(best))
+    return catalogue.Entry(
+        spec=spec.name,
+        objective=args.objective,
+        author="mindustry-forge",
+        schematic=schematic.to_base64(
+            best, name=f"{spec.name} / {args.objective}",
+            description=(f"{best.delivered} {spec.target} in {spec.ticks / 60:.0f}s, "
+                         f"{standing(best)} blocks, found by mindustry-forge"),
+        ),
+        delivered=best.delivered,
+        blocks=standing(best),
+        stuck=best.stuck,
+        conditions=run_session.conditions,
+        origin=run_session.core_offset(left, bottom),
+        name=f"{spec.name} / {args.objective}",
+        notes=(f"{args.generations} generations of {args.population}, "
+               f"{args.genome} genome, seed {args.seed}"),
+        options=objective_options(args),
+    )
 
 
-def material_for(spec: specs.Spec) -> str | None:
-    """The ore a design has to be sat on, if any.
-
-    A specification with inputs is fed from its ports and can be built anywhere. One
-    without them has to mine, so the work area is worthless unless it covers ore.
-    """
-    return None if spec.inputs else spec.target if spec.name == "copper-line" else "coal"
+def objective_options(args) -> dict:
+    return {"budget": {"blocks": args.budget_blocks},
+            "throughput": {"block_cost": args.block_cost}}.get(args.objective, {})
 
 
 def main() -> None:
@@ -73,169 +88,98 @@ def main() -> None:
                              "wrong")
     parser.add_argument("--population", type=int, default=48)
     parser.add_argument("--generations", type=int, default=40)
-    parser.add_argument("--map", default="Ancient_Caldera")
-    parser.add_argument("--world-seed", type=int, default=16,
-                        help="pins the ore. Mindustry repaints it on every load, so "
-                             "without this two runs are not comparable")
-    parser.add_argument("--keep-out", type=int, default=3,
-                        help="tiles around the output whose material is scraped off the "
-                             "map, so that a line is the only way to deliver anything")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--port", type=int, default=8900,
                         help="where to serve the live view")
-    parser.add_argument("--bridge-port", type=int, default=BRIDGE_PORT,
-                        help="the agent socket. Change it to run two forges at once, or "
-                             "to sit beside a run of mindustry-ai, which uses the same "
-                             "plugin and the same default")
-    parser.add_argument("--game-port", type=int, default=GAME_PORT,
-                        help="the port the server hosts on. Every instance binds one even "
-                             "when nothing connects, so parallel runs need distinct ones")
     parser.add_argument("--no-open", dest="open", action="store_false", default=True)
     parser.add_argument("--out", type=Path, default=Path("designs"))
-    parser.add_argument("--jar", type=Path, default=None)
+    session.add_world_arguments(parser)
     args = parser.parse_args()
 
     spec = specs.get(args.spec)
-    options = {"budget": {"blocks": args.budget_blocks},
-               "throughput": {"block_cost": args.block_cost}}.get(args.objective, {})
-    score = objectives.get(args.objective, **options)
+    score = objectives.get(args.objective, **objective_options(args))
 
     run = Run(f"{spec.name} / {args.objective}")
     run.describe(spec, args.objective, args.genome, args.population)
     url = serve(run, args.port)
 
-    jar = str(args.jar or next((Path("bridge") / "build" / "libs").glob("*.jar")))
-    directory = setup_server("mindustry-forge")
-    install_plugin(directory, jar)
-
     print(f"forge   : {spec.name} -> {spec.target}, {args.objective}")
     print(f"watch   : {url}")
     if args.open:
+        import webbrowser
+
         webbrowser.open(url)
 
-    with ServerProcess(directory, jvm_args=[f"-Dmindustryai.port={args.bridge_port}"],
-                       port=args.game_port) as server:
-        # Two outcomes, waited on together. The plugin logs a failure to bind and lets the
-        # server carry on running, which looks entirely healthy from outside: waiting only
-        # for success turns a busy port into two minutes of silence and a timeout that
-        # names the wrong problem.
-        opened = server.wait_for(
-            rf"listening on 127\.0\.0\.1:{args.bridge_port}"
-            rf"|could not listen on port {args.bridge_port}",
-            timeout=120,
-        )
-        if "could not listen" in opened:
-            raise SystemExit(
-                f"the agent socket {args.bridge_port} is already taken, so this server "
-                f"came up without a bridge. Something else is on it: another forge, or a "
-                f"run of mindustry-ai, which uses the same plugin and the same default "
-                f"port. Pass --bridge-port (and --game-port) to sit beside it.\n"
-                f"  {opened}"
-            )
+    with session.opened(spec, map_name=args.map, world_seed=args.world_seed,
+                        keep_out=args.keep_out, bridge_port=args.bridge_port,
+                        game_port=args.game_port, jar=args.jar) as world:
+        print()
+        population = Population(spec, score, size=args.population,
+                                genome=args.genome, rng=random.Random(args.seed))
+        population.seed()
 
-        with Bridge(port=args.bridge_port, tensor=True, timeout=120.0) as bridge:
-            # Sandbox, so a candidate is never refused for being unaffordable. What is
-            # being searched for is a shape that works, and making the search pay for
-            # copper would only teach it to be small.
-            observation = bridge.reset(args.map, "sandbox", seed=args.world_seed)
-            server.command("bridge-speed max", r"speed set")
+        started = time.time()
+        for generation in range(1, args.generations + 1):
+            for candidate in population.members:
+                if candidate.delivered is None:
+                    world.bench.run(candidate)
 
-            core = (int(observation["core_x"]), int(observation["core_y"]))
-            material = material_for(spec)
+            report = population.report()
+            run.record(report, population.best(), time.time() - started)
+            print(f"generation {generation:3d}  best {report['best_delivered']:5d} "
+                  f"{spec.target} with {report['best_blocks']:3d} blocks  "
+                  f"{report['working']:3d}/{report['size']} work  "
+                  f"score {report['best_score']:9.2f}  stuck {report['most_stuck']:5d}",
+                  flush=True)
 
-            # Before anything is measured, and before the area is chosen against a map
-            # that is about to change under it.
-            scraped = prepare(bridge, core, material, args.keep_out)
-            if scraped:
-                observation = bridge.observe()
+            population.advance()
 
-            area = choose_area(observation["spatial"], bridge.channels, core, spec,
-                               material, args.keep_out)
-
-            print(f"scraped : {scraped} tiles of {material or 'nothing'} within "
-                  f"{args.keep_out} of the output, so a line is the only way to deliver")
-            print(f"area    : {spec.width}x{spec.height} at ({area.x}, {area.y}), "
-                  f"{area.material} tiles of usable material")
-            print()
-            if material is not None and area.material == 0:
-                raise SystemExit(
-                    "no usable material in the work area: nothing here can deliver "
-                    "anything, and the search would be measuring noise. Try another "
-                    "--world-seed."
-                )
-
-            bench = Bench(bridge, spec, area)
-            population = Population(spec, score, size=args.population,
-                                    genome=args.genome, rng=random.Random(args.seed))
-            population.seed()
-
-            started = time.time()
-            for generation in range(1, args.generations + 1):
-                for candidate in population.members:
-                    if candidate.delivered is None:
-                        bench.run(candidate)
-
-                report = population.report()
-                run.record(report, population.best(), time.time() - started)
-                print(f"generation {generation:3d}  best {report['best_delivered']:5d} "
-                      f"{spec.target} with {report['best_blocks']:3d} blocks  "
-                      f"{report['working']:3d}/{report['size']} work  "
-                      f"score {report['best_score']:9.2f}  stuck {report['most_stuck']:5d}",
-                      flush=True)
-
-                if generation < args.generations:
-                    population.advance()
-
-            run.finish()
-            best = population.best()
+        best = population.best()
+        entry = entry_for(best, spec, args, world) if best and best.delivered else None
 
     print()
     if best is None or not best.delivered:
-        print("Nothing delivered anything. Either the work area has no workable design in")
-        print("it, the time budget is too short for one to show, or there were too few")
-        print("generations: on this bench the first delivery has taken ten of them.")
+        print("nothing delivered. Either the world has no reachable ore for this")
+        print("specification, the time budget is too short for one to show, or there were")
+        print("too few generations: on this bench the first delivery has taken ten.")
     else:
         print(f"{best.delivered} {spec.target} in {spec.ticks / 60:.0f} seconds, "
-              f"{best.blocks_standing or best.used()} blocks")
+              f"{standing(best)} blocks")
         print()
         print(best.render())
+        print()
+        print("paste into the game with ctrl+v:")
+        print(entry.schematic)
 
     # Written whether or not anything worked. A run that found nothing is exactly the run
     # worth reading afterwards, and an early return left nothing to read.
     args.out.mkdir(parents=True, exist_ok=True)
     stem = f"{spec.name}-{args.objective}"
 
-    # The string a player pastes, and the only shape in which a result leaves this
-    # repository. Provenance travels in the JSON beside it rather than inside it: a design
-    # is never more than a claim about the world it was measured on, and a catalogue that
-    # has forgotten which world cannot tell whether its entries still hold.
-    pasteable = ""
-    if best is not None and best.used():
-        pasteable = schematic.to_base64(
-            best, name=f"{spec.name} / {args.objective}",
-            description=(f"{best.delivered} {spec.target} in {spec.ticks / 60:.0f}s, "
-                         f"{standing(best)} blocks, found by mindustry-forge"),
-        )
-        (args.out / f"{stem}.msch").write_bytes(base64.b64decode(pasteable))
-        print()
-        print("paste into the game with ctrl+v:")
-        print(pasteable)
-
-    written = args.out / f"{stem}.json"
-    written.write_text(json.dumps({
-        "schematic": pasteable,
-        "engine": MINDUSTRY_VERSION,
+    record = args.out / f"{stem}.json"
+    record.write_text(json.dumps({
         "spec": spec.name, "target": spec.target, "objective": args.objective,
-        "genome": args.genome, "map": args.map, "world_seed": args.world_seed,
-        "area": [area.x, area.y, spec.width, spec.height], "core": list(area.core),
-        "ticks": spec.ticks,
-        "delivered": best.delivered if best else 0,
-        "blocks": (best.blocks_standing or best.used()) if best else 0,
+        "genome": args.genome, "delivered": best.delivered if best else 0,
+        "blocks": standing(best) if best else 0,
         "text": best.render() if best else "",
         "cells": ([list(cell) for cell in schematic.cells_of(best)] if best else []),
         "history": run.snapshot()["history"],
     }, indent=2), encoding="utf-8")
-    print(f"written to {written}")
+
+    written = [record]
+    if entry is not None:
+        (args.out / f"{stem}.msch").write_bytes(base64.b64decode(entry.schematic))
+        submission = args.out / f"{stem}.entry.json"
+        submission.write_text(json.dumps(entry.to_json(), indent=2) + "\n",
+                              encoding="utf-8")
+        written += [args.out / f"{stem}.msch", submission]
+
+    print()
+    for path in written:
+        print(f"written : {path}")
+    if entry is not None:
+        print()
+        print(f"put it in the catalogue with:  python tools/publish.py {submission}")
 
 
 if __name__ == "__main__":
