@@ -76,6 +76,20 @@ because of the flaw come out. That is what the provenance on every entry is for:
 that has forgotten which world it was measured on can never be rechecked, and a catalogue
 that cannot recheck itself is a pile of claims.
 
+## If your design uses a block nobody has used yet
+
+The site draws with Mindustry's own art, and only the sprites the catalogue needs are kept
+in the repository. Add a schematic holding a block no entry used before and it will draw as
+a plain coloured tile until somebody runs:
+
+```bash
+python tools/sprites.py
+```
+
+That pulls the missing art out of the pinned engine's asset jar, writes it into
+`docs/sprites/`, and prints what it fetched. Commit the result alongside your entry. It
+names any block it could not find art for rather than leaving you to spot it.
+
 ## Adding a new question
 
 A specification is what arrives, what has to leave, how big the square is and how long a

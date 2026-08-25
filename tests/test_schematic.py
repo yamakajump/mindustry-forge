@@ -16,12 +16,14 @@ import pytest
 
 from forge.layout import Design, Line, Machine, empty
 from forge.schematic import (
-    as_layout,
     HEADER,
+    anchor_offset,
+    as_layout,
     VERSION,
     from_base64,
     pack_point,
     read,
+    size_of,
     to_base64,
     unpack_point,
     write,
@@ -141,8 +143,38 @@ def test_a_design_in_the_corner_of_a_big_area_crops_to_itself():
 
     back = from_base64(to_base64(design))
 
-    assert (back["width"], back["height"]) == (1, 1)
+    # Two, not one: a mechanical drill covers two tiles a side, and only its anchor tile
+    # is stored. See the next test for what declaring one instead looks like.
+    assert (back["width"], back["height"]) == (2, 2)
     assert back["tiles"] == [(0, 0, "mechanical-drill", 0)]
+
+
+def test_the_declared_size_counts_what_blocks_cover_not_where_they_are_pinned():
+    """A schematic stores anchors; a player pastes footprints.
+
+    Caught by drawing one. A drill with a belt running up from it came back declared 1x7,
+    a box one tile narrower than the 2x2 drill inside it, which is not a shape any factory
+    can have.
+    """
+    design = Design(12, 12, PALETTE,
+                    machines=[Machine(0, 0, "mechanical-drill")],
+                    lines=[Line(0, 1, 0, 6, "conveyor", True)])
+
+    back = from_base64(to_base64(design))
+
+    assert (back["width"], back["height"]) == (2, 7)
+
+
+def test_the_anchor_offset_truncates_the_way_java_does():
+    """`-(size - 1) / 2` truncates toward zero in Java, where Python would floor."""
+    assert [anchor_offset(size) for size in (1, 2, 3, 4, 5)] == [0, 0, -1, -1, -2]
+
+
+def test_a_block_nobody_listed_is_taken_to_cover_one_tile():
+    """True of every carrier, and the honest default for anything new."""
+    assert size_of("conveyor") == 1
+    assert size_of("something-added-next-year") == 1
+    assert size_of("mechanical-drill") == 2
 
 
 def test_cropping_keeps_the_shape_rather_than_squeezing_it():

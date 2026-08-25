@@ -5,7 +5,7 @@
       "spec": "copper-line",
       "objective": "compact",
       "author": "mindustry-forge",
-      "schematic": "bXNjaAF4nCXKTQ6CMBCG4Y+GX3FhTNzPASRKDInXgVK0sbSkgAm3lzqz6NN3MjjiIBDbdlS4SDdNyldGW0U3km6cWrmg7NUsvZ4W7SyauiE+I23pcZ+vVD+pM05+9u/gVttTt9Gobb/Oi9+qwfmXEjiNSr5bq2Vrqt5rY5BLZ79qcx7AGSjxnwwiUDAZYl4n4RFMGYh2BES0X8aIAkkgR8qVcmVcGVfOlXMVXDs/5JgrWw==",
+      "schematic": "bXNjaAF4nCWL0Q6CMAxFLwvKkJgYE9/7ARIlxsTfwTF1cWxkgAl/78r60NNz22KPnUDu2l7jpPww6FBb4zRdSPl+aNWEqtOjCmaYjHe4N3dKZ2Qc3a7jmZoHPa1X3zi+/Ow6ei7UG9fN4xSW+uXDWwsceq0+rTOqtXUXjLWQyrufXnwAcAQqrFVAMEpGFkPBQ4GcrYzIeLvhJhgcbjiskklskXG4QsbP1YpkMplMViaL+APmwitc",
       "delivered": 15,
       "blocks": 18,
       "conditions": {
@@ -28,7 +28,7 @@
       "spec": "copper-line",
       "objective": "compact",
       "author": "by hand, three drills",
-      "schematic": "bXNjaAF4nCXNvQ7CIBSG4VNKf9TFxcnlJK5ttDp5OS0lKZFCA41J797iN8Cb8yQHSNJRkHT9rOmm/LLo0FrjNN952Hjq3djwOgWteQzG2kinUUcVzLIa7+javRlLbBy/HrHhZ8eD9eoTBZ1nrfYXjOpt+9+mWnn31ZsPRHTZD2XpEikZ5WlOkKcIJEeIJFACJbAAFsACWAJLYAmsgBWwAtbIIf2epfwAYicl+A==",
+      "schematic": "bXNjaAF4nCXOTwvCIBjH8WfO/akuXTp1eaDrRq1OvZzNCZOcDo1g7765n4hf+YAPkqSjIOn6WdNN+WXRobXGab7zsPLUu7Hh7xS05jEYayOdRh1VMMvXeEfX7s14xMbx6xEbfnY8WK8+UVCtvPvp1Qc6z1pts4zqbbvPIaILUb4ly9KRtkhJK08XgeQIkQRKoAQWwAJYAEtgCSyBFbACVsAaOdD+hS1/XXIl5w==",
       "delivered": 19,
       "blocks": 21,
       "conditions": {
@@ -51,7 +51,7 @@
       "spec": "copper-line",
       "objective": "compact",
       "author": "by hand, one drill",
-      "schematic": "bXNjaAF4nC3LQQrCMBCF4ZdYq+DGtas5QIsVwfukyYCDaaYkIvT2RuLA8PEWPwwOFl1yC4O8rivnMUpiutK80dOlMJDWGbLEiFPg4rOsb9GEy236FySJ7lMZ6EFzVP8qFueFfa3Fuzi29ug1fXjTDKBHO1PfwvzYNbrGvtHDfAH7GCPU",
+      "schematic": "bXNjaAF4nC3LQQrCMBCF4ZdYq+DGtas5QIsVwfukkwGDaaYkIvT2RuLA8PEWPywOFl1yi4BY11XyGEMSutK80dMlP5DW6XOIEScvhXNY30ETLrfpX1BIdJ/KQA+ao/KrWJwX4VoHdnFs7ZE1fWTTDKBHO1PfwvzYNbrGvtHDfAH7uCPV",
       "delivered": 10,
       "blocks": 6,
       "conditions": {
@@ -74,7 +74,7 @@
       "spec": "copper-line",
       "objective": "density",
       "author": "by hand, one drill",
-      "schematic": "bXNjaAF4nC3LQQrCMBCF4ZdYq+DGtas5QIsVwfukyYCDaaYkIvT2RuLA8PEWPwwOFl1yC4O8rivnMUpiutK80dOlMJDWGbLEiFPg4rOsb9GEy236FySJ7lMZ6EFzVP8qFueFfa3Fuzi29ug1fXjTDKBHO1PfwvzYNbrGvtHDfAH7GCPU",
+      "schematic": "bXNjaAF4nC3LQQrCMBCF4ZdYq+DGtas5QIsVwfukkwGDaaYkIvT2RuLA8PEWPywOFl1yi4BY11XyGEMSutK80dMlP5DW6XOIEScvhXNY30ETLrfpX1BIdJ/KQA+ao/KrWJwX4VoHdnFs7ZE1fWTTDKBHO1PfwvzYNbrGvtHDfAH7uCPV",
       "delivered": 10,
       "blocks": 6,
       "conditions": {
@@ -97,7 +97,7 @@
       "spec": "copper-line",
       "objective": "density",
       "author": "mindustry-forge",
-      "schematic": "bXNjaAF4nCXKSw7CMAwE0GnTH2IDC/Y+ABV/cZ42CRCRJlWaLnp7UjyWrHmWUWKTo3DdoHGQfhx1aK1xmk6ktJtMXLBVepLBjNF4h8f1TvxGxtHtPB3p8qTeevlN9eVnp6hfaDBOzVMMS/vy4a1z7AYtP50zsrOtCsZaVMHPUQcAe0DgnyxNSoGcLdaTSMqytATEKsEqWAWrZJWsilWxalbNalgNsh/yNyoo",
+      "schematic": "bXNjaAF4nCXKSxKCMAwG4B/Ky3GjC/c5gIzv8TzQFu1YWqbAgttbSJKZ5EuCArsUmWt6jZP0w6BDbY3TdCGl3WimBXulRxnMMBnv8Lo/id/IOHpcxzPd3tRaL39x7PzsFLUL9capeZzCUnc+fHSKQ6/lt3FGNrZWwViLIvh50gHAERDYIokZSyBdhyy2LcS6TGMT600gWZWxMlbOylkFq2CVrJJVsSokf/NVKik=",
       "delivered": 24,
       "blocks": 17,
       "conditions": {
@@ -120,7 +120,7 @@
       "spec": "copper-line",
       "objective": "density",
       "author": "by hand, three drills",
-      "schematic": "bXNjaAF4nCXNvQ7CIBSG4VNKf9TFxcnlJK5ttDp5OS0lKZFCA41J797iN8Cb8yQHSNJRkHT9rOmm/LLo0FrjNN952Hjq3djwOgWteQzG2kinUUcVzLIa7+javRlLbBy/HrHhZ8eD9eoTBZ1nrfYXjOpt+9+mWnn31ZsPRHTZD2XpEikZ5WlOkKcIJEeIJFACJbAAFsACWAJLYAmsgBWwAtbIIf2epfwAYicl+A==",
+      "schematic": "bXNjaAF4nCXOTwvCIBjH8WfO/akuXTp1eaDrRq1OvZzNCZOcDo1g7765n4hf+YAPkqSjIOn6WdNN+WXRobXGab7zsPLUu7Hh7xS05jEYayOdRh1VMMvXeEfX7s14xMbx6xEbfnY8WK8+UVCtvPvp1Qc6z1pts4zqbbvPIaILUb4ly9KRtkhJK08XgeQIkQRKoAQWwAJYAEtgCSyBFbACVsAaOdD+hS1/XXIl5w==",
       "delivered": 19,
       "blocks": 21,
       "conditions": {
@@ -143,7 +143,7 @@
       "spec": "copper-line",
       "objective": "throughput",
       "author": "mindustry-forge",
-      "schematic": "bXNjaAF4nC2Nwa7CIBBFr6Wi1WfiyricD7BRa94HVYqWSKGhdOHfC46z4HBy72Sww7ZA6dpB46j8OOpQW+M0nSn2wc/Pfpwjtp2eVDBjNN7hv7kSN8k4ul2mEzUN3a1Xr/R9+Nl1dH/TYFw3TzG864cPT11gP2jVt86o1tZdMNZCpgNRBwAH4A/f2WCRsUaRISEyBEpOZX7KlKZWlZuLtFdAZIiMKqVfK9mWbEs2ySbZVmwrtjXbDxVjA/EBYm4sZw==",
+      "schematic": "bXNjaAF4nC2N0Q6CMAxFrwxR1BifjI/9AImK8YNwTFkcGxnjwb93oy7pTntzmmKPbYbcNr3CSbphUL4y2iq6UOi8m97dMAVsWzVKr4egncWjvhGbpC3dr+OZ6pqexslPbF9usi09v9Rr205j8N/q5fxbZTj0SnaN1bIxVeu1MSjigaA8gCOwi8ACZaz4Now1shTuIgRQpC9NIjUCOS/kECmcUWLJ0zIpaWVWCg4LVlY8rZKSxxuzsubwj5KxgfgBaPIsaA==",
       "delivered": 21,
       "blocks": 22,
       "conditions": {
@@ -168,7 +168,7 @@
       "spec": "copper-line",
       "objective": "throughput",
       "author": "by hand, three drills",
-      "schematic": "bXNjaAF4nCXNvQ7CIBSG4VNKf9TFxcnlJK5ttDp5OS0lKZFCA41J797iN8Cb8yQHSNJRkHT9rOmm/LLo0FrjNN952Hjq3djwOgWteQzG2kinUUcVzLIa7+javRlLbBy/HrHhZ8eD9eoTBZ1nrfYXjOpt+9+mWnn31ZsPRHTZD2XpEikZ5WlOkKcIJEeIJFACJbAAFsACWAJLYAmsgBWwAtbIIf2epfwAYicl+A==",
+      "schematic": "bXNjaAF4nCXOTwvCIBjH8WfO/akuXTp1eaDrRq1OvZzNCZOcDo1g7765n4hf+YAPkqSjIOn6WdNN+WXRobXGab7zsPLUu7Hh7xS05jEYayOdRh1VMMvXeEfX7s14xMbx6xEbfnY8WK8+UVCtvPvp1Qc6z1pts4zqbbvPIaILUb4ly9KRtkhJK08XgeQIkQRKoAQWwAJYAEtgCSyBFbACVsAaOdD+hS1/XXIl5w==",
       "delivered": 19,
       "blocks": 21,
       "conditions": {
@@ -191,7 +191,7 @@
       "spec": "copper-line",
       "objective": "throughput",
       "author": "by hand, one drill",
-      "schematic": "bXNjaAF4nC3LQQrCMBCF4ZdYq+DGtas5QIsVwfukyYCDaaYkIvT2RuLA8PEWPwwOFl1yC4O8rivnMUpiutK80dOlMJDWGbLEiFPg4rOsb9GEy236FySJ7lMZ6EFzVP8qFueFfa3Fuzi29ug1fXjTDKBHO1PfwvzYNbrGvtHDfAH7GCPU",
+      "schematic": "bXNjaAF4nC3LQQrCMBCF4ZdYq+DGtas5QIsVwfukkwGDaaYkIvT2RuLA8PEWPywOFl1yi4BY11XyGEMSutK80dMlP5DW6XOIEScvhXNY30ETLrfpX1BIdJ/KQA+ao/KrWJwX4VoHdnFs7ZE1fWTTDKBHO1PfwvzYNbrGvtHDfAH7uCPV",
       "delivered": 10,
       "blocks": 6,
       "conditions": {

@@ -28,6 +28,10 @@ repository, on one pinned world, for the same number of seconds, on one pinned v
 the game. An entry measured anywhere else is refused rather than quietly ranked alongside,
 because two designs compared across different worlds are not being compared at all.
 
+Press *view* on any row and the layout is drawn with the game's own sprites,
+decoded from the same string the copy button hands you. There is no second copy of
+the picture to disagree with the schematic.
+
 Beat one and it goes on the board. Your submission is re-measured automatically on the
 same bench, so nobody has to take your word for it, and nobody has to take mine either.
 See [CONTRIBUTING.md](CONTRIBUTING.md).
