@@ -4009,7 +4009,7 @@
       "power": 0,
       "role": "unloader",
       "carries": "item",
-      "items_per_second": 327.27274
+      "items_per_second": 11
     },
     "mass-driver":{
       "name": "mass-driver",

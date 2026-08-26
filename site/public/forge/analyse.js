@@ -113,7 +113,11 @@ function outputsOf(node) {
   // offloaders gave the first real schematic 39 outgoing links from its batteries and 49
   // from its steam generators: every drop of water supplied to it drained into a battery
   // and the layout reported producing nothing at all.
-  if (node.role === "power" || node.role === "sink" || node.role === "turret") return [];
+  // A container hands nothing to anybody. It holds, and an unloader beside it pulls: the
+  // edge goes from the container to the unloader and is added once the graph is laid out,
+  // because it is the unloader that decides it exists.
+  if (node.role === "power" || node.role === "sink" || node.role === "turret"
+      || node.role === "store") return [];
   if ((node.role === "crafter" || node.role === "generator")
       && !Object.keys(node.block.output || {}).length
       && !Object.keys(node.block.output_liquid || {}).length) {
@@ -294,6 +298,30 @@ export function buildGraph(tiles) {
     }
   }
 
+  // An unloader is the one block that pulls instead of being pushed to, so its ways in
+  // are not among the edges above: nothing points at it. It draws from every container it
+  // touches, which is what makes a vault a buffer in the middle of a line rather than the
+  // end of one.
+  //
+  // Before this, a container swallowed whatever reached it and an unloader beside one was
+  // handed an invented supply out of nowhere, of whatever resource was being solved for.
+  // The two halves of the same belt had nothing to do with each other.
+  for (let index = 0; index < nodes.length; index++) {
+    if (nodes[index].role !== "unloader") continue;
+    const touching = new Set();
+    for (const [cx, cy] of nodes[index].footprint) {
+      for (const [dx, dy] of DIRECTIONS) {
+        const found = at.get(`${cx + dx},${cy + dy}`);
+        if (found !== undefined && nodes[found].role === "store") touching.add(found);
+      }
+    }
+    for (const store of touching) {
+      edges.push([store, index]);
+      // The container is no longer where the line ends: what arrives keeps going.
+      nodes[store].drained = true;
+    }
+  }
+
   const out = nodes.map(() => []);
   const into = nodes.map(() => []);
   for (const [a, b] of edges) { out[a].push(b); into[b].push(a); }
@@ -419,6 +447,9 @@ function solveFlow(graph, supply) {
   // press produces becomes a source for whatever the press feeds. Bounded by the number of
   // stages a real recipe tree has, and stopped when a round adds nothing.
   const made = graph.nodes.map(() => ({}));
+  // What passes through a block without stopping there, which is the whole of what a
+  // carrier does and was missing from the report entirely.
+  const carrying = graph.nodes.map(() => ({}));
   const fed = {};
 
   for (let round = 0; round < 12; round++) {
@@ -440,22 +471,6 @@ function solveFlow(graph, supply) {
           sources[index] = (sources[index] || 0) + sourceRate(graph, index, resource);
         }
       }
-      // An unloader beside a container is where a line starts. It pulls rather than being
-      // pushed to, so nothing upstream feeds it and a line beginning at one used to begin
-      // at nothing at all.
-      if (!liquid) {
-        for (let index = 0; index < nodes; index++) {
-          const node = graph.nodes[index];
-          if (node.role !== "unloader" || !graph.out[index].length) continue;
-          const beside = graph.nodes.some((other) =>
-            other.role === "store"
-            && Math.abs(other.x - node.x) + Math.abs(other.y - node.y) <= 2);
-          if (beside) {
-            sources[index] = (sources[index] || 0)
-              + (node.block.items_per_second || 11);
-          }
-        }
-      }
       if (!Object.keys(sources).length) continue;
 
       const out = throughput(graph, {
@@ -471,6 +486,7 @@ function solveFlow(graph, supply) {
         const before = arriving[index][resource] || 0;
         if (Math.abs(out.received[index] - before) > SETTLED) moved = true;
         arriving[index][resource] = out.received[index];
+        if (out.carried[index] > SETTLED) carrying[index][resource] = out.carried[index];
       }
     }
 
@@ -510,9 +526,9 @@ function solveFlow(graph, supply) {
       made[index] = now;
     }
 
-    if (!moved) return { arriving, made, fed, settled: true, rounds: round + 1 };
+    if (!moved) return { arriving, carrying, made, fed, settled: true, rounds: round + 1 };
   }
-  return { arriving, made, fed, settled: false, rounds: 12 };
+  return { arriving, carrying, made, fed, settled: false, rounds: 12 };
 }
 
 /**
@@ -612,12 +628,30 @@ function sourceRate(graph, index, resource) {
   const declared = (node.block.output_per_second || 0) * (node.boost || 1);
 
   let asked = 0;
+  let taps = 0;
   for (let other = 0; other < graph.nodes.length; other++) {
     if (piecesOf[other] !== piecesOf[index]) continue;
-    const wants = appetiteFor(graph.nodes[other], resource, false);
+    const node2 = graph.nodes[other];
+    if (node2.role === "source" && node2.configured === resource) taps++;
+    const wants = appetiteFor(node2, resource, false);
     if (Number.isFinite(wants)) asked += wants;
   }
-  return asked > 0 ? Math.min(declared, asked) : declared;
+  // Shared out between the taps rather than each one promising the whole demand. Capped
+  // one by one, twelve sources feeding a reactor farm supplied twelve times what it
+  // wanted, and the eleven-twelfths nobody drank ran out of the nearest open pipe and was
+  // reported as a hundred thousand cryofluid a minute of production.
+  return asked > 0 ? Math.min(declared, asked / Math.max(1, taps)) : declared;
+}
+
+/** Everything the sandbox taps inside a schematic pour of one resource, per second. */
+function poured(graph, resource) {
+  let total = 0;
+  for (let index = 0; index < graph.nodes.length; index++) {
+    if (graph.nodes[index].role !== "source") continue;
+    if (graph.nodes[index].configured !== resource) continue;
+    total += sourceRate(graph, index, resource);
+  }
+  return total;
 }
 
 /** What one block can pass per second, for one resource. */
@@ -642,9 +676,11 @@ function capacityFor(node, resource, liquid) {
   if (node.role === "conduit") {
     return (node.block.liquid_capacity || 10) * TICKS;
   }
-  // A store holds and hands back: it passes anything, which is what makes an unloader
-  // beside a vault a source for the line after it.
+  // A container holds and hands back whatever is pulled out of it.
   if (node.role === "store") return Infinity;
+  // An unloader moves eleven items a second and no more, whatever the container behind it
+  // holds, and only the item it was set to if it was set to one.
+  if (node.role === "unloader" && node.configured && node.configured !== resource) return 0;
   // A machine passes nothing on: what leaves it is what it makes, which is a separate
   // source rather than the same flow continuing.
   if (node.role === "crafter" || node.role === "generator" || node.role === "sink"
@@ -679,9 +715,10 @@ function appetiteFor(node, resource, isExit) {
     if (!ammo.includes(resource)) return 0;
     return (node.block.shots_per_second || 0) * (node.block.ammo_per_shot || 1) * speed;
   }
-  // A store swallows whatever reaches it, which is what makes a line into a vault a line
-  // that delivers rather than a line that ends in the air.
-  if (node.role === "store") return Infinity;
+  // A container swallows whatever reaches it, which is what makes a line into a vault a
+  // line that delivers rather than one that ends in the air. Unless something unloads from
+  // it, in which case it is a buffer in the middle and the items carry on.
+  if (node.role === "store") return node.drained ? 0 : Infinity;
 
   if (node.role === "crafter" || node.role === "generator" || node.role === "sink") {
     const wants = appetite(node.block);
@@ -700,10 +737,15 @@ export function solve(graph, supply = {}) {
 
   // What each block passes on, in the shape the rest of this file already reads: a carrier
   // hands on what reached it, a machine hands on what it made.
-  const through = graph.nodes.map((node, index) =>
-    (node.role === "crafter" || node.role === "generator")
-      ? solved.made[index]
-      : (node.role === "sink" || node.role === "power" ? {} : solved.arriving[index]));
+  const through = graph.nodes.map((node, index) => {
+    if (node.role === "crafter" || node.role === "generator") return solved.made[index];
+    if (node.role === "sink" || node.role === "power") return {};
+    // A carrier passes things on rather than keeping them, so what it holds is what went
+    // through it. Read off what stopped there, every belt but the last one of a line
+    // reported carrying nothing at all.
+    const moving = solved.carrying[index];
+    return Object.keys(moving).length ? moving : solved.arriving[index];
+  });
 
   return {
     through,
@@ -1039,8 +1081,14 @@ export async function analyse(text, supply = {}, chosen = null) {
     // What was handed in and came back out is not production. A layout fed water and
     // returning water made nothing; saying it produced fifteen thousand water a minute
     // would bury the one number that mattered, which was the power.
+    //
+    // A sandbox source counts as handed in, because it is: it is a tap the builder put
+    // inside the schematic, not a thing the schematic makes. Left out, a reactor farm
+    // standing on twelve cryofluid sources was credited with the cryofluid that ran
+    // straight through it and out of the nearest open pipe.
     const given = Object.values(feeds)
-      .reduce((sum, rates) => sum + (rates[item] || 0), 0);
+      .reduce((sum, rates) => sum + (rates[item] || 0), 0)
+      + poured(graph, item);
     const net = rate - given;
     if (net > SETTLED) produced[item] = net;
   }

@@ -355,15 +355,19 @@ test("a sandbox source pours what it was configured with", async () => {
   const out = await analyse(paste(tiles));
 
   /* Capped by the belt, not by the source: it offers a hundred a second and a conveyor
-     carries six and a half. */
-  close(out.produced.coal, 6.5, "le charbon sort au debit de la bande");
+     carries six and a half. Read off the belt rather than off what the schematic is said
+     to produce, because a tap the builder put inside it is something handed in, not
+     something made: a layout fed coal and returning coal has made nothing. */
+  const last = out.detail.filter((d) => d.name === "conveyor").pop();
+  close(last.through.coal, 6.5, "le charbon sort au debit de la bande");
   assert.ok(!out.idle["item-source"], "une source alimente, elle n'est pas oubliee");
 });
 
 test("a liquid source is recognised even when nothing in the layout drinks it", async () => {
   const water = { content: 4, id: known.liquids["water"].id };
   const out = await analyse(paste([[0, 0, "liquid-source", 0, water], [1, 0, "conduit", 0]]));
-  assert.ok(out.produced.water > 0, "l'eau sort du tuyau");
+  const pipe = out.detail.find((d) => d.name === "conduit");
+  assert.ok(pipe.through.water > 0, "l'eau passe dans le tuyau");
 });
 
 test("what arrives is spread over the machines waiting for it", async () => {
@@ -404,6 +408,40 @@ test("a sandbox source gives the factory what it asks for, not a flood", async (
                  [2, 0, "conduit", 0], [3, 0, "conduit", 0]];
   const out = await analyse(paste(tiles));
 
-  assert.ok(out.produced.water < 1300,
-            `un tuyau ne deverse pas un ocean : ${out.produced.water}`);
+  const carried = out.detail.find((d) => d.name === "conduit").through.water;
+  assert.ok(carried > 0 && carried < 1300,
+            `un tuyau ne deverse pas un ocean : ${carried}`);
+});
+
+test("a container is a buffer an unloader draws from, not a hole", async () => {
+  /* A container swallowed whatever reached it and the unloader beside it was handed an
+     invented supply out of nowhere, of whatever resource was being solved for. The two
+     halves of one belt had nothing to do with each other. */
+  const tiles = [[0, 0, "conveyor", 0], [1, 0, "container", 0], [3, 0, "unloader", 0],
+                 [4, 0, "conveyor", 0], [5, 0, "conveyor", 0]];
+  const out = await analyse(paste(tiles), { copper: 4 });
+
+  const last = out.detail.filter((d) => d.name === "conveyor").pop();
+  close(last.through.copper, 4, "ce qui est entre dans le coffre ressort du deverseur");
+});
+
+test("an unloader hands on eleven items a second, not three hundred", async () => {
+  /* `60 / speed`, which is the game's own stat line. Written as `speed * 60` it came out
+     thirty times too fast and a container behind one looked like a mine. */
+  close(known.blocks["unloader"].items_per_second, 11, "onze par seconde");
+
+  const tiles = [[0, 0, "conveyor", 0], [1, 0, "container", 0], [3, 0, "unloader", 0],
+                 [4, 0, "titanium-conveyor", 0]];
+  const out = await analyse(paste(tiles), { copper: 40 });
+  const belt = out.detail.find((d) => d.name === "titanium-conveyor");
+  close(belt.through.copper, 10, "la bande en titane porte dix, le deverseur en offre onze");
+});
+
+test("a sandbox source is not credited with what runs straight through", async () => {
+  /* A reactor farm standing on twelve cryofluid sources was reported as producing a
+     hundred thousand cryofluid a minute, which is the part nobody drank leaving by the
+     nearest open pipe. */
+  const water = { content: 4, id: known.liquids["water"].id };
+  const out = await analyse(paste([[0, 0, "liquid-source", 0, water], [1, 0, "conduit", 0]]));
+  assert.ok(!out.produced.water, "une source n'est pas une production");
 });
