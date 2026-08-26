@@ -80,7 +80,12 @@ function footprint(x, y, size) {
 
 /** The tiles this block tries to hand items to. */
 function outputsOf(node) {
-  if (node.role === "conveyor") {
+  // A conduit points somewhere, exactly like a belt: `ConduitBuild.updateTile` calls
+  // `moveLiquidForward`, which is `tile.nearby(rotation)` and nothing else. Treated as
+  // handing to all four sides, a line of pipes fed itself in both directions, and the last
+  // pipe of a run was never the end of anything: it pointed back at its neighbour, so the
+  // solver could find no exit at all and the whole line carried nothing.
+  if (node.role === "conveyor" || node.role === "conduit") {
     const [dx, dy] = DIRECTIONS[node.rotation % 4];
     return [[node.x + dx, node.y + dy]];
   }
@@ -141,11 +146,14 @@ function outputsOf(node) {
  */
 function accepts(node, fromTile) {
   if (node.role === "unknown" || node.role === "power") return false;
-  if (node.role === "conveyor") {
+  // A belt and a pipe both refuse what is pushed against their own direction of travel.
+  // `Conduit.acceptLiquid` ends in a check that the source is not the tile it points at,
+  // which is the same rule as a conveyor's.
+  if (node.role === "conveyor" || node.role === "conduit") {
     const [dx, dy] = DIRECTIONS[node.rotation % 4];
     return !(fromTile[0] === node.x + dx && fromTile[1] === node.y + dy);
   }
-  if (node.role === "junction" || node.role === "router" || node.role === "conduit"
+  if (node.role === "junction" || node.role === "router"
       || node.role === "bridge" || node.role === "sorter") {
     return true;
   }
@@ -153,7 +161,7 @@ function accepts(node, fromTile) {
   if (node.role === "drill") return false;
   // A store takes anything and an unloader takes nothing: it pulls, it is not pushed to.
   if (node.role === "store") return true;
-  if (node.role === "unloader") return false;
+  if (node.role === "unloader" || node.role === "source") return false;
   if (node.role === "turret") return true;
   // A machine takes what its recipe calls for and nothing else. Accepting anything gave a
   // cultivator an edge into another cultivator, because both are crafters: neither eats
@@ -177,12 +185,49 @@ function accepts(node, fromTile) {
 const LIQUIDS = new Set();
 function noteLiquids() {
   if (LIQUIDS.size) return;
+  // The catalogue now carries the game's own liquid registry. The fallback below is what
+  // it did before, and it was right until a schematic configured a source with a liquid
+  // that no block in it consumes: nothing in any recipe, so nothing recognised it.
+  for (const name of Object.keys(catalogue.liquids || {})) LIQUIDS.add(name);
+  if (LIQUIDS.size) return;
   for (const block of Object.values(catalogue.blocks)) {
     for (const name of Object.keys(block.input_liquid || {})) LIQUIDS.add(name);
     for (const name of Object.keys(block.output_liquid || {})) LIQUIDS.add(name);
   }
 }
 const isLiquid = (name) => LIQUIDS.has(name);
+
+/**
+ * The colour the game paints a configured block with.
+ *
+ * A sorter, a source and an unloader are drawn as a coloured square with the block's frame
+ * over it, and that colour is the only thing telling twelve identical sources apart.
+ */
+function tintOf(resource) {
+  if (!resource) return null;
+  const found = catalogue.items?.[resource] || catalogue.liquids?.[resource];
+  return found?.color || null;
+}
+
+/** Mindustry's own content numbering. Items are 0 and liquids are 4; never rearranged. */
+const CONTENT_ITEM = 0;
+const CONTENT_LIQUID = 4;
+
+/**
+ * What a block was configured to handle: the item a sorter passes, the liquid a source
+ * pours. Stored as a content type and a number, which only means something against the
+ * game's registry.
+ */
+function configuredContent(config) {
+  if (!config || config.type !== 5) return null;
+  const registry = config.content === CONTENT_LIQUID ? catalogue.liquids
+    : config.content === CONTENT_ITEM ? catalogue.items : null;
+  if (!registry) return null;
+  for (const [name, entry] of Object.entries(registry)) {
+    if (entry.id === config.id) return name;
+  }
+  return null;
+}
 
 /**
  * Where a bridge actually reaches, checked against what the game allows.
@@ -217,6 +262,8 @@ export function buildGraph(tiles) {
       x: tile.x, y: tile.y, rotation: tile.rotation | 0,
       block, name: block.name, role: block.role || "",
       config: tile.config || null,
+      configured: configuredContent(tile.config),
+      tint: tintOf(configuredContent(tile.config)),
       link: bridgeLink(tile, block),
       footprint: footprint(tile.x, tile.y, block.size || 1),
     };
@@ -224,6 +271,8 @@ export function buildGraph(tiles) {
     nodes.push(node);
     for (const [fx, fy] of node.footprint) at.set(`${fx},${fy}`, index);
   }
+
+  speedUp(nodes);
 
   const edges = [];
   const seen = new Set();
@@ -250,6 +299,55 @@ export function buildGraph(tiles) {
   for (const [a, b] of edges) { out[a].push(b); into[b].push(a); }
 
   return { nodes, edges, out, into };
+}
+
+/** The middle of a block, in tiles, which is what the game measures ranges between. */
+function centre(node) {
+  const size = node.block.size || 1;
+  const offset = Math.trunc(-(size - 1) / 2);
+  return [node.x + offset + size / 2, node.y + offset + size / 2];
+}
+
+/**
+ * How much faster each block runs, because of the projectors standing over it.
+ *
+ * The game's own schematic panel ignores this entirely, and on a reactor farm that is not
+ * a rounding error: forty-one thorium reactors under five overdrive projectors read as
+ * 36,900 energy a second in game and make 55,350. The author of one such layout wrote
+ * "53-55k max power generated" in its description, which is the boosted figure, and the
+ * game contradicted them in their own preview.
+ *
+ * Rule taken from `OverdriveProjector.updateTile` and `BlockIndexer.eachBlock`: every
+ * building whose centre is within the projector's range plus its own half-width is sped
+ * up, walls and power blocks excepted, and two projectors do not stack - the strongest
+ * wins, because `applyBoost` keeps the larger of the two.
+ *
+ * The phase fabric bonus is deliberately left out of the number. Whether a projector is
+ * being fed phase depends on the solve, which depends on the speeds, which depends on the
+ * boost; rather than iterate a circle for a bonus a player switches on knowingly, the
+ * plain boost is reported and the extra is named alongside it.
+ */
+function speedUp(nodes) {
+  for (const node of nodes) node.boost = 1;
+
+  for (const projector of nodes) {
+    if (projector.role !== "projector") continue;
+    const reach = projector.block.range || 0;
+    const strength = projector.block.boost || 1;
+    const [px, py] = centre(projector);
+
+    for (const node of nodes) {
+      if (node === projector) continue;
+      // A wall, a battery, a conduit: the game marks them itself, and reading the flag
+      // beats keeping a list here that the next balance patch makes wrong.
+      if (node.block.no_overdrive || node.block.privileged) continue;
+      const [x, y] = centre(node);
+      const half = (node.block.size || 1) / 2;
+      if (Math.hypot(x - px, y - py) <= reach + half) {
+        node.boost = Math.max(node.boost, strength);
+      }
+    }
+  }
 }
 
 const addTo = (rates, item, amount) => {
@@ -299,6 +397,7 @@ function appetite(block) {
  */
 function solveFlow(graph, supply) {
   const nodes = graph.nodes.length;
+  piecesOf = pieces(graph);
   const arriving = graph.nodes.map(() => ({}));
 
   const resources = new Set();
@@ -310,6 +409,10 @@ function solveFlow(graph, supply) {
       if (count > 0) resources.add(item);
     }
     for (const item of Object.keys(node.block.output_liquid || {})) resources.add(item);
+    // A sandbox source pours whatever it was set to, and what it was set to is in the
+    // schematic. Left out, a test layout built on twelve liquid sources read as a factory
+    // fed nothing, because nothing in it produced water and no water was declared.
+    if (node.role === "source" && node.configured) resources.add(node.configured);
   }
 
   // Machines make things that other machines eat, so the chain is walked in order: what a
@@ -330,6 +433,12 @@ function solveFlow(graph, supply) {
       for (let index = 0; index < nodes; index++) {
         const rate = made[index][resource] || 0;
         if (rate > SETTLED) sources[index] = (sources[index] || 0) + rate;
+      }
+      for (let index = 0; index < nodes; index++) {
+        const node = graph.nodes[index];
+        if (node.role === "source" && node.configured === resource) {
+          sources[index] = (sources[index] || 0) + sourceRate(graph, index, resource);
+        }
       }
       // An unloader beside a container is where a line starts. It pulls rather than being
       // pushed to, so nothing upstream feeds it and a line beginning at one used to begin
@@ -356,6 +465,8 @@ function solveFlow(graph, supply) {
                                       !graph.out[index].length),
       });
 
+      shareOut(graph, resource, out.received);
+
       for (let index = 0; index < nodes; index++) {
         const before = arriving[index][resource] || 0;
         if (Math.abs(out.received[index] - before) > SETTLED) moved = true;
@@ -367,14 +478,17 @@ function solveFlow(graph, supply) {
     for (let index = 0; index < nodes; index++) {
       const node = graph.nodes[index];
       if (node.role !== "crafter" && node.role !== "generator") continue;
+      // A machine under a projector wants more per second and makes more per second, in
+      // the same proportion, so the share it runs at is the honest one either way.
+      const speed = node.boost || 1;
       const wants = appetite(node.block);
       let share = 1;
       for (const [name, wanted] of Object.entries(wants)) {
         if (wanted <= 0) continue;
-        share = Math.min(share, (arriving[index][name] || 0) / wanted);
+        share = Math.min(share, (arriving[index][name] || 0) / (wanted * speed));
       }
       if (node.role === "generator" && !Object.keys(wants).length && node.block.craft_time) {
-        const burn = TICKS / node.block.craft_time;
+        const burn = TICKS / node.block.craft_time * speed;
         const offered = Object.entries(arriving[index])
           .filter(([name]) => !isLiquid(name))
           .reduce((sum, [, rate]) => sum + rate, 0);
@@ -385,10 +499,10 @@ function solveFlow(graph, supply) {
 
       const now = {};
       for (const item of Object.keys(node.block.output || {})) {
-        now[item] = produces(node.block, item) * share;
+        now[item] = produces(node.block, item) * share * speed;
       }
       for (const [liquid, rate] of Object.entries(node.block.output_liquid || {})) {
-        now[liquid] = rate * share;
+        now[liquid] = rate * share * speed;
       }
       for (const name of new Set([...Object.keys(now), ...Object.keys(made[index])])) {
         if (Math.abs((now[name] || 0) - (made[index][name] || 0)) > SETTLED) moved = true;
@@ -401,13 +515,132 @@ function solveFlow(graph, supply) {
   return { arriving, made, fed, settled: false, rounds: 12 };
 }
 
+/**
+ * Which blocks can reach which, ignoring direction. Two machines in the same piece of the
+ * graph draw on the same supply; two machines in different pieces never do.
+ */
+function pieces(graph) {
+  const owner = graph.nodes.map((_, index) => index);
+  const find = (index) => {
+    while (owner[index] !== index) index = owner[index] = owner[owner[index]];
+    return index;
+  };
+  for (const [a, b] of graph.edges) {
+    const ra = find(a);
+    const rb = find(b);
+    if (ra !== rb) owner[ra] = rb;
+  }
+  return graph.nodes.map((_, index) => find(index));
+}
+
+let piecesOf = null;
+
+/**
+ * Spread what arrived over the machines that were waiting for it.
+ *
+ * A maximum flow answers "how much can get through" and has no opinion on who gets it: it
+ * is free to fill some machines and abandon others, and on a reactor farm it did exactly
+ * that, reporting seven of forty-one thorium reactors as fed nothing while the other
+ * thirty-four ran flat out. The total was right and the picture was a lie, and the page
+ * built on it named a perfectly ordinary reactor as the layout's bottleneck.
+ *
+ * The game hands material out round by round, so twenty machines behind one belt all run
+ * at a fraction rather than fifteen running and five starving. Reproduced here by pooling
+ * what reached machines of the same kind in the same piece of the graph and dividing it
+ * the way they asked for it. Same total, and a share per machine that matches what a
+ * player watching the base would see.
+ *
+ * Machines nothing feeds are left out of the pool: a reactor wired to no pipe at all is a
+ * fault worth seeing, not a number to average away.
+ */
+function shareOut(graph, resource, received) {
+  const groups = new Map();
+
+  for (let index = 0; index < graph.nodes.length; index++) {
+    const node = graph.nodes[index];
+    if (node.role !== "crafter" && node.role !== "generator"
+        && node.role !== "sink" && node.role !== "turret") continue;
+    if (!graph.into[index].length) continue;
+    const wants = appetiteFor(node, resource, false);
+    if (!(wants > 0) || !Number.isFinite(wants)) continue;
+
+    const key = `${piecesOf[index]}|${node.name}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push([index, wants]);
+  }
+
+  for (const members of groups.values()) {
+    if (members.length < 2) continue;
+    let pool = members.reduce((sum, [index]) => sum + received[index], 0);
+    if (pool <= SETTLED) continue;
+
+    // Nobody is handed more than they can use, so what a full machine cannot take goes
+    // round again. Two passes settle any real layout; the cap stops a rounding loop.
+    let open = members.slice();
+    for (let pass = 0; pass < 4 && open.length && pool > SETTLED; pass++) {
+      const asked = open.reduce((sum, [, wants]) => sum + wants, 0);
+      const share = Math.min(1, pool / asked);
+      const next = [];
+      for (const member of open) {
+        const give = member[1] * share;
+        received[member[0]] = give;
+        pool -= give;
+        if (share >= 1 - 1e-9) continue;
+        next.push(member);
+      }
+      if (share >= 1 - 1e-9) break;
+      open = next;
+      break;
+    }
+  }
+}
+
+/**
+ * What a sandbox source hands over.
+ *
+ * Its declared rate is a firehose: a liquid source refills itself to ten thousand every
+ * tick, which is six hundred thousand a second, and a maximum flow will push all of it
+ * into whatever pipe ends in the air. A reactor farm built on twelve of them reported
+ * producing five hundred and fifty-seven million cryofluid a minute.
+ *
+ * A source is a tap the builder put inside the schematic, so it gives the factory what the
+ * factory asks for: the appetite of every machine it can reach, and no more. Its own rate
+ * stays the ceiling, which is what holds an item source to a hundred a second.
+ */
+function sourceRate(graph, index, resource) {
+  const node = graph.nodes[index];
+  const declared = (node.block.output_per_second || 0) * (node.boost || 1);
+
+  let asked = 0;
+  for (let other = 0; other < graph.nodes.length; other++) {
+    if (piecesOf[other] !== piecesOf[index]) continue;
+    const wants = appetiteFor(graph.nodes[other], resource, false);
+    if (Number.isFinite(wants)) asked += wants;
+  }
+  return asked > 0 ? Math.min(declared, asked) : declared;
+}
+
 /** What one block can pass per second, for one resource. */
 function capacityFor(node, resource, liquid) {
+  const speed = node.boost || 1;
   const carries = node.block.carries;
   if (carries && (carries === "liquid") !== liquid) return 0;
   if (node.role === "conveyor" || node.role === "junction" || node.role === "bridge"
       || node.role === "unloader") {
-    return node.block.items_per_second || Infinity;
+    // A liquid junction and a liquid bridge state no item rate, because they carry no
+    // items. Their ceiling is the same as a pipe's.
+    if (node.block.carries === "liquid") return (node.block.liquid_capacity || 10) * TICKS;
+    return (node.block.items_per_second || Infinity) * speed;
+  }
+  if (node.role === "source") {
+    return node.configured === resource ? (node.block.output_per_second || 0) * speed : 0;
+  }
+  // A pipe is not infinite. `moveLiquid` never hands over more than the receiving block's
+  // whole capacity in one tick, so that capacity a second is the ceiling, and it sits far
+  // above any pump: it never binds on a real layout, it only stops a sandbox source from
+  // flooding the model with numbers no pipe could carry.
+  if (node.role === "conduit") {
+    return (node.block.liquid_capacity || 10) * TICKS;
   }
   // A store holds and hands back: it passes anything, which is what makes an unloader
   // beside a vault a source for the line after it.
@@ -431,10 +664,12 @@ function capacityFor(node, resource, liquid) {
  * flow with no sink is a maximum flow of zero.
  */
 function appetiteFor(node, resource, isExit) {
+  const speed = node.boost || 1;
   if (isExit && node.block.carries) {
     const carries = node.block.carries;
     if ((carries === "liquid") !== isLiquid(resource)) return 0;
-    return node.block.items_per_second || Infinity;
+    if (carries === "liquid") return (node.block.liquid_capacity || 10) * TICKS;
+    return (node.block.items_per_second || Infinity) * speed;
   }
   // A turret eats what it is loaded with, at the rate it fires. How often it fires is not
   // in a still picture, so this is the rate while firing and the report says so rather
@@ -442,7 +677,7 @@ function appetiteFor(node, resource, isExit) {
   if (node.role === "turret") {
     const ammo = node.block.ammo || [];
     if (!ammo.includes(resource)) return 0;
-    return (node.block.shots_per_second || 0) * (node.block.ammo_per_shot || 1);
+    return (node.block.shots_per_second || 0) * (node.block.ammo_per_shot || 1) * speed;
   }
   // A store swallows whatever reaches it, which is what makes a line into a vault a line
   // that delivers rather than a line that ends in the air.
@@ -450,10 +685,10 @@ function appetiteFor(node, resource, isExit) {
 
   if (node.role === "crafter" || node.role === "generator" || node.role === "sink") {
     const wants = appetite(node.block);
-    if (wants[resource] > 0) return wants[resource];
+    if (wants[resource] > 0) return wants[resource] * speed;
     if (node.role === "generator" && !Object.keys(wants).length && node.block.craft_time
         && !isLiquid(resource)) {
-      return TICKS / node.block.craft_time;
+      return TICKS / node.block.craft_time * speed;
     }
     return 0;
   }
@@ -512,14 +747,17 @@ function deliveredFlow(graph, solved) {
  * stated as one. It is also the number the schematic that exposed all this was named
  * after: "Water power 2306 energy".
  */
-export function powerBudget(graph, solved) {
+export function powerBudget(graph, solved, { boosted = true } = {}) {
   let made = 0;
   let spent = 0;
   for (let index = 0; index < graph.nodes.length; index++) {
-    const block = graph.nodes[index].block;
+    const node = graph.nodes[index];
     const running = solved.fed[index] === undefined ? 1 : solved.fed[index];
-    made += (block.power_out || 0) * running;
-    spent += (block.power || 0) * running;
+    // A boosted generator makes more and a boosted consumer draws more, both because the
+    // game multiplies by `delta()` and `delta()` carries the time scale.
+    const speed = boosted ? (node.boost || 1) : 1;
+    made += (node.block.power_out || 0) * running * speed;
+    spent += (node.block.power || 0) * running * speed;
   }
   return { made, spent, net: made - spent };
 }
@@ -856,6 +1094,20 @@ export async function analyse(text, supply = {}, chosen = null) {
     // What it would make if it were fed all of that, which is the number a player is
     // really shopping for.
     potential: powerBudget(graph, { fed: {} }),
+    // The same sum done the game's way, so the two can be held side by side. It is what
+    // `Schematic.powerProduction` and `powerConsumption` return, and the build cost above
+    // is `Schematic.requirements`: on every schematic tried so far this matches the panel
+    // in game to the last unit, which is what makes the places it is beaten worth stating.
+    // The game's own numbering, so the build cost can be listed in the order the panel in
+    // game lists it rather than sorted by quantity.
+    itemOrder: Object.fromEntries(
+      Object.entries(catalogue.items || {}).map(([name, item]) => [name, item.id])),
+    asTheGameSaysIt: {
+      ...powerBudget(graph, { fed: {} }, { boosted: false }),
+      // How many blocks are being sped up, which is the whole of the difference.
+      boosted: graph.nodes.filter((node) => (node.boost || 1) > 1).length,
+      projectors: graph.nodes.filter((node) => node.role === "projector").length,
+    },
     settled: solved.settled,
     // What the reading had to work around, so the page can say it rather than quietly
     // reporting on a partial base as though it were the whole one.

@@ -23,7 +23,9 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "input_liquid", "output_liquid", "power", "power_out",
         "tier", "drill_time", "hardness_multiplier", "cost", "item_capacity",
         "range", "carries", "output_per_second",
-        "ammo", "reload", "ammo_per_shot", "shots_per_second", "liquid_capacity")
+        "ammo", "reload", "ammo_per_shot", "shots_per_second", "liquid_capacity",
+        "boost", "boost_phase", "boost_input", "boost_time", "phase_range_boost",
+        "no_overdrive", "privileged")
 
 
 def main() -> None:
@@ -44,6 +46,7 @@ def main() -> None:
         "build": raw["build"],
         "blocks": blocks,
         "items": raw["items"],
+        "liquids": raw["liquids"],
     }, separators=(",", ":")), encoding="utf-8")
 
     print(f"{len(blocks)} blocs sur {len(raw['blocks'])}, "

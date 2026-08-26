@@ -4,6 +4,6 @@
   "type": "module",
   "description": "Analyse a Mindustry schematic in the browser: what it makes, where it chokes, what it wastes",
   "scripts": {
-    "test": "node --test tests/js/"
+    "test": "node --test \"tests/js/**/*.test.js\""
   }
 }

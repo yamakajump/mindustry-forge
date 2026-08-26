@@ -107,6 +107,18 @@ def main() -> None:
                     wanted.append((f"{block}#{shape}", sprites[pattern]))
                     break
 
+    # The frame of a block that gets configured, without the composite's contents.
+    #
+    # The game fills the whole tile with the colour of what a sorter passes or a source
+    # pours, then draws the frame over it. The composite is that frame with the unset
+    # cross already baked in, so painting under it showed nothing at all: twelve sources
+    # side by side, twelve identical dark squares.
+    for block, entry in catalogue["blocks"].items():
+        if entry.get("role") not in ("source", "sorter", "unloader"):
+            continue
+        if block in sprites:
+            wanted.append((f"{block}#plain", sprites[block]))
+
     # The span a bridge throws, without which two ends of one line read as two dead ends.
     for block, entry in catalogue["blocks"].items():
         if entry.get("role") != "bridge":

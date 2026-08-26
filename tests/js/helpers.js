@@ -29,7 +29,9 @@ const utf = (text) => {
  */
 export function paste(tiles, name = "essai") {
   const sizes = { "mechanical-drill": 2, "pneumatic-drill": 2, "graphite-press": 2,
-                  "silicon-smelter": 2, "kiln": 2, "distributor": 2, "laser-drill": 3 };
+                  "silicon-smelter": 2, "kiln": 2, "distributor": 2, "laser-drill": 3,
+                  "overdrive-projector": 2, "steam-generator": 2, "thorium-reactor": 3,
+                  "coal-centrifuge": 2, "cultivator": 2, "spore-press": 2 };
   const spans = tiles.map(([x, y, block]) => {
     const size = sizes[block] || 1;
     const offset = Math.trunc(-(size - 1) / 2);
@@ -56,13 +58,24 @@ export function paste(tiles, name = "essai") {
   count.writeInt32BE(tiles.length, 0);
   parts.push(count);
 
-  for (const [x, y, block, rotation] of tiles) {
-    const tile = Buffer.alloc(7);
-    tile.writeUInt8(palette.indexOf(block), 0);
-    tile.writeInt32BE((((x - left) << 16) | ((y - bottom) & 0xFFFF)) | 0, 1);
-    tile.writeUInt8(0, 5);
-    tile.writeUInt8((rotation || 0) & 0xFF, 6);
-    parts.push(tile);
+  for (const [x, y, block, rotation, config] of tiles) {
+    const head = Buffer.alloc(5);
+    head.writeUInt8(palette.indexOf(block), 0);
+    head.writeInt32BE((((x - left) << 16) | ((y - bottom) & 0xFFFF)) | 0, 1);
+    parts.push(head);
+
+    // Configuration type 5 is a piece of content: the item a sorter passes, the liquid a
+    // source pours. A content type and a short, which is all the game writes.
+    if (config) {
+      const body = Buffer.alloc(4);
+      body.writeUInt8(5, 0);
+      body.writeUInt8(config.content, 1);
+      body.writeInt16BE(config.id, 2);
+      parts.push(body);
+    } else {
+      parts.push(Buffer.from([0]));
+    }
+    parts.push(Buffer.from([(rotation || 0) & 0xFF]));
   }
 
   const body = deflateSync(Buffer.concat(parts));
