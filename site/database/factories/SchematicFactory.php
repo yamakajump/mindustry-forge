@@ -18,7 +18,7 @@ class SchematicFactory extends Factory
             'slug' => Schematic::freshSlug(),
             'name' => 'Schematique '.fake()->word(),
             'code' => 'bXNjaAF4nD'.fake()->lexify('??????'),
-            'public' => false,
+            'visibility' => 'private',
             'blocks' => fake()->numberBetween(4, 200),
         ];
     }
