@@ -63,9 +63,18 @@ devient ce qu'il aurait toujours dû être : le juge, pas le produit.
 
 ## Les tranches
 
-1. **Le noyau et les transporteurs.** `Build`, `proximity`, `dump()` en tourniquet,
-   `acceptItem`, les positions d'objets sur une bande. Bande, jonction, routeur, trieur,
-   trop-plein, sous-verse, pont, déverseur, coffre.
+1. **Le noyau et les transporteurs.** FAIT le 26/08/2026. `Build`, `proximity`, `dump()`
+   en tourniquet, `acceptItem`, les positions d'objets sur une bande. Bande, jonction,
+   routeur, trieur, trop-plein, sous-verse, pont, déverseur, coffre. Onze tests, et une
+   bande sort **6,5 objets par seconde** sans qu'on lui ait jamais donné ce chiffre : il
+   tombe de `speed = 0,046` par image et `itemSpace = 0,4`.
+
+   Trois bugs trouvés par la transcription elle-même, qu'aucune intuition n'aurait vus :
+   `Edges` s'indexe par `taille - 1` et pas par la taille ; `acceptItem` demande la
+   direction **de la source vers la bande**, pas l'inverse, et prise à l'envers toute
+   bande refusait tout ; et `dump` fige le curseur avant sa boucle, alors que le lire à
+   chaque tour faisait sauter un voisin sur deux - un routeur à trois sorties en servait
+   deux et jamais la troisième.
 2. **Les machines.** Usines, foreuses, pompes, liquides et `moveLiquid`.
 3. **L'électricité.** `PowerGraph` : satisfaction, batteries, équilibre.
 4. **L'oracle.** Porter le pont de `mindustry-ai` dans `bench/`, comparer par type.
@@ -76,6 +85,15 @@ Le calcul analytique ne disparaît pas : il répond en millisecondes et il est v
 fois contre le jeu. La simulation répond à ce qu'il ne peut pas dire, les transitoires,
 les tampons qui se remplissent, la file qui bouchonne. Les deux doivent se rejoindre en
 régime établi, et ils se surveillent l'un l'autre.
+
+## Un désaccord déjà trouvé, et laissé visible
+
+Une bande en titane calcule à **12,02** objets par seconde depuis ses propres constantes,
+et sa fiche dans le jeu annonce **10**. La bande de base calcule 6,9 et annonce 6,5.
+`displayedSpeed` est tapé à la main bloc par bloc dans `Blocks.java` : c'est de
+l'affichage, pas de l'arithmétique. Lequel des deux le moteur livre vraiment est
+exactement le genre de question que le banc tranchera. En attendant, le portage reproduit
+la physique et l'écart est écrit dans un test plutôt que caché.
 
 ## Ce qui reste vrai sur le serveur
 

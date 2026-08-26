@@ -29,7 +29,11 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         # The ground. What a drill on it pulls out and what a pump on it draws, which is
         # the difference between "at best, on a full patch" and an actual figure.
         "floor", "overlay", "floor_liquid", "drops", "drops_liquid", "liquid_multiplier",
-        "deep", "buildable", "unmineable", "pump_amount")
+        "deep", "buildable", "unmineable", "pump_amount",
+        # What the tick by tick simulation needs and the steady state one never did: the
+        # real speeds, not the figures the game prints for a player.
+        "speed", "junction_speed", "junction_capacity", "transport_time",
+        "overflow", "invert", "overflow_speed")
 
 
 def main() -> None:

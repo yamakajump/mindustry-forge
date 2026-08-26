@@ -195,12 +195,20 @@ public class DumpBlocks {
             // displayedSpeed is items per second at full compression, which is the figure
             // the game shows the player and the only one worth comparing tools on.
             entry.put("items_per_second", conveyor.displayedSpeed);
+            // How far along a belt an item slides in one frame. `displayedSpeed` is a
+            // figure typed by hand for the player, block by block; it is not `speed` times
+            // anything, so a simulation that needs the real one has to be given it.
+            entry.put("speed", conveyor.speed);
             return;
         }
         if (block instanceof Junction junction) {
             entry.put("role", "junction");
             entry.put("carries", "item");
             entry.put("items_per_second", TPS / Math.max(1f, junction.speed));
+            // Frames an item spends crossing, and how many may be crossing at once, per
+            // side. A junction is four queues, not a buffer.
+            entry.put("junction_speed", junction.speed);
+            entry.put("junction_capacity", junction.capacity);
             return;
         }
         if (block instanceof Duct duct) {
@@ -219,13 +227,19 @@ public class DumpBlocks {
             entry.put("carries", "item");
             entry.put("range", bridge.range);
             entry.put("items_per_second", TPS / Math.max(1f, bridge.transportTime));
+            entry.put("transport_time", bridge.transportTime);
             return;
         }
-        if (block instanceof OverflowGate) {
-            // Straight on when it can, to the sides when it cannot. Modelled as a router
-            // for now, which is right on the share it passes and wrong on the priority.
+        if (block instanceof OverflowGate gate) {
+            // Straight on when it can, to the sides when it cannot. A maximum flow cannot
+            // express that priority and reads it as a plain router, which is right on the
+            // total and wrong on which branch carries it. A simulation can, so the flag
+            // travels even though the analytic side ignores it.
             entry.put("role", "router");
             entry.put("carries", "item");
+            entry.put("overflow", true);
+            if (gate.invert) entry.put("invert", true);
+            entry.put("overflow_speed", gate.speed);
             return;
         }
         if (block instanceof Sorter) {

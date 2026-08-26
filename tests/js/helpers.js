@@ -28,10 +28,15 @@ const utf = (text) => {
  * `Schematics.write` in Mindustry v159.7 and nothing else.
  */
 export function paste(tiles, name = "essai") {
-  const sizes = { "mechanical-drill": 2, "pneumatic-drill": 2, "graphite-press": 2,
-                  "silicon-smelter": 2, "kiln": 2, "distributor": 2, "laser-drill": 3,
-                  "overdrive-projector": 2, "steam-generator": 2, "thorium-reactor": 3,
-                  "coal-centrifuge": 2, "cultivator": 2, "spore-press": 2 };
+  /* Block sizes out of the catalogue rather than a table kept here.
+  
+     The writer below is deliberately independent of the reader, so that a round trip
+     tests something; how big a block is is not a format assumption though, it is block
+     data, and a hand-kept list of it was a landmine. A vault missing from it was written
+     as one tile wide, read back as three, and the test that followed measured a schematic
+     nobody had described. */
+  const sizes = Object.fromEntries(
+    Object.entries(loadCatalogue().blocks).map(([name, block]) => [name, block.size || 1]));
   const spans = tiles.map(([x, y, block]) => {
     const size = sizes[block] || 1;
     const offset = Math.trunc(-(size - 1) / 2);
