@@ -155,7 +155,14 @@ function accepts(node, fromTile) {
   if (node.role === "store") return true;
   if (node.role === "unloader") return false;
   if (node.role === "turret") return true;
-  return node.role === "crafter" || node.role === "sink" || node.role === "generator" ||
+  // A machine takes what its recipe calls for and nothing else. Accepting anything gave a
+  // cultivator an edge into another cultivator, because both are crafters: neither eats
+  // spore pods, and the graph said one fed the other.
+  if (node.role === "crafter") {
+    return Object.keys(node.block.input || {}).length > 0
+      || Object.keys(node.block.input_liquid || {}).length > 0;
+  }
+  return node.role === "sink" || node.role === "generator" ||
     Object.keys(node.block.input || {}).length > 0 ||
     Object.keys(node.block.input_liquid || {}).length > 0;
 }

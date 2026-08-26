@@ -23,7 +23,7 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "input_liquid", "output_liquid", "power", "power_out",
         "tier", "drill_time", "hardness_multiplier", "cost", "item_capacity",
         "range", "carries", "output_per_second",
-        "ammo", "reload", "ammo_per_shot", "shots_per_second")
+        "ammo", "reload", "ammo_per_shot", "shots_per_second", "liquid_capacity")
 
 
 def main() -> None:
