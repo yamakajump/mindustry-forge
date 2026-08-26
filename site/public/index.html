@@ -97,8 +97,8 @@ const escape = (s) => String(s).replace(/[<>&]/g, (c) =>
 /* An item beside its own icon. A player recognises the picture faster than the English
    name, and a schematic is read at a glance or not at all. */
 /** A block's own sprite, for a palette that shows what it is putting down. */
-const blockIcon = (name, size = 16) => {
-  const src = itemIcon(name, size * 2, "");
+const blockIcon = (name, size = 16, folder = "") => {
+  const src = itemIcon(name, size * 2, folder);
   return src ? `<img src="${src}" alt="" width="${size}" height="${size}">` : "";
 };
 
@@ -376,6 +376,54 @@ function render(report) {
     }</div>
   </div>`);
 
+  /* The ground, painted rather than imagined.
+  
+     Until now a drill was reported at its best case, "on a full patch", which is the tool
+     admitting it does not know what the drill is standing on. Paint the ore and the
+     question has an answer: the game's own formula needs the number of covered tiles and
+     nothing else. */
+  const floors = Object.entries(catalogueOf()?.blocks || {})
+    .filter(([, block]) => block.floor);
+  const ores = floors.filter(([, block]) => block.drops || block.drops_liquid);
+  const plain = floors.filter(([, block]) => !block.drops && !block.drops_liquid);
+  const painted = Object.keys(ground).length;
+
+  right.push(`<div class="card"><h2>Le sol</h2>
+    <p class="hint-line" style="margin:0 0 8px">${brush.floor
+      ? `<strong>${escape(brush.floor)}</strong> au pinceau : clique ou glisse sur l'image,
+         echap pour le poser.`
+      : "Peins le terrain sous la schematique, et les foreuses et les pompes disent ce"
+        + " qu'elles sortent vraiment au lieu de leur meilleur cas."}</p>
+
+    <label class="slide"><span>Transparence</span>
+      <input type="range" id="fade" min="0" max="100" value="${Math.round(opacity * 100)}">
+    </label>
+
+    <div class="row" style="margin:8px 0">
+      <label class="slide" style="flex:1"><span>Pinceau</span>
+        <input type="range" id="brush-size" min="1" max="7" step="2" value="${brush.size}">
+        <span class="num">${brush.size}x${brush.size}</span></label>
+      ${painted ? `<button type="button" id="ground-clear">Effacer le sol</button>` : ""}
+    </div>
+
+    <p class="hint-line" style="margin:6px 0 4px">Minerais et liquides</p>
+    <div class="chips palette" id="ores">${
+      ores.map(([name, block]) => `<button type="button" class="chip pick ${
+        brush.floor === name ? "on" : ""}" data-floor="${escape(name)}">${
+        blockIcon(name, 16, "floor/")}${withIcon(block.drops || block.drops_liquid, 14)}${
+        escape(name)}</button>`).join("")
+    }</div>
+
+    <p class="hint-line" style="margin:10px 0 4px">Terrains</p>
+    <div class="chips palette" id="grounds">${
+      plain.slice(0, 60).map(([name]) => `<button type="button" class="chip pick ${
+        brush.floor === name ? "on" : ""}" data-floor="${escape(name)}">${
+        blockIcon(name, 16, "floor/")}${escape(name)}</button>`).join("")
+    }</div>
+    ${painted ? `<p class="hint-line" style="margin-top:10px"><strong>${painted}</strong>
+      case${painted > 1 ? "s" : ""} peinte${painted > 1 ? "s" : ""}.</p>` : ""}
+  </div>`);
+
   /* Keeping it, which is the only thing on this page that needs a server. Offered after
      the answer rather than before it: nobody wants to name a schematic they have not seen
      analysed yet. */
@@ -459,8 +507,11 @@ function render(report) {
       width: stage.clientWidth - 32,
       maxScale: 48,
       // Room to put something down beyond the edge, but only while something is waiting
-      // to be put down.
-      margin: placing ? 2 : 0,
+      // to be put down. The brush needs it too: the ground around a build is exactly
+      // where the drills that feed it would go.
+      margin: placing || brush.floor ? 2 : 0,
+      ground,
+      opacity,
       inputs: report.ports?.inputs || [],
       outputs: report.ports?.outputs || [],
     });
@@ -469,7 +520,7 @@ function render(report) {
   paint();
   if (window.ResizeObserver) new ResizeObserver(paint).observe(stage);
 
-  wireBlocks(report, () => drawn);
+  wireBlocks(report, () => drawn, paint);
   wireKeep(report);
 
   $("ports-sealed")?.addEventListener("click", () => {
@@ -505,6 +556,36 @@ function render(report) {
       `<button type="button" class="chip pick ${placing === name ? "on" : ""}"
         data-block="${escape(name)}">${blockIcon(name)}${escape(name)}</button>`).join("")
       || `<span class="hint-line">Aucun bloc de ce nom.</span>`;
+  });
+
+  /* The brush. Painting redraws rather than re-analyses, because the ground only changes
+     what a drill or a pump pulls out and the analysis is re-run once the stroke ends. */
+  for (const id of ["ores", "grounds"]) {
+    $(id)?.addEventListener("click", (event) => {
+      const chip = event.target.closest("[data-floor]");
+      if (!chip) return;
+      brush.floor = brush.floor === chip.dataset.floor ? null : chip.dataset.floor;
+      placing = null;
+      for (const other of document.querySelectorAll("[data-floor]")) {
+        other.classList.toggle("on", other.dataset.floor === brush.floor);
+      }
+      paint();
+      $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
+
+  $("fade")?.addEventListener("input", (event) => {
+    opacity = Number(event.target.value) / 100;
+    paint();
+  });
+  $("brush-size")?.addEventListener("input", (event) => {
+    brush.size = Number(event.target.value);
+    event.target.parentElement.querySelector(".num").textContent =
+      `${brush.size}x${brush.size}`;
+  });
+  $("ground-clear")?.addEventListener("click", () => {
+    ground = {};
+    run();
   });
 
   $("ports-mark")?.addEventListener("click", () => {
@@ -579,7 +660,7 @@ async function run() {
        published stays theirs, and the page costs nothing to host however many people
        use it. */
     const [report] = await Promise.all([
-      analyse(payload, parseSupply($("supply").value), marked, { sealed }),
+      analyse(payload, parseSupply($("supply").value), marked, { sealed, ground }),
       loadSprites(),
     ]);
     render(report);
@@ -594,8 +675,10 @@ async function run() {
    down a line of belt is one click per tile and disarming between each would be absurd;
    the cost of that is needing a way out that is not hunting for the chip again. */
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || !placing) return;
+  if (event.key !== "Escape" || (!placing && !brush.floor)) return;
   placing = null;
+  brush.floor = null;
+  for (const chip of document.querySelectorAll("[data-floor]")) chip.classList.remove("on");
   for (const chip of document.querySelectorAll("#palette [data-block]")) {
     chip.classList.remove("on");
   }
@@ -673,6 +756,25 @@ let looking = null;
 let placing = null;
 
 /**
+ * The ground the schematic is standing on, tile by tile.
+ *
+ * `{ "x,y": { floor, overlay } }`, the game's own two layers: an ore is laid over a floor
+ * rather than instead of it. Painted rather than read out of a save, because the question
+ * it answers is "what would this do if I put it there", and there is no there yet.
+ *
+ * It is what turns "at best, on a full patch" into a figure. A drill's rate in the game is
+ * `(drillTime + hardness * multiplier) / tiles covered`, and until now the tiles covered
+ * were imagined.
+ */
+let ground = {};
+
+/** What the brush is holding, and how wide it paints. */
+let brush = { floor: null, size: 1 };
+
+/** How solid the build is drawn, so the ground under it can be seen and painted. */
+let opacity = 1;
+
+/**
  * The saved schematic this page is looking at, if it came from one.
  *
  * Kept so that reopening one is editing it rather than making a second copy, and so that
@@ -711,6 +813,22 @@ function showBlock(report, tile) {
   const parts = [`<h2>${escape(tile.name)}</h2>
     <p class="sub" style="margin:0 0 10px">${role} &middot; ${tile.size}x${tile.size}
       &middot; en (${tile.x}, ${tile.y})</p>`];
+
+  /* What the ground gives it, which is the whole reason for painting one. "Best case, on
+     a full patch" was the tool saying it did not know. */
+  if (tile.dug) {
+    parts.push(`<div class="line"><span>${withIcon(tile.dug.resource)}
+      ${escape(tile.dug.resource)} sorti du sol</span>
+      <span class="num good">${rate(tile.dug.rate * 60)} / min</span></div>`);
+    if (tile.dug.covered !== undefined) {
+      parts.push(`<p class="hint-line" style="margin:2px 0 8px">Couvre
+        <strong>${tile.dug.covered}</strong> case${tile.dug.covered > 1 ? "s" : ""}
+        sur ${tile.dug.of} : c'est ce rapport qui fixe le debit.</p>`);
+    }
+  } else if (tile.role === "drill" || tile.role === "pump") {
+    parts.push(`<p class="hint-line" style="margin:2px 0 8px">Rien dessous. Peins le sol
+      pour savoir ce qu'elle sort.</p>`);
+  }
 
   if (tile.fed !== undefined) {
     const share = Math.round(tile.fed * 100);
@@ -824,10 +942,64 @@ function showBlock(report, tile) {
 }
 
 /** Map a click on the picture back to the block under it. */
-function wireBlocks(report, drawnNow) {
+function wireBlocks(report, drawnNow, repaint) {
   const canvas = $("view");
   if (!canvas) return;
   canvas.style.cursor = "pointer";
+
+  /* Painting the ground, on press and while dragging.
+  
+     A stroke is one gesture, so the analysis re-runs when it ends rather than on every
+     tile: painting a patch of ore is twenty tiles, and re-solving a maximum flow twenty
+     times while a finger is still moving would make the page stutter for no answer
+     anybody reads. */
+  const at = (event) => {
+    const drawn = drawnNow();
+    if (!drawn) return null;
+    const rect = canvas.getBoundingClientRect();
+    return [
+      drawn.box.left + Math.floor((event.clientX - rect.left) / drawn.scale),
+      drawn.box.bottom + drawn.box.height - 1
+        - Math.floor((event.clientY - rect.top) / drawn.scale),
+    ];
+  };
+
+  let painting = false;
+  const dab = (event) => {
+    if (!brush.floor) return;
+    const spot = at(event);
+    if (!spot) return;
+    const block = catalogueOf()?.blocks?.[brush.floor] || {};
+    const layer = block.overlay ? "overlay" : "floor";
+    const reach = Math.floor(brush.size / 2);
+    for (let dx = -reach; dx <= reach; dx++) {
+      for (let dy = -reach; dy <= reach; dy++) {
+        const key = `${spot[0] + dx},${spot[1] + dy}`;
+        const was = ground[key] || {};
+        ground[key] = { ...was, [layer]: brush.floor };
+        // An ore is laid over ground, never over nothing. Painting one onto a bare tile
+        // drew a half transparent sprite over the page itself, which reads as a hole.
+        if (layer === "overlay" && !was.floor) ground[key].floor = "stone";
+      }
+    }
+    repaint();
+  };
+
+  canvas.addEventListener("pointerdown", (event) => {
+    if (!brush.floor) return;
+    painting = true;
+    canvas.setPointerCapture(event.pointerId);
+    dab(event);
+  });
+  canvas.addEventListener("pointermove", (event) => { if (painting) dab(event); });
+  for (const kind of ["pointerup", "pointercancel"]) {
+    canvas.addEventListener(kind, () => {
+      if (!painting) return;
+      painting = false;
+      // The stroke is over: now the numbers are worth redoing.
+      run();
+    });
+  }
 
   canvas.addEventListener("click", (event) => {
     const drawn = drawnNow();
@@ -848,6 +1020,7 @@ function wireBlocks(report, drawnNow) {
       edit((tiles) => [...tiles, { x: tx, y: ty, block: placing, rotation: 0 }]);
       return;
     }
+    if (brush.floor) return;   // painting is handled on the move, not on the click
 
     looking = hit ? `${hit.x},${hit.y}` : null;
     showBlock(report, hit || null);

@@ -13,6 +13,8 @@ import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.Duct;
 import mindustry.world.blocks.distribution.ItemBridge;
 import mindustry.world.blocks.distribution.OverflowGate;
+import mindustry.world.blocks.environment.Floor;
+import mindustry.world.blocks.environment.OverlayFloor;
 import mindustry.world.blocks.defense.OverdriveProjector;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.distribution.Sorter;
@@ -124,6 +126,7 @@ public class DumpBlocks {
             }
 
             describeRole(block, entry);
+            describeFloor(block, entry);
             blocks.put(block.name, entry);
         }
         root.put("blocks", blocks);
@@ -315,6 +318,9 @@ public class DumpBlocks {
             // full footprint of liquid, which is the figure the game itself shows.
             entry.put("role", "pump");
             entry.put("output_per_second", TPS * pump.pumpAmount * block.size * block.size);
+            // Per tile as well as per pump, because a pump half on the water pumps half
+            // as much: the game sums `liquidMultiplier` over the tiles it covers.
+            entry.put("pump_amount", pump.pumpAmount);
             entry.put("input_liquid", liquidInputsOf(block));
             return;
         }
@@ -410,6 +416,33 @@ public class DumpBlocks {
             entry.put("role", "sink");
             entry.put("input_liquid", liquidInputsOf(block));
         }
+    }
+
+    /**
+     * The ground, which decides what a drill on it actually pulls out.
+     *
+     * <p>Without it a drill can only be reported at its best case, on a full patch of
+     * whatever the reader imagines, which is the tool admitting it does not know what the
+     * drill is standing on. `itemDrop` and `liquidDrop` are what the game asks when a
+     * drill or a pump looks down, so they are what gets asked here.
+     */
+    private static void describeFloor(Block block, Jval entry) {
+        if (!(block instanceof Floor floor)) {
+            return;
+        }
+        // An overlay is an ore laid over a floor; a floor is the ground itself. Told apart
+        // because painting one replaces the ground and painting the other does not.
+        entry.put("floor", true);
+        if (block instanceof OverlayFloor) entry.put("overlay", true);
+        if (floor.isLiquid) entry.put("floor_liquid", true);
+        if (floor.playerUnmineable) entry.put("unmineable", true);
+        if (floor.itemDrop != null) entry.put("drops", floor.itemDrop.name);
+        if (floor.liquidDrop != null) {
+            entry.put("drops_liquid", floor.liquidDrop.name);
+            entry.put("liquid_multiplier", floor.liquidMultiplier);
+        }
+        if (floor.isDeep()) entry.put("deep", true);
+        entry.put("buildable", floor.hasSurface() || floor.placeableOn);
     }
 
     /** Liquids a block drinks, per second. */

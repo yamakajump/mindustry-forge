@@ -54,6 +54,11 @@ export function demand(graph) {
       made[node.configured] = (made[node.configured] || 0)
         + (block.output_per_second || 0) * speed;
     }
+    // And a drill standing on ore is not something to go and find either: it is already
+    // there, pulling out exactly what the tiles under it hold.
+    if (node.dug) {
+      made[node.dug.resource] = (made[node.dug.resource] || 0) + node.dug.rate * speed;
+    }
   }
 
   const outside = {};

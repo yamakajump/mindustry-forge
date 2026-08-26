@@ -18,6 +18,7 @@
 import { fromBase64 } from "./schematic.js";
 import { demand, requirements } from "./needs.js";
 import { candidates, feedFrom, markable, marksOf, readMarks } from "./marks.js";
+import { yieldOf } from "./ground.js";
 import { throughput } from "./maxflow.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
@@ -442,6 +443,7 @@ function solveFlow(graph, supply) {
     // schematic. Left out, a test layout built on twelve liquid sources read as a factory
     // fed nothing, because nothing in it produced water and no water was declared.
     if (node.role === "source" && node.configured) resources.add(node.configured);
+    if (node.dug) resources.add(node.dug.resource);
   }
 
   // Machines make things that other machines eat, so the chain is walked in order: what a
@@ -470,6 +472,9 @@ function solveFlow(graph, supply) {
         const node = graph.nodes[index];
         if (node.role === "source" && node.configured === resource) {
           sources[index] = (sources[index] || 0) + sourceRate(graph, index, resource);
+        }
+        if (node.dug?.resource === resource) {
+          sources[index] = (sources[index] || 0) + node.dug.rate * (node.boost || 1);
         }
       }
       if (!Object.keys(sources).length) continue;
@@ -660,6 +665,11 @@ function capacityFor(node, resource, liquid) {
   const speed = node.boost || 1;
   const carries = node.block.carries;
   if (carries && (carries === "liquid") !== liquid) return 0;
+  // A drill hands on what it pulled up, and only that.
+  if (node.role === "drill" || node.role === "pump") {
+    return node.dug?.resource === resource
+      ? node.dug.rate * speed * (node.block.size || 1) ** 2 : 0;
+  }
   if (node.role === "conveyor" || node.role === "junction" || node.role === "bridge"
       || node.role === "unloader") {
     // A liquid junction and a liquid bridge state no item rate, because they carry no
@@ -927,11 +937,19 @@ function surplusOf(graph, solved, feeds) {
  * than guessed. A schematic torn out of a base is a middle: a press with no drill in the
  * picture makes nothing at all, and calling that a broken design would be wrong.
  */
-export async function analyse(text, supply = {}, chosen = null, { sealed = false } = {}) {
+export async function analyse(text, supply = {}, chosen = null,
+                              { sealed = false, ground = null } = {}) {
   await loadCatalogue();
   noteLiquids();
   const parsed = await fromBase64(text);
   const graph = buildGraph(parsed.tiles);
+
+  // What the ground gives each drill and each pump, worked out once. Nothing here is a
+  // guess: the game decides what a drill makes from the tiles under it, and until there
+  // was a ground to look at, a drill in this graph made nothing at all.
+  for (const node of graph.nodes) {
+    node.dug = yieldOf(node, ground, catalogue);
+  }
 
   // Plugged in by itself when nobody said otherwise.
   //
@@ -1091,6 +1109,7 @@ export async function analyse(text, supply = {}, chosen = null, { sealed = false
     detail: graph.nodes.map((node, index) => ({
       x: node.x, y: node.y, name: node.name, role: node.role,
       size: node.block.size || 1, rotation: node.rotation,
+      dug: node.dug || null,
       fed: solved.fed[index],
       through: solved.through[index],
       feeds: graph.out[index].length,

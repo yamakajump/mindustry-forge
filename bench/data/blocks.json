@@ -13,7 +13,9 @@
       "rotate": false,
       "health": -1,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "spawn":{
       "name": "spawn",
@@ -25,7 +27,10 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "buildable": true
     },
     "remove-wall":{
       "name": "remove-wall",
@@ -49,7 +54,10 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "buildable": true
     },
     "cliff":{
       "name": "cliff",
@@ -265,7 +273,13 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "water",
+      "liquid_multiplier": 1.5,
+      "deep": true,
+      "buildable": true
     },
     "shallow-water":{
       "name": "shallow-water",
@@ -277,7 +291,12 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "water",
+      "liquid_multiplier": 1,
+      "buildable": true
     },
     "tainted-water":{
       "name": "tainted-water",
@@ -289,7 +308,12 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "water",
+      "liquid_multiplier": 1,
+      "buildable": true
     },
     "deep-tainted-water":{
       "name": "deep-tainted-water",
@@ -301,7 +325,13 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "water",
+      "liquid_multiplier": 1.5,
+      "deep": true,
+      "buildable": true
     },
     "darksand-tainted-water":{
       "name": "darksand-tainted-water",
@@ -313,7 +343,12 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "water",
+      "liquid_multiplier": 1,
+      "buildable": true
     },
     "sand-water":{
       "name": "sand-water",
@@ -325,7 +360,12 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "water",
+      "liquid_multiplier": 1,
+      "buildable": true
     },
     "darksand-water":{
       "name": "darksand-water",
@@ -337,7 +377,12 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "water",
+      "liquid_multiplier": 1,
+      "buildable": true
     },
     "tar":{
       "name": "tar",
@@ -349,7 +394,13 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "oil",
+      "liquid_multiplier": 1,
+      "deep": true,
+      "buildable": true
     },
     "pooled-cryofluid":{
       "name": "pooled-cryofluid",
@@ -361,7 +412,13 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "cryofluid",
+      "liquid_multiplier": 0.5,
+      "deep": true,
+      "buildable": true
     },
     "molten-slag":{
       "name": "molten-slag",
@@ -373,7 +430,13 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "slag",
+      "liquid_multiplier": 1,
+      "deep": true,
+      "buildable": true
     },
     "space":{
       "name": "space",
@@ -385,7 +448,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": false
     },
     "empty":{
       "name": "empty",
@@ -397,7 +462,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": false
     },
     "stone":{
       "name": "stone",
@@ -409,7 +476,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "crater-stone":{
       "name": "crater-stone",
@@ -421,7 +490,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "char":{
       "name": "char",
@@ -433,7 +504,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "basalt":{
       "name": "basalt",
@@ -445,7 +518,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "hotrock":{
       "name": "hotrock",
@@ -457,7 +532,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "magmarock":{
       "name": "magmarock",
@@ -469,7 +546,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "sand-floor":{
       "name": "sand-floor",
@@ -481,7 +560,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "unmineable": true,
+      "drops": "sand",
+      "buildable": true
     },
     "darksand":{
       "name": "darksand",
@@ -493,7 +576,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "unmineable": true,
+      "drops": "sand",
+      "buildable": true
     },
     "dirt":{
       "name": "dirt",
@@ -505,7 +592,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "mud":{
       "name": "mud",
@@ -517,7 +606,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "dacite":{
       "name": "dacite",
@@ -529,7 +620,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "rhyolite":{
       "name": "rhyolite",
@@ -541,7 +634,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "rhyolite-crater":{
       "name": "rhyolite-crater",
@@ -553,7 +648,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "rough-rhyolite":{
       "name": "rough-rhyolite",
@@ -565,7 +662,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "regolith":{
       "name": "regolith",
@@ -577,7 +676,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "yellow-stone":{
       "name": "yellow-stone",
@@ -589,7 +690,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "carbon-stone":{
       "name": "carbon-stone",
@@ -601,7 +704,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "ferric-stone":{
       "name": "ferric-stone",
@@ -613,7 +718,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "ferric-craters":{
       "name": "ferric-craters",
@@ -625,7 +732,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "beryllic-stone":{
       "name": "beryllic-stone",
@@ -637,7 +746,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "crystalline-stone":{
       "name": "crystalline-stone",
@@ -649,7 +760,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "crystal-floor":{
       "name": "crystal-floor",
@@ -661,7 +774,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "yellow-stone-plates":{
       "name": "yellow-stone-plates",
@@ -673,7 +788,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "red-stone":{
       "name": "red-stone",
@@ -685,7 +802,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "dense-red-stone":{
       "name": "dense-red-stone",
@@ -697,7 +816,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "red-ice":{
       "name": "red-ice",
@@ -709,7 +830,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "arkycite-floor":{
       "name": "arkycite-floor",
@@ -721,7 +844,13 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "floor_liquid": true,
+      "drops_liquid": "arkycite",
+      "liquid_multiplier": 1,
+      "deep": true,
+      "buildable": true
     },
     "arkyic-stone":{
       "name": "arkyic-stone",
@@ -733,7 +862,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "rhyolite-vent":{
       "name": "rhyolite-vent",
@@ -745,7 +876,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "carbon-vent":{
       "name": "carbon-vent",
@@ -757,7 +890,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "arkyic-vent":{
       "name": "arkyic-vent",
@@ -769,7 +904,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "yellow-stone-vent":{
       "name": "yellow-stone-vent",
@@ -781,7 +918,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "red-stone-vent":{
       "name": "red-stone-vent",
@@ -793,7 +932,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "crystalline-vent":{
       "name": "crystalline-vent",
@@ -805,7 +946,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "stone-vent":{
       "name": "stone-vent",
@@ -817,7 +960,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "basalt-vent":{
       "name": "basalt-vent",
@@ -829,7 +974,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "redmat":{
       "name": "redmat",
@@ -841,7 +988,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "bluemat":{
       "name": "bluemat",
@@ -853,7 +1002,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "grass":{
       "name": "grass",
@@ -865,7 +1016,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "salt":{
       "name": "salt",
@@ -877,7 +1030,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "snow":{
       "name": "snow",
@@ -889,7 +1044,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "ice":{
       "name": "ice",
@@ -901,7 +1058,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "ice-snow":{
       "name": "ice-snow",
@@ -913,7 +1072,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "shale":{
       "name": "shale",
@@ -925,7 +1086,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "moss":{
       "name": "moss",
@@ -937,7 +1100,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "core-zone":{
       "name": "core-zone",
@@ -949,7 +1114,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "spore-moss":{
       "name": "spore-moss",
@@ -961,7 +1128,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "stone-wall":{
       "name": "stone-wall",
@@ -1573,7 +1742,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-floor-damaged":{
       "name": "metal-floor-damaged",
@@ -1585,7 +1756,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-floor-2":{
       "name": "metal-floor-2",
@@ -1597,7 +1770,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-floor-3":{
       "name": "metal-floor-3",
@@ -1609,7 +1784,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-floor-4":{
       "name": "metal-floor-4",
@@ -1621,7 +1798,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-floor-5":{
       "name": "metal-floor-5",
@@ -1633,7 +1812,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "dark-panel-1":{
       "name": "dark-panel-1",
@@ -1645,7 +1826,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "dark-panel-2":{
       "name": "dark-panel-2",
@@ -1657,7 +1840,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "dark-panel-3":{
       "name": "dark-panel-3",
@@ -1669,7 +1854,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "dark-panel-4":{
       "name": "dark-panel-4",
@@ -1681,7 +1868,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "dark-panel-5":{
       "name": "dark-panel-5",
@@ -1693,7 +1882,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "dark-panel-6":{
       "name": "dark-panel-6",
@@ -1705,7 +1896,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "dark-metal":{
       "name": "dark-metal",
@@ -1729,7 +1922,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-2":{
       "name": "metal-tiles-2",
@@ -1741,7 +1936,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-3":{
       "name": "metal-tiles-3",
@@ -1753,7 +1950,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-4":{
       "name": "metal-tiles-4",
@@ -1765,7 +1964,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-5":{
       "name": "metal-tiles-5",
@@ -1777,7 +1978,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-6":{
       "name": "metal-tiles-6",
@@ -1789,7 +1992,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-7":{
       "name": "metal-tiles-7",
@@ -1801,7 +2006,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-8":{
       "name": "metal-tiles-8",
@@ -1813,7 +2020,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-9":{
       "name": "metal-tiles-9",
@@ -1825,7 +2034,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-10":{
       "name": "metal-tiles-10",
@@ -1837,7 +2048,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-11":{
       "name": "metal-tiles-11",
@@ -1849,7 +2062,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-12":{
       "name": "metal-tiles-12",
@@ -1861,7 +2076,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-tiles-13":{
       "name": "metal-tiles-13",
@@ -1873,7 +2090,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "metal-wall-1":{
       "name": "metal-wall-1",
@@ -1921,7 +2140,9 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "buildable": true
     },
     "colored-wall":{
       "name": "colored-wall",
@@ -1945,7 +2166,10 @@
       "rotate": true,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "buildable": true
     },
     "character-overlay-white":{
       "name": "character-overlay-white",
@@ -1957,7 +2181,10 @@
       "rotate": true,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "buildable": true
     },
     "rune-overlay":{
       "name": "rune-overlay",
@@ -1969,7 +2196,10 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "buildable": true
     },
     "rune-overlay-crux":{
       "name": "rune-overlay-crux",
@@ -1981,7 +2211,10 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "buildable": true
     },
     "pebbles":{
       "name": "pebbles",
@@ -1993,7 +2226,10 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "buildable": true
     },
     "tendrils":{
       "name": "tendrils",
@@ -2005,7 +2241,10 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "buildable": true
     },
     "ore-copper":{
       "name": "ore-copper",
@@ -2017,7 +2256,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "copper",
+      "buildable": true
     },
     "ore-lead":{
       "name": "ore-lead",
@@ -2029,7 +2272,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "lead",
+      "buildable": true
     },
     "ore-scrap":{
       "name": "ore-scrap",
@@ -2041,7 +2288,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "scrap",
+      "buildable": true
     },
     "ore-coal":{
       "name": "ore-coal",
@@ -2053,7 +2304,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "coal",
+      "buildable": true
     },
     "ore-titanium":{
       "name": "ore-titanium",
@@ -2065,7 +2320,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "titanium",
+      "buildable": true
     },
     "ore-thorium":{
       "name": "ore-thorium",
@@ -2077,7 +2336,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "thorium",
+      "buildable": true
     },
     "ore-beryllium":{
       "name": "ore-beryllium",
@@ -2089,7 +2352,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "beryllium",
+      "buildable": true
     },
     "ore-tungsten":{
       "name": "ore-tungsten",
@@ -2101,7 +2368,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "tungsten",
+      "buildable": true
     },
     "ore-crystal-thorium":{
       "name": "ore-crystal-thorium",
@@ -2113,7 +2384,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "thorium",
+      "buildable": true
     },
     "ore-wall-thorium":{
       "name": "ore-wall-thorium",
@@ -2125,7 +2400,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "thorium",
+      "buildable": true
     },
     "ore-wall-beryllium":{
       "name": "ore-wall-beryllium",
@@ -2137,7 +2416,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "beryllium",
+      "buildable": true
     },
     "graphitic-wall":{
       "name": "graphitic-wall",
@@ -2161,7 +2444,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "graphite",
+      "buildable": true
     },
     "ore-wall-tungsten":{
       "name": "ore-wall-tungsten",
@@ -2173,7 +2460,11 @@
       "rotate": false,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "floor": true,
+      "overlay": true,
+      "drops": "tungsten",
+      "buildable": true
     },
     "graphite-press":{
       "name": "graphite-press",
@@ -4246,6 +4537,7 @@
       "power": 0,
       "role": "pump",
       "output_per_second": 7,
+      "pump_amount": 0.11666667,
       "input_liquid":{}
     },
     "rotary-pump":{
@@ -4266,6 +4558,7 @@
       "power": 18,
       "role": "pump",
       "output_per_second": 48,
+      "pump_amount": 0.2,
       "input_liquid":{}
     },
     "impulse-pump":{
@@ -4287,6 +4580,7 @@
       "power": 78,
       "role": "pump",
       "output_per_second": 118.799995,
+      "pump_amount": 0.22,
       "input_liquid":{}
     },
     "conduit":{
@@ -4471,6 +4765,7 @@
       "power": 0,
       "role": "pump",
       "output_per_second": 80,
+      "pump_amount": 0.33333334,
       "input_liquid":{
         "hydrogen": 1.5
       }
@@ -5175,6 +5470,7 @@
       "power": 90,
       "role": "pump",
       "output_per_second": 26.4,
+      "pump_amount": 0.11,
       "input_liquid":{}
     },
     "cultivator":{
@@ -5223,6 +5519,7 @@
       "power": 180,
       "role": "pump",
       "output_per_second": 135,
+      "pump_amount": 0.25,
       "input_liquid":{
         "water": 9
       }

@@ -107,6 +107,16 @@ def main() -> None:
                     wanted.append((f"{block}#{shape}", sprites[pattern]))
                     break
 
+    # The ground. One sprite each, no edge variants for now: a painted patch of copper ore
+    # reads as copper ore without them, and the blending rules are a day's work on their
+    # own.
+    for name, entry in catalogue["blocks"].items():
+        if not entry.get("floor"):
+            continue
+        path = sprites.get(name) or sprites.get(f"{name}1")
+        if path:
+            wanted.append((f"floor/{name}", path))
+
     # The frame of a block that gets configured, without the composite's contents.
     #
     # The game fills the whole tile with the colour of what a sorter passes or a source
