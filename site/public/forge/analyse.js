@@ -17,7 +17,7 @@
 
 import { fromBase64 } from "./schematic.js";
 import { demand, requirements } from "./needs.js";
-import { ports, feedPorts } from "./ports.js";
+import { ports, feedPorts, mainPorts } from "./ports.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -611,7 +611,68 @@ function surplusOf(graph, solved, feeds) {
  * than guessed. A schematic torn out of a base is a middle: a press with no drill in the
  * picture makes nothing at all, and calling that a broken design would be wrong.
  */
-export async function analyse(text, supply = {}) {
+/**
+ * Flag the socket to actually use, so the picture can say which one rather than ringing
+ * fourteen tiles in the same colour and leaving the reader to guess.
+ */
+function markMain(found, marked) {
+  // A player's choice wins over the guess, and silences it: showing thirteen suggestions
+  // beside the one they picked is arguing with them.
+  if (marked) {
+    return {
+      ...found,
+      inputs: found.inputs
+        .filter((port) => marked[`${port.x},${port.y}`] === "in")
+        .map((port) => ({ ...port, main: true })),
+    };
+  }
+  const best = new Set(
+    [...mainPorts(found.inputs).values()].map(({ port }) => port.index));
+  return {
+    ...found,
+    inputs: found.inputs.map((port) => ({ ...port, main: best.has(port.index) })),
+  };
+}
+
+/**
+ * Feed exactly the tiles the player marked as inputs.
+ *
+ * Each gets what the machines behind it are waiting for, and when several are marked for
+ * the same resource the demand is shared: two water pipes marked means two water pipes,
+ * not two schematics.
+ */
+function feedMarked(graph, marked, outside, liquid) {
+  const wanted = [];
+  for (let index = 0; index < graph.nodes.length; index++) {
+    const node = graph.nodes[index];
+    if (marked[`${node.x},${node.y}`] !== "in") continue;
+    wanted.push(index);
+  }
+  if (!wanted.length) return {};
+
+  const feeds = {};
+  for (const [resource, rate] of Object.entries(outside)) {
+    if (resource.startsWith("*")) continue;
+    const carries = liquid(resource) ? "liquid" : "item";
+    const able = wanted.filter((i) => (graph.nodes[i].block.carries || "item") === carries);
+    if (!able.length) continue;
+    for (const index of able) {
+      feeds[index] = { ...(feeds[index] || {}), [resource]: rate / able.length };
+    }
+  }
+  return feeds;
+}
+
+/**
+ * Analyse a schematic.
+ *
+ * `chosen` is what the player marked by hand: `{ "4,15": "in", "9,3": "out" }`. Guessing
+ * where a schematic plugs in is genuinely hard, and the guess is a default rather than an
+ * answer: a design has one intake and eleven pipes that could physically take one, and
+ * nothing in the file says which the author meant. So the tool proposes and the player
+ * decides, and what they decide is kept with the schematic.
+ */
+export async function analyse(text, supply = {}, chosen = null) {
   await loadCatalogue();
   noteLiquids();
   const parsed = await fromBase64(text);
@@ -623,7 +684,10 @@ export async function analyse(text, supply = {}) {
   // say what. Asking the player instead was asking them to state what the schematic
   // already says, and it meant a layout nobody had described analysed to nothing at all.
   const outside = demand(graph).outside;
-  const socketed = feedPorts(graph, isLiquid, outside);
+  const marked = chosen && Object.keys(chosen).length ? chosen : null;
+  const socketed = marked
+    ? feedMarked(graph, marked, outside, isLiquid)
+    : feedPorts(graph, isLiquid, outside);
 
   // A stated supply overrides it, for "what does this do on half the water I have".
   // Split across the entry points rather than repeated at each: handed to all of them, a
@@ -723,7 +787,8 @@ export async function analyse(text, supply = {}) {
     needs: requirements(graph, catalogue),
     // Where to plug it in, named by tile. Not "it needs water" but "the pipe at 0,7 wants
     // water", which is the difference between a fact and an instruction.
-    ports: ports(graph, isLiquid, outside),
+    ports: markMain(ports(graph, isLiquid, outside), marked),
+    marked: marked || {},
     fedItself: !Object.keys(supply).length,
     // What it would make if it were fed all of that, which is the number a player is
     // really shopping for.
@@ -733,6 +798,23 @@ export async function analyse(text, supply = {}) {
     // reporting on a partial base as though it were the whole one.
     altered: parsed.altered,
     truncated: parsed.truncated,
+    // Everything the solver worked out, per block, so a click on one can say what it is
+    // doing rather than only what it is.
+    detail: graph.nodes.map((node, index) => ({
+      x: node.x, y: node.y, name: node.name, role: node.role,
+      size: node.block.size || 1, rotation: node.rotation,
+      fed: solved.fed[index],
+      through: solved.through[index],
+      feeds: graph.out[index].length,
+      fedBy: graph.into[index].length,
+      needs: node.block.input || {},
+      needsLiquid: node.block.input_liquid || {},
+      makes: node.block.output || {},
+      makesLiquid: node.block.output_liquid || {},
+      power: node.block.power || 0,
+      powerOut: node.block.power_out || 0,
+      cost: node.block.cost || {},
+    })),
     graph,
     // The nodes rather than the raw tiles: they carry the size, the role and the checked
     // bridge link, so the picture and the analysis cannot disagree about what is connected.

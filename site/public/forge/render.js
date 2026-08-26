@@ -94,6 +94,24 @@ function backing(context, scale) {
  * is what Corentin saw and said was wrong. The bridge remembers where it reaches, so this
  * is drawing what the schematic already says rather than inferring anything.
  */
+/**
+ * Mindustry's own units: eight world pixels to a tile. The bridge's measurements are
+ * stated in them, so they are converted here rather than eyeballed as fractions.
+ */
+const WORLD = 8;
+
+/**
+ * A bridge, drawn the way `ItemBridge.draw` draws it.
+ *
+ * Three things were missing and all three showed. The rounded end caps, which the game
+ * puts at *both* ends and which are what make a bridge look like a bridge rather than a
+ * bar. The transparency, `Renderer.bridgeOpacity`, without which the span hides whatever
+ * it flies over. And the width: the span is six and a half world pixels of eight, so
+ * drawing it a full tile wide made it a slab.
+ *
+ * The span also runs edge to edge, not centre to centre: half a tile is taken off each
+ * end, which is exactly the room the end caps occupy.
+ */
 function drawBridge(context, node, box, scale) {
   // The link the analysis already checked against the game's rules, rather than the raw
   // offset. Believed as stored, five bridges in one real schematic claimed to reach 365
@@ -102,6 +120,7 @@ function drawBridge(context, node, box, scale) {
 
   const span = atlas?.sprites?.[`${node.name}-bridge`];
   const arrow = atlas?.sprites?.[`${node.name}-arrow`];
+  const cap = atlas?.sprites?.[`${node.name}-end`];
   if (!span) return;
 
   const at = (x, y) => [(x - box.left) * scale + scale / 2,
@@ -111,17 +130,66 @@ function drawBridge(context, node, box, scale) {
   const length = Math.hypot(toX - fromX, toY - fromY);
   if (length < 1) return;
 
+  const angle = Math.atan2(toY - fromY, toX - fromX);
+  const width = scale * 6.5 / WORLD;
+
   context.save();
+  // The game's own default. Opaque, a span hides the belts and drills it flies over, and
+  // a picture that hides half a schematic is not showing the schematic.
+  context.globalAlpha = 0.75;
+
   context.translate(fromX, fromY);
-  context.rotate(Math.atan2(toY - fromY, toX - fromX));
-  // Stretched along its length the way the game stretches it, rather than tiled: a tiled
-  // span shows a seam at every tile and the game's does not.
+  context.rotate(angle);
+
+  // Edge to edge rather than centre to centre: half a tile off each end, which is the
+  // room the caps take.
+  const half = scale / 2;
   context.drawImage(sheet, span.x, span.y, span.w, span.h,
-                    0, -scale / 2, length, scale);
+                    half, -width / 2, Math.max(0, length - scale), width);
+
   if (arrow) {
-    context.drawImage(sheet, arrow.x, arrow.y, arrow.w, arrow.h,
-                      length / 2 - scale / 2, -scale / 2, scale, scale);
+    // Repeated along the way, every four world pixels, rather than one in the middle.
+    const step = scale * 4 / WORLD;
+    const offset = scale * 2 / WORLD;
+    for (let along = half + offset; along < length - half; along += step) {
+      context.drawImage(sheet, arrow.x, arrow.y, arrow.w, arrow.h,
+                        along - scale / 2, -scale / 2, scale, scale);
+    }
   }
+  context.restore();
+
+  if (cap) {
+    // Both ends, each turned to face along the span. The game turns one by ninety degrees
+    // and the other by two hundred and seventy, which is what rounds off both sides.
+    for (const [x, y, turn] of [[fromX, fromY, Math.PI / 2], [toX, toY, -Math.PI / 2]]) {
+      context.save();
+      context.globalAlpha = 0.75;
+      context.translate(x, y);
+      context.rotate(angle + turn);
+      context.drawImage(sheet, cap.x, cap.y, cap.w, cap.h,
+                        -scale / 2, -scale / 2, scale, scale);
+      context.restore();
+    }
+  }
+}
+
+/**
+ * A ring on a tile, for a socket.
+ *
+ * Drawn rather than listed. A player reading "the pipe at 0,7 wants water" beside a
+ * picture has to count tiles to find it; a mark on the tile itself is the same fact
+ * without the counting.
+ */
+function marker(context, port, box, scale, colour, incoming) {
+  const x = (port.x - box.left) * scale;
+  const y = (box.height - (port.y - box.bottom) - 1) * scale;
+
+  context.save();
+  context.strokeStyle = colour;
+  context.lineWidth = Math.max(2, scale * 0.09);
+  context.setLineDash(incoming ? [] : [scale * 0.22, scale * 0.16]);
+  context.strokeRect(x + context.lineWidth / 2, y + context.lineWidth / 2,
+                     scale - context.lineWidth, scale - context.lineWidth);
   context.restore();
 }
 
@@ -206,26 +274,6 @@ function blender(tiles, sizeOf, roleOf) {
     const [ox, oy] = DIRECTIONS[(other.rotation || 0) % 4];
     return other.x + ox === node.x && other.y + oy === node.y;
   };
-}
-
-/**
- * A ring on a tile, for a socket.
- *
- * Drawn rather than listed. A player reading "the pipe at 0,7 wants water" beside a
- * picture has to count tiles to find it; a mark on the tile itself is the same fact
- * without the counting.
- */
-function marker(context, port, box, scale, colour, incoming) {
-  const x = (port.x - box.left) * scale;
-  const y = (box.height - (port.y - box.bottom) - 1) * scale;
-
-  context.save();
-  context.strokeStyle = colour;
-  context.lineWidth = Math.max(2, scale * 0.09);
-  context.setLineDash(incoming ? [] : [scale * 0.22, scale * 0.16]);
-  context.strokeRect(x + context.lineWidth / 2, y + context.lineWidth / 2,
-                     scale - context.lineWidth, scale - context.lineWidth);
-  context.restore();
 }
 
 /**
@@ -314,7 +362,10 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   // Sockets, so the picture says where to plug it in. A list of coordinates beside a
   // picture makes a reader count tiles; a mark on the tile does not.
   for (const port of options.inputs || []) {
-    marker(context, port, box, scale, "#84d98b", true);
+    // The one to use is drawn solid; the others are places it could have gone instead,
+    // and ringing all fourteen the same way said "you need fourteen pipes".
+    marker(context, port, box, scale,
+           port.main ? "#84d98b" : "#84d98b66", port.main !== false);
   }
   for (const port of options.outputs || []) {
     marker(context, port, box, scale, "#ffd37f", false);

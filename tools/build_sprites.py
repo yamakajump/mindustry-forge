@@ -116,11 +116,30 @@ def main() -> None:
             if path:
                 wanted.append((block + part, path))
 
-    # Item icons, for saying what a layout produces with the same pictures the game uses.
+    # Item and liquid icons, for saying what a layout makes and drinks in the same pictures
+    # the game uses. Liquids were left out at first and it showed immediately: a report
+    # naming oil beside an icon of coal and an icon of spore pods reads as an oversight,
+    # because it is one.
     for item in catalogue["items"]:
         path = sprites.get(f"item-{item}")
         if path:
             wanted.append((f"item/{item}", path))
+
+    liquids = set()
+    for entry in catalogue["blocks"].values():
+        liquids |= set(entry.get("input_liquid") or {})
+        liquids |= set(entry.get("output_liquid") or {})
+    for liquid in sorted(liquids):
+        path = sprites.get(f"liquid-{liquid}")
+        if path:
+            wanted.append((f"item/{liquid}", path))
+
+    # And the blocks a player is told to build, so "2 impulse-pump" shows the pump.
+    for name, entry in catalogue["blocks"].items():
+        if entry.get("role") in ("pump", "drill"):
+            path = pick(name, sprites)
+            if path:
+                wanted.append((name, path))
 
     # The hatched backing the game shows behind a schematic, rather than one drawn by hand
     # to look like it.
