@@ -16,6 +16,7 @@
  */
 
 import { fromBase64 } from "./schematic.js";
+import { requirements } from "./needs.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -607,6 +608,13 @@ export async function analyse(text, supply = {}) {
     cost,
     internal,
     power,
+    // What has to arrive for the layout to run flat out, said in pumps and drills rather
+    // than in rates. Computed rather than asked for: nobody knows offhand that a layout
+    // drinks eighteen water a second, and everybody can picture two mechanical pumps.
+    needs: requirements(graph, catalogue),
+    // What it would make if it were fed all of that, which is the number a player is
+    // really shopping for.
+    potential: powerBudget(graph, { fed: {} }),
     settled: solved.settled,
     // What the reading had to work around, so the page can say it rather than quietly
     // reporting on a partial base as though it were the whole one.

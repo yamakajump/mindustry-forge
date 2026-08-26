@@ -77,6 +77,14 @@ def pick(name: str, sprites: dict[str, str]) -> str | None:
 #: What a bridge needs beyond its own tile: the span it throws, and the arrow along it.
 BRIDGE_PARTS = ("-bridge", "-arrow", "-end")
 
+#: A carrier is drawn from one of five shapes, chosen by which neighbours feed it.
+#:
+#: The game calls this autotiling and does it in `Autotiler.buildBlending`: 0 straight,
+#: 1 a curve, 2 a merge from behind and one side, 3 a merge from every side, 4 a merge from
+#: both sides. Drawing only shape 0 makes every belt in a picture look straight, which is
+#: wrong wherever a line turns, and a line that turns is most lines.
+SHAPES = 5
+
 
 def main() -> None:
     archive = zipfile.ZipFile(JAR)
@@ -88,6 +96,16 @@ def main() -> None:
     for block in catalogue["blocks"]:
         path = pick(block, sprites)
         (wanted.append((block, path)) if path else missing.append(block))
+
+    # Every shape a carrier can take, so a corner is drawn as a corner.
+    for block, entry in catalogue["blocks"].items():
+        if entry.get("role") not in ("conveyor", "conduit"):
+            continue
+        for shape in range(SHAPES):
+            for pattern in (f"{block}-{shape}-0", f"{block}-top-{shape}"):
+                if pattern in sprites:
+                    wanted.append((f"{block}#{shape}", sprites[pattern]))
+                    break
 
     # The span a bridge throws, without which two ends of one line read as two dead ends.
     for block, entry in catalogue["blocks"].items():

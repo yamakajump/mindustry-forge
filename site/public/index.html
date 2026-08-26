@@ -169,11 +169,11 @@
     </div>
 
     <details class="supply">
-      <summary>Ce morceau recoit d'ailleurs ? Dis ce qui y arrive.</summary>
+      <summary>Simuler un apport reel plutot que le plein regime</summary>
       <p class="hint-line">
-        Une presse sans foreuse dans l'image ne produit rien toute seule, et une centrale
-        sans arrivee d'eau non plus. Indique ce qu'une bande ou un tuyau venu d'ailleurs y
-        amene, par seconde. Le total est reparti sur les entrees du reseau concerne.
+Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que ca
+        donne avec moins que ca, indique ici ce qui arrive vraiment, par seconde. Le total
+        est reparti sur les entrees du reseau concerne.
       </p>
       <div class="row">
         <input type="text" id="supply" placeholder="water=120, coal=4" autocomplete="off"
@@ -243,7 +243,44 @@ function render(report) {
   const bolt = `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"
     style="width:20px;height:20px;fill:currentColor;stroke:none"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>`;
 
-  right.push(`<div class="card"><h2>Sortie</h2>${
+  /* What it takes to feed this, computed rather than asked for. Nobody knows offhand that
+     a layout drinks eighteen water a second; everybody can picture two mechanical pumps.
+     This card comes first because it is the question a player has before any other. */
+  const needs = report.needs || [];
+  if (needs.length) {
+    right.push(`<div class="card"><h2>Il lui faut</h2>${needs.map((need) => {
+      const best = need.options.slice(0, 3);
+      const label = need.resource.startsWith("*")
+        ? "un combustible quelconque"
+        : `${withIcon(need.resource)}${escape(need.resource)}`;
+      return `<div class="line"><span>${label}</span>
+        <span class="num">${rate(need.perMinute)} / min</span></div>` + (best.length
+        ? `<div class="chips" style="margin:6px 0 10px">${best.map((o) =>
+            `<span class="chip"><span class="num">${o.count}</span> ${escape(o.block)}</span>`)
+            .join(`<span style="color:var(--dim);align-self:center">ou</span>`)}</div>`
+        : "");
+    }).join("")}<p class="hint-line">Debit maximal, foreuse posee sur une tache pleine.
+      Sur une tache a moitie couverte il en faut deux fois plus.</p></div>`);
+  }
+
+  /* And what it gives back once it has all that, which is what a player is shopping for. */
+  const full = report.potential || { made: 0, spent: 0 };
+  if (full.made > 0.01 || full.spent > 0.01) {
+    right.push(`<div class="card"><h2>Une fois nourrie a fond</h2>
+      ${full.made > 0.01
+        ? `<div class="line"><span>Produit</span>
+             <span class="num good">${rate(full.made)} energie / s</span></div>` : ""}
+      ${full.spent > 0.01
+        ? `<div class="line"><span>Consomme</span>
+             <span class="num warn">${rate(full.spent)} energie / s</span></div>` : ""}
+      ${full.made > 0.01
+        ? `<div class="line"><span><strong>Net</strong></span>
+             <span class="num ${full.made - full.spent >= 0 ? "good" : "bad"}">
+             ${rate(full.made - full.spent)} energie / s</span></div>` : ""}
+    </div>`);
+  }
+
+  right.push(`<div class="card"><h2>Avec ce que tu as indique</h2>${
     power.made > 0.01
       ? `<div class="out-rate" style="color:var(--accent)">${bolt}
            <b>${rate(power.net)}</b><span>energie / s &nbsp;<span style="color:var(--dim)">
@@ -254,8 +291,8 @@ function render(report) {
       <b>${rate(n)}</b><span>${escape(item)} / min</span></div>`).join("")
   }${
     !made.length && power.made <= 0.01
-      ? `<p class="empty">Rien n'en sort. Si ce morceau est nourri par une bande ou un
-         tuyau venu d'ailleurs, indique-le au-dessus.</p>`
+      ? `<p class="empty">Rien tant qu'on ne lui donne rien. Indique un apport
+         au-dessus pour voir ce que ca donne.</p>`
       : ""
   }${
     power.made <= 0.01 && power.spent > 0.01
@@ -278,7 +315,8 @@ function render(report) {
       schematique elle-meme.</p></div>`);
   }
 
-  if (report.bottleneck) {
+  const fedSomething = made.length || (report.power && report.power.made > 0.01);
+  if (report.bottleneck && fedSomething) {
     const [name, share] = report.bottleneck;
     right.push(`<div class="card"><h2>Goulot</h2>
       <div class="line"><span>${escape(name)}</span>
