@@ -35,6 +35,14 @@ SCENERY = {
     "Cliff", "Boulder", "DirtBlock",
 }
 
+#: Classes that can appear in a schematic and cannot change what it produces. A wall is a
+#: wall: it stops bullets and moves nothing. Told apart from the scenery because they are
+#: really placed by players, and told apart from the work because there is nothing to port.
+INERT = {
+    "Wall", "Door", "BaseShield", "MessageBlock", "MemoryBlock", "Radar", "LightBlock",
+    "ShockMine", "BuildTurret",
+}
+
 #: What a class is for, in one line, so the list can be read without opening the game.
 #: Only for the ones worth explaining; anything absent is named well enough by itself.
 NOTES = {
@@ -101,8 +109,9 @@ def main() -> None:
     for name, block in blocks.items():
         kinds[block.get("kind", "Block")].append(name)
 
-    todo = {k: v for k, v in kinds.items() if k not in SCENERY}
+    todo = {k: v for k, v in kinds.items() if k not in SCENERY and k not in INERT}
     scenery = sum(len(v) for k, v in kinds.items() if k in SCENERY)
+    inert = {k: v for k, v in kinds.items() if k in INERT}
 
     lines = [
         "# Chaque bloc du jeu, et où en est le portage",
@@ -138,6 +147,15 @@ def main() -> None:
                      f"{'s' if len(names) > 1 else ''}"
                      + (f" &mdash; {note}" if note else ""))
         lines.append(f"      {shown}")
+
+    lines.append("")
+    lines.append("## Posés par un joueur, mais sans effet sur ce qui circule")
+    lines.append("")
+    lines.append("Un mur est un mur : il arrête des balles et ne déplace rien. Rien à")
+    lines.append("porter, et rien à mesurer non plus.")
+    lines.append("")
+    for kind, names in sorted(inert.items(), key=lambda kv: -len(kv[1])):
+        lines.append(f"- `{kind}` : {len(names)}")
 
     lines.append("")
     lines.append("## Le décor, rien à faire")

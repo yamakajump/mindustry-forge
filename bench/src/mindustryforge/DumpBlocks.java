@@ -98,6 +98,10 @@ public class DumpBlocks {
             entry.put("has_items", block.hasItems);
             entry.put("has_power", block.hasPower);
             entry.put("rotate", block.rotate);
+            // Frames between two attempts to hand an output on. It rarely binds - a press
+            // makes one graphite every ninety frames and may offload every five - but it
+            // is the difference between a machine that trickles and one that bursts.
+            entry.put("dump_time", block.dumpTime);
             entry.put("health", block.health);
 
             // What it costs to build, which is what "compact" and "cheap" are scored on.

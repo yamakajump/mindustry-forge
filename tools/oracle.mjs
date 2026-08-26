@@ -124,6 +124,58 @@ const SCENARIOS = {
     { x: 9, y: 0, block: "vault", rotation: 0 },
   ],
 
+  /* A press. Two coal in, one graphite out, ninety frames a batch, so at most two thirds
+     of a graphite a second whatever it is fed. Fed a hundred a second by a sandbox source,
+     what comes out is the machine's own pace and nothing else.
+  
+     A press is two across and stored at its corner, so it covers x..x+1 and y..y+1. The
+     first go at this left a gap of one tile between the belt and the press and measured a
+     factory that was never connected: both engines agreed on nothing at all, which is the
+     right answer to the wrong question. */
+  "crafter-press": () => [
+    { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: 1, y: 1, block: "conveyor", rotation: 0 },
+    { x: 2, y: 1, block: "conveyor", rotation: 0 },
+    { x: 3, y: 1, block: "graphite-press", rotation: 0 },
+    { x: 5, y: 1, block: "conveyor", rotation: 0 },
+    { x: 6, y: 1, block: "conveyor", rotation: 0 },
+    { x: 8, y: 1, block: "vault", rotation: 0 },
+  ],
+
+  /* Four presses along one belt, which carries 6.5 coal a second where they want 5.33
+     between them. They should all run, and what the belt does not deliver ends in the
+     vault as coal: both numbers have to match, not just the graphite. */
+  "crafter-starved": () => {
+    const tiles = [
+      { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
+      { x: 11, y: 1, block: "vault", rotation: 0 },
+      { x: 11, y: 4, block: "vault", rotation: 0 },
+    ];
+    for (let x = 1; x <= 9; x++) tiles.push({ x, y: 1, block: "conveyor", rotation: 0 });
+    for (let x = 1; x <= 9; x++) tiles.push({ x, y: 4, block: "conveyor", rotation: 0 });
+    for (const x of [2, 4, 6, 8]) {
+      tiles.push({ x, y: 2, block: "graphite-press", rotation: 0 });
+    }
+    return tiles;
+  },
+
+  /* Two presses off one router, each with its own vault, so the split is visible. */
+  "crafter-two-presses": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "router", rotation: 0 },
+
+    // East of the router: covers 3..4 by 0..1.
+    { x: 3, y: 0, block: "graphite-press", rotation: 0 },
+    { x: 5, y: 0, block: "conveyor", rotation: 0 },
+    { x: 7, y: 0, block: "vault", rotation: 0 },
+
+    // North of the router: covers 2..3 by 2..3, which clears the first press by a tile.
+    { x: 2, y: 2, block: "graphite-press", rotation: 0 },
+    { x: 2, y: 4, block: "conveyor", rotation: 1 },
+    { x: 2, y: 6, block: "vault", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -148,6 +200,34 @@ function sorter(carried) {
     { x: 3, y: 0, block: "conveyor", rotation: 3 },
     { x: 3, y: -2, block: "vault", rotation: 0 },
   ];
+}
+
+/**
+ * Refuse a scenario whose blocks stand on each other.
+ *
+ * Written after losing an hour to two presses sharing a tile. The game silently kept one
+ * of them, so the measurement was of a schematic nobody had described, and the port and
+ * the engine disagreed about a layout neither of them should have been given. Blocks are
+ * stored at a corner and reach up and right by their size, which is exactly the sort of
+ * arithmetic worth having checked rather than remembered.
+ */
+function check(name, tiles) {
+  const taken = new Map();
+  for (const tile of tiles) {
+    const size = sizeOf(tile.block);
+    const offset = Math.trunc(-(size - 1) / 2);
+    for (let dx = 0; dx < size; dx++) {
+      for (let dy = 0; dy < size; dy++) {
+        const at = `${tile.x + offset + dx},${tile.y + offset + dy}`;
+        if (taken.has(at)) {
+          throw new Error(`${name} : ${tile.block} et ${taken.get(at)} se chevauchent `
+            + `en ${at}`);
+        }
+        taken.set(at, tile.block);
+      }
+    }
+  }
+  return tiles;
 }
 
 function line(block, length) {
@@ -205,7 +285,7 @@ mkdirSync(KEPT, { recursive: true });
 if (process.argv.includes("--measure")) {
   const commands = [];
   for (const [name, build] of Object.entries(SCENARIOS)) {
-    const code = await toBase64(build(), { tags: { name }, sizeOf });
+    const code = await toBase64(check(name, build()), { tags: { name }, sizeOf });
     writeFileSync(join(KEPT, `${name}.txt`), code);
     commands.push(`measure ${code} ${SECONDS} ../bench/data/oracle/${name}.json`);
   }
@@ -223,7 +303,7 @@ console.log(`scenario / coffre / objet      portage      jeu   ecart`);
 console.log(`${"-".repeat(62)}`);
 
 for (const [name, build] of Object.entries(SCENARIOS)) {
-  const code = await toBase64(build(), { tags: { name }, sizeOf });
+  const code = await toBase64(check(name, build()), { tags: { name }, sizeOf });
   const mine = await port(code, TICKS);
   const theirs = measured(name);
 

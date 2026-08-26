@@ -1,0 +1,24 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "containers": [
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "items":{
+        "graphite": 19
+      }
+    },
+    {
+      "block": "vault",
+      "x": 14,
+      "y": 19,
+      "items":{}
+    }
+  ],
+  "per_second":{
+    "graphite": 0.6333333
+  }
+}
