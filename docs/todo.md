@@ -4,41 +4,23 @@ Tenu ici plutôt que dans un gestionnaire de tâches, parce que la session n'en 
 qu'une liste que Corentin ne peut pas lire ne sert à rien. Une ligne par chose, dans
 l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 
-## En cours
+## À faire
 
-### 1. Rendu : ce que le jeu dessine et pas nous
-
-- [ ] **Ponts à liquide sans portée.** `bridge-conduit`, `phase-conduit` et compagnie sont
-      sortis de la branche `ItemBridge` du dumper et atterrissent dans celle des tuyaux,
-      qui n'écrit pas `range`. Sans portée, chaque lien est jugé hors de portée et rejeté :
-      les six ponts de phase d'une schématique n'ont ni trait à l'écran ni arête dans le
-      graphe. Ça fausse le rendu **et** le calcul.
-- [ ] **Sources sans couleur.** Une source d'objet montre dans le jeu un carré de la
-      couleur de la ressource réglée dessus, une source de liquide idem. Il faut sortir la
-      couleur des objets et des liquides du jeu, elle n'est pas dans le catalogue.
-- [ ] **Liens des nœuds d'énergie.** Les traits beiges entre les pylônes ne sont pas
-      dessinés du tout. C'est la configuration de type 8 (liste de positions).
-
-### 2. Gestion des schématiques sur le site
-
-Rien de tout ça n'existe : une fois publiée, une schématique ne peut plus bouger.
-
-- [ ] Basculer publique / privée après coup.
-- [ ] Non répertoriée : accessible par lien, absente de la vitrine.
-- [ ] Supprimer une schématique.
-- [ ] Renommer, et remplacer le code par une version corrigée.
-
-### 3. Le simulateur
+### 1. Le simulateur
 
 `simulate.js` contredit le flot maximal (presse à spores 20 %, générateurs 0 %, net -408
 contre +2 402). Il n'est branché sur rien pour l'instant. Soit il est réparé et il devient
 la référence, soit il dégage. Le jeu a confirmé le modèle analytique sur trois
 schématiques, donc c'est le simulateur qui est faux.
 
-### 4. Mécanismes du jeu encore absents
+### 2. Mécanismes du jeu encore absents
 
 - **Chaleur** (Erekir) : pas modélisée du tout. Toute la moitié Erekir du jeu en dépend, et
   `reinforced-bridge-conduit` est classé « consommateur », ce qui est le symptôme.
+- **Débit réel d'un tuyau.** Plafonné à la contenance du bloc par tick, qui est le plafond
+  du jeu (`moveLiquid`) mais jamais atteint : en régime établi le gradient se resserre. Ça
+  ne mord sur aucune disposition réelle, ça ne sert qu'à empêcher une source de bac à sable
+  d'inonder le modèle. Le vrai débit demanderait de simuler la pression.
 - **Portes de trop-plein** : laissées en routeurs, et c'est un choix. Le jeu envoie tout
   droit si ça passe et sur les côtés sinon ; avec un flot maximal ce choix ne change pas le
   débit total, seulement quelle branche le porte.
@@ -46,26 +28,38 @@ schématiques, donc c'est le simulateur qui est faux.
   accélérateur est alimenté dépend du calcul, qui dépend de la vitesse, qui dépend du
   bonus. Le chiffre nu est annoncé et le bonus est nommé à côté.
 
-### 5. Vérifier les chiffres contre le vrai jeu
+### 3. Vérifier les chiffres contre le vrai jeu
 
 Le banc existe et ne sert pas encore. Une schématique posée dans un serveur Mindustry,
 mesurée quelques secondes, et comparée au calcul. C'est ce qui distingue ce site de tous
 les autres, et `verified` reste faux tant que ça ne tourne pas.
 
-### 6. Place de marché
+### 4. Place de marché
 
 - Comparer deux schématiques côte à côte.
 - Filtrer sur ce dont elle a besoin : « j'ai du charbon, montre ce que je peux faire
   tourner ».
 - Classement par cuivre investi et pas seulement par bloc.
 
-### 7. Reste
+### 5. Reste
 
 - Les entrées et sorties définies à la main doivent être rejouées à l'ouverture d'une
   schématique gardée.
 - Diagnostic explicite : « trois bandes reliées à rien », en tête plutôt qu'en bas.
 
 ## Corrigé
+
+- [x] **La gestion des schématiques sur le site.** Privée, par lien, publique, et
+      supprimer, depuis la grille et depuis la page de la schématique. L'API existait
+      depuis le premier jour et rien ne l'appelait. Plus un drapeau modérateur pour retirer
+      de la vitrine ce qui ne va pas.
+- [x] **Ponts à liquide sans portée** : chaque lien était jugé hors de portée et jeté, donc
+      ni trait à l'écran ni arête dans le graphe.
+- [x] **Tuyaux directionnels.** Un conduit pointe quelque part comme une bande
+      (`moveLiquidForward`), et routeurs et jonctions à liquide partageaient son rôle.
+- [x] **Couleur des ressources** sur les sources et les trieurs, avec le cadre nu du jeu et
+      non le composite, dont le centre est la croix « rien de réglé ».
+- [x] **Liens des pylônes** dessinés, `PowerNode.drawPlanConfigTop`.
 
 - [x] **L'encart du jeu, à l'unité près.** Coût de construction et bilan électrique
       calculés avec les formules de `Schematic.requirements`, `powerProduction` et
