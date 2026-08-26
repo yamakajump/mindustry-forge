@@ -128,13 +128,20 @@ export class Build {
     this.items.add(item);
   }
 
-  /** Whether the recipe names this item at all. `Block.consumesItem`. */
+  /**
+   * Whether this block will take this item at all.
+   *
+   * The game's own filter, built when a block's consumers are declared and read straight
+   * out of the dump. Inferred from the recipe instead, a generator that burns "anything"
+   * accepted anything: a drill beside one fed it copper, it burned the copper, and half
+   * of what the drill made never reached the vault.
+   */
   wants(item) {
+    if (this.block.accepts) return this.block.accepts.includes(item);
     const input = this.block.input || {};
     if (Object.keys(input).length) return item in input;
     if (this.role === "turret") return (this.block.ammo || []).includes(item);
-    // A generator that burns anything states a duration and no ingredient.
-    return this.role === "generator" && Boolean(this.block.craft_time);
+    return false;
   }
 
   /** `Building.canDump`, which an overflow gate overrides to refuse going backwards. */
@@ -201,8 +208,9 @@ export class Build {
     if (!this.block.liquid_capacity) return false;
     // A machine only takes a liquid its recipe names, which is what stops a press from
     // filling up with water it cannot use.
+    if (this.block.drinks && !this.block.drinks.includes(liquid)) return false;
     const wanted = this.block.input_liquid || {};
-    if (Object.keys(wanted).length && !(liquid in wanted)) return false;
+    if (!this.block.drinks && Object.keys(wanted).length && !(liquid in wanted)) return false;
     return (!this.liquid || this.liquid === liquid || this.liquidAmount < 0.2)
       && this.liquidAmount < this.liquidCapacity;
   }
@@ -362,6 +370,13 @@ export class World {
     }
 
     this.tick = 0;
+    this.grids = [];
+  }
+
+  /** Work out the power grids, once the world is laid out. */
+  wire(gridsOf) {
+    this.grids = gridsOf(this);
+    return this;
   }
 
   at(x, y) { return this.tiles.get(`${x},${y}`) || null; }
@@ -372,6 +387,11 @@ export class World {
     for (const build of this.builds) {
       if (build.behaviour?.update) build.behaviour.update(build, this, delta);
     }
+    // The grids settle after the blocks have run, so what a generator made this frame is
+    // what the grid has to hand out. Tried the other way round as well, on the chance it
+    // explained a one item gap on a fully powered drill; it did not, and this way round
+    // matches a battery's charge to three decimals.
+    for (const grid of this.grids) grid.update(delta);
   }
 
   run(seconds) {

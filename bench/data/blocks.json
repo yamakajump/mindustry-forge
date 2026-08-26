@@ -3019,6 +3019,9 @@
       "has_power": false,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "coal"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -3048,6 +3051,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "coal"
+      ],
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 360,
       "cost":{
@@ -3081,6 +3090,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "sand",
+        "coal"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -3111,6 +3124,11 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "sand",
+        "coal",
+        "pyratite"
+      ],
       "liquid_pressure": 1,
       "health": 395,
       "cost":{
@@ -3144,6 +3162,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "lead",
+        "sand"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -3175,6 +3197,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "titanium"
+      ],
+      "drinks": [
+        "oil"
+      ],
       "liquid_pressure": 1,
       "health": 320,
       "cost":{
@@ -3208,6 +3236,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "sand",
+        "thorium"
+      ],
       "liquid_pressure": 1,
       "health": 190,
       "cost":{
@@ -3239,6 +3271,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "copper",
+        "lead",
+        "titanium",
+        "silicon"
+      ],
       "liquid_pressure": 1,
       "health": 430,
       "cost":{
@@ -3272,6 +3310,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "titanium"
+      ],
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -3304,6 +3348,11 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "lead",
+        "sand",
+        "coal"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -3335,6 +3384,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "spore-pod",
+        "pyratite"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -3365,6 +3418,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "scrap"
+      ],
       "liquid_pressure": 1,
       "health": 200,
       "cost":{
@@ -3395,6 +3451,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "slag"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -3417,6 +3476,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "scrap"
+      ],
+      "drinks": [
+        "slag"
+      ],
       "liquid_pressure": 1,
       "health": 465,
       "cost":{
@@ -3444,6 +3509,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "spore-pod"
+      ],
       "liquid_pressure": 1,
       "health": 320,
       "cost":{
@@ -3473,6 +3541,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "scrap"
+      ],
       "liquid_pressure": 1,
       "health": 40,
       "cost":{
@@ -3502,6 +3573,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "oil"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -3552,6 +3626,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "graphite",
+        "sand"
+      ],
       "liquid_pressure": 1,
       "health": 575,
       "cost":{
@@ -3582,6 +3660,9 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 860,
       "cost":{
@@ -3642,6 +3723,12 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "beryllium"
+      ],
+      "drinks": [
+        "ozone"
+      ],
       "liquid_pressure": 1,
       "health": 860,
       "cost":{
@@ -3703,6 +3790,9 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "slag"
+      ],
       "liquid_pressure": 1,
       "health": 1040,
       "cost":{
@@ -3732,6 +3822,9 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "phase-fabric"
+      ],
       "liquid_pressure": 1,
       "health": 510,
       "cost":{
@@ -3815,6 +3908,9 @@
       "has_power": false,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "slag"
+      ],
       "liquid_pressure": 1,
       "health": 70,
       "cost":{
@@ -3836,6 +3932,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "graphite",
+        "tungsten"
+      ],
       "liquid_pressure": 1,
       "health": 900,
       "cost":{
@@ -3867,6 +3967,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "sand"
+      ],
+      "drinks": [
+        "slag"
+      ],
       "liquid_pressure": 1,
       "health": 935,
       "cost":{
@@ -3900,6 +4006,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "silicon"
+      ],
+      "drinks": [
+        "slag"
+      ],
       "liquid_pressure": 1,
       "health": 825,
       "cost":{
@@ -3933,6 +4045,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "graphite"
+      ],
+      "drinks": [
+        "arkycite"
+      ],
       "liquid_pressure": 1,
       "health": 1150,
       "cost":{
@@ -3966,6 +4084,13 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "sand",
+        "thorium"
+      ],
+      "drinks": [
+        "ozone"
+      ],
       "liquid_pressure": 1,
       "health": 1115,
       "cost":{
@@ -4000,6 +4125,12 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "thorium"
+      ],
+      "drinks": [
+        "nitrogen"
+      ],
       "liquid_pressure": 1,
       "health": 1005,
       "cost":{
@@ -4567,6 +4698,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "silicon"
+      ],
       "liquid_pressure": 1,
       "health": 80,
       "cost":{
@@ -4588,6 +4722,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "phase-fabric"
+      ],
       "liquid_pressure": 1,
       "health": 320,
       "cost":{
@@ -4611,6 +4748,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "phase-fabric"
+      ],
       "liquid_pressure": 1,
       "health": 175,
       "cost":{
@@ -4641,6 +4781,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "silicon",
+        "phase-fabric"
+      ],
       "liquid_pressure": 1,
       "health": 485,
       "cost":{
@@ -4670,6 +4814,13 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "phase-fabric"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 360,
       "cost":{
@@ -4729,6 +4880,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "nitrogen"
+      ],
       "liquid_pressure": 1,
       "health": 610,
       "cost":{
@@ -4752,6 +4906,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "phase-fabric"
+      ],
+      "drinks": [
+        "hydrogen"
+      ],
       "liquid_pressure": 1,
       "health": 1040,
       "cost":{
@@ -4777,6 +4937,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "cyanogen"
+      ],
       "liquid_pressure": 1,
       "health": 915,
       "cost":{
@@ -5353,6 +5516,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "nitrogen"
+      ],
       "liquid_pressure": 1,
       "health": 630,
       "cost":{
@@ -5661,6 +5827,9 @@
       "has_power": false,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "hydrogen"
+      ],
       "liquid_pressure": 1,
       "health": 380,
       "cost":{
@@ -5893,6 +6062,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "power_capacity": 4000,
       "health": 40,
       "cost":{
         "copper": 5,
@@ -5913,6 +6083,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "power_capacity": 50000,
       "health": 360,
       "cost":{
         "lead": 50,
@@ -5933,6 +6104,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "coal",
+        "spore-pod",
+        "blast-compound",
+        "pyratite"
+      ],
       "liquid_pressure": 1,
       "health": 40,
       "cost":{
@@ -5982,6 +6159,15 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "coal",
+        "spore-pod",
+        "blast-compound",
+        "pyratite"
+      ],
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -6009,6 +6195,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "pyratite"
+      ],
+      "drinks": [
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 360,
       "cost":{
@@ -6039,6 +6231,11 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "thorium",
+        "phase-fabric",
+        "fissile-matter"
+      ],
       "liquid_pressure": 1,
       "health": 245,
       "cost":{
@@ -6112,6 +6309,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "thorium"
+      ],
+      "drinks": [
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 700,
       "cost":{
@@ -6142,6 +6345,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "blast-compound"
+      ],
+      "drinks": [
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 900,
       "cost":{
@@ -6174,6 +6383,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "power_capacity": 1000,
       "health": 90,
       "cost":{
         "beryllium": 8
@@ -6191,6 +6401,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "power_capacity": 40000,
       "health": 810,
       "cost":{
         "silicon": 10,
@@ -6255,6 +6466,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "arkycite",
+        "ozone"
+      ],
       "liquid_pressure": 1,
       "health": 825,
       "cost":{
@@ -6283,6 +6498,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "slag",
+        "arkycite"
+      ],
       "liquid_pressure": 1,
       "health": 935,
       "cost":{
@@ -6311,6 +6530,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "cyanogen"
+      ],
       "liquid_pressure": 1,
       "health": 2850,
       "cost":{
@@ -6339,6 +6561,13 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "phase-fabric"
+      ],
+      "drinks": [
+        "water",
+        "arkycite"
+      ],
       "liquid_pressure": 1,
       "health": 3900,
       "cost":{
@@ -6372,6 +6601,9 @@
       "has_power": false,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -6382,7 +6614,8 @@
       "tier": 2,
       "drill_time": 600,
       "hardness_multiplier": 50,
-      "liquid_boost": 1.6
+      "liquid_boost": 1.6,
+      "warmup_speed": 0.015
     },
     "pneumatic-drill":{
       "name": "pneumatic-drill",
@@ -6394,6 +6627,9 @@
       "has_power": false,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -6405,7 +6641,8 @@
       "tier": 3,
       "drill_time": 400,
       "hardness_multiplier": 50,
-      "liquid_boost": 1.6
+      "liquid_boost": 1.6,
+      "warmup_speed": 0.015
     },
     "laser-drill":{
       "name": "laser-drill",
@@ -6417,6 +6654,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 360,
       "cost":{
@@ -6430,7 +6670,8 @@
       "tier": 4,
       "drill_time": 280,
       "hardness_multiplier": 50,
-      "liquid_boost": 1.6
+      "liquid_boost": 1.6,
+      "warmup_speed": 0.015
     },
     "blast-drill":{
       "name": "blast-drill",
@@ -6442,6 +6683,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 765,
       "cost":{
@@ -6455,7 +6699,8 @@
       "tier": 5,
       "drill_time": 280,
       "hardness_multiplier": 50,
-      "liquid_boost": 1.8
+      "liquid_boost": 1.8,
+      "warmup_speed": 0.01
     },
     "water-extractor":{
       "name": "water-extractor",
@@ -6491,6 +6736,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 160,
       "cost":{
@@ -6521,6 +6769,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "sand"
+      ],
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 430,
       "cost":{
@@ -6593,6 +6847,12 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "graphite"
+      ],
+      "drinks": [
+        "hydrogen"
+      ],
       "liquid_pressure": 1,
       "health": 950,
       "cost":{
@@ -6618,6 +6878,9 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "hydrogen"
+      ],
       "liquid_pressure": 1,
       "health": 255,
       "cost":{
@@ -6637,6 +6900,10 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "hydrogen",
+        "nitrogen"
+      ],
       "liquid_pressure": 1,
       "health": 1040,
       "cost":{
@@ -6661,6 +6928,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "water",
+        "ozone"
+      ],
       "liquid_pressure": 1,
       "health": 1020,
       "cost":{
@@ -6673,7 +6944,8 @@
       "tier": 6,
       "drill_time": 720,
       "hardness_multiplier": 0,
-      "liquid_boost": 1.75
+      "liquid_boost": 1.75,
+      "warmup_speed": 0.015
     },
     "eruption-drill":{
       "name": "eruption-drill",
@@ -6685,6 +6957,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "hydrogen",
+        "cyanogen"
+      ],
       "liquid_pressure": 1,
       "health": 2500,
       "cost":{
@@ -6698,7 +6974,8 @@
       "tier": 7,
       "drill_time": 281.25,
       "hardness_multiplier": 0,
-      "liquid_boost": 2
+      "liquid_boost": 2,
+      "warmup_speed": 0.015
     },
     "core-shard":{
       "name": "core-shard",
@@ -6925,6 +7202,15 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "copper",
+        "graphite",
+        "silicon"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 250,
       "cost":{
@@ -6953,6 +7239,15 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "lead",
+        "metaglass",
+        "scrap"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 800,
       "cost":{
@@ -6982,6 +7277,14 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "coal",
+        "pyratite"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 400,
       "cost":{
@@ -7010,6 +7313,15 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "graphite",
+        "silicon",
+        "pyratite"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 260,
       "cost":{
@@ -7039,6 +7351,12 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "water",
+        "slag",
+        "oil",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 1000,
       "cost":{
@@ -7060,6 +7378,10 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 1120,
       "cost":{
@@ -7082,6 +7404,10 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 260,
       "cost":{
@@ -7121,6 +7447,15 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "surge-alloy",
+        "blast-compound",
+        "pyratite"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 1200,
       "cost":{
@@ -7152,6 +7487,17 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "copper",
+        "graphite",
+        "thorium",
+        "silicon",
+        "pyratite"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 960,
       "cost":{
@@ -7204,6 +7550,12 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "water",
+        "slag",
+        "oil",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 2250,
       "cost":{
@@ -7226,6 +7578,14 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "titanium",
+        "thorium"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 1980,
       "cost":{
@@ -7255,6 +7615,17 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "graphite",
+        "silicon",
+        "plastanium",
+        "blast-compound",
+        "pyratite"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 1170,
       "cost":{
@@ -7287,6 +7658,16 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "metaglass",
+        "plastanium",
+        "surge-alloy",
+        "blast-compound"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 1305,
       "cost":{
@@ -7318,6 +7699,13 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "surge-alloy"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 2400,
       "cost":{
@@ -7348,6 +7736,15 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "graphite",
+        "thorium",
+        "pyratite"
+      ],
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 2560,
       "cost":{
@@ -7380,6 +7777,10 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 3200,
       "cost":{
@@ -7403,6 +7804,14 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "beryllium",
+        "tungsten",
+        "carbide"
+      ],
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 1620,
       "cost":{
@@ -7433,6 +7842,14 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "graphite",
+        "silicon",
+        "oxide"
+      ],
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 1890,
       "cost":{
@@ -7464,6 +7881,10 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "ozone",
+        "cyanogen"
+      ],
       "liquid_pressure": 1,
       "health": 1890,
       "cost":{
@@ -7486,6 +7907,15 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "thorium",
+        "oxide",
+        "carbide"
+      ],
+      "drinks": [
+        "water",
+        "hydrogen"
+      ],
       "liquid_pressure": 1,
       "health": 4000,
       "cost":{
@@ -7518,6 +7948,15 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "thorium",
+        "silicon",
+        "surge-alloy",
+        "tungsten"
+      ],
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 4480,
       "cost":{
@@ -7570,6 +8009,9 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "nitrogen"
+      ],
       "liquid_pressure": 1,
       "health": 3360,
       "cost":{
@@ -7594,6 +8036,14 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "phase-fabric",
+        "surge-alloy",
+        "carbide"
+      ],
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 3520,
       "cost":{
@@ -7626,6 +8076,12 @@
       "has_power": false,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "surge-alloy"
+      ],
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 8750,
       "cost":{
@@ -7743,6 +8199,10 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "graphite",
+        "silicon"
+      ],
       "liquid_pressure": 1,
       "health": 360,
       "cost":{
@@ -7768,6 +8228,11 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "metaglass",
+        "titanium",
+        "silicon"
+      ],
       "liquid_pressure": 1,
       "health": 1200,
       "cost":{
@@ -7795,6 +8260,14 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "titanium",
+        "silicon",
+        "plastanium"
+      ],
+      "drinks": [
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 3035,
       "cost":{
@@ -7826,6 +8299,15 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "silicon",
+        "plastanium",
+        "phase-fabric",
+        "surge-alloy"
+      ],
+      "drinks": [
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 5830,
       "cost":{
@@ -7877,6 +8359,10 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "water",
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 205,
       "cost":{
@@ -7962,6 +8448,13 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "silicon",
+        "tungsten"
+      ],
+      "drinks": [
+        "hydrogen"
+      ],
       "liquid_pressure": 1,
       "health": 860,
       "cost":{
@@ -7989,6 +8482,13 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "silicon",
+        "tungsten"
+      ],
+      "drinks": [
+        "hydrogen"
+      ],
       "liquid_pressure": 1,
       "health": 1040,
       "cost":{
@@ -8017,6 +8517,13 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "silicon",
+        "tungsten"
+      ],
+      "drinks": [
+        "hydrogen"
+      ],
       "liquid_pressure": 1,
       "health": 860,
       "cost":{
@@ -8044,6 +8551,13 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "accepts": [
+        "thorium",
+        "silicon"
+      ],
+      "drinks": [
+        "nitrogen"
+      ],
       "liquid_pressure": 1,
       "health": 2500,
       "cost":{
@@ -8072,6 +8586,9 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "cyanogen"
+      ],
       "liquid_pressure": 1,
       "health": 2800,
       "cost":{
@@ -8097,6 +8614,9 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "cyanogen"
+      ],
       "liquid_pressure": 1,
       "health": 3600,
       "cost":{
@@ -8123,6 +8643,9 @@
       "has_power": true,
       "rotate": true,
       "dump_time": 5,
+      "drinks": [
+        "cyanogen"
+      ],
       "liquid_pressure": 1,
       "health": 3600,
       "cost":{
@@ -8169,6 +8692,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "ozone"
+      ],
       "liquid_pressure": 1,
       "health": 285,
       "cost":{
@@ -8712,6 +9238,9 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "oil"
+      ],
       "liquid_pressure": 1,
       "health": 640,
       "cost":{
@@ -8736,6 +9265,9 @@
       "has_power": false,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "water"
+      ],
       "liquid_pressure": 1,
       "health": 640,
       "cost":{
@@ -8760,6 +9292,12 @@
       "has_power": true,
       "rotate": false,
       "dump_time": 5,
+      "accepts": [
+        "copper",
+        "lead",
+        "thorium",
+        "silicon"
+      ],
       "liquid_pressure": 1,
       "health": 3920,
       "cost":{
@@ -8865,6 +9403,9 @@
       "has_power": false,
       "rotate": false,
       "dump_time": 5,
+      "drinks": [
+        "cryofluid"
+      ],
       "liquid_pressure": 1,
       "health": 520,
       "cost":{

@@ -7,14 +7,14 @@
   "containers": [
     {
       "block": "vault",
-      "x": 22,
+      "x": 18,
       "y": 13,
       "items":{
-        "copper": 182
+        "copper": 47
       }
     }
   ],
   "per_second":{
-    "copper": 6.0666666
+    "copper": 1.5666667
   }
 }

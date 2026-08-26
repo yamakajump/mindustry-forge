@@ -15,6 +15,7 @@
 import { DIRECTIONS, TICKS } from "./core.js";
 import { MACHINES } from "./machines.js";
 import { LIQUIDS } from "./liquids.js";
+import { POWER } from "./power.js";
 
 /** `Conveyor.itemSpace` and `Conveyor.capacity`, both private constants in the game. */
 const ITEM_SPACE = 0.4;
@@ -533,5 +534,11 @@ export function behaviourOf(node) {
      they are the same shape, and to a simulation they are nothing alike. */
   if (node.block.carries === "liquid") return LIQUIDS[node.role] || null;
   if (node.role === "pump") return LIQUIDS.pump;
+  if (node.role === "generator") {
+    // A generator that names a fuel burns it; one that names none makes power from nothing,
+    // which is a solar panel or an RTG.
+    return Object.keys(node.block.input || {}).length || node.block.craft_time
+      ? POWER.burner : POWER.freeGenerator;
+  }
   return BY_ROLE[node.role] || null;
 }

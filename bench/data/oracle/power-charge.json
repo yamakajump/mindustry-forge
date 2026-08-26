@@ -1,0 +1,16 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [
+    {
+      "block": "battery",
+      "x": 15,
+      "y": 12,
+      "charge": 0.44450676
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

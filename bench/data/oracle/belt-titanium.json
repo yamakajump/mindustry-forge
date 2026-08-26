@@ -3,6 +3,7 @@
   "ticks": 1800,
   "seconds": 30,
   "pools": [],
+  "batteries": [],
   "containers": [
     {
       "block": "vault",
