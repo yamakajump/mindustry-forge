@@ -39,6 +39,13 @@ const KNOWN_GAPS = {
   // is the odd part: the harder case is the one that is right. Left as a number rather
   // than rounded away, because a gap that only appears at full power is a clue.
   "power-plenty": 0.03,
+  /* A meltdown winding its reload down through a pipe. Both engines agree it drinks two
+     hundred and twenty five water, to within half a unit, and disagree by two units on
+     sixty about where the last of it sits when the clock stops. That is a settled gradient
+     between three tanks, and where on it thirty seconds lands is the order the three were
+     updated in rather than a fact about the block. The half unit is one frame: the engine
+     runs one more update of the world than the countdown counts. */
+  "turret-meltdown-drain": 0.05,
 };
 
 /**

@@ -947,6 +947,246 @@ function bridgeLink(build) {
   return null;
 }
 
+/**
+ * Everything defensive, in the only state a still schematic can be measured in: at rest.
+ *
+ * With nothing to shoot at, these blocks are not idle in the same way, and the differences
+ * are exactly what a schematic needs to know. Four different answers:
+ *
+ * - A **liquid turret** swallows its whole tank once and never drinks again. Its water is
+ *   a stock, not a rate: reading it as a consumer invents a demand that does not exist.
+ * - A **power turret** draws until it has finished reloading, three seconds at most, and
+ *   then stops dead. `shouldConsume()` is `isShooting || reloadCounter < reload`, and a
+ *   block that consumes nothing asks the grid for nothing.
+ * - A **meltdown** is the opposite: it starts fully reloaded and spends the next seven and
+ *   a half seconds drinking two hundred and twenty five water to wind **down** to zero.
+ *   That drain is scaled by `delta()` and not by `edelta()`, so it happens whether or not
+ *   the turret has any power at all.
+ * - A **projector** never stops. It draws its power every frame, damage or no damage, and
+ *   eats one item every few seconds. A mender beside an undamaged wall eats silicon for
+ *   ever, and that is a real leak in a schematic rather than a rounding error.
+ *
+ * Source: `mindustry.world.blocks.defense.turrets.*` and `..defense.*`, v159.7.
+ */
+
+/**
+ * Anything with a barrel that has nothing to shoot at.
+ *
+ * `Turret.shouldConsume` is `isShooting || reloadCounter < reload`, and with no target
+ * `isShooting` is false, so the only draw is the run up to a full reload. Coolant speeds
+ * that up and is drunk while it lasts: a lancer finishes in fifty seven frames rather than
+ * eighty and drinks eleven and a half water doing it.
+ *
+ * A build tower and a tractor beam have the same shape and never start: one needs a
+ * rebuild plan, the other a target, and neither exists in a measurement.
+ */
+const turretIdle = {
+  begin(build) {
+    build.state.reload = 0;
+    build.state.wants = 0;
+  },
+
+  acceptLiquid(build, source, liquid) {
+    if (!build.block.has_liquids) return false;
+    if (build.block.drinks && !build.block.drinks.includes(liquid)) return false;
+    /* `LiquidTurret.acceptLiquid` swaps ammunition only once what it holds is down to a
+       single shot's worth, which for a tsunami is two and a half units rather than one.
+       Everything else is the ordinary rule. */
+    return (!build.liquid || build.liquid === liquid || build.liquidAmount < 0.2)
+      && build.liquidAmount < build.liquidCapacity;
+  },
+
+  acceptItem() { return false; },
+
+  update(build, world, step) {
+    const block = build.block;
+    const reload = block.reload || 0;
+
+    // Only a power turret runs itself up. A tractor beam wants a target and a build tower
+    // wants a plan, and with neither the answer is zero for the whole measurement.
+    const runsUp = block.kind === "PowerTurret" && reload > 0;
+    if (!runsUp || build.state.reload >= reload) {
+      build.state.wants = 0;
+      return;
+    }
+
+    build.state.wants = 1;
+    const delta = build.delta(step);
+    const efficiency = block.power > 0 ? (build.state.power ?? 1) : 1;
+    build.state.reload += delta * efficiency;
+
+    // `ReloadTurret.updateCooling`, which is a booster rather than a requirement: the
+    // turret reloads without it, just slower.
+    const coolant = block.coolant_amount || 0;
+    const worth = block.coolant_worth?.[build.liquid] || 0;
+    if (coolant > 0 && worth > 0 && efficiency > 0 && build.liquidAmount > 0) {
+      const used = Math.min(build.liquidAmount, coolant * delta);
+      build.liquidAmount -= used;
+      build.state.reload += used * worth * efficiency;
+    }
+  },
+};
+
+/**
+ * A meltdown, which winds down instead of up.
+ *
+ * `placed()` sets its reload counter to full and `updateReload` is overridden to do
+ * nothing, so the only thing that moves the counter is coolant being spent to lower it.
+ * Two hundred and twenty five water on a tank that holds sixty, over seven and a half
+ * seconds, and then it stops for good.
+ *
+ * The drain uses `delta()` rather than `edelta()`: an unpowered meltdown drinks exactly as
+ * fast as a powered one. That is the fact worth measuring, because it is the one nobody
+ * would guess.
+ */
+const laserTurret = {
+  begin(build) {
+    build.state.reload = build.block.reload || 0;
+    build.state.wants = 0;
+  },
+
+  acceptLiquid: turretIdle.acceptLiquid,
+  acceptItem() { return false; },
+
+  update(build, world, step) {
+    const block = build.block;
+    if (build.state.reload <= 0) return;
+
+    const used = Math.min(build.liquidAmount, block.coolant_amount || 0) * build.delta(step);
+    if (used <= 0) return;
+    build.state.reload -= used * (block.coolant_worth?.[build.liquid] || 0);
+    build.liquidAmount = Math.max(0, build.liquidAmount - used);
+  },
+};
+
+/**
+ * A mender, and the mend projector that shares its class.
+ *
+ * It draws its power unconditionally: `shouldConsume` is not overridden, so a mender with
+ * nothing to repair is a mender drawing power. And it eats one item every `useTime` ticks
+ * for as long as it has both power and stock, again whether or not anything is damaged.
+ *
+ * The clock is the game's **global** one rather than a counter on the block, so every
+ * mender on a map consumes on the same frame. Placed at time zero, as a measurement is,
+ * the first item goes on the very first frame.
+ */
+const mendProjector = {
+  begin(build) {
+    build.state.timer = Infinity;
+    build.state.wants = 1;
+  },
+
+  acceptItem(build, source, item) {
+    return build.wants(item) && build.items.get(item) < build.itemCapacity;
+  },
+
+  update(build, world, step) {
+    const every = build.block.use_time || 400;
+    const powered = build.block.power > 0 ? (build.state.power ?? 1) > 0 : true;
+    const stocked = Object.keys(build.block.boost_input || {})
+      .every((item) => build.items.get(item) > 0);
+
+    build.state.timer += build.delta(step);
+    if (build.state.timer >= every && powered && stocked) {
+      build.state.timer = 0;
+      for (const [item, amount] of Object.entries(build.block.boost_input || {})) {
+        build.items.remove(item, amount);
+      }
+    }
+  },
+};
+
+/**
+ * An overdrive projector, and the dome that shares its class.
+ *
+ * Same permanent power draw as a mender, but its item clock is a counter on the block
+ * rather than the global one, so it is aligned to when it was placed. And the guard is
+ * only `efficiency > 0`: it calls `consume()` on schedule **even with nothing in stock**,
+ * which does nothing but must not be skipped, or the counter drifts.
+ *
+ * The dome is the odd one out: `hasBoost` is false and its two items are requirements
+ * rather than bonuses, so without them it has no efficiency and boosts nothing at all.
+ */
+const overdriveProjector = {
+  begin(build) {
+    build.state.used = 0;
+    build.state.wants = 1;
+  },
+
+  acceptItem(build, source, item) {
+    return build.wants(item) && build.items.get(item) < build.itemCapacity;
+  },
+
+  update(build, world, step) {
+    const block = build.block;
+    const needed = Object.keys(block.input || {});
+    const stocked = needed.every((item) => build.items.get(item) > 0);
+    const powered = block.power > 0 ? (build.state.power ?? 1) > 0 : true;
+    if (!powered || !stocked) return;
+
+    build.state.used += build.delta(step);
+    if (build.state.used >= (block.use_time || 400)) {
+      build.state.used %= block.use_time || 400;
+      for (const [item, amount] of Object.entries(block.input || {})) {
+        build.items.remove(item, amount);
+      }
+      for (const [item, amount] of Object.entries(block.boost_input || {})) {
+        build.items.remove(item, amount);
+      }
+    }
+  },
+};
+
+/**
+ * A force projector.
+ *
+ * Its coolant is the surprise: it accepts sixty units and drinks **none of it**. The only
+ * place the coolant is spent sits inside `if (buildup > 0)`, and `buildup` only rises when
+ * a bullet is absorbed. For a schematic that is a dead stock, not a supply line.
+ *
+ * The phase fabric is the opposite: one every three hundred and fifty ticks, for ever, on
+ * the game's global clock. And `broken` starts true, so the very first frame is skipped
+ * while the shield comes up.
+ */
+const forceProjector = {
+  begin(build) {
+    build.state.timer = Infinity;
+    build.state.broken = true;
+    build.state.wants = 1;
+  },
+
+  acceptLiquid: turretIdle.acceptLiquid,
+
+  acceptItem(build, source, item) {
+    return build.wants(item) && build.items.get(item) < build.itemCapacity;
+  },
+
+  update(build, world, step) {
+    const every = build.block.use_time || 350;
+    const powered = build.block.power > 0 ? (build.state.power ?? 1) > 0 : true;
+    const stocked = Object.keys(build.block.boost_input || {})
+      .every((item) => build.items.get(item) > 0);
+
+    build.state.timer += build.delta(step);
+    if (stocked && !build.state.broken && build.state.timer >= every && powered) {
+      build.state.timer = 0;
+      for (const [item, amount] of Object.entries(build.block.boost_input || {})) {
+        build.items.remove(item, amount);
+      }
+    }
+    // `if(broken && buildup <= 0) broken = false`, and buildup is zero until something
+    // hits the shield.
+    build.state.broken = false;
+  },
+};
+
+/** A radar: power, for ever, and nothing else. It takes no items and no liquids. */
+const radar = {
+  begin(build) { build.state.wants = 1; },
+  acceptItem() { return false; },
+  acceptLiquid() { return false; },
+};
+
 const BY_ROLE = {
   conveyor,
   "stack-conveyor": stackConveyor,
@@ -965,6 +1205,13 @@ const BY_ROLE = {
   "duct-router": ductRouter,
   "stack-router": stackRouter,
   "duct-bridge": ductBridge,
+  "turret-idle": turretIdle,
+  tractor: turretIdle,
+  "laser-turret": laserTurret,
+  mender: mendProjector,
+  projector: overdriveProjector,
+  shield: forceProjector,
+  radar,
   ...MACHINES,
 };
 

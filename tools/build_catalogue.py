@@ -43,7 +43,12 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "power_production", "item_duration_multipliers", "explode_on_full",
         "min_efficiency", "display_efficiency_scale", "floating", "item_duration",
         "heating", "coolant_power", "ambient_cooldown_time", "fuel_item",
-        "max_heat", "unstable_speed", "item_worth", "leaks", "insulated")
+        "max_heat", "unstable_speed", "item_worth", "leaks", "insulated",
+        # La defense, dont la question est ce qu'elle consomme au repos.
+        "coolant_amount", "coolant_multiplier", "ammo_types", "shoot_duration",
+        "heal_percent", "phase_boost", "use_time", "radius", "shield_health",
+        "phase_radius_boost", "phase_shield_boost", "coolant_consumption",
+        "discovery_time", "has_boost", "coolant_worth")
 
 
 def main() -> None:

@@ -61,4 +61,13 @@ measure bXNjaAF4nDWJSwqAMBQDp7+VLvQgPVRp36JgLfTj+aWCJEwYgsMo7B2KcKYZhw+t1CbJ95zE
 measure bXNjaAF4nE2IQQ6AIBADB1lOetCH8CiCezARSRB8v1lPpk0nUwLikCsVZdtH7jG1Upvu0URY/op8G540zs58dC3xrqNlBQKAs1qY8AYP+ACriZ0vSnMVyQ== 30 ../bench/data/oracle/duct-armored-duct.json
 measure bXNjaAF4nDWJQQqAIBAAR1u71CHoHT7KcqEgC0x7fxh0mYEZejqDnCEpc6xr8SGnK2v0i277GYXxD+0iH90T6lEY9qLJ31fNqwICBtNgmyzS1AHGwcQL+7AWfw== 30 ../bench/data/oracle/duct-armored-behind.json
 measure bXNjaAF4nD3LWwrCMBQA0ekjPqgUkW4ji0rbixSSXEnSgruXKMh8nK9homvoowvCOIsLNuoqNr9cPDFsRYLNuqdFmBYN857LptE+JUpyRRPX/8PgXZZk17R5z2XReMhbE+Zwuy/AGaAxYGi+0dL+uFU6xkrPvWJ4VD6vAiHJ 30 ../bench/data/oracle/beam-node-span.json ore-copper@13,0 ore-copper@13,1 ore-copper@13,2 ore-copper@14,0 ore-copper@14,1 ore-copper@14,2 ore-copper@15,0 ore-copper@15,1 ore-copper@15,2
+measure bXNjaAF4nGNgYmBiZGDJS8xNZRAoKS0qSi3RLU8sS9XNTMlJZWRgAbEZGBgYGSAAAAMUCcU= 30 ../bench/data/oracle/turret-wave-idle.json water~10@0,0
+measure bXNjaAF4nDXIQQqAIBBG4X9USmjdMTyUNC6GdCQZ6frhos2D7yEiEILmVnDaHKNYaqUa91cTjyzqEf+B/erKUwxHlWcKJ8t6A/AAgVYCCM5hW/oAmUYVNg== 30 ../bench/data/oracle/turret-meltdown-drain.json water~60@1,1 water~1800@6,1
+measure bXNjaAF4nCXJSwqAMAxF0VfrZ9SR68iiooROapRHOnD3UoQLZ3CxISfMrpdhj05aSFM/jcLu/ckojCrV3KhxE+t/UQ6NML7SlNUAZABIo2kwYRl8DRIWjw== 30 ../bench/data/oracle/turret-lancer-runup.json thorium*10@0,1
+measure bXNjaAF4nBXFQQrAIAwEwNVIb0I/kkelErxUW5Z46O+LMDA4IAll2nCcsUgPNTblmusVVEbX7tNp8RBibKiXRTg/vY3dAQgApC3vMsruBz9/FAk= 30 ../bench/data/oracle/turret-arc-runup.json thorium*10@0,1
+measure bXNjaAF4nGNgYmBkZGDJS8xNZeDOTc1LSS3STU0sKWZiYIPwGHgK8stTi3SL80uLklMZGBiYGCCAkYERRAEA/8gNiA== 30 ../bench/data/oracle/mender-eats.json silicon*10@0,0
+measure bXNjaAF4nGNgZmBiZGDJS8xNZeDLL0stSinKLEvVTU0sKWZiEEYIFBTlZ6Uml+QXMfAU5JenFukW55cWJacyMDAwMUAAI4QFAKSgFFY= 30 ../bench/data/oracle/overdrive-eats.json phase-fabric*10@0,0
+measure bXNjaAF4nBXFUQqAIBAFwLfqX0En8VChL1KslbXo+uHPDAK8INz7RSzjLGw5ltzosB1qibGbVqZHDWvXjxaHvpYIwAECmfjZD9BvESI= 30 ../bench/data/oracle/shield-idle.json phase-fabric*10@1,1 water~60@1,1
+measure bXNjaAF4nB3JSwqAMBAE0c5HN5Kj5FAtGbLRCO2AeHuJUPAWhRUpIA+ehk1sVG3icycUea/dhol+Ccs/UXa6m956UN0AJAAIsziJyJMP1CgSwg== 30 ../bench/data/oracle/radar-draws.json thorium*10@0,1
+measure bXNjaAF4nE3K0QqAIAxG4d8WEYTQi+yhJg4RTGEsorcP74ID383BDgpYu1yKM921ZfbxqHHNTQnRvHDRriY+DMfvQEzirvZyEysKgAAgzGiyYJt8NjwXFw== 30 ../bench/data/oracle/build-tower-idle.json thorium*10@0,1 nitrogen~30@3,1
 measure bXNjaAF4nD2KWwqAIBQFR82K+mglLcrsEkFp2APafRgRB2ZgODQYRRHcKrRDmsdJ+n1zoaCdD1n7PZ7JC7WP4ZI7Jrrv9Ad7uXM5gBJA2Zfv0GhUBZgc0dhcFWWWoc56AM60Fo0= 30 ../bench/data/oracle/bridge-span.json

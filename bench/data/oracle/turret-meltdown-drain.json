@@ -1,0 +1,52 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "meltdown",
+      "x": 13,
+      "y": 13,
+      "liquid": "water",
+      "amount": 54.946377
+    },
+    {
+      "block": "conduit",
+      "x": 16,
+      "y": 13,
+      "liquid": "water",
+      "amount": 17.973188
+    },
+    {
+      "block": "liquid-tank",
+      "x": 18,
+      "y": 13,
+      "liquid": "water",
+      "amount": 1561.581
+    }
+  ],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "meltdown",
+      "x": 13,
+      "y": 13,
+      "efficiency": 0
+    },
+    {
+      "block": "conduit",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "liquid-tank",
+      "x": 18,
+      "y": 13,
+      "efficiency": 1
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

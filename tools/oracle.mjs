@@ -687,6 +687,129 @@ const SCENARIOS = {
     ground: [13, 14, 15].flatMap((x) => [0, 1, 2].map((y) => `ore-copper@${x},${y}`)),
   }),
 
+  /* A wave with a tank of water and nothing to shoot at. It holds its ten units for the
+     whole thirty seconds and drinks not a drop: a liquid turret's water is a stock, not a
+     rate, and a port that reads it as a consumer invents a supply line. */
+  "turret-wave-idle": () => ({
+    tiles: [{ x: 0, y: 0, block: "wave", rotation: 0 }],
+    stock: ["water~10@0,0"],
+  }),
+
+  /* A meltdown, which does the opposite of reloading. It is placed fully loaded and spends
+     the next seven and a half seconds drinking two hundred and twenty five water to wind
+     **down** to zero, on a tank that holds sixty. And it does it on `delta()` rather than
+     `edelta()`, so it drinks exactly as fast with no power at all: there is none here. */
+  "turret-meltdown-drain": () => ({
+    tiles: [
+      // Covers 0..3 by 0..3.
+      { x: 1, y: 1, block: "meltdown", rotation: 0 },
+      // A pipe between the tank and the turret, and not for decoration. A tank pushes
+      // `clamp(fract - ofract) * 1800`, which is enough to refill a sixty unit tank from
+      // empty in one frame: the turret's level then sawtooths rather than settling, and
+      // where on the sawtooth thirty seconds lands is not a fact about the block. Through
+      // a pipe that holds twenty the same gradient moves twenty units at a time, and the
+      // level settles.
+      { x: 4, y: 1, block: "conduit", rotation: 2 },
+      // Covers 5..7 by 0..2.
+      { x: 6, y: 1, block: "liquid-tank", rotation: 0 },
+    ],
+    stock: ["water~60@1,1", "water~1800@6,1"],
+  }),
+
+  /* A lancer, which draws power and coolant only while it runs itself up to a full reload,
+     and then stops dead. Eighty frames of reload, cut to fifty seven by the coolant it
+     drinks on the way, and after that it asks the grid for nothing at all.
+
+     Measured against an RTG rather than a sandbox tap, because a tap fills the battery in
+     three frames and hides everything. The battery says how much the lancer took. */
+  "turret-lancer-runup": () => ({
+    tiles: [
+      // Covers 0..1 by 0..1.
+      { x: 0, y: 0, block: "rtg-generator", rotation: 0 },
+      // Covers 2..3 by 0..1.
+      { x: 2, y: 0, block: "lancer", rotation: 0 },
+      // Covers 4..6 by -1..1.
+      { x: 5, y: 0, block: "battery-large", rotation: 0 },
+    ],
+    stock: ["thorium*10@0,0"],
+  }),
+
+  /* And an arc, which is the same shape at a third of the size. The pair against
+     `gen-rtg-thorium`, which is the same RTG and battery with nothing drawing on it, is
+     what says the draw stops: a port that keeps a turret consuming reads a battery two
+     thirds emptier. */
+  "turret-arc-runup": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "rtg-generator", rotation: 0 },
+      { x: 2, y: 0, block: "arc", rotation: 0 },
+      { x: 4, y: 0, block: "battery-large", rotation: 0 },
+    ],
+    stock: ["thorium*10@0,0"],
+  }),
+
+  /* A mender with nothing to repair, which eats silicon anyway. One every four hundred
+     ticks, on the game's **global** clock, so placed at time zero the first goes on the
+     first frame and five are gone by thirty seconds. */
+  "mender-eats": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "mender", rotation: 0 },
+      { x: 1, y: 0, block: "power-source", rotation: 0 },
+    ],
+    stock: ["silicon*10@0,0"],
+  }),
+
+  /* An overdrive projector, same idea and a different clock: its counter is on the block
+     rather than global, so the first item goes at four hundred and only four are gone.
+     Five against four is the whole difference between the two classes, and it is the sort
+     of thing that reads as a rounding error until it is put side by side. */
+  "overdrive-eats": () => ({
+    tiles: [
+      // Covers 0..1 by 0..1.
+      { x: 0, y: 0, block: "overdrive-projector", rotation: 0 },
+      { x: 2, y: 0, block: "power-source", rotation: 0 },
+    ],
+    stock: ["phase-fabric*10@0,0"],
+  }),
+
+  /* A force projector, which accepts sixty units of coolant and drinks none of it: the
+     only line that spends coolant sits inside `if (buildup > 0)`, and nothing has hit the
+     shield. Its phase fabric is the opposite, one every three hundred and fifty ticks for
+     ever. Both halves in one scenario. */
+  "shield-idle": () => ({
+    tiles: [
+      // Covers 0..2 by 0..2.
+      { x: 1, y: 1, block: "force-projector", rotation: 0 },
+      { x: 3, y: 1, block: "power-source", rotation: 0 },
+    ],
+    stock: ["phase-fabric*10@1,1", "water~60@1,1"],
+  }),
+
+  /* A radar, which draws its power for ever and takes nothing else. Against the same RTG
+     and battery as the turrets, so the three read side by side. */
+  "radar-draws": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "rtg-generator", rotation: 0 },
+      { x: 2, y: 0, block: "radar", rotation: 0 },
+      { x: 4, y: 0, block: "battery-large", rotation: 0 },
+    ],
+    stock: ["thorium*10@0,0"],
+  }),
+
+  /* A build tower with nothing to rebuild, which is the interesting case: it accepts
+     thirty nitrogen, drinks none of it, and asks the grid for nothing. `shouldConsume` is
+     "has this a plan", and a measurement has no rubble in it. The battery has to read
+     exactly what the RTG made and not a unit less. */
+  "build-tower-idle": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "rtg-generator", rotation: 0 },
+      // Covers 2..4 by -1..1.
+      { x: 3, y: 0, block: "build-tower", rotation: 0 },
+      // Covers 5..7 by -1..1.
+      { x: 6, y: 0, block: "battery-large", rotation: 0 },
+    ],
+    stock: ["thorium*10@0,0", "nitrogen~30@3,0"],
+  }),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },

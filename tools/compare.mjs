@@ -26,8 +26,17 @@ const { gridsOf } = await import(new URL("../site/public/forge/engine/power.js",
 const { attributeOf, yieldOf } = await import(
   new URL("../site/public/forge/ground.js", import.meta.url));
 
-/** Which measured blocks count as machines, so both sides pick the same ones. */
-const MACHINE_ROLES = new Set(["crafter", "unit-factory", "generator", "drill"]);
+/**
+ * Which measured blocks count as machines, so both sides pick the same ones.
+ *
+ * Anything that holds a stock worth comparing. The defensive blocks earn their place here:
+ * what a mender is holding after thirty seconds **is** the measurement, because it eats an
+ * item every four hundred ticks whether or not anything near it is damaged.
+ */
+const MACHINE_ROLES = new Set([
+  "crafter", "unit-factory", "generator", "drill", "separator",
+  "mender", "projector", "shield", "turret-idle", "laser-turret",
+]);
 
 export const known = useCatalogue(JSON.parse(
   readFileSync(join(ROOT, "site", "public", "forge", "blocks.json"), "utf8")));
@@ -82,17 +91,25 @@ export function groundOf(list) {
 /**
  * What each block starts out holding, if the scenario said.
  *
- * Written `coal*10@3,0`, in the same coordinates as the ground and moved the same way. A
- * sandbox source never runs out, so a generator measured beside one is a generator that is
- * never hungry; half the questions worth asking are the other kind.
+ * Written `coal*10@3,0` for items and `water~60@3,0` for a liquid, in the same coordinates
+ * as the ground and moved the same way. A sandbox source never runs out, so anything
+ * measured beside one is never hungry; half the questions worth asking are the other kind,
+ * and "does this block drink its coolant or merely hold it" is one of them.
  */
 function fill(world, stock) {
   for (const one of stock) {
     const [what, at] = one.split("@");
-    const [item, count] = what.split("*");
     const [x, y] = at.split(",").map(Number);
     const build = world.at(x, y);
-    if (build) build.items.add(item, Number(count));
+    if (!build) continue;
+    if (what.includes("~")) {
+      const [liquid, amount] = what.split("~");
+      build.liquid = liquid;
+      build.liquidAmount = Number(amount);
+    } else {
+      const [item, count] = what.split("*");
+      build.items.add(item, Number(count));
+    }
   }
 }
 
@@ -137,7 +154,7 @@ export async function ported(code, ticks, ground = [], stock = []) {
      A machine's stock is not: a factory that stalled with sixty silicon in it stalled with
      sixty silicon in it, and that is the whole result of a scenario about stalling. */
   const stocks = world.builds
-    .filter((build) => ["crafter", "unit-factory", "generator", "drill"].includes(build.role))
+    .filter((build) => MACHINE_ROLES.has(build.role))
     .filter((build) => build.items.total > 0)
     .map((build) => ({
       x: build.x, y: build.y,
