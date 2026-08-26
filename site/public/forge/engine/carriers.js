@@ -12,7 +12,7 @@
  * Mindustry v159.7.
  */
 
-import { DIRECTIONS, TICKS } from "./core.js";
+import { bridgeLink, DIRECTIONS, TICKS } from "./core.js";
 import { MACHINES } from "./machines.js";
 import { LIQUIDS } from "./liquids.js";
 import { POWER } from "./power.js";
@@ -55,6 +55,13 @@ const conveyor = {
     // A belt never hands back to the block it points at, which is what stops two belts
     // facing each other from passing one item back and forth for ever.
     if (source?.block?.rotate && build.facing(build.world) === source) return false;
+    /* And an armoured belt takes from a belt, or from directly behind, and from nothing
+       else: a crafter beside one cannot feed it, which is the entire point of the block. */
+    if (build.block.kind === "ArmoredConveyor"
+        && !(source?.block?.carries === "item" && source?.block?.speed)
+        && arrivesFrom(build, source) !== build.rotation) {
+      return false;
+    }
     return (direction === 0 && state.minitem >= ITEM_SPACE)
       || (direction % 2 === 1 && state.minitem > 0.7);
   },
@@ -937,15 +944,6 @@ const ductBridge = {
   },
 };
 
-/** `DirectionBridge.findLink`: the first bridge of the same block along the way it points. */
-function bridgeLink(build) {
-  const [dx, dy] = DIRECTIONS[build.rotation];
-  for (let i = 1; i <= (build.block.range || 4); i++) {
-    const other = build.world?.at(build.x + dx * i, build.y + dy * i);
-    if (other && other.name === build.name) return other;
-  }
-  return null;
-}
 
 /**
  * Everything defensive, in the only state a still schematic can be measured in: at rest.
@@ -1187,6 +1185,61 @@ const radar = {
   acceptLiquid() { return false; },
 };
 
+/**
+ * Erekir's unloader, which does not unload the way Serpulo's does.
+ *
+ * Serpulo's stands between two things and shuffles items until their ratios match. This one
+ * has a direction: it takes from the block **behind** it and hands to the block in
+ * **front**, one item every `speed` frames, and cares nothing for how full either is. Two
+ * blocks with the same word in their name and no behaviour in common.
+ *
+ * Left as a sink, it was a hole in the middle of every Erekir bus.
+ */
+const directionalUnloader = {
+  begin(build) {
+    build.state.timer = 0;
+    build.state.offset = 0;
+  },
+
+  acceptItem() { return false; },
+
+  update(build, world, step) {
+    const speed = build.block.speed || 1;
+    build.state.timer += build.delta(step);
+    if (build.state.timer < speed) return;
+    build.state.timer %= speed;
+
+    const front = build.facing(world);
+    const [dx, dy] = DIRECTIONS[(build.rotation + 2) % 4];
+    const back = world.at(build.x + dx, build.y + dy);
+    if (!front || !back || !back.block.unloadable) return;
+
+    const wanted = build.node.configured;
+    if (wanted) {
+      if (back.items.get(wanted) > 0 && front.acceptItem(build, wanted)) {
+        front.handleItem(build, wanted);
+        back.items.remove(wanted);
+      }
+      return;
+    }
+
+    /* Unset, it walks the whole item list from wherever it left off and takes the first it
+       can move, then starts the next walk one past that. Not a rotation over containers: a
+       rotation over **item kinds**, which is why an unset one alternates evenly between
+       two items in the same vault. */
+    const items = [...back.items.counts.keys()];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[(i + build.state.offset) % items.length];
+      if (back.items.get(item) > 0 && front.acceptItem(build, item)) {
+        front.handleItem(build, item);
+        back.items.remove(item);
+        build.state.offset = (i + build.state.offset + 1) % items.length;
+        return;
+      }
+    }
+  },
+};
+
 const BY_ROLE = {
   conveyor,
   "stack-conveyor": stackConveyor,
@@ -1205,6 +1258,7 @@ const BY_ROLE = {
   "duct-router": ductRouter,
   "stack-router": stackRouter,
   "duct-bridge": ductBridge,
+  "duct-unloader": directionalUnloader,
   "turret-idle": turretIdle,
   tractor: turretIdle,
   "laser-turret": laserTurret,

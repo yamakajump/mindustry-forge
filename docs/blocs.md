@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **105 classes à reproduire**, pour 228 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 52 sur 105
+## Fait : 56 sur 105
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -50,7 +50,7 @@ second, c'est une intuition qui a l'air d'un portage.
       power-node, power-node-large, surge-tower
 - [ ] `UnitAssembler` - 3 blocs - assemble une unite a partir de plans
       mech-assembler, ship-assembler, tank-assembler
-- [ ] `ArmoredConduit` - 2 blocs
+- [x] `ArmoredConduit` - 2 blocs
       plated-conduit, reinforced-conduit
 - [x] `Battery` - 2 blocs - stocke l'energie
       battery, battery-large
@@ -116,7 +116,7 @@ second, c'est une intuition qui a l'air d'un portage.
       cliff-crusher, large-cliff-crusher
 - [ ] `Accelerator` - 1 bloc
       interplanetary-accelerator
-- [ ] `ArmoredConveyor` - 1 bloc
+- [x] `ArmoredConveyor` - 1 bloc
       armored-conveyor
 - [ ] `AutoDoor` - 1 bloc
       blast-door
@@ -132,9 +132,9 @@ second, c'est une intuition qui a l'air d'un portage.
       sublimate
 - [ ] `ContinuousTurret` - 1 bloc
       lustre
-- [ ] `DirectionLiquidBridge` - 1 bloc
+- [x] `DirectionLiquidBridge` - 1 bloc
       reinforced-bridge-conduit
-- [ ] `DirectionalUnloader` - 1 bloc
+- [x] `DirectionalUnloader` - 1 bloc
       duct-unloader
 - [x] `DuctBridge` - 1 bloc
       duct-bridge

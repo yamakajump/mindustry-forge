@@ -37,6 +37,8 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.distribution.DirectionLiquidBridge;
+import mindustry.world.blocks.distribution.DirectionalUnloader;
 import mindustry.world.blocks.defense.Radar;
 import mindustry.world.blocks.defense.ForceProjector;
 import mindustry.world.blocks.defense.MendProjector;
@@ -121,6 +123,10 @@ public class DumpBlocks {
             // taking, and that is the whole reason a line backs up.
             entry.put("liquid_capacity", block.liquidCapacity);
             entry.put("has_items", block.hasItems);
+            /* Whether an unloader may take out of it. True for nearly everything, and
+               false for every carrier: a duct, a router, an unloader itself. Without it an
+               Erekir unloader happily drains the duct behind it. */
+            if (block.unloadable) entry.put("unloadable", true);
             /* Whether it has a tank at all. Every block reports a `liquidCapacity`, which
                defaults to ten, so a power node reads as something that can hold water: a
                liquid source beside one filled it, and the schematic showed a puddle in a
@@ -347,6 +353,23 @@ public class DumpBlocks {
            router is not a `Router`, a duct bridge is not an `ItemBridge`, and a surge
            router is a duct router with a stack. An Erekir schematic built on any of them
            read as a line that produced nothing. */
+        if (block instanceof DirectionalUnloader puller) {
+            /* Erekir's unloader: it does not push round, it takes from the block behind it
+               and hands to the block in front, one item every `speed` frames. Filed as a
+               sink it was a hole in the middle of every Erekir bus. */
+            entry.put("role", "duct-unloader");
+            entry.put("carries", "item");
+            entry.put("speed", puller.speed);
+            entry.put("items_per_second", TPS / Math.max(0.0001f, puller.speed));
+            if (puller.allowCoreUnload) entry.put("allow_core_unload", true);
+            return;
+        }
+        if (block instanceof DirectionLiquidBridge span) {
+            entry.put("role", "liquid-span");
+            entry.put("carries", "liquid");
+            entry.put("range", span.range);
+            return;
+        }
         if (block instanceof StackRouter stack) {
             // Checked before `DuctRouter`, which it extends.
             entry.put("role", "stack-router");

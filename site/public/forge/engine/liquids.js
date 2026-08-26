@@ -14,7 +14,7 @@
  * Source: `mindustry.world.blocks.liquid.*`, Mindustry v159.7.
  */
 
-import { DIRECTIONS, TICKS } from "./core.js";
+import { bridgeLink, DIRECTIONS, TICKS } from "./core.js";
 
 /**
  * A pipe.
@@ -33,6 +33,21 @@ const conduit = {
        the tank is filed under: the check missed, the pipe took its own water back every
        frame, and a line that filled correctly emptied into nothing. */
     if (source && build.facing(build.world) === source) return false;
+
+    /* An armoured pipe refuses anything that is not part of the plumbing: a pump, a tank
+       or a crafter beside one cannot pour into it, only a pipe, a liquid bridge or a
+       junction can, plus whatever stands directly behind it.
+
+       Note it accepts a **plain** conduit as readily as another armoured one: the check is
+       on the class of pipe, not on the armour. That reads like an oversight and is not. */
+    if (build.block.kind === "ArmoredConduit" && source) {
+      const plumbing = ["Conduit", "ArmoredConduit", "DirectionLiquidBridge",
+                        "LiquidJunction"].includes(source.block.kind);
+      const behind = source.relativeTo(build) === build.rotation;
+      const apart = !build.proximity.includes(source);
+      if (!plumbing && !behind && !apart) return false;
+    }
+
     return (!build.liquid || build.liquid === liquid || build.liquidAmount < 0.2)
       && build.liquidAmount < build.liquidCapacity;
   },
@@ -144,8 +159,52 @@ const pump = {
   acceptLiquid() { return false; },
 };
 
+/**
+ * A reinforced bridge conduit: a liquid bridge with no configuration.
+ *
+ * Same idea as the duct bridge and the same trap. It links to the first of its own kind in
+ * the direction it points, it pushes every frame rather than on a timer, and the receiving
+ * end blocks the face the beam arrives on. Unlinked it dribbles forward instead.
+ */
+const liquidSpan = {
+  begin(build) {
+    build.state.occupied = [null, null, null, null];
+  },
+
+  acceptLiquid(build, source, liquid) {
+    const link = bridgeLink(build);
+    // Only if it has somewhere to send it, or the sender is the bridge feeding it.
+    if (!link && !(source && bridgeLink(source) === build)) return false;
+    const side = build.relativeTo(source);
+    const held = build.state.occupied[(side + 2) % 4];
+    return (!build.liquid || build.liquid === liquid || build.liquidAmount < 0.2)
+      && side !== build.rotation
+      && (!held || held === source);
+  },
+
+  update(build, world, step) {
+    const link = bridgeLink(build);
+    build.state.link = link;
+
+    if (link) {
+      if (build.liquidAmount > 0) build.moveLiquid(link, build.liquid);
+      link.state.occupied[build.rotation % 4] = build;
+    } else if (build.liquidAmount > 0.0001) {
+      build.moveLiquidForward(world, build.liquid);
+    }
+
+    for (let i = 0; i < 4; i++) {
+      const held = build.state.occupied[i];
+      if (held && (held.rotation !== i || held.state.link !== build)) {
+        build.state.occupied[i] = null;
+      }
+    }
+  },
+};
+
 export const LIQUIDS = {
   conduit,
+  "liquid-span": liquidSpan,
   router: liquidRouter,
   junction: liquidJunction,
   bridge: liquidBridge,

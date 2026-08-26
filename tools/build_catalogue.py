@@ -48,7 +48,7 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "coolant_amount", "coolant_multiplier", "ammo_types", "shoot_duration",
         "heal_percent", "phase_boost", "use_time", "radius", "shield_health",
         "phase_radius_boost", "phase_shield_boost", "coolant_consumption",
-        "discovery_time", "has_boost", "coolant_worth")
+        "discovery_time", "has_boost", "coolant_worth", "allow_core_unload", "unloadable")
 
 
 def main() -> None:

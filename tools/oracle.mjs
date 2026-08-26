@@ -810,6 +810,90 @@ const SCENARIOS = {
     stock: ["thorium*10@0,0", "nitrogen~30@3,0"],
   }),
 
+  /* Erekir's unloader, which has a direction where Serpulo's has a ratio: it takes from
+     the block behind and gives to the block in front, fifteen a second, and never mind how
+     full either is. Two blocks with the same word in their name and nothing in common. */
+  "duct-unloader-drains": () => ({
+    tiles: [
+      // Covers 0..2 by 0..2, primed with two kinds so the item rotation shows.
+      { x: 1, y: 1, block: "vault", rotation: 0 },
+      { x: 3, y: 1, block: "duct-unloader", rotation: 0 },
+      { x: 4, y: 1, block: "duct", rotation: 0 },
+      { x: 5, y: 1, block: "duct", rotation: 0 },
+      // Covers 6..8 by 0..2.
+      { x: 7, y: 1, block: "vault", rotation: 0 },
+    ],
+    stock: ["beryllium*300@1,1", "tungsten*300@1,1"],
+  }),
+
+  /* Set to one item, it takes that one and nothing else, and the other three hundred sit
+     in the vault untouched. */
+  "duct-unloader-sorted": () => ({
+    tiles: [
+      { x: 1, y: 1, block: "vault", rotation: 0 },
+      { x: 3, y: 1, block: "duct-unloader", rotation: 0, raw: item("tungsten") },
+      { x: 4, y: 1, block: "duct", rotation: 0 },
+      { x: 5, y: 1, block: "duct", rotation: 0 },
+      { x: 7, y: 1, block: "vault", rotation: 0 },
+    ],
+    stock: ["beryllium*300@1,1", "tungsten*300@1,1"],
+  }),
+
+  /* A reinforced bridge conduit: the same beam as a duct bridge, carrying a liquid. No
+     configuration, four tiles, and the receiving end blocks the face the beam lands on. */
+  "liquid-span": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
+      { x: 1, y: 0, block: "reinforced-bridge-conduit", rotation: 0 },
+      { x: 5, y: 0, block: "reinforced-bridge-conduit", rotation: 0 },
+      { x: 6, y: 0, block: "conduit", rotation: 0 },
+      // Covers 7..9 by -1..1.
+      { x: 8, y: 0, block: "liquid-tank", rotation: 0 },
+    ],
+  }),
+
+  /* An armoured pipe, fed from the side by a tank and from behind by a pipe. The tank is
+     refused outright, which is the whole block, and the pipe is not. */
+  "conduit-armored-side": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "plated-conduit", rotation: 0 },
+      // Covers -1..1 by 1..3, so it presses on the pipe's north face.
+      { x: 0, y: 2, block: "liquid-tank", rotation: 0 },
+      { x: -2, y: 2, block: "liquid-source", rotation: 0, raw: liquid("water") },
+      // Somewhere for the pipe to send it, so that "it never filled" cannot be blamed on
+      // having nowhere to go.
+      { x: 1, y: 0, block: "conduit", rotation: 0 },
+      { x: 3, y: 0, block: "liquid-tank", rotation: 0 },
+    ],
+  }),
+
+  /* The same pipe fed from directly behind, which it takes. The pair is the rule: what an
+     armoured pipe refuses is the **side**, not the block. */
+  "conduit-armored-behind": () => ({
+    tiles: [
+      { x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
+      { x: 0, y: 0, block: "plated-conduit", rotation: 0 },
+      { x: 1, y: 0, block: "conduit", rotation: 0 },
+      { x: 3, y: 0, block: "liquid-tank", rotation: 0 },
+    ],
+  }),
+
+  /* And an armoured belt, refused by a source standing beside it. Same rule, other
+     carrier: what may feed it is a belt, or whatever is directly behind. */
+  "conveyor-armored-side": () => [
+    { x: 0, y: 0, block: "armored-conveyor", rotation: 0 },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 3, y: 0, block: "vault", rotation: 0 },
+    { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
+  ],
+
+  "conveyor-armored-behind": () => [
+    { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 0, y: 0, block: "armored-conveyor", rotation: 0 },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 3, y: 0, block: "vault", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
