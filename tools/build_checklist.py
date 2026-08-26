@@ -143,9 +143,9 @@ def main() -> None:
         shown = ", ".join(sorted(names)[:6])
         if len(names) > 6:
             shown += f", et {len(names) - 6} autres"
-        lines.append(f"- [{mark}] `{kind}` &mdash; {len(names)} bloc"
+        lines.append(f"- [{mark}] `{kind}` - {len(names)} bloc"
                      f"{'s' if len(names) > 1 else ''}"
-                     + (f" &mdash; {note}" if note else ""))
+                     + (f" - {note}" if note else ""))
         lines.append(f"      {shown}")
 
     lines.append("")

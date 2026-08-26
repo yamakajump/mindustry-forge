@@ -18,7 +18,7 @@
 import { fromBase64 } from "./schematic.js";
 import { demand, requirements } from "./needs.js";
 import { candidates, feedFrom, markable, marksOf, readMarks } from "./marks.js";
-import { yieldOf } from "./ground.js";
+import { attributeOf, yieldOf } from "./ground.js";
 import { throughput } from "./maxflow.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
@@ -951,6 +951,7 @@ export async function analyse(text, supply = {}, chosen = null,
   // was a ground to look at, a drill in this graph made nothing at all.
   for (const node of graph.nodes) {
     node.dug = yieldOf(node, ground, catalogue);
+    node.attrsum = attributeOf(node, ground, catalogue);
   }
 
   // Plugged in by itself when nobody said otherwise.

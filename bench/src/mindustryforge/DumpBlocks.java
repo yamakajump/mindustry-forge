@@ -40,7 +40,9 @@ import mindustry.world.blocks.power.PowerGenerator;
 import mindustry.world.blocks.power.PowerNode;
 import mindustry.world.blocks.heat.HeatConductor;
 import mindustry.world.blocks.heat.HeatProducer;
+import mindustry.world.blocks.production.AttributeCrafter;
 import mindustry.world.blocks.production.GenericCrafter;
+import mindustry.world.blocks.production.Separator;
 import mindustry.world.blocks.production.HeatCrafter;
 import mindustry.world.consumers.Consume;
 import mindustry.type.LiquidStack;
@@ -102,6 +104,11 @@ public class DumpBlocks {
             // taking, and that is the whole reason a line backs up.
             entry.put("liquid_capacity", block.liquidCapacity);
             entry.put("has_items", block.hasItems);
+            /* Whether it has a tank at all. Every block reports a `liquidCapacity`, which
+               defaults to ten, so a power node reads as something that can hold water: a
+               liquid source beside one filled it, and the schematic showed a puddle in a
+               wire. `hasLiquids` is the flag the game itself tests. */
+            entry.put("has_liquids", block.hasLiquids);
             entry.put("has_power", block.hasPower);
             entry.put("rotate", block.rotate);
             // Frames between two attempts to hand an output on. It rarely binds - a press
@@ -442,6 +449,44 @@ public class DumpBlocks {
             entry.put("power", block.consPower != null ? block.consPower.usage * TPS : 0f);
             return;
         }
+        if (block instanceof AttributeCrafter boosted) {
+            /* A factory whose speed is decided by the ground under it. The boost is the
+               sum of one attribute over every tile it covers, not an average: a two by two
+               cultivator on four tiles of spore moss reads 1.2, not 0.3. */
+            entry.put("role", "crafter");
+            entry.put("attribute", boosted.attribute.name);
+            entry.put("base_efficiency", boosted.baseEfficiency);
+            entry.put("boost_scale", boosted.boostScale);
+            entry.put("max_boost", boosted.maxBoost);
+            if (boosted.scaleLiquidConsumption) entry.put("scale_liquid_consumption", true);
+            entry.put("craft_time", boosted.craftTime);
+            entry.put("input", inputsOf(block));
+            entry.put("input_liquid", liquidInputsOf(block));
+            entry.put("output", craftedItemsOf(block));
+            entry.put("output_liquid", craftedLiquidsOf(block));
+            entry.put("power", block.consPower != null ? block.consPower.usage * TPS : 0f);
+            return;
+        }
+        if (block instanceof Separator sorted) {
+            /* One item per batch, drawn from a weighted list. The draw is a pure function
+               of a counter kept on the block, so the sequence is reproducible, but the
+               total is reproducible without reproducing the draw at all: every batch
+               yields exactly one item whatever it lands on. */
+            entry.put("role", "separator");
+            entry.put("craft_time", sorted.craftTime);
+            Jval results = Jval.newArray();
+            for (ItemStack stack : sorted.results) {
+                Jval one = Jval.newObject();
+                one.put("item", stack.item.name);
+                one.put("amount", stack.amount);
+                results.asArray().add(one);
+            }
+            entry.put("results", results);
+            entry.put("input", inputsOf(block));
+            entry.put("input_liquid", liquidInputsOf(block));
+            entry.put("power", block.consPower != null ? block.consPower.usage * TPS : 0f);
+            return;
+        }
         if (block instanceof GenericCrafter crafter) {
             entry.put("role", "crafter");
             entry.put("craft_time", crafter.craftTime);
@@ -632,6 +677,15 @@ public class DumpBlocks {
         // because painting one replaces the ground and painting the other does not.
         entry.put("floor", true);
         if (block instanceof OverlayFloor) entry.put("overlay", true);
+
+        // What a floor is worth to a block standing on it. A cultivator on spore moss goes
+        // faster, and how much faster is the sum of this over every tile it covers.
+        Jval gives = Jval.newObject();
+        for (mindustry.world.meta.Attribute attribute : mindustry.world.meta.Attribute.all) {
+            float value = floor.attributes.get(attribute);
+            if (value != 0f) gives.put(attribute.name, value);
+        }
+        if (gives.asObject().size > 0) entry.put("attributes", gives);
         if (floor.isLiquid) entry.put("floor_liquid", true);
         if (floor.playerUnmineable) entry.put("unmineable", true);
         if (floor.itemDrop != null) entry.put("drops", floor.itemDrop.name);

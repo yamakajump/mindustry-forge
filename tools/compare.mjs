@@ -23,7 +23,8 @@ const { World } = await import(new URL("../site/public/forge/engine/core.js", im
 const { behaviourOf } = await import(
   new URL("../site/public/forge/engine/carriers.js", import.meta.url));
 const { gridsOf } = await import(new URL("../site/public/forge/engine/power.js", import.meta.url));
-const { yieldOf } = await import(new URL("../site/public/forge/ground.js", import.meta.url));
+const { attributeOf, yieldOf } = await import(
+  new URL("../site/public/forge/ground.js", import.meta.url));
 
 /** Which measured blocks count as machines, so both sides pick the same ones. */
 const MACHINE_ROLES = new Set(["crafter", "unit-factory", "generator", "drill"]);
@@ -56,12 +57,24 @@ function lineUp(list, keys) {
     .sort((a, b) => a.at.localeCompare(b.at));
 }
 
-/** The ground a scenario is run on, in the shape the analysis paints it in. */
+/**
+ * The ground a scenario is run on, in the shape the analysis paints it in.
+ *
+ * Two layers, not one. An ore is laid **over** whatever floor is there, a floor **is** the
+ * floor: painting spore moss as an overlay would leave a cultivator standing on bare metal
+ * as far as `sumAttribute` is concerned, and the boost it is there to measure would read
+ * zero. The bench tells them apart the same way, by class.
+ *
+ * The bare floor is metal, because that is what `Measure` lays the map out in.
+ */
 export function groundOf(list) {
   const painted = {};
   for (const one of list) {
     const [block, at] = one.split("@");
-    if (at) painted[at] = { floor: "stone", overlay: block };
+    if (!at) continue;
+    const layers = painted[at] || (painted[at] = { floor: "metal-floor" });
+    if (known.blocks[block]?.overlay) layers.overlay = block;
+    else layers.floor = block;
   }
   return painted;
 }
@@ -71,9 +84,16 @@ export async function ported(code, ticks, ground = []) {
   const parsed = await fromBase64(code);
   const graph = buildGraph(parsed.tiles);
   const painted = groundOf(ground);
-  for (const node of graph.nodes) node.dug = yieldOf(node, painted, known);
+  for (const node of graph.nodes) {
+    node.dug = yieldOf(node, painted, known);
+    node.attrsum = attributeOf(node, painted, known);
+  }
 
   const world = new World(graph, behaviourOf).wire(gridsOf);
+  /* Where the bench lays the schematic down, so that the one block whose behaviour depends
+     on its map position - a separator, whose draw is seeded from `tile.pos()` - is asked
+     the same question on both sides. `Measure.MARGIN`. */
+  world.origin = [12, 12];
   for (let i = 0; i < ticks; i++) world.step();
 
   const containers = world.builds
