@@ -11,8 +11,7 @@ import base64
 
 import pytest
 
-from analyser import schematic
-from analyser.blocks import catalogue
+from bench import schematic
 
 
 def test_a_written_schematic_reads_back_the_same():
@@ -37,7 +36,7 @@ def test_a_wide_block_is_measured_by_what_it_covers():
     was a table here, listing eight blocks by hand, and it called everything else one tile
     wide.
     """
-    assert catalogue().size_of("mechanical-drill") == 2
+    assert schematic.size_of("mechanical-drill") == 2
     parsed = schematic.read(schematic.write([(5, 5, "mechanical-drill", 0)]))
     assert (parsed["width"], parsed["height"]) == (2, 2)
 

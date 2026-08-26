@@ -94,7 +94,7 @@
 <body>
 <header>
   <h1>Mindustry <span>Forge</span></h1>
-  <p>Ce que ta schematique produit, ou elle coince, et ce qu'elle gaspille.</p>
+  <p>Ce que ta schematique produit, ou elle coince, et ce qu'elle gaspille. <strong>Tout est calcule dans ton navigateur</strong>, rien n'est envoye.</p>
 </header>
 
 <main>
@@ -137,7 +137,9 @@
   <div id="out"></div>
 </main>
 
-<script>
+<script type="module">
+import { analyse } from "./forge/analyse.js";
+
 const $ = (id) => document.getElementById(id);
 const text = $("text"), out = $("out"), drop = $("drop");
 
@@ -168,7 +170,7 @@ const parseSupply = (raw) => {
 const rate = (n) => n.toLocaleString("fr-FR", {maximumFractionDigits: 1});
 
 function render(report) {
-  const made = Object.entries(report.per_minute).sort((a, b) => b[1] - a[1]);
+  const made = Object.entries(report.perMinute).sort((a, b) => b[1] - a[1]);
   const cards = [];
 
   cards.push(`<div class="card">
@@ -180,7 +182,7 @@ function render(report) {
          <p class="hint">Si ce morceau est nourri par une bande venue d'ailleurs,
          indique-le au-dessus.</p>`}
     <p class="meta">${report.name} &middot; ${report.width}x${report.height} &middot;
-      ${report.blocks} blocs &middot; jeu ${report.game_version}</p>
+      ${report.blocks} blocs &middot; jeu ${report.gameVersion}</p>
   </div>`);
 
   if (report.bottleneck) {
@@ -250,14 +252,10 @@ async function analyse() {
   $("go").disabled = true;
   out.innerHTML = `<div class="card" style="color:var(--dim)">Analyse...</div>`;
   try {
-    const answer = await fetch("/analyse", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({schematic: payload, supply: parseSupply($("supply").value)}),
-    });
-    const body = await answer.json();
-    if (!answer.ok) throw new Error(body.error || "erreur inconnue");
-    render(body);
+    /* Computed here, on this machine. Nothing is uploaded, so a base somebody has not
+       published stays theirs, and the page costs nothing to host however many people
+       use it. */
+    render(await analyse(payload, parseSupply($("supply").value)));
   } catch (error) {
     out.innerHTML = `<div class="card error">${error.message}</div>`;
   } finally {
