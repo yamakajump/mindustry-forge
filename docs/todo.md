@@ -6,12 +6,18 @@ l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 
 ## À faire
 
-### 1. Le simulateur
+### 1. Faire tourner le banc
 
-`simulate.js` contredit le flot maximal (presse à spores 20 %, générateurs 0 %, net -408
-contre +2 402). Il n'est branché sur rien pour l'instant. Soit il est réparé et il devient
-la référence, soit il dégage. Le jeu a confirmé le modèle analytique sur trois
-schématiques, donc c'est le simulateur qui est faux.
+C'est le seul point qui reste sur la justesse des chiffres, et c'est le vrai.
+
+Le banc existe : `bench/` pose une schématique dans un serveur Mindustry v159.7 réel, avec
+le vrai moteur. Il ne sert à rien pour l'instant. Une schématique posée, mesurée quelques
+secondes, comparée au calcul : c'est ce qui distingue ce site de tous les autres, et
+`verified` reste faux tant que ça ne tourne pas.
+
+C'est aussi ce qui remplace le simulateur, supprimé plutôt que réparé. Écrire une copie du
+moteur de Mindustry en JavaScript à côté d'une copie qui marche du moteur de Mindustry,
+c'était la mauvaise moitié du travail.
 
 ### 2. Mécanismes du jeu encore absents
 
@@ -28,26 +34,30 @@ schématiques, donc c'est le simulateur qui est faux.
   accélérateur est alimenté dépend du calcul, qui dépend de la vitesse, qui dépend du
   bonus. Le chiffre nu est annoncé et le bonus est nommé à côté.
 
-### 3. Vérifier les chiffres contre le vrai jeu
-
-Le banc existe et ne sert pas encore. Une schématique posée dans un serveur Mindustry,
-mesurée quelques secondes, et comparée au calcul. C'est ce qui distingue ce site de tous
-les autres, et `verified` reste faux tant que ça ne tourne pas.
-
-### 4. Place de marché
+### 3. Place de marché
 
 - Comparer deux schématiques côte à côte.
 - Filtrer sur ce dont elle a besoin : « j'ai du charbon, montre ce que je peux faire
   tourner ».
 - Classement par cuivre investi et pas seulement par bloc.
 
-### 5. Reste
+### 4. Reste
 
 - Les entrées et sorties définies à la main doivent être rejouées à l'ouverture d'une
   schématique gardée.
 - Diagnostic explicite : « trois bandes reliées à rien », en tête plutôt qu'en bas.
 
 ## Corrigé
+
+- [x] **Le simulateur, supprimé.** `simulate.js` disait -408 énergie/s là où le modèle
+      analytique dit +2 402, avec les générateurs à 0 % sur une schématique qui s'appelle
+      « Water power 2306 energy ». 307 lignes que rien n'importait et qu'aucun test ne
+      couvrait, soit une deuxième implémentation de la même question : exactement
+      l'échec que ce dépôt passe son temps à éviter. Le modèle analytique est corroboré
+      trois fois (l'encart du jeu à l'unité près, les 2 306 mesurés par l'auteur contre
+      2 402 calculés, les 53-55k annoncés par l'auteur de la ferme contre 55 382). Ce qui
+      tranchera vraiment le débit réel, c'est le banc, pas une copie du moteur en
+      JavaScript posée à côté du moteur.
 
 - [x] **On demande les entrées avant de sortir des chiffres.** Deviner par où une
       schématique se branche est un coup de dé : une conception a une arrivée et douze
