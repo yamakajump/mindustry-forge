@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 39 sur 103
+## Fait : 43 sur 103
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -56,7 +56,7 @@ second, c'est une intuition qui a l'air d'un portage.
       battery, battery-large
 - [ ] `BeamDrill` - 2 blocs
       large-plasma-bore, plasma-bore
-- [ ] `BeamNode` - 2 blocs
+- [x] `BeamNode` - 2 blocs
       beam-node, beam-tower
 - [ ] `BurstDrill` - 2 blocs
       eruption-drill, impact-drill
@@ -134,9 +134,9 @@ second, c'est une intuition qui a l'air d'un portage.
       reinforced-bridge-conduit
 - [ ] `DirectionalUnloader` - 1 bloc
       duct-unloader
-- [ ] `DuctBridge` - 1 bloc
+- [x] `DuctBridge` - 1 bloc
       duct-bridge
-- [ ] `DuctRouter` - 1 bloc
+- [x] `DuctRouter` - 1 bloc
       duct-router
 - [ ] `ForceProjector` - 1 bloc
       force-projector
@@ -202,7 +202,7 @@ second, c'est une intuition qui a l'air d'un portage.
       shockwave-tower
 - [ ] `SolidPump` - 1 bloc
       water-extractor
-- [ ] `StackRouter` - 1 bloc
+- [x] `StackRouter` - 1 bloc
       surge-router
 - [ ] `Thruster` - 1 bloc
       thruster

@@ -602,6 +602,91 @@ const SCENARIOS = {
   "reactor-flux": () => flux(true),
   "reactor-flux-cold": () => flux(false),
 
+  /* A duct router, one in and three out. Nothing in the cursor divides by three: the even
+     split is what a cursor that advances on refusals as well as successes comes to. */
+  "duct-router-three-ways": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("beryllium") },
+    { x: 1, y: 0, block: "duct", rotation: 0 },
+    { x: 2, y: 0, block: "duct-router", rotation: 0 },
+    { x: 3, y: 0, block: "duct", rotation: 0 },
+    { x: 5, y: 0, block: "vault", rotation: 0 },
+    { x: 2, y: 1, block: "duct", rotation: 1 },
+    { x: 2, y: 3, block: "vault", rotation: 0 },
+    { x: 2, y: -1, block: "duct", rotation: 3 },
+    { x: 2, y: -3, block: "vault", rotation: 0 },
+  ],
+
+  /* The same router set to sort. The sorted item goes straight ahead and **only** straight
+     ahead; everything else goes out the sides and never forward. Set to graphite and fed
+     beryllium, the vault in front has to end at nothing at all. */
+  "duct-router-sorted": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("beryllium") },
+    { x: 1, y: 0, block: "duct", rotation: 0 },
+    { x: 2, y: 0, block: "duct-router", rotation: 0, raw: item("graphite") },
+    { x: 3, y: 0, block: "duct", rotation: 0 },
+    { x: 5, y: 0, block: "vault", rotation: 0 },
+    { x: 2, y: 1, block: "duct", rotation: 1 },
+    { x: 2, y: 3, block: "vault", rotation: 0 },
+  ],
+
+  /* A surge router, which saves ten and lets them all go in one frame. The total is close
+     to a plain router's; the shape is not, and a vault behind one grows by ten at a time.
+     Unpowered it still works, at four sevenths of the speed, which is the part a port that
+     gates on `efficiency > 0` gets wrong by refusing to run at all. */
+  "stack-router-powered": () => stackRouter(true),
+  "stack-router-unpowered": () => stackRouter(false),
+
+  /* Two duct bridges throwing four tiles, and a third with nothing to link to.
+
+     The terminal bridge refuses everything through `acceptItem` and is fed anyway, because
+     the bridge behind it hands over without asking. And the receiving bridge blocks the
+     face the beam arrives on: the duct pushing at that side is refused for the whole
+     thirty seconds and ends holding exactly one item.
+
+     There was a third feed here, into the free face of the middle bridge, and it turned
+     the scenario into a contention: two ways in, four slots, and the two engines picked
+     different winners while agreeing on the total to the item. Contention is worth
+     measuring, but not in the same scenario as the two rules above. */
+  "duct-bridge-span": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("beryllium") },
+    { x: 1, y: 0, block: "duct", rotation: 0 },
+    { x: 2, y: 0, block: "duct-bridge", rotation: 0 },
+    { x: 6, y: 0, block: "duct-bridge", rotation: 0 },
+    { x: 10, y: 0, block: "duct-bridge", rotation: 0 },
+    { x: 11, y: 0, block: "duct", rotation: 0 },
+    { x: 13, y: 0, block: "vault", rotation: 0 },
+
+    // Pushing at the middle bridge from the west, which is the face the first bridge's
+    // beam lands on. It should never get in.
+    { x: 4, y: 0, block: "item-source", rotation: 0, raw: item("graphite") },
+    { x: 5, y: 0, block: "duct", rotation: 0 },
+  ],
+
+  /* An armoured duct, fed three ways. From the side by a block that is not a duct it takes
+     nothing; from a duct pointed at it, or from directly behind, it takes everything. The
+     three together are the table, and a port that reads armoured as "same but tougher"
+     fails the first, while one that reads it as "from behind only" fails the second. */
+  "duct-armored-side": () => armoured("side"),
+  "duct-armored-duct": () => armoured("duct"),
+  "duct-armored-behind": () => armoured("behind"),
+
+  /* Erekir's wire, which is a battery pretending to be a wire: a beam node holds a
+     thousand power and reaches ten tiles in a straight line. Two of them carry a
+     generator's output to a drill that touches nothing. */
+  "beam-node-span": () => ({
+    tiles: [
+      { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
+      { x: 1, y: 1, block: "combustion-generator", rotation: 0 },
+      { x: 2, y: 1, block: "beam-node", rotation: 0 },
+      { x: 12, y: 1, block: "beam-node", rotation: 0 },
+      // Nine tiles from the first node, touching nothing but the second.
+      { x: 14, y: 1, block: "laser-drill", rotation: 0 },
+      { x: 16, y: 1, block: "conveyor", rotation: 0 },
+      { x: 18, y: 1, block: "vault", rotation: 0 },
+    ],
+    ground: [13, 14, 15].flatMap((x) => [0, 1, 2].map((y) => `ore-copper@${x},${y}`)),
+  }),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -640,6 +725,43 @@ function rationed(fuel, block = "combustion-generator") {
     ],
     stock: [`${fuel}*10@0,0`],
   };
+}
+
+/** A surge router, with the grid behind it or without. */
+function stackRouter(powered) {
+  const tiles = [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("beryllium") },
+    { x: 1, y: 0, block: "duct", rotation: 0 },
+    { x: 2, y: 0, block: "surge-router", rotation: 0 },
+    { x: 4, y: 0, block: "vault", rotation: 0 },
+  ];
+  if (powered) tiles.push({ x: 2, y: 1, block: "power-source", rotation: 0 });
+  return tiles;
+}
+
+/**
+ * An armoured duct fed one of three ways.
+ *
+ * The feed is always a source of beryllium; what changes is what stands between it and the
+ * armoured duct, and on which side.
+ */
+function armoured(how) {
+  const tiles = [
+    { x: 0, y: 0, block: "armored-duct", rotation: 0 },
+    { x: 1, y: 0, block: "duct", rotation: 0 },
+    { x: 3, y: 0, block: "vault", rotation: 0 },
+  ];
+  if (how === "side") {
+    // A source is not a duct, so from the side it is refused outright.
+    tiles.push({ x: 0, y: 1, block: "item-source", rotation: 0, raw: item("beryllium") });
+  } else if (how === "duct") {
+    // A duct is family, and this one points straight at it.
+    tiles.push({ x: 0, y: 2, block: "item-source", rotation: 0, raw: item("beryllium") });
+    tiles.push({ x: 0, y: 1, block: "duct", rotation: 3 });
+  } else {
+    tiles.push({ x: -1, y: 0, block: "item-source", rotation: 0, raw: item("beryllium") });
+  }
+  return tiles;
 }
 
 /** A thorium reactor, on a source that never runs out or on thirty thorium and no more. */

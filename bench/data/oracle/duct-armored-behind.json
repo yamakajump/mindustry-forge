@@ -1,0 +1,53 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "armored-duct",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "beryllium": 1
+      }
+    },
+    {
+      "block": "duct",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 16,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "beryllium": 449
+      }
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 16,
+      "y": 13,
+      "items":{
+        "beryllium": 449
+      }
+    }
+  ],
+  "per_second":{
+    "beryllium": 14.966666
+  }
+}

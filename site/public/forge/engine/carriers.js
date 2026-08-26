@@ -494,9 +494,23 @@ const duct = {
 
   acceptItem(build, source, item) {
     if (build.state.current || build.items.total) return false;
+    const direction = Math.abs(arrivesFrom(build, source) - build.rotation) % 4;
+
+    /* Armoured is not "the same but tougher". A plain duct takes from every side but the
+       one it points at; an armoured duct takes only from **directly behind**, plus from
+       other members of the duct family that are explicitly pointed at it. A crafter or a
+       vault beside one cannot feed it at all, which is the whole point of the block and
+       is invisible in any rate calculation.
+
+       `isDuct` is true for exactly two classes in the game, `Duct` and `DuctBridge`. */
+    if (build.block.armored) {
+      const family = source?.block?.rotate && source?.block?.duct_speed
+        && source.facing(build.world) === build;
+      return Boolean(family) || arrivesFrom(build, source) === build.rotation;
+    }
+
     // Never from the block it points at, and never head on.
     if (source?.block?.rotate && build.facing(build.world) === source) return false;
-    const direction = Math.abs(arrivesFrom(build, source) - build.rotation) % 4;
     return direction !== 2;
   },
 
@@ -512,19 +526,21 @@ const duct = {
     /* One item every `speed` frames, and the accounting for that is worth writing down.
     
        `DuctBuild.updateTile` reads `progress += edelta() / speed * 2` against a threshold
-       of `1 - 1/speed`, and `current` is only picked up at the end of the update rather
-       than when the item arrives. Walked through by hand for a duct whose speed is four,
-       that comes to a three frame cycle and twenty items a second.
+       of `1 - 1/speed`, and `handleItem` starts it at minus one. The number of updates
+       between arriving and leaving is therefore
+
+           ceil((1 - 1/speed - (-1)) / (2/speed)) = ceil(speed - 0.5)
+
+       which for a whole `speed` is `speed` exactly. Four frames, fifteen items a second,
+       and the game's own stat line agrees: `60f / speed`.
+
+       This read as a three frame cycle for a while, on a `floor` where the game has a
+       `ceil`, and the extra frame was blamed on update order and written down as measured
+       rather than derived. It was arithmetic, and the `progress %= ...` leftover never
+       survives either: it is overwritten next frame by the zero or the minus one.
     
-       The engine hands over fifteen, on one duct, on two and on eight alike: exactly
-       `60 / speed`, one frame more than the source reads. The likeliest culprit is that
-       buildings are not updated in the order they were placed, which shifts every
-       hand-off by a frame; I could not confirm it, so what is written here is the cycle
-       that was measured rather than the one that was derived, and the derivation is above
-       so the next person can find what I could not.
-    
-       Its own stat line says thirty, twice what it delivers, in the same way a conveyor's
-       `displayedSpeed` is a figure typed by hand. */
+       Note this is not a conveyor's `displayedSpeed`, which is a figure typed by hand and
+       has to be distrusted. A duct's is computed from the field. */
     const speed = build.block.duct_speed || 5;
     const next = build.facing(world);
 
@@ -704,6 +720,233 @@ const itemTurret = {
 /* The machines come last, so that a role they cover wins over the placeholder that
    swallowed everything before they existed. Spread first, `crafter: sink` two lines below
    quietly took it back and a press made nothing at all. */
+/**
+ * A duct router: one way in, three ways out.
+ *
+ * It takes only from **directly behind** - not "from anywhere but the front", which is
+ * what a plain duct does - and hands on to the front and the two sides in a rotating
+ * order, never backwards.
+ *
+ * The cursor advances on **every** neighbour it looks at, including the ones it refuses
+ * and including the one it succeeds with. A power node parked on one of its faces is
+ * looked at, refused, and still costs a turn, which is what shifts the phase and makes the
+ * three-way split come out even. A cursor that only advances on success splits it
+ * unevenly, which is exactly the sort of thing a rate calculation cannot see.
+ */
+const ductRouter = {
+  begin(build) {
+    build.state.progress = 0;
+    build.state.current = null;
+  },
+
+  acceptItem(build, source, item) {
+    return build.state.current === null && build.items.total === 0
+      && source.relativeTo(build) === build.rotation;
+  },
+
+  handleItem(build, source, item) {
+    build.state.current = item;
+    build.state.progress = -1;
+    build.items.add(item);
+  },
+
+  update(build, world, step) {
+    const speed = build.block.duct_speed || 5;
+    build.state.progress += (build.delta(step) / speed) * 2;
+
+    if (build.state.current !== null) {
+      if (build.state.progress >= 1 - 1 / speed) {
+        const target = ductTarget(build, build.state.current);
+        if (target) {
+          target.handleItem(build, build.state.current);
+          build.items.remove(build.state.current);
+          build.state.current = null;
+          build.state.progress %= 1 - 1 / speed;
+        }
+        // Blocked, `progress` keeps climbing with no modulo at all, so a router held up
+        // for two hundred frames lets go on the very frame a way out appears.
+      }
+    } else {
+      build.state.progress = 0;
+    }
+
+    if (build.state.current === null && build.items.total > 0) {
+      build.state.current = build.items.first();
+    }
+  },
+};
+
+/** `DuctRouterBuild.target`, shared with the stack router that extends it. */
+function ductTarget(build, item) {
+  if (item === null) return null;
+  const start = build.cdump;
+  const sorted = build.node.configured;
+  for (let i = 0; i < build.proximity.length; i++) {
+    const other = build.proximity[(i + start) % build.proximity.length];
+    const side = build.relativeTo(other);
+    /* A sorted router sends the item it was set to straight ahead and everything else out
+       the sides, which is one condition rather than two: "is this the sorted item" has to
+       agree with "is this the front". */
+    const wrongWay = sorted && (item === sorted) !== (side === build.rotation);
+    const backwards = side === (build.rotation + 2) % 4;
+    build.cdump = (build.cdump + 1) % build.proximity.length;
+    if (!wrongWay && !backwards && other.acceptItem(build, item)) return other;
+  }
+  return null;
+}
+
+/**
+ * A surge router: a duct router that saves up a stack and lets it go all at once.
+ *
+ * Its charge does not use `delta` at all. `progress += efficiency + baseEfficiency` per
+ * **frame**, and `baseEfficiency` is one, so it works unpowered at a seventh of the speed
+ * rather than not at all. Then the whole stack of ten leaves in a single frame, in a loop
+ * that calls `target()` again after each item and so keeps advancing the cursor.
+ *
+ * The signature is that a vault behind one grows by exactly ten at a time and never by
+ * one. A port that lets items through as they arrive gets the total roughly right and the
+ * shape entirely wrong.
+ */
+const stackRouter = {
+  begin(build) {
+    build.state.progress = 0;
+    build.state.current = null;
+    build.state.unloading = false;
+  },
+
+  acceptItem(build, source, item) {
+    return !build.state.unloading
+      && (build.state.current === null || item === build.state.current)
+      && build.items.total < build.itemCapacity
+      && source.relativeTo(build) === build.rotation;
+  },
+
+  handleItem(build, source, item) {
+    build.state.current = item;
+    build.state.progress = -1;
+    build.items.add(item);
+  },
+
+  update(build, world, step) {
+    const cap = build.block.duct_speed || 5;
+    const power = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+    const rate = (build.block.base_efficiency ?? 0) + power;
+
+    if (!build.state.unloading && build.state.current !== null
+        && build.items.total >= build.itemCapacity) {
+      if (build.state.progress < cap) build.state.progress += rate;
+      if (build.state.progress >= cap) {
+        build.state.unloading = true;
+        build.state.progress %= cap;
+      }
+    }
+
+    if (build.state.unloading && build.state.current !== null) {
+      let target = ductTarget(build, build.state.current);
+      while (target && build.items.get(build.state.current) > 0) {
+        target.handleItem(build, build.state.current);
+        build.items.remove(build.state.current);
+        target = ductTarget(build, build.state.current);
+      }
+      if (build.items.get(build.state.current) === 0) {
+        build.state.current = null;
+        build.state.unloading = false;
+      }
+    }
+
+    if ((build.state.current === null || build.items.get(build.state.current) === 0)
+        && build.items.total > 0) {
+      build.state.current = build.items.first();
+    }
+    if (build.items.total === 0) {
+      build.state.unloading = false;
+      build.state.current = null;
+    }
+  },
+};
+
+/**
+ * A duct bridge, which is nothing like an item bridge.
+ *
+ * It has no configuration: it looks along the way it points and links to the **first**
+ * bridge of its own kind within range, so a chain is built by pointing them at each other
+ * and a bridge in between shortens the reach of the one behind it.
+ *
+ * Two consequences a rate cannot express. A bridge with nobody to link to refuses
+ * everything, yet still receives from the bridge behind it, because that transfer goes
+ * straight to `handleItem` and never asks. And the receiving end **blocks the face the
+ * beam arrives on**: a duct trying to feed that side is refused forever, which looks like
+ * a bug in the layout and is a rule of the block.
+ */
+const ductBridge = {
+  begin(build) {
+    build.state.progress = 0;
+    build.state.occupied = [null, null, null, null];
+  },
+
+  acceptItem(build, source, item) {
+    if (!bridgeLink(build)) return false;
+    const side = build.relativeTo(source);
+    return build.items.total < build.itemCapacity
+      && side !== build.rotation
+      && !build.state.occupied[(side + 2) % 4];
+  },
+
+  handleItem(build, source, item) {
+    build.items.add(item);
+  },
+
+  update(build, world, step) {
+    const speed = build.block.duct_speed || 5;
+    const link = bridgeLink(build);
+    build.state.link = link;
+
+    if (link) {
+      link.state.occupied[build.rotation % 4] = build;
+      if (build.items.total > 0 && link.items.total < link.itemCapacity) {
+        // No division by `speed` here, unlike a duct: the counter runs at one a frame and
+        // the leftover is carried over, so the rate is exactly `60 / speed` with no
+        // rounding anywhere.
+        build.state.progress += build.delta(step);
+        while (build.state.progress > speed) {
+          const next = build.items.first();
+          if (next && link.items.total < link.itemCapacity) {
+            build.items.remove(next);
+            link.handleItem(build, next);
+          }
+          build.state.progress -= speed;
+        }
+      }
+    } else if (build.items.total > 0) {
+      // Unlinked, it is an ordinary block pushing at whatever is in front of it, one item
+      // a frame at most.
+      const next = build.items.first();
+      const front = build.facing(world);
+      if (front && front.acceptItem(build, next)) {
+        front.handleItem(build, next);
+        build.items.remove(next);
+      }
+    }
+
+    for (let i = 0; i < 4; i++) {
+      const held = build.state.occupied[i];
+      if (held && (held.rotation !== i || held.state.link !== build)) {
+        build.state.occupied[i] = null;
+      }
+    }
+  },
+};
+
+/** `DirectionBridge.findLink`: the first bridge of the same block along the way it points. */
+function bridgeLink(build) {
+  const [dx, dy] = DIRECTIONS[build.rotation];
+  for (let i = 1; i <= (build.block.range || 4); i++) {
+    const other = build.world?.at(build.x + dx * i, build.y + dy * i);
+    if (other && other.name === build.name) return other;
+  }
+  return null;
+}
+
 const BY_ROLE = {
   conveyor,
   "stack-conveyor": stackConveyor,
@@ -719,6 +962,9 @@ const BY_ROLE = {
   generator: sink,
   duct,
   core,
+  "duct-router": ductRouter,
+  "stack-router": stackRouter,
+  "duct-bridge": ductBridge,
   ...MACHINES,
 };
 
