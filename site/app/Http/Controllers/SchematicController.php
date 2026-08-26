@@ -53,6 +53,29 @@ class SchematicController extends Controller
         ], 201);
     }
 
+    /**
+     * Everything needed to reopen a schematic in the analyser.
+     *
+     * Including what its author marked by hand, which was stored from the first day and
+     * never read back: reopening a schematic threw away the one answer the tool cannot
+     * work out for itself, and asked for it again.
+     */
+    public function read(Request $request, Schematic $schematic): JsonResponse
+    {
+        abort_unless($schematic->visibleTo($request->user()), 404);
+
+        return response()->json([
+            'slug' => $schematic->slug,
+            'name' => $schematic->name,
+            'description' => $schematic->description,
+            'code' => $schematic->code,
+            'visibility' => $schematic->visibility,
+            'mine' => $schematic->managedBy($request->user()),
+            'marked' => (array) ($schematic->analysis['marked'] ?? []),
+            'kept' => $schematic->created_at?->format('d/m/Y'),
+        ]);
+    }
+
     public function update(Request $request, Schematic $schematic): JsonResponse
     {
         abort_unless($schematic->managedBy($request->user()), 403);
@@ -61,10 +84,30 @@ class SchematicController extends Controller
             'name' => ['sometimes', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'visibility' => ['sometimes', 'in:private,unlisted,public'],
+            // A corrected string, and the analysis that goes with it. A schematic that
+            // could never be edited meant a typo in a name, or an intake marked wrongly,
+            // was permanent: the only way out was to delete it and start again.
+            'code' => ['sometimes', 'string', 'max:'.self::MAX_CODE],
+            'analysis' => ['sometimes', 'array'],
+            'thumbnail' => ['nullable', 'string', 'max:4194304'],
         ]);
-        $schematic->fill($data)->save();
 
-        return response()->json(['ok' => true]);
+        if (isset($data['analysis'])) {
+            $schematic->fill(Schematic::fromAnalysis($data['analysis']));
+            $schematic->analysis = $data['analysis'];
+        }
+        if (isset($data['code'])) {
+            $schematic->code = preg_replace('/\s+/', '', $data['code']);
+        }
+        foreach (['name', 'description', 'visibility'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $schematic->{$field} = $data[$field];
+            }
+        }
+        $schematic->save();
+        $this->keepThumbnail($schematic, $data['thumbnail'] ?? null);
+
+        return response()->json(['ok' => true, 'url' => url("/s/{$schematic->slug}")]);
     }
 
     public function destroy(Request $request, Schematic $schematic): JsonResponse

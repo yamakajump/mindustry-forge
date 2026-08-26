@@ -36,6 +36,7 @@
           @endif
         </p>
         @include('partials.manage', ['compact' => true])
+        <p class="meta"><a href="/?s={{ $schematic->slug }}">Modifier</a></p>
       </article>
     @endforeach
   </div>

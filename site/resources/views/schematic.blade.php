@@ -103,7 +103,8 @@
       <textarea id="code" readonly rows="3">{{ $schematic->code }}</textarea>
       <div class="row">
         <button class="primary" id="copy" type="button">Copier</button>
-        <a class="button" href="/?s={{ $schematic->slug }}">Analyser chez moi</a>
+        <a class="button" href="/?s={{ $schematic->slug }}">{{
+          $schematic->managedBy(auth()->user()) ? 'Modifier' : 'Analyser chez moi' }}</a>
       </div>
       <p class="hint-line">Colle-la dans Mindustry avec ctrl+v.</p>
     </div>
