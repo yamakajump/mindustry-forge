@@ -77,6 +77,10 @@ public class DumpBlocks {
             entry.put("name", block.name);
             entry.put("size", block.size);
             entry.put("item_capacity", block.itemCapacity);
+            // How much a block can hold, which a steady-state calculation never needed and
+            // a simulation cannot do without: a tank that fills is a tank that stops
+            // taking, and that is the whole reason a line backs up.
+            entry.put("liquid_capacity", block.liquidCapacity);
             entry.put("has_items", block.hasItems);
             entry.put("has_power", block.hasPower);
             entry.put("rotate", block.rotate);
