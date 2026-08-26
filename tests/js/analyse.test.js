@@ -14,6 +14,9 @@ import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { loadCatalogue, paste } from "./helpers.js";
 
 const known = loadCatalogue();
+
+/** A real schematic, pasted by a real player through a chat, checksum and all. */
+const REAL = "bXNjaAF4nE1Sy27TQBS9HjszHid2yoptVdaWEEj0K1izqCo0iSeRhWMbe5yqQvwAEqISP8AX8gW05j5SQqT45Pq+zjk3kMFFAtm2a4Nvw3vXg/ryFXTjNr4Z4eLm6ubVbueur93t718PV7eQtO7g4eUHF/xw2Xd3+Hzz9vW7S9/6YX8Py8qP26HuQ921ADnkTf15qqty6CZsgLyfmtGXuK2a6gDFZqir/Tk2Gxew7B7WY/DuUO5pqgvdAOtt55pyixSHejftPazPrUd/jxXZdmpCfeTqYmorP+ya7q7cI1F4Eerg2no6nMuXJ2L4/hMsx74bfNkPfkTNrKpsu8qXjRtwF8BH4E8c4SOCmH4riWKJEokWECsEbeb56Sd+j4qyBiKCFCJKWkMN8zw/cjKT5FJgJTX5c80frikkuYYoAVqjCJRAAipC0LQ8wlXYEIGFWCNkhhlSB3LAHYre5mcCSAmHc8uaJCmkzmqAaSscpOhtjoLmp9MghS2x6I5ToF4GBZFlOzhKBNAQeqkFDNkTQ0r2POA3qAwLVxAnvFIRKIGEuCbi5A9yMl5giMtTBCvJ7Dk5KPKhoBskKCSmvbhyiWCJ8YJyQB5RiZYTajmhlhNqOaGWE2pZ/J0XYwDmn5OcJQXz48kPTcamCDlR50JmKpDQKQzPkw4UYjiNDxZiWMhpHIX5//8QI24bOhBaR3wJ0M4VQpZKuBLIBQoBdsLKmaycyRItC1bOZOVMlkRrBBb97STaimjiMfOcVMZzgZVALlAI4Ma/lba3pg==";
 const close = (a, b, why) => assert.ok(Math.abs(a - b) < 1e-3, `${why}: ${a} vs ${b}`);
 
 test("the catalogue came from the game, not from a wiki", () => {
@@ -114,4 +117,34 @@ test("a wrapped paste from a chat message still works", async () => {
   const wrapped = text.match(/.{1,20}/g).join("\n  ");
   const out = await analyse(wrapped);
   assert.equal(out.blocks, 2);
+});
+
+test("a bridge keeps its link instead of breaking the read", async () => {
+  /* Real schematics are full of configured blocks and the first version refused all of
+     them. A bridge remembers where it reaches, a power node what it is wired to, a sorter
+     which item it passes. The first schematic anyone pasted at this held eight bridge
+     conduits, ten bridge conveyors and a power node, and was rejected outright. */
+  const { fromBase64 } = await import("../../site/public/forge/schematic.js");
+  const parsed = await fromBase64(REAL);
+  assert.equal(parsed.tags.name, "Water power 2306 energy");
+  assert.ok(parsed.tiles.length >= 90, `${parsed.tiles.length} tuiles lues`);
+
+  const bridges = parsed.tiles.filter((t) => t.block === "bridge-conveyor");
+  assert.ok(bridges.length > 0);
+  assert.equal(bridges[0].config.type, 7, "a bridge stores a Point2");
+});
+
+test("a string damaged in transit is read anyway and says so", async () => {
+  /* Refusing a build the reader can see perfectly well helps nobody: 1,102 bytes decoded
+     cleanly and the whole thing was rejected over the last two checksum bytes. */
+  const out = await analyse(REAL, {});
+  assert.equal(out.altered, true, "the checksum did not match");
+  assert.ok(out.truncated > 0, "and the tail was lost, which the report must say");
+  assert.ok(out.blocks >= 90, "while the blocks that did read are kept");
+});
+
+test("a clean schematic is not flagged as damaged", async () => {
+  const out = await analyse(paste([[0, 0, "conveyor", 0], [1, 0, "conveyor", 0]]));
+  assert.equal(out.altered, false);
+  assert.equal(out.truncated, 0);
 });
