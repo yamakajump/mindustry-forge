@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **105 classes à reproduire**, pour 228 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 56 sur 105
+## Fait : 57 sur 105
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -54,7 +54,7 @@ second, c'est une intuition qui a l'air d'un portage.
       plated-conduit, reinforced-conduit
 - [x] `Battery` - 2 blocs - stocke l'energie
       battery, battery-large
-- [ ] `BeamDrill` - 2 blocs
+- [x] `BeamDrill` - 2 blocs
       large-plasma-bore, plasma-bore
 - [x] `BeamNode` - 2 blocs
       beam-node, beam-tower

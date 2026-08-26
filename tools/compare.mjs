@@ -23,7 +23,7 @@ const { World } = await import(new URL("../site/public/forge/engine/core.js", im
 const { behaviourOf } = await import(
   new URL("../site/public/forge/engine/carriers.js", import.meta.url));
 const { gridsOf } = await import(new URL("../site/public/forge/engine/power.js", import.meta.url));
-const { attributeOf, yieldOf } = await import(
+const { attributeOf, beamOf, yieldOf } = await import(
   new URL("../site/public/forge/ground.js", import.meta.url));
 
 /**
@@ -82,7 +82,11 @@ export function groundOf(list) {
     const [block, at] = one.split("@");
     if (!at) continue;
     const layers = painted[at] || (painted[at] = { floor: "metal-floor" });
-    if (known.blocks[block]?.overlay) layers.overlay = block;
+    // Three layers, not two: Erekir's ore is an overlay on a **wall**, and a wall is a
+    // block rather than a layer of ground. A bore pointed at one reads nothing if the wall
+    // is filed as a floor, because nothing there is solid.
+    if (known.blocks[block]?.wall) layers.wall = block;
+    else if (known.blocks[block]?.overlay) layers.overlay = block;
     else layers.floor = block;
   }
   return painted;
@@ -121,6 +125,7 @@ export async function ported(code, ticks, ground = [], stock = []) {
   for (const node of graph.nodes) {
     node.dug = yieldOf(node, painted, known);
     node.attrsum = attributeOf(node, painted, known);
+    node.beam = beamOf(node, painted, known);
   }
 
   const world = new World(graph, behaviourOf).wire(gridsOf);

@@ -581,8 +581,90 @@ function randomSeed(seed, min, max) {
   }
 }
 
+/**
+ * A plasma bore: Erekir's drill, which stands beside its ore rather than on it.
+ *
+ * What it makes is decided once, when it is placed: one item per tile of its own width
+ * that has an ore wall within range, and nothing behind the first solid tile in each line.
+ * After that it is a timer, and `time += edelta() * multiplier` produces the **whole**
+ * facing at once rather than one item per cycle.
+ *
+ * Its hydrogen is a booster and not an ingredient: `optionalBoostIntensity` is 2.5, so a
+ * bore with no hydrogen runs at two fifths of the speed rather than stopping. Reading it as
+ * a requirement makes a working layout report as starved.
+ */
+const beamDrill = {
+  begin(build) {
+    build.state.time = 0;
+    build.state.dumpTimer = 0;
+  },
+
+  acceptItem() { return false; },
+
+  update(build, world, step) {
+    const block = build.block;
+    const beam = build.node.beam;
+    const delta = build.delta(step);
+
+    build.state.dumpTimer += delta;
+    if (build.state.dumpTimer >= (block.dump_time || 5)) {
+      build.state.dumpTimer = 0;
+      build.dump();
+    }
+
+    // `shouldConsume`: full, or pointed at nothing, and it stops asking for anything.
+    if (!beam || build.items.total >= build.itemCapacity) return;
+
+    let efficiency = block.power > 0 ? (build.state.power ?? 1) : 1;
+    for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
+      const wanted = (rate / TICKS) * delta;
+      if (wanted <= 0) continue;
+      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      efficiency = Math.min(efficiency, held / wanted);
+    }
+    efficiency = Math.max(0, Math.min(1, efficiency));
+    if (efficiency <= 0) return;
+
+    // And the optional half, which speeds it up rather than gating it.
+    let boost = 1;
+    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
+      const wanted = (rate / TICKS) * delta;
+      if (wanted <= 0) continue;
+      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      boost = Math.min(boost, held / wanted);
+    }
+    boost = Math.max(0, Math.min(1, boost));
+    const multiplier = 1 + ((block.optional_boost_intensity ?? 1) - 1) * boost;
+
+    for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
+      if (build.liquid === liquid) {
+        build.liquidAmount = Math.max(0, build.liquidAmount - (rate / TICKS) * delta * efficiency);
+      }
+    }
+    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
+      if (build.liquid === liquid) {
+        build.liquidAmount = Math.max(0, build.liquidAmount - (rate / TICKS) * delta * boost);
+      }
+    }
+
+    const each = (block.drill_time || 200)
+      / (block.drill_multipliers?.[beam.resource] ?? 1);
+    build.state.time += delta * efficiency * multiplier;
+    if (build.state.time >= each) {
+      // One per line of sight, all in the same frame, and each one checked against the
+      // cap on its own: a bore with one slot left and four lines fills the slot and drops
+      // the other three.
+      for (let i = 0; i < beam.count; i++) {
+        if (build.items.total < build.itemCapacity) build.items.add(beam.resource);
+      }
+      build.state.time %= each;
+    }
+  },
+};
+
 export const MACHINES = {
   crafter,
+  "beam-drill": beamDrill,
   drill,
   separator,
   "heat-conductor": heatConductor,

@@ -1,0 +1,74 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "plasma-bore",
+      "x": 13,
+      "y": 16,
+      "liquid": "hydrogen",
+      "amount": 10
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 17,
+      "liquid": "hydrogen",
+      "amount": 9999.996
+    }
+  ],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "beryllium": 55
+      }
+    },
+    {
+      "block": "duct",
+      "x": 13,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 16,
+      "efficiency": 0
+    },
+    {
+      "block": "plasma-bore",
+      "x": 13,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "beryllium": 1
+      }
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 17,
+      "efficiency": 1
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13,
+      "items":{
+        "beryllium": 55
+      }
+    }
+  ],
+  "per_second":{
+    "beryllium": 1.8333334
+  }
+}
