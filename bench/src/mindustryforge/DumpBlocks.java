@@ -456,6 +456,15 @@ public class DumpBlocks {
                 ammo.asArray().add(Jval.valueOf(item.name));
             }
             entry.put("ammo", ammo);
+            // How much it holds, in ammunition rather than in items, and what each item is
+            // worth when it arrives. A turret fills to `maxAmmo` and then refuses, which is
+            // what backs a belt up behind it.
+            entry.put("max_ammo", turret.maxAmmo);
+            Jval worth = Jval.newObject();
+            for (Item item : turret.ammoTypes.keys()) {
+                worth.put(item.name, turret.ammoTypes.get(item).ammoMultiplier);
+            }
+            entry.put("ammo_worth", worth);
             entry.put("input_liquid", liquidInputsOf(block));
             return;
         }

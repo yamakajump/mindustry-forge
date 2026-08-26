@@ -27,5 +27,7 @@ measure bXNjaAF4nB2I0QqAIBDAZudB0Lf4UWL3EKRCeX1/KIMNhiKB2HI19tPLSL2ZcFzDanq7P8WI
 measure bXNjaAF4nB2I0QqAIBDApp4R9C1+lJgPQSbUWb8fJ4MNxkJwyJVbZd1H0aRfD2yH1paePu5SEfvEN49TAQFwcXqCw1s8YvkB6PsNZw== 30 ../bench/data/oracle/duct-two.json
 measure bXNjaAF4nC3KUQqAIBRE0atmRbkVFyXlR5AFpq0/9MXAHBgGh1EMV0gRt9et+JDTneNuWI8Sk3/umreI+2ffPtg31LMAC4CyvXtQaMEIg2CFUZiEuaFZGh9aMxJZ 30 ../bench/data/oracle/duct-armored.json
 measure bXNjaAF4nDWJWwqAIAAEx1d+hEfxUFIGQSWY2vVDIxZ2mR0sk0Bf4Yy4tS7FpxbzdqRHM+8lnv5ONS8R3SXut36gaaEeBbAAwoweQSL7CFQfhflo3AqJhhcU2xUD 30 ../bench/data/oracle/duct-overflow.json
+measure bXNjaAF4nBXGWwqAIBQA0blqENRWXFTYDQQf4CNo9+H8nMEhgitXVs4xW9Phn5hStxxxaPa9zhaUPdTy6lcb9p4VcKw2sAiyXjALg138rigP/g== 30 ../bench/data/oracle/turret-fills.json
+measure bXNjaAF4nB2JSQrAIBDAMi5QaL/io0TmUKgKbtDfF5tLAsFjBFdiVq4xW9MRenxWtZz30Bx6nS0pR6pl6Vsb/t+AY+PBIshuwWwZ7NYH8YcQ6g== 30 ../bench/data/oracle/turret-salvo.json
 measure bXNjaAF4nB2KUQqAIBTAZlpE0VE8VNiDhFR4VuDtIxlsP2PCGlzek7CFouIPueIr2ixrvCX5Wh4NwhxKfqUVZelbPXc9AAdgxu4OhuHPgPvzAaCFEvk= 30 ../bench/data/oracle/core-delivery.json
 measure bXNjaAF4nD2KWwqAIBQFR82K+mglLcrsEkFp2APafRgRB2ZgODQYRRHcKrRDmsdJ+n1zoaCdD1n7PZ7JC7WP4ZI7Jrrv9Ad7uXM5gBJA2Zfv0GhUBZgc0dhcFWWWoc56AM60Fo0= 30 ../bench/data/oracle/bridge-span.json

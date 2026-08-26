@@ -7235,6 +7235,12 @@
         "graphite",
         "silicon"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "copper": 2,
+        "graphite": 4,
+        "silicon": 5
+      },
       "input_liquid":{}
     },
     "scatter":{
@@ -7273,6 +7279,12 @@
         "lead",
         "metaglass"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "scrap": 5,
+        "lead": 4,
+        "metaglass": 5
+      },
       "input_liquid":{}
     },
     "scorch":{
@@ -7309,6 +7321,11 @@
         "coal",
         "pyratite"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "coal": 3,
+        "pyratite": 10
+      },
       "input_liquid":{}
     },
     "hail":{
@@ -7347,6 +7364,12 @@
         "silicon",
         "pyratite"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "graphite": 2,
+        "silicon": 3,
+        "pyratite": 4
+      },
       "input_liquid":{}
     },
     "wave":{
@@ -7483,6 +7506,12 @@
         "pyratite",
         "surge-alloy"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "blast-compound": 5,
+        "pyratite": 5,
+        "surge-alloy": 4
+      },
       "input_liquid":{}
     },
     "salvo":{
@@ -7526,6 +7555,14 @@
         "silicon",
         "thorium"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "copper": 5,
+        "graphite": 4,
+        "pyratite": 5,
+        "silicon": 5,
+        "thorium": 4
+      },
       "input_liquid":{}
     },
     "segment":{
@@ -7611,6 +7648,11 @@
         "titanium",
         "thorium"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "titanium": 4,
+        "thorium": 5
+      },
       "input_liquid":{}
     },
     "ripple":{
@@ -7654,6 +7696,14 @@
         "blast-compound",
         "plastanium"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "graphite": 2,
+        "silicon": 3,
+        "pyratite": 4,
+        "blast-compound": 4,
+        "plastanium": 2
+      },
       "input_liquid":{}
     },
     "cyclone":{
@@ -7695,6 +7745,13 @@
         "plastanium",
         "surge-alloy"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "metaglass": 2,
+        "blast-compound": 5,
+        "plastanium": 4,
+        "surge-alloy": 5
+      },
       "input_liquid":{}
     },
     "foreshadow":{
@@ -7732,6 +7789,10 @@
       "ammo": [
         "surge-alloy"
       ],
+      "max_ammo": 40,
+      "ammo_worth":{
+        "surge-alloy": 1
+      },
       "input_liquid":{}
     },
     "spectre":{
@@ -7773,6 +7834,12 @@
         "thorium",
         "pyratite"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "graphite": 4,
+        "thorium": 2,
+        "pyratite": 3
+      },
       "input_liquid":{}
     },
     "meltdown":{
@@ -7838,6 +7905,12 @@
         "tungsten",
         "carbide"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "beryllium": 1,
+        "tungsten": 2,
+        "carbide": 2
+      },
       "input_liquid":{}
     },
     "diffuse":{
@@ -7877,6 +7950,12 @@
         "oxide",
         "silicon"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "graphite": 1,
+        "oxide": 2,
+        "silicon": 1
+      },
       "input_liquid":{}
     },
     "sublimate":{
@@ -7942,6 +8021,12 @@
         "carbide",
         "oxide"
       ],
+      "max_ammo": 12,
+      "ammo_worth":{
+        "thorium": 1,
+        "carbide": 1,
+        "oxide": 1
+      },
       "input_liquid":{
         "hydrogen": 5
       }
@@ -7985,6 +8070,13 @@
         "silicon",
         "surge-alloy"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "tungsten": 3,
+        "thorium": 1,
+        "silicon": 4,
+        "surge-alloy": 3
+      },
       "input_liquid":{}
     },
     "afflict":{
@@ -8072,6 +8164,12 @@
         "phase-fabric",
         "surge-alloy"
       ],
+      "max_ammo": 45,
+      "ammo_worth":{
+        "carbide": 1,
+        "phase-fabric": 5,
+        "surge-alloy": 1
+      },
       "input_liquid":{}
     },
     "smite":{
@@ -8108,6 +8206,10 @@
       "ammo": [
         "surge-alloy"
       ],
+      "max_ammo": 30,
+      "ammo_worth":{
+        "surge-alloy": 1
+      },
       "input_liquid":{}
     },
     "malign":{
