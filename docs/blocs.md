@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 17 sur 103
+## Fait : 19 sur 103
 
 - [x] `GenericCrafter` &mdash; 17 blocs &mdash; toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -20,7 +20,7 @@ second, c'est une intuition qui a l'air d'un portage.
       breach, cyclone, diffuse, disperse, duo, foreshadow, et 11 autres
 - [ ] `Reconstructor` &mdash; 8 blocs &mdash; ameliore une unite en une meilleure
       additive-reconstructor, exponential-reconstructor, mech-refabricator, multiplicative-reconstructor, prime-refabricator, ship-refabricator, et 2 autres
-- [ ] `ConsumeGenerator` &mdash; 6 blocs &mdash; brule quelque chose et fait de l'energie
+- [x] `ConsumeGenerator` &mdash; 6 blocs &mdash; brule quelque chose et fait de l'energie
       chemical-combustion-chamber, combustion-generator, differential-generator, pyrolysis-generator, rtg-generator, steam-generator
 - [ ] `CoreBlock` &mdash; 6 blocs &mdash; le noyau : un coffre qui compte
       core-acropolis, core-bastion, core-citadel, core-foundation, core-nucleus, core-shard
@@ -52,7 +52,7 @@ second, c'est une intuition qui a l'air d'un portage.
       mech-assembler, ship-assembler, tank-assembler
 - [ ] `ArmoredConduit` &mdash; 2 blocs
       plated-conduit, reinforced-conduit
-- [ ] `Battery` &mdash; 2 blocs &mdash; stocke l'energie
+- [x] `Battery` &mdash; 2 blocs &mdash; stocke l'energie
       battery, battery-large
 - [ ] `BeamDrill` &mdash; 2 blocs
       large-plasma-bore, plasma-bore

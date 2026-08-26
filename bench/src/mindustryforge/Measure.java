@@ -213,6 +213,27 @@ public class Measure implements ApplicationListener {
         }
         root.put("pools", pools);
 
+        /* And what the batteries are holding.
+        
+           A grid is not a sum: it strikes a balance every frame, tops one side up from the
+           other, and hands every consumer the same fraction. The state of the batteries at
+           the end is the compact way to check the whole of that arithmetic at once - a
+           port that got the balance wrong by a per cent ends the run somewhere else. */
+        Jval charges = Jval.newArray();
+        for (Tile tile : Vars.world.tiles) {
+            if (tile.build == null || tile.build.tile != tile) continue;
+            if (tile.build.power == null || tile.block().consPower == null) continue;
+            if (!tile.block().consPower.buffered) continue;
+
+            Jval one = Jval.newObject();
+            one.put("block", tile.block().name);
+            one.put("x", tile.x);
+            one.put("y", tile.y);
+            one.put("charge", tile.build.power.status);
+            charges.asArray().add(one);
+        }
+        root.put("batteries", charges);
+
         Jval stores = Jval.newArray();
         Jval totals = Jval.newObject();
         Seq<Tile> seen = new Seq<>();

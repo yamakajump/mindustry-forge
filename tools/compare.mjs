@@ -22,6 +22,7 @@ const { fromBase64 } = await import(
 const { World } = await import(new URL("../site/public/forge/engine/core.js", import.meta.url));
 const { behaviourOf } = await import(
   new URL("../site/public/forge/engine/carriers.js", import.meta.url));
+const { gridsOf } = await import(new URL("../site/public/forge/engine/power.js", import.meta.url));
 const { yieldOf } = await import(new URL("../site/public/forge/ground.js", import.meta.url));
 
 export const known = useCatalogue(JSON.parse(
@@ -65,7 +66,7 @@ export async function ported(code, ticks, ground = []) {
   const painted = groundOf(ground);
   for (const node of graph.nodes) node.dug = yieldOf(node, painted, known);
 
-  const world = new World(graph, behaviourOf);
+  const world = new World(graph, behaviourOf).wire(gridsOf);
   for (let i = 0; i < ticks; i++) world.step();
 
   const containers = world.builds
@@ -80,9 +81,14 @@ export async function ported(code, ticks, ground = []) {
     .map((build) => ({ x: build.x, y: build.y,
                        liquid: build.liquid, amount: build.liquidAmount }));
 
+  const batteries = world.builds
+    .filter((build) => (build.block.power_capacity || 0) > 0)
+    .map((build) => ({ x: build.x, y: build.y, charge: build.state.charge || 0 }));
+
   return {
     containers: lineUp(containers, ["items"]),
     pools: lineUp(pools, ["liquid", "amount"]),
+    batteries: lineUp(batteries, ["charge"]),
   };
 }
 
@@ -95,6 +101,7 @@ export function measured(name) {
     ticks: raw.ticks,
     containers: lineUp(raw.containers || [], ["items"]),
     pools: lineUp(raw.pools || [], ["liquid", "amount"]),
+    batteries: lineUp(raw.batteries || [], ["charge"]),
   };
 }
 
@@ -146,6 +153,19 @@ export function differences(mine, theirs) {
         ? 1 : Math.abs(here.amount - there.amount) / size;
       out.push({ what: `${here.at} ${there.liquid}`,
                  mine: here.amount.toFixed(1), theirs: there.amount.toFixed(1), gap });
+    }
+  }
+
+  if (mine.batteries.length !== theirs.batteries.length) {
+    out.push({ what: "batteries", mine: mine.batteries.length,
+               theirs: theirs.batteries.length, gap: 1 });
+  } else {
+    for (let i = 0; i < mine.batteries.length; i++) {
+      const here = mine.batteries[i];
+      const there = theirs.batteries[i];
+      out.push({ what: `${here.at} charge`,
+                 mine: here.charge.toFixed(3), theirs: there.charge.toFixed(3),
+                 gap: Math.abs(here.charge - there.charge) });
     }
   }
 

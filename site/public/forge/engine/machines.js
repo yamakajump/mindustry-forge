@@ -38,6 +38,12 @@ export function efficiencyOf(build, step) {
     if (efficiency <= 0) return 0;
   }
 
+  // And the grid, which hands every consumer the same fraction. A smelter on a grid at
+  // seventy per cent smelts at seventy per cent: it slows down rather than stopping.
+  if (block.power > 0) {
+    efficiency = Math.min(efficiency, build.state.power ?? 1);
+  }
+
   return shouldConsume(build) ? Math.min(1, efficiency) : 0;
 }
 
@@ -163,8 +169,18 @@ const drill = {
     // its rate is `60 * covered / time`, so the delay between two items is the reciprocal.
     const delay = (60 * dug.covered) / dug.rate;
 
-    build.state.warmup = approach(build.state.warmup, 1, speedUp * delta);
-    build.state.progress += delta * dug.covered * build.state.warmup;
+    /* A drill on a grid that cannot keep up drills slower, it does not stop. `speed` in
+       `Drill.updateTile` is the consumption efficiency, and for a laser drill that is
+       whatever fraction the grid is handing out. */
+    const speed = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+    if (speed <= 0) {
+      build.state.warmup = approach(build.state.warmup, 0, speedUp * delta);
+      dumpDrill(build, step);
+      return;
+    }
+
+    build.state.warmup = approach(build.state.warmup, speed, speedUp * delta);
+    build.state.progress += delta * dug.covered * speed * build.state.warmup;
 
     if (build.state.progress >= delay) {
       const batch = Math.floor(build.state.progress / delay);

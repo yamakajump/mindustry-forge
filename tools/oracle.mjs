@@ -228,6 +228,28 @@ const SCENARIOS = {
     ground: [[0, 0], [0, 1]].map(([x, y]) => `ore-copper@${x},${y}`),
   }),
 
+  /* A generator that burns coal, a battery, and nothing drawing on it. Thirty seconds is
+     more than enough to fill the battery, so what is measured is that it fills at all and
+     that the generator kept burning. */
+  "power-charge": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "combustion-generator", rotation: 0 },
+    { x: 3, y: 0, block: "battery", rotation: 0 },
+  ],
+
+  /* A grid that cannot keep up.
+  
+     A laser drill wants 66 power a second and one combustion generator makes 60, so the
+     grid runs at nine tenths and the drill drills at nine tenths. It does not stop, and
+     nothing anywhere decides which machine to switch off: every consumer on a grid is
+     handed the same fraction, which is the line that makes a whole base dim together.
+  
+     The same drill with two generators has all the power it wants, and the pair of
+     scenarios is the comparison. */
+  "power-short": () => laserDrill(1),
+  "power-plenty": () => laserDrill(2),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -239,6 +261,36 @@ const SCENARIOS = {
     { x: 8, y: 0, block: "vault", rotation: 0 },
   ],
 };
+
+/**
+ * A laser drill on nine tiles of copper, fed by however many generators are asked for.
+ *
+ * The generators touch the drill rather than reaching it through a power node. A node
+ * placed from a schematic carries its links in its configuration, and one written without
+ * them connects to nothing at all: the first go at this had a node between them and
+ * measured a drill with no power, in both engines, which is the right answer to the wrong
+ * question. Blocks that touch share a grid, and that needs no configuration.
+ */
+function laserDrill(generators) {
+  const tiles = [
+    // Covers 0..2 by 0..2, with its ore under it.
+    { x: 1, y: 1, block: "laser-drill", rotation: 0 },
+    { x: 3, y: 1, block: "conveyor", rotation: 0 },
+    { x: 4, y: 1, block: "conveyor", rotation: 0 },
+    { x: 6, y: 1, block: "vault", rotation: 0 },
+
+    { x: 0, y: 5, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: 0, y: 4, block: "router", rotation: 0 },
+    { x: 0, y: 3, block: "combustion-generator", rotation: 0 },
+  ];
+  if (generators > 1) {
+    tiles.push({ x: 1, y: 4, block: "conveyor", rotation: 3 });
+    tiles.push({ x: 1, y: 3, block: "combustion-generator", rotation: 0 });
+  }
+  const ground = [];
+  for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) ground.push(`ore-copper@${x},${y}`);
+  return { tiles, ground };
+}
 
 /** A sorter set to copper, on a line carrying whatever is asked for. */
 function sorter(carried) {

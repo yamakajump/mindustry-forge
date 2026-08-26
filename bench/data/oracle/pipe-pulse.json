@@ -74,6 +74,7 @@
       "amount": 1800
     }
   ],
+  "batteries": [],
   "containers": [],
   "per_second":{}
 }

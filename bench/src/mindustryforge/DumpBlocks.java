@@ -102,10 +102,41 @@ public class DumpBlocks {
             // makes one graphite every ninety frames and may offload every five - but it
             // is the difference between a machine that trickles and one that bursts.
             entry.put("dump_time", block.dumpTime);
+
+            /* Exactly which items and liquids a block will take, read off the filters the
+               game builds when its consumers are declared.
+            
+               Inferred from the recipe instead, a generator that burns "anything" accepted
+               anything at all: a drill beside one fed it copper, the generator burned it,
+               and twenty two items out of forty eight vanished on the way to the vault.
+               The game's answer is `ConsumeItemFlammable`, which writes a filter, and the
+               filter is a fact rather than a guess. */
+            Jval accepts = Jval.newArray();
+            for (Item item : Vars.content.items()) {
+                if (block.itemFilter != null && block.itemFilter.length > item.id
+                        && block.itemFilter[item.id]) {
+                    accepts.asArray().add(Jval.valueOf(item.name));
+                }
+            }
+            if (accepts.asArray().size > 0) entry.put("accepts", accepts);
+
+            Jval drinks = Jval.newArray();
+            for (Liquid liquid : Vars.content.liquids()) {
+                if (block.liquidFilter != null && block.liquidFilter.length > liquid.id
+                        && block.liquidFilter[liquid.id]) {
+                    drinks.asArray().add(Jval.valueOf(liquid.name));
+                }
+            }
+            if (drinks.asArray().size > 0) entry.put("drinks", drinks);
             // How hard a block pushes a liquid at the next one. `moveLiquid` compares the
             // fraction it holds, times this, against the fraction the other holds, so a
             // settled line has a gradient along it rather than a flat rate.
             entry.put("liquid_pressure", block.liquidPressure);
+            // What a battery holds. A buffered consumer asks for nothing and stores a lot,
+            // which is exactly what tells a battery apart from a machine.
+            if (block.consPower != null && block.consPower.buffered) {
+                entry.put("power_capacity", block.consPower.capacity);
+            }
             entry.put("health", block.health);
 
             // What it costs to build, which is what "compact" and "cheap" are scored on.
@@ -288,6 +319,9 @@ public class DumpBlocks {
             entry.put("drill_time", drill.drillTime);
             entry.put("hardness_multiplier", drill.hardnessDrillMultiplier);
             entry.put("liquid_boost", drill.liquidBoostIntensity);
+            // How fast it gets up to speed. A drill does not start at full pace, and over
+            // a thirty second measurement the ramp is worth a whole item.
+            entry.put("warmup_speed", drill.warmupSpeed);
             return;
         }
         if (block instanceof Conduit || block instanceof LiquidJunction
