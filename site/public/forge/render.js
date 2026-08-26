@@ -295,7 +295,19 @@ function blender(tiles, sizeOf, roleOf) {
  */
 export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   const context = canvas.getContext("2d");
-  const box = bounds(tiles, sizeOf);
+  const tight = bounds(tiles, sizeOf);
+
+  /* An apron of empty tiles around the build, for putting blocks down beyond its edge.
+     
+     Without it a packed schematic cannot be extended at all: the first one tried had not a
+     single free tile inside its own box, so every click landed on something and the
+     palette had nowhere to put anything. Only asked for while a block is waiting to be
+     placed, because the rest of the time it is empty space around a picture. */
+  const apron = Math.max(0, options.margin || 0);
+  const box = apron
+    ? { left: tight.left - apron, bottom: tight.bottom - apron,
+        width: tight.width + apron * 2, height: tight.height + apron * 2 }
+    : tight;
   const room = options.width || canvas.clientWidth || 480;
 
   // Whole pixels per tile. A fractional scale makes 32 pixel art shimmer along its own
@@ -323,6 +335,25 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
     context.fillRect((tile.x + offset - box.left) * scale,
                      (box.height - (tile.y + offset - box.bottom) - size) * scale,
                      size * scale, size * scale);
+  }
+
+  // The apron, drawn as a grid so it reads as somewhere blocks go rather than as padding.
+  if (apron) {
+    context.save();
+    context.strokeStyle = "rgba(255, 211, 127, .22)";
+    context.lineWidth = 1;
+    for (let x = 0; x < box.width; x++) {
+      for (let y = 0; y < box.height; y++) {
+        const tx = box.left + x;
+        const ty = box.bottom + y;
+        const inside = tx >= tight.left && tx < tight.left + tight.width
+          && ty >= tight.bottom && ty < tight.bottom + tight.height;
+        if (inside) continue;
+        context.strokeRect(x * scale + 0.5, (box.height - y - 1) * scale + 0.5,
+                           scale - 1, scale - 1);
+      }
+    }
+    context.restore();
   }
 
   const feeds = blender(tiles, sizeOf, roleOf);
@@ -488,9 +519,14 @@ function drawPowerLinks(context, tiles, sizeOf, box, scale) {
   context.restore();
 }
 
-/** One item icon, for saying what a layout makes in the game's own pictures. */
-export function itemIcon(item, pixels = 20) {
-  const found = atlas?.sprites?.[`item/${item}`];
+/**
+ * One sprite as an image, for saying what a layout makes in the game's own pictures.
+ *
+ * `folder` picks which set: items live under `item/` and blocks under their own name, so
+ * the same helper draws the chip beside "coal" and the chip beside "conveyor".
+ */
+export function itemIcon(item, pixels = 20, folder = "item/") {
+  const found = atlas?.sprites?.[`${folder}${item}`];
   if (!found || !sheet) return null;
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = pixels;

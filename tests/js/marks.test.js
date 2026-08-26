@@ -92,12 +92,35 @@ test("an old save with a bare side still reads", () => {
   assert.deepEqual(readMarks({ "3,7": "peut-etre" }), {}, "et rien d'autre ne passe");
 });
 
-test("a mark only goes on something that carries", () => {
+test("a mark goes on anything that can be plugged into", () => {
+  /* It used to be carriers only, which is wrong in the ordinary case: a belt coming from
+     outside ends on a press as happily as on another belt. */
   const node = (block, role) => ({ block, role });
   assert.equal(markable(node({ carries: "item" }, "conveyor")), true);
-  assert.equal(markable(node({}, "crafter")), false, "on ne branche pas sur une usine");
+  assert.equal(markable(node({}, "crafter")), true, "une bande peut finir sur une usine");
+  assert.equal(markable(node({}, "turret")), true, "et sur une tourelle");
+  assert.equal(markable(node({}, "store")), true, "et dans un coffre");
+
+  assert.equal(markable(node({}, "power")), false, "on ne branche pas une bande sur une pile");
+  assert.equal(markable(node({}, "unknown")), false);
   assert.equal(markable(node({ carries: "item" }, "source")), false,
                "une source de bac a sable verse deja toute seule");
+});
+
+test("a machine is offered its own recipe, not the whole shortfall", async () => {
+  const out = await analyse(paste([[0, 0, "graphite-press", 0], [4, 0, "duo", 0]]));
+  assert.deepEqual(out.offers["0,0"], ["coal"], "une presse mange du charbon");
+  assert.ok(out.offers["4,0"].includes("graphite"), "une tourelle mange ses munitions");
+  assert.ok(!out.offers["4,0"].includes("coal"), "et pas du charbon");
+});
+
+test("an arrival can land straight on a machine", async () => {
+  /* No belt in the picture at all: the schematic is one press, and the coal arrives on it
+     from a base that was not copied. */
+  const out = await analyse(paste([[0, 0, "graphite-press", 0]]), {},
+                            inAt([0, 0, "coal"]));
+  close(out.detail[0].fed, 1, "la presse tourne");
+  close(out.perMinute.graphite, 40, "et sort son graphite");
 });
 
 test("a marked tile with nothing picked takes what fits", () => {
