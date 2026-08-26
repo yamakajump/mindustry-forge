@@ -21,6 +21,7 @@ import mindustry.world.blocks.distribution.Sorter;
 import mindustry.world.blocks.distribution.StackConveyor;
 import mindustry.world.blocks.storage.StorageBlock;
 import mindustry.world.blocks.storage.Unloader;
+import mindustry.world.blocks.units.UnitFactory;
 import mindustry.world.blocks.distribution.Junction;
 import mindustry.world.blocks.distribution.Router;
 import mindustry.world.blocks.production.Drill;
@@ -212,6 +213,18 @@ public class DumpBlocks {
             liquids.put(liquid.name, entry);
         }
         root.put("liquids", liquids);
+
+        // The units, so a factory's plan can be read back out of a schematic: the
+        // configuration stores a content type and an id, and an id means nothing without
+        // the registry it came from.
+        Jval units = Jval.newObject();
+        for (mindustry.type.UnitType unit : Vars.content.units()) {
+            Jval entry = Jval.newObject();
+            entry.put("id", unit.id);
+            entry.put("health", unit.health);
+            units.put(unit.name, entry);
+        }
+        root.put("units", units);
 
         try {
             Files.createDirectories(out.getParent());
@@ -455,6 +468,31 @@ public class DumpBlocks {
             // other side can take. Stated as its own capacity per tick, which is past any
             // real pipe by three orders of magnitude.
             entry.put("output_per_second", block.liquidCapacity * TPS);
+            return;
+        }
+        if (block instanceof UnitFactory factory) {
+            /* A unit factory is a crafter whose output is not an item.
+            
+               It carries a list of plans - a unit, how long it takes, what it costs - and
+               the schematic says which one is selected. Everything else about it is a
+               `GenericCrafter`: progress accumulates while it has what it needs, and a
+               unit comes out when the progress is done. */
+            entry.put("role", "unit-factory");
+            Jval plans = Jval.newArray();
+            for (UnitFactory.UnitPlan plan : factory.plans) {
+                Jval one = Jval.newObject();
+                one.put("unit", plan.unit.name);
+                one.put("unit_id", plan.unit.id);
+                one.put("time", plan.time);
+                Jval needs = Jval.newObject();
+                for (ItemStack stack : plan.requirements) {
+                    needs.put(stack.item.name, stack.amount);
+                }
+                one.put("requirements", needs);
+                plans.asArray().add(one);
+            }
+            entry.put("plans", plans);
+            entry.put("input_liquid", liquidInputsOf(block));
             return;
         }
         if (block instanceof OverdriveProjector projector) {

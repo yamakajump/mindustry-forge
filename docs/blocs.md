@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 19 sur 103
+## Fait : 20 sur 103
 
 - [x] `GenericCrafter` &mdash; 17 blocs &mdash; toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -28,7 +28,7 @@ second, c'est une intuition qui a l'air d'un portage.
       electric-heater, heat-reactor, heat-source, oxidation-chamber, phase-heater, slag-heater
 - [x] `LiquidRouter` &mdash; 6 blocs &mdash; un routeur a liquide, qui est aussi une reserve
       liquid-container, liquid-router, liquid-tank, reinforced-liquid-container, reinforced-liquid-router, reinforced-liquid-tank
-- [ ] `UnitFactory` &mdash; 6 blocs &mdash; fabrique des unites : c'est ce qu'il a demande
+- [x] `UnitFactory` &mdash; 6 blocs &mdash; fabrique des unites : c'est ce qu'il a demande
       air-factory, ground-factory, mech-fabricator, naval-factory, ship-fabricator, tank-fabricator
 - [ ] `HeatCrafter` &mdash; 5 blocs &mdash; une usine qui a besoin de chaleur en plus
       atmospheric-concentrator, carbide-crucible, cyanogen-synthesizer, phase-synthesizer, surge-crucible

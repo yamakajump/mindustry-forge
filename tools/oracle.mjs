@@ -38,6 +38,7 @@ const sizeOf = (name) => known.blocks[name]?.size || 1;
 const held = (kind, id) => Uint8Array.from([5, kind, (id >> 8) & 255, id & 255]);
 const item = (name) => held(0, known.items[name].id);
 const liquid = (name) => held(4, known.liquids[name].id);
+const unit = (name) => held(6, known.units[name].id);
 
 /** A scenario may be a bare list of tiles, or tiles and the ground under them. */
 const shape = (built) => (Array.isArray(built) ? { tiles: built, ground: [] }
@@ -249,6 +250,58 @@ const SCENARIOS = {
      scenarios is the comparison. */
   "power-short": () => laserDrill(1),
   "power-plenty": () => laserDrill(2),
+
+  /* A ground factory making daggers: ten silicon and ten lead every nine hundred frames,
+     which is fifteen seconds, so two in thirty.
+  
+     Every feed touches what it feeds. The first go at this had the generators diagonal to
+     the router and the belts stopping a tile short of the factory, so nothing at all was
+     connected and both engines dutifully made nothing: the right answer to the wrong
+     question, which is this scenario file's recurring failure mode.
+  
+     What comes out is not an item and never reaches a container, so the measurement is
+     the units standing on the map at the end. */
+  /* The same factory pointed into its own generators, so the dagger it builds has nowhere
+     to go. It builds exactly one and then sits on its silicon for the rest of the run,
+     which is a thing worth being able to tell a player about their design. */
+  "units-boxed-in": () => ({
+    tiles: SCENARIOS["units-daggers"]().tiles.map((tile) =>
+      (tile.block === "ground-factory" ? { ...tile, rotation: 0 } : tile)),
+  }),
+
+  /* And the same factory with nobody having chosen what it builds, which makes nothing.
+     Worth a scenario of its own, because it is a mistake a player really makes. */
+  "units-unset": () => ({
+    tiles: SCENARIOS["units-daggers"]().tiles.map((tile) =>
+      (tile.block === "ground-factory" ? { ...tile, raw: undefined } : tile)),
+  }),
+
+  "units-daggers": () => ({
+    tiles: [
+      // Covers 0..2 by 0..2.
+      // Set to build daggers. A factory nobody has configured makes nothing at all:
+      // `currentPlan` starts at -1, which is a thing worth knowing about a schematic.
+      // Pointed west, at open ground: a finished unit needs somewhere to be put down,
+      // and a factory that has nowhere builds one and stops.
+      { x: 1, y: 1, block: "ground-factory", rotation: 2, raw: unit("dagger") },
+
+      { x: 0, y: 5, block: "item-source", rotation: 0, raw: item("silicon") },
+      { x: 0, y: 4, block: "conveyor", rotation: 3 },
+      { x: 0, y: 3, block: "conveyor", rotation: 3 },
+
+      { x: 2, y: 5, block: "item-source", rotation: 0, raw: item("lead") },
+      { x: 2, y: 4, block: "conveyor", rotation: 3 },
+      { x: 2, y: 3, block: "conveyor", rotation: 3 },
+
+      // Three generators against the factory's right edge, each with its own coal.
+      { x: 3, y: 0, block: "combustion-generator", rotation: 0 },
+      { x: 4, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
+      { x: 3, y: 1, block: "combustion-generator", rotation: 0 },
+      { x: 4, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
+      { x: 3, y: 2, block: "combustion-generator", rotation: 0 },
+      { x: 4, y: 2, block: "item-source", rotation: 0, raw: item("coal") },
+    ],
+  }),
 
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [

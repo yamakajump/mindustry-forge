@@ -8141,8 +8141,37 @@
         "silicon": 80
       },
       "power": 72,
-      "role": "sink",
-      "input":{},
+      "role": "unit-factory",
+      "plans": [
+        {
+          "unit": "dagger",
+          "unit_id": 0,
+          "time": 900,
+          "requirements":{
+            "silicon": 10,
+            "lead": 10
+          }
+        },
+        {
+          "unit": "crawler",
+          "unit_id": 10,
+          "time": 600,
+          "requirements":{
+            "silicon": 8,
+            "coal": 10
+          }
+        },
+        {
+          "unit": "nova",
+          "unit_id": 5,
+          "time": 2400,
+          "requirements":{
+            "silicon": 30,
+            "lead": 20,
+            "titanium": 20
+          }
+        }
+      ],
       "input_liquid":{}
     },
     "air-factory":{
@@ -8163,8 +8192,26 @@
         "silicon": 60
       },
       "power": 72,
-      "role": "sink",
-      "input":{},
+      "role": "unit-factory",
+      "plans": [
+        {
+          "unit": "flare",
+          "unit_id": 15,
+          "time": 900,
+          "requirements":{
+            "silicon": 15
+          }
+        },
+        {
+          "unit": "mono",
+          "unit_id": 20,
+          "time": 2100,
+          "requirements":{
+            "silicon": 30,
+            "lead": 15
+          }
+        }
+      ],
       "input_liquid":{}
     },
     "naval-factory":{
@@ -8185,8 +8232,27 @@
         "metaglass": 120
       },
       "power": 72,
-      "role": "sink",
-      "input":{},
+      "role": "unit-factory",
+      "plans": [
+        {
+          "unit": "risso",
+          "unit_id": 25,
+          "time": 2700,
+          "requirements":{
+            "silicon": 20,
+            "metaglass": 35
+          }
+        },
+        {
+          "unit": "retusa",
+          "unit_id": 30,
+          "time": 2100,
+          "requirements":{
+            "silicon": 15,
+            "titanium": 20
+          }
+        }
+      ],
       "input_liquid":{}
     },
     "additive-reconstructor":{
@@ -8391,8 +8457,18 @@
         "beryllium": 150
       },
       "power": 90,
-      "role": "sink",
-      "input":{},
+      "role": "unit-factory",
+      "plans": [
+        {
+          "unit": "stell",
+          "unit_id": 38,
+          "time": 2100,
+          "requirements":{
+            "beryllium": 40,
+            "silicon": 50
+          }
+        }
+      ],
       "input_liquid":{}
     },
     "ship-fabricator":{
@@ -8412,8 +8488,18 @@
         "beryllium": 200
       },
       "power": 90,
-      "role": "sink",
-      "input":{},
+      "role": "unit-factory",
+      "plans": [
+        {
+          "unit": "elude",
+          "unit_id": 49,
+          "time": 2400,
+          "requirements":{
+            "graphite": 50,
+            "silicon": 70
+          }
+        }
+      ],
       "input_liquid":{}
     },
     "mech-fabricator":{
@@ -8434,8 +8520,18 @@
         "tungsten": 10
       },
       "power": 90,
-      "role": "sink",
-      "input":{},
+      "role": "unit-factory",
+      "plans": [
+        {
+          "unit": "merui",
+          "unit_id": 43,
+          "time": 2400,
+          "requirements":{
+            "beryllium": 50,
+            "silicon": 70
+          }
+        }
+      ],
       "input_liquid":{}
     },
     "tank-refabricator":{
@@ -9913,6 +10009,284 @@
       "color": "#89e8b6",
       "heat_capacity": 0.5,
       "temperature": 0.5
+    }
+  },
+  "units":{
+    "dagger":{
+      "id": 0,
+      "health": 150
+    },
+    "mace":{
+      "id": 1,
+      "health": 550
+    },
+    "fortress":{
+      "id": 2,
+      "health": 900
+    },
+    "scepter":{
+      "id": 3,
+      "health": 9000
+    },
+    "reign":{
+      "id": 4,
+      "health": 24000
+    },
+    "nova":{
+      "id": 5,
+      "health": 120
+    },
+    "pulsar":{
+      "id": 6,
+      "health": 320
+    },
+    "quasar":{
+      "id": 7,
+      "health": 640
+    },
+    "vela":{
+      "id": 8,
+      "health": 8200
+    },
+    "corvus":{
+      "id": 9,
+      "health": 18000
+    },
+    "crawler":{
+      "id": 10,
+      "health": 150
+    },
+    "atrax":{
+      "id": 11,
+      "health": 600
+    },
+    "spiroct":{
+      "id": 12,
+      "health": 1000
+    },
+    "arkyid":{
+      "id": 13,
+      "health": 8000
+    },
+    "toxopid":{
+      "id": 14,
+      "health": 22000
+    },
+    "flare":{
+      "id": 15,
+      "health": 70
+    },
+    "horizon":{
+      "id": 16,
+      "health": 340
+    },
+    "zenith":{
+      "id": 17,
+      "health": 700
+    },
+    "antumbra":{
+      "id": 18,
+      "health": 7200
+    },
+    "eclipse":{
+      "id": 19,
+      "health": 22000
+    },
+    "mono":{
+      "id": 20,
+      "health": 100
+    },
+    "poly":{
+      "id": 21,
+      "health": 400
+    },
+    "mega":{
+      "id": 22,
+      "health": 460
+    },
+    "quad":{
+      "id": 23,
+      "health": 6000
+    },
+    "oct":{
+      "id": 24,
+      "health": 24000
+    },
+    "risso":{
+      "id": 25,
+      "health": 280
+    },
+    "minke":{
+      "id": 26,
+      "health": 600
+    },
+    "bryde":{
+      "id": 27,
+      "health": 910
+    },
+    "sei":{
+      "id": 28,
+      "health": 11000
+    },
+    "omura":{
+      "id": 29,
+      "health": 22000
+    },
+    "retusa":{
+      "id": 30,
+      "health": 270
+    },
+    "oxynoe":{
+      "id": 31,
+      "health": 560
+    },
+    "cyerce":{
+      "id": 32,
+      "health": 870
+    },
+    "aegires":{
+      "id": 33,
+      "health": 12000
+    },
+    "navanax":{
+      "id": 34,
+      "health": 20000
+    },
+    "alpha":{
+      "id": 35,
+      "health": 150
+    },
+    "beta":{
+      "id": 36,
+      "health": 170
+    },
+    "gamma":{
+      "id": 37,
+      "health": 220
+    },
+    "stell":{
+      "id": 38,
+      "health": 850
+    },
+    "locus":{
+      "id": 39,
+      "health": 2100
+    },
+    "precept":{
+      "id": 40,
+      "health": 5000
+    },
+    "vanquish":{
+      "id": 41,
+      "health": 11000
+    },
+    "conquer":{
+      "id": 42,
+      "health": 22000
+    },
+    "merui":{
+      "id": 43,
+      "health": 680
+    },
+    "cleroi":{
+      "id": 44,
+      "health": 1100
+    },
+    "anthicus":{
+      "id": 45,
+      "health": 2700
+    },
+    "anthicus-missile":{
+      "id": 46,
+      "health": 55
+    },
+    "tecta":{
+      "id": 47,
+      "health": 6500
+    },
+    "collaris":{
+      "id": 48,
+      "health": 18000
+    },
+    "elude":{
+      "id": 49,
+      "health": 600
+    },
+    "avert":{
+      "id": 50,
+      "health": 1100
+    },
+    "obviate":{
+      "id": 51,
+      "health": 2300
+    },
+    "quell":{
+      "id": 52,
+      "health": 6000
+    },
+    "quell-missile":{
+      "id": 53,
+      "health": 45
+    },
+    "disrupt":{
+      "id": 54,
+      "health": 12000
+    },
+    "disrupt-missile":{
+      "id": 55,
+      "health": 70
+    },
+    "renale":{
+      "id": 56,
+      "health": 500
+    },
+    "latum":{
+      "id": 57,
+      "health": 20000
+    },
+    "evoke":{
+      "id": 58,
+      "health": 300
+    },
+    "incite":{
+      "id": 59,
+      "health": 500
+    },
+    "emanate":{
+      "id": 60,
+      "health": 700
+    },
+    "block":{
+      "id": 61,
+      "health": 1
+    },
+    "manifold":{
+      "id": 62,
+      "health": 200
+    },
+    "assembly-drone":{
+      "id": 63,
+      "health": 90
+    },
+    "scathe-missile":{
+      "id": 64,
+      "health": 240
+    },
+    "scathe-missile-phase":{
+      "id": 65,
+      "health": 500
+    },
+    "scathe-missile-surge":{
+      "id": 66,
+      "health": 300
+    },
+    "scathe-missile-surge-split":{
+      "id": 67,
+      "health": 50
+    },
+    "turret-unit-build-tower":{
+      "id": 68,
+      "health": 1
     }
   }
 }

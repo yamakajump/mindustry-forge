@@ -4,6 +4,54 @@
   "seconds": 30,
   "pools": [],
   "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "bridge-conveyor",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "bridge-conveyor",
+      "x": 17,
+      "y": 13,
+      "efficiency": 0
+    },
+    {
+      "block": "conveyor",
+      "x": 18,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 3
+      }
+    },
+    {
+      "block": "vault",
+      "x": 20,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 187
+      }
+    }
+  ],
   "containers": [
     {
       "block": "vault",
