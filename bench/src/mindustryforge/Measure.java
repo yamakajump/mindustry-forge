@@ -269,6 +269,11 @@ public class Measure implements ApplicationListener {
                 one.put("progress", f.progress);
                 one.put("payload", f.payload != null);
             }
+            if (tile.build instanceof mindustry.world.blocks.defense.turrets.ItemTurret.ItemTurretBuild turret) {
+                // A turret's ammunition is not in its item module, so it never shows up as
+                // something held: counted here, it becomes the thing a scenario can check.
+                one.put("ammo", turret.totalAmmo);
+            }
             if (tile.build.items != null && tile.build.items.total() > 0) {
                 Jval held = Jval.newObject();
                 for (Item item : Vars.content.items()) {

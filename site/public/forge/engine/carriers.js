@@ -618,10 +618,36 @@ const source = {
   },
 };
 
-/** A machine, a turret, anything that swallows and gives nothing back. Slice two. */
+/** A machine, anything that swallows and gives nothing back. */
 const sink = {
   acceptItem(build, source, item) {
     return build.wants(item) && build.items.get(item) < build.itemCapacity;
+  },
+};
+
+/**
+ * A turret that eats items.
+ *
+ * Its ammunition is not in its item module: an item handed to it is converted into
+ * `ammoMultiplier` units of ammunition and the item itself is gone. So a turret does not
+ * hold graphite, it holds ammunition that used to be graphite, and it takes more until
+ * `maxAmmo` is reached and then refuses.
+ *
+ * How fast it eats depends on how often it fires, which a still picture cannot know. What
+ * a schematic can be told is the other half: how much it swallows before it stops, which
+ * is what backs a belt up behind a row of turrets nobody is shooting at.
+ */
+const itemTurret = {
+  begin(build) { build.state.ammo = 0; },
+
+  acceptItem(build, source, item) {
+    const worth = build.block.ammo_worth?.[item];
+    if (!worth) return false;
+    return build.state.ammo + worth <= (build.block.max_ammo || 30);
+  },
+
+  handleItem(build, source, item) {
+    build.state.ammo += build.block.ammo_worth?.[item] || 0;
   },
 };
 
@@ -639,7 +665,7 @@ const BY_ROLE = {
   store,
   unloader,
   sink,
-  turret: sink,
+  turret: itemTurret,
   generator: sink,
   duct,
   core,

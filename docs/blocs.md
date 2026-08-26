@@ -12,11 +12,11 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 23 sur 103
+## Fait : 24 sur 103
 
 - [x] `GenericCrafter` &mdash; 17 blocs &mdash; toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
-- [ ] `ItemTurret` &mdash; 17 blocs &mdash; mange ses munitions au rythme de son tir
+- [x] `ItemTurret` &mdash; 17 blocs &mdash; mange ses munitions au rythme de son tir
       breach, cyclone, diffuse, disperse, duo, foreshadow, et 11 autres
 - [ ] `Reconstructor` &mdash; 8 blocs &mdash; ameliore une unite en une meilleure
       additive-reconstructor, exponential-reconstructor, mech-refabricator, multiplicative-reconstructor, prime-refabricator, ship-refabricator, et 2 autres

@@ -106,6 +106,10 @@ export async function ported(code, ticks, ground = []) {
       items: Object.fromEntries([...build.items.counts].filter(([, n]) => n > 0)),
     }));
 
+  const ammo = world.builds
+    .filter((build) => build.role === "turret" && (build.state.ammo || 0) > 0)
+    .map((build) => ({ x: build.x, y: build.y, ammo: build.state.ammo }));
+
   const units = {};
   for (const build of world.builds) {
     const made = build.state.made || 0;
@@ -119,6 +123,7 @@ export async function ported(code, ticks, ground = []) {
     pools: lineUp(pools, ["liquid", "amount"]),
     batteries: lineUp(batteries, ["charge"]),
     stocks: lineUp(stocks, ["items"]),
+    ammo: lineUp(ammo, ["ammo"]),
     units,
   };
 }
@@ -136,6 +141,9 @@ export function measured(name) {
     stocks: lineUp((raw.running || [])
       .filter((one) => one.holds && MACHINE_BLOCKS.has(one.block))
       .map((one) => ({ x: one.x, y: one.y, items: one.holds })), ["items"]),
+    ammo: lineUp((raw.running || [])
+      .filter((one) => (one.ammo || 0) > 0)
+      .map((one) => ({ x: one.x, y: one.y, ammo: one.ammo })), ["ammo"]),
     units: raw.units || {},
   };
 }
@@ -205,6 +213,18 @@ export function differences(mine, theirs) {
         out.push({ what: `${here.at} retient ${item}`, mine: a, theirs: b,
                    gap: b ? Math.abs(a - b) / b : (a ? 1 : 0) });
       }
+    }
+  }
+
+  if (mine.ammo.length !== theirs.ammo.length) {
+    out.push({ what: "tourelles chargees", mine: mine.ammo.length,
+               theirs: theirs.ammo.length, gap: 1 });
+  } else {
+    for (let i = 0; i < mine.ammo.length; i++) {
+      const a = mine.ammo[i].ammo;
+      const b = theirs.ammo[i].ammo;
+      out.push({ what: `${mine.ammo[i].at} munitions`, mine: a, theirs: b,
+                 gap: b ? Math.abs(a - b) / b : (a ? 1 : 0) });
     }
   }
 

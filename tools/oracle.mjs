@@ -324,6 +324,26 @@ const SCENARIOS = {
     { x: 2, y: 3, block: "vault", rotation: 0 },
   ],
 
+  /* A turret at the end of a belt, with nobody shooting at it. It fills to its capacity
+     and then refuses, which is the half of a turret a still picture can answer: not how
+     fast it eats, but how much it swallows before it backs the belt up. */
+  "turret-fills": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("graphite") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+    { x: 3, y: 0, block: "duo", rotation: 0 },
+  ],
+
+  /* A bigger one, which holds more and is worth more per item. */
+  "turret-salvo": () => [
+    { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("graphite") },
+    { x: 1, y: 1, block: "conveyor", rotation: 0 },
+    { x: 2, y: 1, block: "conveyor", rotation: 0 },
+    // Two across, stored at its corner: it reaches to x+1, so it starts where the belt
+    // ends rather than a tile further on.
+    { x: 3, y: 1, block: "salvo", rotation: 0 },
+  ],
+
   /* A core, which is where most schematics that are not self-contained are meant to
      deliver. It takes anything and hands nothing back. */
   "core-delivery": () => [
