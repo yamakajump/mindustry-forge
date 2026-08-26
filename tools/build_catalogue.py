@@ -36,7 +36,7 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "overflow", "invert", "overflow_speed", "recharge", "output_router",
         "dump_time", "kind", "liquid_pressure", "power_capacity", "accepts", "drinks", "warmup_speed", "plans", "duct_speed", "armored", "max_ammo", "ammo_worth",
         "heat_output", "warmup_rate", "heat_requirement", "overheat_scale",
-        "max_efficiency", "split_heat")
+        "max_efficiency", "split_heat", "buffered", "buffer_speed", "buffer_capacity")
 
 
 def main() -> None:

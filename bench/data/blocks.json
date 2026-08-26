@@ -5138,7 +5138,10 @@
       "carries": "item",
       "range": 4,
       "items_per_second": 60,
-      "transport_time": 0
+      "transport_time": 0,
+      "buffered": true,
+      "buffer_speed": 74,
+      "buffer_capacity": 14
     },
     "phase-conveyor":{
       "name": "phase-conveyor",

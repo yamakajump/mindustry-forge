@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 29 sur 103
+## Fait : 31 sur 103
 
 - [x] `GenericCrafter` &mdash; 17 blocs &mdash; toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -120,7 +120,7 @@ second, c'est une intuition qui a l'air d'un portage.
       armored-conveyor
 - [ ] `AutoDoor` &mdash; 1 bloc
       blast-door
-- [ ] `BufferedItemBridge` &mdash; 1 bloc
+- [x] `BufferedItemBridge` &mdash; 1 bloc
       bridge-conveyor
 - [ ] `ColoredFloor` &mdash; 1 bloc
       colored-floor
@@ -148,7 +148,7 @@ second, c'est une intuition qui a l'air d'un portage.
       impact-reactor
 - [ ] `Incinerator` &mdash; 1 bloc
       incinerator
-- [ ] `ItemBridge` &mdash; 1 bloc &mdash; porte par dessus un trou, vers la case qu'il retient
+- [x] `ItemBridge` &mdash; 1 bloc &mdash; porte par dessus un trou, vers la case qu'il retient
       phase-conveyor
 - [ ] `ItemIncinerator` &mdash; 1 bloc
       slag-incinerator

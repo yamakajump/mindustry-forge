@@ -346,36 +346,48 @@ const unloader = {
  * `transportTime` frames. Unlinked, it behaves as an ordinary block and hands round.
  */
 const bridge = {
-  begin(build) { build.state.timer = 0; },
+  begin(build) {
+    build.state.timer = 0;
+    build.state.accept = 0;
+    // A buffered bridge is a delay line rather than a hand-off: what enters at one end
+    // spends `speed` frames inside before it may leave the other.
+    build.state.queue = [];
+  },
 
   acceptItem(build, source, item) {
     return build.items.total < build.itemCapacity;
   },
 
   update(build, world, step) {
-    /* The timer runs whether or not there is anything to send, which is what `Building`'s
-       own `timer(id, time)` does: it counts game time, not attempts. Reset only on a
-       successful hand-off, a bridge that had nothing to send for a moment then sent one
-       immediately and ran fast: measured against the engine, 196 against 187. */
+    const link = build.node.link;
+    const target = link ? world.at(link[0], link[1]) : null;
+
+    // Unlinked, it is an ordinary block and hands round whatever it holds.
+    if (!target) {
+      if (build.items.total) build.dump();
+      return;
+    }
+
+    if (build.block.buffered) {
+      buffered(build, target, step);
+      return;
+    }
+
+    /* `ItemBridge.updateTransport`: the counter runs whether or not there is anything to
+       send, because it counts game time and not attempts. Reset only on a successful
+       hand-off, a bridge that had nothing to send for a moment then sent one immediately
+       and ran fast. */
     const wait = build.block.transport_time || TICKS / (build.block.items_per_second || 11);
     build.state.timer += build.delta(step);
     if (build.state.timer < wait) return;
     build.state.timer %= wait;
 
     if (!build.items.total) return;
-
-    const link = build.node.link;
-    const target = link ? world.at(link[0], link[1]) : null;
     const item = build.items.first();
-
-    if (target) {
-      if (target.acceptItem(build, item)) {
-        target.handleItem(build, item);
-        build.items.remove(item);
-      }
-      return;
+    if (target.acceptItem(build, item)) {
+      target.handleItem(build, item);
+      build.items.remove(item);
     }
-    build.dump();
   },
 };
 
@@ -617,6 +629,44 @@ const source = {
     }
   },
 };
+
+/**
+ * `BufferedItemBridgeBuild.updateTransport`: a delay line with a gate at the far end.
+ *
+ * One item is taken off the block's own stock into the buffer per update. It may leave
+ * once it has spent `speed` frames inside, and the far end takes at most one every four
+ * frames. Both halves matter: the delay is why a line of them lags, and the gate is why
+ * one carries fifteen a second and not sixty.
+ */
+function buffered(build, target, step) {
+  const speed = build.block.buffer_speed ?? 40;
+  const room = build.block.buffer_capacity ?? 50;
+
+  build.state.age = (build.state.age || 0) + build.delta(step);
+
+  if (build.state.queue.length < room && build.items.total) {
+    const item = build.items.first();
+    build.items.remove(item);
+    build.state.queue.push({ item, at: build.state.age });
+  }
+
+  /* The gate is checked first and spends itself when it fires, whether or not anything
+     goes through. `timer(timerAccept, 4) && item != null && other.acceptItem(...)` reads
+     left to right, so the timer is consumed before the rest is even looked at. Reset only
+     on success, the bridge saved up its turns and handed one item too many over thirty
+     seconds. */
+  build.state.accept += build.delta(step);
+  if (build.state.accept < 4) return;
+  build.state.accept %= 4;
+
+  const front = build.state.queue[0];
+  if (!front || build.state.age - front.at < speed) return;
+
+  if (target.acceptItem(build, front.item)) {
+    target.handleItem(build, front.item);
+    build.state.queue.shift();
+  }
+}
 
 /** A machine, anything that swallows and gives nothing back. */
 const sink = {

@@ -26,14 +26,14 @@ const { differences, KEPT, measured, paintedFor, ported } = await import(
   new URL("../../tools/compare.mjs", import.meta.url));
 
 /**
- * The one scenario that does not match yet, and by how much.
+ * What does not match yet, and by how much.
  *
- * Named rather than quietly skipped. A bridge line hands over 196 items where the engine
- * hands over 187, four and eight tenths per cent fast, and until `ItemBridge` is read
- * closely enough to say why, the gap is a number in a test rather than a surprise later.
+ * Named rather than quietly skipped. The bridge used to be here at four and eight tenths
+ * per cent and is not any more: it turned out to be a `BufferedItemBridge`, a delay line
+ * with a gate rather than a hand-off with a timer, and writing down the gap is what kept
+ * it in view until it was found.
  */
 const KNOWN_GAPS = {
-  "bridge-span": 0.05,
   // A laser drill with power to spare makes 46 where the engine makes 47, one item in
   // thirty seconds. The same drill on a grid that cannot keep up matches exactly, which
   // is the odd part: the harder case is the one that is right. Left as a number rather
