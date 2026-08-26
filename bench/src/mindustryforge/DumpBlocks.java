@@ -9,12 +9,27 @@ import mindustry.type.Item;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
 import mindustry.world.blocks.distribution.Conveyor;
+import mindustry.world.blocks.distribution.Duct;
+import mindustry.world.blocks.distribution.ItemBridge;
+import mindustry.world.blocks.distribution.OverflowGate;
+import mindustry.world.blocks.distribution.Sorter;
 import mindustry.world.blocks.distribution.Junction;
 import mindustry.world.blocks.distribution.Router;
 import mindustry.world.blocks.production.Drill;
+import mindustry.world.blocks.liquid.Conduit;
+import mindustry.world.blocks.liquid.LiquidBridge;
+import mindustry.world.blocks.liquid.LiquidJunction;
+import mindustry.world.blocks.liquid.LiquidRouter;
+import mindustry.world.blocks.power.Battery;
+import mindustry.world.blocks.power.ConsumeGenerator;
+import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.power.PowerNode;
 import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.consumers.Consume;
+import mindustry.type.LiquidStack;
 import mindustry.world.consumers.ConsumeItems;
+import mindustry.world.consumers.ConsumeLiquid;
+import mindustry.world.consumers.ConsumeLiquids;
 import mindustry.world.consumers.ConsumePower;
 
 import java.io.PrintWriter;
@@ -113,6 +128,7 @@ public class DumpBlocks {
     private static void describeRole(Block block, Jval entry) {
         if (block instanceof Conveyor conveyor) {
             entry.put("role", "conveyor");
+            entry.put("carries", "item");
             // displayedSpeed is items per second at full compression, which is the figure
             // the game shows the player and the only one worth comparing tools on.
             entry.put("items_per_second", conveyor.displayedSpeed);
@@ -120,11 +136,43 @@ public class DumpBlocks {
         }
         if (block instanceof Junction junction) {
             entry.put("role", "junction");
+            entry.put("carries", "item");
             entry.put("items_per_second", TPS / Math.max(1f, junction.speed));
+            return;
+        }
+        if (block instanceof Duct duct) {
+            // A duct carries like a conveyor and states its speed the same way.
+            entry.put("role", "conveyor");
+            entry.put("carries", "item");
+            entry.put("items_per_second", TPS / Math.max(1f, duct.speed) * 2f);
+            return;
+        }
+        if (block instanceof ItemBridge bridge && !(block instanceof LiquidBridge)) {
+            // A bridge carries items over a gap to a tile it remembers, so it is a carrier
+            // and not a sink. Classified as a sink it swallowed everything handed to it:
+            // ten of them in the first real schematic, and the whole line downstream read
+            // as producing nothing.
+            entry.put("role", "bridge");
+            entry.put("carries", "item");
+            entry.put("range", bridge.range);
+            entry.put("items_per_second", TPS / Math.max(1f, bridge.transportTime));
+            return;
+        }
+        if (block instanceof OverflowGate) {
+            // Straight on when it can, to the sides when it cannot. Modelled as a router
+            // for now, which is right on the share it passes and wrong on the priority.
+            entry.put("role", "router");
+            entry.put("carries", "item");
+            return;
+        }
+        if (block instanceof Sorter) {
+            entry.put("role", "sorter");
+            entry.put("carries", "item");
             return;
         }
         if (block instanceof Router) {
             entry.put("role", "router");
+            entry.put("carries", "item");
             return;
         }
         if (block instanceof Drill drill) {
@@ -136,6 +184,25 @@ public class DumpBlocks {
             entry.put("drill_time", drill.drillTime);
             entry.put("hardness_multiplier", drill.hardnessDrillMultiplier);
             entry.put("liquid_boost", drill.liquidBoostIntensity);
+            return;
+        }
+        if (block instanceof Conduit || block instanceof LiquidJunction
+                || block instanceof LiquidRouter || block instanceof LiquidBridge) {
+            // Liquids move through their own network, and leaving them out is not a small
+            // omission: a schematic that turns water into power reads as producing nothing
+            // at all, or worse, as producing its own intermediates for free.
+            // Liquids and items travel on networks that never touch. Saying which one a
+            // carrier belongs to is what stops a conveyor from being credited with
+            // delivering water, which reads as a working factory and is not one.
+            entry.put("role", block instanceof LiquidBridge ? "bridge" : "conduit");
+            entry.put("carries", "liquid");
+            return;
+        }
+        if (block instanceof PowerNode || block instanceof Battery) {
+            // Wires and buffers. They neither make nor spend power on balance, but a
+            // schematic full of them is a power schematic, and saying so is most of what a
+            // reader needs.
+            entry.put("role", "power");
             return;
         }
         if (block instanceof GenericCrafter crafter) {
@@ -150,8 +217,32 @@ public class DumpBlocks {
                 }
             }
             entry.put("output", output);
+
+            // Liquids out, per second, since a liquid is produced continuously rather than
+            // in batches. A spore press makes oil and nothing else, and without this the
+            // press reads as consuming spore pods and returning nothing.
+            Jval liquidOut = Jval.newObject();
+            if (crafter.outputLiquids != null) {
+                for (LiquidStack stack : crafter.outputLiquids) {
+                    liquidOut.put(stack.liquid.name, stack.amount * TPS);
+                }
+            }
+            entry.put("output_liquid", liquidOut);
+
             entry.put("input", inputsOf(crafter));
+            entry.put("input_liquid", liquidInputsOf(crafter));
             entry.put("power", powerOf(crafter));
+            return;
+        }
+        if (block instanceof PowerGenerator generator) {
+            // What the whole schematic exists for, in the case that started this: water in,
+            // power out. Classified as a sink before, with no consumption at all, so the
+            // coal feeding it was counted as the layout's output.
+            entry.put("role", "generator");
+            entry.put("power_out", generator.powerProduction * TPS);
+            entry.put("input", inputsOf(block));
+            entry.put("input_liquid", liquidInputsOf(block));
+            entry.put("craft_time", itemDurationOf(block));
             return;
         }
         if (block.hasItems && block.acceptsItems) {
@@ -160,7 +251,43 @@ public class DumpBlocks {
             // nothing comes back out.
             entry.put("role", "sink");
             entry.put("input", inputsOf(block));
+            entry.put("input_liquid", liquidInputsOf(block));
+            entry.put("power", powerOf(block));
+            return;
         }
+        if (block.hasLiquids && block.consumesPower) {
+            entry.put("role", "sink");
+            entry.put("input_liquid", liquidInputsOf(block));
+            entry.put("power", powerOf(block));
+        }
+    }
+
+    /** Liquids a block drinks, per second. */
+    private static Jval liquidInputsOf(Block block) {
+        Jval input = Jval.newObject();
+        for (Consume consume : block.consumers) {
+            if (consume instanceof ConsumeLiquid one) {
+                input.put(one.liquid.name, one.amount * TPS);
+            } else if (consume instanceof ConsumeLiquids many) {
+                for (LiquidStack stack : many.liquids) {
+                    input.put(stack.liquid.name, stack.amount * TPS);
+                }
+            }
+        }
+        return input;
+    }
+
+    /**
+     * How long one unit of fuel lasts a generator, in ticks.
+     *
+     * A generator states how much power it makes and how long an item burns, never a rate
+     * of consumption, so the rate has to come from the two together.
+     */
+    private static float itemDurationOf(Block block) {
+        if (block instanceof ConsumeGenerator burner) {
+            return burner.itemDuration;
+        }
+        return 0f;
     }
 
     private static Jval inputsOf(Block block) {

@@ -84,6 +84,30 @@ function outputsOf(node) {
   if (node.role === "junction") {
     return DIRECTIONS.map(([dx, dy]) => [node.x + dx, node.y + dy]);
   }
+  if (node.role === "bridge") {
+    // A bridge carries over a gap to the tile it remembers, and that memory is the whole
+    // point of it: without reading the link, a line that jumps a wall reads as two
+    // separate lines, both of which end in the air. The offset is stored relative to the
+    // bridge, which is what `Schematics.mapConfig` writes.
+    const link = node.config && node.config.type === 7
+      ? [node.x + node.config.dx, node.y + node.config.dy]
+      : null;
+    if (link) return [link];
+    // Unlinked, it behaves as an ordinary block and hands to whatever touches it.
+    return DIRECTIONS.map(([dx, dy]) => [node.x + dx, node.y + dy]);
+  }
+  // Nothing leaves a block that makes nothing. A battery, a power node, a turret and a
+  // generator all sit in the middle of a base and hand nothing on, and treating them as
+  // offloaders gave the first real schematic 39 outgoing links from its batteries and 49
+  // from its steam generators: every drop of water supplied to it drained into a battery
+  // and the layout reported producing nothing at all.
+  if (node.role === "power" || node.role === "sink") return [];
+  if ((node.role === "crafter" || node.role === "generator")
+      && !Object.keys(node.block.output || {}).length
+      && !Object.keys(node.block.output_liquid || {}).length) {
+    return [];
+  }
+
   // Routers, drills, crafters and anything else that offloads: every tile touching the
   // footprint, minus the footprint itself.
   const covered = new Set(node.footprint.map(([x, y]) => `${x},${y}`));
@@ -109,17 +133,38 @@ function outputsOf(node) {
  * belts pointing at each other.
  */
 function accepts(node, fromTile) {
-  if (node.role === "unknown") return false;
+  if (node.role === "unknown" || node.role === "power") return false;
   if (node.role === "conveyor") {
     const [dx, dy] = DIRECTIONS[node.rotation % 4];
     return !(fromTile[0] === node.x + dx && fromTile[1] === node.y + dy);
   }
-  if (node.role === "junction" || node.role === "router") return true;
+  if (node.role === "junction" || node.role === "router" || node.role === "conduit"
+      || node.role === "bridge" || node.role === "sorter") {
+    return true;
+  }
   // A drill makes its own ore and takes nothing. Feeding one is a wasted belt.
   if (node.role === "drill") return false;
-  return node.role === "crafter" || node.role === "sink" ||
-    Object.keys(node.block.input || {}).length > 0;
+  return node.role === "crafter" || node.role === "sink" || node.role === "generator" ||
+    Object.keys(node.block.input || {}).length > 0 ||
+    Object.keys(node.block.input_liquid || {}).length > 0;
 }
+
+/**
+ * Which resources are liquids, taken from the catalogue rather than listed here.
+ *
+ * It matters because the two travel on separate networks: a conveyor will not carry water
+ * and a conduit will not carry coal. Mixing them lets a belt deliver oil, which reads as a
+ * working factory and is not one.
+ */
+const LIQUIDS = new Set();
+function noteLiquids() {
+  if (LIQUIDS.size) return;
+  for (const block of Object.values(catalogue.blocks)) {
+    for (const name of Object.keys(block.input_liquid || {})) LIQUIDS.add(name);
+    for (const name of Object.keys(block.output_liquid || {})) LIQUIDS.add(name);
+  }
+}
+const isLiquid = (name) => LIQUIDS.has(name);
 
 /** Build the network a list of tiles describes. */
 export function buildGraph(tiles) {
@@ -131,6 +176,7 @@ export function buildGraph(tiles) {
     const node = {
       x: tile.x, y: tile.y, rotation: tile.rotation | 0,
       block, name: block.name, role: block.role || "",
+      config: tile.config || null,
       footprint: footprint(tile.x, tile.y, block.size || 1),
     };
     const index = nodes.length;
@@ -215,31 +261,81 @@ export function solve(graph, supply = {}) {
   return { through, fed, settled, rounds, delivered: delivered(graph, through) };
 }
 
+/** How much of everything a block needs per second to run flat out. */
+function appetite(block) {
+  const wants = {};
+  for (const item of Object.keys(block.input || {})) wants[item] = consumes(block, item);
+  for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
+    wants[liquid] = rate;
+  }
+  return wants;
+}
+
+/**
+ * What a block will actually take of what was handed to it.
+ *
+ * A conveyor will not carry water and a conduit will not carry coal. Letting them read as
+ * carrying anything made a belt deliver oil, which looks like a working factory and is
+ * not one.
+ */
+function filtered(node, arriving) {
+  const carries = node.block.carries;
+  if (!carries) return arriving;
+  const kept = {};
+  for (const [name, rate] of Object.entries(arriving)) {
+    if ((carries === "liquid") === isLiquid(name)) kept[name] = rate;
+  }
+  return kept;
+}
+
 function advance(node, index, arriving, through, fed) {
   const before = through[index];
   let now;
+  arriving = filtered(node, arriving);
 
-  if (node.role === "crafter") {
+  if (node.role === "crafter" || node.role === "generator") {
     // A recipe runs at the pace of its scarcest ingredient, never faster than its own
     // craft time. Fed twice the coal it can use, a press still makes one graphite every
     // ninety ticks, and the extra coal backs up rather than becoming graphite.
+    //
+    // Liquids count exactly as items do here, and leaving them out was the bug that
+    // mattered: a cultivator declared no inputs at all, so it made spore pods out of
+    // nothing, and a schematic that turns water into power was reported as making coal.
+    const wants = appetite(node.block);
     let share = 1;
-    for (const item of Object.keys(node.block.input || {})) {
-      const wanted = consumes(node.block, item);
+    for (const [name, wanted] of Object.entries(wants)) {
       if (wanted <= 0) continue;
-      share = Math.min(share, (arriving[item] || 0) / wanted);
+      share = Math.min(share, (arriving[name] || 0) / wanted);
     }
-    share = Math.max(0, Math.min(1, share));
+
+    // A generator that burns whatever flammable thing it is handed declares no input at
+    // all, because the game filters by flammability rather than by name. It eats one item
+    // every `craft_time` ticks, of whatever arrived.
+    if (node.role === "generator" && !Object.keys(wants).length && node.block.craft_time) {
+      const burn = TICKS / node.block.craft_time;
+      const offered = Object.entries(arriving)
+        .filter(([name]) => !isLiquid(name))
+        .reduce((sum, [, rate]) => sum + rate, 0);
+      share = Math.min(share, burn > 0 ? offered / burn : 1);
+    }
+
+    share = Math.max(0, Math.min(1, Number.isFinite(share) ? share : 0));
     fed[index] = share;
     now = {};
     for (const item of Object.keys(node.block.output || {})) {
       now[item] = produces(node.block, item) * share;
     }
-  } else if (node.role === "sink") {
+    for (const [liquid, rate] of Object.entries(node.block.output_liquid || {})) {
+      now[liquid] = rate * share;
+    }
+  } else if (node.role === "sink" || node.role === "power") {
     now = {};
   } else {
     // A belt is the commonest bottleneck in the game and the one players most often miss.
-    const cap = (node.role === "conveyor" || node.role === "junction")
+    // A conduit has no stated rate in the registry, so it is left unconstrained rather
+    // than treated as zero: an invented limit is worse than an absent one.
+    const cap = (node.role === "conveyor" || node.role === "junction"
+                 || node.role === "bridge")
       ? (node.block.items_per_second || Infinity) : Infinity;
     const total = totalOf(arriving);
     now = {};
@@ -253,6 +349,26 @@ function advance(node, index, arriving, through, fed) {
     if (Math.abs((now[key] || 0) - (before[key] || 0)) > SETTLED) return true;
   }
   return false;
+}
+
+/**
+ * Power made and power spent, per second.
+ *
+ * Not routed through the grid. A power node has a reach and a schematic can hold two
+ * networks that never touch, so this is a budget rather than a simulation, and it is
+ * stated as one. It is also the number the schematic that exposed all this was named
+ * after: "Water power 2306 energy".
+ */
+export function powerBudget(graph, solved) {
+  let made = 0;
+  let spent = 0;
+  for (let index = 0; index < graph.nodes.length; index++) {
+    const block = graph.nodes[index].block;
+    const running = solved.fed[index] === undefined ? 1 : solved.fed[index];
+    made += (block.power_out || 0) * running;
+    spent += (block.power || 0) * running;
+  }
+  return { made, spent, net: made - spent };
 }
 
 /**
@@ -289,13 +405,34 @@ function arrivingAt(graph, through, index) {
  * supply and counted every item straight back out as delivered: the first real schematic
  * this ran on reported 240 coal a minute out of one stranded conveyor.
  */
-function entrances(graph) {
-  const out = [];
+function entrances(graph, resource) {
+  const carries = isLiquid(resource) ? "liquid" : "item";
+  const on = graph.nodes.filter((n) => n.block.carries === carries);
+
+  // A belt from outside arrives at the edge of what was copied, so the entry points are
+  // the carriers on the boundary. Asking instead for blocks with nothing feeding them
+  // finds none at all in a layout whose network loops, which is most power schematics:
+  // the first one tried this way had nineteen entry points, every one of them a battery,
+  // and every drop of water supplied drained into one.
+  if (!on.length) return [];
+  const left = Math.min(...on.map((n) => n.x));
+  const right = Math.max(...on.map((n) => n.x));
+  const bottom = Math.min(...on.map((n) => n.y));
+  const top = Math.max(...on.map((n) => n.y));
+
+  const edge = [];
   for (let index = 0; index < graph.nodes.length; index++) {
-    if (!graph.into[index].length && graph.out[index].length &&
-        graph.nodes[index].role !== "drill") out.push(index);
+    const node = graph.nodes[index];
+    if (node.block.carries !== carries || !graph.out[index].length) continue;
+    if (node.x === left || node.x === right || node.y === bottom || node.y === top) {
+      edge.push(index);
+    }
   }
-  return out;
+  // A network entirely inside its own box still has to be fed somewhere, and the head of
+  // it is as good a place as any.
+  return edge.length ? edge
+    : graph.nodes.map((_, i) => i).filter((i) =>
+        graph.nodes[i].block.carries === carries && graph.out[i].length);
 }
 
 /** Blocks that neither receive nor deliver anything. */
@@ -355,40 +492,86 @@ function surplusOf(graph, solved, feeds) {
  */
 export async function analyse(text, supply = {}) {
   await loadCatalogue();
+  noteLiquids();
   const parsed = await fromBase64(text);
   const graph = buildGraph(parsed.tiles);
 
+  // Each resource enters on its own network, since water and coal do not share a pipe.
+  //
+  // Split across the entry points rather than repeated at each. "water=100" means a
+  // hundred a second arrives, not a hundred a second per pipe: handed to all of them, a
+  // schematic with fifteen edge conduits was fed fifteen hundred and duly reported
+  // fifteen thousand water a minute coming back out.
   const feeds = {};
-  if (Object.keys(supply).length) {
-    for (const index of entrances(graph)) feeds[index] = { ...supply };
+  for (const [resource, rate] of Object.entries(supply)) {
+    const where = entrances(graph, resource);
+    if (!where.length) continue;
+    const each = rate / where.length;
+    for (const index of where) {
+      feeds[index] = { ...(feeds[index] || {}), [resource]: each };
+    }
   }
 
   const solved = solve(graph, feeds);
 
+  // A block on the power grid is not a block somebody forgot to connect. Batteries and
+  // nodes carry nothing on the item or liquid network by design, and calling twenty-one
+  // batteries "connected to nothing" buries the two bridges that really were.
   const idle = {};
   for (const index of orphans(graph)) {
-    const name = graph.nodes[index].name;
-    idle[name] = (idle[name] || 0) + 1;
+    const node = graph.nodes[index];
+    if (node.role === "power" || node.role === "generator") continue;
+    idle[node.name] = (idle[node.name] || 0) + 1;
   }
 
   const unknown = {};
   const cost = {};
-  let power = 0;
   for (const node of graph.nodes) {
     if (node.role === "unknown") unknown[node.name] = (unknown[node.name] || 0) + 1;
     for (const [item, amount] of Object.entries(node.block.cost || {})) {
       cost[item] = (cost[item] || 0) + amount;
     }
-    power += node.block.power || 0;
   }
 
   const culprit = bottleneckOf(graph, solved);
+  const power = powerBudget(graph, solved);
+
+  // What leaves, and separately what is made and eaten inside. A schematic that turns
+  // water into power makes coal on the way and none of it comes out, so reporting the coal
+  // as its output describes a factory that does not exist. Told apart rather than dropped:
+  // knowing the chain runs through coal is worth saying, it is just not the answer to
+  // "what does this produce".
   const produced = {};
+  const internal = {};
   for (const [item, rate] of Object.entries(solved.delivered)) {
-    if (rate > SETTLED) produced[item] = rate;
+    // What was handed in and came back out is not production. A layout fed water and
+    // returning water made nothing; saying it produced fifteen thousand water a minute
+    // would bury the one number that mattered, which was the power.
+    const net = rate - (supply[item] || 0);
+    if (net > SETTLED) produced[item] = net;
   }
+  for (let index = 0; index < graph.nodes.length; index++) {
+    const node = graph.nodes[index];
+    if (node.role !== "crafter" && node.role !== "generator") continue;
+    const running = solved.fed[index] || 0;
+    for (const [item, count] of Object.entries(node.block.output || {})) {
+      const made = count * craftsPerSecond(node.block) * running;
+      if (made > SETTLED && !produced[item]) internal[item] = (internal[item] || 0) + made;
+    }
+    for (const [liquid, rate] of Object.entries(node.block.output_liquid || {})) {
+      const made = rate * running;
+      if (made > SETTLED && !produced[liquid]) {
+        internal[liquid] = (internal[liquid] || 0) + made;
+      }
+    }
+  }
+
+  // Below a tenth of an item a minute, a rate rounds to zero on screen and reads as a
+  // product the layout does not make. It is a rounding crumb at a dead end, not an output.
   const perMinute = {};
-  for (const [item, rate] of Object.entries(produced)) perMinute[item] = rate * 60;
+  for (const [item, rate] of Object.entries(produced)) {
+    if (rate * 60 >= 0.1) perMinute[item] = rate * 60;
+  }
 
   return {
     name: parsed.tags.name || "sans nom",
@@ -403,6 +586,7 @@ export async function analyse(text, supply = {}) {
     surplus: surplusOf(graph, solved, feeds),
     unknown,
     cost,
+    internal,
     power,
     settled: solved.settled,
     // What the reading had to work around, so the page can say it rather than quietly

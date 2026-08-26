@@ -1831,9 +1831,11 @@
       "output":{
         "graphite": 1
       },
+      "output_liquid":{},
       "input":{
         "coal": 2
       },
+      "input_liquid":{},
       "power": 0
     },
     "multi-press":{
@@ -1856,8 +1858,12 @@
       "output":{
         "graphite": 2
       },
+      "output_liquid":{},
       "input":{
         "coal": 3
+      },
+      "input_liquid":{
+        "water": 6
       },
       "power": 108
     },
@@ -1879,10 +1885,12 @@
       "output":{
         "silicon": 1
       },
+      "output_liquid":{},
       "input":{
         "coal": 1,
         "sand": 2
       },
+      "input_liquid":{},
       "power": 30
     },
     "silicon-crucible":{
@@ -1905,11 +1913,13 @@
       "output":{
         "silicon": 8
       },
+      "output_liquid":{},
       "input":{
         "coal": 4,
         "sand": 6,
         "pyratite": 1
       },
+      "input_liquid":{},
       "power": 240
     },
     "kiln":{
@@ -1931,10 +1941,12 @@
       "output":{
         "metaglass": 1
       },
+      "output_liquid":{},
       "input":{
         "lead": 1,
         "sand": 1
       },
+      "input_liquid":{},
       "power": 36
     },
     "plastanium-compressor":{
@@ -1957,8 +1969,12 @@
       "output":{
         "plastanium": 1
       },
+      "output_liquid":{},
       "input":{
         "titanium": 2
+      },
+      "input_liquid":{
+        "oil": 15
       },
       "power": 180
     },
@@ -1981,10 +1997,12 @@
       "output":{
         "phase-fabric": 1
       },
+      "output_liquid":{},
       "input":{
         "thorium": 4,
         "sand": 10
       },
+      "input_liquid":{},
       "power": 300
     },
     "surge-smelter":{
@@ -2006,12 +2024,14 @@
       "output":{
         "surge-alloy": 1
       },
+      "output_liquid":{},
       "input":{
         "copper": 3,
         "lead": 4,
         "titanium": 2,
         "silicon": 3
       },
+      "input_liquid":{},
       "power": 240
     },
     "cryofluid-mixer":{
@@ -2031,8 +2051,14 @@
       "craft_time": 120,
       "crafts_per_second": 0.5,
       "output":{},
+      "output_liquid":{
+        "cryofluid": 12
+      },
       "input":{
         "titanium": 1
+      },
+      "input_liquid":{
+        "water": 12
       },
       "power": 60
     },
@@ -2054,11 +2080,13 @@
       "output":{
         "pyratite": 1
       },
+      "output_liquid":{},
       "input":{
         "coal": 1,
         "lead": 2,
         "sand": 2
       },
+      "input_liquid":{},
       "power": 12
     },
     "blast-mixer":{
@@ -2079,10 +2107,12 @@
       "output":{
         "blast-compound": 1
       },
+      "output_liquid":{},
       "input":{
         "pyratite": 1,
         "spore-pod": 1
       },
+      "input_liquid":{},
       "power": 24
     },
     "melter":{
@@ -2102,9 +2132,13 @@
       "craft_time": 10,
       "crafts_per_second": 6,
       "output":{},
+      "output_liquid":{
+        "slag": 12
+      },
       "input":{
         "scrap": 1
       },
+      "input_liquid":{},
       "power": 60
     },
     "separator":{
@@ -2118,7 +2152,12 @@
       "cost":{
         "copper": 30,
         "titanium": 25
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "slag": 4
+      },
+      "power": 66
     },
     "disassembler":{
       "name": "disassembler",
@@ -2137,7 +2176,11 @@
       "role": "sink",
       "input":{
         "scrap": 1
-      }
+      },
+      "input_liquid":{
+        "slag": 7.2
+      },
+      "power": 240
     },
     "spore-press":{
       "name": "spore-press",
@@ -2155,9 +2198,13 @@
       "craft_time": 20,
       "crafts_per_second": 3,
       "output":{},
+      "output_liquid":{
+        "oil": 18
+      },
       "input":{
         "spore-pod": 1
       },
+      "input_liquid":{},
       "power": 42
     },
     "pulverizer":{
@@ -2178,9 +2225,11 @@
       "output":{
         "sand": 1
       },
+      "output_liquid":{},
       "input":{
         "scrap": 1
       },
+      "input_liquid":{},
       "power": 30
     },
     "coal-centrifuge":{
@@ -2202,7 +2251,11 @@
       "output":{
         "coal": 1
       },
+      "output_liquid":{},
       "input":{},
+      "input_liquid":{
+        "oil": 6
+      },
       "power": 42
     },
     "incinerator":{
@@ -2216,7 +2269,10 @@
       "cost":{
         "lead": 15,
         "graphite": 5
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 30
     },
     "silicon-arc-furnace":{
       "name": "silicon-arc-furnace",
@@ -2236,10 +2292,12 @@
       "output":{
         "silicon": 4
       },
+      "output_liquid":{},
       "input":{
         "graphite": 1,
         "sand": 4
       },
+      "input_liquid":{},
       "power": 300
     },
     "electrolyzer":{
@@ -2260,7 +2318,14 @@
       "craft_time": 10,
       "crafts_per_second": 6,
       "output":{},
+      "output_liquid":{
+        "ozone": 4,
+        "hydrogen": 6
+      },
       "input":{},
+      "input_liquid":{
+        "water": 10
+      },
       "power": 60
     },
     "atmospheric-concentrator":{
@@ -2280,7 +2345,11 @@
       "craft_time": 80,
       "crafts_per_second": 0.75,
       "output":{},
+      "output_liquid":{
+        "nitrogen": 16
+      },
       "input":{},
+      "input_liquid":{},
       "power": 120
     },
     "oxidation-chamber":{
@@ -2303,8 +2372,12 @@
       "output":{
         "oxide": 1
       },
+      "output_liquid":{},
       "input":{
         "beryllium": 1
+      },
+      "input_liquid":{
+        "ozone": 2
       },
       "power": 30
     },
@@ -2325,7 +2398,9 @@
       "craft_time": 80,
       "crafts_per_second": 0.75,
       "output":{},
+      "output_liquid":{},
       "input":{},
+      "input_liquid":{},
       "power": 100
     },
     "slag-heater":{
@@ -2345,7 +2420,11 @@
       "craft_time": 80,
       "crafts_per_second": 0.75,
       "output":{},
+      "output_liquid":{},
       "input":{},
+      "input_liquid":{
+        "slag": 40
+      },
       "power": 0
     },
     "phase-heater":{
@@ -2365,9 +2444,11 @@
       "craft_time": 480,
       "crafts_per_second": 0.125,
       "output":{},
+      "output_liquid":{},
       "input":{
         "phase-fabric": 1
       },
+      "input_liquid":{},
       "power": 0
     },
     "heat-redirector":{
@@ -2419,7 +2500,12 @@
       "health": 70,
       "cost":{
         "tungsten": 15
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "slag": 0
+      },
+      "power": 0
     },
     "carbide-crucible":{
       "name": "carbide-crucible",
@@ -2440,10 +2526,12 @@
       "output":{
         "carbide": 1
       },
+      "output_liquid":{},
       "input":{
         "tungsten": 2,
         "graphite": 3
       },
+      "input_liquid":{},
       "power": 120
     },
     "slag-centrifuge":{
@@ -2464,8 +2552,14 @@
       "craft_time": 120,
       "crafts_per_second": 0.5,
       "output":{},
+      "output_liquid":{
+        "gallium": 1
+      },
       "input":{
         "sand": 1
+      },
+      "input_liquid":{
+        "slag": 40
       },
       "power": 2
     },
@@ -2489,8 +2583,12 @@
       "output":{
         "surge-alloy": 1
       },
+      "output_liquid":{},
       "input":{
         "silicon": 3
+      },
+      "input_liquid":{
+        "slag": 160
       },
       "power": 90
     },
@@ -2512,8 +2610,14 @@
       "craft_time": 20,
       "crafts_per_second": 3,
       "output":{},
+      "output_liquid":{
+        "cyanogen": 12
+      },
       "input":{
         "graphite": 1
+      },
+      "input_liquid":{
+        "arkycite": 160
       },
       "power": 120
     },
@@ -2537,9 +2641,13 @@
       "output":{
         "phase-fabric": 1
       },
+      "output_liquid":{},
       "input":{
         "thorium": 2,
         "sand": 6
+      },
+      "input_liquid":{
+        "ozone": 8
       },
       "power": 480
     },
@@ -2563,8 +2671,12 @@
       "output":{
         "fissile-matter": 1
       },
+      "output_liquid":{},
       "input":{
         "thorium": 3
+      },
+      "input_liquid":{
+        "nitrogen": 1
       },
       "power": 0
     },
@@ -2942,7 +3054,9 @@
       "role": "sink",
       "input":{
         "silicon": 1
-      }
+      },
+      "input_liquid":{},
+      "power": 18
     },
     "mend-projector":{
       "name": "mend-projector",
@@ -2961,7 +3075,9 @@
       "role": "sink",
       "input":{
         "phase-fabric": 1
-      }
+      },
+      "input_liquid":{},
+      "power": 90
     },
     "overdrive-projector":{
       "name": "overdrive-projector",
@@ -2980,7 +3096,9 @@
       "role": "sink",
       "input":{
         "phase-fabric": 1
-      }
+      },
+      "input_liquid":{},
+      "power": 210
     },
     "overdrive-dome":{
       "name": "overdrive-dome",
@@ -3001,7 +3119,9 @@
       "input":{
         "phase-fabric": 1,
         "silicon": 1
-      }
+      },
+      "input_liquid":{},
+      "power": 600
     },
     "force-projector":{
       "name": "force-projector",
@@ -3019,7 +3139,9 @@
       "role": "sink",
       "input":{
         "phase-fabric": 1
-      }
+      },
+      "input_liquid":{},
+      "power": 240
     },
     "shock-mine":{
       "name": "shock-mine",
@@ -3060,7 +3182,12 @@
         "thorium": 60,
         "silicon": 150,
         "oxide": 40
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "nitrogen": 3
+      },
+      "power": 180
     },
     "regen-projector":{
       "name": "regen-projector",
@@ -3079,7 +3206,11 @@
       "role": "sink",
       "input":{
         "phase-fabric": 1
-      }
+      },
+      "input_liquid":{
+        "hydrogen": 1
+      },
+      "power": 60
     },
     "shockwave-tower":{
       "name": "shockwave-tower",
@@ -3094,7 +3225,12 @@
         "surge-alloy": 50,
         "tungsten": 100,
         "oxide": 30
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "cyanogen": 1.5
+      },
+      "power": 100
     },
     "shield-projector":{
       "name": "shield-projector",
@@ -3128,6 +3264,7 @@
         "copper": 1
       },
       "role": "conveyor",
+      "carries": "item",
       "items_per_second": 6.5
     },
     "titanium-conveyor":{
@@ -3144,6 +3281,7 @@
         "titanium": 1
       },
       "role": "conveyor",
+      "carries": "item",
       "items_per_second": 10
     },
     "plastanium-conveyor":{
@@ -3160,7 +3298,9 @@
         "plastanium": 1
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "armored-conveyor":{
       "name": "armored-conveyor",
@@ -3176,6 +3316,7 @@
         "plastanium": 1
       },
       "role": "conveyor",
+      "carries": "item",
       "items_per_second": 10
     },
     "junction":{
@@ -3190,6 +3331,7 @@
         "copper": 3
       },
       "role": "junction",
+      "carries": "item",
       "items_per_second": 2.3076923
     },
     "bridge-conveyor":{
@@ -3204,8 +3346,10 @@
         "copper": 6,
         "lead": 6
       },
-      "role": "sink",
-      "input":{}
+      "role": "bridge",
+      "carries": "item",
+      "range": 4,
+      "items_per_second": 60
     },
     "phase-conveyor":{
       "name": "phase-conveyor",
@@ -3221,8 +3365,10 @@
         "silicon": 7,
         "phase-fabric": 5
       },
-      "role": "sink",
-      "input":{}
+      "role": "bridge",
+      "carries": "item",
+      "range": 12,
+      "items_per_second": 30
     },
     "sorter":{
       "name": "sorter",
@@ -3235,7 +3381,9 @@
       "cost":{
         "copper": 2,
         "lead": 2
-      }
+      },
+      "role": "sorter",
+      "carries": "item"
     },
     "inverted-sorter":{
       "name": "inverted-sorter",
@@ -3248,7 +3396,9 @@
       "cost":{
         "copper": 2,
         "lead": 2
-      }
+      },
+      "role": "sorter",
+      "carries": "item"
     },
     "router":{
       "name": "router",
@@ -3261,7 +3411,8 @@
       "cost":{
         "copper": 3
       },
-      "role": "router"
+      "role": "router",
+      "carries": "item"
     },
     "distributor":{
       "name": "distributor",
@@ -3275,7 +3426,8 @@
         "copper": 4,
         "lead": 4
       },
-      "role": "router"
+      "role": "router",
+      "carries": "item"
     },
     "overflow-gate":{
       "name": "overflow-gate",
@@ -3289,8 +3441,8 @@
         "copper": 4,
         "lead": 2
       },
-      "role": "sink",
-      "input":{}
+      "role": "router",
+      "carries": "item"
     },
     "underflow-gate":{
       "name": "underflow-gate",
@@ -3304,8 +3456,8 @@
         "copper": 4,
         "lead": 2
       },
-      "role": "sink",
-      "input":{}
+      "role": "router",
+      "carries": "item"
     },
     "unloader":{
       "name": "unloader",
@@ -3320,7 +3472,9 @@
         "silicon": 30
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "mass-driver":{
       "name": "mass-driver",
@@ -3337,7 +3491,9 @@
         "silicon": 75
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 105
     },
     "duct":{
       "name": "duct",
@@ -3350,8 +3506,9 @@
       "cost":{
         "beryllium": 1
       },
-      "role": "sink",
-      "input":{}
+      "role": "conveyor",
+      "carries": "item",
+      "items_per_second": 30
     },
     "armored-duct":{
       "name": "armored-duct",
@@ -3365,8 +3522,9 @@
         "beryllium": 2,
         "tungsten": 1
       },
-      "role": "sink",
-      "input":{}
+      "role": "conveyor",
+      "carries": "item",
+      "items_per_second": 30
     },
     "duct-router":{
       "name": "duct-router",
@@ -3380,7 +3538,9 @@
         "beryllium": 10
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "overflow-duct":{
       "name": "overflow-duct",
@@ -3395,7 +3555,9 @@
         "beryllium": 8
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "underflow-duct":{
       "name": "underflow-duct",
@@ -3410,7 +3572,9 @@
         "beryllium": 8
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "duct-bridge":{
       "name": "duct-bridge",
@@ -3424,7 +3588,9 @@
         "beryllium": 15
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "duct-unloader":{
       "name": "duct-unloader",
@@ -3440,7 +3606,9 @@
         "tungsten": 10
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "surge-conveyor":{
       "name": "surge-conveyor",
@@ -3455,7 +3623,9 @@
         "tungsten": 1
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 1
     },
     "surge-router":{
       "name": "surge-router",
@@ -3470,7 +3640,9 @@
         "tungsten": 1
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 3
     },
     "unit-cargo-loader":{
       "name": "unit-cargo-loader",
@@ -3486,7 +3658,11 @@
         "oxide": 20
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{
+        "nitrogen": 10
+      },
+      "power": 8
     },
     "unit-cargo-unload-point":{
       "name": "unit-cargo-unload-point",
@@ -3501,7 +3677,9 @@
         "tungsten": 60
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "mechanical-pump":{
       "name": "mechanical-pump",
@@ -3514,7 +3692,10 @@
       "cost":{
         "copper": 15,
         "metaglass": 10
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 0
     },
     "rotary-pump":{
       "name": "rotary-pump",
@@ -3529,7 +3710,10 @@
         "metaglass": 50,
         "titanium": 35,
         "silicon": 20
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 18
     },
     "impulse-pump":{
       "name": "impulse-pump",
@@ -3545,7 +3729,10 @@
         "titanium": 40,
         "thorium": 35,
         "silicon": 30
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 78
     },
     "conduit":{
       "name": "conduit",
@@ -3557,7 +3744,9 @@
       "health": 45,
       "cost":{
         "metaglass": 1
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "pulse-conduit":{
       "name": "pulse-conduit",
@@ -3570,7 +3759,9 @@
       "cost":{
         "metaglass": 1,
         "titanium": 2
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "plated-conduit":{
       "name": "plated-conduit",
@@ -3584,7 +3775,9 @@
         "metaglass": 1,
         "thorium": 2,
         "plastanium": 1
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "liquid-router":{
       "name": "liquid-router",
@@ -3597,7 +3790,9 @@
       "cost":{
         "metaglass": 2,
         "graphite": 4
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "liquid-container":{
       "name": "liquid-container",
@@ -3610,7 +3805,9 @@
       "cost":{
         "metaglass": 15,
         "titanium": 10
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "liquid-tank":{
       "name": "liquid-tank",
@@ -3623,7 +3820,9 @@
       "cost":{
         "metaglass": 40,
         "titanium": 30
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "liquid-junction":{
       "name": "liquid-junction",
@@ -3636,7 +3835,9 @@
       "cost":{
         "metaglass": 8,
         "graphite": 4
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "bridge-conduit":{
       "name": "bridge-conduit",
@@ -3649,7 +3850,9 @@
       "cost":{
         "metaglass": 8,
         "graphite": 4
-      }
+      },
+      "role": "bridge",
+      "carries": "liquid"
     },
     "phase-conduit":{
       "name": "phase-conduit",
@@ -3664,7 +3867,9 @@
         "titanium": 10,
         "silicon": 7,
         "phase-fabric": 5
-      }
+      },
+      "role": "bridge",
+      "carries": "liquid"
     },
     "reinforced-pump":{
       "name": "reinforced-pump",
@@ -3678,7 +3883,12 @@
         "silicon": 20,
         "beryllium": 40,
         "tungsten": 30
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "hydrogen": 1.5
+      },
+      "power": 0
     },
     "reinforced-conduit":{
       "name": "reinforced-conduit",
@@ -3690,7 +3900,9 @@
       "health": 250,
       "cost":{
         "beryllium": 2
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "reinforced-liquid-junction":{
       "name": "reinforced-liquid-junction",
@@ -3703,7 +3915,9 @@
       "cost":{
         "graphite": 4,
         "beryllium": 8
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "reinforced-bridge-conduit":{
       "name": "reinforced-bridge-conduit",
@@ -3716,7 +3930,10 @@
       "cost":{
         "graphite": 8,
         "beryllium": 20
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 0
     },
     "reinforced-liquid-router":{
       "name": "reinforced-liquid-router",
@@ -3729,7 +3946,9 @@
       "cost":{
         "graphite": 8,
         "beryllium": 4
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "reinforced-liquid-container":{
       "name": "reinforced-liquid-container",
@@ -3742,7 +3961,9 @@
       "cost":{
         "beryllium": 16,
         "tungsten": 10
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "reinforced-liquid-tank":{
       "name": "reinforced-liquid-tank",
@@ -3755,7 +3976,9 @@
       "cost":{
         "beryllium": 50,
         "tungsten": 40
-      }
+      },
+      "role": "conduit",
+      "carries": "liquid"
     },
     "power-node":{
       "name": "power-node",
@@ -3768,7 +3991,8 @@
       "cost":{
         "copper": 2,
         "lead": 6
-      }
+      },
+      "role": "power"
     },
     "power-node-large":{
       "name": "power-node-large",
@@ -3782,7 +4006,8 @@
         "lead": 10,
         "titanium": 5,
         "silicon": 3
-      }
+      },
+      "role": "power"
     },
     "surge-tower":{
       "name": "surge-tower",
@@ -3797,7 +4022,8 @@
         "titanium": 7,
         "silicon": 15,
         "surge-alloy": 15
-      }
+      },
+      "role": "power"
     },
     "diode":{
       "name": "diode",
@@ -3824,7 +4050,8 @@
       "cost":{
         "copper": 5,
         "lead": 20
-      }
+      },
+      "role": "power"
     },
     "battery-large":{
       "name": "battery-large",
@@ -3838,7 +4065,8 @@
         "lead": 50,
         "titanium": 20,
         "silicon": 30
-      }
+      },
+      "role": "power"
     },
     "combustion-generator":{
       "name": "combustion-generator",
@@ -3852,8 +4080,11 @@
         "copper": 25,
         "lead": 15
       },
-      "role": "sink",
-      "input":{}
+      "role": "generator",
+      "power_out": 60,
+      "input":{},
+      "input_liquid":{},
+      "craft_time": 120
     },
     "thermal-generator":{
       "name": "thermal-generator",
@@ -3869,7 +4100,12 @@
         "metaglass": 40,
         "graphite": 35,
         "silicon": 35
-      }
+      },
+      "role": "generator",
+      "power_out": 108,
+      "input":{},
+      "input_liquid":{},
+      "craft_time": 0
     },
     "steam-generator":{
       "name": "steam-generator",
@@ -3885,8 +4121,13 @@
         "graphite": 25,
         "silicon": 30
       },
-      "role": "sink",
-      "input":{}
+      "role": "generator",
+      "power_out": 330,
+      "input":{},
+      "input_liquid":{
+        "water": 6
+      },
+      "craft_time": 90
     },
     "differential-generator":{
       "name": "differential-generator",
@@ -3903,10 +4144,15 @@
         "titanium": 50,
         "silicon": 65
       },
-      "role": "sink",
+      "role": "generator",
+      "power_out": 1080,
       "input":{
         "pyratite": 1
-      }
+      },
+      "input_liquid":{
+        "cryofluid": 6
+      },
+      "craft_time": 220
     },
     "rtg-generator":{
       "name": "rtg-generator",
@@ -3923,8 +4169,11 @@
         "plastanium": 75,
         "phase-fabric": 25
       },
-      "role": "sink",
-      "input":{}
+      "role": "generator",
+      "power_out": 270,
+      "input":{},
+      "input_liquid":{},
+      "craft_time": 840
     },
     "solar-panel":{
       "name": "solar-panel",
@@ -3937,7 +4186,12 @@
       "cost":{
         "lead": 10,
         "silicon": 8
-      }
+      },
+      "role": "generator",
+      "power_out": 7.2,
+      "input":{},
+      "input_liquid":{},
+      "craft_time": 0
     },
     "solar-panel-large":{
       "name": "solar-panel-large",
@@ -3951,7 +4205,12 @@
         "lead": 60,
         "silicon": 70,
         "phase-fabric": 15
-      }
+      },
+      "role": "generator",
+      "power_out": 96,
+      "input":{},
+      "input_liquid":{},
+      "craft_time": 0
     },
     "thorium-reactor":{
       "name": "thorium-reactor",
@@ -3968,10 +4227,15 @@
         "thorium": 150,
         "silicon": 200
       },
-      "role": "sink",
+      "role": "generator",
+      "power_out": 900,
       "input":{
         "thorium": 1
-      }
+      },
+      "input_liquid":{
+        "cryofluid": 2.3999999
+      },
+      "craft_time": 0
     },
     "impact-reactor":{
       "name": "impact-reactor",
@@ -3989,10 +4253,15 @@
         "silicon": 300,
         "surge-alloy": 250
       },
-      "role": "sink",
+      "role": "generator",
+      "power_out": 7800,
       "input":{
         "blast-compound": 1
-      }
+      },
+      "input_liquid":{
+        "cryofluid": 15
+      },
+      "craft_time": 0
     },
     "beam-node":{
       "name": "beam-node",
@@ -4035,7 +4304,8 @@
         "beryllium": 250,
         "oxide": 150,
         "carbide": 75
-      }
+      },
+      "role": "power"
     },
     "turbine-condenser":{
       "name": "turbine-condenser",
@@ -4047,7 +4317,12 @@
       "health": 575,
       "cost":{
         "beryllium": 60
-      }
+      },
+      "role": "generator",
+      "power_out": 20,
+      "input":{},
+      "input_liquid":{},
+      "craft_time": 0
     },
     "chemical-combustion-chamber":{
       "name": "chemical-combustion-chamber",
@@ -4062,7 +4337,15 @@
         "silicon": 30,
         "tungsten": 20,
         "oxide": 40
-      }
+      },
+      "role": "generator",
+      "power_out": 550,
+      "input":{},
+      "input_liquid":{
+        "ozone": 2,
+        "arkycite": 40
+      },
+      "craft_time": 120
     },
     "pyrolysis-generator":{
       "name": "pyrolysis-generator",
@@ -4077,7 +4360,15 @@
         "silicon": 100,
         "oxide": 60,
         "carbide": 60
-      }
+      },
+      "role": "generator",
+      "power_out": 1400,
+      "input":{},
+      "input_liquid":{
+        "slag": 20,
+        "arkycite": 40
+      },
+      "craft_time": 120
     },
     "flux-reactor":{
       "name": "flux-reactor",
@@ -4093,7 +4384,14 @@
         "surge-alloy": 120,
         "oxide": 80,
         "carbide": 60
-      }
+      },
+      "role": "generator",
+      "power_out": 18000,
+      "input":{},
+      "input_liquid":{
+        "cyanogen": 9
+      },
+      "craft_time": 0
     },
     "neoplasia-reactor":{
       "name": "neoplasia-reactor",
@@ -4111,10 +4409,16 @@
         "oxide": 150,
         "carbide": 300
       },
-      "role": "sink",
+      "role": "generator",
+      "power_out": 8400,
       "input":{
         "phase-fabric": 1
-      }
+      },
+      "input_liquid":{
+        "arkycite": 80,
+        "water": 10
+      },
+      "craft_time": 180
     },
     "mechanical-drill":{
       "name": "mechanical-drill",
@@ -4204,7 +4508,10 @@
         "lead": 30,
         "metaglass": 30,
         "graphite": 30
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 90
     },
     "cultivator":{
       "name": "cultivator",
@@ -4225,7 +4532,11 @@
       "output":{
         "spore-pod": 1
       },
+      "output_liquid":{},
       "input":{},
+      "input_liquid":{
+        "water": 18
+      },
       "power": 80
     },
     "oil-extractor":{
@@ -4246,7 +4557,11 @@
       "role": "sink",
       "input":{
         "sand": 1
-      }
+      },
+      "input_liquid":{
+        "water": 9
+      },
+      "power": 180
     },
     "vent-condenser":{
       "name": "vent-condenser",
@@ -4264,7 +4579,11 @@
       "craft_time": 120,
       "crafts_per_second": 0.5,
       "output":{},
+      "output_liquid":{
+        "water": 30
+      },
       "input":{},
+      "input_liquid":{},
       "power": 30
     },
     "cliff-crusher":{
@@ -4297,7 +4616,11 @@
       "role": "sink",
       "input":{
         "graphite": 1
-      }
+      },
+      "input_liquid":{
+        "hydrogen": 1
+      },
+      "power": 60
     },
     "plasma-bore":{
       "name": "plasma-bore",
@@ -4309,7 +4632,12 @@
       "health": 255,
       "cost":{
         "beryllium": 40
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "hydrogen": 0.25
+      },
+      "power": 9
     },
     "large-plasma-bore":{
       "name": "large-plasma-bore",
@@ -4324,7 +4652,13 @@
         "beryllium": 100,
         "tungsten": 70,
         "oxide": 25
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "hydrogen": 0.5,
+        "nitrogen": 3
+      },
+      "power": 48
     },
     "impact-drill":{
       "name": "impact-drill",
@@ -4378,7 +4712,9 @@
         "lead": 800
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "core-foundation":{
       "name": "core-foundation",
@@ -4394,7 +4730,9 @@
         "silicon": 2000
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "core-nucleus":{
       "name": "core-nucleus",
@@ -4411,7 +4749,9 @@
         "silicon": 5000
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "core-bastion":{
       "name": "core-bastion",
@@ -4427,7 +4767,9 @@
         "beryllium": 800
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "core-citadel":{
       "name": "core-citadel",
@@ -4444,7 +4786,9 @@
         "oxide": 1000
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "core-acropolis":{
       "name": "core-acropolis",
@@ -4462,7 +4806,9 @@
         "carbide": 3000
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "container":{
       "name": "container",
@@ -4476,7 +4822,9 @@
         "titanium": 100
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "vault":{
       "name": "vault",
@@ -4491,7 +4839,9 @@
         "thorium": 125
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "reinforced-container":{
       "name": "reinforced-container",
@@ -4506,7 +4856,9 @@
         "tungsten": 30
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "reinforced-vault":{
       "name": "reinforced-vault",
@@ -4522,7 +4874,9 @@
         "tungsten": 125
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "duo":{
       "name": "duo",
@@ -4536,7 +4890,9 @@
         "copper": 35
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "scatter":{
       "name": "scatter",
@@ -4551,7 +4907,9 @@
         "lead": 45
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "scorch":{
       "name": "scorch",
@@ -4566,7 +4924,9 @@
         "graphite": 22
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "hail":{
       "name": "hail",
@@ -4581,7 +4941,9 @@
         "graphite": 17
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "wave":{
       "name": "wave",
@@ -4595,7 +4957,10 @@
         "copper": 25,
         "lead": 75,
         "metaglass": 45
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 0
     },
     "lancer":{
       "name": "lancer",
@@ -4610,7 +4975,10 @@
         "lead": 70,
         "titanium": 30,
         "silicon": 60
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 360
     },
     "arc":{
       "name": "arc",
@@ -4623,7 +4991,10 @@
       "cost":{
         "copper": 50,
         "lead": 50
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 198
     },
     "parallax":{
       "name": "parallax",
@@ -4654,7 +5025,9 @@
         "plastanium": 45
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "salvo":{
       "name": "salvo",
@@ -4670,7 +5043,9 @@
         "titanium": 50
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "segment":{
       "name": "segment",
@@ -4700,7 +5075,10 @@
         "metaglass": 100,
         "titanium": 250,
         "thorium": 100
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 0
     },
     "fuse":{
       "name": "fuse",
@@ -4716,7 +5094,9 @@
         "thorium": 100
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "ripple":{
       "name": "ripple",
@@ -4732,7 +5112,9 @@
         "titanium": 60
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "cyclone":{
       "name": "cyclone",
@@ -4748,7 +5130,9 @@
         "plastanium": 80
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "foreshadow":{
       "name": "foreshadow",
@@ -4766,7 +5150,9 @@
         "surge-alloy": 300
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 600
     },
     "spectre":{
       "name": "spectre",
@@ -4784,7 +5170,9 @@
         "surge-alloy": 250
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "meltdown":{
       "name": "meltdown",
@@ -4800,7 +5188,10 @@
         "graphite": 300,
         "silicon": 325,
         "surge-alloy": 325
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 1020
     },
     "breach":{
       "name": "breach",
@@ -4816,7 +5207,11 @@
         "beryllium": 150
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{
+        "water": 15
+      },
+      "power": 0
     },
     "diffuse":{
       "name": "diffuse",
@@ -4833,7 +5228,11 @@
         "tungsten": 50
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{
+        "water": 15
+      },
+      "power": 0
     },
     "sublimate":{
       "name": "sublimate",
@@ -4848,7 +5247,10 @@
         "beryllium": 400,
         "tungsten": 150,
         "oxide": 40
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 0
     },
     "titan":{
       "name": "titan",
@@ -4864,7 +5266,12 @@
         "tungsten": 250
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{
+        "water": 30,
+        "hydrogen": 5
+      },
+      "power": 0
     },
     "disperse":{
       "name": "disperse",
@@ -4881,7 +5288,11 @@
         "oxide": 50
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{
+        "water": 20
+      },
+      "power": 0
     },
     "afflict":{
       "name": "afflict",
@@ -4911,7 +5322,12 @@
         "silicon": 250,
         "oxide": 50,
         "carbide": 90
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "nitrogen": 6
+      },
+      "power": 200
     },
     "scathe":{
       "name": "scathe",
@@ -4929,7 +5345,11 @@
         "carbide": 200
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{
+        "water": 15
+      },
+      "power": 0
     },
     "smite":{
       "name": "smite",
@@ -4947,7 +5367,11 @@
         "carbide": 500
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{
+        "water": 15
+      },
+      "power": 0
     },
     "malign":{
       "name": "malign",
@@ -4979,7 +5403,9 @@
         "silicon": 80
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 72
     },
     "air-factory":{
       "name": "air-factory",
@@ -4995,7 +5421,9 @@
         "silicon": 60
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 72
     },
     "naval-factory":{
       "name": "naval-factory",
@@ -5011,7 +5439,9 @@
         "metaglass": 120
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 72
     },
     "additive-reconstructor":{
       "name": "additive-reconstructor",
@@ -5030,7 +5460,9 @@
       "input":{
         "silicon": 40,
         "graphite": 40
-      }
+      },
+      "input_liquid":{},
+      "power": 180
     },
     "multiplicative-reconstructor":{
       "name": "multiplicative-reconstructor",
@@ -5051,7 +5483,9 @@
         "silicon": 130,
         "titanium": 80,
         "metaglass": 40
-      }
+      },
+      "input_liquid":{},
+      "power": 360
     },
     "exponential-reconstructor":{
       "name": "exponential-reconstructor",
@@ -5074,7 +5508,11 @@
         "silicon": 850,
         "titanium": 750,
         "plastanium": 650
-      }
+      },
+      "input_liquid":{
+        "cryofluid": 60
+      },
+      "power": 780
     },
     "tetrative-reconstructor":{
       "name": "tetrative-reconstructor",
@@ -5098,7 +5536,11 @@
         "plastanium": 600,
         "surge-alloy": 500,
         "phase-fabric": 350
-      }
+      },
+      "input_liquid":{
+        "cryofluid": 180
+      },
+      "power": 1500
     },
     "repair-point":{
       "name": "repair-point",
@@ -5126,7 +5568,10 @@
         "thorium": 80,
         "silicon": 90,
         "plastanium": 60
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 300
     },
     "tank-fabricator":{
       "name": "tank-fabricator",
@@ -5141,7 +5586,9 @@
         "beryllium": 150
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 90
     },
     "ship-fabricator":{
       "name": "ship-fabricator",
@@ -5156,7 +5603,9 @@
         "beryllium": 200
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 90
     },
     "mech-fabricator":{
       "name": "mech-fabricator",
@@ -5172,7 +5621,9 @@
         "tungsten": 10
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 90
     },
     "tank-refabricator":{
       "name": "tank-refabricator",
@@ -5191,7 +5642,11 @@
       "input":{
         "silicon": 40,
         "tungsten": 30
-      }
+      },
+      "input_liquid":{
+        "hydrogen": 3
+      },
+      "power": 180
     },
     "ship-refabricator":{
       "name": "ship-refabricator",
@@ -5211,7 +5666,11 @@
       "input":{
         "silicon": 60,
         "tungsten": 40
-      }
+      },
+      "input_liquid":{
+        "hydrogen": 3
+      },
+      "power": 150
     },
     "mech-refabricator":{
       "name": "mech-refabricator",
@@ -5230,7 +5689,11 @@
       "input":{
         "silicon": 50,
         "tungsten": 40
-      }
+      },
+      "input_liquid":{
+        "hydrogen": 3
+      },
+      "power": 150
     },
     "prime-refabricator":{
       "name": "prime-refabricator",
@@ -5250,7 +5713,11 @@
       "input":{
         "thorium": 80,
         "silicon": 100
-      }
+      },
+      "input_liquid":{
+        "nitrogen": 10
+      },
+      "power": 270
     },
     "tank-assembler":{
       "name": "tank-assembler",
@@ -5267,7 +5734,11 @@
         "carbide": 80
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{
+        "cyanogen": 9
+      },
+      "power": 150
     },
     "ship-assembler":{
       "name": "ship-assembler",
@@ -5285,7 +5756,11 @@
         "carbide": 100
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{
+        "cyanogen": 12
+      },
+      "power": 150
     },
     "mech-assembler":{
       "name": "mech-assembler",
@@ -5303,7 +5778,11 @@
         "carbide": 200
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{
+        "cyanogen": 12
+      },
+      "power": 180
     },
     "basic-assembler-module":{
       "name": "basic-assembler-module",
@@ -5332,7 +5811,12 @@
         "graphite": 90,
         "silicon": 90,
         "tungsten": 80
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "ozone": 3
+      },
+      "power": 60
     },
     "payload-conveyor":{
       "name": "payload-conveyor",
@@ -5458,7 +5942,9 @@
         "tungsten": 40
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 150
     },
     "large-constructor":{
       "name": "large-constructor",
@@ -5475,7 +5961,9 @@
         "oxide": 100
       },
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 180
     },
     "payload-loader":{
       "name": "payload-loader",
@@ -5489,7 +5977,10 @@
         "graphite": 80,
         "silicon": 160,
         "tungsten": 90
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 0
     },
     "payload-unloader":{
       "name": "payload-unloader",
@@ -5503,7 +5994,10 @@
         "graphite": 140,
         "silicon": 220,
         "tungsten": 180
-      }
+      },
+      "role": "sink",
+      "input_liquid":{},
+      "power": 120
     },
     "power-source":{
       "name": "power-source",
@@ -5513,7 +6007,8 @@
       "has_power": true,
       "rotate": false,
       "health": 40,
-      "cost":{}
+      "cost":{},
+      "role": "power"
     },
     "power-void":{
       "name": "power-void",
@@ -5535,7 +6030,9 @@
       "health": 40,
       "cost":{},
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "item-void":{
       "name": "item-void",
@@ -5555,7 +6052,10 @@
       "has_power": false,
       "rotate": false,
       "health": 40,
-      "cost":{}
+      "cost":{},
+      "role": "sink",
+      "input_liquid":{},
+      "power": 0
     },
     "liquid-void":{
       "name": "liquid-void",
@@ -5565,7 +6065,10 @@
       "has_power": false,
       "rotate": false,
       "health": 40,
-      "cost":{}
+      "cost":{},
+      "role": "sink",
+      "input_liquid":{},
+      "power": 0
     },
     "payload-source":{
       "name": "payload-source",
@@ -5600,7 +6103,9 @@
       "craft_time": 80,
       "crafts_per_second": 0.75,
       "output":{},
+      "output_liquid":{},
       "input":{},
+      "input_liquid":{},
       "power": 0
     },
     "illuminator":{
@@ -5637,7 +6142,9 @@
       "health": 40,
       "cost":{},
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "legacy-unit-factory-air":{
       "name": "legacy-unit-factory-air",
@@ -5649,7 +6156,9 @@
       "health": 40,
       "cost":{},
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "legacy-unit-factory-ground":{
       "name": "legacy-unit-factory-ground",
@@ -5661,7 +6170,9 @@
       "health": 40,
       "cost":{},
       "role": "sink",
-      "input":{}
+      "input":{},
+      "input_liquid":{},
+      "power": 0
     },
     "command-center":{
       "name": "command-center",
@@ -5701,7 +6212,12 @@
         "lead": 300,
         "titanium": 200,
         "silicon": 250
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "oil": 9
+      },
+      "power": 480
     },
     "landing-pad":{
       "name": "landing-pad",
@@ -5715,7 +6231,12 @@
         "copper": 200,
         "graphite": 100,
         "titanium": 100
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "water": 90000
+      },
+      "power": 0
     },
     "interplanetary-accelerator":{
       "name": "interplanetary-accelerator",
@@ -5739,7 +6260,9 @@
         "lead": 8000,
         "thorium": 4000,
         "silicon": 5000
-      }
+      },
+      "input_liquid":{},
+      "power": 600
     },
     "message":{
       "name": "message",
@@ -5809,7 +6332,12 @@
         "thorium": 75,
         "silicon": 150,
         "surge-alloy": 50
-      }
+      },
+      "role": "sink",
+      "input_liquid":{
+        "cryofluid": 4.7999997
+      },
+      "power": 0
     },
     "memory-cell":{
       "name": "memory-cell",

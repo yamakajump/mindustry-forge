@@ -171,11 +171,12 @@
     <details class="supply">
       <summary>Ce morceau recoit d'ailleurs ? Dis ce qui y arrive.</summary>
       <p class="hint-line">
-        Une presse sans foreuse dans l'image ne produit rien toute seule. Indique ce qu'une
-        bande venue d'ailleurs y depose, par seconde.
+        Une presse sans foreuse dans l'image ne produit rien toute seule, et une centrale
+        sans arrivee d'eau non plus. Indique ce qu'une bande ou un tuyau venu d'ailleurs y
+        amene, par seconde. Le total est reparti sur les entrees du reseau concerne.
       </p>
       <div class="row">
-        <input type="text" id="supply" placeholder="coal=4, sand=8" autocomplete="off"
+        <input type="text" id="supply" placeholder="water=120, coal=4" autocomplete="off"
                aria-label="Ce qui arrive de l'exterieur, par seconde">
       </div>
     </details>
@@ -234,13 +235,48 @@ function render(report) {
     <p class="sub">${report.width}x${report.height} &middot; ${report.blocks} blocs
       &middot; jeu ${escape(report.gameVersion)}</p>`);
 
+  /* Power alongside the items, because for a whole class of schematics it is the only
+     answer. One of them was reported as producing coal and spore pods, which are
+     intermediates it eats itself, while the electricity it exists to make went unmentioned
+     and was in its own name. */
+  const power = report.power || { made: 0, spent: 0, net: 0 };
+  const bolt = `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"
+    style="width:20px;height:20px;fill:currentColor;stroke:none"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>`;
+
   right.push(`<div class="card"><h2>Sortie</h2>${
-    made.length
-      ? made.map(([item, n]) => `<div class="out-rate">${withIcon(item, 22)}
-          <b>${rate(n)}</b><span>${escape(item)} / min</span></div>`).join("")
-      : `<p class="empty">Rien n'en sort. Si ce morceau est nourri par une bande venue
-         d'ailleurs, indique-le au-dessus.</p>`
+    power.made > 0.01
+      ? `<div class="out-rate" style="color:var(--accent)">${bolt}
+           <b>${rate(power.net)}</b><span>energie / s &nbsp;<span style="color:var(--dim)">
+           (${rate(power.made)} produits, ${rate(power.spent)} consommes)</span></span></div>`
+      : ""
+  }${
+    made.map(([item, n]) => `<div class="out-rate">${withIcon(item, 22)}
+      <b>${rate(n)}</b><span>${escape(item)} / min</span></div>`).join("")
+  }${
+    !made.length && power.made <= 0.01
+      ? `<p class="empty">Rien n'en sort. Si ce morceau est nourri par une bande ou un
+         tuyau venu d'ailleurs, indique-le au-dessus.</p>`
+      : ""
+  }${
+    power.made <= 0.01 && power.spent > 0.01
+      ? `<div class="line"><span>Consomme de l'energie sans en produire</span>
+         <span class="num warn">${rate(power.spent)} / s</span></div>`
+      : ""
   }</div>`);
+
+  /* What the chain makes on the way and eats itself. Worth saying, and worth not
+     confusing with what comes out. */
+  const inside = Object.entries(report.internal || {})
+    .filter(([, n]) => n * 60 > 0.5)
+    .sort((a, b) => b[1] - a[1]);
+  if (inside.length) {
+    right.push(`<div class="card"><h2>Fabrique et consomme sur place</h2>${
+      inside.map(([item, n]) =>
+        `<div class="line"><span>${withIcon(item)}${escape(item)}</span>
+          <span class="num">${rate(n * 60)} / min</span></div>`).join("")
+    }<p class="hint-line">Ces objets ne sortent pas : ils alimentent les machines de la
+      schematique elle-meme.</p></div>`);
+  }
 
   if (report.bottleneck) {
     const [name, share] = report.bottleneck;
@@ -271,15 +307,11 @@ function render(report) {
   }
 
   const cost = Object.entries(report.cost || {}).sort((a, b) => b[1] - a[1]);
-  if (cost.length || report.power) {
+  if (cost.length) {
     right.push(`<div class="card"><h2>Cout de construction</h2><div class="chips">${
       cost.map(([item, n]) =>
         `<span class="chip">${withIcon(item, 15)}<span class="num">${n}</span></span>`).join("")
-    }${report.power
-      ? `<span class="chip warn"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"
-           style="width:13px;height:13px;fill:currentColor;stroke:none"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
-         <span class="num">${rate(report.power)} / s</span></span>`
-      : ""}</div></div>`);
+    }</div></div>`);
   }
 
   const notes = [];
