@@ -50,9 +50,13 @@ a wiki is how a tool comes to disagree with the game about what a player pasted.
 ## Trying it
 
 ```bash
-forge.bat                      # or: cd site/public && python -m http.server 8770
+cd site/public && python -m http.server 8770     # then open http://127.0.0.1:8770/
 node --test "tests/js/*.test.js"
 ```
+
+Any static file server does. The page fetches its block catalogue, so opening the HTML from
+the filesystem is the one thing that does not work: a browser refuses a module import over
+`file://`.
 
 ## Status
 
