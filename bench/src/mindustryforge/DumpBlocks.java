@@ -84,6 +84,11 @@ public class DumpBlocks {
         for (Block block : Vars.content.blocks()) {
             Jval entry = Jval.newObject();
             entry.put("name", block.name);
+            // The Java class, which is what decides how a block behaves: two blocks of the
+            // same class share an `updateTile` and differ only in their numbers. It is the
+            // only honest way to write a list of what is left to port, because it is the
+            // game's own list rather than one typed from memory.
+            entry.put("kind", kindOf(block));
             entry.put("size", block.size);
             entry.put("item_capacity", block.itemCapacity);
             // How much a block can hold, which a steady-state calculation never needed and
@@ -471,6 +476,23 @@ public class DumpBlocks {
         }
         if (floor.isDeep()) entry.put("deep", true);
         entry.put("buildable", floor.hasSurface() || floor.placeableOn);
+    }
+
+    /**
+     * The class that decides how a block behaves.
+     *
+     * <p>Almost every block in the game is declared as an anonymous subclass, `new
+     * Conveyor("conveyor"){{ speed = 0.046f; }}`, whose simple name is the empty string.
+     * Asked for it directly, three hundred and eighty eight of four hundred and forty six
+     * blocks came back nameless. What is wanted is the first named class above it, which
+     * is where `updateTile` actually lives.
+     */
+    private static String kindOf(Block block) {
+        Class<?> found = block.getClass();
+        while (found != null && found.getSimpleName().isEmpty()) {
+            found = found.getSuperclass();
+        }
+        return found == null ? "Block" : found.getSimpleName();
     }
 
     /** Liquids a block drinks, per second. */

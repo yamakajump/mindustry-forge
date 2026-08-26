@@ -99,6 +99,31 @@ const SCENARIOS = {
     { x: 2, y: 3, block: "vault", rotation: 0 },
   ],
 
+  /* A sorter has two paths and each gets a scenario of its own.
+  
+     Merging two lines to test both at once did not work: a sandbox source pours a hundred
+     a second, so whichever item is on the main line floods every round of the merge and
+     three lead got through in thirty seconds. One item, one path, no ambiguity.
+  
+     Set to copper and carrying copper: everything goes straight on and the side vault
+     stays empty. Set to copper and carrying lead: everything is turned aside and the
+     vault in front stays empty. Compared container by container, so "the side vault is
+     empty" is part of the answer rather than lost in a total. */
+  "sorter-passes": () => sorter("copper"),
+  "sorter-diverts": () => sorter("lead"),
+
+  /* A vault that starts empty, filled by a source, emptied by an unloader into another
+     vault. Eleven a second is the unloader's own stat line. */
+  "unloader-drains": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 3, y: 0, block: "vault", rotation: 0 },
+    { x: 5, y: 0, block: "unloader", rotation: 0, raw: item("copper") },
+    { x: 6, y: 0, block: "titanium-conveyor", rotation: 0 },
+    { x: 7, y: 0, block: "titanium-conveyor", rotation: 0 },
+    { x: 9, y: 0, block: "vault", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -111,6 +136,20 @@ const SCENARIOS = {
   ],
 };
 
+/** A sorter set to copper, on a line carrying whatever is asked for. */
+function sorter(carried) {
+  return [
+    { x: 0, y: 1, block: "item-source", rotation: 0, raw: item(carried) },
+    { x: 1, y: 1, block: "conveyor", rotation: 0 },
+    { x: 2, y: 1, block: "conveyor", rotation: 0 },
+    { x: 3, y: 1, block: "sorter", rotation: 0, raw: item("copper") },
+    { x: 4, y: 1, block: "conveyor", rotation: 0 },
+    { x: 6, y: 1, block: "vault", rotation: 0 },
+    { x: 3, y: 0, block: "conveyor", rotation: 3 },
+    { x: 3, y: -2, block: "vault", rotation: 0 },
+  ];
+}
+
 function line(block, length) {
   const tiles = [{ x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") }];
   for (let x = 1; x <= length; x++) tiles.push({ x, y: 0, block, rotation: 0 });
@@ -118,20 +157,35 @@ function line(block, length) {
   return tiles;
 }
 
-/** Run a schematic through the port, and report what its vaults hold. */
+/**
+ * Line the containers up so they can be compared one to one.
+ *
+ * Summed together, a sorter that sorts nothing passes: the copper and the lead are both
+ * there, just in the wrong vaults. Told apart by where they stand, it does not. The two
+ * engines number the world differently, so the containers are sorted by position relative
+ * to the leftmost and lowest of them and matched in that order.
+ */
+function lineUp(containers) {
+  const left = Math.min(...containers.map((one) => one.x));
+  const bottom = Math.min(...containers.map((one) => one.y));
+  return containers
+    .map((one) => ({ at: `${one.x - left},${one.y - bottom}`, items: one.items }))
+    .sort((a, b) => a.at.localeCompare(b.at));
+}
+
+/** Run a schematic through the port, and report what each of its vaults holds. */
 async function port(code, ticks) {
   const graph = buildGraph((await fromBase64(code)).tiles);
   const world = new World(graph, behaviourOf);
   for (let i = 0; i < ticks; i++) world.step();
 
-  const out = {};
-  for (const build of world.builds) {
-    if (build.role !== "store") continue;
-    for (const [name, count] of build.items.counts) {
-      if (count > 0) out[name] = (out[name] || 0) + count;
-    }
-  }
-  return out;
+  const containers = world.builds
+    .filter((build) => build.role === "store")
+    .map((build) => ({
+      x: build.x, y: build.y,
+      items: Object.fromEntries([...build.items.counts].filter(([, n]) => n > 0)),
+    }));
+  return containers.length ? lineUp(containers) : [];
 }
 
 /** What the engine wrote down last time, if it has been asked. */
@@ -139,13 +193,8 @@ function measured(name) {
   const path = join(KEPT, `${name}.json`);
   if (!existsSync(path)) return null;
   const raw = JSON.parse(readFileSync(path, "utf8"));
-  const out = {};
-  for (const store of raw.containers || []) {
-    for (const [item, count] of Object.entries(store.items || {})) {
-      out[item] = (out[item] || 0) + count;
-    }
-  }
-  return { ticks: raw.ticks, items: out };
+  const containers = raw.containers || [];
+  return { ticks: raw.ticks, containers: containers.length ? lineUp(containers) : [] };
 }
 
 const SECONDS = 30;
@@ -170,8 +219,8 @@ if (process.argv.includes("--measure")) {
 
 let worst = 0;
 let missing = 0;
-console.log(`scenario              portage        jeu     ecart`);
-console.log(`${"-".repeat(56)}`);
+console.log(`scenario / coffre / objet      portage      jeu   ecart`);
+console.log(`${"-".repeat(62)}`);
 
 for (const [name, build] of Object.entries(SCENARIOS)) {
   const code = await toBase64(build(), { tags: { name }, sizeOf });
@@ -180,23 +229,34 @@ for (const [name, build] of Object.entries(SCENARIOS)) {
 
   if (!theirs) {
     missing++;
-    console.log(`${name.padEnd(20)} ${JSON.stringify(mine).padEnd(24)} pas encore mesure`);
+    console.log(`${name.padEnd(20)} pas encore mesure`);
     continue;
   }
 
-  const items = new Set([...Object.keys(mine), ...Object.keys(theirs.items)]);
-  for (const item of items) {
-    const a = mine[item] || 0;
-    const b = theirs.items[item] || 0;
-    const gap = b ? Math.abs(a - b) / b : (a ? 1 : 0);
-    worst = Math.max(worst, gap);
-    const label = `${name}/${item}`;
-    console.log(`${label.padEnd(20)} ${String(a).padStart(8)} ${String(b).padStart(10)}`
-      + `   ${a === b ? "exact" : `${(gap * 100).toFixed(1)}%`}`);
+  if (mine.length !== theirs.containers.length) {
+    worst = 1;
+    console.log(`${name.padEnd(20)} ${mine.length} coffres contre `
+      + `${theirs.containers.length}`);
+    continue;
+  }
+
+  for (let i = 0; i < mine.length; i++) {
+    const here = mine[i];
+    const there = theirs.containers[i];
+    const items = new Set([...Object.keys(here.items), ...Object.keys(there.items)]);
+    for (const item of items) {
+      const a = here.items[item] || 0;
+      const b = there.items[item] || 0;
+      const gap = b ? Math.abs(a - b) / b : (a ? 1 : 0);
+      worst = Math.max(worst, gap);
+      const label = `${name} ${here.at} ${item}`;
+      console.log(`${label.padEnd(30)} ${String(a).padStart(6)} ${String(b).padStart(8)}`
+        + `   ${a === b ? "exact" : `${(gap * 100).toFixed(1)}%`}`);
+    }
   }
 }
 
-console.log(`${"-".repeat(56)}`);
+console.log(`${"-".repeat(62)}`);
 if (missing) {
   console.log(`${missing} scenario(s) jamais mesures : relance avec --measure`);
 }
