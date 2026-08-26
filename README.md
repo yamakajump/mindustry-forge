@@ -21,20 +21,38 @@ output is a bug in this repository, not a matter of opinion. That check runs in 
 
 Nobody else can make that claim, because nobody else has the bench.
 
+## It runs on your machine
+
+The analysis is JavaScript and happens in your browser. Nothing is uploaded, so a base you
+have not published stays yours, and the page costs nothing to host however many people use
+it. There is no server to pay for and no server to go down.
+
+That also settles a question this repository keeps asking of itself: there is exactly one
+implementation of the analysis, `site/public/forge/analyse.js`. A second one, in another
+language, for the command line or for a backend, would be a second thing to be wrong.
+
 ## What is here
 
 | | |
 |---|---|
-| `analyser/` | reads a `.msch`, builds the flow graph, computes throughput and the bottleneck |
-| `bench/` | runs the real game and measures the same schematic, to prove the analyser right |
-| `site/` | the marketplace: paste, analyse, publish, compare |
-| `tests/` | including the ones that check the calculation against the game |
+| `site/public/forge/` | the analysis: reads a `.msch`, builds the flow graph, finds the bottleneck |
+| `site/public/index.html` | the page, which holds no calculation of its own |
+| `bench/` | runs the real game and measures the same schematic, to prove the analysis right |
+| `tests/js/` | the analysis, run exactly as the page runs it |
+| `tests/` | the bench |
 
 ## The `.msch` format is not guessed
 
-`analyser/schematic.py` implements the layout of `Schematics.write` and `TypeIO` from
-Mindustry v159.7, the version pinned throughout this repository. Reading a format from a
-wiki is how a tool comes to disagree with the game about what a player pasted.
+`site/public/forge/schematic.js` implements the layout of `Schematics.write` and `TypeIO`
+from Mindustry v159.7, the version pinned throughout this repository. Reading a format from
+a wiki is how a tool comes to disagree with the game about what a player pasted.
+
+## Trying it
+
+```bash
+forge.bat                      # or: cd site/public && python -m http.server 8770
+node --test "tests/js/*.test.js"
+```
 
 ## Status
 

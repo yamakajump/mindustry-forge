@@ -27,8 +27,11 @@ from __future__ import annotations
 
 import base64
 import io
+import json
 import struct
 import zlib
+from functools import lru_cache
+from pathlib import Path
 
 HEADER = b"msch"
 VERSION = 1
@@ -38,6 +41,13 @@ MAX_SIDE = 32767
 
 #: Type id for a null object in TypeIO. Every block a layout holds is unconfigured.
 CONFIG_NULL = b"\x00"
+
+@lru_cache(maxsize=1)
+def _registry() -> dict:
+    """The block registry the game printed, read once."""
+    path = Path(__file__).parent / "data" / "blocks.json"
+    return json.loads(path.read_text(encoding="utf-8")).get("blocks", {})
+
 
 def size_of(block: str) -> int:
     """How many tiles a side a block covers.
@@ -52,9 +62,7 @@ def size_of(block: str) -> int:
     own coordinates suggest, and used to be declared one short: a 1x7 schematic holding a
     2x2 drill, which is not a shape.
     """
-    from analyser.blocks import catalogue
-
-    return catalogue().size_of(block)
+    return int(_registry().get(block, {}).get("size", 1))
 
 
 def anchor_offset(size: int) -> int:
