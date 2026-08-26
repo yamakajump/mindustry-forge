@@ -17,6 +17,9 @@
 @endphp
 
 @push('head')
+  @if($schematic->managedBy(auth()->user()))
+    <script src="/forge/manage.js" type="module" defer></script>
+  @endif
   {{-- What a Discord message unfurls into. The picture and the figure together are the
        whole point: a link that shows what a schematic does gets clicked, a link that shows
        a domain name does not. --}}
@@ -77,6 +80,22 @@
           <div class="line"><span>{{ $item }}</span>
             <span class="num">{{ number_format($needRate, 0, ',', ' ') }} / min</span></div>
         @endforeach
+      </div>
+    @endif
+
+    @if($schematic->managedBy(auth()->user()))
+      <div class="card"><h2>Gerer</h2>
+        @include('partials.manage', ['gone' => '/mes-schematiques'])
+        <p class="hint-line">
+          @if($schematic->user_id !== auth()->id())
+            Tu vois ces boutons parce que tu tiens la vitrine, pas parce que la
+            schematique est a toi.
+          @else
+            Privee, personne d'autre ne la voit. Par lien, elle marche pour qui l'a et
+            reste hors de la vitrine. Publique, elle est dans la vitrine et classee avec
+            les autres.
+          @endif
+        </p>
       </div>
     @endif
 

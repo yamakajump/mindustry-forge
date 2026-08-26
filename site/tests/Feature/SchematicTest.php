@@ -225,3 +225,32 @@ it('laisse son auteur la supprimer, et personne d\'autre', function () {
         ->assertOk();
     expect(Schematic::whereKey($schematic->id)->exists())->toBeFalse();
 });
+
+it('laisse le moderateur retirer de la vitrine ce qui ne va pas', function () {
+    /* A public list anyone can post to needs somebody able to take something out of it,
+       and the alternative was opening the database by hand. */
+    $moderator = User::factory()->create(['moderator' => true]);
+    $schematic = Schematic::factory()->create(['visibility' => 'public']);
+
+    $this->actingAs($moderator)
+        ->patchJson("/api/schematiques/{$schematic->slug}", ['visibility' => 'private'])
+        ->assertOk();
+
+    expect($schematic->fresh()->visibility)->toBe('private');
+
+    $this->actingAs($moderator)
+        ->deleteJson("/api/schematiques/{$schematic->slug}")
+        ->assertOk();
+});
+
+it('ne fait de personne un moderateur par defaut', function () {
+    $someone = User::factory()->create();
+    $schematic = Schematic::factory()->create(['visibility' => 'public']);
+
+    $this->actingAs($someone)
+        ->deleteJson("/api/schematiques/{$schematic->slug}")
+        ->assertForbidden();
+
+    // Relu depuis la base : c'est la valeur par defaut de la colonne qu'on teste.
+    expect($someone->fresh()->moderator)->toBeFalse();
+});
