@@ -312,3 +312,98 @@ test("an unloader beside a container is where a line starts", async () => {
   assert.equal(unloader.role, "unloader");
   assert.ok(!out.idle.unloader, "un deverseur colle a un coffre fait quelque chose");
 });
+
+/* What the game itself puts in a schematic's info panel, and where Forge parts with it.
+   `Schematic.powerProduction` sums `getDisplayedPowerProduction`, `powerConsumption` sums
+   `consPower.usage`, both per tick, and neither knows an overdrive projector exists. */
+
+test("power is counted on every block, not only on the power blocks", async () => {
+  /* A phase conveyor draws 0.3 a tick and is filed under bridges. Counted per role, its
+     18 a second went missing, and a 334 block layout came out 144 short of the game. */
+  const out = await analyse(paste([[0, 0, "phase-conveyor", 0], [5, 0, "phase-conveyor", 0]]));
+  close(out.potential.spent, 36, "deux convoyeurs de phase, 18 chacun");
+});
+
+test("an overdrive projector speeds up what stands under it", async () => {
+  const alone = await analyse(paste([[0, 0, "steam-generator", 0]]));
+  close(alone.potential.made, 330, "un generateur a vapeur vaut 330");
+
+  const boosted = await analyse(paste([
+    [0, 0, "steam-generator", 0], [3, 0, "overdrive-projector", 0]]));
+  close(boosted.potential.made, 495, "sous un accelerateur il en vaut la moitie de plus");
+  close(boosted.potential.spent, 210, "et l'accelerateur se paie 210");
+});
+
+test("an overdrive projector reaches ten tiles and no further", async () => {
+  const far = await analyse(paste([
+    [0, 0, "steam-generator", 0], [30, 0, "overdrive-projector", 0]]));
+  close(far.potential.made, 330, "hors de portee, rien n'accelere");
+});
+
+test("a projector does not speed up another projector", async () => {
+  /* `canOverdrive` is false on it, on walls and on the whole power grid. Read from the
+     game rather than listed here, so a balance patch cannot make this quietly wrong. */
+  const out = await analyse(paste([
+    [0, 0, "overdrive-projector", 0], [3, 0, "overdrive-projector", 0]]));
+  close(out.potential.spent, 420, "deux accelerateurs, 210 chacun et pas un de plus");
+});
+
+test("a sandbox source pours what it was configured with", async () => {
+  const coal = { content: 0, id: known.items["coal"].id };
+  const tiles = [[0, 0, "item-source", 0, coal], [1, 0, "conveyor", 0],
+                 [2, 0, "conveyor", 0]];
+  const out = await analyse(paste(tiles));
+
+  /* Capped by the belt, not by the source: it offers a hundred a second and a conveyor
+     carries six and a half. */
+  close(out.produced.coal, 6.5, "le charbon sort au debit de la bande");
+  assert.ok(!out.idle["item-source"], "une source alimente, elle n'est pas oubliee");
+});
+
+test("a liquid source is recognised even when nothing in the layout drinks it", async () => {
+  const water = { content: 4, id: known.liquids["water"].id };
+  const out = await analyse(paste([[0, 0, "liquid-source", 0, water], [1, 0, "conduit", 0]]));
+  assert.ok(out.produced.water > 0, "l'eau sort du tuyau");
+});
+
+test("what arrives is spread over the machines waiting for it", async () => {
+  /* A maximum flow is free to fill some machines and abandon others, and it did: seven of
+     forty-one thorium reactors read as fed nothing while the other thirty-four ran flat
+     out, and the page named an ordinary reactor as the layout's bottleneck. The game
+     hands material out round by round. */
+  const tiles = [[0, 0, "conveyor", 0], [1, 0, "router", 0],
+                 [2, 0, "graphite-press", 0], [0, 1, "graphite-press", 0]];
+  const out = await analyse(paste(tiles), { coal: 1 });
+
+  const presses = out.detail.filter((t) => t.name === "graphite-press");
+  assert.equal(presses.length, 2);
+  close(presses[0].fed, presses[1].fed, "les deux presses tournent pareil");
+  assert.ok(presses[0].fed > 0.01, "aucune des deux n'est laissee a zero");
+  assert.ok(presses[0].fed < 0.99, "et aucune ne tourne a plein sur la moitie du charbon");
+});
+
+test("a machine nothing feeds stays at nothing", async () => {
+  /* The other half of the same rule: sharing must not average away a real fault. A press
+     wired to no belt at all is worth seeing. */
+  const tiles = [[0, 0, "conveyor", 0], [1, 0, "graphite-press", 0],
+                 [8, 8, "graphite-press", 0]];
+  const out = await analyse(paste(tiles), { coal: 4 });
+
+  const presses = out.detail.filter((t) => t.name === "graphite-press")
+    .sort((a, b) => b.fed - a.fed);
+  assert.ok(presses[0].fed > 0.5, "celle qui est branchee tourne");
+  close(presses[1].fed, 0, "celle qui n'est reliee a rien ne tourne pas");
+});
+
+test("a sandbox source gives the factory what it asks for, not a flood", async () => {
+  /* A liquid source refills itself to ten thousand every tick, which is six hundred
+     thousand a second, and a maximum flow pushed every drop of it into whatever pipe
+     ended in the air: one layout reported making 557 million cryofluid a minute. */
+  const water = { content: 4, id: known.liquids["water"].id };
+  const tiles = [[0, 0, "liquid-source", 0, water], [1, 0, "conduit", 0],
+                 [2, 0, "conduit", 0], [3, 0, "conduit", 0]];
+  const out = await analyse(paste(tiles));
+
+  assert.ok(out.produced.water < 1300,
+            `un tuyau ne deverse pas un ocean : ${out.produced.water}`);
+});

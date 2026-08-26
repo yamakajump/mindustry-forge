@@ -27,22 +27,32 @@ export function demand(graph) {
     const block = node.block;
     const crafts = block.craft_time ? TICKS / block.craft_time : 0;
 
+    // A block under an overdrive projector eats and makes more per second, and the
+    // shopping list is a list of rates.
+    const speed = node.boost || 1;
+
     for (const [item, count] of Object.entries(block.input || {})) {
-      wanted[item] = (wanted[item] || 0) + count * crafts;
+      wanted[item] = (wanted[item] || 0) + count * crafts * speed;
     }
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
-      wanted[liquid] = (wanted[liquid] || 0) + rate;
+      wanted[liquid] = (wanted[liquid] || 0) + rate * speed;
     }
     // A generator that burns whatever it is handed states a duration and no ingredient.
     if (node.role === "generator" && !Object.keys(block.input || {}).length && crafts) {
-      wanted["*combustible"] = (wanted["*combustible"] || 0) + crafts;
+      wanted["*combustible"] = (wanted["*combustible"] || 0) + crafts * speed;
     }
 
     for (const [item, count] of Object.entries(block.output || {})) {
-      made[item] = (made[item] || 0) + count * crafts;
+      made[item] = (made[item] || 0) + count * crafts * speed;
     }
     for (const [liquid, rate] of Object.entries(block.output_liquid || {})) {
-      made[liquid] = (made[liquid] || 0) + rate;
+      made[liquid] = (made[liquid] || 0) + rate * speed;
+    }
+    // A sandbox source is a tap the builder put inside the schematic. Left out, a test
+    // layout standing on twelve liquid sources was told to go and find a pump.
+    if (node.role === "source" && node.configured) {
+      made[node.configured] = (made[node.configured] || 0)
+        + (block.output_per_second || 0) * speed;
     }
   }
 

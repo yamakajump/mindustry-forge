@@ -334,9 +334,24 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
     const role = roleOf(name);
     const spins = turns(name, role);
 
+    // The square of colour under a configured block, which is how the game says what a
+    // sorter passes and what a source pours. `Fill.square(x, y, tilesize/2)` in
+    // `Sorter.draw` and `ItemSourceBuild.draw`: a whole tile, with the frame over it.
+    // Without it twelve sources side by side are twelve identical blank frames.
+    let art = found;
+    if (tile.tint) {
+      const plain = atlas?.sprites?.[`${tile.name || tile.block}#plain`];
+      if (plain) {
+        // The bare frame rather than the composite, whose middle is the cross the game
+        // draws when nothing is set: painted under that, the colour never showed.
+        art = plain;
+        context.fillStyle = tile.tint;
+        context.fillRect(px, py, size * scale, size * scale);
+      }
+    }
+
     // A carrier picks one of five shapes from its neighbours, so a corner draws as a
     // corner. Everything else keeps its single sprite.
-    let art = found;
     let flip = 1;
     if (role === "conveyor" || role === "conduit") {
       const chosen = carrierShape(tile, feeds);
@@ -371,12 +386,93 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
     marker(context, port, box, scale, "#ffd37f", false);
   }
 
+  drawPowerLinks(context, tiles, sizeOf, box, scale);
+
   // Spans last, so a bridge draws over the tiles it flies past rather than under them.
   for (const tile of tiles) {
     if (roleOf(tile.name || tile.block) === "bridge") drawBridge(context, tile, box, scale);
   }
 
   return { scale, box, missing: [...new Set(missing)] };
+}
+
+/**
+ * The wires between power nodes, which were not drawn at all.
+ *
+ * They are most of what a power schematic looks like: a picture of a reactor farm with the
+ * pylons and no lines between them is a picture of some reactors. The game draws them from
+ * `PowerNode.drawPlanConfigTop`, centre to centre, trimmed by half of each block plus a
+ * pixel and a half so the line starts at the frame rather than under it.
+ *
+ * The link list is stored on both ends, so each wire is offered twice and drawn once.
+ */
+function drawPowerLinks(context, tiles, sizeOf, box, scale) {
+  const at = new Map();
+  for (let index = 0; index < tiles.length; index++) {
+    const tile = tiles[index];
+    const size = sizeOf(tile.name || tile.block);
+    const offset = Math.trunc(-(size - 1) / 2);
+    for (let dx = 0; dx < size; dx++) {
+      for (let dy = 0; dy < size; dy++) {
+        at.set(`${tile.x + offset + dx},${tile.y + offset + dy}`, index);
+      }
+    }
+  }
+
+  const centre = (tile) => {
+    const size = sizeOf(tile.name || tile.block);
+    const offset = Math.trunc(-(size - 1) / 2);
+    return [(tile.x + offset - box.left) * scale + size * scale / 2,
+            (box.height - (tile.y + offset - box.bottom) - size) * scale + size * scale / 2];
+  };
+
+  const drawn = new Set();
+  context.save();
+  // White with a breath of the game's power yellow, which is `setupColor(1f)` on a fed
+  // network, and see-through enough not to bury what it flies over.
+  context.strokeStyle = "#fdf3d0";
+  context.globalAlpha = 0.55;
+  context.lineWidth = Math.max(1, scale * 1.6 / WORLD);
+  context.lineCap = "round";
+
+  for (let index = 0; index < tiles.length; index++) {
+    const tile = tiles[index];
+    const links = tile.config?.type === 8 ? tile.config.links : null;
+    if (!links) continue;
+
+    for (const packed of links) {
+      // `Point2.pack`: the x in the high half, the y in the low half as a signed short.
+      const dx = packed >> 16;
+      const dy = (packed << 16) >> 16;
+      const other = at.get(`${tile.x + dx},${tile.y + dy}`);
+      if (other === undefined || other === index) continue;
+
+      const key = index < other ? `${index}-${other}` : `${other}-${index}`;
+      if (drawn.has(key)) continue;
+      drawn.add(key);
+
+      const [x1, y1] = centre(tile);
+      const [x2, y2] = centre(tiles[other]);
+      const length = Math.hypot(x2 - x1, y2 - y1);
+      if (length < 1) continue;
+
+      // Trimmed at each end by half the block it leaves, less a pixel and a half, which
+      // is `len1` and `len2` in `PowerNode.drawLaser`.
+      const ux = (x2 - x1) / length;
+      const uy = (y2 - y1) / length;
+      const trim = (tile2) =>
+        (sizeOf(tile2.name || tile2.block) * scale) / 2 - 1.5 * scale / WORLD;
+      const from = trim(tile);
+      const to = trim(tiles[other]);
+      if (from + to >= length) continue;
+
+      context.beginPath();
+      context.moveTo(x1 + ux * from, y1 + uy * from);
+      context.lineTo(x2 - ux * to, y2 - uy * to);
+      context.stroke();
+    }
+  }
+  context.restore();
 }
 
 /** One item icon, for saying what a layout makes in the game's own pictures. */

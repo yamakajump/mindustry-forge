@@ -6,12 +6,14 @@ import arc.util.serialization.Jval;
 import mindustry.Vars;
 import mindustry.core.Version;
 import mindustry.type.Item;
+import mindustry.type.Liquid;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
 import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.Duct;
 import mindustry.world.blocks.distribution.ItemBridge;
 import mindustry.world.blocks.distribution.OverflowGate;
+import mindustry.world.blocks.defense.OverdriveProjector;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.distribution.Sorter;
 import mindustry.world.blocks.storage.StorageBlock;
@@ -20,6 +22,8 @@ import mindustry.world.blocks.distribution.Junction;
 import mindustry.world.blocks.distribution.Router;
 import mindustry.world.blocks.production.Drill;
 import mindustry.world.blocks.production.Pump;
+import mindustry.world.blocks.sandbox.ItemSource;
+import mindustry.world.blocks.sandbox.LiquidSource;
 import mindustry.world.blocks.liquid.Conduit;
 import mindustry.world.blocks.liquid.LiquidBridge;
 import mindustry.world.blocks.liquid.LiquidJunction;
@@ -34,7 +38,6 @@ import mindustry.type.LiquidStack;
 import mindustry.world.consumers.ConsumeItems;
 import mindustry.world.consumers.ConsumeLiquid;
 import mindustry.world.consumers.ConsumeLiquids;
-import mindustry.world.consumers.ConsumePower;
 
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -61,6 +64,9 @@ public class DumpBlocks {
 
     /** Ticks per second, which is what turns the game's per-tick figures into per-second. */
     private static final float TPS = 60f;
+
+    /** Pixels to a tile, which is what turns the game's ranges into tiles. */
+    private static final float TILESIZE = 8f;
 
     public static void dump(Path out) {
         Jval root = Jval.newObject();
@@ -93,6 +99,30 @@ public class DumpBlocks {
             }
             entry.put("cost", cost);
 
+            // Power, read the way the game reads it for its own schematic panel:
+            // `Schematic.powerConsumption` sums `consPower.usage` and `powerProduction`
+            // sums `getDisplayedPowerProduction()`, both per tick. Taken here for every
+            // block rather than per role, because a phase conveyor draws power and is not
+            // a power block: filed under bridges, its 0.3 a tick went uncounted and a 334
+            // block layout came out 144 energy a second cheaper than the game says.
+            // Guarded, because the sandbox power void declares an infinite draw and
+            // `Infinity` is not JSON: the dump it produced could not be parsed at all by
+            // anything stricter than Python.
+            float draw = block.consPower != null ? block.consPower.usage * TPS : 0f;
+            entry.put("power", Float.isFinite(draw) ? draw : 0f);
+            if (!Float.isFinite(draw)) entry.put("power_void", true);
+            // An overdrive projector speeds up what stands near it, and the game's own
+            // schematic panel ignores that entirely: forty thorium reactors under five
+            // projectors read as 36,900 energy a second when they make 55,350. Two flags
+            // decide who is sped up, and both are the game's, read rather than guessed.
+            if (!block.canOverdrive) entry.put("no_overdrive", true);
+            if (block.privileged) entry.put("privileged", true);
+            if (block instanceof PowerGenerator generator) {
+                // Not `powerProduction`: a thermal generator divides by its display scale,
+                // and the game's own figure is the divided one.
+                entry.put("power_out", generator.getDisplayedPowerProduction() * TPS);
+            }
+
             describeRole(block, entry);
             blocks.put(block.name, entry);
         }
@@ -105,6 +135,14 @@ public class DumpBlocks {
             // Hardness is what decides which drill can touch an ore, and cost is the
             // game's own notion of how precious an item is. Both are needed to say what a
             // layout is worth rather than only how much it moves.
+            // The id, because a schematic stores a sorter's filter and a source's output as
+            // a content type and a number, and turning that back into "titanium" needs the
+            // game's own numbering rather than the order a JSON object happens to be in.
+            entry.put("id", item.id);
+            // The colour the game paints a sorter and a source with. Without it those
+            // blocks draw as blank frames, and telling twelve identical sources apart is
+            // exactly what the colour is for.
+            entry.put("color", "#" + item.color.toString().substring(0, 6));
             entry.put("hardness", item.hardness);
             entry.put("cost", item.cost);
             entry.put("explosiveness", item.explosiveness);
@@ -112,6 +150,20 @@ public class DumpBlocks {
             items.put(item.name, entry);
         }
         root.put("items", items);
+
+        // Which names are liquids, stated rather than inferred. It had been worked out
+        // from whatever appeared in a recipe, which is right until a schematic configures
+        // a source with a liquid no block in it consumes.
+        Jval liquids = Jval.newObject();
+        for (Liquid liquid : Vars.content.liquids()) {
+            Jval entry = Jval.newObject();
+            entry.put("id", liquid.id);
+            entry.put("color", "#" + liquid.color.toString().substring(0, 6));
+            entry.put("heat_capacity", liquid.heatCapacity);
+            entry.put("temperature", liquid.temperature);
+            liquids.put(liquid.name, entry);
+        }
+        root.put("liquids", liquids);
 
         try {
             Files.createDirectories(out.getParent());
@@ -202,8 +254,25 @@ public class DumpBlocks {
             // Liquids and items travel on networks that never touch. Saying which one a
             // carrier belongs to is what stops a conveyor from being credited with
             // delivering water, which reads as a working factory and is not one.
-            entry.put("role", block instanceof LiquidBridge ? "bridge" : "conduit");
+            // Told apart rather than lumped together, and the lumping was not harmless:
+            // a conduit points somewhere and a liquid router does not, so the four of them
+            // sharing one role meant either every pipe leaked sideways or every router
+            // was a one-way street. The first was the state of things; a schematic's
+            // pipes fed themselves in both directions.
+            entry.put("role",
+                block instanceof LiquidBridge ? "bridge"
+                : block instanceof LiquidJunction ? "junction"
+                : block instanceof LiquidRouter ? "router"
+                : "conduit");
             entry.put("carries", "liquid");
+            if (block instanceof LiquidBridge bridge) {
+                // A liquid bridge is an ItemBridge, and it was sent down this branch to be
+                // told it carries liquid - which lost its range on the way. With no range
+                // every link it stored was judged out of reach and thrown away: six phase
+                // conduits with no line drawn between them and, worse, no edge in the
+                // graph, so the liquid stopped there.
+                entry.put("range", bridge.range);
+            }
             return;
         }
         if (block instanceof PowerNode || block instanceof Battery) {
@@ -239,7 +308,6 @@ public class DumpBlocks {
 
             entry.put("input", inputsOf(crafter));
             entry.put("input_liquid", liquidInputsOf(crafter));
-            entry.put("power", powerOf(crafter));
             return;
         }
         if (block instanceof Pump pump) {
@@ -248,7 +316,6 @@ public class DumpBlocks {
             entry.put("role", "pump");
             entry.put("output_per_second", TPS * pump.pumpAmount * block.size * block.size);
             entry.put("input_liquid", liquidInputsOf(block));
-            entry.put("power", powerOf(block));
             return;
         }
         if (block instanceof PowerGenerator generator) {
@@ -256,7 +323,6 @@ public class DumpBlocks {
             // power out. Classified as a sink before, with no consumption at all, so the
             // coal feeding it was counted as the layout's output.
             entry.put("role", "generator");
-            entry.put("power_out", generator.powerProduction * TPS);
             entry.put("input", inputsOf(block));
             entry.put("input_liquid", liquidInputsOf(block));
             entry.put("craft_time", itemDurationOf(block));
@@ -279,7 +345,6 @@ public class DumpBlocks {
             }
             entry.put("ammo", ammo);
             entry.put("input_liquid", liquidInputsOf(block));
-            entry.put("power", powerOf(block));
             return;
         }
         if (block instanceof Unloader unloader) {
@@ -288,6 +353,37 @@ public class DumpBlocks {
             entry.put("role", "unloader");
             entry.put("carries", "item");
             entry.put("items_per_second", unloader.speed * TPS);
+            return;
+        }
+        if (block instanceof ItemSource source) {
+            // Sandbox blocks, and the reason a test layout reads as producing nothing:
+            // filed as sinks, the twelve sources feeding a reactor farm looked like twelve
+            // places its output disappeared into.
+            entry.put("role", "source");
+            entry.put("carries", "item");
+            entry.put("output_per_second", source.itemsPerSecond);
+            return;
+        }
+        if (block instanceof LiquidSource) {
+            entry.put("role", "source");
+            entry.put("carries", "liquid");
+            // It refills itself every tick, so what comes out is whatever the pipe on the
+            // other side can take. Stated as its own capacity per tick, which is past any
+            // real pipe by three orders of magnitude.
+            entry.put("output_per_second", block.liquidCapacity * TPS);
+            return;
+        }
+        if (block instanceof OverdriveProjector projector) {
+            // Range is in world units in the game and in tiles here, because every other
+            // distance on this site is in tiles and one unit per file is how a conversion
+            // gets forgotten.
+            entry.put("role", "projector");
+            entry.put("boost", projector.speedBoost);
+            entry.put("boost_phase", projector.speedBoostPhase);
+            entry.put("range", projector.range / TILESIZE);
+            entry.put("phase_range_boost", projector.phaseRangeBoost / TILESIZE);
+            entry.put("boost_input", optionalInputsOf(block));
+            entry.put("boost_time", projector.useTime);
             return;
         }
         if (block instanceof StorageBlock) {
@@ -305,13 +401,11 @@ public class DumpBlocks {
             entry.put("role", "sink");
             entry.put("input", inputsOf(block));
             entry.put("input_liquid", liquidInputsOf(block));
-            entry.put("power", powerOf(block));
             return;
         }
         if (block.hasLiquids && block.consumesPower) {
             entry.put("role", "sink");
             entry.put("input_liquid", liquidInputsOf(block));
-            entry.put("power", powerOf(block));
         }
     }
 
@@ -319,6 +413,7 @@ public class DumpBlocks {
     private static Jval liquidInputsOf(Block block) {
         Jval input = Jval.newObject();
         for (Consume consume : block.consumers) {
+            if (consume.optional) continue;
             if (consume instanceof ConsumeLiquid one) {
                 input.put(one.liquid.name, one.amount * TPS);
             } else if (consume instanceof ConsumeLiquids many) {
@@ -343,10 +438,17 @@ public class DumpBlocks {
         return 0f;
     }
 
-    private static Jval inputsOf(Block block) {
+    /**
+     * What a block takes to go faster but runs without.
+     *
+     * Kept apart from {@link #inputsOf}, which had been mixing the two: an overdrive
+     * projector with no phase fabric still boosts, and reading its phase fabric as an
+     * ingredient makes a working layout report as starved.
+     */
+    private static Jval optionalInputsOf(Block block) {
         Jval input = Jval.newObject();
         for (Consume consume : block.consumers) {
-            if (consume instanceof ConsumeItems items) {
+            if (consume.optional && consume instanceof ConsumeItems items) {
                 for (ItemStack stack : items.items) {
                     input.put(stack.item.name, stack.amount);
                 }
@@ -355,13 +457,17 @@ public class DumpBlocks {
         return input;
     }
 
-    private static float powerOf(Block block) {
+    private static Jval inputsOf(Block block) {
+        Jval input = Jval.newObject();
         for (Consume consume : block.consumers) {
-            if (consume instanceof ConsumePower power) {
-                return power.usage * TPS;
+            if (consume.optional) continue;
+            if (consume instanceof ConsumeItems items) {
+                for (ItemStack stack : items.items) {
+                    input.put(stack.item.name, stack.amount);
+                }
             }
         }
-        return 0f;
+        return input;
     }
 
     public static Path defaultOut() {

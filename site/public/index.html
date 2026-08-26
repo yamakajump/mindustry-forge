@@ -233,12 +233,46 @@ function render(report) {
     right.push(`<div class="card"><h2>Gaspille</h2>${rows.join("")}</div>`);
   }
 
-  const cost = Object.entries(report.cost || {}).sort((a, b) => b[1] - a[1]);
-  if (cost.length) {
-    right.push(`<div class="card"><h2>Cout de construction</h2><div class="chips">${
-      cost.map(([item, n]) =>
-        `<span class="chip">${withIcon(item, 15)}<span class="num">${n}</span></span>`).join("")
-    }</div></div>`);
+  /* The panel the game itself shows, reproduced from its own formulas, and the places
+     Forge parts with it named rather than hidden. Two reasons for it to be on the page:
+     a player can hold it against what they see in game and decide whether to trust the
+     rest, and the disagreements are the point of the site. The game's own figure ignores
+     overdrive projectors entirely, so a reactor farm under five of them is understated by
+     eighteen thousand energy a second, and the author of one such layout wrote the higher
+     number in its description while the game contradicted them in their own preview. */
+  /* In the game's own order rather than by quantity, so the row can be read against the
+     panel in game without hunting. The order is the item registry's, which is what
+     `ItemSeq` walks. */
+  const cost = Object.entries(report.cost || {})
+    .sort((a, b) => (report.itemOrder?.[a[0]] ?? 99) - (report.itemOrder?.[b[0]] ?? 99));
+  const asGame = report.asTheGameSaysIt;
+  if (cost.length || asGame) {
+    const boost = asGame && report.potential
+      && Math.abs(report.potential.made - asGame.made) > 0.01;
+    right.push(`<div class="card"><h2>Ce que dit le jeu</h2>${
+      cost.length
+        ? `<div class="chips" style="margin-bottom:10px">${cost.map(([item, n]) =>
+            `<span class="chip">${withIcon(item, 15)}<span class="num">${n}</span></span>`)
+            .join("")}</div>`
+        : ""
+    }${
+      asGame && (asGame.made > 0.01 || asGame.spent > 0.01)
+        ? `<div class="line"><span>Energie</span><span class="num">
+             <span class="good">+${rate(asGame.made)}</span>
+             &nbsp;<span class="warn">-${rate(asGame.spent)}</span></span></div>`
+        : ""
+    }<p class="hint-line">Cout et energie calcules avec les formules du jeu, a l'unite
+      pres : c'est l'encart que tu vois sur l'apercu d'une schematique.</p>${
+      boost
+        ? `<div class="line" style="margin-top:8px"><span>Forge compte plutot</span>
+             <span class="num good">${rate(report.potential.made)} energie / s</span></div>
+           <p class="hint-line">Le jeu ignore les accelerateurs. Ici
+             <strong>${asGame.projectors}</strong> en couvre${asGame.projectors > 1 ? "nt" : ""}
+             <strong>${asGame.boosted}</strong> bloc${asGame.boosted > 1 ? "s" : ""},
+             qui tournent moitie plus vite, et jusqu'a deux fois et quart plus vite si tu
+             les alimentes en matiere de phase.</p>`
+        : ""
+    }</div>`);
   }
 
   const notes = [];
