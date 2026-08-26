@@ -27,6 +27,10 @@ export function efficiencyOf(build, step) {
     if (build.items.get(item) < amount) return 0;
   }
 
+  // `HeatCrafterBuild.shouldConsume`: no heat at all means it does not run, however much
+  // of everything else it is holding.
+  if (block.heat_requirement > 0 && !(build.state.heat > 0)) return 0;
+
   let efficiency = 1;
   for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
     // `ConsumeLiquid.efficiency`, worked out as the game does it, with efficiency taken as
@@ -66,6 +70,52 @@ function shouldConsume(build) {
 }
 
 /**
+ * How much heat reaches this block, from the faces touching it.
+ *
+ * `Building.calculateHeat`. Heat is Erekir's third network and it travels like neither of
+ * the other two: not on a belt and not on a grid, but from one block's face to the face
+ * pressed against it. A producer has to be **facing** the block it heats, and a heat
+ * router has to be facing away, which is what stops a ring of them from feeding itself.
+ *
+ * Divided by the producer's size and multiplied by how many tiles of it are in contact, so
+ * a small block against the side of a big one gets a share rather than the lot.
+ */
+function heatReaching(build) {
+  let heat = 0;
+  for (const other of build.proximity) {
+    const made = other.state?.heat || 0;
+    if (made <= 0) continue;
+
+    const split = Boolean(other.block.split_heat);
+    const towards = (build.relativeTo(other) + 2) % 4;
+    // A producer must face us; a splitter must face away.
+    if (other.block.rotate) {
+      if (split ? build.relativeTo(other) === other.rotation
+                : towards !== other.rotation) continue;
+    }
+
+    const gap = Math.min(Math.abs(other.x - build.x), Math.abs(other.y - build.y));
+    const contact = Math.min(
+      Math.trunc(build.size / 2 + other.size / 2 - gap),
+      Math.min(other.size, build.size));
+
+    heat += (made / other.size) * Math.max(1, contact) / (split ? 3 : 1);
+  }
+  return heat;
+}
+
+/**
+ * A block that only passes heat on: a redirector, or a router that splits it three ways.
+ *
+ * It holds nothing and makes nothing. Whatever reaches its face leaves by the face it
+ * points at, which is why a chain of them carries heat across a base.
+ */
+const heatConductor = {
+  begin(build) { build.state.heat = 0; },
+  update(build) { build.state.heat = heatReaching(build); },
+};
+
+/**
  * Any factory in the game.
  *
  * Seventeen blocks share this class on Serpulo alone, from a graphite press to a
@@ -84,10 +134,18 @@ const crafter = {
 
   update(build, world, step) {
     const block = build.block;
+
+    // Heat arrives before anything is decided, because it is what decides how fast this
+    // runs and, for a crafter that needs it, whether it runs at all.
+    if (block.heat_requirement) build.state.heat = heatReaching(build);
+
     const efficiency = efficiencyOf(build, step);
 
     if (efficiency > 0) {
-      const delta = build.delta(step) * efficiency;
+      /* Heat scales the speed rather than gating it, and it can go past one: a crucible
+         fed more heat than it asks for runs faster, up to `maxEfficiency`. That is
+         `efficiencyScale` in the game, multiplied into `edelta`. */
+      const delta = build.delta(step) * efficiency * heatScale(build);
       build.state.progress += delta / (block.craft_time || 1);
 
       // A liquid comes out continuously rather than in a batch: half a craft's worth of
@@ -105,8 +163,27 @@ const crafter = {
 
     if (build.state.progress >= 1) craft(build);
     dumpOutputs(build, step);
+
+    // And a producer's own heat, which creeps towards what it makes at a fixed rate
+    // whatever its efficiency: `heat = approachDelta(heat, heatOutput * efficiency, rate)`.
+    if (block.heat_output) {
+      build.state.heat = approach(build.state.heat || 0,
+                                  block.heat_output * efficiency,
+                                  (block.warmup_rate ?? 0.15) * build.delta(step));
+    }
   },
 };
+
+/** `HeatCrafterBuild.efficiencyScale`: what the heat it is getting is worth. */
+function heatScale(build) {
+  const wanted = build.block.heat_requirement;
+  if (!wanted) return 1;
+  const heat = build.state.heat || 0;
+  const over = Math.max(heat - wanted, 0);
+  return Math.min(
+    Math.min(heat, wanted) / wanted + (over / wanted) * (build.block.overheat_scale ?? 1),
+    build.block.max_efficiency ?? 4);
+}
 
 /** One batch: eat the ingredients, hand out what was made, keep the remainder. */
 function craft(build) {
@@ -330,5 +407,6 @@ function planOf(build) {
 export const MACHINES = {
   crafter,
   drill,
+  "heat-conductor": heatConductor,
   "unit-factory": unitFactory,
 };

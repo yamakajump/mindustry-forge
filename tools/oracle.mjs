@@ -40,6 +40,19 @@ const item = (name) => held(0, known.items[name].id);
 const liquid = (name) => held(4, known.liquids[name].id);
 const unit = (name) => held(6, known.units[name].id);
 
+/**
+ * A power node's links, as the game writes them: a `Point2[]`, each packed into one int,
+ * each an offset from the node itself.
+ */
+const links = (offsets) => {
+  const out = new Uint8Array(2 + offsets.length * 4);
+  out[0] = 8;
+  out[1] = offsets.length;
+  const view = new DataView(out.buffer);
+  offsets.forEach(([dx, dy], i) => view.setInt32(2 + i * 4, (dx << 16) | (dy & 0xFFFF)));
+  return out;
+};
+
 /** A scenario may be a bare list of tiles, or tiles and the ground under them. */
 const shape = (built) => (Array.isArray(built) ? { tiles: built, ground: [] }
   : { tiles: built.tiles, ground: built.ground || [] });
@@ -343,6 +356,70 @@ const SCENARIOS = {
     // ends rather than a tile further on.
     { x: 3, y: 1, block: "salvo", rotation: 0 },
   ],
+
+  /* Erekir's chemistry, which runs on heat.
+  
+     Heat is a third network and it travels like neither of the other two: not on a belt
+     and not on a grid, but from one block's face to the face pressed against it. A
+     producer has to be facing what it heats.
+  
+     A carbide crucible wants forty heat, and a sandbox heat source pours a thousand, so
+     this measures the overheat rule as well: past its requirement a crucible runs faster,
+     up to four times, and four times is where it lands. */
+  "heat-crucible": () => [
+    // Covers 0..2 by 0..2.
+    { x: 1, y: 1, block: "carbide-crucible", rotation: 0 },
+    // Facing west, into the crucible's right edge.
+    { x: 3, y: 1, block: "heat-source", rotation: 2 },
+    { x: 3, y: 0, block: "power-source", rotation: 0 },
+
+    { x: 0, y: 5, block: "item-source", rotation: 0, raw: item("tungsten") },
+    { x: 0, y: 4, block: "conveyor", rotation: 3 },
+    { x: 0, y: 3, block: "conveyor", rotation: 3 },
+    { x: 2, y: 5, block: "item-source", rotation: 0, raw: item("graphite") },
+    { x: 2, y: 4, block: "conveyor", rotation: 3 },
+    { x: 2, y: 3, block: "conveyor", rotation: 3 },
+
+    { x: 1, y: -1, block: "conveyor", rotation: 3 },
+    { x: 1, y: -3, block: "vault", rotation: 0 },
+  ],
+
+  /* The same crucible with the heat carried to it by a redirector instead of pressed
+     against it, which is how a real base does it. */
+  "heat-redirected": () => [
+    { x: 1, y: 1, block: "carbide-crucible", rotation: 0 },
+    { x: 4, y: 1, block: "heat-redirector", rotation: 2 },
+    { x: 6, y: 1, block: "heat-source", rotation: 2 },
+    // Touching the crucible: diagonal is not touching, and a crucible with no
+    // power does not run however much heat is pressed against it.
+    { x: 0, y: -1, block: "power-source", rotation: 0 },
+
+    { x: 0, y: 5, block: "item-source", rotation: 0, raw: item("tungsten") },
+    { x: 0, y: 4, block: "conveyor", rotation: 3 },
+    { x: 0, y: 3, block: "conveyor", rotation: 3 },
+    { x: 2, y: 5, block: "item-source", rotation: 0, raw: item("graphite") },
+    { x: 2, y: 4, block: "conveyor", rotation: 3 },
+    { x: 2, y: 3, block: "conveyor", rotation: 3 },
+
+    { x: 2, y: -1, block: "conveyor", rotation: 3 },
+    { x: 2, y: -3, block: "vault", rotation: 0 },
+  ],
+
+  /* A power node, which is how a real base joins things that do not touch. Its links are
+     part of its configuration; written without them it connects to nothing at all. */
+  "power-node": () => ({
+    tiles: [
+      { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
+      { x: 1, y: 1, block: "combustion-generator", rotation: 0 },
+      { x: 2, y: 1, block: "power-node", rotation: 0, raw: links([[-1, 0], [4, 0]]) },
+
+      // Four tiles away, touching nothing: only the node joins it to the generator.
+      { x: 7, y: 1, block: "laser-drill", rotation: 0 },
+      { x: 9, y: 1, block: "conveyor", rotation: 0 },
+      { x: 11, y: 1, block: "vault", rotation: 0 },
+    ],
+    ground: [6, 7, 8].flatMap((x) => [0, 1, 2].map((y) => `ore-copper@${x},${y}`)),
+  }),
 
   /* A core, which is where most schematics that are not self-contained are meant to
      deliver. It takes anything and hands nothing back. */

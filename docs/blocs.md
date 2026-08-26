@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 24 sur 103
+## Fait : 29 sur 103
 
 - [x] `GenericCrafter` &mdash; 17 blocs &mdash; toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -24,13 +24,13 @@ second, c'est une intuition qui a l'air d'un portage.
       chemical-combustion-chamber, combustion-generator, differential-generator, pyrolysis-generator, rtg-generator, steam-generator
 - [x] `CoreBlock` &mdash; 6 blocs &mdash; le noyau : un coffre qui compte
       core-acropolis, core-bastion, core-citadel, core-foundation, core-nucleus, core-shard
-- [ ] `HeatProducer` &mdash; 6 blocs &mdash; chauffe, pour la moitie Erekir du jeu
+- [x] `HeatProducer` &mdash; 6 blocs &mdash; chauffe, pour la moitie Erekir du jeu
       electric-heater, heat-reactor, heat-source, oxidation-chamber, phase-heater, slag-heater
 - [x] `LiquidRouter` &mdash; 6 blocs &mdash; un routeur a liquide, qui est aussi une reserve
       liquid-container, liquid-router, liquid-tank, reinforced-liquid-container, reinforced-liquid-router, reinforced-liquid-tank
 - [x] `UnitFactory` &mdash; 6 blocs &mdash; fabrique des unites : c'est ce qu'il a demande
       air-factory, ground-factory, mech-fabricator, naval-factory, ship-fabricator, tank-fabricator
-- [ ] `HeatCrafter` &mdash; 5 blocs &mdash; une usine qui a besoin de chaleur en plus
+- [x] `HeatCrafter` &mdash; 5 blocs &mdash; une usine qui a besoin de chaleur en plus
       atmospheric-concentrator, carbide-crucible, cyanogen-synthesizer, phase-synthesizer, surge-crucible
 - [x] `Drill` &mdash; 4 blocs &mdash; sort du sol ce qu'il y a dessous
       blast-drill, laser-drill, mechanical-drill, pneumatic-drill
@@ -44,9 +44,9 @@ second, c'est une intuition qui a l'air d'un portage.
       container, reinforced-container, reinforced-vault, vault
 - [ ] `AttributeCrafter` &mdash; 3 blocs &mdash; une usine dont la vitesse depend du sol dessous
       cultivator, silicon-crucible, vent-condenser
-- [ ] `HeatConductor` &mdash; 3 blocs &mdash; porte la chaleur
+- [x] `HeatConductor` &mdash; 3 blocs &mdash; porte la chaleur
       heat-redirector, heat-router, small-heat-redirector
-- [ ] `PowerNode` &mdash; 3 blocs &mdash; relie le reseau
+- [x] `PowerNode` &mdash; 3 blocs &mdash; relie le reseau
       power-node, power-node-large, surge-tower
 - [ ] `UnitAssembler` &mdash; 3 blocs &mdash; assemble une unite a partir de plans
       mech-assembler, ship-assembler, tank-assembler
@@ -186,7 +186,7 @@ second, c'est une intuition qui a l'air d'un portage.
       segment
 - [ ] `PowerDiode` &mdash; 1 bloc
       diode
-- [ ] `PowerSource` &mdash; 1 bloc
+- [x] `PowerSource` &mdash; 1 bloc
       power-source
 - [ ] `PowerVoid` &mdash; 1 bloc
       power-void

@@ -3704,14 +3704,16 @@
       },
       "power": 120,
       "role": "crafter",
+      "heat_requirement": 24,
+      "overheat_scale": 1,
+      "max_efficiency": 1,
       "craft_time": 80,
-      "crafts_per_second": 0.75,
+      "input":{},
+      "input_liquid":{},
       "output":{},
       "output_liquid":{
         "nitrogen": 16
-      },
-      "input":{},
-      "input_liquid":{}
+      }
     },
     "oxidation-chamber":{
       "name": "oxidation-chamber",
@@ -3740,18 +3742,19 @@
       "power": 30,
       "no_overdrive": true,
       "role": "crafter",
+      "heat_output": 5,
+      "warmup_rate": 0.15,
       "craft_time": 120,
-      "crafts_per_second": 0.5,
-      "output":{
-        "oxide": 1
-      },
-      "output_liquid":{},
       "input":{
         "beryllium": 1
       },
       "input_liquid":{
         "ozone": 2
-      }
+      },
+      "output":{
+        "oxide": 1
+      },
+      "output_liquid":{}
     },
     "electric-heater":{
       "name": "electric-heater",
@@ -3773,12 +3776,13 @@
       "power": 100,
       "no_overdrive": true,
       "role": "crafter",
+      "heat_output": 3,
+      "warmup_rate": 0.15,
       "craft_time": 80,
-      "crafts_per_second": 0.75,
-      "output":{},
-      "output_liquid":{},
       "input":{},
-      "input_liquid":{}
+      "input_liquid":{},
+      "output":{},
+      "output_liquid":{}
     },
     "slag-heater":{
       "name": "slag-heater",
@@ -3803,14 +3807,15 @@
       "power": 0,
       "no_overdrive": true,
       "role": "crafter",
+      "heat_output": 8,
+      "warmup_rate": 0.15,
       "craft_time": 80,
-      "crafts_per_second": 0.75,
-      "output":{},
-      "output_liquid":{},
       "input":{},
       "input_liquid":{
         "slag": 40
-      }
+      },
+      "output":{},
+      "output_liquid":{}
     },
     "phase-heater":{
       "name": "phase-heater",
@@ -3835,14 +3840,15 @@
       "power": 0,
       "no_overdrive": true,
       "role": "crafter",
+      "heat_output": 15,
+      "warmup_rate": 0.15,
       "craft_time": 480,
-      "crafts_per_second": 0.125,
-      "output":{},
-      "output_liquid":{},
       "input":{
         "phase-fabric": 1
       },
-      "input_liquid":{}
+      "input_liquid":{},
+      "output":{},
+      "output_liquid":{}
     },
     "heat-redirector":{
       "name": "heat-redirector",
@@ -3860,7 +3866,8 @@
         "graphite": 10,
         "tungsten": 10
       },
-      "power": 0
+      "power": 0,
+      "role": "heat-conductor"
     },
     "small-heat-redirector":{
       "name": "small-heat-redirector",
@@ -3878,7 +3885,8 @@
         "graphite": 8,
         "surge-alloy": 3
       },
-      "power": 0
+      "power": 0,
+      "role": "heat-conductor"
     },
     "heat-router":{
       "name": "heat-router",
@@ -3896,7 +3904,9 @@
         "graphite": 10,
         "tungsten": 15
       },
-      "power": 0
+      "power": 0,
+      "role": "heat-conductor",
+      "split_heat": true
     },
     "slag-incinerator":{
       "name": "slag-incinerator",
@@ -3945,17 +3955,19 @@
       },
       "power": 120,
       "role": "crafter",
+      "heat_requirement": 40,
+      "overheat_scale": 1,
+      "max_efficiency": 1,
       "craft_time": 33.75,
-      "crafts_per_second": 1.7777778,
-      "output":{
-        "carbide": 1
-      },
-      "output_liquid":{},
       "input":{
         "tungsten": 2,
         "graphite": 3
       },
-      "input_liquid":{}
+      "input_liquid":{},
+      "output":{
+        "carbide": 1
+      },
+      "output_liquid":{}
     },
     "slag-centrifuge":{
       "name": "slag-centrifuge",
@@ -4022,18 +4034,20 @@
       },
       "power": 90,
       "role": "crafter",
+      "heat_requirement": 40,
+      "overheat_scale": 1,
+      "max_efficiency": 1,
       "craft_time": 45,
-      "crafts_per_second": 1.3333334,
-      "output":{
-        "surge-alloy": 1
-      },
-      "output_liquid":{},
       "input":{
         "silicon": 3
       },
       "input_liquid":{
         "slag": 160
-      }
+      },
+      "output":{
+        "surge-alloy": 1
+      },
+      "output_liquid":{}
     },
     "cyanogen-synthesizer":{
       "name": "cyanogen-synthesizer",
@@ -4061,17 +4075,19 @@
       },
       "power": 120,
       "role": "crafter",
+      "heat_requirement": 20,
+      "overheat_scale": 1,
+      "max_efficiency": 1,
       "craft_time": 20,
-      "crafts_per_second": 3,
-      "output":{},
-      "output_liquid":{
-        "cyanogen": 12
-      },
       "input":{
         "graphite": 1
       },
       "input_liquid":{
         "arkycite": 160
+      },
+      "output":{},
+      "output_liquid":{
+        "cyanogen": 12
       }
     },
     "phase-synthesizer":{
@@ -4101,19 +4117,21 @@
       },
       "power": 480,
       "role": "crafter",
+      "heat_requirement": 32,
+      "overheat_scale": 1,
+      "max_efficiency": 1,
       "craft_time": 30,
-      "crafts_per_second": 2,
-      "output":{
-        "phase-fabric": 1
-      },
-      "output_liquid":{},
       "input":{
         "thorium": 2,
         "sand": 6
       },
       "input_liquid":{
         "ozone": 8
-      }
+      },
+      "output":{
+        "phase-fabric": 1
+      },
+      "output_liquid":{}
     },
     "heat-reactor":{
       "name": "heat-reactor",
@@ -4142,18 +4160,19 @@
       "power": 0,
       "no_overdrive": true,
       "role": "crafter",
+      "heat_output": 10,
+      "warmup_rate": 0.15,
       "craft_time": 600,
-      "crafts_per_second": 0.1,
-      "output":{
-        "fissile-matter": 1
-      },
-      "output_liquid":{},
       "input":{
         "thorium": 3
       },
       "input_liquid":{
         "nitrogen": 1
-      }
+      },
+      "output":{
+        "fissile-matter": 1
+      },
+      "output_liquid":{}
     },
     "copper-wall":{
       "name": "copper-wall",
@@ -9172,7 +9191,8 @@
       "cost":{},
       "power": 0,
       "no_overdrive": true,
-      "role": "power"
+      "role": "power",
+      "power_out": 999999.94
     },
     "power-void":{
       "name": "power-void",
@@ -9304,12 +9324,13 @@
       "power": 0,
       "no_overdrive": true,
       "role": "crafter",
+      "heat_output": 1000,
+      "warmup_rate": 1000,
       "craft_time": 80,
-      "crafts_per_second": 0.75,
-      "output":{},
-      "output_liquid":{},
       "input":{},
-      "input_liquid":{}
+      "input_liquid":{},
+      "output":{},
+      "output_liquid":{}
     },
     "illuminator":{
       "name": "illuminator",

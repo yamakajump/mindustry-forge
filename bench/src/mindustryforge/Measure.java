@@ -145,9 +145,20 @@ public class Measure implements ApplicationListener {
             Tile tile = Vars.world.tile(MARGIN + stile.x, MARGIN + stile.y);
             if (tile == null) continue;
             tile.setBlock(stile.block, Team.sharded, stile.rotation);
-            if (stile.config != null && tile.build != null) {
-                tile.build.configureAny(stile.config);
-            }
+        }
+
+        /* Configured only once everything is standing.
+        
+           A power node's configuration is the list of what it is wired to, and a bridge's
+           is where it reaches. Applied as each block went down, anything pointing at a
+           block later in the list pointed at empty ground: a node wired to a drill four
+           tiles away connected to nothing, and the engine measured a drill with no power
+           while the port measured one with plenty. */
+        for (Schematic.Stile stile : schematic.tiles) {
+            if (stile.config == null) continue;
+            Tile tile = Vars.world.tile(MARGIN + stile.x, MARGIN + stile.y);
+            if (tile == null || tile.build == null) continue;
+            tile.build.configureAny(stile.config);
         }
 
         clock.install();
