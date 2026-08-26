@@ -5332,9 +5332,10 @@
         "beryllium": 1
       },
       "power": 0,
-      "role": "conveyor",
       "carries": "item",
-      "items_per_second": 30
+      "items_per_second": 30,
+      "duct_speed": 4,
+      "role": "duct"
     },
     "armored-duct":{
       "name": "armored-duct",
@@ -5353,9 +5354,11 @@
         "tungsten": 1
       },
       "power": 0,
-      "role": "conveyor",
       "carries": "item",
-      "items_per_second": 30
+      "items_per_second": 30,
+      "duct_speed": 4,
+      "armored": true,
+      "role": "duct"
     },
     "duct-router":{
       "name": "duct-router",
@@ -5394,9 +5397,11 @@
         "beryllium": 8
       },
       "power": 0,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "duct",
+      "carries": "item",
+      "items_per_second": 30,
+      "duct_speed": 4,
+      "overflow": true
     },
     "underflow-duct":{
       "name": "underflow-duct",
@@ -5415,9 +5420,12 @@
         "beryllium": 8
       },
       "power": 0,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "duct",
+      "carries": "item",
+      "items_per_second": 30,
+      "duct_speed": 4,
+      "overflow": true,
+      "invert": true
     },
     "duct-bridge":{
       "name": "duct-bridge",
@@ -6995,7 +7003,7 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "role": "store",
+      "role": "core",
       "carries": "item"
     },
     "core-foundation":{
@@ -7017,7 +7025,7 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "role": "store",
+      "role": "core",
       "carries": "item"
     },
     "core-nucleus":{
@@ -7040,7 +7048,7 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "role": "store",
+      "role": "core",
       "carries": "item"
     },
     "core-bastion":{
@@ -7062,7 +7070,7 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "role": "store",
+      "role": "core",
       "carries": "item"
     },
     "core-citadel":{
@@ -7085,7 +7093,7 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "role": "store",
+      "role": "core",
       "carries": "item"
     },
     "core-acropolis":{
@@ -7109,7 +7117,7 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "role": "store",
+      "role": "core",
       "carries": "item"
     },
     "container":{

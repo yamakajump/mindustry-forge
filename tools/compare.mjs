@@ -77,7 +77,7 @@ export async function ported(code, ticks, ground = []) {
   for (let i = 0; i < ticks; i++) world.step();
 
   const containers = world.builds
-    .filter((build) => build.role === "store")
+    .filter((build) => build.role === "store" || build.role === "core")
     .map((build) => ({
       x: build.x, y: build.y,
       items: Object.fromEntries([...build.items.counts].filter(([, n]) => n > 0)),

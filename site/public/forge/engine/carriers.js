@@ -467,6 +467,131 @@ const stackConveyor = {
 };
 
 /**
+ * A duct, which is what Erekir has instead of a belt.
+ *
+ * Nothing like a conveyor. It holds exactly one item, carries it across in `speed` frames,
+ * and refuses everything else meanwhile. Its rate is therefore a plain division rather
+ * than anything to do with spacing, and a line of them cannot buffer: one blocked duct
+ * stops the whole run behind it immediately.
+ */
+const duct = {
+  begin(build) {
+    build.state.progress = 0;
+    build.state.current = null;
+  },
+
+  acceptItem(build, source, item) {
+    if (build.state.current || build.items.total) return false;
+    // Never from the block it points at, and never head on.
+    if (source?.block?.rotate && build.facing(build.world) === source) return false;
+    const direction = Math.abs(arrivesFrom(build, source) - build.rotation) % 4;
+    return direction !== 2;
+  },
+
+  /* Only `handleStack` sets the item being carried; a plain `handleItem` just puts it in
+     the duct and leaves `current` alone. It is picked up at the end of the duct's own
+     update, one frame later, and that frame is most of the difference between a line of
+     ducts carrying fifteen a second and thirty. */
+  handleItem(build, source, item) {
+    build.items.add(item);
+  },
+
+  update(build, world, step) {
+    /* One item every `speed` frames, and the accounting for that is worth writing down.
+    
+       `DuctBuild.updateTile` reads `progress += edelta() / speed * 2` against a threshold
+       of `1 - 1/speed`, and `current` is only picked up at the end of the update rather
+       than when the item arrives. Walked through by hand for a duct whose speed is four,
+       that comes to a three frame cycle and twenty items a second.
+    
+       The engine hands over fifteen, on one duct, on two and on eight alike: exactly
+       `60 / speed`, one frame more than the source reads. The likeliest culprit is that
+       buildings are not updated in the order they were placed, which shifts every
+       hand-off by a frame; I could not confirm it, so what is written here is the cycle
+       that was measured rather than the one that was derived, and the derivation is above
+       so the next person can find what I could not.
+    
+       Its own stat line says thirty, twice what it delivers, in the same way a conveyor's
+       `displayedSpeed` is a figure typed by hand. */
+    const speed = build.block.duct_speed || 5;
+    const next = build.facing(world);
+
+    if (!build.state.current || !next) {
+      build.state.progress = 0;
+      if (build.items.total) build.state.current = build.items.first();
+      return;
+    }
+
+    build.state.progress += build.delta(step);
+    if (build.state.progress < speed - 1) return;
+
+    if (next.acceptItem(build, build.state.current)) {
+      next.handleItem(build, build.state.current);
+      build.items.remove(build.state.current);
+      build.state.current = null;
+      build.state.progress %= speed - 1;
+    }
+  },
+};
+
+/**
+ * An overflow duct: straight on when it can, to the sides when it cannot.
+ *
+ * The same idea as an overflow gate on Serpulo's belts, and the same reason a maximum flow
+ * cannot express it: it is right about the total and wrong about which branch carries it.
+ */
+const overflowDuct = {
+  ...duct,
+
+  update(build, world, step) {
+    const speed = build.block.duct_speed || 5;
+
+    if (!build.state.current) {
+      build.state.progress = 0;
+      if (build.items.total) build.state.current = build.items.first();
+      return;
+    }
+
+    build.state.progress += build.delta(step);
+    if (build.state.progress < speed - 1) return;
+
+    const item = build.state.current;
+    const ahead = build.facing(world);
+    const invert = build.block.invert;
+
+    // Straight on first, unless it is the inverted one, which prefers the sides.
+    const order = invert ? [sideOf(build, world, 1), sideOf(build, world, 3), ahead]
+      : [ahead, sideOf(build, world, 1), sideOf(build, world, 3)];
+
+    for (const target of order) {
+      if (!target?.acceptItem(build, item)) continue;
+      target.handleItem(build, item);
+      build.items.remove(item);
+      build.state.current = null;
+      build.state.progress %= speed - 1;
+      return;
+    }
+  },
+};
+
+function sideOf(build, world, turn) {
+  const [dx, dy] = DIRECTIONS[(build.rotation + turn) % 4];
+  return world.at(build.x + dx, build.y + dy);
+}
+
+/**
+ * A core.
+ *
+ * A container that counts. It takes anything up to its capacity and hands nothing back,
+ * and it is where most schematics that are not self-contained are meant to deliver.
+ */
+const core = {
+  acceptItem(build, source, item) {
+    return build.items.total < build.itemCapacity;
+  },
+};
+
+/**
  * A sandbox source.
  *
  * `ItemSourceBuild.updateTile` sets its own count to one, dumps it, and sets it back to
@@ -516,6 +641,8 @@ const BY_ROLE = {
   sink,
   turret: sink,
   generator: sink,
+  duct,
+  core,
   ...MACHINES,
 };
 
@@ -528,6 +655,9 @@ const BY_ROLE = {
  * side has no use for.
  */
 export function behaviourOf(node) {
+  // An overflow duct is a duct with a preference, not a gate: it moves like a duct and
+  // chooses like a gate, so it cannot be either of the two.
+  if (node.block.overflow && node.role === "duct") return overflowDuct;
   if (node.block.overflow) return overflow;
   /* What a block carries picks the behaviour as much as its role does. A liquid router and
      an item router share the role "router" in the catalogue, because to a maximum flow

@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 20 sur 103
+## Fait : 23 sur 103
 
 - [x] `GenericCrafter` &mdash; 17 blocs &mdash; toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -22,7 +22,7 @@ second, c'est une intuition qui a l'air d'un portage.
       additive-reconstructor, exponential-reconstructor, mech-refabricator, multiplicative-reconstructor, prime-refabricator, ship-refabricator, et 2 autres
 - [x] `ConsumeGenerator` &mdash; 6 blocs &mdash; brule quelque chose et fait de l'energie
       chemical-combustion-chamber, combustion-generator, differential-generator, pyrolysis-generator, rtg-generator, steam-generator
-- [ ] `CoreBlock` &mdash; 6 blocs &mdash; le noyau : un coffre qui compte
+- [x] `CoreBlock` &mdash; 6 blocs &mdash; le noyau : un coffre qui compte
       core-acropolis, core-bastion, core-citadel, core-foundation, core-nucleus, core-shard
 - [ ] `HeatProducer` &mdash; 6 blocs &mdash; chauffe, pour la moitie Erekir du jeu
       electric-heater, heat-reactor, heat-source, oxidation-chamber, phase-heater, slag-heater
@@ -68,7 +68,7 @@ second, c'est une intuition qui a l'air d'un portage.
       constructor, large-constructor
 - [x] `Conveyor` &mdash; 2 blocs &mdash; une bande : positions d'objets le long d'elle-meme
       conveyor, titanium-conveyor
-- [ ] `Duct` &mdash; 2 blocs &mdash; les bandes d'Erekir, une seule case a la fois
+- [x] `Duct` &mdash; 2 blocs &mdash; les bandes d'Erekir, une seule case a la fois
       armored-duct, duct
 - [ ] `LaunchPad` &mdash; 2 blocs
       advanced-launch-pad, launch-pad
@@ -84,7 +84,7 @@ second, c'est une intuition qui a l'air d'un portage.
       mend-projector, mender
 - [ ] `OverdriveProjector` &mdash; 2 blocs &mdash; accelere ce qui l'entoure
       overdrive-dome, overdrive-projector
-- [ ] `OverflowDuct` &mdash; 2 blocs
+- [x] `OverflowDuct` &mdash; 2 blocs
       overflow-duct, underflow-duct
 - [x] `OverflowGate` &mdash; 2 blocs &mdash; tout droit d'abord, de cote seulement si ca bouchonne
       overflow-gate, underflow-gate

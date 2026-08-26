@@ -12,6 +12,7 @@ import mindustry.game.Team;
 import mindustry.type.Item;
 import mindustry.type.Liquid;
 import mindustry.world.Tile;
+import mindustry.gen.Building;
 import mindustry.world.blocks.storage.StorageBlock.StorageBuild;
 
 import java.io.PrintWriter;
@@ -286,9 +287,15 @@ public class Measure implements ApplicationListener {
         Seq<Tile> seen = new Seq<>();
 
         for (Tile tile : Vars.world.tiles) {
-            if (!(tile.build instanceof StorageBuild store) || seen.contains(tile)) {
+            // A core is not a `StorageBuild` in this version, and it is where most
+            // schematics are meant to deliver: reported by what it is rather than by what
+            // it inherits from, a core full of copper counted as no container at all.
+            boolean holds = tile.build instanceof StorageBuild
+                || tile.block() instanceof mindustry.world.blocks.storage.CoreBlock;
+            if (!holds || seen.contains(tile)) {
                 continue;
             }
+            Building store = tile.build;
             // A three by three vault covers nine tiles and is one building.
             if (store.tile != tile) {
                 continue;
