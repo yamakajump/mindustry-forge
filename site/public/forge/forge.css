@@ -82,7 +82,20 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 .stage {
   background: #0e1116; border: 2px solid var(--edge); border-radius: var(--radius);
   padding: 16px; display: flex; align-items: flex-start; justify-content: center;
-  position: sticky; top: 16px; overflow: auto; max-height: calc(100vh - 32px);
+  overflow: auto;
+}
+
+/* The whole left column sticks, not the picture alone.
+   Sticking the picture by itself made it slide over the block panel underneath as soon as
+   the page scrolled: they are siblings in one column, so one of them staying put means it
+   passes across the other. */
+.side {
+  position: sticky; top: 16px;
+  max-height: calc(100vh - 32px); overflow: auto;
+  display: flex; flex-direction: column; gap: 12px;
+}
+@media (max-width: 860px) {
+  .side { position: static; max-height: none; }
 }
 .stage canvas, .stage img {
   display: block; image-rendering: pixelated; border-radius: 4px; max-width: 100%;
@@ -208,6 +221,6 @@ details.supply input[type=text] { width: 280px; }
 /* The block panel, under the picture. Clicking a block is how a player asks what it is
    doing, and how they tell the tool where the schematic really plugs in: guessing that is
    genuinely hard, so the guess is a default and this is the answer. */
-.block-panel { margin-top: 12px; }
+.block-panel { margin: 0; }
 .block-panel .sub { margin: 0 0 10px; }
 .stage canvas { cursor: pointer; }
