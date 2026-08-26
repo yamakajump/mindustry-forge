@@ -16,6 +16,7 @@ import mindustry.world.blocks.distribution.Sorter;
 import mindustry.world.blocks.distribution.Junction;
 import mindustry.world.blocks.distribution.Router;
 import mindustry.world.blocks.production.Drill;
+import mindustry.world.blocks.production.Pump;
 import mindustry.world.blocks.liquid.Conduit;
 import mindustry.world.blocks.liquid.LiquidBridge;
 import mindustry.world.blocks.liquid.LiquidJunction;
@@ -232,6 +233,15 @@ public class DumpBlocks {
             entry.put("input", inputsOf(crafter));
             entry.put("input_liquid", liquidInputsOf(crafter));
             entry.put("power", powerOf(crafter));
+            return;
+        }
+        if (block instanceof Pump pump) {
+            // What a player actually installs to feed a schematic. Stated per second over a
+            // full footprint of liquid, which is the figure the game itself shows.
+            entry.put("role", "pump");
+            entry.put("output_per_second", TPS * pump.pumpAmount * block.size * block.size);
+            entry.put("input_liquid", liquidInputsOf(block));
+            entry.put("power", powerOf(block));
             return;
         }
         if (block instanceof PowerGenerator generator) {

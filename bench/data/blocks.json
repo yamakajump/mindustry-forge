@@ -3693,7 +3693,8 @@
         "copper": 15,
         "metaglass": 10
       },
-      "role": "sink",
+      "role": "pump",
+      "output_per_second": 7,
       "input_liquid":{},
       "power": 0
     },
@@ -3711,7 +3712,8 @@
         "titanium": 35,
         "silicon": 20
       },
-      "role": "sink",
+      "role": "pump",
+      "output_per_second": 48,
       "input_liquid":{},
       "power": 18
     },
@@ -3730,7 +3732,8 @@
         "thorium": 35,
         "silicon": 30
       },
-      "role": "sink",
+      "role": "pump",
+      "output_per_second": 118.799995,
       "input_liquid":{},
       "power": 78
     },
@@ -3884,7 +3887,8 @@
         "beryllium": 40,
         "tungsten": 30
       },
-      "role": "sink",
+      "role": "pump",
+      "output_per_second": 80,
       "input_liquid":{
         "hydrogen": 1.5
       },
@@ -4509,7 +4513,8 @@
         "metaglass": 30,
         "graphite": 30
       },
-      "role": "sink",
+      "role": "pump",
+      "output_per_second": 26.4,
       "input_liquid":{},
       "power": 90
     },
@@ -4554,10 +4559,8 @@
         "thorium": 115,
         "silicon": 75
       },
-      "role": "sink",
-      "input":{
-        "sand": 1
-      },
+      "role": "pump",
+      "output_per_second": 135,
       "input_liquid":{
         "water": 9
       },

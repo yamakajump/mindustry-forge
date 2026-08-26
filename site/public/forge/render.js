@@ -13,6 +13,9 @@
 
 const TILE = 32;
 
+/** Mindustry counts rotations anticlockwise from east. */
+const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+
 let atlas = null;
 let sheet = null;
 
@@ -123,6 +126,89 @@ function drawBridge(context, node, box, scale) {
 }
 
 /**
+ * Which of a carrier's five shapes to draw, following the game's own autotiler.
+ *
+ * Ported from `Autotiler.buildBlending` and `transformCase` in v159.7 rather than guessed.
+ * A belt is drawn straight, as a curve, or as a merge depending on which of its three
+ * back-and-side neighbours hand into it, and drawing only the straight one made every line
+ * in a picture look straight, including the ones that turn.
+ *
+ * Returns the shape and the vertical flip, because the game distinguishes a curve from its
+ * mirror by scaling y to minus one rather than by holding a sixth sprite.
+ */
+function carrierShape(node, feeds) {
+  // Relative directions, as the game counts them: 1 and 3 are the sides, 2 is behind.
+  const side1 = feeds(node, 1);
+  const back = feeds(node, 2);
+  const side3 = feeds(node, 3);
+
+  const which =
+    (back && side1 && side3) ? 0 :
+    (side1 && side3) ? 1 :
+    (side1 && back) ? 2 :
+    (side3 && back) ? 3 :
+    side1 ? 4 :
+    side3 ? 5 : -1;
+
+  switch (which) {
+    case 0: return { shape: 3, flip: 1 };
+    case 1: return { shape: 4, flip: 1 };
+    case 2: return { shape: 2, flip: 1 };
+    case 3: return { shape: 2, flip: -1 };
+    case 4: return { shape: 1, flip: -1 };
+    case 5: return { shape: 1, flip: 1 };
+    default: return { shape: 0, flip: 1 };
+  }
+}
+
+/**
+ * Whether the neighbour in a relative direction hands into this carrier.
+ *
+ * The game's rule, kept: a neighbour blends if it puts items out at all, and if one of the
+ * two is facing the other. A block that does not rotate is always taken to be facing.
+ */
+function blender(tiles, sizeOf, roleOf) {
+  const at = new Map();
+  for (const tile of tiles) {
+    const name = tile.name || tile.block;
+    const size = sizeOf(name);
+    const offset = Math.trunc(-(size - 1) / 2);
+    for (let dx = 0; dx < size; dx++) {
+      for (let dy = 0; dy < size; dy++) {
+        at.set(`${tile.x + offset + dx},${tile.y + offset + dy}`, tile);
+      }
+    }
+  }
+
+  const carries = (role) => role === "conveyor" || role === "junction" ||
+    role === "router" || role === "bridge" || role === "sorter" || role === "conduit";
+  const turnsToo = (role) => role === "conveyor" || role === "conduit" ||
+    role === "drill" || role === "crafter" || role === "generator" || role === "sorter";
+
+  return (node, direction) => {
+    const real = ((node.rotation - direction) % 4 + 4) % 4;
+    const [dx, dy] = DIRECTIONS[real];
+    const other = at.get(`${node.x + dx},${node.y + dy}`);
+    if (!other) return false;
+
+    const name = other.name || other.block;
+    const role = roleOf(name);
+    if (role === "power" || role === "unknown") return false;
+
+    // Whether this carrier points at the neighbour.
+    const [fx, fy] = DIRECTIONS[node.rotation % 4];
+    const facingThem = node.x + fx === other.x && node.y + fy === other.y;
+    if (facingThem) return true;
+
+    // Or the neighbour points at this one. A block that does not rotate counts as facing.
+    const rotates = role === "conveyor" || role === "conduit" || role === "bridge";
+    if (!rotates) return carries(role) || turnsToo(role);
+    const [ox, oy] = DIRECTIONS[(other.rotation || 0) % 4];
+    return other.x + ox === node.x && other.y + oy === node.y;
+  };
+}
+
+/**
  * Draw the schematic onto a canvas, sized to fit the space it is given.
  *
  * Returns the scale used, so a caller can map a click back to a tile.
@@ -159,6 +245,7 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
                      size * scale, size * scale);
   }
 
+  const feeds = blender(tiles, sizeOf, roleOf);
   const missing = [];
   for (const tile of tiles) {
     const size = sizeOf(tile.name || tile.block);
@@ -175,17 +262,31 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
       continue;
     }
 
-    const spins = turns(tile.name || tile.block, roleOf(tile.name || tile.block));
-    if (spins && tile.rotation) {
+    const name = tile.name || tile.block;
+    const role = roleOf(name);
+    const spins = turns(name, role);
+
+    // A carrier picks one of five shapes from its neighbours, so a corner draws as a
+    // corner. Everything else keeps its single sprite.
+    let art = found;
+    let flip = 1;
+    if (role === "conveyor" || role === "conduit") {
+      const chosen = carrierShape(tile, feeds);
+      const variant = atlas?.sprites?.[`${name}#${chosen.shape}`];
+      if (variant) { art = variant; flip = chosen.flip; }
+    }
+
+    if (spins || flip !== 1) {
       context.save();
       context.translate(px + (size * scale) / 2, py + (size * scale) / 2);
       // Mindustry counts rotations anticlockwise from east; a canvas turns clockwise.
       context.rotate(-(tile.rotation % 4) * Math.PI / 2);
-      context.drawImage(sheet, found.x, found.y, found.w, found.h,
+      context.scale(1, flip);
+      context.drawImage(sheet, art.x, art.y, art.w, art.h,
                         -(size * scale) / 2, -(size * scale) / 2, size * scale, size * scale);
       context.restore();
     } else {
-      context.drawImage(sheet, found.x, found.y, found.w, found.h,
+      context.drawImage(sheet, art.x, art.y, art.w, art.h,
                         px, py, size * scale, size * scale);
     }
   }
