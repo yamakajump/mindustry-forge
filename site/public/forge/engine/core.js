@@ -205,7 +205,11 @@ export class Build {
     if (this.behaviour?.acceptLiquid) {
       return this.behaviour.acceptLiquid(this, source, liquid);
     }
-    if (!this.block.liquid_capacity) return false;
+    /* `Building.acceptLiquid` starts with `block.hasLiquids`. Every block reports a
+       liquid capacity, ten by default, so testing that instead makes a power node look
+       like something that can hold water: a source beside one filled it, and a wire ended
+       up with ten units of water in it. */
+    if (!this.block.has_liquids) return false;
     // A machine only takes a liquid its recipe names, which is what stops a press from
     // filling up with water it cannot use.
     if (this.block.drinks && !this.block.drinks.includes(liquid)) return false;
@@ -371,6 +375,19 @@ export class World {
 
     this.tick = 0;
     this.grids = [];
+
+    /* Where the bottom left of the schematic sits on the map.
+    
+       Almost nothing cares. A separator does: its draw is seeded from `tile.pos()`, so the
+       mix a disassembler puts out is decided by **where on the map it was built**, and the
+       same schematic laid down two tiles over sorts differently. Left at the origin here
+       and set to what the bench uses when the two are being held against each other. */
+    this.origin = [0, 0];
+  }
+
+  /** `Tile.pos()`: the world position of a block, packed into one int as the game packs it. */
+  packed(build) {
+    return ((build.x + this.origin[0]) << 16) | ((build.y + this.origin[1]) & 0xFFFF);
   }
 
   /** Work out the power grids, once the world is laid out. */

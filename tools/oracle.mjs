@@ -27,7 +27,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-const { differences, KEPT, known, measured, paintedFor, ported } = await import(
+const { differences, KEPT, known, measured, ported } = await import(
   new URL("./compare.mjs", import.meta.url));
 const { toBase64 } = await import(
   new URL("../site/public/forge/schematic.js", import.meta.url));
@@ -56,6 +56,36 @@ const links = (offsets) => {
 /** A scenario may be a bare list of tiles, or tiles and the ground under them. */
 const shape = (built) => (Array.isArray(built) ? { tiles: built, ground: [] }
   : { tiles: built.tiles, ground: built.ground || [] });
+
+/**
+ * The ground, moved to where the schematic will land.
+ *
+ * A schematic has no absolute position: writing one shifts every block so the lowest and
+ * leftmost tile any of them **covers** sits at the origin. The ground list is written in
+ * the scenario's own coordinates, so it has to make the same move, or it ends up under the
+ * tile next door.
+ *
+ * This was wrong and silent for a while, because both engines painted the same wrong tiles
+ * and agreed perfectly: `drill-copper` covered two tiles of ore rather than four and
+ * `drill-half` one rather than two. The port was right; the question was not the one the
+ * name claimed.
+ */
+function shifted(tiles, ground) {
+  if (!ground.length) return ground;
+  let left = Infinity;
+  let bottom = Infinity;
+  for (const tile of tiles) {
+    const offset = Math.trunc(-(sizeOf(tile.block) - 1) / 2);
+    left = Math.min(left, tile.x + offset);
+    bottom = Math.min(bottom, tile.y + offset);
+  }
+  return ground.map((one) => {
+    const [block, at] = one.split("@");
+    if (!at) return one;
+    const [x, y] = at.split(",").map(Number);
+    return `${block}@${x - left},${y - bottom}`;
+  });
+}
 
 /**
  * The scenarios.
@@ -430,6 +460,49 @@ const SCENARIOS = {
     { x: 4, y: 0, block: "core-shard", rotation: 0 },
   ],
 
+  /* A cultivator on four tiles of spore moss, and the same one on bare floor.
+  
+     `AttributeCrafter`: the ground multiplies the speed. The sum is over the tiles it
+     covers rather than an average, so four tiles at 0.3 read 1.2 and a two by two
+     cultivator runs at 1 + 1.2 = 2.2 times its nameplate. The pair is the measurement: one
+     number on its own could be a wrong craft time, two that differ by exactly the boost
+     could not. */
+  "cultivator-spores": () => cultivator(true),
+  "cultivator-bare": () => cultivator(false),
+
+  /* A separator, whose output is drawn rather than decided.
+  
+     One item per batch, weighted five copper to three lead to two graphite to two
+     titanium. The total is arithmetic and would match whatever the draw did; the split
+     only matches if the generator is reproduced bit for bit, down to the seed being the
+     block's position on the map. */
+  "separator-mix": () => [
+    { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("slag") },
+    { x: 0, y: 1, block: "power-source", rotation: 0 },
+    // Covers 1..2 by 0..1.
+    { x: 1, y: 0, block: "separator", rotation: 0 },
+    { x: 3, y: 0, block: "conveyor", rotation: 0 },
+    { x: 4, y: 0, block: "conveyor", rotation: 0 },
+    { x: 6, y: 0, block: "vault", rotation: 0 },
+  ],
+
+  /* A disassembler, which is the same class with an item to eat as well: it takes scrap
+     and slag and gives back one of four things, one of which is scrap-free sand. Fed
+     faster than it can chew, so what it holds at the end is part of the answer. */
+  "separator-disassembler": () => [
+    // Covers 1..3 by 1..3, so both sources have to stand against its left edge.
+    { x: 2, y: 2, block: "disassembler", rotation: 0 },
+    { x: 0, y: 2, block: "liquid-source", rotation: 0, raw: liquid("slag") },
+    { x: 0, y: 3, block: "power-source", rotation: 0 },
+
+    { x: 2, y: 5, block: "item-source", rotation: 0, raw: item("scrap") },
+    { x: 2, y: 4, block: "conveyor", rotation: 3 },
+
+    { x: 4, y: 2, block: "conveyor", rotation: 0 },
+    { x: 5, y: 2, block: "conveyor", rotation: 0 },
+    { x: 7, y: 2, block: "vault", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -441,6 +514,28 @@ const SCENARIOS = {
     { x: 8, y: 0, block: "vault", rotation: 0 },
   ],
 };
+
+/**
+ * A cultivator, on spore moss or on nothing.
+ *
+ * The floor is painted rather than the overlay: `sumAttribute` reads the floor and skips
+ * whatever ore is laid over it, so spore moss has to **be** the ground and not sit on it.
+ */
+function cultivator(mossy) {
+  const tiles = [
+    { x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
+    { x: -1, y: 1, block: "power-source", rotation: 0 },
+    // Covers 0..1 by 0..1.
+    { x: 0, y: 0, block: "cultivator", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+    { x: 3, y: 0, block: "conveyor", rotation: 0 },
+    { x: 5, y: 0, block: "vault", rotation: 0 },
+  ];
+  const ground = mossy
+    ? [[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => `spore-moss@${x},${y}`)
+    : [];
+  return { tiles, ground };
+}
 
 /**
  * A laser drill on nine tiles of copper, fed by however many generators are asked for.
@@ -546,11 +641,12 @@ if (process.argv.includes("--measure")) {
   const commands = [];
   for (const [name, build] of Object.entries(SCENARIOS)) {
     const { tiles, ground } = shape(build());
+    const painted = shifted(tiles, ground);
     const code = await toBase64(check(name, tiles), { tags: { name }, sizeOf });
     writeFileSync(join(KEPT, `${name}.txt`), code);
-    writeFileSync(join(KEPT, `${name}.sol`), ground.join(" "));
+    writeFileSync(join(KEPT, `${name}.sol`), painted.join(" "));
     commands.push(`measure ${code} ${SECONDS} ../bench/data/oracle/${name}.json`
-      + (ground.length ? ` ${ground.join(" ")}` : ""));
+      + (painted.length ? ` ${painted.join(" ")}` : ""));
   }
   writeFileSync(join(KEPT, "commands.txt"), `${commands.join("\n")}\n`);
   console.log(`${commands.length} scenarios ecrits dans ${KEPT}`);
@@ -576,7 +672,7 @@ for (const [name, build] of Object.entries(SCENARIOS)) {
     continue;
   }
 
-  const mine = await ported(code, theirs.ticks, ground);
+  const mine = await ported(code, theirs.ticks, shifted(tiles, ground));
   for (const gap of differences(mine, theirs)) {
     worst = Math.max(worst, gap.gap);
     console.log(`${`${name} ${gap.what}`.padEnd(38)}`

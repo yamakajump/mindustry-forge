@@ -34,6 +34,27 @@ export function footprintOf(node) {
 const layersAt = (ground, x, y) => ground[`${x},${y}`] || {};
 
 /**
+ * What the ground under a block is worth to it.
+ *
+ * `Block.sumAttribute`: the sum over every tile it covers, not an average, which is why a
+ * two by two cultivator on four tiles of spore moss reads 1.2 rather than 0.3. Read off
+ * the **floor** and never the ore laid over it, and a deep floor counts for nothing at all
+ * unless the block floats.
+ */
+export function attributeOf(node, ground, catalogue) {
+  const wanted = node.block.attribute;
+  if (!wanted || !ground || !catalogue) return 0;
+
+  let sum = 0;
+  for (const [x, y] of footprintOf(node)) {
+    const floor = catalogue.blocks[layersAt(ground, x, y).floor];
+    if (!floor || floor.deep) continue;
+    sum += floor.attributes?.[wanted] || 0;
+  }
+  return sum;
+}
+
+/**
  * What this block draws out of the ground, per second.
  *
  * Null when it draws nothing: not a drill, nothing under it, or ore it cannot break. A

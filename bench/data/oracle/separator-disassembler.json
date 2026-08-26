@@ -1,0 +1,111 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "liquid": "slag",
+      "amount": 9999.88
+    },
+    {
+      "block": "disassembler",
+      "x": 14,
+      "y": 13,
+      "liquid": "slag",
+      "amount": 72
+    }
+  ],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "disassembler",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "scrap": 20
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "sand": 1
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 17,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "sand": 1,
+        "thorium": 1
+      }
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "graphite": 16,
+        "sand": 53,
+        "titanium": 27,
+        "thorium": 19
+      }
+    },
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 14,
+      "efficiency": 0
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 15,
+      "efficiency": 1,
+      "holds":{
+        "scrap": 3
+      }
+    },
+    {
+      "block": "item-source",
+      "x": 14,
+      "y": 16,
+      "efficiency": 1
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "items":{
+        "graphite": 16,
+        "sand": 53,
+        "titanium": 27,
+        "thorium": 19
+      }
+    }
+  ],
+  "per_second":{
+    "graphite": 0.53333336,
+    "sand": 1.7666667,
+    "titanium": 0.9,
+    "thorium": 0.6333333
+  }
+}

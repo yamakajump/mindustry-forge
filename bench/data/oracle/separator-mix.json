@@ -1,0 +1,89 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "liquid": "slag",
+      "amount": 9999.934
+    },
+    {
+      "block": "separator",
+      "x": 13,
+      "y": 13,
+      "liquid": "slag",
+      "amount": 39.933334
+    }
+  ],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "separator",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "graphite": 1
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 18,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 21,
+        "lead": 10,
+        "graphite": 9,
+        "titanium": 10
+      }
+    },
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 14,
+      "efficiency": 0
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 18,
+      "y": 13,
+      "items":{
+        "copper": 21,
+        "lead": 10,
+        "graphite": 9,
+        "titanium": 10
+      }
+    }
+  ],
+  "per_second":{
+    "copper": 0.7,
+    "lead": 0.33333334,
+    "graphite": 0.3,
+    "titanium": 0.33333334
+  }
+}

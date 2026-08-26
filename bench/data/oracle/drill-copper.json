@@ -30,7 +30,7 @@
       "y": 13,
       "efficiency": 0,
       "holds":{
-        "copper": 5
+        "copper": 10
       }
     }
   ],
@@ -40,11 +40,11 @@
       "x": 17,
       "y": 13,
       "items":{
-        "copper": 5
+        "copper": 10
       }
     }
   ],
   "per_second":{
-    "copper": 0.16666667
+    "copper": 0.33333334
   }
 }

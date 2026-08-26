@@ -1,0 +1,80 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "liquid": "water",
+      "amount": 9999.7
+    },
+    {
+      "block": "cultivator",
+      "x": 13,
+      "y": 13,
+      "liquid": "water",
+      "amount": 79.7
+    }
+  ],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "cultivator",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "spore-pod": 1
+      }
+    },
+    {
+      "block": "vault",
+      "x": 18,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "spore-pod": 38
+      }
+    },
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 14,
+      "efficiency": 0
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 18,
+      "y": 13,
+      "items":{
+        "spore-pod": 38
+      }
+    }
+  ],
+  "per_second":{
+    "spore-pod": 1.2666667
+  }
+}

@@ -18,7 +18,7 @@
  * number for both is how a design with an isolated reactor reads as fine.
  */
 
-import { DIRECTIONS } from "./core.js";
+import { TICKS } from "./core.js";
 
 /** Blocks whose class is a wire or a battery: they carry the grid but ask nothing of it. */
 const isNode = (build) => build.role === "power";
@@ -211,10 +211,11 @@ const burner = {
       build.state.running = 0;
     }
 
-    // A liquid ingredient, which a steam generator has alongside its coal.
+    // A liquid ingredient, which a steam generator has alongside its coal. Per second in
+    // the catalogue, per frame in the game: sixty apart, so the rate is converted here.
     for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
       const held = build.liquid === liquid ? build.liquidAmount : 0;
-      const wanted = rate * delta;
+      const wanted = (rate / TICKS) * delta;
       if (held < wanted) {
         build.state.running = 0;
       } else {
