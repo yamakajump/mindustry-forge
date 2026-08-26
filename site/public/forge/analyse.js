@@ -88,7 +88,8 @@ function outputsOf(node) {
   // handing to all four sides, a line of pipes fed itself in both directions, and the last
   // pipe of a run was never the end of anything: it pointed back at its neighbour, so the
   // solver could find no exit at all and the whole line carried nothing.
-  if (node.role === "conveyor" || node.role === "conduit") {
+  if (node.role === "conveyor" || node.role === "conduit"
+      || node.role === "stack-conveyor") {
     const [dx, dy] = DIRECTIONS[node.rotation % 4];
     return [[node.x + dx, node.y + dy]];
   }
@@ -156,7 +157,8 @@ function accepts(node, fromTile) {
   // A belt and a pipe both refuse what is pushed against their own direction of travel.
   // `Conduit.acceptLiquid` ends in a check that the source is not the tile it points at,
   // which is the same rule as a conveyor's.
-  if (node.role === "conveyor" || node.role === "conduit") {
+  if (node.role === "conveyor" || node.role === "conduit"
+      || node.role === "stack-conveyor") {
     const [dx, dy] = DIRECTIONS[node.rotation % 4];
     return !(fromTile[0] === node.x + dx && fromTile[1] === node.y + dy);
   }
@@ -671,7 +673,7 @@ function capacityFor(node, resource, liquid) {
       ? node.dug.rate * speed * (node.block.size || 1) ** 2 : 0;
   }
   if (node.role === "conveyor" || node.role === "junction" || node.role === "bridge"
-      || node.role === "unloader") {
+      || node.role === "unloader" || node.role === "stack-conveyor") {
     // A liquid junction and a liquid bridge state no item rate, because they carry no
     // items. Their ceiling is the same as a pipe's.
     if (node.block.carries === "liquid") return (node.block.liquid_capacity || 10) * TICKS;

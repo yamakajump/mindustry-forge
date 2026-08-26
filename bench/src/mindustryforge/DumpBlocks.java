@@ -18,6 +18,7 @@ import mindustry.world.blocks.environment.OverlayFloor;
 import mindustry.world.blocks.defense.OverdriveProjector;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.distribution.Sorter;
+import mindustry.world.blocks.distribution.StackConveyor;
 import mindustry.world.blocks.storage.StorageBlock;
 import mindustry.world.blocks.storage.Unloader;
 import mindustry.world.blocks.distribution.Junction;
@@ -189,6 +190,19 @@ public class DumpBlocks {
      * working for the blocks a mod adds.
      */
     private static void describeRole(Block block, Jval entry) {
+        if (block instanceof StackConveyor stack) {
+            // Not a `Conveyor`: it moves a whole stack from tile to tile rather than items
+            // along a length, so it shares no ancestor with one and fell through every
+            // branch below. It came out classified as a sink, which made every plastanium
+            // conveyor in every schematic a hole that swallowed whatever reached it.
+            entry.put("role", "stack-conveyor");
+            entry.put("carries", "item");
+            entry.put("items_per_second", Math.round(block.itemCapacity * stack.speed * TPS));
+            entry.put("speed", stack.speed);
+            entry.put("recharge", stack.recharge);
+            entry.put("output_router", stack.outputRouter);
+            return;
+        }
         if (block instanceof Conveyor conveyor) {
             entry.put("role", "conveyor");
             entry.put("carries", "item");

@@ -33,7 +33,7 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         # What the tick by tick simulation needs and the steady state one never did: the
         # real speeds, not the figures the game prints for a player.
         "speed", "junction_speed", "junction_capacity", "transport_time",
-        "overflow", "invert", "overflow_speed")
+        "overflow", "invert", "overflow_speed", "recharge", "output_router")
 
 
 def main() -> None:

@@ -47,29 +47,6 @@ test("a belt carries what the game says it carries", async () => {
        "une bande porte 6,5 par seconde");
 });
 
-test("a belt's rate is its own two constants and nothing else", async () => {
-  /* `speed` tiles a frame, `itemSpace` between items, so `speed * 60 / itemSpace` a
-     second. Nothing here was told a rate.
-
-     It parts company with the figure the game prints, and that is worth saying rather
-     than hiding: a titanium belt computes to 12.02 and its stat line says 10, a plain one
-     computes to 6.9 and says 6.5. `displayedSpeed` is typed by hand block by block in
-     `Blocks.java`, so it is advertising rather than arithmetic, and which of the two the
-     engine actually delivers is a question for the bench. Until it answers, the physics
-     is what this reproduces and the gap is written down. */
-  const belt = known.blocks["titanium-conveyor"];
-  const physics = belt.speed * 60 / 0.4;
-
-  const tiles = [];
-  for (let x = 0; x < 6; x++) tiles.push([x, 0, "titanium-conveyor", 0]);
-  const out = simulate(await graphOf(tiles),
-                       { feeds: { 0: { copper: 40 } }, seconds: 30, warmup: 6 });
-
-  near(out.delivered.copper, physics, 0.4, "ce que ses constantes donnent");
-  assert.ok(physics > belt.items_per_second,
-            "et c'est au dessus de ce que le jeu affiche, qui est un chiffre tape a la main");
-});
-
 test("a belt fed less than it can carry passes exactly that", async () => {
   const tiles = [];
   for (let x = 0; x < 5; x++) tiles.push([x, 0, "conveyor", 0]);

@@ -77,10 +77,25 @@ const conveyor = {
     const speed = build.block.speed || 0;
     const moved = speed * build.delta(step);
 
+    /* How far up its own length the front item may go.
+    
+       Two belts pointing the same way are one line, and the game couples them: the item at
+       the front of this belt cannot reach the end while the item at the back of the next
+       one is still in the way. Left out, a belt hands on the moment an item reaches 1 and
+       the pair runs faster than either could.
+    
+       It costs nothing on a slow belt, where items are far enough apart that the next one's
+       back is always clear, and it is the whole difference on a fast one: measured against
+       the engine, a copper line matched to the item and a titanium line ran 6.6% fast. */
+    const aligned = next?.behaviour === conveyor && next.rotation === build.rotation;
+    const nextMax = aligned
+      ? 1 - Math.max(ITEM_SPACE - next.state.minitem, 0)
+      : 1;
+
     for (let i = state.len - 1; i >= 0; i--) {
       const ahead = (i === state.len - 1 ? 100 : state.ys[i + 1]) - ITEM_SPACE;
       state.ys[i] += clamp(ahead - state.ys[i], 0, moved);
-      if (state.ys[i] > 1) state.ys[i] = 1;
+      if (state.ys[i] > nextMax) state.ys[i] = nextMax;
 
       if (state.ys[i] >= 1 && pass(build, next, state.ids[i])) {
         state.ids.splice(i, state.len - i);
@@ -335,10 +350,16 @@ const bridge = {
   },
 
   update(build, world, step) {
-    if (!build.items.total) return;
+    /* The timer runs whether or not there is anything to send, which is what `Building`'s
+       own `timer(id, time)` does: it counts game time, not attempts. Reset only on a
+       successful hand-off, a bridge that had nothing to send for a moment then sent one
+       immediately and ran fast: measured against the engine, 196 against 187. */
     const wait = build.block.transport_time || TICKS / (build.block.items_per_second || 11);
     build.state.timer += build.delta(step);
     if (build.state.timer < wait) return;
+    build.state.timer %= wait;
+
+    if (!build.items.total) return;
 
     const link = build.node.link;
     const target = link ? world.at(link[0], link[1]) : null;
@@ -348,11 +369,124 @@ const bridge = {
       if (target.acceptItem(build, item)) {
         target.handleItem(build, item);
         build.items.remove(item);
-        build.state.timer = 0;
       }
       return;
     }
-    if (build.dump()) build.state.timer = 0;
+    build.dump();
+  },
+};
+
+/**
+ * A plastanium conveyor.
+ *
+ * Nothing like a belt. It moves a whole stack, a "crater", one tile at a time: the first
+ * of a line gathers until it is full, the middle ones pass the stack along, and the last
+ * one dumps it. That is why its rate is `itemCapacity * speed * 60` rather than anything
+ * to do with spacing.
+ *
+ * `StackConveyor` shares no ancestor with `Conveyor`, which is how it came to be filed as
+ * a sink and to swallow everything it was given.
+ */
+const stackConveyor = {
+  begin(build) {
+    build.state.cooldown = 0;
+    build.state.loaded = false;
+  },
+
+  /** Which of the three the game put it in, from what is in front and behind. */
+  role(build) {
+    const world = build.world;
+    const [fx, fy] = DIRECTIONS[build.rotation];
+    const [bx, by] = DIRECTIONS[(build.rotation + 2) % 4];
+    const front = world?.at(build.x + fx, build.y + fy);
+    const back = world?.at(build.x + bx, build.y + by);
+
+    const isStack = (other) => other?.behaviour === stackConveyor;
+    if (!isStack(front)) return "unload";
+    // A loading dock is one with nothing of its own kind behind it. One that another
+    // stack conveyor points at is a middle instead, however empty its back is.
+    if (!isStack(back) && !build.proximity.some((near) =>
+        isStack(near) && near.behaviour.frontOf?.(near) === build)) {
+      return "load";
+    }
+    return "move";
+  },
+
+  frontOf(build) {
+    const [dx, dy] = DIRECTIONS[build.rotation];
+    return build.world?.at(build.x + dx, build.y + dy) || null;
+  },
+
+  acceptItem(build, source, item) {
+    const recharge = build.block.recharge || 2;
+    if (build.state.cooldown > recharge - 1) return false;
+    if (stackConveyor.role(build) !== "load") return false;
+    if (build.items.total && !build.items.has(item)) return false;
+    if (build.items.total >= build.itemCapacity) return false;
+    return stackConveyor.frontOf(build) !== source;
+  },
+
+  update(build, world, step) {
+    const speed = build.block.speed || 0;
+    const recharge = build.block.recharge || 2;
+
+    if (build.state.cooldown > 0) {
+      build.state.cooldown = clamp(build.state.cooldown - speed * build.delta(step),
+                                   0, recharge);
+    }
+    if (!build.items.total) return;
+    if (build.state.cooldown > 0) return;
+
+    const where = stackConveyor.role(build);
+    const item = build.items.first();
+
+    if (where === "unload") {
+      while (build.items.total && build.dump(build.items.first())) {
+        // `dump` takes the item out itself; the loop is the game's own `while`.
+      }
+      return;
+    }
+
+    // A loading dock waits until it is full; anything else passes what it has straight on.
+    if (where === "load" && build.items.total < build.itemCapacity) return;
+
+    const front = stackConveyor.frontOf(build);
+    if (front?.behaviour !== stackConveyor || front.items.total) return;
+
+    for (const [name, count] of [...build.items.counts]) {
+      if (count > 0) front.items.add(name, count);
+    }
+    build.items.counts.clear();
+    build.items.total = 0;
+    build.state.cooldown = recharge;
+    front.state.cooldown = 1;
+  },
+};
+
+/**
+ * A sandbox source.
+ *
+ * `ItemSourceBuild.updateTile` sets its own count to one, dumps it, and sets it back to
+ * zero, `itemsPerSecond` times a second. It never holds anything: what a belt in front of
+ * it actually takes is decided by the belt, which is the whole point of using one to feed
+ * a measurement.
+ */
+const source = {
+  begin(build) { build.state.counter = 0; },
+
+  acceptItem() { return false; },
+
+  update(build, world, step) {
+    const item = build.node.configured;
+    if (!item) return;
+    const limit = TICKS / (build.block.output_per_second || 100);
+    build.state.counter += build.delta(step);
+    while (build.state.counter >= limit) {
+      build.items.add(item);
+      build.dump(item);
+      build.items.remove(item, build.items.get(item));
+      build.state.counter -= limit;
+    }
   },
 };
 
@@ -365,6 +499,8 @@ const sink = {
 
 const BY_ROLE = {
   conveyor,
+  "stack-conveyor": stackConveyor,
+  source,
   router,
   junction,
   sorter,

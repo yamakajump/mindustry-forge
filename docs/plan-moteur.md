@@ -86,14 +86,55 @@ fois contre le jeu. La simulation répond à ce qu'il ne peut pas dire, les tran
 les tampons qui se remplissent, la file qui bouchonne. Les deux doivent se rejoindre en
 régime établi, et ils se surveillent l'un l'autre.
 
+## L'oracle tourne, et il a tranché
+
+Fait le 26/08/2026. `bench/src/mindustryforge/Measure.java` pose une schématique dans un
+vrai serveur v159.7, la fait tourner trente secondes et écrit ce que ses coffres
+contiennent. Le pas de temps est figé et la boucle ne dort plus, donc trente secondes de
+jeu prennent une fraction de seconde réelle. `npm run oracle:measure` rejoue les scénarios,
+`npm run oracle` compare, et `tests/js/oracle.test.js` refait la comparaison à chaque
+`npm test`.
+
+Les scénarios se suffisent : une source de bac à sable d'un côté, un coffre de l'autre.
+La même chaîne entre dans les deux moteurs, et on compte **en objets** et pas en débits.
+« 182 des deux côtés » ne laisse nulle part où se cacher, « environ six et demi » cache
+une erreur de six pour cent.
+
+| scénario | portage | jeu |
+|---|---:|---:|
+| bande de cuivre | 182 | 182 |
+| bande en titane | 320 | 320 |
+| bande en plastanium | 570 | 570 |
+| bande courte, bande longue | 196, 154 | 196, 154 |
+| routeur à trois sorties | 196 | 196 |
+| trop-plein | 196 | 196 |
+| jonction croisée | 193 + 193 | 193 + 193 |
+| pont | 196 | **187** |
+
+Trois bugs trouvés par la mesure, qu'aucun test écrit à la main n'aurait vus :
+
+- **`nextMax` manquait.** Deux bandes alignées sont une seule ligne, et le jeu les couple :
+  l'objet en tête d'une bande ne peut pas atteindre le bout tant que celui en queue de la
+  suivante est en travers. Sans ça, une ligne en cuivre tombait juste et une ligne en
+  titane allait 6,6 % trop vite.
+- **Le convoyeur en plastanium était classé « consommateur ».** `StackConveyor` ne descend
+  pas de `Conveyor` : il ne partage aucun ancêtre avec lui et passait à travers toutes les
+  branches du dumper. Chaque convoyeur en plastanium de chaque schématique était un trou
+  noir, dans la simulation **et dans le calcul analytique**.
+- **Le minuteur d'un pont** ne comptait que les tentatives, pas le temps.
+
+Reste **le pont, à 4,8 %**. Nommé dans un test avec son écart plutôt que passé sous
+silence.
+
 ## Un désaccord déjà trouvé, et laissé visible
 
-Une bande en titane calcule à **12,02** objets par seconde depuis ses propres constantes,
-et sa fiche dans le jeu annonce **10**. La bande de base calcule 6,9 et annonce 6,5.
-`displayedSpeed` est tapé à la main bloc par bloc dans `Blocks.java` : c'est de
-l'affichage, pas de l'arithmétique. Lequel des deux le moteur livre vraiment est
-exactement le genre de question que le banc tranchera. En attendant, le portage reproduit
-la physique et l'écart est écrit dans un test plutôt que caché.
+Trois réponses candidates, et une seule vraie. Une bande en titane calcule à **12,02**
+objets par seconde depuis ses constantes, sa fiche annonce **10**, et le moteur en livre
+**10,67**. Aucune des trois ne concorde.
+
+Le moteur a raison, et la raison pour laquelle le plafond n'est jamais atteint est
+`nextMax`. Sans l'oracle, j'aurais choisi entre 12,02 et 10 avec un argument, et les deux
+étaient faux.
 
 ## Ce qui reste vrai sur le serveur
 
