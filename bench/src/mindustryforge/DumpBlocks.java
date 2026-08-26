@@ -9,6 +9,7 @@ import mindustry.type.Item;
 import mindustry.type.Liquid;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
+import mindustry.world.blocks.distribution.BufferedItemBridge;
 import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.Duct;
 import mindustry.world.blocks.distribution.ItemBridge;
@@ -320,6 +321,14 @@ public class DumpBlocks {
             entry.put("range", bridge.range);
             entry.put("items_per_second", TPS / Math.max(1f, bridge.transportTime));
             entry.put("transport_time", bridge.transportTime);
+            if (block instanceof BufferedItemBridge buffered) {
+                // Not a hand-off but a delay line: an item entering spends `speed` frames
+                // inside before it may leave, and the far end may only take one every four
+                // frames. Modelled as a plain timer, a bridge line ran five per cent fast.
+                entry.put("buffered", true);
+                entry.put("buffer_speed", buffered.speed);
+                entry.put("buffer_capacity", buffered.bufferCapacity);
+            }
             return;
         }
         if (block instanceof OverflowGate gate) {
