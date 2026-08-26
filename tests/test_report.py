@@ -89,3 +89,14 @@ def test_the_report_reads_as_a_person_would_want_it(known):
     assert "ma ligne" in text
     assert "40.0 graphite / min" in text
     assert "gaspille" in text and "conveyor x1" in text
+
+
+def test_a_string_with_line_breaks_in_it_still_works(known):
+    """A schematic pasted out of a Discord message arrives wrapped, and a player who has
+    to strip the newlines themselves will not bother."""
+    tiles = [(x, 0, "conveyor", 0) for x in range(3)]
+    text = paste(tiles)
+    wrapped = "\n".join(text[i:i + 40] for i in range(0, len(text), 40))
+
+    out = report.analyse("".join(wrapped.split()), supply={"copper": 1.0}, source=known)
+    assert out.produced["copper"] == pytest.approx(1.0)
