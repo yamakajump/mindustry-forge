@@ -45,24 +45,62 @@ export function bytesFromBase64(text) {
  * `DeflaterOutputStream` writes. Asking for "deflate-raw" here reads the two byte zlib
  * header as data and fails on a file that is perfectly valid.
  */
-async function inflate(bytes) {
+/**
+ * Undo the deflate the game applied, keeping whatever came out.
+ *
+ * `DecompressionStream("deflate")` is the zlib-wrapped variant, which is what Java's
+ * `DeflaterOutputStream` writes. Asking for "deflate-raw" on the whole body reads the two
+ * byte zlib header as data and fails on a file that is perfectly valid.
+ *
+ * Read chunk by chunk rather than through `new Response(stream)`. Two reasons, both found
+ * the hard way. `Response` reported every failure as "Failed to fetch" in Chrome, which
+ * says nothing at all and hid the real cause for an hour. And a stream that errors partway
+ * still handed over everything it had decoded before it did, which turns out to be the
+ * whole schematic: measured on the first one a player pasted, 1,102 bytes out and then
+ * "Junk found after end of compressed data" over the four trailing checksum bytes.
+ *
+ * So a string damaged by a chat client is read anyway, and the caller is told it looked
+ * altered rather than being handed nothing.
+ */
+async function pump(data, format) {
+  const stream = new DecompressionStream(format);
+  const writer = stream.writable.getWriter();
+  writer.write(data).catch(() => {});
+  writer.close().catch(() => {});
+
+  const reader = stream.readable.getReader();
+  const chunks = [];
+  let length = 0;
+  let complete = false;
   try {
-    const stream = new Blob([bytes]).stream()
-      .pipeThrough(new DecompressionStream("deflate"));
-    return { body: new Uint8Array(await new Response(stream).arrayBuffer()), altered: false };
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) { complete = true; break; }
+      chunks.push(value);
+      length += value.length;
+    }
   } catch {
-    // The checksum at the end failed, which is what a schematic pasted through a chat
-    // client looks like: a few characters lost or changed on the way. The deflate stream
-    // itself usually still decodes, so refusing here would reject a build the reader can
-    // see perfectly well. It is read anyway and the caller is told it looked altered.
-    //
-    // Measured on the first real schematic anyone pasted at this: 1,102 bytes decoded
-    // cleanly, 90 of its 95 tiles intact, and the whole thing refused over the last two
-    // bytes.
-    const raw = new Blob([bytes.slice(2)]).stream()
-      .pipeThrough(new DecompressionStream("deflate-raw"));
-    return { body: new Uint8Array(await new Response(raw).arrayBuffer()), altered: true };
+    // Kept on purpose. What decoded before the error is the schematic; what failed is the
+    // checksum after it.
   }
+
+  const out = new Uint8Array(length);
+  let at = 0;
+  for (const chunk of chunks) { out.set(chunk, at); at += chunk.length; }
+  return { body: out, complete };
+}
+
+async function inflate(bytes) {
+  const zlib = await pump(bytes, "deflate");
+  if (zlib.complete && zlib.body.length) return { body: zlib.body, altered: false };
+
+  // The zlib wrapper checks a sum at the end, and a paste that lost a character fails it
+  // while the compressed data itself is intact. Skipping the two byte header and reading
+  // the deflate stream directly gets the build back.
+  const raw = await pump(bytes.slice(2), "deflate-raw");
+  const best = raw.body.length >= zlib.body.length ? raw : zlib;
+  if (!best.body.length) throw new Error("la decompression n'a rien rendu");
+  return { body: best.body, altered: true };
 }
 
 /**

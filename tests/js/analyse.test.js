@@ -148,3 +148,16 @@ test("a clean schematic is not flagged as damaged", async () => {
   assert.equal(out.altered, false);
   assert.equal(out.truncated, 0);
 });
+
+test("a stream that errors on its checksum still yields the schematic", async () => {
+  /* Found by running the page rather than by reading it. Chrome reported every failure as
+     "Failed to fetch" through `new Response(stream)`, which says nothing; read chunk by
+     chunk, the same data decoded 1,102 bytes and then raised "Junk found after end of
+     compressed data" over the four trailing checksum bytes. Everything before the error is
+     the build. */
+  const { fromBase64 } = await import("../../site/public/forge/schematic.js");
+  const parsed = await fromBase64(REAL);
+  assert.ok(parsed.tiles.length >= 90);
+  assert.equal(parsed.altered, true);
+  assert.equal(parsed.truncated, 5, "and it says how many blocks it lost");
+});
