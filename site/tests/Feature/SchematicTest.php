@@ -1,0 +1,125 @@
+<?php
+
+use App\Models\Schematic;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+
+uses(RefreshDatabase::class);
+
+/**
+ * Keeping, publishing and reading back a schematic.
+ *
+ * The analysis arrives from a browser, so every test here is about not believing it: the
+ * figures are bounded, the picture is checked for being a picture, and somebody else's
+ * schematic stays somebody else's.
+ */
+
+function analysis(array $extra = []): array
+{
+    return array_merge([
+        'width' => 10, 'height' => 16, 'blocks' => 90,
+        'perMinute' => ['graphite' => 40.0],
+        'needs' => [['resource' => 'coal', 'perMinute' => 80.0]],
+        'potential' => ['made' => 2970.0, 'spent' => 568.0],
+    ], $extra);
+}
+
+it('garde une schematique et en tire les chiffres cherchables', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson('/api/schematiques', [
+            'name' => 'Ligne a graphite',
+            'code' => 'bXNjaAF4nD',
+            'analysis' => analysis(),
+        ])
+        ->assertCreated()
+        ->assertJsonStructure(['slug', 'url']);
+
+    $kept = Schematic::first();
+    expect($kept->blocks)->toBe(90)
+        ->and($kept->power_made)->toBe(2970.0)
+        ->and($kept->produces)->toEqual(['graphite' => 40])
+        ->and($kept->needs)->toEqual(['coal' => 80])
+        ->and($kept->public)->toBeFalse()
+        ->and($kept->verified)->toBeFalse();
+});
+
+it('borne ce qui arrive du navigateur', function () {
+    // The analysis is computed on a machine nobody controls, so a figure that cannot be
+    // true is dropped rather than stored for whatever reads it next to trip over.
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->postJson('/api/schematiques', [
+        'name' => 'Truque',
+        'code' => 'bXNjaAF4nD',
+        'analysis' => analysis([
+            'blocks' => 99999999,
+            'width' => -40,
+            'potential' => ['made' => -1000.0, 'spent' => 'beaucoup'],
+            'perMinute' => ['graphite' => 'plein', 'coal' => 12.0],
+        ]),
+    ])->assertCreated();
+
+    $kept = Schematic::first();
+    expect($kept->blocks)->toBe(65535)
+        ->and($kept->width)->toBe(0)
+        ->and($kept->power_made)->toBe(0.0)
+        ->and($kept->produces)->toEqual(['coal' => 12]);
+});
+
+it('refuse une image qui n en est pas une', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->postJson('/api/schematiques', [
+        'name' => 'Avec piece jointe',
+        'code' => 'bXNjaAF4nD',
+        'analysis' => analysis(),
+        'thumbnail' => 'data:image/png;base64,'.base64_encode('<?php echo "bonjour";'),
+    ])->assertCreated();
+
+    Storage::disk('public')->assertDirectoryEmpty('apercus');
+});
+
+it('garde une schematique privee privee', function () {
+    $owner = User::factory()->create();
+    $someoneElse = User::factory()->create();
+    $schematic = Schematic::factory()->for($owner)->create(['public' => false]);
+
+    $this->get("/s/{$schematic->slug}")->assertNotFound();
+    $this->actingAs($someoneElse)->get("/s/{$schematic->slug}")->assertNotFound();
+    $this->actingAs($owner)->get("/s/{$schematic->slug}")->assertOk();
+});
+
+it('montre une schematique publique a tout le monde', function () {
+    $schematic = Schematic::factory()->create(['public' => true, 'name' => 'Presse a graphite']);
+
+    $this->get("/s/{$schematic->slug}")
+        ->assertOk()
+        ->assertSee('Presse a graphite')
+        ->assertSee('og:title', escape: false);
+});
+
+it('ne laisse personne modifier la schematique d un autre', function () {
+    $schematic = Schematic::factory()->create(['public' => false]);
+
+    $this->actingAs(User::factory()->create())
+        ->patchJson("/api/schematiques/{$schematic->slug}", ['public' => true])
+        ->assertForbidden();
+
+    expect($schematic->fresh()->public)->toBeFalse();
+});
+
+it('donne a chaque schematique une adresse imprevisible', function () {
+    // A sequential url says how many schematics the site has and lets anyone walk every
+    // private one that ever slipped through.
+    $first = Schematic::factory()->create();
+    $second = Schematic::factory()->create();
+
+    expect($first->slug)->not->toBe($second->slug)
+        ->and($first->slug)->toMatch('/^[a-z0-9]{10}$/')
+        ->and($first->slug)->not->toBe((string) $first->id)
+        ->and($second->slug)->not->toBe((string) $second->id);
+});
