@@ -1,0 +1,52 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12,
+      "liquid": "cyanogen",
+      "amount": 10000
+    },
+    {
+      "block": "flux-reactor",
+      "x": 15,
+      "y": 14,
+      "liquid": "cyanogen",
+      "amount": 30
+    }
+  ],
+  "batteries": [
+    {
+      "block": "battery-large",
+      "x": 19,
+      "y": 14,
+      "charge": 0
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "flux-reactor",
+      "x": 15,
+      "y": 14,
+      "efficiency": 0
+    },
+    {
+      "block": "battery-large",
+      "x": 19,
+      "y": 14,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

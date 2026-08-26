@@ -1,0 +1,1 @@
+magmarock@0,1 magmarock@1,1 magmarock@0,2 magmarock@1,2

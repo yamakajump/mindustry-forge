@@ -1,0 +1,55 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "liquid": "cryofluid",
+      "amount": 9999.967
+    },
+    {
+      "block": "thorium-reactor",
+      "x": 14,
+      "y": 13,
+      "liquid": "cryofluid",
+      "amount": 30
+    }
+  ],
+  "batteries": [
+    {
+      "block": "battery-large",
+      "x": 17,
+      "y": 13,
+      "charge": 0.48580107
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "thorium-reactor",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "thorium": 25
+      }
+    },
+    {
+      "block": "battery-large",
+      "x": 17,
+      "y": 13,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

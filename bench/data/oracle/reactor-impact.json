@@ -1,0 +1,139 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "impact-reactor",
+      "x": 14,
+      "y": 13,
+      "liquid": "cryofluid",
+      "amount": 80
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 14,
+      "liquid": "cryofluid",
+      "amount": 9999.75
+    }
+  ],
+  "batteries": [
+    {
+      "block": "battery-large",
+      "x": 18,
+      "y": 13,
+      "charge": 0.21476038
+    },
+    {
+      "block": "battery-large",
+      "x": 21,
+      "y": 13,
+      "charge": 0.21476038
+    },
+    {
+      "block": "battery-large",
+      "x": 24,
+      "y": 13,
+      "charge": 0.21476038
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "impact-reactor",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "blast-compound": 10
+      }
+    },
+    {
+      "block": "battery-large",
+      "x": 18,
+      "y": 13,
+      "efficiency": 0
+    },
+    {
+      "block": "battery-large",
+      "x": 21,
+      "y": 13,
+      "efficiency": 0
+    },
+    {
+      "block": "battery-large",
+      "x": 24,
+      "y": 13,
+      "efficiency": 0
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "rtg-generator",
+      "x": 13,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "thorium": 7
+      }
+    },
+    {
+      "block": "rtg-generator",
+      "x": 15,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "thorium": 7
+      }
+    },
+    {
+      "block": "rtg-generator",
+      "x": 17,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "thorium": 7
+      }
+    },
+    {
+      "block": "rtg-generator",
+      "x": 19,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "thorium": 7
+      }
+    },
+    {
+      "block": "rtg-generator",
+      "x": 21,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "thorium": 7
+      }
+    },
+    {
+      "block": "rtg-generator",
+      "x": 23,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "thorium": 7
+      }
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

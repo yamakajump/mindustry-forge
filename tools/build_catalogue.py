@@ -38,7 +38,12 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "heat_output", "warmup_rate", "heat_requirement", "overheat_scale",
         "max_efficiency", "split_heat", "buffered", "buffer_speed", "buffer_capacity",
         "attributes", "attribute", "base_efficiency", "boost_scale", "max_boost",
-        "scale_liquid_consumption", "results", "has_liquids")
+        "scale_liquid_consumption", "results", "has_liquids",
+        # The generators, which share one word and no behaviour at all.
+        "power_production", "item_duration_multipliers", "explode_on_full",
+        "min_efficiency", "display_efficiency_scale", "floating", "item_duration",
+        "heating", "coolant_power", "ambient_cooldown_time", "fuel_item",
+        "max_heat", "unstable_speed", "item_worth")
 
 
 def main() -> None:

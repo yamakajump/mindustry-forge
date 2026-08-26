@@ -6616,10 +6616,21 @@
       },
       "power": 0,
       "power_out": 60,
+      "power_production": 60,
       "role": "generator",
       "input":{},
       "input_liquid":{},
-      "craft_time": 120
+      "craft_time": 120,
+      "warmup_speed": 0.05,
+      "item_duration_multipliers":{
+        "pyratite": 3
+      },
+      "item_worth":{
+        "coal": 1,
+        "spore-pod": 1.15,
+        "blast-compound": 0.4,
+        "pyratite": 1.4
+      }
     },
     "thermal-generator":{
       "name": "thermal-generator",
@@ -6643,10 +6654,15 @@
       },
       "power": 0,
       "power_out": 108,
+      "power_production": 108,
       "role": "generator",
       "input":{},
       "input_liquid":{},
-      "craft_time": 0
+      "craft_time": 0,
+      "attribute": "heat",
+      "min_efficiency": 0,
+      "display_efficiency_scale": 1,
+      "floating": true
     },
     "steam-generator":{
       "name": "steam-generator",
@@ -6678,12 +6694,23 @@
       },
       "power": 0,
       "power_out": 330,
+      "power_production": 330,
       "role": "generator",
       "input":{},
       "input_liquid":{
         "water": 6
       },
-      "craft_time": 90
+      "craft_time": 90,
+      "warmup_speed": 0.05,
+      "item_duration_multipliers":{
+        "pyratite": 3
+      },
+      "item_worth":{
+        "coal": 1,
+        "spore-pod": 1.15,
+        "blast-compound": 0.4,
+        "pyratite": 1.4
+      }
     },
     "differential-generator":{
       "name": "differential-generator",
@@ -6713,6 +6740,7 @@
       },
       "power": 0,
       "power_out": 1080,
+      "power_production": 1080,
       "role": "generator",
       "input":{
         "pyratite": 1
@@ -6720,7 +6748,8 @@
       "input_liquid":{
         "cryofluid": 6
       },
-      "craft_time": 220
+      "craft_time": 220,
+      "warmup_speed": 0.05
     },
     "rtg-generator":{
       "name": "rtg-generator",
@@ -6749,10 +6778,20 @@
       },
       "power": 0,
       "power_out": 270,
+      "power_production": 270,
       "role": "generator",
       "input":{},
       "input_liquid":{},
-      "craft_time": 840
+      "craft_time": 840,
+      "warmup_speed": 0.05,
+      "item_duration_multipliers":{
+        "phase-fabric": 15
+      },
+      "item_worth":{
+        "thorium": 1,
+        "phase-fabric": 0.6,
+        "fissile-matter": 1.5
+      }
     },
     "solar-panel":{
       "name": "solar-panel",
@@ -6773,6 +6812,7 @@
       },
       "power": 0,
       "power_out": 7.2,
+      "power_production": 7.2,
       "role": "generator",
       "input":{},
       "input_liquid":{},
@@ -6798,6 +6838,7 @@
       },
       "power": 0,
       "power_out": 96,
+      "power_production": 96,
       "role": "generator",
       "input":{},
       "input_liquid":{},
@@ -6831,6 +6872,7 @@
       },
       "power": 0,
       "power_out": 900,
+      "power_production": 900,
       "role": "generator",
       "input":{
         "thorium": 1
@@ -6838,7 +6880,13 @@
       "input_liquid":{
         "cryofluid": 2.3999999
       },
-      "craft_time": 0
+      "craft_time": 0,
+      "heating": 0.02,
+      "coolant_power": 0.5,
+      "ambient_cooldown_time": 1200,
+      "heat_output": 15,
+      "item_duration": 360,
+      "fuel_item": "thorium"
     },
     "impact-reactor":{
       "name": "impact-reactor",
@@ -6869,6 +6917,7 @@
       },
       "power": 1500,
       "power_out": 7800,
+      "power_production": 7800,
       "role": "generator",
       "input":{
         "blast-compound": 1
@@ -6876,7 +6925,9 @@
       "input_liquid":{
         "cryofluid": 15
       },
-      "craft_time": 0
+      "craft_time": 0,
+      "warmup_speed": 0.001,
+      "item_duration": 140
     },
     "beam-node":{
       "name": "beam-node",
@@ -6961,10 +7012,17 @@
       },
       "power": 0,
       "power_out": 180,
+      "power_production": 20,
       "role": "generator",
       "input":{},
       "input_liquid":{},
-      "craft_time": 0
+      "craft_time": 0,
+      "attribute": "steam",
+      "min_efficiency": 8.9999,
+      "display_efficiency_scale": 0.11111111,
+      "output_liquid":{
+        "water": 0.5555556
+      }
     },
     "chemical-combustion-chamber":{
       "name": "chemical-combustion-chamber",
@@ -6991,13 +7049,15 @@
       },
       "power": 0,
       "power_out": 550,
+      "power_production": 550,
       "role": "generator",
       "input":{},
       "input_liquid":{
         "ozone": 2,
         "arkycite": 40
       },
-      "craft_time": 120
+      "craft_time": 120,
+      "warmup_speed": 0.05
     },
     "pyrolysis-generator":{
       "name": "pyrolysis-generator",
@@ -7024,13 +7084,18 @@
       },
       "power": 0,
       "power_out": 1400,
+      "power_production": 1400,
       "role": "generator",
       "input":{},
       "input_liquid":{
         "slag": 20,
         "arkycite": 40
       },
-      "craft_time": 120
+      "craft_time": 120,
+      "warmup_speed": 0.05,
+      "output_liquid":{
+        "water": 20
+      }
     },
     "flux-reactor":{
       "name": "flux-reactor",
@@ -7057,12 +7122,16 @@
       },
       "power": 0,
       "power_out": 18000,
+      "power_production": 18000,
       "role": "generator",
       "input":{},
       "input_liquid":{
         "cyanogen": 9
       },
-      "craft_time": 0
+      "craft_time": 0,
+      "max_heat": 150,
+      "unstable_speed": 0.0055555557,
+      "warmup_speed": 0.1
     },
     "neoplasia-reactor":{
       "name": "neoplasia-reactor",
@@ -7095,6 +7164,7 @@
       "power": 0,
       "no_overdrive": true,
       "power_out": 8400,
+      "power_production": 8400,
       "role": "generator",
       "input":{
         "phase-fabric": 1
@@ -7103,7 +7173,14 @@
         "arkycite": 80,
         "water": 10
       },
-      "craft_time": 180
+      "craft_time": 180,
+      "warmup_speed": 0.05,
+      "output_liquid":{
+        "neoplasm": 20
+      },
+      "explode_on_full": true,
+      "heat_output": 60,
+      "warmup_rate": 0.15
     },
     "mechanical-drill":{
       "name": "mechanical-drill",
@@ -10496,7 +10573,9 @@
       "hardness": 1,
       "cost": 0.5,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "lead":{
       "name": "lead",
@@ -10505,7 +10584,9 @@
       "hardness": 1,
       "cost": 0.7,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "metaglass":{
       "name": "metaglass",
@@ -10514,7 +10595,9 @@
       "hardness": 0,
       "cost": 1.5,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "graphite":{
       "name": "graphite",
@@ -10523,7 +10606,9 @@
       "hardness": 0,
       "cost": 1,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "sand":{
       "name": "sand",
@@ -10532,7 +10617,9 @@
       "hardness": 0,
       "cost": 1,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "coal":{
       "name": "coal",
@@ -10541,7 +10628,9 @@
       "hardness": 2,
       "cost": 1,
       "explosiveness": 0.2,
-      "flammability": 1
+      "flammability": 1,
+      "radioactivity": 0,
+      "charge": 0
     },
     "titanium":{
       "name": "titanium",
@@ -10550,7 +10639,9 @@
       "hardness": 3,
       "cost": 1,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "thorium":{
       "name": "thorium",
@@ -10559,7 +10650,9 @@
       "hardness": 4,
       "cost": 1.1,
       "explosiveness": 0.2,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 1,
+      "charge": 0
     },
     "scrap":{
       "name": "scrap",
@@ -10568,7 +10661,9 @@
       "hardness": 0,
       "cost": 0.5,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "silicon":{
       "name": "silicon",
@@ -10577,7 +10672,9 @@
       "hardness": 0,
       "cost": 0.8,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "plastanium":{
       "name": "plastanium",
@@ -10586,7 +10683,9 @@
       "hardness": 0,
       "cost": 1.3,
       "explosiveness": 0.2,
-      "flammability": 0.1
+      "flammability": 0.1,
+      "radioactivity": 0,
+      "charge": 0
     },
     "phase-fabric":{
       "name": "phase-fabric",
@@ -10595,7 +10694,9 @@
       "hardness": 0,
       "cost": 1.3,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0.6,
+      "charge": 0
     },
     "surge-alloy":{
       "name": "surge-alloy",
@@ -10604,7 +10705,9 @@
       "hardness": 0,
       "cost": 1.2,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0.75
     },
     "spore-pod":{
       "name": "spore-pod",
@@ -10613,7 +10716,9 @@
       "hardness": 0,
       "cost": 1,
       "explosiveness": 0,
-      "flammability": 1.15
+      "flammability": 1.15,
+      "radioactivity": 0,
+      "charge": 0
     },
     "blast-compound":{
       "name": "blast-compound",
@@ -10622,7 +10727,9 @@
       "hardness": 0,
       "cost": 1,
       "explosiveness": 1.2,
-      "flammability": 0.4
+      "flammability": 0.4,
+      "radioactivity": 0,
+      "charge": 0
     },
     "pyratite":{
       "name": "pyratite",
@@ -10631,7 +10738,9 @@
       "hardness": 0,
       "cost": 1,
       "explosiveness": 0.4,
-      "flammability": 1.4
+      "flammability": 1.4,
+      "radioactivity": 0,
+      "charge": 0
     },
     "beryllium":{
       "name": "beryllium",
@@ -10640,7 +10749,9 @@
       "hardness": 3,
       "cost": 1.2,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "tungsten":{
       "name": "tungsten",
@@ -10649,7 +10760,9 @@
       "hardness": 5,
       "cost": 1.5,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "oxide":{
       "name": "oxide",
@@ -10658,7 +10771,9 @@
       "hardness": 0,
       "cost": 1.2,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "carbide":{
       "name": "carbide",
@@ -10667,7 +10782,9 @@
       "hardness": 0,
       "cost": 1.4,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 0,
+      "charge": 0
     },
     "fissile-matter":{
       "name": "fissile-matter",
@@ -10676,7 +10793,9 @@
       "hardness": 0,
       "cost": 1,
       "explosiveness": 0,
-      "flammability": 0
+      "flammability": 0,
+      "radioactivity": 1.5,
+      "charge": 0
     },
     "dormant-cyst":{
       "name": "dormant-cyst",
@@ -10685,7 +10804,9 @@
       "hardness": 0,
       "cost": 1,
       "explosiveness": 0,
-      "flammability": 0.1
+      "flammability": 0.1,
+      "radioactivity": 0,
+      "charge": 0
     }
   },
   "liquids":{

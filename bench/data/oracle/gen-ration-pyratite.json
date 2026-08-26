@@ -1,0 +1,34 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [
+    {
+      "block": "battery",
+      "x": 13,
+      "y": 12,
+      "charge": 0.62964743
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "combustion-generator",
+      "x": 12,
+      "y": 12,
+      "efficiency": 1,
+      "holds":{
+        "pyratite": 5
+      }
+    },
+    {
+      "block": "battery",
+      "x": 13,
+      "y": 12,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

@@ -85,7 +85,7 @@ function shouldConsume(build) {
  * Divided by the producer's size and multiplied by how many tiles of it are in contact, so
  * a small block against the side of a big one gets a share rather than the lot.
  */
-function heatReaching(build) {
+export function heatReaching(build) {
   let heat = 0;
   for (const other of build.proximity) {
     const made = other.state?.heat || 0;
