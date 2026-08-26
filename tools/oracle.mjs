@@ -54,8 +54,8 @@ const links = (offsets) => {
 };
 
 /** A scenario may be a bare list of tiles, or tiles and the ground under them. */
-const shape = (built) => (Array.isArray(built) ? { tiles: built, ground: [] }
-  : { tiles: built.tiles, ground: built.ground || [] });
+const shape = (built) => (Array.isArray(built) ? { tiles: built, ground: [], stock: [] }
+  : { tiles: built.tiles, ground: built.ground || [], stock: built.stock || [] });
 
 /**
  * The ground, moved to where the schematic will land.
@@ -80,10 +80,10 @@ function shifted(tiles, ground) {
     bottom = Math.min(bottom, tile.y + offset);
   }
   return ground.map((one) => {
-    const [block, at] = one.split("@");
+    const [what, at] = one.split("@");
     if (!at) return one;
     const [x, y] = at.split(",").map(Number);
-    return `${block}@${x - left},${y - bottom}`;
+    return `${what}@${x - left},${y - bottom}`;
   });
 }
 
@@ -503,6 +503,105 @@ const SCENARIOS = {
     { x: 7, y: 2, block: "vault", rotation: 0 },
   ],
 
+  /* The same generator on three fuels, with nothing but a battery to catch what it makes.
+
+     What a burner produces is not its nameplate: it is the **flammability** of what it
+     drew. Coal is worth 1, spore pods 1.15, pyratite 1.4, so the three batteries end at
+     0.45, 0.52 and 0.63 of full and nothing else in the scenario differs. Read as "a
+     combustion generator makes sixty power a second", all three read 0.45. */
+  "gen-spore": () => burning("spore-pod"),
+  "gen-pyratite": () => burning("pyratite"),
+
+  /* And on a fixed ration rather than an endless one, which is where the other half of the
+     table shows: pyratite lasts three times as long per item, so ten of them last the
+     whole thirty seconds where ten coal are gone in twenty. Both the charge and what is
+     left in the generator have to match. */
+  "gen-ration-coal": () => rationed("coal"),
+  "gen-ration-pyratite": () => rationed("pyratite"),
+
+  /* An RTG, which is the same class reading radioactivity instead of flammability, and the
+     extreme of the duration table: phase fabric is worth 0.6 and lasts fifteen times as
+     long, so it makes **less** power for far longer. */
+  "gen-rtg-thorium": () => rationed("thorium", "rtg-generator"),
+  "gen-rtg-phase": () => rationed("phase-fabric", "rtg-generator"),
+
+  /* A solar panel, which needs nothing and reads no ground. The control: it has to give
+     the same answer on bare floor as a thermal generator gives a different answer on hot
+     rock, or the attribute system has leaked into blocks that never asked for it. */
+  "gen-solar": () => [
+    { x: 0, y: 0, block: "solar-panel", rotation: 0 },
+    { x: 1, y: 0, block: "battery", rotation: 0 },
+  ],
+
+  /* A thermal generator on four tiles of magmarock, and the same one on hot rock.
+
+     `productionEfficiency` is the sum of the attribute over the tiles it covers, with no
+     cap of any kind: 4 x 0.75 against 4 x 0.5, so the two batteries differ by half again.
+     Clamped to one, as an efficiency usually is, both read the same. */
+  "gen-thermal-magma": () => thermal("magmarock"),
+  "gen-thermal-hot": () => thermal("hotrock"),
+
+  /* A thorium reactor, fed and left to empty.
+
+     `productionEfficiency = items.get(thorium) / itemCapacity`: a reactor holding fifteen
+     thorium of thirty makes **half** its rated power. No rate table anywhere says so, and
+     over thirty seconds on a fixed ration it is an eleven per cent error. Fed by a source
+     it stays full and makes its nameplate figure; on a ration of thirty it does not. */
+  "reactor-fed": () => reactor(true),
+  "reactor-ration": () => reactor(false),
+
+  /* And the same reactor with nothing to cool it.
+
+     Cooling is hand rolled and sits outside the consumer system: uncooled, heat climbs
+     0.02 a frame and the reactor dies at one, fifty frames in. Everything after that is a
+     flat line, and the battery says exactly when it stopped. */
+  "reactor-uncooled": () => ({
+    tiles: [
+      // Covers 0..2 by 0..2.
+      { x: 1, y: 1, block: "thorium-reactor", rotation: 0 },
+      // Covers 3..5 by 0..2.
+      { x: 4, y: 1, block: "battery-large", rotation: 0 },
+    ],
+    stock: ["thorium*30@1,1"],
+  }),
+
+  /* An impact reactor, which is the only block in the game that draws on the grid it is
+     feeding. It wants 25 power a frame and gives back 130 times its warmup to the fifth,
+     so it is a net drain for the first twenty one seconds and a net gain after.
+
+     Six RTGs make 27 a frame between them, which is just enough to hold the grid at full
+     coverage while the reactor warms. The batteries then integrate the whole curve: a port
+     that forgets the reactor consumes reads a straight line, one that forgets the fifth
+     power reads a different one. */
+  "reactor-impact": () => {
+    const tiles = [
+      // Covers 1..4 by 1..4.
+      { x: 2, y: 2, block: "impact-reactor", rotation: 0 },
+      { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("blast-compound") },
+      { x: 0, y: 3, block: "liquid-source", rotation: 0, raw: liquid("cryofluid") },
+    ];
+    const stock = [];
+    for (let i = 0; i < 6; i++) {
+      // Two wide, in a row along the reactor's top edge and each other's sides.
+      tiles.push({ x: 1 + i * 2, y: 5, block: "rtg-generator", rotation: 0 });
+      stock.push(`thorium*10@${1 + i * 2},5`);
+    }
+    for (let i = 0; i < 3; i++) {
+      tiles.push({ x: 6 + i * 3, y: 2, block: "battery-large", rotation: 0 });
+    }
+    return { tiles, stock };
+  },
+
+  /* A flux reactor, which runs at whatever fraction of its heat requirement it is getting.
+
+     `efficiency *= clamp(heat / maxHeat)` happens in the consumption pass, so cold it
+     produces nothing **and drinks nothing**. The pair is the measurement: with heat it
+     makes three hundred a frame, without it makes nothing and its cyanogen is untouched.
+     A port that misses the line reads eighteen thousand power a second out of a cold
+     reactor. */
+  "reactor-flux": () => flux(true),
+  "reactor-flux-cold": () => flux(false),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -514,6 +613,77 @@ const SCENARIOS = {
     { x: 8, y: 0, block: "vault", rotation: 0 },
   ],
 };
+
+/** A combustion generator fed forever, with a battery to catch what it makes. */
+function burning(fuel) {
+  return [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item(fuel) },
+    { x: 1, y: 0, block: "combustion-generator", rotation: 0 },
+    { x: 2, y: 0, block: "battery", rotation: 0 },
+  ];
+}
+
+/**
+ * The same, on a fixed ration and no source at all.
+ *
+ * A large battery rather than a small one wherever the small one would fill: a saturated
+ * battery reads 1.000 whatever it was given, so a scenario that saturates measures nothing
+ * about the generator feeding it.
+ */
+function rationed(fuel, block = "combustion-generator") {
+  const size = sizeOf(block);
+  const big = block !== "combustion-generator";
+  return {
+    tiles: [
+      { x: 0, y: 0, block, rotation: 0 },
+      { x: size + (big ? 1 : 0), y: 0, block: big ? "battery-large" : "battery", rotation: 0 },
+    ],
+    stock: [`${fuel}*10@0,0`],
+  };
+}
+
+/** A thorium reactor, on a source that never runs out or on thirty thorium and no more. */
+function reactor(fed) {
+  const tiles = [
+    // Covers 0..2 by 0..2.
+    { x: 1, y: 1, block: "thorium-reactor", rotation: 0 },
+    { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("cryofluid") },
+    // Covers 3..5 by 0..2.
+    { x: 4, y: 1, block: "battery-large", rotation: 0 },
+  ];
+  if (fed) tiles.push({ x: -1, y: 0, block: "item-source", rotation: 0, raw: item("thorium") });
+  return { tiles, stock: fed ? [] : ["thorium*30@1,1"] };
+}
+
+/** A flux reactor, with a heat source pointed at it or without. */
+function flux(hot) {
+  const tiles = [
+    // Covers 0..4 by 0..4.
+    { x: 2, y: 2, block: "flux-reactor", rotation: 0 },
+    { x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("cyanogen") },
+  ];
+  // Facing east, into the reactor's left edge. A heat producer that is not pointed at what
+  // it is heating delivers nothing at all.
+  if (hot) tiles.push({ x: -1, y: 2, block: "heat-source", rotation: 0 });
+  const banks = hot ? 12 : 1;
+  for (let i = 0; i < banks; i++) {
+    tiles.push({ x: 6 + i * 3, y: 2, block: "battery-large", rotation: 0 });
+  }
+  return tiles;
+}
+
+/** A thermal generator on four tiles of whatever the ground is made of. */
+function thermal(floor) {
+  return {
+    tiles: [
+      // Covers 0..1 by 0..1.
+      { x: 0, y: 0, block: "thermal-generator", rotation: 0 },
+      // Covers 2..4 by -1..1, so it touches the generator's right edge.
+      { x: 3, y: 0, block: "battery-large", rotation: 0 },
+    ],
+    ground: [[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => `${floor}@${x},${y}`),
+  };
+}
 
 /**
  * A cultivator, on spore moss or on nothing.
@@ -640,13 +810,16 @@ mkdirSync(KEPT, { recursive: true });
 if (process.argv.includes("--measure")) {
   const commands = [];
   for (const [name, build] of Object.entries(SCENARIOS)) {
-    const { tiles, ground } = shape(build());
+    const { tiles, ground, stock } = shape(build());
     const painted = shifted(tiles, ground);
+    const filled = shifted(tiles, stock);
     const code = await toBase64(check(name, tiles), { tags: { name }, sizeOf });
     writeFileSync(join(KEPT, `${name}.txt`), code);
     writeFileSync(join(KEPT, `${name}.sol`), painted.join(" "));
+    writeFileSync(join(KEPT, `${name}.stock`), filled.join(" "));
+    const trailing = [...painted, ...filled];
     commands.push(`measure ${code} ${SECONDS} ../bench/data/oracle/${name}.json`
-      + (painted.length ? ` ${painted.join(" ")}` : ""));
+      + (trailing.length ? ` ${trailing.join(" ")}` : ""));
   }
   writeFileSync(join(KEPT, "commands.txt"), `${commands.join("\n")}\n`);
   console.log(`${commands.length} scenarios ecrits dans ${KEPT}`);
@@ -662,7 +835,7 @@ console.log(`scenario / place / ce qui s'y trouve   portage      jeu   ecart`);
 console.log(`${"-".repeat(66)}`);
 
 for (const [name, build] of Object.entries(SCENARIOS)) {
-  const { tiles, ground } = shape(build());
+  const { tiles, ground, stock } = shape(build());
   const code = await toBase64(check(name, tiles), { tags: { name }, sizeOf });
   const theirs = measured(name);
 
@@ -672,7 +845,8 @@ for (const [name, build] of Object.entries(SCENARIOS)) {
     continue;
   }
 
-  const mine = await ported(code, theirs.ticks, shifted(tiles, ground));
+  const mine = await ported(code, theirs.ticks,
+                            shifted(tiles, ground), shifted(tiles, stock));
   for (const gap of differences(mine, theirs)) {
     worst = Math.max(worst, gap.gap);
     console.log(`${`${name} ${gap.what}`.padEnd(38)}`

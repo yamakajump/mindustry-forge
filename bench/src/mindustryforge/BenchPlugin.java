@@ -1,6 +1,7 @@
 package mindustryforge;
 
 import arc.util.CommandHandler;
+import arc.struct.Seq;
 import arc.util.Log;
 import mindustry.mod.Plugin;
 
@@ -42,7 +43,7 @@ public class BenchPlugin extends Plugin {
         /* The oracle. The browser carries a transcription of the game's update loop, and a
            transcription is worth nothing unless something can tell it apart from a
            plausible invention. The only thing that can is the engine it came from. */
-        handler.register("measure", "<schematique> [secondes] [chemin] [sol...]",
+        handler.register("measure", "<schematique> [secondes] [chemin] [peinture...]",
                 "Run a schematic in the real engine and write down what came out.", args -> {
             float seconds = args.length > 1 ? Float.parseFloat(args[1]) : 30f;
             Path out = args.length > 2 ? Paths.get(args[2]) : Paths.get("bench", "data", "mesure.json");
@@ -50,9 +51,18 @@ public class BenchPlugin extends Plugin {
             // schematic's own coordinates. A drill on bare floor measures nothing.
             // The last parameter swallows the rest of the line, so it arrives as one
             // string with spaces in it.
-            String[] ground = args.length > 3 && !args[3].isBlank()
+            String[] rest = args.length > 3 && !args[3].isBlank()
                 ? args[3].trim().split("\s+") : new String[0];
-            measure.queue(args[0], seconds, out, ground);
+            /* Two kinds of thing arrive here, told apart by their shape rather than by an
+               extra argument: `ore-copper@2,3` is ground to paint, `coal*10@3,0` is what a
+               block starts out holding. */
+            Seq<String> ground = new Seq<>();
+            Seq<String> stock = new Seq<>();
+            for (String one : rest) {
+                (one.contains("*") ? stock : ground).add(one);
+            }
+            measure.queue(args[0], seconds, out, ground.toArray(String.class),
+                stock.toArray(String.class));
         });
 
         Log.info("[forge] bench ready");

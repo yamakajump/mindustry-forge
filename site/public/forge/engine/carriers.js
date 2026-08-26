@@ -744,9 +744,21 @@ export function behaviourOf(node) {
   // that is what it is: a wire that never runs out.
   if (node.role === "power" && node.block.power_out > 0) return POWER.freeGenerator;
   if (node.role === "generator") {
-    // A generator that names a fuel burns it; one that names none makes power from nothing,
-    // which is a solar panel or an RTG.
-    return Object.keys(node.block.input || {}).length || node.block.craft_time
+    /* Six classes share the word "generator" and no behaviour whatsoever, so this goes by
+       class rather than by whether a recipe was written down. A thermal generator reads
+       the ground, an impact reactor reads its own warmup and pays for the privilege, a
+       nuclear reactor reads how full it is, a flux reactor reads the heat pressed against
+       it. Told apart by "does it name a fuel", four of the six were a burner. */
+    const byKind = {
+      ThermalGenerator: POWER.thermal,
+      SolarGenerator: POWER.freeGenerator,
+      ImpactReactor: POWER.impact,
+      NuclearReactor: POWER.nuclear,
+      VariableReactor: POWER.variable,
+    };
+    if (byKind[node.block.kind]) return byKind[node.block.kind];
+    return Object.keys(node.block.input || {}).length
+      || node.block.accepts || node.block.input_liquid
       ? POWER.burner : POWER.freeGenerator;
   }
   return BY_ROLE[node.role] || null;

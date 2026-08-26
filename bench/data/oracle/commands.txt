@@ -37,4 +37,19 @@ measure bXNjaAF4nEWLSwoCMRQEKyYZBtGFB5lDhZhFIM4bXz7i7SWICE1X9aJZsQa3h0fiFntpeYQm
 measure bXNjaAF4nEWKUQrCMBQEJyYppSiepIeKMR+B2KfPJNLblyAiLDuzsMxYg9vCI3GNrdTcQxVdb0GT51Lyq+X7+pamMXF+yifpby3/O3OUraddFN9DKxWYAIx3o4HTiBlqsV+4Acc0cADYRRxa 30 ../bench/data/oracle/cultivator-bare.json
 measure bXNjaAF4nD2KUQqDMBBEX5pEFPQoHirY/Qioa1dj29tLWloYePOYocU7wpoWYdhlS5YOtXHJr8gw50fJ93HXYpPQb/oU+1n3P9NOup7yViOeqcwH0AC4GHA44FbzqR7/RZ0INBUXPQ8bFA== 30 ../bench/data/oracle/separator-mix.json
 measure bXNjaAF4nE2KzQrCMBgEJ39asV59iz5UbL9DIGlqklZ8e8mhICwMs7vccAq7+iQ8q2y++JbLtITqa5X0ilIujP/KI4b3Hpap5r3Mwrjlj5TT7qFJOmWY83rINxfc4ffYgAE0ih6Usyg0vcKgsa4fLBqDsfQVi+twXDt+wjYkpA== 30 ../bench/data/oracle/separator-disassembler.json
+measure bXNjaAF4nBXGQQ6AIAwF0Q9ojDHuvAaHAtIQFrSmlIW3N8zmDQKcw8apE85KHMcrSgFXM+pxyNRCeIr0PIc14ViJSZOJ4sjJjPQDELDagRsObr2HX/y45BUn 30 ../bench/data/oracle/gen-spore.json
+measure bXNjaAF4nBXGMQ6AIAxG4b+gcdDExWtwqGIawgCYUgZub3jL9+BBhK1yEVxJavimsmUTjzOblNDb0FfwvK3E0S23GpJUUbamOCKbiU4AHqsduEGg9Q5u8QMqWhZ1 30 ../bench/data/oracle/gen-pyratite.json
+measure bXNjaAF4nCXIQQqAMAwF0Z9QcOnGa/RQaQlFsAnEuPD2os7mwYBBhGIyFetQqyG5u9XucjC27rNd53eGmoakB5YmmRo3AMYfgV4eP2ISzA== 30 ../bench/data/oracle/gen-ration-coal.json coal*10@0,0
+measure bXNjaAF4nCWIQQqAMAwEN0HwAfqNPiqVUDw0kRgP/b1U5zLDgEGExaQrtqZWQvJ0K9eYkcrYD+/1ub/b1DQkPbBWydQYABg/BJp6Ab7JFKM= 30 ../bench/data/oracle/gen-ration-pyratite.json pyratite*10@0,0
+measure bXNjaAF4nBXHUQqAIBAA0VHrUzqJh9pg2YJUWLaPbh/CwGPYKYltSFcO09E8rMU1/X57pq4zHeoS06mnRKh/7RE3BTJAWpXFDx9YEj8= 30 ../bench/data/oracle/gen-rtg-thorium.json thorium*10@0,1
+measure bXNjaAF4nBXGQQqAMAwF0anVZY/SQ0X4xIVWidl4eykMvGGjFtZhl2iu0SO9P4e9WmjzXUNheQdtt0zF108LF7AAlFmd/OBjEUY= 30 ../bench/data/oracle/gen-rtg-phase.json phase-fabric*10@0,1
+measure bXNjaAF4nGNgYmBkZGDJS8xNZeBMT83TLc7PSSxiYuAG07oFiXmpOQzsSYklJalFlQwMDEwMEMDIwAiiANNODKw= 30 ../bench/data/oracle/gen-solar.json
+measure bXNjaAF4nDXHMQqAMBBE0UmipUUOkkONMKxFNsKyjbcXC+HD42NHK9gWXeimNfJSOOdwmrOi/29aCuYdOE5mKp4xGSYAFQDKV/t4Ab7lFIA= 30 ../bench/data/oracle/gen-thermal-magma.json magmarock@0,1 magmarock@1,1 magmarock@0,2 magmarock@1,2
+measure bXNjaAF4nDXHQQrAIAxE0VHbZZEeJIdKYdCFRgjZ9PbFReHD4+NESThMJ1EbTaLTpw7pKzLu/xqNrrEc16MR9FeGeiOADABpVzYfiDYTxg== 30 ../bench/data/oracle/gen-thermal-hot.json hotrock@0,1 hotrock@1,1 hotrock@0,2 hotrock@1,2
+measure bXNjaAF4nDWJQQqDMBAAJybBg0hfkkelum0DpqHbzcHfi6Awl5lhxDvCN1dhUsmLNU0vWQMP+zQtvaarMm/l18ua/q3rIszPbCa6py3rW5iKSb0fBBhwnOBiwDMQT/MAEUYOM1cbdw== 30 ../bench/data/oracle/reactor-fed.json
+measure bXNjaAF4nC3JQQqEMBAAwY5R9hR9SR41usMaUIPj5ODvRVjoS9F8iIH+kF0ZTWXxatnESz0ik6/VStvzf5C2crbyzVdttihpFne1O29iPwUidATeCENPpGN49QDdtBhP 30 ../bench/data/oracle/reactor-ration.json thorium*30@2,1
+measure bXNjaAF4nC3JQQqAMAwF0Z9a3IlepIeKNVShbSCkC28vBTfzFoMVCyF2boLDhLOrpdGzapUrYPdb7Rkt/Qvbye5ib6psRQAEgEAzcfIBgYcTtg== 30 ../bench/data/oracle/reactor-uncooled.json thorium*30@1,1
+measure bXNjaAF4nD3M7QqDMAyF4VdtHaL2TnpRXRek4MeW1R+7+1E7BoHnnBCCo28we9gEpxJiPtSn7Rlitrga/G/PmLJs/n2cGoV5Ta8zPf5V8+IX2UVDOZ3vIWfRj1+DLgJM0NJQBiw4WqC1ho6OBsMVLmzlVhkqY8HQlw+GoTIVvpE/IhY= 30 ../bench/data/oracle/reactor-impact.json thorium*10@1,4 thorium*10@3,4 thorium*10@5,4 thorium*10@7,4 thorium*10@9,4 thorium*10@11,4
+measure bXNjaAF4nDXIYQcCQRSF4bPtrNh2FBEREZGYH3XbbrVMrW4z1L/POPXheLwHRzQV3EPuis5U+jRauMT8dugK4ffBx+GZh3N4jdl6xeymkv7hT5KS2idEsasCmAM1JkAFAI1DW6KsxpS0xJMFWZIVWZMN2ZId2ZND4Qvhfxwq 30 ../bench/data/oracle/reactor-flux.json
+measure bXNjaAF4nC2J2wpAQBQAxy0RDz5kP2qtQ2rZHLvF34vUPEwzNFQZ5W43YVCxLgY1s0+XccFPBd3n/6D365HWyZwhqRP60cYoehtvdRGgeMkhA6hKWnLqNzzNqxgW 30 ../bench/data/oracle/reactor-flux-cold.json
 measure bXNjaAF4nD2KWwqAIBQFR82K+mglLcrsEkFp2APafRgRB2ZgODQYRRHcKrRDmsdJ+n1zoaCdD1n7PZ7JC7WP4ZI7Jrrv9Ad7uXM5gBJA2Zfv0GhUBZgc0dhcFWWWoc56AM60Fo0= 30 ../bench/data/oracle/bridge-span.json

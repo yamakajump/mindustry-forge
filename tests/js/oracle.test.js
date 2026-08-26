@@ -22,7 +22,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const { differences, KEPT, measured, paintedFor, ported } = await import(
+const { differences, KEPT, measured, paintedFor, ported, stockedFor } = await import(
   new URL("../../tools/compare.mjs", import.meta.url));
 
 /**
@@ -39,10 +39,6 @@ const KNOWN_GAPS = {
   // is the odd part: the harder case is the one that is right. Left as a number rather
   // than rounded away, because a gap that only appears at full power is a clue.
   "power-plenty": 0.03,
-  // A battery's charge, which both engines put at 0.445 and which differs in the fourth
-  // decimal. Three decimals is as much as a float added to eighteen hundred times is
-  // worth trusting.
-  "power-charge": 0.002,
 };
 
 const scenarios = readdirSync(KEPT)
@@ -57,7 +53,8 @@ for (const name of scenarios) {
   test(`${name} matches the engine`, async () => {
     const code = readFileSync(join(KEPT, `${name}.txt`), "utf8").trim();
     const engine = measured(name);
-    const mine = await ported(code, engine.ticks, paintedFor(name));
+    const mine = await ported(code, engine.ticks, paintedFor(name),
+                              stockedFor(name));
 
     const gaps = differences(mine, engine);
     assert.ok(gaps.length > 0, "le moteur a fait quelque chose de mesurable");

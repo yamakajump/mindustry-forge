@@ -71,6 +71,11 @@ export class Held {
     for (const [item, count] of this.counts) if (count > 0) return item;
     return null;
   }
+  /** Everything at once, which is what `kill()` amounts to for whatever was inside. */
+  clear() {
+    this.counts.clear();
+    this.total = 0;
+  }
 }
 
 /**

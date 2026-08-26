@@ -50,7 +50,8 @@ public class Measure implements ApplicationListener {
     private boolean running;
 
     /** One scenario waiting its turn, with the ground it is to be run on. */
-    private record Job(String base64, float seconds, Path out, String[] ground) {
+    private record Job(String base64, float seconds, Path out, String[] ground,
+                      String[] stock) {
     }
 
     /**
@@ -63,8 +64,9 @@ public class Measure implements ApplicationListener {
     private final Seq<Job> waiting = new Seq<>();
 
     /** Take a scenario, and run it when the one before it is done. */
-    public void queue(String base64, float seconds, Path path, String[] ground) {
-        waiting.add(new Job(base64, seconds, path, ground));
+    public void queue(String base64, float seconds, Path path, String[] ground,
+                      String[] stock) {
+        waiting.add(new Job(base64, seconds, path, ground, stock));
         if (!running) {
             start(waiting.remove(0));
         }
@@ -79,6 +81,7 @@ public class Measure implements ApplicationListener {
      */
     private void start(Job job) {
         ground = job.ground();
+        stock = job.stock();
         begin(job.base64(), job.seconds(), job.out());
     }
 
@@ -90,6 +93,9 @@ public class Measure implements ApplicationListener {
      * schematic's own coordinates, so the browser and the game paint the same tiles.
      */
     private String[] ground = new String[0];
+
+    /** What each block starts out holding, written `item*count@x,y`. */
+    private String[] stock = new String[0];
 
     public void begin(String base64, float seconds, Path path) {
         Schematic schematic;
@@ -145,6 +151,22 @@ public class Measure implements ApplicationListener {
             Tile tile = Vars.world.tile(MARGIN + stile.x, MARGIN + stile.y);
             if (tile == null) continue;
             tile.setBlock(stile.block, Team.sharded, stile.rotation);
+        }
+
+        /* Whatever a block is meant to be holding when the clock starts.
+
+           A sandbox source never runs out, so anything measured beside one measures a
+           machine that is never hungry. Half the interesting questions are the other kind:
+           how far does ten coal go, how long does a reactor last on the thorium it has,
+           when exactly does the fourth silicon leave a mender. Written `coal*10@3,0`. */
+        for (String filled : stock) {
+            String[] parts = filled.split("[*@,]");
+            if (parts.length != 4) continue;
+            Item item = Vars.content.item(parts[0]);
+            Tile tile = Vars.world.tile(MARGIN + Integer.parseInt(parts[2]),
+                                        MARGIN + Integer.parseInt(parts[3]));
+            if (tile == null || tile.build == null || item == null) continue;
+            tile.build.items.add(item, Integer.parseInt(parts[1]));
         }
 
         /* Configured only once everything is standing.

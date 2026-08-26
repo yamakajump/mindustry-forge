@@ -1,0 +1,34 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [
+    {
+      "block": "battery-large",
+      "x": 15,
+      "y": 13,
+      "charge": 0.09714817
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "rtg-generator",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "phase-fabric": 9
+      }
+    },
+    {
+      "block": "battery-large",
+      "x": 15,
+      "y": 13,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

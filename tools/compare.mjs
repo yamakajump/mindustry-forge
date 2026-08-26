@@ -79,8 +79,25 @@ export function groundOf(list) {
   return painted;
 }
 
+/**
+ * What each block starts out holding, if the scenario said.
+ *
+ * Written `coal*10@3,0`, in the same coordinates as the ground and moved the same way. A
+ * sandbox source never runs out, so a generator measured beside one is a generator that is
+ * never hungry; half the questions worth asking are the other kind.
+ */
+function fill(world, stock) {
+  for (const one of stock) {
+    const [what, at] = one.split("@");
+    const [item, count] = what.split("*");
+    const [x, y] = at.split(",").map(Number);
+    const build = world.at(x, y);
+    if (build) build.items.add(item, Number(count));
+  }
+}
+
 /** Run a schematic through the port, and report what settled where. */
-export async function ported(code, ticks, ground = []) {
+export async function ported(code, ticks, ground = [], stock = []) {
   const parsed = await fromBase64(code);
   const graph = buildGraph(parsed.tiles);
   const painted = groundOf(ground);
@@ -94,6 +111,7 @@ export async function ported(code, ticks, ground = []) {
      on its map position - a separator, whose draw is seeded from `tile.pos()` - is asked
      the same question on both sides. `Measure.MARGIN`. */
   world.origin = [12, 12];
+  fill(world, stock);
   for (let i = 0; i < ticks; i++) world.step();
 
   const containers = world.builds
@@ -170,7 +188,15 @@ export function measured(name) {
 
 /** The ground a scenario was measured on, written down beside it. */
 export function paintedFor(name) {
-  const path = join(KEPT, `${name}.sol`);
+  return listing(join(KEPT, `${name}.sol`));
+}
+
+/** And what its blocks started out holding. */
+export function stockedFor(name) {
+  return listing(join(KEPT, `${name}.stock`));
+}
+
+function listing(path) {
   if (!existsSync(path)) return [];
   const text = readFileSync(path, "utf8").trim();
   return text ? text.split(/\s+/) : [];
@@ -263,9 +289,15 @@ export function differences(mine, theirs) {
     for (let i = 0; i < mine.batteries.length; i++) {
       const here = mine.batteries[i];
       const there = theirs.batteries[i];
+      /* A thousandth is the resolution of this measurement and not a tolerance granted
+         out of kindness: a battery's charge is a float added to eighteen hundred times, in
+         a different order on each side, and the fourth decimal is the order rather than
+         the physics. Anything a schematic would notice is three orders of magnitude
+         larger. */
+      const apart = Math.abs(here.charge - there.charge);
       out.push({ what: `${here.at} charge`,
                  mine: here.charge.toFixed(3), theirs: there.charge.toFixed(3),
-                 gap: Math.abs(here.charge - there.charge) });
+                 gap: apart <= 0.001 ? 0 : apart });
     }
   }
 

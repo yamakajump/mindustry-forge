@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 33 sur 103
+## Fait : 39 sur 103
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -102,7 +102,7 @@ second, c'est une intuition qui a l'air d'un portage.
       distributor, router
 - [x] `Separator` - 2 blocs - sort un objet au hasard selon des poids
       disassembler, separator
-- [ ] `SolarGenerator` - 2 blocs - de l'energie, sans rien
+- [x] `SolarGenerator` - 2 blocs - de l'energie, sans rien
       solar-panel, solar-panel-large
 - [x] `Sorter` - 2 blocs - laisse passer ce qu'on a regle, devie le reste
       inverted-sorter, sorter
@@ -110,7 +110,7 @@ second, c'est une intuition qui a l'air d'un portage.
       plastanium-conveyor, surge-conveyor
 - [ ] `SwitchBlock` - 2 blocs
       switch, world-switch
-- [ ] `ThermalGenerator` - 2 blocs - de l'energie a partir du sol chaud
+- [x] `ThermalGenerator` - 2 blocs - de l'energie a partir du sol chaud
       thermal-generator, turbine-condenser
 - [ ] `WallCrafter` - 2 blocs
       cliff-crusher, large-cliff-crusher
@@ -142,9 +142,9 @@ second, c'est une intuition qui a l'air d'un portage.
       force-projector
 - [ ] `Fracker` - 1 bloc
       oil-extractor
-- [ ] `HeaterGenerator` - 1 bloc
+- [x] `HeaterGenerator` - 1 bloc
       neoplasia-reactor
-- [ ] `ImpactReactor` - 1 bloc - consomme et produit, avec une chauffe
+- [x] `ImpactReactor` - 1 bloc - consomme et produit, avec une chauffe
       impact-reactor
 - [ ] `Incinerator` - 1 bloc
       incinerator
@@ -172,7 +172,7 @@ second, c'est une intuition qui a l'air d'un portage.
       beam-link
 - [ ] `MassDriver` - 1 bloc
       mass-driver
-- [ ] `NuclearReactor` - 1 bloc - de l'energie, et une explosion si on la neglige
+- [x] `NuclearReactor` - 1 bloc - de l'energie, et une explosion si on la neglige
       thorium-reactor
 - [ ] `PayloadLoader` - 1 bloc
       payload-loader
@@ -218,8 +218,22 @@ second, c'est une intuition qui a l'air d'un portage.
       unit-cargo-unload-point
 - [x] `Unloader` - 1 bloc - tire hors d'un coffre, onze par seconde
       unloader
-- [ ] `VariableReactor` - 1 bloc - de l'energie proportionnelle a ce qu'on lui donne
+- [x] `VariableReactor` - 1 bloc - de l'energie proportionnelle a ce qu'on lui donne
       flux-reactor
+
+## Ce qui est coché et reste incomplet
+
+Une case cochée dit que la classe est transcrite et mesurée, pas
+qu'aucun de ses blocs ne pose problème. Ce qui manque encore, nommé
+plutôt que laissé à découvrir :
+
+- **Un bloc ne retient qu'un liquide à la fois.** Le jeu, lui, garde un
+  compteur par liquide et n'utilise `current()` que pour décider ce
+  qu'il accepte. Ça ne se voit que sur les blocs qui en boivent deux :
+  `chemical-combustion-chamber` (ozone et arkycite), `pyrolysis-generator`
+  (scorie et arkycite), `neoplasia-reactor` (arkycite et eau). Les trois
+  sont d'Erekir, aucun n'est mesuré, et aucun ne tournera correctement
+  tant que le module liquide n'aura pas plusieurs cases.
 
 ## Posés par un joueur, mais sans effet sur ce qui circule
 

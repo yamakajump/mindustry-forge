@@ -37,6 +37,11 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.power.VariableReactor;
+import mindustry.world.blocks.power.NuclearReactor;
+import mindustry.world.blocks.power.ImpactReactor;
+import mindustry.world.blocks.power.ThermalGenerator;
+import mindustry.world.blocks.power.HeaterGenerator;
 import mindustry.world.blocks.power.PowerNode;
 import mindustry.world.blocks.heat.HeatConductor;
 import mindustry.world.blocks.heat.HeatProducer;
@@ -181,6 +186,12 @@ public class DumpBlocks {
                 // Not `powerProduction`: a thermal generator divides by its display scale,
                 // and the game's own figure is the divided one.
                 entry.put("power_out", generator.getDisplayedPowerProduction() * TPS);
+                /* And the undivided one beside it, because the simulation needs the field
+                   and the reader needs the figure. A turbine condenser reads three power a
+                   tick on its own card and holds 1/3, the difference being the nine tiles
+                   of vent it is standing on: dividing once for the player and once for the
+                   engine would be dividing twice. */
+                entry.put("power_production", generator.powerProduction * TPS);
             }
 
             describeRole(block, entry);
@@ -208,6 +219,12 @@ public class DumpBlocks {
             entry.put("cost", item.cost);
             entry.put("explosiveness", item.explosiveness);
             entry.put("flammability", item.flammability);
+            /* What a generator's output is multiplied by. `ConsumeItemFlammable` hands
+               back the flammability of what it drew, `ConsumeItemRadioactive` the
+               radioactivity: a combustion generator makes 1.0 on coal and 1.4 on pyratite,
+               an RTG 1.0 on thorium and 0.6 on phase fabric. */
+            entry.put("radioactivity", item.radioactivity);
+            entry.put("charge", item.charge);
             items.put(item.name, entry);
         }
         root.put("items", items);
@@ -534,6 +551,7 @@ public class DumpBlocks {
             entry.put("input", inputsOf(block));
             entry.put("input_liquid", liquidInputsOf(block));
             entry.put("craft_time", itemDurationOf(block));
+            describeGenerator(block, entry);
             return;
         }
         if (block instanceof ItemTurret turret) {
@@ -800,4 +818,90 @@ public class DumpBlocks {
     public static Path defaultOut() {
         return Paths.get("analyser", "data", "blocks.json");
     }
+
+    /**
+     * What tells one generator apart from another, past its nameplate.
+     *
+     * Six classes hide behind "makes power" and none of them works like the next. A
+     * combustion generator's output is the **flammability of what it is burning**, so it
+     * makes fifteen per cent more on spore pods and forty per cent more on pyratite. A
+     * thermal generator's output is the ground under it, uncapped, so a turbine condenser
+     * on nine tiles of vent runs at nine. An impact reactor's is its own warmup to the
+     * fifth power, and it consumes while it produces. None of that is derivable from the
+     * numbers already dumped, and guessing any of it means being wrong by a factor.
+     */
+    private static void describeGenerator(Block block, Jval entry) {
+        if (block instanceof ConsumeGenerator burner) {
+            entry.put("warmup_speed", burner.warmupSpeed);
+            /* How much longer one fuel lasts than the default. Pyratite burns three times
+               as long in a combustion generator, phase fabric fifteen times as long in an
+               RTG: a single `itemDuration` is wrong for three of the seven. */
+            Jval durations = Jval.newObject();
+            for (Item item : Vars.content.items()) {
+                float found = burner.itemDurationMultipliers.get(item, 1f);
+                if (found != 1f) durations.put(item.name, found);
+            }
+            if (durations.asObject().size > 0) entry.put("item_duration_multipliers", durations);
+            if (burner.outputLiquid != null) {
+                Jval out = Jval.newObject();
+                out.put(burner.outputLiquid.liquid.name, burner.outputLiquid.amount * TPS);
+                entry.put("output_liquid", out);
+            }
+            if (burner.explodeOnFull) entry.put("explode_on_full", true);
+            /* What burning each accepted item is worth, which is the generator's output
+               multiplier and not a property of the block at all: `ConsumeItemFlammable`
+               hands back flammability, `ConsumeItemRadioactive` radioactivity, and the
+               plain filter hands back one. Written out per item here so the simulation
+               never has to know which subclass it is looking at. */
+            if (burner.filterItem != null) {
+                Jval worth = Jval.newObject();
+                for (Item item : Vars.content.items()) {
+                    if (burner.filterItem.filter.get(item)) {
+                        worth.put(item.name, burner.filterItem.itemEfficiencyMultiplier(item));
+                    }
+                }
+                if (worth.asObject().size > 0) entry.put("item_worth", worth);
+            }
+        }
+        if (block instanceof HeaterGenerator heater) {
+            entry.put("heat_output", heater.heatOutput);
+            entry.put("warmup_rate", heater.warmupRate);
+        }
+        if (block instanceof ThermalGenerator thermal) {
+            /* The ground, again, but read differently from a cultivator's: there is no cap
+               at all. `productionEfficiency = sum + attribute.env()`, and nothing clamps
+               it, so a three by three condenser on nine tiles of vent produces nine times
+               its field. Clamping it to one is the obvious mistake and it is a ninefold
+               one. */
+            entry.put("attribute", thermal.attribute.name);
+            entry.put("min_efficiency", thermal.minEfficiency);
+            entry.put("display_efficiency_scale", thermal.displayEfficiencyScale);
+            if (thermal.floating) entry.put("floating", true);
+            if (thermal.outputLiquid != null) {
+                Jval out = Jval.newObject();
+                out.put(thermal.outputLiquid.liquid.name, thermal.outputLiquid.amount * TPS);
+                entry.put("output_liquid", out);
+            }
+        }
+        if (block instanceof ImpactReactor impact) {
+            entry.put("warmup_speed", impact.warmupSpeed);
+            entry.put("item_duration", impact.itemDuration);
+        }
+        if (block instanceof NuclearReactor nuclear) {
+            /* Every one of these lives in the class body or the constructor rather than in
+               the block's own initialiser, so reading `Blocks.java` finds none of them. */
+            entry.put("heating", nuclear.heating);
+            entry.put("coolant_power", nuclear.coolantPower);
+            entry.put("ambient_cooldown_time", nuclear.ambientCooldownTime);
+            entry.put("heat_output", nuclear.heatOutput);
+            entry.put("item_duration", nuclear.itemDuration);
+            if (nuclear.fuelItem != null) entry.put("fuel_item", nuclear.fuelItem.name);
+        }
+        if (block instanceof VariableReactor variable) {
+            entry.put("max_heat", variable.maxHeat);
+            entry.put("unstable_speed", variable.unstableSpeed);
+            entry.put("warmup_speed", variable.warmupSpeed);
+        }
+    }
+
 }
