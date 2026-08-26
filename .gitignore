@@ -2,10 +2,10 @@ __pycache__/
 *.pyc
 .pytest_cache/
 *.egg-info/
+node_modules/
 
 # Le serveur de test et ce qu il ecrit. Le jar du jeu ne se versionne pas.
 _run/
-_garde/
 bench/build/
 bench/.gradle/
 bench/bridge-old/
@@ -15,4 +15,13 @@ mindustry-forge/
 site/vendor/
 site/node_modules/
 site/.env
+site/storage/*.key
+site/storage/framework/cache/*
+site/storage/framework/sessions/*
+site/storage/framework/views/*
+site/storage/logs/*
+site/storage/app/public/apercus/*
+site/public/storage
 site/public/build/
+site/database/*.sqlite
+site/bootstrap/cache/*
