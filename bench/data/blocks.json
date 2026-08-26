@@ -4065,7 +4065,8 @@
       "power": 0,
       "role": "conveyor",
       "carries": "item",
-      "items_per_second": 6.5
+      "items_per_second": 6.5,
+      "speed": 0.046
     },
     "titanium-conveyor":{
       "name": "titanium-conveyor",
@@ -4084,7 +4085,8 @@
       "power": 0,
       "role": "conveyor",
       "carries": "item",
-      "items_per_second": 10
+      "items_per_second": 10,
+      "speed": 0.0801
     },
     "plastanium-conveyor":{
       "name": "plastanium-conveyor",
@@ -4122,7 +4124,8 @@
       "power": 0,
       "role": "conveyor",
       "carries": "item",
-      "items_per_second": 10
+      "items_per_second": 10,
+      "speed": 0.08
     },
     "junction":{
       "name": "junction",
@@ -4139,7 +4142,9 @@
       "power": 0,
       "role": "junction",
       "carries": "item",
-      "items_per_second": 2.3076923
+      "items_per_second": 2.3076923,
+      "junction_speed": 26,
+      "junction_capacity": 6
     },
     "bridge-conveyor":{
       "name": "bridge-conveyor",
@@ -4158,7 +4163,8 @@
       "role": "bridge",
       "carries": "item",
       "range": 4,
-      "items_per_second": 60
+      "items_per_second": 60,
+      "transport_time": 0
     },
     "phase-conveyor":{
       "name": "phase-conveyor",
@@ -4179,7 +4185,8 @@
       "role": "bridge",
       "carries": "item",
       "range": 12,
-      "items_per_second": 30
+      "items_per_second": 30,
+      "transport_time": 2
     },
     "sorter":{
       "name": "sorter",
@@ -4264,7 +4271,9 @@
       "power": 0,
       "no_overdrive": true,
       "role": "router",
-      "carries": "item"
+      "carries": "item",
+      "overflow": true,
+      "overflow_speed": 1
     },
     "underflow-gate":{
       "name": "underflow-gate",
@@ -4282,7 +4291,10 @@
       "power": 0,
       "no_overdrive": true,
       "role": "router",
-      "carries": "item"
+      "carries": "item",
+      "overflow": true,
+      "invert": true,
+      "overflow_speed": 1
     },
     "unloader":{
       "name": "unloader",
