@@ -18,19 +18,45 @@ class Schematic extends Model
 {
     use HasFactory;
 
+    /**
+     * Who can see it.
+     *
+     * `unlisted` is the one a boolean could not express and the one most drafts want: a
+     * link that works for anybody it is given to, and a schematic that stays out of the
+     * public list until its author says otherwise.
+     */
+    public const PRIVATE = 'private';
+
+    public const UNLISTED = 'unlisted';
+
+    public const PUBLIC = 'public';
+
+    public const VISIBILITIES = [self::PRIVATE, self::UNLISTED, self::PUBLIC];
+
     protected $fillable = [
-        'user_id', 'slug', 'name', 'description', 'code', 'public',
+        'user_id', 'slug', 'name', 'description', 'code', 'visibility',
         'analysis', 'width', 'height', 'blocks', 'power_made', 'power_used',
         'produces', 'needs',
     ];
 
     protected $casts = [
-        'public' => 'boolean',
         'verified' => 'boolean',
         'analysis' => 'array',
         'produces' => 'array',
         'needs' => 'array',
     ];
+
+    /** In the public list. Unlisted schematics are reachable and not listed. */
+    public function scopeListed($query)
+    {
+        return $query->where('visibility', self::PUBLIC);
+    }
+
+    /** Whether this user may open its page at all. */
+    public function visibleTo(?User $user): bool
+    {
+        return $this->visibility !== self::PRIVATE || $this->user_id === $user?->id;
+    }
 
     public function user(): BelongsTo
     {

@@ -27,7 +27,7 @@ class SchematicController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'code' => ['required', 'string', 'max:'.self::MAX_CODE],
-            'public' => ['boolean'],
+            'visibility' => ['sometimes', 'in:private,unlisted,public'],
             'analysis' => ['required', 'array'],
             // Rendered by the same code that drew it on screen, so the picture in a Discord
             // unfurl cannot disagree with the picture on the page.
@@ -41,7 +41,7 @@ class SchematicController extends Controller
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'code' => preg_replace('/\s+/', '', $data['code']),
-            'public' => (bool) ($data['public'] ?? false),
+            'visibility' => $data['visibility'] ?? Schematic::PRIVATE,
             'analysis' => $data['analysis'],
         ])->save();
 
@@ -60,7 +60,7 @@ class SchematicController extends Controller
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'public' => ['sometimes', 'boolean'],
+            'visibility' => ['sometimes', 'in:private,unlisted,public'],
         ]);
         $schematic->fill($data)->save();
 
@@ -86,7 +86,7 @@ class SchematicController extends Controller
     /** The public page, which is also what a Discord link unfurls into. */
     public function show(Schematic $schematic): View
     {
-        abort_unless($schematic->public || $schematic->user_id === auth()->id(), 404);
+        abort_unless($schematic->visibleTo(auth()->user()), 404);
         $schematic->increment('views');
 
         return view('schematic', ['schematic' => $schematic]);
@@ -95,7 +95,7 @@ class SchematicController extends Controller
     /** The raw string, for the analyser's "analyse chez moi" link. */
     public function code(Schematic $schematic): \Illuminate\Http\Response
     {
-        abort_unless($schematic->public || $schematic->user_id === auth()->id(), 404);
+        abort_unless($schematic->visibleTo(auth()->user()), 404);
 
         return response($schematic->code, 200, ['Content-Type' => 'text/plain']);
     }

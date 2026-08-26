@@ -304,7 +304,12 @@ function render(report) {
         aria-label="Nom de la schematique">
       <button class="primary" id="keep" type="button">Garder</button>
       <label style="display:inline-flex;align-items:center;gap:7px;color:var(--dim)">
-        <input type="checkbox" id="keep-public"> publier
+        qui la voit
+        <select id="keep-visibility" aria-label="Qui peut la voir">
+          <option value="private">moi seul</option>
+          <option value="unlisted">par lien</option>
+          <option value="public">tout le monde</option>
+        </select>
       </label>
     </div>
     <p class="hint-line" id="keep-note"></p>
@@ -584,7 +589,7 @@ function wireKeep(report) {
         body: JSON.stringify({
           name: $("keep-name").value.trim() || report.name,
           code: String(text.value).replace(/\s+/g, ""),
-          public: $("keep-public").checked,
+          visibility: $("keep-visibility").value,
           analysis: {
             width: report.width, height: report.height, blocks: report.blocks,
             perMinute: report.perMinute, needs: report.needs,

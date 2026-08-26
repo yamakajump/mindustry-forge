@@ -34,7 +34,7 @@ class BrowseController extends Controller
         $order = array_key_exists($request->query('tri'), self::ORDERS)
             ? $request->query('tri') : 'best';
 
-        $query = Schematic::query()->with('user')->where('public', true);
+        $query = Schematic::query()->with('user')->listed();
 
         if ($makes !== '') {
             // A JSON key rather than a LIKE over the whole blob: "graphite" must not match
@@ -69,7 +69,7 @@ class BrowseController extends Controller
     private function itemsOnOffer(): array
     {
         $found = [];
-        foreach (Schematic::where('public', true)->pluck('produces') as $produces) {
+        foreach (Schematic::listed()->pluck('produces') as $produces) {
             foreach (array_keys((array) $produces) as $item) {
                 $found[$item] = ($found[$item] ?? 0) + 1;
             }
