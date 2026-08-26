@@ -244,8 +244,87 @@ const totalOf = (rates) => Object.values(rates).reduce((a, b) => a + b, 0);
  * into its own line makes one out of an ordinary belt. A layout that has not settled is
  * reported as unsettled rather than quietly rounded off.
  */
+/**
+ * How much of each resource each node can usefully absorb, counting everything behind it.
+ *
+ * Worked out backwards from the machines, once, before anything is pushed. It is what
+ * turns "split evenly" into "send it where it is wanted", and it is the difference between
+ * describing a factory and describing its blueprint.
+ *
+ * Capped by what a carrier can move, since a belt behind ten presses still only carries
+ * six and a half items a second and promising the presses more would invent throughput.
+ */
+function demandBehind(graph) {
+  const pull = graph.nodes.map(() => null);
+  const onStack = new Set();
+
+  // Worked out once per node, walking back from the machines, rather than by repeating a
+  // pass until it settles. Repeating it shrank the answer to nothing on a network that
+  // loops: every round applied the carriers' rate cap again, and a hundred rounds of
+  // multiplying by a fraction below one leaves 1e-103 power a second.
+  //
+  // A node already being computed contributes nothing, which cuts the loop where it
+  // closes. That understates a ring main a little and is honest about it, where the other
+  // way round was catastrophic.
+  const compute = (index) => {
+    if (pull[index]) return pull[index];
+    if (onStack.has(index)) return {};
+    onStack.add(index);
+
+    const node = graph.nodes[index];
+    const wants = {};
+
+    if (node.role === "crafter" || node.role === "generator" || node.role === "sink") {
+      for (const item of Object.keys(node.block.input || {})) {
+        wants[item] = consumes(node.block, item);
+      }
+      for (const [liquid, rate] of Object.entries(node.block.input_liquid || {})) {
+        wants[liquid] = rate;
+      }
+      // A generator that burns anything wants anything, which cannot be named. A standing
+      // appetite keeps a branch feeding one from being starved by a branch feeding a
+      // machine that did name its ingredient.
+      if (node.role === "generator" && !Object.keys(wants).length && node.block.craft_time) {
+        wants["*"] = TICKS / node.block.craft_time;
+      }
+    } else {
+      for (const target of graph.out[index]) {
+        for (const [item, rate] of Object.entries(compute(target))) {
+          wants[item] = (wants[item] || 0) + rate;
+        }
+      }
+      const cap = (node.role === "conveyor" || node.role === "junction"
+                   || node.role === "bridge")
+        ? (node.block.items_per_second || Infinity) : Infinity;
+      const total = Object.values(wants).reduce((a, b) => a + b, 0);
+      if (total > cap && total > 0) {
+        for (const item of Object.keys(wants)) wants[item] *= cap / total;
+      }
+    }
+
+    onStack.delete(index);
+    pull[index] = wants;
+    return wants;
+  };
+
+  for (let index = 0; index < graph.nodes.length; index++) compute(index);
+
+  // A standing appetite matches anything, so it answers for any resource rather than
+  // sitting under a name nothing is called.
+  return pull.map((wants) => {
+    if (!wants["*"]) return wants;
+    const spread = { ...wants };
+    delete spread["*"];
+    return new Proxy(spread, {
+      get: (target, key) => key in target ? target[key]
+        : (typeof key === "string" && !key.startsWith("*") ? wants["*"] : undefined),
+    });
+  });
+}
+
 export function solve(graph, supply = {}) {
   const through = graph.nodes.map(() => ({}));
+  const pull = demandBehind(graph);
   const fed = {};
   let settled = false;
   let rounds = 0;
@@ -262,13 +341,25 @@ export function solve(graph, supply = {}) {
     for (let index = 0; index < graph.nodes.length; index++) {
       const outgoing = graph.out[index];
       if (!outgoing.length) continue;
-      // Split evenly. A router hands round-robin between its ways out and a drill offloads
-      // the same way, which is what the game does when nothing downstream is backed up.
-      const share = 1 / outgoing.length;
-      for (const target of outgoing) {
-        for (const [item, amount] of Object.entries(through[index])) {
+      for (const [item, amount] of Object.entries(through[index])) {
+        // Shared out by what each branch can actually swallow, not equally.
+        //
+        // An even split is what the game does only while nothing downstream is backed up,
+        // and something always is. A branch that wants nothing keeps taking half of
+        // everything under an even split, and the half that goes to the machines is half
+        // of what it should be: the first real schematic came out at 1,252 power a second
+        // against the 2,402 its own blocks could make, with a centrifuge sitting at zero
+        // per cent while a dead-end pipe beside it took the other half.
+        //
+        // A conveyor in the game backs up instead, and the item goes the other way. So the
+        // share follows demand, and falls back to an even split only where nothing
+        // downstream expresses any.
+        const appetites = outgoing.map((target) => pull[target]?.[item] || 0);
+        const total = appetites.reduce((a, b) => a + b, 0);
+        outgoing.forEach((target, at) => {
+          const share = total > SETTLED ? appetites[at] / total : 1 / outgoing.length;
           addTo(arriving[target], item, amount * share);
-        }
+        });
       }
     }
 
@@ -279,7 +370,8 @@ export function solve(graph, supply = {}) {
     if (!changed) { settled = true; break; }
   }
 
-  return { through, fed, settled, rounds, delivered: delivered(graph, through) };
+  return { through, fed, settled, rounds, pull,
+           delivered: delivered(graph, through, pull) };
 }
 
 /** How much of everything a block needs per second to run flat out. */
@@ -397,23 +489,31 @@ export function powerBudget(graph, solved) {
  * hand on. The second case is the honest one for a schematic torn out of a base, whose
  * belt ends at the edge because the rest of the factory was not copied.
  */
-function delivered(graph, through) {
+function delivered(graph, through, pull) {
   const total = {};
   for (let index = 0; index < graph.nodes.length; index++) {
     const node = graph.nodes[index];
     if (node.role !== "sink" && graph.out[index].length) continue;
-    const source = node.role === "sink" ? arrivingAt(graph, through, index) : through[index];
+    const source = node.role === "sink"
+      ? arrivingAt(graph, through, index, pull) : through[index];
     for (const [item, amount] of Object.entries(source)) addTo(total, item, amount);
   }
   return total;
 }
 
-function arrivingAt(graph, through, index) {
+function arrivingAt(graph, through, index, pull) {
   const total = {};
   for (const upstream of graph.into[index]) {
-    const share = 1 / Math.max(1, graph.out[upstream].length);
+    const siblings = graph.out[upstream];
     for (const [item, amount] of Object.entries(through[upstream])) {
-      addTo(total, item, amount * share);
+      // The same rule as the forward pass. Two different splits between the same two
+      // nodes is how a sink comes to receive something the network never sent it.
+      const appetites = siblings.map((target) => pull?.[target]?.[item] || 0);
+      const sum = appetites.reduce((a, b) => a + b, 0);
+      const mine = sum > SETTLED
+        ? (pull?.[index]?.[item] || 0) / sum
+        : 1 / Math.max(1, siblings.length);
+      addTo(total, item, amount * mine);
     }
   }
   return total;
