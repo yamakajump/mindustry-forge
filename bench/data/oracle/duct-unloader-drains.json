@@ -1,0 +1,78 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "beryllium": 75,
+        "tungsten": 75
+      }
+    },
+    {
+      "block": "duct-unloader",
+      "x": 15,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "duct",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "tungsten": 1
+      }
+    },
+    {
+      "block": "duct",
+      "x": 17,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "beryllium": 1
+      }
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "beryllium": 224,
+        "tungsten": 224
+      }
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13,
+      "items":{
+        "beryllium": 75,
+        "tungsten": 75
+      }
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "items":{
+        "beryllium": 224,
+        "tungsten": 224
+      }
+    }
+  ],
+  "per_second":{
+    "beryllium": 9.966666,
+    "tungsten": 9.966666
+  }
+}

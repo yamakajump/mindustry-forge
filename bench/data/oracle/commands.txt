@@ -70,4 +70,11 @@ measure bXNjaAF4nGNgZmBiZGDJS8xNZeDLL0stSinKLEvVTU0sKWZiEEYIFBTlZ6Uml+QXMfAU5Jen
 measure bXNjaAF4nBXFUQqAIBAFwLfqX0En8VChL1KslbXo+uHPDAK8INz7RSzjLGw5ltzosB1qibGbVqZHDWvXjxaHvpYIwAECmfjZD9BvESI= 30 ../bench/data/oracle/shield-idle.json phase-fabric*10@1,1 water~60@1,1
 measure bXNjaAF4nB3JSwqAMBAE0c5HN5Kj5FAtGbLRCO2AeHuJUPAWhRUpIA+ehk1sVG3icycUea/dhol+Ccs/UXa6m956UN0AJAAIsziJyJMP1CgSwg== 30 ../bench/data/oracle/radar-draws.json thorium*10@0,1
 measure bXNjaAF4nE3K0QqAIAxG4d8WEYTQi+yhJg4RTGEsorcP74ID383BDgpYu1yKM921ZfbxqHHNTQnRvHDRriY+DMfvQEzirvZyEysKgAAgzGiyYJt8NjwXFw== 30 ../bench/data/oracle/build-tower-idle.json thorium*10@0,1 nitrogen~30@3,1
+measure bXNjaAF4nFXJQQqAIBRF0WtfiQbN2oaL+qSDwAxMW398GjV5h8dlQRy+6pnZ0th7HLVcmnKLqelRbyE8Okpn/VW8XSCAw9mIMeE/ggGz8QL2KRL7 30 ../bench/data/oracle/duct-unloader-drains.json beryllium*300@1,1 tungsten*300@1,1
+measure bXNjaAF4nFWJMQ6AIBAE54SLsbAw8Rs8iggdQoLg+82VNjOZXTac4Gu8M2ea1wizlhZT7uFpfeTk0DfOMth/L94SUBDE4BCFgwVvw4KaYDV9NewTIQ== 30 ../bench/data/oracle/duct-unloader-sorted.json beryllium*300@1,1 tungsten*300@1,1
+measure bXNjaAF4nDWMQQ4CIRAECxfUaHyAj+BRLIxmog6Ky/8NJqSTrupLc2JxeEsv4fzUT9cSv+9knstctbcsXJuo3WrLUuLatNwl5mql68ZhyjzYkj2AAOCCH/0PjjCwYz+wcBz4AV5nHQ0= 30 ../bench/data/oracle/liquid-span.json
+measure bXNjaAF4nDWKQQ7DIBADhwDKIWpP/QaPQtk9oBJoCfy/Qk0utsc2K97gSjyU116LjNRDbEdtKuFMoo7nJ8euEq6VLafvSBJ6LG8eF5x1tF1Z7xN4WDBgWLAzg/VuKvbf+2k/C7YcPQ== 30 ../bench/data/oracle/conduit-armored-side.json
+measure bXNjaAF4nDXKQQ6DIBRF0YvSOjDtsLtgUdT/E0kVlML+DUbzBucNLk96g41+VT5TilJDcT6vKau4r84hiuW1hL0Gcf9U86S8t8UXFXflDPcZr674+AMsgHk0zDk6ukaPbRyf6hz1 30 ../bench/data/oracle/conduit-armored-behind.json
+measure bXNjaAF4nD2JQQqAIBREn6kQtGnTMTyU6F8ImWAqdPtwUczAvOFh0Qpz+SwcoVxDnlKdr7lUie5OUQz7dz/P+pMdvp+NLTXJ7i69BgEMgJqdYUHP0cBip3oBvW8bAA== 30 ../bench/data/oracle/conveyor-armored-side.json
+measure bXNjaAF4nD2KUQqAIBQEp7QI+umvU3goywcJqWAZdPsoMBZ2BnbpUQ062iDMa4qX3Ckbm0PK4swim49OM/pTgjlSyasw1bXeGX7rLlv2E9AATff1F1raFwr94gERgRvK 30 ../bench/data/oracle/conveyor-armored-behind.json
 measure bXNjaAF4nD2KWwqAIBQFR82K+mglLcrsEkFp2APafRgRB2ZgODQYRRHcKrRDmsdJ+n1zoaCdD1n7PZ7JC7WP4ZI7Jrrv9Ad7uXM5gBJA2Zfv0GhUBZgc0dhcFWWWoc56AM60Fo0= 30 ../bench/data/oracle/bridge-span.json

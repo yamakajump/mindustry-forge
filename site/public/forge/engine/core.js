@@ -422,3 +422,20 @@ export class World {
     return this;
   }
 }
+
+/**
+ * `DirectionBridge.findLink`: the first block of the same kind along the way it points.
+ *
+ * Erekir's bridges carry no configuration at all, which is what makes them different from
+ * Serpulo's: a bridge conveyor remembers a tile and a duct bridge simply looks. A bridge in
+ * between shortens the reach of the one behind it, and a chain is built by pointing them at
+ * each other rather than by wiring them.
+ */
+export function bridgeLink(build) {
+  const [dx, dy] = DIRECTIONS[build.rotation];
+  for (let i = 1; i <= (build.block.range || 4); i++) {
+    const other = build.world?.at(build.x + dx * i, build.y + dy * i);
+    if (other && other.name === build.name) return other;
+  }
+  return null;
+}

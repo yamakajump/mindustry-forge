@@ -60,6 +60,9 @@ const NOTHING_HAPPENS = new Set([
   // An armoured duct refuses a side feed from anything that is not a duct. That is the
   // whole block, and it reads as a vault that never gets a single item.
   "duct-armored-side",
+  // Same rule on the other carrier: an armoured belt takes from a belt or from directly
+  // behind, and a source standing beside it is not either.
+  "conveyor-armored-side",
 ]);
 
 const scenarios = readdirSync(KEPT)

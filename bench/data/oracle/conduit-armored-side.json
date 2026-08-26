@@ -1,0 +1,71 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "conduit",
+      "x": 15,
+      "y": 13,
+      "liquid": "water",
+      "amount": 19.999998
+    },
+    {
+      "block": "liquid-tank",
+      "x": 17,
+      "y": 13,
+      "liquid": "water",
+      "amount": 1799.9999
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 15,
+      "liquid": "water",
+      "amount": 10000
+    },
+    {
+      "block": "liquid-tank",
+      "x": 14,
+      "y": 15,
+      "liquid": "water",
+      "amount": 1800
+    }
+  ],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "plated-conduit",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conduit",
+      "x": 15,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "liquid-tank",
+      "x": 17,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "liquid-tank",
+      "x": 14,
+      "y": 15,
+      "efficiency": 1
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}
