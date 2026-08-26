@@ -141,6 +141,10 @@ public class Measure implements ApplicationListener {
                 tile.setOverlay(floor);
             } else if (floor instanceof mindustry.world.blocks.environment.Floor ground2) {
                 tile.setFloor(ground2);
+            } else {
+                // A static wall, which is a block and not a layer. Erekir's ore lives in
+                // these, and a plasma bore with nothing to point at measures nothing.
+                tile.setBlock(floor);
             }
         }
 

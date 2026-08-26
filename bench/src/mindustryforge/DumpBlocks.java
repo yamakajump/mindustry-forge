@@ -37,6 +37,8 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.environment.StaticWall;
+import mindustry.world.blocks.production.BeamDrill;
 import mindustry.world.blocks.distribution.DirectionLiquidBridge;
 import mindustry.world.blocks.distribution.DirectionalUnloader;
 import mindustry.world.blocks.defense.Radar;
@@ -353,6 +355,41 @@ public class DumpBlocks {
            router is not a `Router`, a duct bridge is not an `ItemBridge`, and a surge
            router is a duct router with a stack. An Erekir schematic built on any of them
            read as a line that produced nothing. */
+        if (block instanceof BeamDrill bore) {
+            /* Erekir's drill, which does not stand on its ore: it points at a cliff and
+               eats sideways into it, one item per tile of its own width that has a wall
+               within range. Filed as a sink, every plasma bore in a schematic was a hole
+               rather than a source. */
+            entry.put("role", "beam-drill");
+            entry.put("carries", "item");
+            entry.put("drill_time", bore.drillTime);
+            entry.put("range", bore.range);
+            entry.put("tier", bore.tier);
+            entry.put("optional_boost_intensity", bore.optionalBoostIntensity);
+            Jval multipliers = Jval.newObject();
+            for (Item item : Vars.content.items()) {
+                float found = bore.drillMultipliers.get(item, 1f);
+                if (found != 1f) multipliers.put(item.name, found);
+            }
+            if (multipliers.asObject().size > 0) entry.put("drill_multipliers", multipliers);
+            if (bore.blockedItems != null) {
+                Jval blocked = Jval.newArray();
+                for (Item item : bore.blockedItems) blocked.asArray().add(Jval.valueOf(item.name));
+                entry.put("blocked_items", blocked);
+            }
+            entry.put("input_liquid", liquidInputsOf(block));
+            /* The liquid that makes it faster and that it runs without: hydrogen, worth
+               two and a half times the speed. Kept apart from the ingredient list, because
+               a bore with no hydrogen is a slow bore and not a stopped one. */
+            Jval boost = Jval.newObject();
+            for (Consume consume : block.consumers) {
+                if (consume.booster && consume instanceof ConsumeLiquid one) {
+                    boost.put(one.liquid.name, one.amount * TPS);
+                }
+            }
+            if (boost.asObject().size > 0) entry.put("boost_liquid", boost);
+            return;
+        }
         if (block instanceof DirectionalUnloader puller) {
             /* Erekir's unloader: it does not push round, it takes from the block behind it
                and hands to the block in front, one item every `speed` frames. Filed as a
@@ -855,9 +892,22 @@ public class DumpBlocks {
      * drill or a pump looks down, so they are what gets asked here.
      */
     private static void describeFloor(Block block, Jval entry) {
+        /* A static wall that drops something, which is Erekir's whole ore economy: there
+           are no patches on the ground there, the ore is in the cliffs and a plasma bore
+           eats sideways into them. Recorded as a wall rather than a floor, because it is
+           neither painted under a block nor built by a player: it is what a bore has to be
+           pointed at. */
+        if (block instanceof StaticWall wall) {
+            entry.put("wall", true);
+            if (wall.itemDrop != null) entry.put("drops", wall.itemDrop.name);
+            return;
+        }
         if (!(block instanceof Floor floor)) {
             return;
         }
+        // A floor may carry ore too, in the walls sense: `wallOre` says a bore may take it
+        // even though a drill standing on it may not.
+        if (floor.wallOre) entry.put("wall_ore", true);
         // An overlay is an ore laid over a floor; a floor is the ground itself. Told apart
         // because painting one replaces the ground and painting the other does not.
         entry.put("floor", true);

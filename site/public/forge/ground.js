@@ -17,6 +17,8 @@
  * that is the number a player wants before they build.
  */
 
+import { DIRECTIONS } from "./engine/core.js";
+
 /** Every tile a block covers, given where it is stored and how big it is. */
 export function footprintOf(node) {
   const size = node.block.size || 1;
@@ -32,6 +34,60 @@ export function footprintOf(node) {
 
 /** The floor and the ore on one tile, as the game stacks them. */
 const layersAt = (ground, x, y) => ground[`${x},${y}`] || {};
+
+/**
+ * What a beam drill can see, and how much of it.
+ *
+ * Erekir has no ore patches: the ore is in the cliffs, and a plasma bore points at one and
+ * eats sideways. So this is not "what am I standing on" but "what is in front of me", one
+ * question per tile of the bore's own width, each answered by the **first solid tile**
+ * within range and by nothing behind it.
+ *
+ * A wall that drops nothing still stops the scan. That is what makes a bore fussy to place
+ * and is the difference between a bore reading four ore and reading one.
+ */
+export function beamOf(node, ground, catalogue) {
+  if (node.role !== "beam-drill" || !ground || !catalogue) return null;
+
+  const size = node.block.size || 1;
+  const corner = Math.trunc(-(size - 1) / 2);
+  const cornerX = node.x + corner;
+  const cornerY = node.y + corner;
+  const [dx, dy] = DIRECTIONS[node.rotation % 4];
+  const blocked = node.block.blocked_items || [];
+
+  let item = null;
+  let count = 0;
+  for (let i = 0; i < size; i++) {
+    // `Block.nearbySide`: the i-th tile across the face it points out of, just outside its
+    // own footprint.
+    const start = [
+      [cornerX + size, cornerY + i],
+      [cornerX + i, cornerY + size],
+      [cornerX - 1, cornerY + i],
+      [cornerX + i, cornerY - 1],
+    ][node.rotation % 4];
+
+    for (let j = 0; j < (node.block.range || 5); j++) {
+      const layers = layersAt(ground, start[0] + dx * j, start[1] + dy * j);
+      const wall = catalogue.blocks[layers.wall];
+      if (!wall) continue;
+
+      // `Tile.wallDrop`: the wall's own drop, or the ore laid over it if that ore is the
+      // kind that lives in walls. An ordinary ground ore over a wall gives nothing.
+      const over = catalogue.blocks[layers.overlay];
+      const drop = wall.drops || (over?.wall_ore ? over.drops : null);
+      const hardness = drop ? (catalogue.items[drop]?.hardness ?? 99) : 99;
+      if (drop && hardness <= (node.block.tier ?? 0) && !blocked.includes(drop)) {
+        item = drop;
+        count++;
+      }
+      break;
+    }
+  }
+
+  return count ? { resource: item, count } : null;
+}
 
 /**
  * What the ground under a block is worth to it.

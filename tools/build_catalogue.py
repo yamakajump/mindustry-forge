@@ -48,7 +48,10 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "coolant_amount", "coolant_multiplier", "ammo_types", "shoot_duration",
         "heal_percent", "phase_boost", "use_time", "radius", "shield_health",
         "phase_radius_boost", "phase_shield_boost", "coolant_consumption",
-        "discovery_time", "has_boost", "coolant_worth", "allow_core_unload", "unloadable")
+        "discovery_time", "has_boost", "coolant_worth", "allow_core_unload", "unloadable",
+        # Les foreuses d'Erekir, qui mangent le mur en face plutot que le sol.
+        "wall", "wall_ore", "drill_time", "optional_boost_intensity",
+        "drill_multipliers", "blocked_items", "boost_liquid")
 
 
 def main() -> None:
@@ -61,7 +64,8 @@ def main() -> None:
         #
         # The ground is the exception: it never appears in a schematic and it decides what
         # the schematic does, because a drill pulls out whatever it is standing on.
-        if not entry.get("role") and not entry.get("cost") and not entry.get("floor"):
+        if (not entry.get("role") and not entry.get("cost")
+                and not entry.get("floor") and not entry.get("wall")):
             continue
         blocks[name] = {k: v for k, v in entry.items()
                         if k in KEEP and v not in (0, {}, "", None)}

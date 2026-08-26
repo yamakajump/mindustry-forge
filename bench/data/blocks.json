@@ -1664,7 +1664,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "spore-wall":{
       "name": "spore-wall",
@@ -1681,7 +1682,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "dirt-wall":{
       "name": "dirt-wall",
@@ -1698,7 +1700,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "dacite-wall":{
       "name": "dacite-wall",
@@ -1715,7 +1718,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "ice-wall":{
       "name": "ice-wall",
@@ -1732,7 +1736,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "snow-wall":{
       "name": "snow-wall",
@@ -1749,7 +1754,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "dune-wall":{
       "name": "dune-wall",
@@ -1766,7 +1772,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "regolith-wall":{
       "name": "regolith-wall",
@@ -1783,7 +1790,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "yellow-stone-wall":{
       "name": "yellow-stone-wall",
@@ -1800,7 +1808,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "rhyolite-wall":{
       "name": "rhyolite-wall",
@@ -1817,7 +1826,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "carbon-wall":{
       "name": "carbon-wall",
@@ -1834,7 +1844,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "ferric-stone-wall":{
       "name": "ferric-stone-wall",
@@ -1851,7 +1862,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "beryllic-stone-wall":{
       "name": "beryllic-stone-wall",
@@ -1868,7 +1880,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "arkyic-wall":{
       "name": "arkyic-wall",
@@ -1885,7 +1898,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "crystalline-stone-wall":{
       "name": "crystalline-stone-wall",
@@ -1902,7 +1916,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "red-ice-wall":{
       "name": "red-ice-wall",
@@ -1919,7 +1934,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "red-stone-wall":{
       "name": "red-stone-wall",
@@ -1936,7 +1952,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "red-diamond-wall":{
       "name": "red-diamond-wall",
@@ -1953,7 +1970,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "sand-wall":{
       "name": "sand-wall",
@@ -1970,7 +1988,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "salt-wall":{
       "name": "salt-wall",
@@ -1987,7 +2006,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "shrubs":{
       "name": "shrubs",
@@ -2004,7 +2024,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "shale-wall":{
       "name": "shale-wall",
@@ -2021,7 +2042,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "spore-pine":{
       "name": "spore-pine",
@@ -2038,7 +2060,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "snow-pine":{
       "name": "snow-pine",
@@ -2055,7 +2078,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "pine":{
       "name": "pine",
@@ -2072,7 +2096,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "white-tree-dead":{
       "name": "white-tree-dead",
@@ -2742,7 +2767,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "metal-tiles-1":{
       "name": "metal-tiles-1",
@@ -3006,7 +3032,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "metal-wall-2":{
       "name": "metal-wall-2",
@@ -3023,7 +3050,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "metal-wall-3":{
       "name": "metal-wall-3",
@@ -3040,7 +3068,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "colored-floor":{
       "name": "colored-floor",
@@ -3076,7 +3105,8 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true
     },
     "character-overlay":{
       "name": "character-overlay",
@@ -3403,6 +3433,7 @@
       "health": 40,
       "cost":{},
       "power": 0,
+      "wall_ore": true,
       "floor": true,
       "overlay": true,
       "drops": "thorium",
@@ -3424,6 +3455,7 @@
       "health": 40,
       "cost":{},
       "power": 0,
+      "wall_ore": true,
       "floor": true,
       "overlay": true,
       "drops": "beryllium",
@@ -3444,7 +3476,9 @@
       "liquid_pressure": 1,
       "health": 40,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "wall": true,
+      "drops": "graphite"
     },
     "ore-wall-graphite":{
       "name": "ore-wall-graphite",
@@ -3462,6 +3496,7 @@
       "health": 40,
       "cost":{},
       "power": 0,
+      "wall_ore": true,
       "floor": true,
       "overlay": true,
       "drops": "graphite",
@@ -3483,6 +3518,7 @@
       "health": 40,
       "cost":{},
       "power": 0,
+      "wall_ore": true,
       "floor": true,
       "overlay": true,
       "drops": "tungsten",
@@ -7861,8 +7897,16 @@
         "beryllium": 40
       },
       "power": 9,
-      "role": "sink",
-      "input_liquid":{}
+      "role": "beam-drill",
+      "carries": "item",
+      "drill_time": 160,
+      "range": 5,
+      "tier": 3,
+      "optional_boost_intensity": 2.5,
+      "input_liquid":{},
+      "boost_liquid":{
+        "hydrogen": 0.25
+      }
     },
     "large-plasma-bore":{
       "name": "large-plasma-bore",
@@ -7889,9 +7933,17 @@
         "oxide": 25
       },
       "power": 48,
-      "role": "sink",
+      "role": "beam-drill",
+      "carries": "item",
+      "drill_time": 100,
+      "range": 6,
+      "tier": 5,
+      "optional_boost_intensity": 2.5,
       "input_liquid":{
         "hydrogen": 0.5
+      },
+      "boost_liquid":{
+        "nitrogen": 3
       }
     },
     "impact-drill":{
@@ -8403,10 +8455,10 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "water": 1,
+        "oil": 1,
         "slag": 1,
-        "cryofluid": 1,
-        "oil": 1
+        "water": 1,
+        "cryofluid": 1
       },
       "input_liquid":{}
     },
@@ -8665,10 +8717,10 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "water": 0.4,
+        "oil": 0.4,
         "slag": 0.4,
-        "cryofluid": 0.4,
-        "oil": 0.4
+        "water": 0.4,
+        "cryofluid": 0.4
       },
       "input_liquid":{}
     },

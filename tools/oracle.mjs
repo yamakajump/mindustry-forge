@@ -894,6 +894,26 @@ const SCENARIOS = {
     { x: 3, y: 0, block: "vault", rotation: 0 },
   ],
 
+  /* A plasma bore, which is Erekir's drill and stands **beside** its ore rather than on
+     it. Two tiles wide, so it reads two lines of sight and makes two beryllium a cycle.
+
+     The pair is the measurement: the second bore has a bare wall in front of one of its
+     two lines, and a wall that drops nothing still stops the scan, so it makes half as
+     much. That is what makes a bore fussy to place and it is invisible to anything that
+     reads "one drill, one rate". */
+  "bore-two-lines": () => bore(2),
+  "bore-one-line": () => bore(1),
+
+  /* And the same bore with hydrogen, which is a booster and not an ingredient: two and a
+     half times the speed, where a port that reads it as a requirement reports a working
+     layout as starved. */
+  "bore-boosted": () => {
+    const built = bore(2);
+    built.tiles.push(
+      { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("hydrogen") });
+    return built;
+  },
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -969,6 +989,29 @@ function armoured(how) {
     tiles.push({ x: -1, y: 0, block: "item-source", rotation: 0, raw: item("beryllium") });
   }
   return tiles;
+}
+
+/**
+ * A plasma bore pointed at a wall of ore, with `lines` of its two lines of sight ore.
+ *
+ * The bore covers 0..1 by 0..1 facing east, so it looks at (2, 0) and (2, 1). Whichever of
+ * those is meant to be barren gets a plain wall: it still stops the scan and it still
+ * yields nothing, which is the whole point.
+ */
+function bore(lines) {
+  return {
+    tiles: [
+      { x: 0, y: 0, block: "plasma-bore", rotation: 0 },
+      { x: -1, y: 0, block: "power-source", rotation: 0 },
+      { x: 0, y: -1, block: "duct", rotation: 3 },
+      { x: 0, y: -3, block: "vault", rotation: 0 },
+    ],
+    ground: [
+      "beryllic-stone-wall@2,0", "beryllic-stone-wall@2,1",
+      ...(lines > 0 ? ["ore-wall-beryllium@2,0"] : []),
+      ...(lines > 1 ? ["ore-wall-beryllium@2,1"] : []),
+    ],
+  };
 }
 
 /** A thorium reactor, on a source that never runs out or on thirty thorium and no more. */
