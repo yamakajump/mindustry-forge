@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Forge - analyser une schematique Mindustry</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314161c'/%3E%3Cpath d='M8 22V10h10M8 16h8' stroke='%23ffd37f' stroke-width='3' fill='none'/%3E%3C/svg%3E">
 <style>
   /* Mindustry's own palette, so the tool does not feel like a spreadsheet bolted onto a
      game. Dark because that is where the game is read from. */
@@ -138,7 +139,7 @@
 </main>
 
 <script type="module">
-import { analyse } from "./forge/analyse.js";
+import { analyse as analyseSchematic } from "./forge/analyse.js";
 
 const $ = (id) => document.getElementById(id);
 const text = $("text"), out = $("out"), drop = $("drop");
@@ -227,7 +228,7 @@ function render(report) {
   }
 
   const unknown = Object.entries(report.unknown || {});
-  if (unknown.length || !report.settled) {
+  if (unknown.length || !report.settled || report.altered || report.truncated) {
     const notes = [];
     if (unknown.length) {
       notes.push(`<li>Blocs inconnus de ce catalogue, traites comme des murs :
@@ -237,13 +238,21 @@ function render(report) {
       notes.push(`<li>La disposition boucle sur elle-meme, le debit affiche n'est pas un
         regime stable.</li>`);
     }
+    if (report.altered) {
+      notes.push(`<li>La chaine collee est legerement abimee, probablement par le
+        copier-coller (messagerie, retour a la ligne). Elle a ete lue quand meme.</li>`);
+    }
+    if (report.truncated) {
+      notes.push(`<li><strong>${report.truncated} blocs</strong> n'ont pas pu etre lus :
+        la chaine s'arrete avant la fin. Recopie-la directement depuis le jeu.</li>`);
+    }
     cards.push(`<div class="card"><h2>A savoir</h2><ul class="known">${notes.join("")}</ul></div>`);
   }
 
   out.innerHTML = cards.join("");
 }
 
-async function analyse() {
+async function run() {
   const payload = "".concat(text.value).replace(/\s+/g, "");
   if (!payload) {
     out.innerHTML = `<div class="card error">Colle une schematique, ou depose un fichier.</div>`;
@@ -255,7 +264,7 @@ async function analyse() {
     /* Computed here, on this machine. Nothing is uploaded, so a base somebody has not
        published stays theirs, and the page costs nothing to host however many people
        use it. */
-    render(await analyse(payload, parseSupply($("supply").value)));
+    render(await analyseSchematic(payload, parseSupply($("supply").value)));
   } catch (error) {
     out.innerHTML = `<div class="card error">${error.message}</div>`;
   } finally {
@@ -263,22 +272,22 @@ async function analyse() {
   }
 }
 
-$("go").addEventListener("click", analyse);
+$("go").addEventListener("click", run);
 text.addEventListener("keydown", (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") analyse();
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") run();
 });
 
 $("file").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   text.value = await readFile(file);
-  analyse();
+  run();
 });
 
 $("paste").addEventListener("click", async () => {
   try {
     text.value = (await navigator.clipboard.readText()).trim();
-    analyse();
+    run();
   } catch {
     out.innerHTML = `<div class="card error">Le navigateur a refuse l'acces au
       presse-papiers. Colle dans le champ avec ctrl+v.</div>`;
@@ -297,7 +306,7 @@ drop.addEventListener("drop", async (e) => {
   const file = e.dataTransfer.files[0];
   if (!file) return;
   text.value = await readFile(file);
-  analyse();
+  run();
 });
 </script>
 </body>

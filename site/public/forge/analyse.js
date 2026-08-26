@@ -405,6 +405,10 @@ export async function analyse(text, supply = {}) {
     cost,
     power,
     settled: solved.settled,
+    // What the reading had to work around, so the page can say it rather than quietly
+    // reporting on a partial base as though it were the whole one.
+    altered: parsed.altered,
+    truncated: parsed.truncated,
     graph,
     tiles: parsed.tiles,
   };
