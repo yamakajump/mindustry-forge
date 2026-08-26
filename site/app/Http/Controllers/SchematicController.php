@@ -55,7 +55,7 @@ class SchematicController extends Controller
 
     public function update(Request $request, Schematic $schematic): JsonResponse
     {
-        abort_unless($schematic->user_id === $request->user()?->id, 403);
+        abort_unless($schematic->managedBy($request->user()), 403);
 
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:120'],
@@ -69,7 +69,7 @@ class SchematicController extends Controller
 
     public function destroy(Request $request, Schematic $schematic): JsonResponse
     {
-        abort_unless($schematic->user_id === $request->user()?->id, 403);
+        abort_unless($schematic->managedBy($request->user()), 403);
         $schematic->delete();
 
         return response()->json(['ok' => true]);

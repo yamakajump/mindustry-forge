@@ -55,7 +55,21 @@ class Schematic extends Model
     /** Whether this user may open its page at all. */
     public function visibleTo(?User $user): bool
     {
-        return $this->visibility !== self::PRIVATE || $this->user_id === $user?->id;
+        return $this->visibility !== self::PRIVATE
+            || $this->user_id === $user?->id
+            || (bool) $user?->moderator;
+    }
+
+    /**
+     * Whether this user may change or remove it.
+     *
+     * Its author, and whoever keeps the showcase. A public list anyone can post to needs
+     * somebody able to take something out of it, and the alternative was opening the
+     * database by hand.
+     */
+    public function managedBy(?User $user): bool
+    {
+        return $user !== null && ($this->user_id === $user->id || $user->moderator);
     }
 
     public function user(): BelongsTo
