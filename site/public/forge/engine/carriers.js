@@ -13,6 +13,7 @@
  */
 
 import { DIRECTIONS, TICKS } from "./core.js";
+import { MACHINES } from "./machines.js";
 
 /** `Conveyor.itemSpace` and `Conveyor.capacity`, both private constants in the game. */
 const ITEM_SPACE = 0.4;
@@ -497,6 +498,9 @@ const sink = {
   },
 };
 
+/* The machines come last, so that a role they cover wins over the placeholder that
+   swallowed everything before they existed. Spread first, `crafter: sink` two lines below
+   quietly took it back and a press made nothing at all. */
 const BY_ROLE = {
   conveyor,
   "stack-conveyor": stackConveyor,
@@ -509,8 +513,8 @@ const BY_ROLE = {
   unloader,
   sink,
   turret: sink,
-  crafter: sink,
   generator: sink,
+  ...MACHINES,
 };
 
 /**

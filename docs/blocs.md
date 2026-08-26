@@ -10,13 +10,11 @@ Cocher une case veut dire deux choses, jamais une seule : la classe est transcri
 depuis la source du jeu, **et** un scénario la mesure dans un vrai serveur. Sans le
 second, c'est une intuition qui a l'air d'un portage.
 
-**112 classes à reproduire**, pour 264 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
+**103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 9 sur 112
+## Fait : 10 sur 103
 
-- [ ] `Wall` &mdash; 24 blocs &mdash; un mur
-      beryllium-wall, beryllium-wall-large, carbide-wall, carbide-wall-large, copper-wall, copper-wall-large, et 18 autres
-- [ ] `GenericCrafter` &mdash; 17 blocs &mdash; toute usine : entrees, duree, sorties
+- [x] `GenericCrafter` &mdash; 17 blocs &mdash; toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
 - [ ] `ItemTurret` &mdash; 17 blocs &mdash; mange ses munitions au rythme de son tir
       breach, cyclone, diffuse, disperse, duo, foreshadow, et 11 autres
@@ -48,18 +46,12 @@ second, c'est une intuition qui a l'air d'un portage.
       cultivator, silicon-crucible, vent-condenser
 - [ ] `HeatConductor` &mdash; 3 blocs &mdash; porte la chaleur
       heat-redirector, heat-router, small-heat-redirector
-- [ ] `MemoryBlock` &mdash; 3 blocs &mdash; retient des nombres pour un processeur
-      memory-bank, memory-cell, world-cell
-- [ ] `MessageBlock` &mdash; 3 blocs &mdash; affiche du texte, ne fait rien
-      message, reinforced-message, world-message
 - [ ] `PowerNode` &mdash; 3 blocs &mdash; relie le reseau
       power-node, power-node-large, surge-tower
 - [ ] `UnitAssembler` &mdash; 3 blocs &mdash; assemble une unite a partir de plans
       mech-assembler, ship-assembler, tank-assembler
 - [ ] `ArmoredConduit` &mdash; 2 blocs
       plated-conduit, reinforced-conduit
-- [ ] `BaseShield` &mdash; 2 blocs &mdash; un bouclier
-      large-shield-projector, shield-projector
 - [ ] `Battery` &mdash; 2 blocs &mdash; stocke l'energie
       battery, battery-large
 - [ ] `BeamDrill` &mdash; 2 blocs
@@ -76,8 +68,6 @@ second, c'est une intuition qui a l'air d'un portage.
       constructor, large-constructor
 - [x] `Conveyor` &mdash; 2 blocs &mdash; une bande : positions d'objets le long d'elle-meme
       conveyor, titanium-conveyor
-- [ ] `Door` &mdash; 2 blocs &mdash; un mur qui s'ouvre
-      door, door-large
 - [ ] `Duct` &mdash; 2 blocs &mdash; les bandes d'Erekir, une seule case a la fois
       armored-duct, duct
 - [ ] `LaunchPad` &mdash; 2 blocs
@@ -132,8 +122,6 @@ second, c'est une intuition qui a l'air d'un portage.
       blast-door
 - [ ] `BufferedItemBridge` &mdash; 1 bloc
       bridge-conveyor
-- [ ] `BuildTurret` &mdash; 1 bloc
-      build-tower
 - [ ] `ColoredFloor` &mdash; 1 bloc
       colored-floor
 - [ ] `ColoredWall` &mdash; 1 bloc
@@ -176,8 +164,6 @@ second, c'est une intuition qui a l'air d'un portage.
       meltdown
 - [ ] `LegacyCommandCenter` &mdash; 1 bloc
       command-center
-- [ ] `LightBlock` &mdash; 1 bloc
-      illuminator
 - [ ] `LiquidSource` &mdash; 1 bloc
       liquid-source
 - [ ] `LiquidVoid` &mdash; 1 bloc
@@ -204,8 +190,6 @@ second, c'est une intuition qui a l'air d'un portage.
       power-source
 - [ ] `PowerVoid` &mdash; 1 bloc
       power-void
-- [ ] `Radar` &mdash; 1 bloc
-      radar
 - [ ] `RegenProjector` &mdash; 1 bloc
       regen-projector
 - [ ] `RepairTower` &mdash; 1 bloc
@@ -214,8 +198,6 @@ second, c'est une intuition qui a l'air d'un portage.
       redweed
 - [ ] `ShieldWall` &mdash; 1 bloc
       shielded-wall
-- [ ] `ShockMine` &mdash; 1 bloc
-      shock-mine
 - [ ] `ShockwaveTower` &mdash; 1 bloc
       shockwave-tower
 - [ ] `SolidPump` &mdash; 1 bloc
@@ -238,6 +220,21 @@ second, c'est une intuition qui a l'air d'un portage.
       unloader
 - [ ] `VariableReactor` &mdash; 1 bloc &mdash; de l'energie proportionnelle a ce qu'on lui donne
       flux-reactor
+
+## Posés par un joueur, mais sans effet sur ce qui circule
+
+Un mur est un mur : il arrête des balles et ne déplace rien. Rien à
+porter, et rien à mesurer non plus.
+
+- `Wall` : 24
+- `MessageBlock` : 3
+- `MemoryBlock` : 3
+- `Door` : 2
+- `BaseShield` : 2
+- `ShockMine` : 1
+- `Radar` : 1
+- `BuildTurret` : 1
+- `LightBlock` : 1
 
 ## Le décor, rien à faire
 

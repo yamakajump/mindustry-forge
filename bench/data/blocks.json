@@ -12,6 +12,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": -1,
       "cost":{},
       "power": 0,
@@ -27,6 +28,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -43,6 +45,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -56,6 +59,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -72,6 +76,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -85,6 +90,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -98,6 +104,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -111,6 +118,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -124,6 +132,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -137,6 +146,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -150,6 +160,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -163,6 +174,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -176,6 +188,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -189,6 +202,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -202,6 +216,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -215,6 +230,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -228,6 +244,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -241,6 +258,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -254,6 +272,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -267,6 +286,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -280,6 +300,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 10,
       "cost":{},
       "power": 0
@@ -293,6 +314,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -312,6 +334,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -330,6 +353,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -348,6 +372,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -367,6 +392,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -385,6 +411,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -403,6 +430,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -421,6 +449,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -440,6 +469,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -459,6 +489,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -478,6 +509,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -493,6 +525,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -508,6 +541,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -523,6 +557,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -538,6 +573,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -553,6 +589,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -568,6 +605,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -583,6 +621,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -598,6 +637,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -615,6 +655,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -632,6 +673,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -647,6 +689,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -662,6 +705,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -677,6 +721,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -692,6 +737,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -707,6 +753,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -722,6 +769,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -737,6 +785,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -752,6 +801,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -767,6 +817,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -782,6 +833,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -797,6 +849,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -812,6 +865,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -827,6 +881,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -842,6 +897,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -857,6 +913,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -872,6 +929,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -887,6 +945,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -902,6 +961,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -921,6 +981,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -936,6 +997,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -951,6 +1013,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -966,6 +1029,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -981,6 +1045,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -996,6 +1061,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1011,6 +1077,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1026,6 +1093,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1041,6 +1109,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1056,6 +1125,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1071,6 +1141,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1086,6 +1157,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1101,6 +1173,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1116,6 +1189,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1131,6 +1205,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1146,6 +1221,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1161,6 +1237,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1176,6 +1253,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1191,6 +1269,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1206,6 +1285,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1221,6 +1301,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1234,6 +1315,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1247,6 +1329,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1260,6 +1343,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1273,6 +1357,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1286,6 +1371,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1299,6 +1385,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1312,6 +1399,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1325,6 +1413,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1338,6 +1427,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1351,6 +1441,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1364,6 +1455,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1377,6 +1469,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1390,6 +1483,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1403,6 +1497,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1416,6 +1511,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1429,6 +1525,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1442,6 +1539,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1455,6 +1553,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1468,6 +1567,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1481,6 +1581,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1494,6 +1595,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1507,6 +1609,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1520,6 +1623,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1533,6 +1637,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1546,6 +1651,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1559,6 +1665,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1572,6 +1679,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1585,6 +1693,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1598,6 +1707,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1611,6 +1721,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1624,6 +1735,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1637,6 +1749,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1650,6 +1763,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1663,6 +1777,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1676,6 +1791,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1689,6 +1805,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1702,6 +1819,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1715,6 +1833,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1728,6 +1847,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1741,6 +1861,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1754,6 +1875,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1767,6 +1889,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1780,6 +1903,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1793,6 +1917,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1806,6 +1931,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1819,6 +1945,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1832,6 +1959,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1845,6 +1973,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1858,6 +1987,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -1871,6 +2001,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1886,6 +2017,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1901,6 +2033,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1916,6 +2049,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1931,6 +2065,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1946,6 +2081,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1961,6 +2097,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1976,6 +2113,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -1991,6 +2129,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2006,6 +2145,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2021,6 +2161,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2036,6 +2177,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2051,6 +2193,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -2064,6 +2207,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2079,6 +2223,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2094,6 +2239,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2109,6 +2255,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2124,6 +2271,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2139,6 +2287,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2154,6 +2303,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2169,6 +2319,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2184,6 +2335,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2199,6 +2351,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2214,6 +2367,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2229,6 +2383,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2244,6 +2399,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2259,6 +2415,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -2272,6 +2429,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -2285,6 +2443,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -2298,6 +2457,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2313,6 +2473,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -2326,6 +2487,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2342,6 +2504,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2358,6 +2521,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2374,6 +2538,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2390,6 +2555,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2406,6 +2572,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2422,6 +2589,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2439,6 +2607,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2456,6 +2625,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2473,6 +2643,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2490,6 +2661,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2507,6 +2679,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2524,6 +2697,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2541,6 +2715,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2558,6 +2733,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2575,6 +2751,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2592,6 +2769,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2609,6 +2787,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -2622,6 +2801,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2639,6 +2819,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -2656,6 +2837,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 75,
@@ -2683,6 +2865,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "lead": 100,
@@ -2714,6 +2897,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 30,
@@ -2742,6 +2926,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 395,
       "cost":{
         "metaglass": 80,
@@ -2773,6 +2958,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 60,
@@ -2802,6 +2988,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 320,
       "cost":{
         "lead": 115,
@@ -2833,6 +3020,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 190,
       "cost":{
         "lead": 120,
@@ -2862,6 +3050,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 430,
       "cost":{
         "lead": 80,
@@ -2893,6 +3082,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "lead": 65,
@@ -2923,6 +3113,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 50,
@@ -2952,6 +3143,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "lead": 30,
@@ -2980,6 +3172,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 200,
       "cost":{
         "copper": 30,
@@ -3008,6 +3201,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 30,
@@ -3028,6 +3222,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 465,
       "cost":{
         "titanium": 100,
@@ -3053,6 +3248,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 320,
       "cost":{
         "lead": 35,
@@ -3080,6 +3276,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 30,
@@ -3107,6 +3304,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "lead": 30,
@@ -3135,6 +3333,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 90,
       "cost":{
         "lead": 15,
@@ -3153,6 +3352,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 575,
       "cost":{
         "graphite": 80,
@@ -3181,6 +3381,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 860,
       "cost":{
         "graphite": 40,
@@ -3211,6 +3412,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 755,
       "cost":{
         "silicon": 150,
@@ -3237,6 +3439,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 860,
       "cost":{
         "graphite": 80,
@@ -3269,6 +3472,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 460,
       "cost":{
         "beryllium": 30,
@@ -3294,6 +3498,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1040,
       "cost":{
         "beryllium": 20,
@@ -3321,6 +3526,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 510,
       "cost":{
         "beryllium": 30,
@@ -3348,6 +3554,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 645,
       "cost":{
         "graphite": 10,
@@ -3364,6 +3571,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 200,
       "cost":{
         "graphite": 8,
@@ -3380,6 +3588,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 645,
       "cost":{
         "graphite": 10,
@@ -3396,6 +3605,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 70,
       "cost":{
         "tungsten": 15
@@ -3415,6 +3625,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 900,
       "cost":{
         "thorium": 150,
@@ -3444,6 +3655,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 935,
       "cost":{
         "graphite": 60,
@@ -3475,6 +3687,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 825,
       "cost":{
         "graphite": 80,
@@ -3506,6 +3719,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 1150,
       "cost":{
         "silicon": 120,
@@ -3537,6 +3751,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 1115,
       "cost":{
         "thorium": 100,
@@ -3569,6 +3784,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1005,
       "cost":{
         "graphite": 20,
@@ -3601,6 +3817,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 320,
       "cost":{
         "copper": 6
@@ -3617,6 +3834,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 1280,
       "cost":{
         "copper": 24
@@ -3633,6 +3851,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 440,
       "cost":{
         "titanium": 6
@@ -3649,6 +3868,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 1760,
       "cost":{
         "titanium": 24
@@ -3665,6 +3885,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 500,
       "cost":{
         "metaglass": 2,
@@ -3682,6 +3903,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 2000,
       "cost":{
         "metaglass": 8,
@@ -3699,6 +3921,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 800,
       "cost":{
         "thorium": 6
@@ -3715,6 +3938,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 3200,
       "cost":{
         "thorium": 24
@@ -3731,6 +3955,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 600,
       "cost":{
         "phase-fabric": 6
@@ -3747,6 +3972,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 2400,
       "cost":{
         "phase-fabric": 24
@@ -3763,6 +3989,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 920,
       "cost":{
         "surge-alloy": 6
@@ -3779,6 +4006,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 3680,
       "cost":{
         "surge-alloy": 24
@@ -3795,6 +4023,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 400,
       "cost":{
         "titanium": 6,
@@ -3812,6 +4041,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 1600,
       "cost":{
         "titanium": 24,
@@ -3829,6 +4059,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 240,
       "cost":{
         "scrap": 6
@@ -3845,6 +4076,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 960,
       "cost":{
         "scrap": 24
@@ -3861,6 +4093,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 2160,
       "cost":{
         "scrap": 54
@@ -3877,6 +4110,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 3840,
       "cost":{
         "scrap": 96
@@ -3893,6 +4127,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 3520,
       "cost":{
         "scrap": 96
@@ -3909,6 +4144,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 520,
       "cost":{
         "beryllium": 6
@@ -3925,6 +4161,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 2080,
       "cost":{
         "beryllium": 24
@@ -3941,6 +4178,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 720,
       "cost":{
         "tungsten": 6
@@ -3957,6 +4195,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 2880,
       "cost":{
         "tungsten": 24
@@ -3973,6 +4212,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 2800,
       "cost":{
         "silicon": 24,
@@ -3990,6 +4230,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 1000,
       "cost":{
         "surge-alloy": 6,
@@ -4007,6 +4248,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 4000,
       "cost":{
         "surge-alloy": 24,
@@ -4024,6 +4266,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 1080,
       "cost":{
         "thorium": 6,
@@ -4041,6 +4284,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 4320,
       "cost":{
         "thorium": 24,
@@ -4058,6 +4302,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 4160,
       "cost":{
         "phase-fabric": 20,
@@ -4076,6 +4321,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 80,
       "cost":{
         "copper": 25,
@@ -4095,6 +4341,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 320,
       "cost":{
         "copper": 50,
@@ -4116,6 +4363,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 175,
       "cost":{
         "lead": 100,
@@ -4144,6 +4392,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 485,
       "cost":{
         "lead": 200,
@@ -4171,6 +4420,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "lead": 100,
@@ -4191,6 +4441,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 50,
       "cost":{
         "lead": 25,
@@ -4207,6 +4458,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 60,
       "cost":{
         "graphite": 50,
@@ -4224,6 +4476,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 610,
       "cost":{
         "thorium": 60,
@@ -4245,6 +4498,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 1040,
       "cost":{
         "silicon": 80,
@@ -4268,6 +4522,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 915,
       "cost":{
         "silicon": 150,
@@ -4290,6 +4545,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 360,
       "cost":{},
       "power": 300
@@ -4303,6 +4559,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 640,
       "cost":{},
       "power": 300
@@ -4316,6 +4573,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 45,
       "cost":{
         "copper": 1
@@ -4335,6 +4593,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 65,
       "cost":{
         "copper": 1,
@@ -4356,6 +4615,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 90,
       "cost":{
         "graphite": 1,
@@ -4379,6 +4639,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 280,
       "cost":{
         "metaglass": 1,
@@ -4400,6 +4661,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 30,
       "cost":{
         "copper": 3
@@ -4420,6 +4682,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 6,
@@ -4441,6 +4704,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 50,
       "cost":{
         "lead": 10,
@@ -4464,6 +4728,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 2,
@@ -4482,6 +4747,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 2,
@@ -4500,6 +4766,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 3
@@ -4517,6 +4784,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 4,
@@ -4535,6 +4803,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 4,
@@ -4556,6 +4825,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 4,
@@ -4578,6 +4848,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 70,
       "cost":{
         "titanium": 25,
@@ -4597,6 +4868,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 430,
       "cost":{
         "lead": 125,
@@ -4618,6 +4890,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 90,
       "cost":{
         "beryllium": 1
@@ -4636,6 +4909,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 140,
       "cost":{
         "beryllium": 2,
@@ -4655,6 +4929,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 90,
       "cost":{
         "beryllium": 10
@@ -4673,6 +4948,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 90,
       "cost":{
         "graphite": 8,
@@ -4692,6 +4968,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 90,
       "cost":{
         "graphite": 8,
@@ -4711,6 +4988,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 90,
       "cost":{
         "beryllium": 15
@@ -4729,6 +5007,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 120,
       "cost":{
         "graphite": 20,
@@ -4749,6 +5028,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 130,
       "cost":{
         "surge-alloy": 1,
@@ -4771,6 +5051,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 130,
       "cost":{
         "surge-alloy": 5,
@@ -4790,6 +5071,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 630,
       "cost":{
         "silicon": 80,
@@ -4812,6 +5094,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 285,
       "cost":{
         "silicon": 60,
@@ -4831,6 +5114,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 15,
@@ -4851,6 +5135,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 70,
@@ -4873,6 +5158,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 430,
       "cost":{
         "copper": 80,
@@ -4896,6 +5182,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 45,
       "cost":{
         "metaglass": 1
@@ -4914,6 +5201,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 90,
       "cost":{
         "metaglass": 1,
@@ -4933,6 +5221,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 220,
       "cost":{
         "metaglass": 1,
@@ -4953,6 +5242,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "metaglass": 2,
@@ -4972,6 +5262,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "metaglass": 15,
@@ -4991,6 +5282,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 500,
       "cost":{
         "metaglass": 40,
@@ -5010,6 +5302,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "metaglass": 8,
@@ -5028,6 +5321,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "metaglass": 8,
@@ -5048,6 +5342,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 50,
       "cost":{
         "metaglass": 20,
@@ -5070,6 +5365,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 380,
       "cost":{
         "silicon": 20,
@@ -5093,6 +5389,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 250,
       "cost":{
         "beryllium": 2
@@ -5111,6 +5408,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 250,
       "cost":{
         "graphite": 4,
@@ -5129,6 +5427,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 250,
       "cost":{
         "graphite": 8,
@@ -5148,6 +5447,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 250,
       "cost":{
         "graphite": 8,
@@ -5167,6 +5467,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 400,
       "cost":{
         "beryllium": 16,
@@ -5186,6 +5487,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 900,
       "cost":{
         "beryllium": 50,
@@ -5205,6 +5507,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 2,
@@ -5223,6 +5526,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "lead": 10,
@@ -5242,6 +5546,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 200,
       "cost":{
         "lead": 10,
@@ -5262,6 +5567,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "metaglass": 10,
@@ -5279,6 +5585,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 5,
@@ -5297,6 +5604,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "lead": 50,
@@ -5316,6 +5624,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 25,
@@ -5337,6 +5646,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 40,
@@ -5361,6 +5671,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 35,
@@ -5386,6 +5697,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "copper": 70,
@@ -5414,6 +5726,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 245,
       "cost":{
         "lead": 100,
@@ -5438,6 +5751,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "lead": 10,
@@ -5459,6 +5773,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 450,
       "cost":{
         "lead": 60,
@@ -5481,6 +5796,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 700,
       "cost":{
         "lead": 300,
@@ -5509,6 +5825,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 900,
       "cost":{
         "lead": 500,
@@ -5538,6 +5855,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 90,
       "cost":{
         "beryllium": 8
@@ -5553,6 +5871,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 810,
       "cost":{
         "silicon": 10,
@@ -5570,6 +5889,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 1170,
       "cost":{
         "silicon": 250,
@@ -5592,6 +5912,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 575,
       "cost":{
         "beryllium": 60
@@ -5612,6 +5933,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 825,
       "cost":{
         "graphite": 40,
@@ -5638,6 +5960,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 935,
       "cost":{
         "graphite": 100,
@@ -5664,6 +5987,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 2850,
       "cost":{
         "graphite": 240,
@@ -5690,6 +6014,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 3900,
       "cost":{
         "silicon": 500,
@@ -5721,6 +6046,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 12
@@ -5741,6 +6067,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 18,
@@ -5762,6 +6089,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "copper": 35,
@@ -5785,6 +6113,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 765,
       "cost":{
         "copper": 65,
@@ -5808,6 +6137,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 30,
@@ -5830,6 +6160,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{
         "copper": 25,
@@ -5858,6 +6189,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 430,
       "cost":{
         "copper": 150,
@@ -5883,6 +6215,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 575,
       "cost":{
         "graphite": 20,
@@ -5908,6 +6241,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 255,
       "cost":{
         "graphite": 25,
@@ -5924,6 +6258,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 950,
       "cost":{
         "silicon": 80,
@@ -5947,6 +6282,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 255,
       "cost":{
         "beryllium": 40
@@ -5964,6 +6300,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 1040,
       "cost":{
         "silicon": 100,
@@ -5986,6 +6323,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 1020,
       "cost":{
         "graphite": 60,
@@ -6008,6 +6346,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 2500,
       "cost":{
         "thorium": 150,
@@ -6031,6 +6370,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 1100,
       "cost":{
         "copper": 1000,
@@ -6050,6 +6390,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 3500,
       "cost":{
         "copper": 3000,
@@ -6070,6 +6411,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 6000,
       "cost":{
         "copper": 8000,
@@ -6091,6 +6433,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 4500,
       "cost":{
         "graphite": 1000,
@@ -6111,6 +6454,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 16000,
       "cost":{
         "silicon": 4000,
@@ -6132,6 +6476,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 30000,
       "cost":{
         "silicon": 5000,
@@ -6154,6 +6499,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 220,
       "cost":{
         "titanium": 100
@@ -6171,6 +6517,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 495,
       "cost":{
         "titanium": 250,
@@ -6189,6 +6536,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 480,
       "cost":{
         "graphite": 40,
@@ -6207,6 +6555,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 1080,
       "cost":{
         "thorium": 70,
@@ -6226,6 +6575,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 250,
       "cost":{
         "copper": 35
@@ -6252,6 +6602,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 800,
       "cost":{
         "copper": 85,
@@ -6279,6 +6630,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 400,
       "cost":{
         "copper": 25,
@@ -6305,6 +6657,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 260,
       "cost":{
         "copper": 40,
@@ -6332,6 +6685,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1000,
       "cost":{
         "copper": 25,
@@ -6351,6 +6705,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 1120,
       "cost":{
         "copper": 60,
@@ -6371,6 +6726,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 260,
       "cost":{
         "copper": 50,
@@ -6389,6 +6745,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 640,
       "cost":{
         "graphite": 50,
@@ -6406,6 +6763,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1200,
       "cost":{
         "graphite": 35,
@@ -6435,6 +6793,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 960,
       "cost":{
         "copper": 100,
@@ -6465,6 +6824,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 1000,
       "cost":{
         "titanium": 40,
@@ -6483,6 +6843,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 2250,
       "cost":{
         "lead": 400,
@@ -6503,6 +6864,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1980,
       "cost":{
         "copper": 225,
@@ -6530,6 +6892,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1170,
       "cost":{
         "copper": 150,
@@ -6560,6 +6923,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1305,
       "cost":{
         "copper": 200,
@@ -6589,6 +6953,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 2400,
       "cost":{
         "copper": 1000,
@@ -6617,6 +6982,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 2560,
       "cost":{
         "copper": 900,
@@ -6647,6 +7013,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 3200,
       "cost":{
         "copper": 1200,
@@ -6668,6 +7035,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1620,
       "cost":{
         "graphite": 125,
@@ -6696,6 +7064,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1890,
       "cost":{
         "graphite": 200,
@@ -6725,6 +7094,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1890,
       "cost":{
         "silicon": 200,
@@ -6745,6 +7115,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 4000,
       "cost":{
         "thorium": 400,
@@ -6775,6 +7146,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 4480,
       "cost":{
         "thorium": 50,
@@ -6805,6 +7177,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 3520,
       "cost":{
         "graphite": 250,
@@ -6823,6 +7196,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 3360,
       "cost":{
         "graphite": 200,
@@ -6845,6 +7219,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 3520,
       "cost":{
         "graphite": 400,
@@ -6875,6 +7250,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 8750,
       "cost":{
         "silicon": 800,
@@ -6903,6 +7279,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 9250,
       "cost":{
         "graphite": 500,
@@ -6922,6 +7299,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "copper": 50,
@@ -6942,6 +7320,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "copper": 60,
@@ -6962,6 +7341,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "copper": 150,
@@ -6982,6 +7362,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "copper": 200,
@@ -7005,6 +7386,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 1200,
       "cost":{
         "lead": 650,
@@ -7030,6 +7412,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 3035,
       "cost":{
         "lead": 2000,
@@ -7059,6 +7442,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 5830,
       "cost":{
         "lead": 4000,
@@ -7089,6 +7473,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 30,
@@ -7106,6 +7491,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 205,
       "cost":{
         "thorium": 80,
@@ -7125,6 +7511,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 575,
       "cost":{
         "silicon": 200,
@@ -7144,6 +7531,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 575,
       "cost":{
         "silicon": 250,
@@ -7163,6 +7551,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 860,
       "cost":{
         "silicon": 200,
@@ -7183,6 +7572,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 860,
       "cost":{
         "silicon": 100,
@@ -7208,6 +7598,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 1040,
       "cost":{
         "silicon": 150,
@@ -7234,6 +7625,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 860,
       "cost":{
         "silicon": 150,
@@ -7259,6 +7651,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 2500,
       "cost":{
         "thorium": 250,
@@ -7285,6 +7678,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 2800,
       "cost":{
         "thorium": 500,
@@ -7308,6 +7702,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 3600,
       "cost":{
         "thorium": 400,
@@ -7332,6 +7727,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 3600,
       "cost":{
         "thorium": 600,
@@ -7356,6 +7752,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 3050,
       "cost":{
         "thorium": 500,
@@ -7374,6 +7771,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 285,
       "cost":{
         "graphite": 90,
@@ -7395,6 +7793,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "copper": 10,
@@ -7412,6 +7811,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "copper": 10,
@@ -7429,6 +7829,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 800,
       "cost":{
         "tungsten": 10
@@ -7445,6 +7846,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 800,
       "cost":{
         "tungsten": 15
@@ -7461,6 +7863,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 645,
       "cost":{
         "graphite": 20,
@@ -7478,6 +7881,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 2550,
       "cost":{
         "graphite": 100,
@@ -7497,6 +7901,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 755,
       "cost":{
         "graphite": 80,
@@ -7515,6 +7920,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 3195,
       "cost":{
         "silicon": 250,
@@ -7533,6 +7939,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 860,
       "cost":{
         "silicon": 50,
@@ -7553,6 +7960,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 2500,
       "cost":{
         "thorium": 80,
@@ -7574,6 +7982,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 645,
       "cost":{
         "graphite": 80,
@@ -7594,6 +8003,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": true,
+      "dump_time": 5,
       "health": 645,
       "cost":{
         "graphite": 140,
@@ -7614,6 +8024,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -7629,6 +8040,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -7643,6 +8055,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -7659,6 +8072,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -7672,6 +8086,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -7688,6 +8103,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -7703,6 +8119,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 1000,
       "cost":{},
       "power": 0
@@ -7716,6 +8133,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 1000,
       "cost":{},
       "power": 0
@@ -7729,6 +8147,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": true,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -7750,6 +8169,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "lead": 8,
@@ -7767,6 +8187,7 @@
       "has_items": false,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0
@@ -7780,6 +8201,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -7796,6 +8218,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -7812,6 +8235,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -7828,6 +8252,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 160,
       "cost":{},
       "power": 0
@@ -7841,6 +8266,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "copper": 350,
@@ -7859,6 +8285,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 640,
       "cost":{
         "copper": 350,
@@ -7881,6 +8308,7 @@
       "has_items": true,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 640,
       "cost":{
         "copper": 200,
@@ -7903,6 +8331,7 @@
       "has_items": true,
       "has_power": true,
       "rotate": false,
+      "dump_time": 5,
       "health": 3920,
       "cost":{
         "copper": 16000,
@@ -7931,6 +8360,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 5,
@@ -7947,6 +8377,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 5,
@@ -7963,6 +8394,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 90,
@@ -7980,6 +8412,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 190,
       "cost":{
         "lead": 320,
@@ -7998,6 +8431,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 520,
       "cost":{
         "lead": 450,
@@ -8020,6 +8454,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{
         "copper": 30,
@@ -8038,6 +8473,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 200,
       "cost":{
         "copper": 30,
@@ -8057,6 +8493,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 360,
       "cost":{
         "lead": 100,
@@ -8075,6 +8512,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 1800,
       "cost":{
         "lead": 200,
@@ -8094,6 +8532,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 50,
       "cost":{
         "lead": 8,
@@ -8113,6 +8552,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 255,
       "cost":{
         "silicon": 10,
@@ -8130,6 +8570,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 665,
       "cost":{
         "silicon": 15,
@@ -8148,6 +8589,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 100,
       "cost":{
         "graphite": 10,
@@ -8164,6 +8606,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -8179,6 +8622,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -8194,6 +8638,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,
@@ -8208,6 +8653,7 @@
       "has_items": false,
       "has_power": false,
       "rotate": false,
+      "dump_time": 5,
       "health": 40,
       "cost":{},
       "power": 0,

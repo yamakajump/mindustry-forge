@@ -178,6 +178,97 @@ export class Build {
     return false;
   }
 
+  /**
+   * Take in a liquid, up to what there is room for.
+   *
+   * One at a time, which is the game's rule and not a simplification: `acceptLiquid` is
+   * `liquids.current() == liquid || liquids.currentAmount() < 0.2f`. Holding the name and
+   * the amount separately is what makes that fall out instead of having to be enforced.
+   */
+  addLiquid(liquid, amount) {
+    if (!this.liquid || this.liquidAmount <= 0.0001) this.liquid = liquid;
+    if (this.liquid !== liquid) return 0;
+    const room = Math.max(0, this.liquidCapacity - this.liquidAmount);
+    const taken = Math.min(room, amount);
+    this.liquidAmount += taken;
+    return taken;
+  }
+
+  acceptLiquid(source, liquid) {
+    if (!this.block.liquid_capacity) return false;
+    return (!this.liquid || this.liquid === liquid || this.liquidAmount < 0.2)
+      && this.liquidAmount < this.liquidCapacity;
+  }
+
+  /**
+   * Push a liquid at one neighbour. `Building.moveLiquid`.
+   *
+   * It moves by pressure rather than by a rate: the fraction this block is holding, times
+   * its own pressure, against the fraction the other is holding. A full pipe into an empty
+   * one moves a lot; two pipes at the same level move nothing, which is why a settled line
+   * has a gradient along it.
+   */
+  moveLiquid(next, liquid) {
+    if (!next || !this.liquidAmount) return 0;
+    const held = this.liquid === liquid ? this.liquidAmount : 0;
+    if (held <= 0) return 0;
+
+    const theirs = next.liquid === liquid ? next.liquidAmount : 0;
+    const ofract = theirs / (next.block.liquid_capacity || 10);
+    const fract = held / this.liquidCapacity * (this.block.liquid_pressure ?? 1);
+
+    let flow = Math.min(Math.max(0, Math.min(1, fract - ofract)) * this.liquidCapacity, held);
+    flow = Math.min(flow, (next.block.liquid_capacity || 10) - theirs);
+
+    if (flow > 0 && ofract <= fract && next.acceptLiquid(this, liquid)) {
+      const taken = next.addLiquid(liquid, flow);
+      this.liquidAmount -= taken;
+      return taken;
+    }
+    return 0;
+  }
+
+  /** `dumpLiquid`: offer it round the neighbours, cursor rotating, as items are. */
+  dumpLiquid(liquid, scaling = 2) {
+    const held = this.liquid === liquid ? this.liquidAmount : 0;
+    if (held <= 0.0001 || !this.proximity.length) return;
+
+    const start = this.cdump;
+    for (let i = 0; i < this.proximity.length; i++) {
+      this.cdump = (this.cdump + 1) % this.proximity.length;
+      const other = this.proximity[(i + start) % this.proximity.length];
+      if (!other.acceptLiquid?.(this, liquid)) continue;
+      this.moveLiquid(other, liquid);
+      if (this.liquidAmount <= 0.0001) return;
+    }
+  }
+
+  /** The one it points at, which is where a pipe sends its liquid. `moveLiquidForward`. */
+  moveLiquidForward(world, liquid) {
+    return this.moveLiquid(this.facing(world), liquid);
+  }
+
+  /**
+   * Hand one item out, and keep it if nobody will take it.
+   *
+   * `Building.offload`, which a machine uses for what it just made. It differs from `dump`
+   * in two ways that both matter: it never fails, because what is not handed on stays in
+   * the machine, and it moves the cursor **before** trying rather than after, so the two
+   * walk the same neighbours in a different order.
+   */
+  offload(item) {
+    const start = this.cdump;
+    for (let i = 0; i < this.proximity.length; i++) {
+      this.cdump = (this.cdump + 1) % this.proximity.length;
+      const other = this.proximity[(i + start) % this.proximity.length];
+      if (other.acceptItem(this, item) && this.canDump(other, item)) {
+        other.handleItem(this, item);
+        return;
+      }
+    }
+    this.handleItem(this, item);
+  }
+
   /** The building this one faces, for the blocks that hand forward rather than around. */
   facing(world) {
     const [dx, dy] = DIRECTIONS[this.rotation];
