@@ -6,6 +6,14 @@ l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 
 ## Corrigé
 
+- [x] **Le débit calculé.** Remplacé par un vrai flot maximal (Dinic) au lieu d'une
+      propagation itérative. La schématique de test passe de 648 à 2 402 énergie/s, ce qui
+      est exactement ce que valent ses blocs, et le goulot fantôme a disparu.
+- [x] **Un tuyau ne porte qu'un liquide.** Règle du jeu vérifiée dans `acceptLiquid` :
+      une citerne annonçait 32 pétrole et 6 011 eau par minute sur les mêmes trois tuiles.
+- [x] **Jonction** : passe tout droit, entrée d'un côté sortie de l'opposé, au lieu de
+      diffuser aux quatre côtés et de mélanger les lignes qu'elle sert à croiser.
+- [x] **Trieur** : sa configuration est enfin utilisée.
 - [x] **Superposition au défilement.** L'aperçu collant passait par-dessus le panneau de
       bloc. La colonne entière colle désormais, pas l'image seule.
 - [x] Icônes des liquides et des pompes conseillées.
@@ -15,28 +23,13 @@ l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 
 ## À faire
 
-### 1. Le débit calculé est faux, et c'est le plus grave
+### 1. Mécanismes du jeu encore absents ou faux
 
-« Branchée comme elle est » annonce 648 énergie/s là où la schématique en vaut 2 402. Le
-chiffre a empiré en corrigeant les entrées, parce que nourrir une seule prise expose la
-faiblesse du routage : une propagation itérative sur un réseau qui boucle perd du débit à
-chaque tour.
-
-Il faut un vrai calcul de flot maximal plutôt qu'une propagation. Tant que ce n'est pas
-fait, ce chiffre ne doit pas être publié comme s'il était mesuré.
-
-### 2. Mécanismes du jeu encore absents ou faux
-
-- **Jonction** : modélisée comme diffusant aux quatre côtés. Le jeu la fait passer tout
-  droit, entrée d'un côté, sortie du côté opposé.
-- **Réservoir et citerne** : Corentin signale qu'ils redistribuent. À vérifier contre le
-  jeu et corriger.
 - **Portes de trop-plein et de sous-flux** : modélisées comme des routeurs. Le jeu leur
   donne une priorité, tout droit d'abord, sur les côtés seulement si ça bloque.
-- **Trieur** : sa configuration dit quel objet il laisse passer, et elle est lue mais pas
-  utilisée.
 - **Déverseur** : prend dans un conteneur, pas modélisé.
 - **Munitions des tourelles** : elles ressortent en puits sans consommation.
+- **Chaleur** (Erekir) : pas modélisée du tout.
 
 ### 3. Vérifier les chiffres contre le vrai jeu
 

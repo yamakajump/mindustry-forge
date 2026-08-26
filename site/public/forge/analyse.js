@@ -18,6 +18,7 @@
 import { fromBase64 } from "./schematic.js";
 import { demand, requirements } from "./needs.js";
 import { ports, feedPorts, mainPorts } from "./ports.js";
+import { throughput } from "./maxflow.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -84,6 +85,14 @@ function outputsOf(node) {
     return [[node.x + dx, node.y + dy]];
   }
   if (node.role === "junction") {
+    // Straight through, and only straight through. A junction exists so two lines can
+    // cross without merging: what comes in from the left leaves on the right and never
+    // turns. Modelled as handing to all four sides, it merged the very lines it is there
+    // to keep apart.
+    //
+    // Which of the four pairs an item takes depends on the side it arrived from, so the
+    // four ways out are all offered here and `pairedThrough` sorts them out when the flow
+    // is pushed.
     return DIRECTIONS.map(([dx, dy]) => [node.x + dx, node.y + dy]);
   }
   if (node.role === "bridge") {
@@ -254,125 +263,6 @@ const totalOf = (rates) => Object.values(rates).reduce((a, b) => a + b, 0);
  * Capped by what a carrier can move, since a belt behind ten presses still only carries
  * six and a half items a second and promising the presses more would invent throughput.
  */
-function demandBehind(graph) {
-  const pull = graph.nodes.map(() => null);
-  const onStack = new Set();
-
-  // Worked out once per node, walking back from the machines, rather than by repeating a
-  // pass until it settles. Repeating it shrank the answer to nothing on a network that
-  // loops: every round applied the carriers' rate cap again, and a hundred rounds of
-  // multiplying by a fraction below one leaves 1e-103 power a second.
-  //
-  // A node already being computed contributes nothing, which cuts the loop where it
-  // closes. That understates a ring main a little and is honest about it, where the other
-  // way round was catastrophic.
-  const compute = (index) => {
-    if (pull[index]) return pull[index];
-    if (onStack.has(index)) return {};
-    onStack.add(index);
-
-    const node = graph.nodes[index];
-    const wants = {};
-
-    if (node.role === "crafter" || node.role === "generator" || node.role === "sink") {
-      for (const item of Object.keys(node.block.input || {})) {
-        wants[item] = consumes(node.block, item);
-      }
-      for (const [liquid, rate] of Object.entries(node.block.input_liquid || {})) {
-        wants[liquid] = rate;
-      }
-      // A generator that burns anything wants anything, which cannot be named. A standing
-      // appetite keeps a branch feeding one from being starved by a branch feeding a
-      // machine that did name its ingredient.
-      if (node.role === "generator" && !Object.keys(wants).length && node.block.craft_time) {
-        wants["*"] = TICKS / node.block.craft_time;
-      }
-    } else {
-      for (const target of graph.out[index]) {
-        for (const [item, rate] of Object.entries(compute(target))) {
-          wants[item] = (wants[item] || 0) + rate;
-        }
-      }
-      const cap = (node.role === "conveyor" || node.role === "junction"
-                   || node.role === "bridge")
-        ? (node.block.items_per_second || Infinity) : Infinity;
-      const total = Object.values(wants).reduce((a, b) => a + b, 0);
-      if (total > cap && total > 0) {
-        for (const item of Object.keys(wants)) wants[item] *= cap / total;
-      }
-    }
-
-    onStack.delete(index);
-    pull[index] = wants;
-    return wants;
-  };
-
-  for (let index = 0; index < graph.nodes.length; index++) compute(index);
-
-  // A standing appetite matches anything, so it answers for any resource rather than
-  // sitting under a name nothing is called.
-  return pull.map((wants) => {
-    if (!wants["*"]) return wants;
-    const spread = { ...wants };
-    delete spread["*"];
-    return new Proxy(spread, {
-      get: (target, key) => key in target ? target[key]
-        : (typeof key === "string" && !key.startsWith("*") ? wants["*"] : undefined),
-    });
-  });
-}
-
-export function solve(graph, supply = {}) {
-  const through = graph.nodes.map(() => ({}));
-  const pull = demandBehind(graph);
-  const fed = {};
-  let settled = false;
-  let rounds = 0;
-
-  for (rounds = 1; rounds <= ROUNDS; rounds++) {
-    const arriving = graph.nodes.map(() => ({}));
-
-    for (const [index, rates] of Object.entries(supply)) {
-      for (const [item, amount] of Object.entries(rates)) {
-        addTo(arriving[index], item, amount);
-      }
-    }
-
-    for (let index = 0; index < graph.nodes.length; index++) {
-      const outgoing = graph.out[index];
-      if (!outgoing.length) continue;
-      for (const [item, amount] of Object.entries(through[index])) {
-        // Shared out by what each branch can actually swallow, not equally.
-        //
-        // An even split is what the game does only while nothing downstream is backed up,
-        // and something always is. A branch that wants nothing keeps taking half of
-        // everything under an even split, and the half that goes to the machines is half
-        // of what it should be: the first real schematic came out at 1,252 power a second
-        // against the 2,402 its own blocks could make, with a centrifuge sitting at zero
-        // per cent while a dead-end pipe beside it took the other half.
-        //
-        // A conveyor in the game backs up instead, and the item goes the other way. So the
-        // share follows demand, and falls back to an even split only where nothing
-        // downstream expresses any.
-        const appetites = outgoing.map((target) => pull[target]?.[item] || 0);
-        const total = appetites.reduce((a, b) => a + b, 0);
-        outgoing.forEach((target, at) => {
-          const share = total > SETTLED ? appetites[at] / total : 1 / outgoing.length;
-          addTo(arriving[target], item, amount * share);
-        });
-      }
-    }
-
-    let changed = false;
-    for (let index = 0; index < graph.nodes.length; index++) {
-      if (advance(graph.nodes[index], index, arriving[index], through, fed)) changed = true;
-    }
-    if (!changed) { settled = true; break; }
-  }
-
-  return { through, fed, settled, rounds, pull,
-           delivered: delivered(graph, through, pull) };
-}
 
 /** How much of everything a block needs per second to run flat out. */
 function appetite(block) {
@@ -385,84 +275,190 @@ function appetite(block) {
 }
 
 /**
- * What a block will actually take of what was handed to it.
+ * How much of each resource reaches each machine, solved rather than approached.
  *
- * A conveyor will not carry water and a conduit will not carry coal. Letting them read as
- * carrying anything made a belt deliver oil, which looks like a working factory and is
- * not one.
+ * One maximum flow per resource, because the networks do not share: water and coal travel
+ * on different carriers, and a pipe full of water is not a belt with room for coal.
+ *
+ * This replaced a solver that pushed supply forward round after round until the numbers
+ * stopped moving. That is fine on a line and wrong on anything with a loop, and it was
+ * wrong in the worst way: every round re-applied each carrier's rate cap, so a network
+ * that loops multiplied by a fraction below one on every pass. A schematic worth 2,402
+ * power a second came out at 648, and an earlier version of the same idea at 1e-103.
  */
-function filtered(node, arriving) {
+function solveFlow(graph, supply) {
+  const nodes = graph.nodes.length;
+  const arriving = graph.nodes.map(() => ({}));
+
+  const resources = new Set();
+  for (const rates of Object.values(supply)) {
+    for (const name of Object.keys(rates)) resources.add(name);
+  }
+  for (const node of graph.nodes) {
+    for (const [item, count] of Object.entries(node.block.output || {})) {
+      if (count > 0) resources.add(item);
+    }
+    for (const item of Object.keys(node.block.output_liquid || {})) resources.add(item);
+  }
+
+  // Machines make things that other machines eat, so the chain is walked in order: what a
+  // press produces becomes a source for whatever the press feeds. Bounded by the number of
+  // stages a real recipe tree has, and stopped when a round adds nothing.
+  const made = graph.nodes.map(() => ({}));
+  const fed = {};
+
+  for (let round = 0; round < 12; round++) {
+    let moved = false;
+
+    for (const resource of resources) {
+      const liquid = isLiquid(resource);
+      const sources = {};
+      for (const [index, rates] of Object.entries(supply)) {
+        if (rates[resource] > 0) sources[index] = rates[resource];
+      }
+      for (let index = 0; index < nodes; index++) {
+        const rate = made[index][resource] || 0;
+        if (rate > SETTLED) sources[index] = (sources[index] || 0) + rate;
+      }
+      if (!Object.keys(sources).length) continue;
+
+      const out = throughput(graph, {
+        supply: sources,
+        capacity: (index) => capacityFor(graph.nodes[index], resource, liquid),
+        wants: (index) => appetiteFor(graph.nodes[index], resource,
+                                      !graph.out[index].length),
+      });
+
+      for (let index = 0; index < nodes; index++) {
+        const before = arriving[index][resource] || 0;
+        if (Math.abs(out.received[index] - before) > SETTLED) moved = true;
+        arriving[index][resource] = out.received[index];
+      }
+    }
+
+    // What each machine makes with what it just received.
+    for (let index = 0; index < nodes; index++) {
+      const node = graph.nodes[index];
+      if (node.role !== "crafter" && node.role !== "generator") continue;
+      const wants = appetite(node.block);
+      let share = 1;
+      for (const [name, wanted] of Object.entries(wants)) {
+        if (wanted <= 0) continue;
+        share = Math.min(share, (arriving[index][name] || 0) / wanted);
+      }
+      if (node.role === "generator" && !Object.keys(wants).length && node.block.craft_time) {
+        const burn = TICKS / node.block.craft_time;
+        const offered = Object.entries(arriving[index])
+          .filter(([name]) => !isLiquid(name))
+          .reduce((sum, [, rate]) => sum + rate, 0);
+        share = Math.min(share, burn > 0 ? offered / burn : 1);
+      }
+      share = Math.max(0, Math.min(1, Number.isFinite(share) ? share : 0));
+      fed[index] = share;
+
+      const now = {};
+      for (const item of Object.keys(node.block.output || {})) {
+        now[item] = produces(node.block, item) * share;
+      }
+      for (const [liquid, rate] of Object.entries(node.block.output_liquid || {})) {
+        now[liquid] = rate * share;
+      }
+      for (const name of new Set([...Object.keys(now), ...Object.keys(made[index])])) {
+        if (Math.abs((now[name] || 0) - (made[index][name] || 0)) > SETTLED) moved = true;
+      }
+      made[index] = now;
+    }
+
+    if (!moved) return { arriving, made, fed, settled: true, rounds: round + 1 };
+  }
+  return { arriving, made, fed, settled: false, rounds: 12 };
+}
+
+/** What one block can pass per second, for one resource. */
+function capacityFor(node, resource, liquid) {
   const carries = node.block.carries;
-  if (!carries) return arriving;
-  const kept = {};
-  for (const [name, rate] of Object.entries(arriving)) {
-    if ((carries === "liquid") === isLiquid(name)) kept[name] = rate;
+  if (carries && (carries === "liquid") !== liquid) return 0;
+  if (node.role === "conveyor" || node.role === "junction" || node.role === "bridge") {
+    return node.block.items_per_second || Infinity;
   }
-  return kept;
+  // A machine passes nothing on: what leaves it is what it makes, which is a separate
+  // source rather than the same flow continuing.
+  if (node.role === "crafter" || node.role === "generator" || node.role === "sink") {
+    return Infinity;
+  }
+  if (node.role === "power" || node.role === "unknown") return 0;
+  return Infinity;
 }
 
-function advance(node, index, arriving, through, fed) {
-  const before = through[index];
-  let now;
-  arriving = filtered(node, arriving);
-
-  if (node.role === "crafter" || node.role === "generator") {
-    // A recipe runs at the pace of its scarcest ingredient, never faster than its own
-    // craft time. Fed twice the coal it can use, a press still makes one graphite every
-    // ninety ticks, and the extra coal backs up rather than becoming graphite.
-    //
-    // Liquids count exactly as items do here, and leaving them out was the bug that
-    // mattered: a cultivator declared no inputs at all, so it made spore pods out of
-    // nothing, and a schematic that turns water into power was reported as making coal.
+/**
+ * What one block will take of one resource per second.
+ *
+ * A carrier with nowhere left to hand on counts too. It is where the schematic ends: a
+ * belt torn out of a base stops at the edge of what was copied, and treating that as a
+ * wall rather than as an exit made every line report nothing at all, because a maximum
+ * flow with no sink is a maximum flow of zero.
+ */
+function appetiteFor(node, resource, isExit) {
+  if (isExit && node.block.carries) {
+    const carries = node.block.carries;
+    if ((carries === "liquid") !== isLiquid(resource)) return 0;
+    return node.block.items_per_second || Infinity;
+  }
+  if (node.role === "crafter" || node.role === "generator" || node.role === "sink") {
     const wants = appetite(node.block);
-    let share = 1;
-    for (const [name, wanted] of Object.entries(wants)) {
-      if (wanted <= 0) continue;
-      share = Math.min(share, (arriving[name] || 0) / wanted);
+    if (wants[resource] > 0) return wants[resource];
+    if (node.role === "generator" && !Object.keys(wants).length && node.block.craft_time
+        && !isLiquid(resource)) {
+      return TICKS / node.block.craft_time;
     }
-
-    // A generator that burns whatever flammable thing it is handed declares no input at
-    // all, because the game filters by flammability rather than by name. It eats one item
-    // every `craft_time` ticks, of whatever arrived.
-    if (node.role === "generator" && !Object.keys(wants).length && node.block.craft_time) {
-      const burn = TICKS / node.block.craft_time;
-      const offered = Object.entries(arriving)
-        .filter(([name]) => !isLiquid(name))
-        .reduce((sum, [, rate]) => sum + rate, 0);
-      share = Math.min(share, burn > 0 ? offered / burn : 1);
-    }
-
-    share = Math.max(0, Math.min(1, Number.isFinite(share) ? share : 0));
-    fed[index] = share;
-    now = {};
-    for (const item of Object.keys(node.block.output || {})) {
-      now[item] = produces(node.block, item) * share;
-    }
-    for (const [liquid, rate] of Object.entries(node.block.output_liquid || {})) {
-      now[liquid] = rate * share;
-    }
-  } else if (node.role === "sink" || node.role === "power") {
-    now = {};
-  } else {
-    // A belt is the commonest bottleneck in the game and the one players most often miss.
-    // A conduit has no stated rate in the registry, so it is left unconstrained rather
-    // than treated as zero: an invented limit is worse than an absent one.
-    const cap = (node.role === "conveyor" || node.role === "junction"
-                 || node.role === "bridge")
-      ? (node.block.items_per_second || Infinity) : Infinity;
-    const total = totalOf(arriving);
-    now = {};
-    const factor = total > cap && total > 0 ? cap / total : 1;
-    for (const [item, amount] of Object.entries(arriving)) now[item] = amount * factor;
+    return 0;
   }
-
-  through[index] = now;
-  const keys = new Set([...Object.keys(before), ...Object.keys(now)]);
-  for (const key of keys) {
-    if (Math.abs((now[key] || 0) - (before[key] || 0)) > SETTLED) return true;
-  }
-  return false;
+  return 0;
 }
+
+export function solve(graph, supply = {}) {
+  const solved = solveFlow(graph, supply);
+
+  // What each block passes on, in the shape the rest of this file already reads: a carrier
+  // hands on what reached it, a machine hands on what it made.
+  const through = graph.nodes.map((node, index) =>
+    (node.role === "crafter" || node.role === "generator")
+      ? solved.made[index]
+      : (node.role === "sink" || node.role === "power" ? {} : solved.arriving[index]));
+
+  return {
+    through,
+    fed: solved.fed,
+    settled: solved.settled,
+    rounds: solved.rounds,
+    arriving: solved.arriving,
+    delivered: deliveredFlow(graph, solved),
+  };
+}
+
+/**
+ * What leaves: what a sink swallowed, and what a carrier with nowhere left to hand on is
+ * holding. The second case is the honest one for a schematic torn out of a base, whose
+ * belt ends at the edge because the rest of the factory was not copied.
+ */
+function deliveredFlow(graph, solved) {
+  const total = {};
+  for (let index = 0; index < graph.nodes.length; index++) {
+    const node = graph.nodes[index];
+    if (node.role === "sink") {
+      for (const [item, rate] of Object.entries(solved.arriving[index])) {
+        addTo(total, item, rate);
+      }
+      continue;
+    }
+    if (graph.out[index].length) continue;
+    const held = (node.role === "crafter" || node.role === "generator")
+      ? solved.made[index] : solved.arriving[index];
+    for (const [item, rate] of Object.entries(held)) addTo(total, item, rate);
+  }
+  return total;
+}
+
 
 /**
  * Power made and power spent, per second.
@@ -499,6 +495,29 @@ function delivered(graph, through, pull) {
     for (const [item, amount] of Object.entries(source)) addTo(total, item, amount);
   }
   return total;
+}
+
+/**
+ * The ways out of a junction that face a way in.
+ *
+ * A junction crosses two lines without merging them, so a side only leads anywhere if
+ * something feeds the opposite side. Offering all four made two lines that merely cross
+ * pour into each other.
+ */
+function pairedThrough(graph, index) {
+  const node = graph.nodes[index];
+  const out = [];
+  for (const target of graph.out[index]) {
+    const other = graph.nodes[target];
+    const dx = Math.sign(other.x - node.x);
+    const dy = Math.sign(other.y - node.y);
+    const behind = graph.into[index].some((source) => {
+      const from = graph.nodes[source];
+      return Math.sign(from.x - node.x) === -dx && Math.sign(from.y - node.y) === -dy;
+    });
+    if (behind) out.push(target);
+  }
+  return out;
 }
 
 function arrivingAt(graph, through, index, pull) {
