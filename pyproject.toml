@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mindustry-forge"
+version = "0.1.0"
+description = "Analyse a Mindustry schematic: what it produces, where it chokes, what it wastes"
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+# Named rather than discovered. The repository root also holds bench/ (Java and Python) and
+# site/ (Laravel), and setuptools refuses to guess which of those is the package.
+[tool.setuptools]
+packages = ["analyser"]
+
+[tool.setuptools.package-data]
+analyser = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
