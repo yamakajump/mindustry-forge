@@ -445,3 +445,31 @@ test("a sandbox source is not credited with what runs straight through", async (
   const out = await analyse(paste([[0, 0, "liquid-source", 0, water], [1, 0, "conduit", 0]]));
   assert.ok(!out.produced.water, "une source n'est pas une production");
 });
+
+test("a liquid a machine drinks is not reported as wasted", async () => {
+  /* Counted on `block.input` alone, a liquid ingredient was never counted as eaten: a
+     layout fed exactly the water its cultivators drink reported wasting all of it, on the
+     same page that said the cultivators were running flat out. */
+  const out = await analyse(REAL, {});
+  assert.ok(!out.surplus.water,
+            `l'eau bue n'est pas gaspillee : ${JSON.stringify(out.surplus)}`);
+});
+
+test("a build standing on its own sources is not asked where it plugs in", async () => {
+  const coal = { content: 0, id: known.items["coal"].id };
+  const out = await analyse(paste([[0, 0, "item-source", 0, coal], [1, 0, "conveyor", 0]]));
+  assert.equal(out.selfFed, true, "elle a ses propres robinets");
+
+  const plain = await analyse(paste([[0, 0, "conveyor", 0], [1, 0, "conveyor", 0]]));
+  assert.equal(plain.selfFed, false, "une bande toute seule attend qu'on la branche");
+});
+
+test("sealed means nothing arrives from outside", async () => {
+  const tiles = [[0, 0, "conveyor", 0], [1, 0, "graphite-press", 0]];
+  const open = await analyse(paste(tiles), {}, null, { sealed: false });
+  const shut = await analyse(paste(tiles), {}, null, { sealed: true });
+
+  const press = (report) => report.detail.find((d) => d.name === "graphite-press");
+  assert.ok(press(open).fed > 0, "ouverte, la presse est alimentee par le bord");
+  close(press(shut).fed, 0, "scellee, rien n'arrive et rien ne tourne");
+});

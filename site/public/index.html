@@ -116,6 +116,61 @@ function render(report) {
   const bolt = `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"
     style="width:20px;height:20px;fill:currentColor;stroke:none"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>`;
 
+  /* Where it plugs in, asked rather than assumed.
+     
+     Guessing is a coin toss: a design has one intake and a dozen pipes that could
+     physically be it, and nothing in the file says which the author meant. Guessing wrong
+     does not produce a blank, it produces a page of throughputs that look computed and are
+     not, which is worse than producing nothing. So the guess is offered as a proposal and
+     everything that depends on it waits for an answer. */
+  // A build standing on its own sandbox sources has already answered: nothing arrives
+  // from outside, because everything it drinks is poured inside it.
+  const answered = ports.asked || report.selfFed;
+  const sockets2 = report.ports?.inputs || [];
+  const guessed = {};
+  for (const port of sockets2) {
+    for (const resource of Object.keys(port.wants)) {
+      const seen = guessed[resource] || { n: 0, carries: port.carries };
+      seen.n++;
+      guessed[resource] = seen;
+    }
+  }
+  const byHand = Object.keys(report.marked || {}).length;
+
+  if (!answered) {
+    const said = Object.entries(guessed).map(([resource, seen]) => {
+      // The fuel wildcard is a question, not an item: a generator that burns anything
+      // states a duration and no ingredient, and printing "*combustible" beside a pipe
+      // icon reads as a bug.
+      const label = resource.startsWith("*")
+        ? "un combustible quelconque"
+        : `${withIcon(resource)}${escape(resource)}`;
+      const kind = seen.carries === "liquid" ? "tuyau" : "bande";
+      return `<div class="line"><span>${label}</span>
+        <span class="num">${seen.n} ${kind}${seen.n > 1 ? "s" : ""}</span></div>`;
+    }).join("");
+
+    right.push(`<div class="card ask"><h2>Par ou ca entre ?</h2>${
+      byHand
+        ? `<p class="hint-line" style="margin-top:0">Tu as marque
+           <strong>${byHand}</strong> bloc${byHand > 1 ? "s" : ""} a la main.</p>`
+        : said
+          ? `<p class="hint-line" style="margin-top:0">Forge propose ceci, entoure en vert
+             sur l'image :</p>${said}`
+          : `<p class="hint-line" style="margin-top:0">Forge ne voit aucune entree :
+             elle a l'air de se suffire a elle-meme.</p>`
+    }<div class="row" style="margin-top:12px">
+      <button type="button" class="primary" id="ports-ok">${
+        byHand || said ? "C'est ca, calcule" : "Calcule quand meme"}</button>
+      <button type="button" id="ports-hand">Je marque moi-meme</button>
+      <button type="button" id="ports-sealed">Rien n'entre</button>
+    </div>
+    <p class="hint-line">Tant que ce n'est pas dit, les debits ne sont pas affiches. Une
+      entree devinee de travers donne des chiffres faux avec l'air d'etre sur de lui, et
+      c'est pire que de ne rien dire.</p>
+    </div>`);
+  }
+
   /* What it takes to feed this, computed rather than asked for. Nobody knows offhand that
      a layout drinks eighteen water a second; everybody can picture two mechanical pumps.
      This card comes first because it is the question a player has before any other. */
@@ -142,7 +197,7 @@ function render(report) {
         ? `<div class="chips" style="margin:6px 0 8px">${best.map((o) =>
             `<span class="chip"><span class="num">${o.count}</span> ${escape(o.block)}</span>`)
             .join(`<span style="color:var(--dim);align-self:center">ou</span>`)}</div>`
-        : "") + (where.length
+        : "") + (where.length && answered
         ? `<p class="hint-line" style="margin:0 0 10px">A brancher sur
            <strong>${where.length}</strong>
            ${where[0].carries === "liquid" ? "tuyau" : "bande"}${where.length > 1 ? "x" : ""},
@@ -169,7 +224,9 @@ function render(report) {
     </div>`);
   }
 
-  right.push(`<div class="card"><h2>${report.fedItself ? "Branchee comme elle est" : "Avec ce que tu as indique"}</h2>${
+  if (answered) right.push(`<div class="card"><h2>${
+    report.sealed || report.selfFed ? "Avec ses propres sources"
+    : report.fedItself ? "Branchee comme elle est" : "Avec ce que tu as indique"}</h2>${
     power.made > 0.01
       ? `<div class="out-rate" style="color:var(--accent)">${bolt}
            <b>${rate(power.net)}</b><span>energie / s &nbsp;<span style="color:var(--dim)">
@@ -195,7 +252,7 @@ function render(report) {
   const inside = Object.entries(report.internal || {})
     .filter(([, n]) => n * 60 > 0.5)
     .sort((a, b) => b[1] - a[1]);
-  if (inside.length) {
+  if (inside.length && answered) {
     right.push(`<div class="card"><h2>Fabrique et consomme sur place</h2>${
       inside.map(([item, n]) =>
         `<div class="line"><span>${withIcon(item)}${escape(item)}</span>
@@ -205,7 +262,7 @@ function render(report) {
   }
 
   const fedSomething = made.length || (report.power && report.power.made > 0.01);
-  if (report.bottleneck && fedSomething) {
+  if (report.bottleneck && fedSomething && answered) {
     const [name, share] = report.bottleneck;
     right.push(`<div class="card"><h2>Goulot</h2>
       <div class="line"><span>${escape(name)}</span>
@@ -219,7 +276,9 @@ function render(report) {
     </div>`);
   }
 
-  const surplus = Object.entries(report.surplus || {});
+  // "Connected to nothing" holds whatever the intake turns out to be; "arrives without
+  // being drunk" does not, so the first is shown at once and the second waits.
+  const surplus = answered ? Object.entries(report.surplus || {}) : [];
   const idle = Object.entries(report.idle || {});
   if (surplus.length || idle.length) {
     const rows = [
@@ -350,6 +409,25 @@ function render(report) {
 
   wireBlocks(report, () => drawn);
   wireKeep(report);
+
+  const answer = (how) => {
+    ports = { asked: true, sealed: how === "sealed" };
+    run();
+  };
+  $("ports-ok")?.addEventListener("click", () => answer("guess"));
+  $("ports-sealed")?.addEventListener("click", () => answer("sealed"));
+  $("ports-hand")?.addEventListener("click", () => {
+    // Not an answer yet: it says "I will point at them", and the question stays until a
+    // block has actually been marked.
+    const card = document.querySelector(".card.ask");
+    if (card) {
+      card.classList.add("waiting");
+      card.querySelector(".hint-line:last-of-type").textContent =
+        "Clique une bande ou un tuyau sur l'image, puis \"Definir comme entree\". "
+        + "Le calcul repart des que tu en as marque un.";
+    }
+    $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
 }
 
 async function run() {
@@ -358,7 +436,11 @@ async function run() {
     out.innerHTML = `<div class="card error">Colle une schematique, ou depose un fichier.</div>`;
     return;
   }
-  if (payload !== lastPayload) { marked = {}; lastPayload = payload; }
+  if (payload !== lastPayload) {
+    marked = {};
+    ports = { asked: false, sealed: false };
+    lastPayload = payload;
+  }
   $("go").disabled = true;
   out.innerHTML = `<div class="skeleton"></div>`;
   try {
@@ -366,7 +448,7 @@ async function run() {
        published stays theirs, and the page costs nothing to host however many people
        use it. */
     const [report] = await Promise.all([
-      analyse(payload, parseSupply($("supply").value)),
+      analyse(payload, parseSupply($("supply").value), marked, { sealed: ports.sealed }),
       loadSprites(),
     ]);
     render(report);
@@ -423,6 +505,16 @@ drop.addEventListener("drop", async (e) => {
  * author meant. So the guess is a default and this is the answer.
  */
 let marked = {};
+
+/**
+ * Whether the player has said where the schematic plugs in.
+ *
+ * Nothing that depends on it is shown until they have. Guessing the intake of a design
+ * with a dozen candidate pipes is a coin toss, and a wrong guess does not produce a blank,
+ * it produces a full page of throughputs that look computed and are not. Better to ask
+ * once: "it is those pipes", "let me point at them", or "nothing goes in".
+ */
+let ports = { asked: false, sealed: false };
 
 const rateLine = (label, rates, unit = "/ min", factor = 60) => {
   const rows = Object.entries(rates || {}).filter(([, v]) => v > 0.001);
@@ -488,6 +580,8 @@ function showBlock(report, tile) {
 
   const set = (value) => {
     if (value) marked[at] = value; else delete marked[at];
+    // Pointing at an intake is an answer to the question, so the page stops asking.
+    if (Object.keys(marked).length) ports = { asked: true, sealed: false };
     run();
   };
   $("mark-in")?.addEventListener("click", () => set(state === "in" ? null : "in"));

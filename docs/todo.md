@@ -49,6 +49,27 @@ les autres, et `verified` reste faux tant que ça ne tourne pas.
 
 ## Corrigé
 
+- [x] **On demande les entrées avant de sortir des chiffres.** Deviner par où une
+      schématique se branche est un coup de dé : une conception a une arrivée et douze
+      tuyaux qui pourraient l'être. Se tromper ne donne pas un blanc, ça donne une page de
+      débits qui ont l'air calculés et ne le sont pas. Trois réponses : « c'est ça »,
+      « je marque moi-même », « rien n'entre ». Une construction posée sur ses propres
+      sources de bac à sable a déjà répondu et n'est pas interrogée.
+- [x] **Marquer un bloc à la main ne servait à rien** : `analyse` était appelée sans les
+      marques. Elles étaient enregistrées, envoyées au serveur, et jamais utilisées.
+- [x] **Un liquide bu était compté comme gaspillé.** Le calcul ne regardait que
+      `block.input` : une schématique nourrie exactement de l'eau que ses cultivateurs
+      boivent annonçait tout gaspiller, sur la page qui disait qu'ils tournaient à fond.
+- [x] **Ce qui traverse un bloc** était absent : on lisait ce qui s'y arrêtait, donc toutes
+      les bandes d'une ligne sauf la dernière disaient ne rien porter.
+- [x] **Déverseurs et conteneurs.** 327 objets/s au lieu de 11, et une réserve inventée à
+      côté de chaque conteneur. L'arête va maintenant du conteneur au déverseur.
+- [x] **Douze sources promettaient chacune toute la demande**, donc douze fois trop, et le
+      surplus sortait par le premier tuyau ouvert : 101 304 cryofluide/min de production
+      sur une schématique qui n'en fabrique pas.
+- [x] **Le contrôle de visibilité** est aux couleurs du site, avec le lien affiché et un
+      bouton pour le copier.
+
 - [x] **La gestion des schématiques sur le site.** Privée, par lien, publique, et
       supprimer, depuis la grille et depuis la page de la schématique. L'API existait
       depuis le premier jour et rien ne l'appelait. Plus un drapeau modérateur pour retirer

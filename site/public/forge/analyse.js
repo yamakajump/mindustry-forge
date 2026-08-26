@@ -930,13 +930,21 @@ function surplusOf(graph, solved, feeds) {
   for (const rates of Object.values(feeds)) {
     for (const [item, rate] of Object.entries(rates)) addTo(putIn, item, rate);
   }
+  // Everything that drinks, not only the crafters, and liquids as well as items.
+  //
+  // Counted on `block.input` alone, a liquid ingredient was never counted as eaten at all:
+  // a layout fed exactly the water its cultivators drink reported wasting all of it, while
+  // the same page said the cultivators were running flat out. Never more than what
+  // actually reached the block, so a machine handed half of what it wants is not credited
+  // with drinking the other half.
   const eaten = {};
   for (let index = 0; index < graph.nodes.length; index++) {
     const node = graph.nodes[index];
-    if (node.role !== "crafter") continue;
-    const share = solved.fed[index] || 0;
-    for (const item of Object.keys(node.block.input || {})) {
-      addTo(eaten, item, consumes(node.block, item) * share);
+    if (node.role !== "crafter" && node.role !== "generator" && node.role !== "sink"
+        && node.role !== "turret") continue;
+    const speed = node.boost || 1;
+    for (const [name, rate] of Object.entries(appetite(node.block))) {
+      addTo(eaten, name, Math.min(rate * speed, solved.arriving[index]?.[name] || 0));
     }
   }
   const out = {};
@@ -1015,7 +1023,7 @@ function feedMarked(graph, marked, outside, liquid) {
  * nothing in the file says which the author meant. So the tool proposes and the player
  * decides, and what they decide is kept with the schematic.
  */
-export async function analyse(text, supply = {}, chosen = null) {
+export async function analyse(text, supply = {}, chosen = null, { sealed = false } = {}) {
   await loadCatalogue();
   noteLiquids();
   const parsed = await fromBase64(text);
@@ -1028,8 +1036,16 @@ export async function analyse(text, supply = {}, chosen = null) {
   // already says, and it meant a layout nobody had described analysed to nothing at all.
   const outside = demand(graph).outside;
   const marked = chosen && Object.keys(chosen).length ? chosen : null;
-  const socketed = marked
-    ? feedMarked(graph, marked, outside, isLiquid)
+
+  // A build with its own sandbox taps in it feeds itself, and there is nothing to ask: the
+  // player already answered by placing the sources. Fed through its edge pipes as well, a
+  // reactor farm was handed cryofluid twice over.
+  const selfFed = graph.nodes.some((node) => node.role === "source" && node.configured);
+  // Sealed means nothing arrives from outside: a sandbox build, a piece of pixel art, a
+  // design that grows everything it eats. Said rather than guessed, because the guess is
+  // the thing a player cannot check and a wrong one produces confident nonsense.
+  const socketed = sealed || (selfFed && !marked) ? {}
+    : marked ? feedMarked(graph, marked, outside, isLiquid)
     : feedPorts(graph, isLiquid, outside);
 
   // A stated supply overrides it, for "what does this do on half the water I have".
@@ -1139,6 +1155,10 @@ export async function analyse(text, supply = {}, chosen = null) {
     ports: markMain(ports(graph, isLiquid, outside), marked),
     marked: marked || {},
     fedItself: !Object.keys(supply).length,
+    sealed,
+    // Whether it holds its own taps, which is what makes the question of where it plugs in
+    // answer itself: a sandbox build feeds itself and nothing arrives from outside.
+    selfFed,
     // What it would make if it were fed all of that, which is the number a player is
     // really shopping for.
     potential: powerBudget(graph, { fed: {} }),
