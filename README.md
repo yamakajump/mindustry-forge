@@ -66,3 +66,35 @@ layouts and published a catalogue of them, is kept at the tag
 beat a hand-written layout: 24 items delivered with 17 blocks against 19 with 21. It had
 also only ever solved that one problem, which is why the product changed rather than the
 code.
+
+## Faire tourner le site
+
+```bash
+cd site
+composer install
+cp .env.example .env && php artisan key:generate
+php artisan migrate
+php artisan storage:link
+php artisan serve --port=8770
+```
+
+Discord se configure dans `.env` :
+
+```
+DISCORD_CLIENT_ID=...
+DISCORD_CLIENT_SECRET=...
+```
+
+L'application se cree sur https://discord.com/developers/applications, avec
+`http://127.0.0.1:8770/auth/discord/callback` comme URI de redirection.
+
+Sous Windows, PHP arrive sans magasin de certificats et tout appel HTTPS sortant
+echoue sur `unable to get local issuer certificate`. Le remede est le paquet de
+certificats, pas la desactivation de la verification :
+
+```bash
+curl -o C:/php/extras/cacert.pem https://curl.se/ca/cacert.pem
+# puis dans php.ini
+curl.cainfo = "C:\php\extras\cacert.pem"
+openssl.cafile = "C:\php\extras\cacert.pem"
+```
