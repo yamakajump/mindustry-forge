@@ -37,7 +37,10 @@ import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
 import mindustry.world.blocks.power.PowerNode;
+import mindustry.world.blocks.heat.HeatConductor;
+import mindustry.world.blocks.heat.HeatProducer;
 import mindustry.world.blocks.production.GenericCrafter;
+import mindustry.world.blocks.production.HeatCrafter;
 import mindustry.world.consumers.Consume;
 import mindustry.type.LiquidStack;
 import mindustry.world.consumers.ConsumeItems;
@@ -384,11 +387,50 @@ public class DumpBlocks {
             }
             return;
         }
+        if (block instanceof mindustry.world.blocks.sandbox.PowerSource source) {
+            // The sandbox tap for electricity. Not a `PowerGenerator`, so it fell through
+            // every branch and read as a plain wire: a scenario built on one measured a
+            // factory with no power at all.
+            entry.put("role", "power");
+            entry.put("power_out", source.powerProduction * TPS);
+            return;
+        }
         if (block instanceof PowerNode || block instanceof Battery) {
             // Wires and buffers. They neither make nor spend power on balance, but a
             // schematic full of them is a power schematic, and saying so is most of what a
             // reader needs.
             entry.put("role", "power");
+            return;
+        }
+        if (block instanceof HeatProducer heater) {
+            // Erekir's chemistry runs on heat, which travels its own way: not on a belt and
+            // not on the power grid, but from a block's face to the face touching it.
+            entry.put("role", "crafter");
+            entry.put("heat_output", heater.heatOutput);
+            entry.put("warmup_rate", heater.warmupRate);
+            entry.put("craft_time", heater.craftTime);
+            entry.put("input", inputsOf(block));
+            entry.put("input_liquid", liquidInputsOf(block));
+            entry.put("output", craftedItemsOf(block));
+            entry.put("output_liquid", craftedLiquidsOf(block));
+            return;
+        }
+        if (block instanceof HeatConductor conductor) {
+            entry.put("role", "heat-conductor");
+            if (conductor.splitHeat) entry.put("split_heat", true);
+            return;
+        }
+        if (block instanceof HeatCrafter hot) {
+            entry.put("role", "crafter");
+            entry.put("heat_requirement", hot.heatRequirement);
+            entry.put("overheat_scale", hot.overheatScale);
+            entry.put("max_efficiency", hot.maxEfficiency);
+            entry.put("craft_time", hot.craftTime);
+            entry.put("input", inputsOf(block));
+            entry.put("input_liquid", liquidInputsOf(block));
+            entry.put("output", craftedItemsOf(block));
+            entry.put("output_liquid", craftedLiquidsOf(block));
+            entry.put("power", block.consPower != null ? block.consPower.usage * TPS : 0f);
             return;
         }
         if (block instanceof GenericCrafter crafter) {
@@ -607,6 +649,28 @@ public class DumpBlocks {
             found = found.getSuperclass();
         }
         return found == null ? "Block" : found.getSimpleName();
+    }
+
+    /** What a crafter of any kind leaves behind, per batch. */
+    private static Jval craftedItemsOf(Block block) {
+        Jval out = Jval.newObject();
+        if (block instanceof GenericCrafter crafter && crafter.outputItems != null) {
+            for (ItemStack stack : crafter.outputItems) {
+                out.put(stack.item.name, stack.amount);
+            }
+        }
+        return out;
+    }
+
+    /** And what it pours, per second, since a liquid comes out continuously. */
+    private static Jval craftedLiquidsOf(Block block) {
+        Jval out = Jval.newObject();
+        if (block instanceof GenericCrafter crafter && crafter.outputLiquids != null) {
+            for (LiquidStack stack : crafter.outputLiquids) {
+                out.put(stack.liquid.name, stack.amount * TPS);
+            }
+        }
+        return out;
     }
 
     /** Liquids a block drinks, per second. */

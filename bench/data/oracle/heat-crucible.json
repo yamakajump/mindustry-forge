@@ -1,0 +1,111 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "carbide": 50
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 15,
+      "efficiency": 1,
+      "holds":{
+        "carbide": 1
+      }
+    },
+    {
+      "block": "power-source",
+      "x": 15,
+      "y": 16,
+      "efficiency": 0
+    },
+    {
+      "block": "carbide-crucible",
+      "x": 13,
+      "y": 17,
+      "efficiency": 1,
+      "holds":{
+        "graphite": 20,
+        "tungsten": 20
+      }
+    },
+    {
+      "block": "heat-source",
+      "x": 15,
+      "y": 17,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 12,
+      "y": 19,
+      "efficiency": 1,
+      "holds":{
+        "tungsten": 3
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 19,
+      "efficiency": 1,
+      "holds":{
+        "graphite": 2
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 12,
+      "y": 20,
+      "efficiency": 1,
+      "holds":{
+        "tungsten": 2
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 20,
+      "efficiency": 1,
+      "holds":{
+        "graphite": 2
+      }
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 21,
+      "efficiency": 1
+    },
+    {
+      "block": "item-source",
+      "x": 14,
+      "y": 21,
+      "efficiency": 1
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13,
+      "items":{
+        "carbide": 50
+      }
+    }
+  ],
+  "per_second":{
+    "carbide": 1.6666666
+  }
+}

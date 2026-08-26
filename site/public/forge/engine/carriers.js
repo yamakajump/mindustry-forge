@@ -690,6 +690,9 @@ export function behaviourOf(node) {
      they are the same shape, and to a simulation they are nothing alike. */
   if (node.block.carries === "liquid") return LIQUIDS[node.role] || null;
   if (node.role === "pump") return LIQUIDS.pump;
+  // The sandbox power tap is filed under the grid rather than under generators, because
+  // that is what it is: a wire that never runs out.
+  if (node.role === "power" && node.block.power_out > 0) return POWER.freeGenerator;
   if (node.role === "generator") {
     // A generator that names a fuel burns it; one that names none makes power from nothing,
     // which is a solar panel or an RTG.
