@@ -246,6 +246,16 @@ function render(report) {
   /* What it takes to feed this, computed rather than asked for. Nobody knows offhand that
      a layout drinks eighteen water a second; everybody can picture two mechanical pumps.
      This card comes first because it is the question a player has before any other. */
+  /* Where to plug it in, grouped by what each socket wants. Eighteen pipes listed one by
+     one is a wall of coordinates; "eighteen pipes want water" with the tiles ringed on the
+     picture is the same fact, read at a glance. */
+  const sockets = {};
+  for (const port of report.ports?.inputs || []) {
+    for (const resource of Object.keys(port.wants)) {
+      (sockets[resource] = sockets[resource] || []).push(port);
+    }
+  }
+
   const needs = report.needs || [];
   if (needs.length) {
     right.push(`<div class="card"><h2>Il lui faut</h2>${needs.map((need) => {
@@ -253,11 +263,17 @@ function render(report) {
       const label = need.resource.startsWith("*")
         ? "un combustible quelconque"
         : `${withIcon(need.resource)}${escape(need.resource)}`;
+      const where = sockets[need.resource] || [];
       return `<div class="line"><span>${label}</span>
         <span class="num">${rate(need.perMinute)} / min</span></div>` + (best.length
-        ? `<div class="chips" style="margin:6px 0 10px">${best.map((o) =>
+        ? `<div class="chips" style="margin:6px 0 8px">${best.map((o) =>
             `<span class="chip"><span class="num">${o.count}</span> ${escape(o.block)}</span>`)
             .join(`<span style="color:var(--dim);align-self:center">ou</span>`)}</div>`
+        : "") + (where.length
+        ? `<p class="hint-line" style="margin:0 0 10px">A brancher sur
+           <strong>${where.length}</strong>
+           ${where[0].carries === "liquid" ? "tuyau" : "bande"}${where.length > 1 ? "x" : ""},
+           entoure${where.length > 1 ? "s" : ""} en vert sur l'image.</p>`
         : "");
     }).join("")}<p class="hint-line">Debit maximal, foreuse posee sur une tache pleine.
       Sur une tache a moitie couverte il en faut deux fois plus.</p></div>`);
@@ -280,7 +296,7 @@ function render(report) {
     </div>`);
   }
 
-  right.push(`<div class="card"><h2>Avec ce que tu as indique</h2>${
+  right.push(`<div class="card"><h2>${report.fedItself ? "Branchee comme elle est" : "Avec ce que tu as indique"}</h2>${
     power.made > 0.01
       ? `<div class="out-rate" style="color:var(--accent)">${bolt}
            <b>${rate(power.net)}</b><span>energie / s &nbsp;<span style="color:var(--dim)">
@@ -386,8 +402,12 @@ function render(report) {
      desktop and overflow it on a phone. */
   const stage = $("view").parentElement;
   const paint = () => {
-    const drawn = draw($("view"), report.tiles, sizeOf, roleOf,
-                       { width: stage.clientWidth - 32, maxScale: 48 });
+    const drawn = draw($("view"), report.tiles, sizeOf, roleOf, {
+      width: stage.clientWidth - 32,
+      maxScale: 48,
+      inputs: report.ports?.inputs || [],
+      outputs: report.ports?.outputs || [],
+    });
     if (drawn.missing.length) console.warn("sprites manquants :", drawn.missing);
   };
   paint();

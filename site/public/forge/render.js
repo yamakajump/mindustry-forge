@@ -209,6 +209,26 @@ function blender(tiles, sizeOf, roleOf) {
 }
 
 /**
+ * A ring on a tile, for a socket.
+ *
+ * Drawn rather than listed. A player reading "the pipe at 0,7 wants water" beside a
+ * picture has to count tiles to find it; a mark on the tile itself is the same fact
+ * without the counting.
+ */
+function marker(context, port, box, scale, colour, incoming) {
+  const x = (port.x - box.left) * scale;
+  const y = (box.height - (port.y - box.bottom) - 1) * scale;
+
+  context.save();
+  context.strokeStyle = colour;
+  context.lineWidth = Math.max(2, scale * 0.09);
+  context.setLineDash(incoming ? [] : [scale * 0.22, scale * 0.16]);
+  context.strokeRect(x + context.lineWidth / 2, y + context.lineWidth / 2,
+                     scale - context.lineWidth, scale - context.lineWidth);
+  context.restore();
+}
+
+/**
  * Draw the schematic onto a canvas, sized to fit the space it is given.
  *
  * Returns the scale used, so a caller can map a click back to a tile.
@@ -289,6 +309,15 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
       context.drawImage(sheet, art.x, art.y, art.w, art.h,
                         px, py, size * scale, size * scale);
     }
+  }
+
+  // Sockets, so the picture says where to plug it in. A list of coordinates beside a
+  // picture makes a reader count tiles; a mark on the tile does not.
+  for (const port of options.inputs || []) {
+    marker(context, port, box, scale, "#84d98b", true);
+  }
+  for (const port of options.outputs || []) {
+    marker(context, port, box, scale, "#ffd37f", false);
   }
 
   // Spans last, so a bridge draws over the tiles it flies past rather than under them.

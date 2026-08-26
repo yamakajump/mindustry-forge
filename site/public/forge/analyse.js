@@ -16,7 +16,8 @@
  */
 
 import { fromBase64 } from "./schematic.js";
-import { requirements } from "./needs.js";
+import { demand, requirements } from "./needs.js";
+import { ports, feedPorts } from "./ports.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -516,13 +517,19 @@ export async function analyse(text, supply = {}) {
   const parsed = await fromBase64(text);
   const graph = buildGraph(parsed.tiles);
 
-  // Each resource enters on its own network, since water and coal do not share a pipe.
+  // Plugged in by itself when nobody said otherwise.
   //
-  // Split across the entry points rather than repeated at each. "water=100" means a
-  // hundred a second arrives, not a hundred a second per pipe: handed to all of them, a
+  // A belt that starts from nowhere is where something arrives, and the machines behind it
+  // say what. Asking the player instead was asking them to state what the schematic
+  // already says, and it meant a layout nobody had described analysed to nothing at all.
+  const outside = demand(graph).outside;
+  const socketed = feedPorts(graph, isLiquid, outside);
+
+  // A stated supply overrides it, for "what does this do on half the water I have".
+  // Split across the entry points rather than repeated at each: handed to all of them, a
   // schematic with fifteen edge conduits was fed fifteen hundred and duly reported
   // fifteen thousand water a minute coming back out.
-  const feeds = {};
+  const feeds = Object.keys(supply).length ? {} : socketed;
   for (const [resource, rate] of Object.entries(supply)) {
     const where = entrances(graph, resource);
     if (!where.length) continue;
@@ -567,7 +574,9 @@ export async function analyse(text, supply = {}) {
     // What was handed in and came back out is not production. A layout fed water and
     // returning water made nothing; saying it produced fifteen thousand water a minute
     // would bury the one number that mattered, which was the power.
-    const net = rate - (supply[item] || 0);
+    const given = Object.values(feeds)
+      .reduce((sum, rates) => sum + (rates[item] || 0), 0);
+    const net = rate - given;
     if (net > SETTLED) produced[item] = net;
   }
   for (let index = 0; index < graph.nodes.length; index++) {
@@ -612,6 +621,10 @@ export async function analyse(text, supply = {}) {
     // than in rates. Computed rather than asked for: nobody knows offhand that a layout
     // drinks eighteen water a second, and everybody can picture two mechanical pumps.
     needs: requirements(graph, catalogue),
+    // Where to plug it in, named by tile. Not "it needs water" but "the pipe at 0,7 wants
+    // water", which is the difference between a fact and an instruction.
+    ports: ports(graph, isLiquid, outside),
+    fedItself: !Object.keys(supply).length,
     // What it would make if it were fed all of that, which is the number a player is
     // really shopping for.
     potential: powerBudget(graph, { fed: {} }),
