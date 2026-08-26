@@ -352,7 +352,10 @@ public class DumpBlocks {
             // a sink: modelled as neither, a line starting at one started at nothing.
             entry.put("role", "unloader");
             entry.put("carries", "item");
-            entry.put("items_per_second", unloader.speed * TPS);
+            // `60f / speed`, which is what the game puts on its own stat line. Written as
+            // `speed * 60` it came out at 327 items a second instead of 11: thirty times
+            // too fast, and a container behind one looked like an inexhaustible mine.
+            entry.put("items_per_second", TPS / Math.max(0.0001f, unloader.speed));
             return;
         }
         if (block instanceof ItemSource source) {

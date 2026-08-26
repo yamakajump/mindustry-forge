@@ -147,10 +147,10 @@ export function throughput(graph, { supply, capacity, wants }) {
 
   // What each machine actually received, which is the number the report is about.
   const received = new Float64Array(nodes);
-  let cursor = 0;
-  for (let id = 0; id < network.edges.length; id += 2) {
-    cursor++;
-  }
+  // And what merely went through it, which is the number a player wants when they click a
+  // belt. They are different: everything a conveyor carries passes and none of it stops,
+  // so a report built on `received` alone showed nothing on every carrier but the last.
+  const carried = new Float64Array(nodes);
   const arriving = new Float64Array(nodes);
   for (let index = 0; index < nodes; index++) {
     for (const id of network.out[outOf(index)]) {
@@ -158,7 +158,13 @@ export function throughput(graph, { supply, capacity, wants }) {
       if (edge.to === SINK) arriving[index] = Math.max(0, edge.flow);
     }
     received[index] = arriving[index];
+
+    // The flow on the block's own edge, the one the capacity sits on: in to out.
+    for (const id of network.out[inOf(index)]) {
+      const edge = network.edges[id];
+      if (edge.to === outOf(index)) carried[index] = Math.max(0, edge.flow);
+    }
   }
 
-  return { total, received, spans, network };
+  return { total, received, carried, spans, network };
 }
