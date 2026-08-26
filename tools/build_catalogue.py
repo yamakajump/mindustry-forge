@@ -20,7 +20,9 @@ TARGET = Path("site/public/forge/blocks.json")
 
 #: What the analysis reads. Everything else the game knows about a block is weight.
 KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
-        "power", "tier", "drill_time", "hardness_multiplier", "cost", "item_capacity")
+        "input_liquid", "output_liquid", "power", "power_out",
+        "tier", "drill_time", "hardness_multiplier", "cost", "item_capacity",
+        "range", "carries")
 
 
 def main() -> None:

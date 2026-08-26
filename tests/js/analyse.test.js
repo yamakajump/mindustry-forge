@@ -76,10 +76,12 @@ test("a stranded machine is waste and not the bottleneck", async () => {
 });
 
 test("a stranded belt is not fed and does not count as output", async () => {
+  /* Supply arrives on the edge of the network that carries it, and is split across the
+     entry points rather than repeated at each, so what comes out is what went in. */
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [9, 9, "conveyor", 0]];
   const out = await analyse(paste(tiles), { coal: 4 });
   assert.deepEqual(out.idle, { conveyor: 1 });
-  close(out.produced.coal, 4, "only the connected line carries anything");
+  assert.ok(!out.produced.coal, "ce qui entre et ressort n'est pas une production");
 });
 
 test("oversupply is reported rather than swallowed", async () => {
@@ -94,8 +96,14 @@ test("the cost of building it is counted", async () => {
 });
 
 test("a smelter declares its power draw", async () => {
-  const out = await analyse(paste([[0, 0, "silicon-smelter", 0]]));
-  close(out.power, 30, "a layout reported without power promises a throughput the game will not give");
+  /* A layout reported without power promises a throughput the game will not deliver.
+     Counted against what a block is actually running at, since a starved smelter draws
+     nothing. */
+  const running = await analyse(paste([
+    [0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [2, 0, "silicon-smelter", 0],
+  ]), { coal: 4, sand: 8 });
+  assert.ok(running.power.spent > 0, `${running.power.spent} energie consommee`);
+  assert.equal(running.power.made, 0, "un four ne produit pas d'energie");
 });
 
 test("an unknown block blocks its tile rather than vanishing", async () => {
@@ -160,4 +168,68 @@ test("a stream that errors on its checksum still yields the schematic", async ()
   assert.ok(parsed.tiles.length >= 90);
   assert.equal(parsed.altered, true);
   assert.equal(parsed.truncated, 5, "and it says how many blocks it lost");
+});
+
+test("a water to power schematic reports power, not the coal it makes on the way", async () => {
+  /* The bug Corentin caught by reading the answer rather than the code. His schematic
+     takes water and makes electricity; it was reported as producing coal and spore pods,
+     which are intermediates every one of which is eaten inside. The cause ran deep: the
+     block registry carried item inputs and nothing else, so a cultivator declared no
+     inputs at all and made spore pods out of nothing, and a steam generator was filed as
+     a sink that swallowed coal without consuming it. */
+  const out = await analyse(REAL, { water: 120 });
+
+  assert.ok(out.power.made > 1000, `${out.power.made} energie produite`);
+  assert.ok(out.power.net > 0, "un groupe electrogene produit plus qu il ne consomme");
+  assert.ok(!out.perMinute.coal || out.perMinute.coal < 1,
+    "le charbon est un intermediaire, pas une sortie");
+});
+
+test("more water means more power", async () => {
+  /* The relationship a player would check first, and the one that stayed flat at zero
+     through three earlier versions of this model. */
+  const little = await analyse(REAL, { water: 30 });
+  const plenty = await analyse(REAL, { water: 120 });
+  assert.ok(plenty.power.made > little.power.made * 1.3,
+    `${little.power.made} contre ${plenty.power.made}`);
+});
+
+test("what was handed in is not counted as what came out", async () => {
+  /* Fed at every edge pipe and counted on the way out, one schematic reported fifteen
+     thousand water a minute of production, which buried the number that mattered. */
+  const out = await analyse(REAL, { water: 100 });
+  assert.ok(!out.perMinute.water, "l'eau fournie n'est pas une production");
+});
+
+test("a belt will not carry a liquid", async () => {
+  /* Letting a carrier take anything made a conveyor deliver oil, which looks like a
+     working factory and is not one. */
+  const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0]];
+  const out = await analyse(paste(tiles), { water: 10 });
+  assert.deepEqual(out.perMinute, {});
+});
+
+test("a battery neither takes nor hands on anything", async () => {
+  /* Treated as an offloader, twenty-one batteries gave a schematic thirty-nine outgoing
+     links, and every drop of water supplied to it drained into one. */
+  const graph = buildGraph([
+    { x: 0, y: 0, block: "conveyor", rotation: 0 },
+    { x: 1, y: 0, block: "battery", rotation: 0 },
+  ]);
+  assert.deepEqual(graph.edges, [], "rien n'entre dans une batterie et rien n'en sort");
+});
+
+test("a block on the power grid is not a block somebody forgot to connect", async () => {
+  /* Batteries and nodes carry nothing on the item network by design. Calling twenty-one
+     of them "connected to nothing" buried the two bridges that really were. */
+  const out = await analyse(REAL, { water: 120 });
+  assert.ok(!out.idle.battery, "une batterie fait son travail sur le reseau electrique");
+  assert.ok(!out.idle["power-node-large"]);
+});
+
+test("a rate that rounds to zero is not reported as a product", async () => {
+  const out = await analyse(REAL, { water: 120 });
+  for (const [item, n] of Object.entries(out.perMinute)) {
+    assert.ok(n >= 0.1, `${item} affiche ${n} par minute`);
+  }
 });
