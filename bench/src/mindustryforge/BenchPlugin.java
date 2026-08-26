@@ -42,11 +42,17 @@ public class BenchPlugin extends Plugin {
         /* The oracle. The browser carries a transcription of the game's update loop, and a
            transcription is worth nothing unless something can tell it apart from a
            plausible invention. The only thing that can is the engine it came from. */
-        handler.register("measure", "<schematique> [secondes] [chemin]",
+        handler.register("measure", "<schematique> [secondes] [chemin] [sol...]",
                 "Run a schematic in the real engine and write down what came out.", args -> {
             float seconds = args.length > 1 ? Float.parseFloat(args[1]) : 30f;
             Path out = args.length > 2 ? Paths.get(args[2]) : Paths.get("bench", "data", "mesure.json");
-            measure.queue(args[0], seconds, out);
+            // Anything after the path is ground to paint: `ore-copper@2,3`, in the
+            // schematic's own coordinates. A drill on bare floor measures nothing.
+            // The last parameter swallows the rest of the line, so it arrives as one
+            // string with spaces in it.
+            String[] ground = args.length > 3 && !args[3].isBlank()
+                ? args[3].trim().split("\s+") : new String[0];
+            measure.queue(args[0], seconds, out, ground);
         });
 
         Log.info("[forge] bench ready");

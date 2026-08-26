@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 10 sur 103
+## Fait : 17 sur 103
 
 - [x] `GenericCrafter` &mdash; 17 blocs &mdash; toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -26,19 +26,19 @@ second, c'est une intuition qui a l'air d'un portage.
       core-acropolis, core-bastion, core-citadel, core-foundation, core-nucleus, core-shard
 - [ ] `HeatProducer` &mdash; 6 blocs &mdash; chauffe, pour la moitie Erekir du jeu
       electric-heater, heat-reactor, heat-source, oxidation-chamber, phase-heater, slag-heater
-- [ ] `LiquidRouter` &mdash; 6 blocs &mdash; un routeur a liquide, qui est aussi une reserve
+- [x] `LiquidRouter` &mdash; 6 blocs &mdash; un routeur a liquide, qui est aussi une reserve
       liquid-container, liquid-router, liquid-tank, reinforced-liquid-container, reinforced-liquid-router, reinforced-liquid-tank
 - [ ] `UnitFactory` &mdash; 6 blocs &mdash; fabrique des unites : c'est ce qu'il a demande
       air-factory, ground-factory, mech-fabricator, naval-factory, ship-fabricator, tank-fabricator
 - [ ] `HeatCrafter` &mdash; 5 blocs &mdash; une usine qui a besoin de chaleur en plus
       atmospheric-concentrator, carbide-crucible, cyanogen-synthesizer, phase-synthesizer, surge-crucible
-- [ ] `Drill` &mdash; 4 blocs &mdash; sort du sol ce qu'il y a dessous
+- [x] `Drill` &mdash; 4 blocs &mdash; sort du sol ce qu'il y a dessous
       blast-drill, laser-drill, mechanical-drill, pneumatic-drill
 - [ ] `LogicBlock` &mdash; 4 blocs &mdash; un processeur : execute un programme
       hyper-processor, logic-processor, micro-processor, world-processor
 - [ ] `PowerTurret` &mdash; 4 blocs &mdash; une tourelle qui mange de l'energie
       afflict, arc, lancer, malign
-- [ ] `Pump` &mdash; 4 blocs &mdash; pompe le liquide sous elle
+- [x] `Pump` &mdash; 4 blocs &mdash; pompe le liquide sous elle
       impulse-pump, mechanical-pump, reinforced-pump, rotary-pump
 - [x] `StorageBlock` &mdash; 4 blocs &mdash; un coffre : prend tout, ne pousse rien
       container, reinforced-container, reinforced-vault, vault
@@ -62,7 +62,7 @@ second, c'est une intuition qui a l'air d'un portage.
       eruption-drill, impact-drill
 - [ ] `CanvasBlock` &mdash; 2 blocs
       canvas, large-canvas
-- [ ] `Conduit` &mdash; 2 blocs &mdash; un tuyau : directionnel, comme une bande
+- [x] `Conduit` &mdash; 2 blocs &mdash; un tuyau : directionnel, comme une bande
       conduit, pulse-conduit
 - [ ] `Constructor` &mdash; 2 blocs
       constructor, large-constructor
@@ -72,9 +72,9 @@ second, c'est une intuition qui a l'air d'un portage.
       armored-duct, duct
 - [ ] `LaunchPad` &mdash; 2 blocs
       advanced-launch-pad, launch-pad
-- [ ] `LiquidBridge` &mdash; 2 blocs &mdash; un pont a liquide
+- [x] `LiquidBridge` &mdash; 2 blocs &mdash; un pont a liquide
       bridge-conduit, phase-conduit
-- [ ] `LiquidJunction` &mdash; 2 blocs &mdash; croise deux tuyaux
+- [x] `LiquidJunction` &mdash; 2 blocs &mdash; croise deux tuyaux
       liquid-junction, reinforced-liquid-junction
 - [ ] `LiquidTurret` &mdash; 2 blocs
       tsunami, wave
@@ -164,7 +164,7 @@ second, c'est une intuition qui a l'air d'un portage.
       meltdown
 - [ ] `LegacyCommandCenter` &mdash; 1 bloc
       command-center
-- [ ] `LiquidSource` &mdash; 1 bloc
+- [x] `LiquidSource` &mdash; 1 bloc
       liquid-source
 - [ ] `LiquidVoid` &mdash; 1 bloc
       liquid-void

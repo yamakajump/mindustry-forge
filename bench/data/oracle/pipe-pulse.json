@@ -1,0 +1,79 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "liquid": "water",
+      "amount": 10000
+    },
+    {
+      "block": "pulse-conduit",
+      "x": 13,
+      "y": 13,
+      "liquid": "water",
+      "amount": 40
+    },
+    {
+      "block": "pulse-conduit",
+      "x": 14,
+      "y": 13,
+      "liquid": "water",
+      "amount": 40
+    },
+    {
+      "block": "pulse-conduit",
+      "x": 15,
+      "y": 13,
+      "liquid": "water",
+      "amount": 40
+    },
+    {
+      "block": "pulse-conduit",
+      "x": 16,
+      "y": 13,
+      "liquid": "water",
+      "amount": 40
+    },
+    {
+      "block": "pulse-conduit",
+      "x": 17,
+      "y": 13,
+      "liquid": "water",
+      "amount": 40
+    },
+    {
+      "block": "pulse-conduit",
+      "x": 18,
+      "y": 13,
+      "liquid": "water",
+      "amount": 40
+    },
+    {
+      "block": "pulse-conduit",
+      "x": 19,
+      "y": 13,
+      "liquid": "water",
+      "amount": 40
+    },
+    {
+      "block": "pulse-conduit",
+      "x": 20,
+      "y": 13,
+      "liquid": "water",
+      "amount": 40
+    },
+    {
+      "block": "liquid-tank",
+      "x": 22,
+      "y": 13,
+      "liquid": "water",
+      "amount": 1800
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

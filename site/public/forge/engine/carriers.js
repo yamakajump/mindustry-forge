@@ -14,6 +14,7 @@
 
 import { DIRECTIONS, TICKS } from "./core.js";
 import { MACHINES } from "./machines.js";
+import { LIQUIDS } from "./liquids.js";
 
 /** `Conveyor.itemSpace` and `Conveyor.capacity`, both private constants in the game. */
 const ITEM_SPACE = 0.4;
@@ -527,5 +528,10 @@ const BY_ROLE = {
  */
 export function behaviourOf(node) {
   if (node.block.overflow) return overflow;
+  /* What a block carries picks the behaviour as much as its role does. A liquid router and
+     an item router share the role "router" in the catalogue, because to a maximum flow
+     they are the same shape, and to a simulation they are nothing alike. */
+  if (node.block.carries === "liquid") return LIQUIDS[node.role] || null;
+  if (node.role === "pump") return LIQUIDS.pump;
   return BY_ROLE[node.role] || null;
 }
