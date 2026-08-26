@@ -253,3 +253,32 @@ test("a bridge that claims to reach three hundred tiles is not linked", async ()
   }
   assert.ok(bridges.some((b) => b.link), "et les ponts valides gardent leur liaison");
 });
+
+test("a pipe carries one liquid at a time", async () => {
+  /* The game's own rule, not a simplification: `acceptLiquid` on a conduit reads
+     `liquids.current() == liquid || liquids.currentAmount() < 0.2f`, so a pipe holding
+     water refuses oil until the water is nearly gone. Letting a pipe carry both let the
+     network mix them, and a liquid tank came out reporting 32 oil and 6,011 water a minute
+     through the same three tiles. */
+  const out = await analyse(REAL, {});
+  const mixing = out.detail.filter((tile) =>
+    (tile.role === "conduit" || tile.role === "junction")
+    && Object.values(tile.through || {}).filter((v) => v > 0.001).length > 1);
+
+  assert.deepEqual(mixing.map((t) => `${t.name} (${t.x},${t.y})`), [],
+    "aucun tuyau ne porte deux liquides");
+});
+
+test("a junction crosses two lines without merging them", async () => {
+  /* A junction exists so two lines can cross. Handing on to all four sides made it merge
+     the very lines it is there to keep apart. */
+  const tiles = [
+    [0, 0, "conveyor", 0], [1, 0, "junction", 0], [2, 0, "conveyor", 0],
+    [1, 1, "conveyor", 3], [1, -1, "conveyor", 3],
+  ];
+  const out = await analyse(paste(tiles), { copper: 4 });
+  const junction = out.detail.find((t) => t.name === "junction");
+  assert.ok(junction, "la jonction est la");
+  assert.ok(out.produced.copper === undefined || out.produced.copper <= 4.001,
+    "rien n'est duplique en traversant");
+});
