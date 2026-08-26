@@ -12,6 +12,7 @@ import mindustry.world.Block;
 import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.Duct;
 import mindustry.world.blocks.distribution.ItemBridge;
+import mindustry.world.blocks.distribution.OverflowDuct;
 import mindustry.world.blocks.distribution.OverflowGate;
 import mindustry.world.blocks.environment.Floor;
 import mindustry.world.blocks.environment.OverlayFloor;
@@ -282,11 +283,28 @@ public class DumpBlocks {
             entry.put("junction_capacity", junction.capacity);
             return;
         }
+        if (block instanceof OverflowDuct overflowDuct) {
+            // A duct that goes straight on when it can and to the sides when it cannot.
+            // Same shape as an overflow gate, on Erekir's carrier instead of Serpulo's.
+            entry.put("role", "duct");
+            entry.put("carries", "item");
+            entry.put("items_per_second", TPS / Math.max(1f, overflowDuct.speed) * 2f);
+            entry.put("duct_speed", overflowDuct.speed);
+            entry.put("overflow", true);
+            if (overflowDuct.invert) entry.put("invert", true);
+            return;
+        }
         if (block instanceof Duct duct) {
-            // A duct carries like a conveyor and states its speed the same way.
-            entry.put("role", "conveyor");
+            // Erekir's carrier. Not a conveyor: it holds exactly one item at a time and
+              // carries it across in `speed` frames, so its rate falls out of that rather
+              // than out of spacing.
             entry.put("carries", "item");
             entry.put("items_per_second", TPS / Math.max(1f, duct.speed) * 2f);
+            // Frames to carry one item across, which is what the simulation needs: a duct
+            // holds exactly one thing at a time and its rate falls out of that.
+            entry.put("duct_speed", duct.speed);
+            if (duct.armored) entry.put("armored", true);
+            entry.put("role", "duct");
             return;
         }
         if (block instanceof ItemBridge bridge && !(block instanceof LiquidBridge)) {
@@ -506,6 +524,13 @@ public class DumpBlocks {
             entry.put("phase_range_boost", projector.phaseRangeBoost / TILESIZE);
             entry.put("boost_input", optionalInputsOf(block));
             entry.put("boost_time", projector.useTime);
+            return;
+        }
+        if (block instanceof mindustry.world.blocks.storage.CoreBlock) {
+            // A container that counts, and where most schematics are meant to deliver.
+            entry.put("role", "core");
+            entry.put("carries", "item");
+            entry.put("item_capacity", block.itemCapacity);
             return;
         }
         if (block instanceof StorageBlock) {

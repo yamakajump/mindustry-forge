@@ -34,7 +34,7 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         # real speeds, not the figures the game prints for a player.
         "speed", "junction_speed", "junction_capacity", "transport_time",
         "overflow", "invert", "overflow_speed", "recharge", "output_router",
-        "dump_time", "kind", "liquid_pressure", "power_capacity", "accepts", "drinks", "warmup_speed", "plans")
+        "dump_time", "kind", "liquid_pressure", "power_capacity", "accepts", "drinks", "warmup_speed", "plans", "duct_speed", "armored")
 
 
 def main() -> None:

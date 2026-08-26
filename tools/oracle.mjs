@@ -303,6 +303,36 @@ const SCENARIOS = {
     ],
   }),
 
+  /* A duct, which is what Erekir has instead of a belt. It holds exactly one item and
+     carries it across in `speed` frames, so its rate is a plain division and a line of
+     them cannot buffer at all. */
+  "duct-line": () => line("duct", 8),
+  // One duct and two, to pin down the cycle: how often a single duct can take a new item
+  // is a fact about one block, where a line of eight is a fact about a wave.
+  "duct-one": () => line("duct", 1),
+  "duct-two": () => line("duct", 2),
+  "duct-armored": () => line("armored-duct", 8),
+
+  /* An overflow duct: straight on when it can, to the sides when it cannot. */
+  "duct-overflow": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "duct", rotation: 0 },
+    { x: 2, y: 0, block: "overflow-duct", rotation: 0 },
+    { x: 3, y: 0, block: "duct", rotation: 0 },
+    { x: 5, y: 0, block: "vault", rotation: 0 },
+    { x: 2, y: 1, block: "duct", rotation: 1 },
+    { x: 2, y: 3, block: "vault", rotation: 0 },
+  ],
+
+  /* A core, which is where most schematics that are not self-contained are meant to
+     deliver. It takes anything and hands nothing back. */
+  "core-delivery": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+    { x: 4, y: 0, block: "core-shard", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
