@@ -87,12 +87,8 @@ function outputsOf(node) {
   if (node.role === "bridge") {
     // A bridge carries over a gap to the tile it remembers, and that memory is the whole
     // point of it: without reading the link, a line that jumps a wall reads as two
-    // separate lines, both of which end in the air. The offset is stored relative to the
-    // bridge, which is what `Schematics.mapConfig` writes.
-    const link = node.config && node.config.type === 7
-      ? [node.x + node.config.dx, node.y + node.config.dy]
-      : null;
-    if (link) return [link];
+    // separate lines, both of which end in the air.
+    if (node.link) return [node.link];
     // Unlinked, it behaves as an ordinary block and hands to whatever touches it.
     return DIRECTIONS.map(([dx, dy]) => [node.x + dx, node.y + dy]);
   }
@@ -166,6 +162,28 @@ function noteLiquids() {
 }
 const isLiquid = (name) => LIQUIDS.has(name);
 
+/**
+ * Where a bridge actually reaches, checked against what the game allows.
+ *
+ * The stored offset cannot simply be believed. A schematic copied out of a base keeps the
+ * links of bridges whose far end was not copied, and those come back as nonsense: measured
+ * on one real schematic, five bridges claimed to reach 365 tiles left and 394 down. Drawn
+ * as given, they were long diagonal bars across the whole picture.
+ *
+ * The game's own two rules settle it. A bridge reaches along one axis, never diagonally,
+ * and never further than its range. Anything else is a bridge that is not linked.
+ */
+function bridgeLink(tile, block) {
+  const config = tile.config;
+  if (!config || config.type !== 7) return null;
+  const { dx, dy } = config;
+  if (!dx && !dy) return null;
+  if (dx !== 0 && dy !== 0) return null;
+  const reach = Math.abs(dx) + Math.abs(dy);
+  if (reach > (block.range || 4)) return null;
+  return [tile.x + dx, tile.y + dy];
+}
+
 /** Build the network a list of tiles describes. */
 export function buildGraph(tiles) {
   const nodes = [];
@@ -177,6 +195,7 @@ export function buildGraph(tiles) {
       x: tile.x, y: tile.y, rotation: tile.rotation | 0,
       block, name: block.name, role: block.role || "",
       config: tile.config || null,
+      link: bridgeLink(tile, block),
       footprint: footprint(tile.x, tile.y, block.size || 1),
     };
     const index = nodes.length;
@@ -594,6 +613,8 @@ export async function analyse(text, supply = {}) {
     altered: parsed.altered,
     truncated: parsed.truncated,
     graph,
-    tiles: parsed.tiles,
+    // The nodes rather than the raw tiles: they carry the size, the role and the checked
+    // bridge link, so the picture and the analysis cannot disagree about what is connected.
+    tiles: graph.nodes,
   };
 }

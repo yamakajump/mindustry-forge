@@ -47,23 +47,35 @@ def sprite_names(archive: zipfile.ZipFile) -> dict[str, str]:
 
 
 def pick(name: str, sprites: dict[str, str]) -> str | None:
-    """The sprite that best stands for a block in a still picture.
+    """The sprite the game itself shows for a block.
 
-    A conveyor has no plain sprite: the game assembles it from directional variants, so the
-    unjoined straight piece is the one a preview wants. Everything else is drawn from its
-    own name, and a handful of blocks put their recognisable half in a `-top` overlay.
+    The game does not draw a block from one image. It stacks layers: a base, a rotator, a
+    top plate, a team-coloured outline, a cell. Guessing at which single layer stands for
+    the whole thing produced pictures that were recognisably wrong, and the schematic
+    Corentin pasted made that obvious on its bridges.
+
+    It turns out there is nothing to guess. Mindustry's own build composites those layers
+    ahead of time into `generated/block-<name>-full.png`, which is exactly what the game
+    puts in front of a player. A hundred and forty-seven of the blocks that can appear in a
+    schematic have one; the rest are a single layer already, and their plain sprite is the
+    composite.
     """
+    composed = f"block-{name}-full"
+    if composed in sprites:
+        return sprites[composed]
     if name in sprites:
         return sprites[name]
-    # Order matters. A conveyor is assembled from `<name>-<join>-<frame>` and the unjoined
-    # straight piece is `0-0`; a conduit and a duct use `<name>-top-<join>` instead, with
-    # `-0` the unjoined one. Trying `-top` before `-top-0` picks up a cap or an overlay and
-    # draws the wrong half of the block.
-    for suffix in ("-0-0", "-top-0", "-bottom", "-base", "-full", "-top", "-large",
+    # A conveyor is assembled from `<name>-<join>-<frame>` and the unjoined straight piece
+    # is `0-0`; a conduit and a duct use `<name>-top-<join>` instead.
+    for suffix in ("-0-0", "-top-0", "-bottom", "-base", "-top", "-large",
                    "-barrel", "-side-l"):
         if name + suffix in sprites:
             return sprites[name + suffix]
     return None
+
+
+#: What a bridge needs beyond its own tile: the span it throws, and the arrow along it.
+BRIDGE_PARTS = ("-bridge", "-arrow", "-end")
 
 
 def main() -> None:
@@ -77,11 +89,26 @@ def main() -> None:
         path = pick(block, sprites)
         (wanted.append((block, path)) if path else missing.append(block))
 
+    # The span a bridge throws, without which two ends of one line read as two dead ends.
+    for block, entry in catalogue["blocks"].items():
+        if entry.get("role") != "bridge":
+            continue
+        for part in BRIDGE_PARTS:
+            path = sprites.get(block + part)
+            if path:
+                wanted.append((block + part, path))
+
     # Item icons, for saying what a layout produces with the same pictures the game uses.
     for item in catalogue["items"]:
         path = sprites.get(f"item-{item}")
         if path:
             wanted.append((f"item/{item}", path))
+
+    # The hatched backing the game shows behind a schematic, rather than one drawn by hand
+    # to look like it.
+    backing = "assets/sprites/schematic-background.png"
+    if backing in archive.namelist():
+        wanted.append(("ui/schematic-background", backing))
 
     images: dict[str, Image.Image] = {}
     for key, path in wanted:

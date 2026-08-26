@@ -39,7 +39,7 @@ export async function loadSprites(base = "./forge/") {
 export function bounds(tiles, sizeOf) {
   let left = Infinity, bottom = Infinity, right = -Infinity, top = -Infinity;
   for (const tile of tiles) {
-    const size = sizeOf(tile.block);
+    const size = sizeOf(tile.name || tile.block);
     const offset = Math.trunc(-(size - 1) / 2);
     left = Math.min(left, tile.x + offset);
     bottom = Math.min(bottom, tile.y + offset);
@@ -57,37 +57,69 @@ export function bounds(tiles, sizeOf) {
  * and invisible, and a belt drawn pointing the wrong way is a picture that lies about the
  * one thing a player is reading it for.
  */
-const TURNS = new Set(["conveyor", "junction", "duct", "sorter", "unloader",
-                       "overflow-gate", "underflow-gate", "bridge-conveyor",
-                       "bridge-conduit", "conduit", "drill", "turret", "crafter"]);
+const TURNS = new Set(["conveyor", "junction", "conduit"]);
 
 function turns(name, role) {
-  if (TURNS.has(role)) return true;
-  return /conveyor|conduit|duct|sorter|gate|bridge|unloader/.test(name);
+  return TURNS.has(role);
 }
 
 /**
- * Paint the hatched backing the game shows behind a schematic.
+ * The hatched backing the game shows behind a schematic, taken from the game.
  *
- * Drawn once into an offscreen pattern rather than stroked per tile: a two hundred block
- * schematic is two hundred clipped strokes otherwise, on every zoom and every resize.
+ * It was drawn by hand at first, with strokes chosen to look like the real thing. Looking
+ * like it is not the same as being it, and the difference is exactly what makes a tool
+ * feel bolted onto a game rather than part of it. `schematic-background.png` ships in the
+ * jar; there was never anything to imitate.
  */
-function hatching(context, scale) {
-  const step = Math.max(6, Math.round(scale * 0.5));
+function backing(context, scale) {
+  const found = atlas?.sprites?.["ui/schematic-background"];
+  if (!found) return "#6b7280";
+
   const patch = document.createElement("canvas");
-  patch.width = patch.height = step * 2;
+  patch.width = patch.height = Math.max(8, Math.round(scale));
   const pen = patch.getContext("2d");
-  pen.fillStyle = "#6b7280";
-  pen.fillRect(0, 0, patch.width, patch.height);
-  pen.strokeStyle = "#7c8494";
-  pen.lineWidth = step * 0.7;
-  pen.beginPath();
-  pen.moveTo(-patch.width, patch.height);
-  pen.lineTo(patch.width, -patch.height);
-  pen.moveTo(0, patch.height * 2);
-  pen.lineTo(patch.width * 2, 0);
-  pen.stroke();
+  pen.imageSmoothingEnabled = false;
+  pen.drawImage(sheet, found.x, found.y, found.w, found.h,
+                0, 0, patch.width, patch.height);
   return context.createPattern(patch, "repeat");
+}
+
+/**
+ * The span a bridge throws, and the arrow along it.
+ *
+ * Without it, a line that hops a wall reads as two lines that both end in the air, which
+ * is what Corentin saw and said was wrong. The bridge remembers where it reaches, so this
+ * is drawing what the schematic already says rather than inferring anything.
+ */
+function drawBridge(context, node, box, scale) {
+  // The link the analysis already checked against the game's rules, rather than the raw
+  // offset. Believed as stored, five bridges in one real schematic claimed to reach 365
+  // tiles away and were drawn as bars across the whole picture.
+  if (!node.link) return;
+
+  const span = atlas?.sprites?.[`${node.name}-bridge`];
+  const arrow = atlas?.sprites?.[`${node.name}-arrow`];
+  if (!span) return;
+
+  const at = (x, y) => [(x - box.left) * scale + scale / 2,
+                        (box.height - (y - box.bottom) - 1) * scale + scale / 2];
+  const [fromX, fromY] = at(node.x, node.y);
+  const [toX, toY] = at(node.link[0], node.link[1]);
+  const length = Math.hypot(toX - fromX, toY - fromY);
+  if (length < 1) return;
+
+  context.save();
+  context.translate(fromX, fromY);
+  context.rotate(Math.atan2(toY - fromY, toX - fromX));
+  // Stretched along its length the way the game stretches it, rather than tiled: a tiled
+  // span shows a seam at every tile and the game's does not.
+  context.drawImage(sheet, span.x, span.y, span.w, span.h,
+                    0, -scale / 2, length, scale);
+  if (arrow) {
+    context.drawImage(sheet, arrow.x, arrow.y, arrow.w, arrow.h,
+                      length / 2 - scale / 2, -scale / 2, scale, scale);
+  }
+  context.restore();
 }
 
 /**
@@ -117,11 +149,11 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   // is not exactly one to one.
   context.imageSmoothingEnabled = false;
 
-  const backing = hatching(context, scale);
+  const pattern = backing(context, scale);
   for (const tile of tiles) {
-    const size = sizeOf(tile.block);
+    const size = sizeOf(tile.name || tile.block);
     const offset = Math.trunc(-(size - 1) / 2);
-    context.fillStyle = backing;
+    context.fillStyle = pattern;
     context.fillRect((tile.x + offset - box.left) * scale,
                      (box.height - (tile.y + offset - box.bottom) - size) * scale,
                      size * scale, size * scale);
@@ -129,21 +161,21 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
 
   const missing = [];
   for (const tile of tiles) {
-    const size = sizeOf(tile.block);
+    const size = sizeOf(tile.name || tile.block);
     const offset = Math.trunc(-(size - 1) / 2);
-    const found = atlas?.sprites?.[tile.block];
+    const found = atlas?.sprites?.[tile.name || tile.block];
     // Screen coordinates count down from the top; the game counts up from the bottom.
     const px = (tile.x + offset - box.left) * scale;
     const py = (box.height - (tile.y + offset - box.bottom) - size) * scale;
 
     if (!found) {
-      missing.push(tile.block);
+      missing.push(tile.name || tile.block);
       context.fillStyle = "rgba(255, 128, 128, .35)";
       context.fillRect(px, py, size * scale, size * scale);
       continue;
     }
 
-    const spins = turns(tile.block, roleOf(tile.block));
+    const spins = turns(tile.name || tile.block, roleOf(tile.name || tile.block));
     if (spins && tile.rotation) {
       context.save();
       context.translate(px + (size * scale) / 2, py + (size * scale) / 2);
@@ -156,6 +188,11 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
       context.drawImage(sheet, found.x, found.y, found.w, found.h,
                         px, py, size * scale, size * scale);
     }
+  }
+
+  // Spans last, so a bridge draws over the tiles it flies past rather than under them.
+  for (const tile of tiles) {
+    if (roleOf(tile.name || tile.block) === "bridge") drawBridge(context, tile, box, scale);
   }
 
   return { scale, box, missing: [...new Set(missing)] };

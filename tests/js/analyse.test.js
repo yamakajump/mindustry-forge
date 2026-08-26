@@ -233,3 +233,23 @@ test("a rate that rounds to zero is not reported as a product", async () => {
     assert.ok(n >= 0.1, `${item} affiche ${n} par minute`);
   }
 });
+
+test("a bridge that claims to reach three hundred tiles is not linked", async () => {
+  /* A schematic copied out of a base keeps the links of bridges whose far end was not
+     copied, and those come back as nonsense: five bridges in one real schematic claimed to
+     reach 365 tiles left and 394 down, and were drawn as bars across the whole picture.
+     The game's own rules settle it: along one axis, never diagonally, never past range. */
+  const parsed = await analyse(REAL, { water: 60 });
+  const bridges = parsed.graph.nodes.filter((n) => n.role === "bridge");
+  assert.ok(bridges.length > 10, `${bridges.length} ponts`);
+
+  for (const bridge of bridges) {
+    if (!bridge.link) continue;
+    const dx = bridge.link[0] - bridge.x;
+    const dy = bridge.link[1] - bridge.y;
+    assert.ok(dx === 0 || dy === 0, `${bridge.name} porte en diagonale (${dx},${dy})`);
+    assert.ok(Math.abs(dx) + Math.abs(dy) <= (bridge.block.range || 4),
+      `${bridge.name} porte a ${Math.abs(dx) + Math.abs(dy)} tuiles`);
+  }
+  assert.ok(bridges.some((b) => b.link), "et les ponts valides gardent leur liaison");
+});
