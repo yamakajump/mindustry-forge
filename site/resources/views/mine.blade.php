@@ -35,7 +35,7 @@
             &middot; {{ number_format($schematic->power_made - $schematic->power_used, 0, ',', ' ') }} energie/s
           @endif
         </p>
-        @include('partials.manage')
+        @include('partials.manage', ['compact' => true])
       </article>
     @endforeach
   </div>
