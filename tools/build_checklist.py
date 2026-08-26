@@ -39,9 +39,14 @@ SCENERY = {
 #: wall: it stops bullets and moves nothing. Told apart from the scenery because they are
 #: really placed by players, and told apart from the work because there is nothing to port.
 INERT = {
-    "Wall", "Door", "BaseShield", "MessageBlock", "MemoryBlock", "Radar", "LightBlock",
-    "ShockMine", "BuildTurret",
+    "Wall", "Door", "BaseShield", "MessageBlock", "MemoryBlock", "LightBlock",
+    "ShockMine",
 }
+
+#: `Radar` and `BuildTurret` used to live in the list above, on the grounds that neither
+#: moves anything. Both draw power, and a radar draws it every frame for ever: thirty six
+#: a second is a real line in a schematic's budget, and "no effect on what circulates" was
+#: only true of items.
 
 #: What a class is for, in one line, so the list can be read without opening the game.
 #: Only for the ones worth explaining; anything absent is named well enough by itself.
@@ -91,6 +96,8 @@ NOTES = {
     "Wall": "un mur",
     "Door": "un mur qui s'ouvre",
     "BaseShield": "un bouclier",
+    "Radar": "tire de l'energie en continu, et rien d'autre",
+    "BuildTurret": "ne consomme rien tant qu'il n'a rien a reconstruire",
 }
 
 

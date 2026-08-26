@@ -1,0 +1,35 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "force-projector",
+      "x": 13,
+      "y": 13,
+      "liquid": "water",
+      "amount": 60
+    }
+  ],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "force-projector",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "phase-fabric": 4
+      }
+    },
+    {
+      "block": "power-source",
+      "x": 15,
+      "y": 13,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

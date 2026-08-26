@@ -94,7 +94,7 @@ public class Measure implements ApplicationListener {
      */
     private String[] ground = new String[0];
 
-    /** What each block starts out holding, written `item*count@x,y`. */
+    /** What each block starts out holding: `coal*10@3,0`, or `water~60@3,0`. */
     private String[] stock = new String[0];
 
     public void begin(String base64, float seconds, Path path) {
@@ -160,13 +160,19 @@ public class Measure implements ApplicationListener {
            how far does ten coal go, how long does a reactor last on the thorium it has,
            when exactly does the fourth silicon leave a mender. Written `coal*10@3,0`. */
         for (String filled : stock) {
-            String[] parts = filled.split("[*@,]");
+            boolean wet = filled.contains("~");
+            String[] parts = filled.split("[*~@,]");
             if (parts.length != 4) continue;
-            Item item = Vars.content.item(parts[0]);
             Tile tile = Vars.world.tile(MARGIN + Integer.parseInt(parts[2]),
                                         MARGIN + Integer.parseInt(parts[3]));
-            if (tile == null || tile.build == null || item == null) continue;
-            tile.build.items.add(item, Integer.parseInt(parts[1]));
+            if (tile == null || tile.build == null) continue;
+            if (wet) {
+                Liquid liquid = Vars.content.liquid(parts[0]);
+                if (liquid != null) tile.build.liquids.add(liquid, Float.parseFloat(parts[1]));
+            } else {
+                Item item = Vars.content.item(parts[0]);
+                if (item != null) tile.build.items.add(item, Integer.parseInt(parts[1]));
+            }
         }
 
         /* Configured only once everything is standing.
@@ -181,6 +187,18 @@ public class Measure implements ApplicationListener {
             Tile tile = Vars.world.tile(MARGIN + stile.x, MARGIN + stile.y);
             if (tile == null || tile.build == null) continue;
             tile.build.configureAny(stile.config);
+        }
+
+        /* And then told they were built.
+
+           `placed()` is what a block gets when a player finishes building it, and several
+           blocks put their opening state there rather than in their constructor. A
+           meltdown sets its reload counter to full in `placed()`, so a bench that stamps
+           blocks straight onto tiles measures a meltdown that never drinks its two hundred
+           and twenty five water: the port was right and the oracle was the one lying. */
+        for (Schematic.Stile stile : schematic.tiles) {
+            Tile tile = Vars.world.tile(MARGIN + stile.x, MARGIN + stile.y);
+            if (tile != null && tile.build != null) tile.build.placed();
         }
 
         clock.install();

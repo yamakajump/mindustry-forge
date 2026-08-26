@@ -167,7 +167,13 @@ export class Grid {
 
     let needed = 0;
     for (const build of this.consumers) {
-      needed += build.block.power / 60 * build.delta(step);
+      /* `ConsumePower.requestedPower` is `usage * (shouldConsume() ? 1 : 0)`: a block that
+         is not consuming asks for **nothing**, rather than asking and going without.
+
+         It matters more than it sounds. A turret with nothing to shoot at draws no power
+         at all once it has finished reloading, and a bank of them counted as consumers
+         invents a demand that dims the whole base in the report and not in the game. */
+      needed += build.block.power / 60 * build.delta(step) * (build.state.wants ?? 1);
     }
 
     this.made = made;

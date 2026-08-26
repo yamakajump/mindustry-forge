@@ -10,9 +10,9 @@ Cocher une case veut dire deux choses, jamais une seule : la classe est transcri
 depuis la source du jeu, **et** un scénario la mesure dans un vrai serveur. Sans le
 second, c'est une intuition qui a l'air d'un portage.
 
-**103 classes à reproduire**, pour 226 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
+**105 classes à reproduire**, pour 228 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 43 sur 103
+## Fait : 52 sur 105
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -36,7 +36,7 @@ second, c'est une intuition qui a l'air d'un portage.
       blast-drill, laser-drill, mechanical-drill, pneumatic-drill
 - [ ] `LogicBlock` - 4 blocs - un processeur : execute un programme
       hyper-processor, logic-processor, micro-processor, world-processor
-- [ ] `PowerTurret` - 4 blocs - une tourelle qui mange de l'energie
+- [x] `PowerTurret` - 4 blocs - une tourelle qui mange de l'energie
       afflict, arc, lancer, malign
 - [x] `Pump` - 4 blocs - pompe le liquide sous elle
       impulse-pump, mechanical-pump, reinforced-pump, rotary-pump
@@ -76,13 +76,13 @@ second, c'est une intuition qui a l'air d'un portage.
       bridge-conduit, phase-conduit
 - [x] `LiquidJunction` - 2 blocs - croise deux tuyaux
       liquid-junction, reinforced-liquid-junction
-- [ ] `LiquidTurret` - 2 blocs
+- [x] `LiquidTurret` - 2 blocs
       tsunami, wave
 - [ ] `LogicDisplay` - 2 blocs
       large-logic-display, logic-display
-- [ ] `MendProjector` - 2 blocs - repare, ne change aucun debit
+- [x] `MendProjector` - 2 blocs - repare, ne change aucun debit
       mend-projector, mender
-- [ ] `OverdriveProjector` - 2 blocs - accelere ce qui l'entoure
+- [x] `OverdriveProjector` - 2 blocs - accelere ce qui l'entoure
       overdrive-dome, overdrive-projector
 - [x] `OverflowDuct` - 2 blocs
       overflow-duct, underflow-duct
@@ -122,6 +122,8 @@ second, c'est une intuition qui a l'air d'un portage.
       blast-door
 - [x] `BufferedItemBridge` - 1 bloc
       bridge-conveyor
+- [x] `BuildTurret` - 1 bloc - ne consomme rien tant qu'il n'a rien a reconstruire
+      build-tower
 - [ ] `ColoredFloor` - 1 bloc
       colored-floor
 - [ ] `ColoredWall` - 1 bloc
@@ -138,7 +140,7 @@ second, c'est une intuition qui a l'air d'un portage.
       duct-bridge
 - [x] `DuctRouter` - 1 bloc
       duct-router
-- [ ] `ForceProjector` - 1 bloc
+- [x] `ForceProjector` - 1 bloc
       force-projector
 - [ ] `Fracker` - 1 bloc
       oil-extractor
@@ -160,7 +162,7 @@ second, c'est une intuition qui a l'air d'un portage.
       junction
 - [ ] `LandingPad` - 1 bloc
       landing-pad
-- [ ] `LaserTurret` - 1 bloc
+- [x] `LaserTurret` - 1 bloc
       meltdown
 - [ ] `LegacyCommandCenter` - 1 bloc
       command-center
@@ -190,6 +192,8 @@ second, c'est une intuition qui a l'air d'un portage.
       power-source
 - [ ] `PowerVoid` - 1 bloc
       power-void
+- [x] `Radar` - 1 bloc - tire de l'energie en continu, et rien d'autre
+      radar
 - [ ] `RegenProjector` - 1 bloc
       regen-projector
 - [ ] `RepairTower` - 1 bloc
@@ -208,7 +212,7 @@ second, c'est une intuition qui a l'air d'un portage.
       thruster
 - [ ] `TileableLogicDisplay` - 1 bloc
       tile-logic-display
-- [ ] `TractorBeamTurret` - 1 bloc
+- [x] `TractorBeamTurret` - 1 bloc
       parallax
 - [ ] `UnitAssemblerModule` - 1 bloc
       basic-assembler-module
@@ -246,8 +250,6 @@ porter, et rien à mesurer non plus.
 - `Door` : 2
 - `BaseShield` : 2
 - `ShockMine` : 1
-- `Radar` : 1
-- `BuildTurret` : 1
 - `LightBlock` : 1
 
 ## Le décor, rien à faire

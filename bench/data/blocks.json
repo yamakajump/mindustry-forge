@@ -5134,9 +5134,16 @@
         "lead": 30
       },
       "power": 18,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "mender",
+      "reload": 200,
+      "range": 40,
+      "heal_percent": 4,
+      "phase_boost": 4,
+      "phase_range_boost": 20,
+      "use_time": 400,
+      "boost_input":{
+        "silicon": 1
+      }
     },
     "mend-projector":{
       "name": "mend-projector",
@@ -5161,9 +5168,16 @@
         "silicon": 40
       },
       "power": 90,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "mender",
+      "reload": 250,
+      "range": 85,
+      "heal_percent": 11,
+      "phase_boost": 15,
+      "phase_range_boost": 50,
+      "use_time": 400,
+      "boost_input":{
+        "phase-fabric": 1
+      }
     },
     "overdrive-projector":{
       "name": "overdrive-projector",
@@ -5197,7 +5211,11 @@
       "boost_input":{
         "phase-fabric": 1
       },
-      "boost_time": 400
+      "boost_time": 400,
+      "use_time": 400,
+      "reload": 60,
+      "has_boost": true,
+      "input":{}
     },
     "overdrive-dome":{
       "name": "overdrive-dome",
@@ -5231,7 +5249,13 @@
       "range": 25,
       "phase_range_boost": 2.5,
       "boost_input":{},
-      "boost_time": 300
+      "boost_time": 300,
+      "use_time": 300,
+      "reload": 60,
+      "input":{
+        "phase-fabric": 1,
+        "silicon": 1
+      }
     },
     "force-projector":{
       "name": "force-projector",
@@ -5259,9 +5283,16 @@
         "silicon": 125
       },
       "power": 240,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "shield",
+      "radius": 101.7,
+      "shield_health": 750,
+      "phase_radius_boost": 80,
+      "phase_shield_boost": 400,
+      "use_time": 350,
+      "coolant_consumption": 0.1,
+      "boost_input":{
+        "phase-fabric": 1
+      }
     },
     "shock-mine":{
       "name": "shock-mine",
@@ -5300,7 +5331,9 @@
         "silicon": 60,
         "beryllium": 10
       },
-      "power": 36
+      "power": 36,
+      "role": "radar",
+      "discovery_time": 600
     },
     "build-tower":{
       "name": "build-tower",
@@ -5324,7 +5357,9 @@
         "oxide": 40
       },
       "power": 180,
-      "role": "sink",
+      "role": "turret-idle",
+      "range": 200,
+      "coolant_multiplier": 5,
       "input_liquid":{
         "nitrogen": 3
       }
@@ -8029,7 +8064,16 @@
         "metaglass": 45
       },
       "power": 0,
-      "role": "sink",
+      "role": "turret-idle",
+      "range": 110,
+      "reload": 3,
+      "coolant_multiplier": 5,
+      "ammo_types":{
+        "water": 1,
+        "slag": 1,
+        "cryofluid": 1,
+        "oil": 1
+      },
       "input_liquid":{}
     },
     "lancer":{
@@ -8056,7 +8100,15 @@
         "silicon": 60
       },
       "power": 360,
-      "role": "sink",
+      "role": "turret-idle",
+      "range": 165,
+      "reload": 80,
+      "coolant_multiplier": 5,
+      "coolant_amount": 0.2,
+      "coolant_worth":{
+        "water": 2,
+        "cryofluid": 4.5
+      },
       "input_liquid":{}
     },
     "arc":{
@@ -8081,7 +8133,15 @@
         "lead": 50
       },
       "power": 198,
-      "role": "sink",
+      "role": "turret-idle",
+      "range": 90,
+      "reload": 35,
+      "coolant_multiplier": 5,
+      "coolant_amount": 0.1,
+      "coolant_worth":{
+        "water": 2,
+        "cryofluid": 4.5
+      },
       "input_liquid":{}
     },
     "parallax":{
@@ -8102,7 +8162,11 @@
         "titanium": 110,
         "silicon": 160
       },
-      "power": 198
+      "power": 198,
+      "role": "tractor",
+      "range": 300,
+      "coolant_multiplier": 1,
+      "input_liquid":{}
     },
     "swarmer":{
       "name": "swarmer",
@@ -8222,7 +8286,12 @@
         "silicon": 130,
         "phase-fabric": 40
       },
-      "power": 480
+      "power": 480,
+      "role": "turret-idle",
+      "range": 180,
+      "reload": 8,
+      "coolant_multiplier": 2,
+      "input_liquid":{}
     },
     "tsunami":{
       "name": "tsunami",
@@ -8250,7 +8319,16 @@
         "thorium": 100
       },
       "power": 0,
-      "role": "sink",
+      "role": "turret-idle",
+      "range": 190,
+      "reload": 3,
+      "coolant_multiplier": 5,
+      "ammo_types":{
+        "water": 0.4,
+        "slag": 0.4,
+        "cryofluid": 0.4,
+        "oil": 0.4
+      },
       "input_liquid":{}
     },
     "fuse":{
@@ -8512,7 +8590,16 @@
         "surge-alloy": 325
       },
       "power": 1020,
-      "role": "sink",
+      "role": "laser-turret",
+      "range": 195,
+      "reload": 90,
+      "coolant_multiplier": 1,
+      "coolant_amount": 0.5,
+      "coolant_worth":{
+        "water": 0.4,
+        "cryofluid": 0.9
+      },
+      "shoot_duration": 230,
       "input_liquid":{}
     },
     "breach":{
@@ -8630,7 +8717,10 @@
         "oxide": 40
       },
       "power": 0,
-      "role": "sink",
+      "role": "turret-idle",
+      "range": 130,
+      "reload": 10,
+      "coolant_multiplier": 1,
       "input_liquid":{}
     },
     "titan":{
@@ -8749,7 +8839,12 @@
         "surge-alloy": 100,
         "oxide": 40
       },
-      "power": 300
+      "power": 300,
+      "role": "turret-idle",
+      "range": 368,
+      "reload": 50,
+      "coolant_multiplier": 5,
+      "input_liquid":{}
     },
     "lustre":{
       "name": "lustre",
@@ -8774,7 +8869,10 @@
         "carbide": 90
       },
       "power": 200,
-      "role": "sink",
+      "role": "turret-idle",
+      "range": 250,
+      "reload": 10,
+      "coolant_multiplier": 1,
       "input_liquid":{
         "nitrogen": 6
       }
@@ -8887,7 +8985,12 @@
         "beryllium": 1000,
         "carbide": 200
       },
-      "power": 2400
+      "power": 2400,
+      "role": "turret-idle",
+      "range": 410,
+      "reload": 3.5,
+      "coolant_multiplier": 5,
+      "input_liquid":{}
     },
     "ground-factory":{
       "name": "ground-factory",

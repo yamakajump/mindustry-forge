@@ -1,0 +1,26 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "wave",
+      "x": 12,
+      "y": 12,
+      "liquid": "water",
+      "amount": 10
+    }
+  ],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "wave",
+      "x": 12,
+      "y": 12,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

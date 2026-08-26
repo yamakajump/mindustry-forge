@@ -37,6 +37,14 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.defense.Radar;
+import mindustry.world.blocks.defense.ForceProjector;
+import mindustry.world.blocks.defense.MendProjector;
+import mindustry.world.blocks.defense.turrets.TractorBeamTurret;
+import mindustry.world.blocks.defense.turrets.LiquidTurret;
+import mindustry.world.blocks.defense.turrets.LaserTurret;
+import mindustry.world.blocks.defense.turrets.ReloadTurret;
+import mindustry.world.blocks.defense.turrets.BaseTurret;
 import mindustry.world.blocks.power.BeamNode;
 import mindustry.world.blocks.distribution.StackRouter;
 import mindustry.world.blocks.distribution.DuctBridge;
@@ -693,6 +701,77 @@ public class DumpBlocks {
             entry.put("input_liquid", liquidInputsOf(block));
             return;
         }
+        /* The defensive blocks, none of which shoots anything in a measurement and all of
+           which were filed as sinks that consume nothing.
+
+           What they do at rest is the whole question for a schematic, and the four answers
+           are all different. A liquid turret swallows its tank once and never drinks
+           again. A power turret draws until it has finished reloading and then stops
+           dead. A meltdown drinks two hundred and twenty five water winding **down** and
+           then stops. A projector draws power for ever and eats an item every few
+           seconds whether or not anything near it is damaged. */
+        if (block instanceof BaseTurret turret) {
+            entry.put("role", block instanceof TractorBeamTurret ? "tractor" : "turret-idle");
+            entry.put("range", turret.range);
+            if (block instanceof ReloadTurret reloader) entry.put("reload", reloader.reload);
+            entry.put("coolant_multiplier", turret.coolantMultiplier);
+            if (turret.coolant != null) {
+                entry.put("coolant_amount", turret.coolant.amount);
+                /* What one unit of each accepted coolant is worth to the reload counter:
+                   `heatCapacity * coolantMultiplier`. Written per liquid so nothing on the
+                   other side has to carry a table of heat capacities around, and because
+                   `coolantMultiplier` is 5 by default and 1 for a meltdown, which is a
+                   fivefold error waiting to happen. */
+                Jval worth = Jval.newObject();
+                for (Liquid liquid : Vars.content.liquids()) {
+                    if (block.liquidFilter != null && block.liquidFilter.length > liquid.id
+                            && block.liquidFilter[liquid.id]) {
+                        worth.put(liquid.name, liquid.heatCapacity * turret.coolantMultiplier);
+                    }
+                }
+                if (worth.asObject().size > 0) entry.put("coolant_worth", worth);
+            }
+            if (block instanceof LaserTurret laser) {
+                entry.put("role", "laser-turret");
+                entry.put("shoot_duration", laser.shootDuration);
+            }
+            if (block instanceof LiquidTurret liquidTurret) {
+                entry.put("role", "turret-idle");
+                Jval ammo = Jval.newObject();
+                liquidTurret.ammoTypes.each((liquid, type) ->
+                    ammo.put(liquid.name, type.ammoMultiplier));
+                if (ammo.asObject().size > 0) entry.put("ammo_types", ammo);
+            }
+            entry.put("input_liquid", liquidInputsOf(block));
+            return;
+        }
+        if (block instanceof MendProjector mender) {
+            entry.put("role", "mender");
+            entry.put("reload", mender.reload);
+            entry.put("range", mender.range);
+            entry.put("heal_percent", mender.healPercent);
+            entry.put("phase_boost", mender.phaseBoost);
+            entry.put("phase_range_boost", mender.phaseRangeBoost);
+            entry.put("use_time", mender.useTime);
+            entry.put("boost_input", optionalInputsOf(block));
+            return;
+        }
+        if (block instanceof ForceProjector shield) {
+            entry.put("role", "shield");
+            entry.put("radius", shield.radius);
+            entry.put("shield_health", shield.shieldHealth);
+            entry.put("phase_radius_boost", shield.phaseRadiusBoost);
+            entry.put("phase_shield_boost", shield.phaseShieldBoost);
+            entry.put("use_time", shield.phaseUseTime);
+            entry.put("coolant_consumption", shield.coolantConsumption);
+            entry.put("boost_input", optionalInputsOf(block));
+            return;
+        }
+        if (block instanceof Radar radar) {
+            entry.put("role", "radar");
+            entry.put("discovery_time", radar.discoveryTime);
+            return;
+        }
         if (block instanceof OverdriveProjector projector) {
             // Range is in world units in the game and in tiles here, because every other
             // distance on this site is in tiles and one unit per file is how a conversion
@@ -704,6 +783,14 @@ public class DumpBlocks {
             entry.put("phase_range_boost", projector.phaseRangeBoost / TILESIZE);
             entry.put("boost_input", optionalInputsOf(block));
             entry.put("boost_time", projector.useTime);
+            entry.put("use_time", projector.useTime);
+            entry.put("reload", projector.reload);
+            /* Whether the phase fabric is a bonus or a requirement. An overdrive dome has
+               `hasBoost` false and its two items are **not** optional: without them it
+               boosts nothing at all, where a projector without phase fabric simply boosts
+               a little less. Reading both as bonuses makes a starved dome look busy. */
+            if (projector.hasBoost) entry.put("has_boost", true);
+            entry.put("input", inputsOf(block));
             return;
         }
         if (block instanceof mindustry.world.blocks.storage.CoreBlock) {
