@@ -59,8 +59,9 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
 </main>
 
 <script type="module">
-import { analyse } from "./forge/analyse.js";
-import { loadSprites, draw, itemIcon } from "./forge/render.js";
+import { analyse, catalogueOf } from "./forge/analyse.js";
+import { fromBase64, toBase64 } from "./forge/schematic.js";
+import { loadSprites, draw, itemIcon, bounds } from "./forge/render.js";
 
 const $ = (id) => document.getElementById(id);
 const text = $("text"), out = $("out"), drop = $("drop");
@@ -95,6 +96,12 @@ const escape = (s) => String(s).replace(/[<>&]/g, (c) =>
 
 /* An item beside its own icon. A player recognises the picture faster than the English
    name, and a schematic is read at a glance or not at all. */
+/** A block's own sprite, for a palette that shows what it is putting down. */
+const blockIcon = (name, size = 16) => {
+  const src = itemIcon(name, size * 2, "");
+  return src ? `<img src="${src}" alt="" width="${size}" height="${size}">` : "";
+};
+
 const withIcon = (item, size = 18) => {
   const src = itemIcon(item, size * 2);
   return src ? `<img src="${src}" alt="" width="${size}" height="${size}">` : "";
@@ -346,6 +353,29 @@ function render(report) {
     right.push(`<div class="card"><h2>A savoir</h2><ul class="notes">${notes.join("")}</ul></div>`);
   }
 
+  /* Putting a block down.
+  
+     The list starts with what the schematic already uses, because the common edit by a
+     long way is extending a line that is already there, and only then opens onto the rest
+     of the catalogue behind a search. A palette of two hundred and fifty three blocks
+     sorted alphabetically is a palette nobody scrolls. */
+  const used = [...new Set(report.tiles.map((tile) => tile.name))]
+    .filter((name) => catalogueOf()?.blocks?.[name])
+    .sort();
+  right.push(`<div class="card"><h2>Poser un bloc</h2>
+    <p class="hint-line" style="margin:0 0 8px">Choisis un bloc, puis clique une case vide
+      sur l'image ${placing ? "" : "&mdash; un pourtour s'ouvre autour pour poser au dela du bord"}. ${placing
+        ? `<strong>${escape(placing)}</strong> est en main : echap pour le reposer.`
+        : "Clique un bloc pose pour le tourner ou l'enlever."}</p>
+    <input type="search" id="palette-search" placeholder="Chercher dans les 253 blocs"
+      aria-label="Chercher un bloc">
+    <div class="chips palette" id="palette">${
+      used.map((name) => `<button type="button" class="chip pick ${
+        placing === name ? "on" : ""}" data-block="${escape(name)}">${
+        blockIcon(name)}${escape(name)}</button>`).join("")
+    }</div>
+  </div>`);
+
   /* Keeping it, which is the only thing on this page that needs a server. Offered after
      the answer rather than before it: nobody wants to name a schematic they have not seen
      analysed yet. */
@@ -428,6 +458,9 @@ function render(report) {
     drawn = draw($("view"), report.tiles, sizeOf, roleOf, {
       width: stage.clientWidth - 32,
       maxScale: 48,
+      // Room to put something down beyond the edge, but only while something is waiting
+      // to be put down.
+      margin: placing ? 2 : 0,
       inputs: report.ports?.inputs || [],
       outputs: report.ports?.outputs || [],
     });
@@ -449,10 +482,82 @@ function render(report) {
     sealed = false;
     run();
   });
+  $("palette")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-block]");
+    if (!chip) return;
+    placing = placing === chip.dataset.block ? null : chip.dataset.block;
+    for (const other of $("palette").querySelectorAll("[data-block]")) {
+      other.classList.toggle("on", other.dataset.block === placing);
+    }
+    // Redrawn rather than re-analysed: choosing a block changes nothing about the
+    // schematic, it only opens the apron around it.
+    paint();
+    $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  $("palette-search")?.addEventListener("input", (event) => {
+    const asked = event.target.value.trim().toLowerCase();
+    const names = asked
+      ? Object.keys(catalogueOf()?.blocks || {})
+          .filter((name) => name.includes(asked)).slice(0, 40).sort()
+      : used;
+    $("palette").innerHTML = names.map((name) =>
+      `<button type="button" class="chip pick ${placing === name ? "on" : ""}"
+        data-block="${escape(name)}">${blockIcon(name)}${escape(name)}</button>`).join("")
+      || `<span class="hint-line">Aucun bloc de ce nom.</span>`;
+  });
+
   $("ports-mark")?.addEventListener("click", () => {
     $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
     $("block")?.classList.add("waiting");
   });
+}
+
+/**
+ * Change the schematic, and let everything else follow.
+ *
+ * The edit is applied to the tiles, written back out as the string the game reads, and
+ * dropped into the box the player pasted into. From there nothing else on the page has to
+ * know that an edit happened: the analysis re-runs on a string, the same way it does on a
+ * fresh paste, and saving keeps the edited version because that is what is in the box.
+ *
+ * The marks move with it. Writing normalises the schematic onto its own bounding box, so
+ * pulling a block off the left edge shifts every tile one to the right, and a mark left
+ * where it was would silently be on a different block.
+ */
+async function edit(change) {
+  const note = $("keep-note");
+  try {
+    const parsed = await fromBase64(text.value);
+    const before = bounds(parsed.tiles, measures.sizeOf);
+    const tiles = change(parsed.tiles);
+    if (!tiles.length) throw new Error("il ne resterait plus rien");
+
+    const after = bounds(tiles, measures.sizeOf);
+    const dx = after.left - before.left;
+    const dy = after.bottom - before.bottom;
+    if (dx || dy) {
+      const moved = {};
+      for (const [at, mark] of Object.entries(marked)) {
+        const [x, y] = at.split(",").map(Number);
+        moved[`${x - dx},${y - dy}`] = mark;
+      }
+      marked = moved;
+      if (looking) {
+        const [x, y] = looking.split(",").map(Number);
+        looking = `${x - dx},${y - dy}`;
+      }
+    }
+
+    text.value = await toBase64(tiles, {
+      tags: parsed.tags, sizeOf: measures.sizeOf,
+    });
+    // The edited string is not a new schematic somebody pasted, so the marks stay.
+    lastPayload = String(text.value).replace(/\s+/g, "");
+    await run();
+  } catch (error) {
+    if (note) note.textContent = `Modification impossible : ${error.message}`;
+  }
 }
 
 async function run() {
@@ -484,6 +589,18 @@ async function run() {
     $("go").disabled = false;
   }
 }
+
+/* Escape puts the palette down. A block stays armed after being placed, because putting
+   down a line of belt is one click per tile and disarming between each would be absurd;
+   the cost of that is needing a way out that is not hunting for the chip again. */
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !placing) return;
+  placing = null;
+  for (const chip of document.querySelectorAll("#palette [data-block]")) {
+    chip.classList.remove("on");
+  }
+  run();
+});
 
 $("go").addEventListener("click", run);
 text.addEventListener("keydown", (e) => {
@@ -544,6 +661,16 @@ let sealed = false;
 
 /** The block the panel is showing, kept so that marking one does not close it. */
 let looking = null;
+
+/**
+ * The block waiting to be put down, if the palette has one selected.
+ *
+ * Editing here rewrites the pasted string rather than keeping a parallel copy of the
+ * schematic. There is one source of truth, it is the same string the game reads, and
+ * every part of the page that already works off it keeps working without knowing that
+ * anything was edited.
+ */
+let placing = null;
 
 /**
  * The saved schematic this page is looking at, if it came from one.
@@ -621,8 +748,11 @@ function showBlock(report, tile) {
     ? (typeof marked[at] === "string" ? { side: marked[at], resource: null } : marked[at])
     : null;
   const offered = report.offers?.[at] || [];
+  // Marked on presence rather than on the list being non-empty: a block can be a way in
+  // with nothing worth offering on it, and it still has to be markable.
+  const canMark = Object.prototype.hasOwnProperty.call(report.offers || {}, at);
 
-  if (offered.length || mark) {
+  if (canMark || mark) {
     const side = (which, label) => `<button type="button" data-side="${which}"
       class="${mark?.side === which ? "primary" : ""}">${label}</button>`;
 
@@ -648,7 +778,24 @@ function showBlock(report, tile) {
       sur une conception un peu grosse c'est un coup de de.</p>`);
   }
 
+  /* Editing, which turns a viewer into a tool. Rewriting the string rather than keeping a
+     second copy of the schematic beside it: one source of truth, and it is the same string
+     the game reads. */
+  const spins = catalogueOf()?.blocks?.[tile.name]?.rotate;
+  parts.push(`<div class="row edit">
+    ${spins ? `<button type="button" id="spin">Tourner</button>` : ""}
+    <button type="button" id="scrap">Retirer ce bloc</button>
+  </div>`);
+
   panel.innerHTML = parts.join("");
+
+  $("spin")?.addEventListener("click", () => edit((tiles) => tiles.map((t) =>
+    t.x === tile.x && t.y === tile.y
+      ? { ...t, rotation: ((t.rotation | 0) + 1) % 4 } : t)));
+  $("scrap")?.addEventListener("click", () => {
+    looking = null;
+    edit((tiles) => tiles.filter((t) => !(t.x === tile.x && t.y === tile.y)));
+  });
 
   panel.querySelector(".mark")?.addEventListener("click", (event) => {
     const button = event.target.closest("button");
@@ -696,6 +843,12 @@ function wireBlocks(report, drawnNow) {
       return tx >= tile.x + offset && tx < tile.x + offset + tile.size
         && ty >= tile.y + offset && ty < tile.y + offset + tile.size;
     });
+    // A block chosen in the palette turns a click into a placement, on an empty tile.
+    if (placing && !hit) {
+      edit((tiles) => [...tiles, { x: tx, y: ty, block: placing, rotation: 0 }]);
+      return;
+    }
+
     looking = hit ? `${hit.x},${hit.y}` : null;
     showBlock(report, hit || null);
   });

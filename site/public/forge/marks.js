@@ -33,10 +33,21 @@ export function readMarks(marks) {
   return out;
 }
 
-/** The blocks a mark can go on: the ones that carry something from one tile to another. */
+/**
+ * The blocks a mark can go on.
+ *
+ * Anything that can be handed something or hand something on, which is nearly everything.
+ * It used to be carriers only, and that was wrong in the ordinary case: a belt coming from
+ * outside the schematic ends on a press as happily as on another belt, and a player whose
+ * arrival lands directly on a machine had no way to say so.
+ *
+ * What is left out is what genuinely cannot be plugged into: the power grid, which carries
+ * neither items nor liquids, a block this catalogue has never seen, a wall, and a sandbox
+ * tap, which pours by itself and has nothing to be told.
+ */
 export function markable(node) {
-  return Boolean(node.block.carries)
-    && node.role !== "source" && node.role !== "unknown";
+  if (!node.role || node.role === "unknown") return false;
+  return node.role !== "power" && node.role !== "source";
 }
 
 /**
@@ -46,7 +57,24 @@ export function markable(node) {
  * carrier can physically hold. A pipe is never offered coal.
  */
 export function candidates(node, shortOf, everything, catalogue, isLiquid) {
-  const liquid = node.block.carries === "liquid";
+  // A machine takes what its recipe calls for and nothing else, so the list on one is its
+  // own ingredients rather than everything the layout is short of. Marking a press and
+  // being offered water would be the tool forgetting what a press is.
+  const own = [
+    ...Object.keys(node.block.input || {}),
+    ...Object.keys(node.block.input_liquid || {}),
+  ];
+  if (own.length) return own;
+  // A turret eats what it is loaded with.
+  if (node.role === "turret") return node.block.ammo || [];
+
+  // A generator that burns anything, and a container, take whatever they are given.
+  const carries = node.block.carries;
+  if (!carries) {
+    return Object.keys(everything).filter((name) => !name.startsWith("*"));
+  }
+
+  const liquid = carries === "liquid";
   const fits = (name) => isLiquid(name) === liquid;
 
   const named = Object.keys(shortOf).filter((name) => !name.startsWith("*") && fits(name));

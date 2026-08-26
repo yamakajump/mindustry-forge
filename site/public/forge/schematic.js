@@ -213,7 +213,16 @@ export async function read(bytes) {
     try {
       const index = reader.u8();
       const packed = reader.i32();
+      const from = reader.at;
       const config = readConfig(reader);
+      // The configuration bytes exactly as they were written.
+      //
+      // Reading them is lossy on purpose: most of the twenty-odd types are skipped rather
+      // than parsed, because the analysis only cares about three of them. That is fine
+      // until the schematic has to be written back out, and then a logic processor's
+      // program or a unit factory's plan would come back as a zero byte. Kept whole here
+      // and copied through untouched, so editing one block cannot damage another.
+      const raw = body.slice(from, reader.at);
       const rotation = reader.u8();
       tiles.push({
         x: (packed >> 16) & 0xFFFF,
@@ -221,6 +230,7 @@ export async function read(bytes) {
         block: palette[index],
         rotation,
         config,
+        raw,
       });
     } catch {
       // A string damaged on its way through a chat loses its tail, not its head. Keeping
@@ -236,4 +246,124 @@ export async function read(bytes) {
 
 export async function fromBase64(text) {
   return read(bytesFromBase64(text));
+}
+
+/* Writing ------------------------------------------------------------------------------
+
+   The other direction, so a schematic can be changed and handed back to the game. Same
+   layout as the reader above and the same source: `Schematics.write` in v159.7.
+
+   Configuration bytes are copied through exactly as they were read rather than rebuilt
+   from the parsed value. The reader only parses the three types the analysis needs and
+   skips the rest, so rebuilding would turn a logic processor's program into a zero byte.
+   Copying means editing one block cannot damage another, which is the property that makes
+   an editor safe to use on somebody's real base. */
+
+class Writer {
+  constructor() {
+    this.parts = [];
+  }
+  bytes(chunk) { this.parts.push(chunk); return this; }
+  u8(value) { return this.bytes(new Uint8Array([value & 0xFF])); }
+  i16(value) {
+    const out = new Uint8Array(2);
+    new DataView(out.buffer).setInt16(0, value);
+    return this.bytes(out);
+  }
+  i32(value) {
+    const out = new Uint8Array(4);
+    new DataView(out.buffer).setInt32(0, value | 0);
+    return this.bytes(out);
+  }
+  /** `writeUTF`: a big-endian two byte length, then the bytes. */
+  text(value) {
+    const encoded = new TextEncoder().encode(String(value));
+    return this.i16(encoded.length).bytes(encoded);
+  }
+  done() {
+    const size = this.parts.reduce((sum, part) => sum + part.length, 0);
+    const out = new Uint8Array(size);
+    let at = 0;
+    for (const part of this.parts) { out.set(part, at); at += part.length; }
+    return out;
+  }
+}
+
+/**
+ * The bytes of a schematic, ready for the clipboard.
+ *
+ * `sizeOf` is asked for rather than kept here: how big a block is belongs to the block
+ * registry the game printed, and a second copy of that table in this file is a second
+ * thing to be wrong.
+ */
+export async function write(tiles, { tags = {}, sizeOf = () => 1 } = {}) {
+  if (!tiles.length) throw new Error("une schematique vide ne se copie pas");
+
+  // The box, from what the blocks cover rather than from what they are stored at: a two
+  // by two press stored at its centre reaches a tile further right and a tile up.
+  let left = Infinity, bottom = Infinity, right = -Infinity, top = -Infinity;
+  for (const tile of tiles) {
+    const size = sizeOf(tile.block);
+    const offset = Math.trunc(-(size - 1) / 2);
+    left = Math.min(left, tile.x + offset);
+    bottom = Math.min(bottom, tile.y + offset);
+    right = Math.max(right, tile.x + offset + size - 1);
+    top = Math.max(top, tile.y + offset + size - 1);
+  }
+
+  const palette = [];
+  for (const tile of tiles) {
+    if (!palette.includes(tile.block)) palette.push(tile.block);
+  }
+  if (palette.length > 255) throw new Error("plus de 255 blocs differents");
+
+  const body = new Writer();
+  body.i16(right - left + 1).i16(top - bottom + 1);
+
+  const entries = Object.entries(tags).filter(([, value]) => value != null);
+  body.u8(entries.length);
+  for (const [key, value] of entries) body.text(key).text(value);
+
+  body.u8(palette.length);
+  for (const name of palette) body.text(name);
+
+  body.i32(tiles.length);
+  for (const tile of tiles) {
+    body.u8(palette.indexOf(tile.block));
+    body.i32(((tile.x - left) << 16) | ((tile.y - bottom) & 0xFFFF));
+    body.bytes(tile.raw?.length ? tile.raw : new Uint8Array([0]));
+    body.u8(tile.rotation || 0);
+  }
+
+  const squeezed = await deflate(body.done());
+  const out = new Uint8Array(5 + squeezed.length);
+  out.set(new TextEncoder().encode(HEADER), 0);
+  out[4] = VERSION;
+  out.set(squeezed, 5);
+  return out;
+}
+
+/** Zlib-wrapped deflate, which is what Java's `DeflaterOutputStream` writes. */
+async function deflate(bytes) {
+  const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream("deflate"));
+  const chunks = [];
+  const reader = stream.getReader();
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  const size = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const out = new Uint8Array(size);
+  let at = 0;
+  for (const chunk of chunks) { out.set(chunk, at); at += chunk.length; }
+  return out;
+}
+
+/** The string a player pastes into the game. */
+export async function toBase64(tiles, options) {
+  const bytes = await write(tiles, options);
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
 }

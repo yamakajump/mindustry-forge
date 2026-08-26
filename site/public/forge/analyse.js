@@ -40,6 +40,11 @@ export async function loadCatalogue(url = "./forge/blocks.json") {
   return catalogue;
 }
 
+/** The block registry, for the parts of the page that place blocks rather than read them. */
+export function catalogueOf() {
+  return catalogue;
+}
+
 export function useCatalogue(data) {
   catalogue = data;
   return catalogue;

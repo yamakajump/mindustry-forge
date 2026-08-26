@@ -25,7 +25,7 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "range", "carries", "output_per_second",
         "ammo", "reload", "ammo_per_shot", "shots_per_second", "liquid_capacity",
         "boost", "boost_phase", "boost_input", "boost_time", "phase_range_boost",
-        "no_overdrive", "privileged")
+        "no_overdrive", "privileged", "rotate")
 
 
 def main() -> None:

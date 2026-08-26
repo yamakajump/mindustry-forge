@@ -302,3 +302,16 @@ select {
 }
 .pin.out { border-color: var(--accent); }
 .block-panel.waiting { border-color: var(--good); }
+
+/* Putting a block down. The list starts with what the schematic already uses, because the
+   common edit by a long way is extending a line that is already there. */
+.palette { max-height: 190px; overflow-y: auto; margin-top: 8px; }
+.palette .chip.pick img { image-rendering: pixelated; }
+#palette-search {
+  width: 100%; min-height: 38px; font-size: 13px;
+  background: var(--bg); color: var(--ink); border: 1px solid var(--edge);
+  border-radius: 6px; padding: 0 8px;
+}
+#palette-search:focus { border-color: var(--accent); outline: none; }
+.row.edit { margin-top: 10px; }
+.row.edit button { min-height: 38px; font-size: 13px; padding: 0 14px; }
