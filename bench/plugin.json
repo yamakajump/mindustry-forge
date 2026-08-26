@@ -1,0 +1,9 @@
+{
+  "name": "mindustry-forge-bench",
+  "displayName": "mindustry-forge bench",
+  "author": "yamakajump",
+  "main": "mindustryforge.BenchPlugin",
+  "description": "Stamps a schematic into a headless server and measures what it produces.",
+  "version": "0.1.0",
+  "minGameVersion": "154"
+}

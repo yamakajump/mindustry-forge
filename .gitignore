@@ -1,18 +1,18 @@
 __pycache__/
 *.pyc
-.venv/
 .pytest_cache/
-
-# Build metadata, written by `pip install -e .`
 *.egg-info/
 
-# The Mindustry server the bench runs against: downloaded, not authored.
+# Le serveur de test et ce qu il ecrit. Le jar du jeu ne se versionne pas.
+_run/
+_garde/
+bench/build/
+bench/.gradle/
+bench/bridge-old/
 mindustry-forge/
-bridge/build/
-bridge/.gradle/
 
-# Designs a run produced. Interesting, but they are output, not source.
-designs/
-
-# Project notes carry amounts and contacts. They have no place in history.
-.claude/projet/
+# Laravel
+site/vendor/
+site/node_modules/
+site/.env
+site/public/build/
