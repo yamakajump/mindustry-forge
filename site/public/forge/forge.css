@@ -204,3 +204,10 @@ details.supply input[type=text] { width: 280px; }
 
 /* A field sitting in a row of buttons should not take the whole row. */
 #keep-row input[type=text] { flex: 1; min-width: 180px; width: auto; }
+
+/* The block panel, under the picture. Clicking a block is how a player asks what it is
+   doing, and how they tell the tool where the schematic really plugs in: guessing that is
+   genuinely hard, so the guess is a default and this is the answer. */
+.block-panel { margin-top: 12px; }
+.block-panel .sub { margin: 0 0 10px; }
+.stage canvas { cursor: pointer; }

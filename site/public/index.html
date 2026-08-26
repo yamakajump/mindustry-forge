@@ -276,8 +276,15 @@ function render(report) {
   </div>`);
 
   out.innerHTML = `<div class="split">
-    <div class="stage"><canvas id="view" role="img"
-      aria-label="Apercu de ${escape(report.name)}, ${report.blocks} blocs"></canvas></div>
+    <div>
+      <div class="stage"><canvas id="view" role="img"
+        aria-label="Apercu de ${escape(report.name)}, ${report.blocks} blocs"></canvas></div>
+      <div id="block" class="card block-panel">
+        <h2>Un bloc</h2>
+        <p class="empty">Clique un bloc sur l'image pour voir ce qu'il fait, et pour dire
+          si c'est par la que ca entre ou que ca sort.</p>
+      </div>
+    </div>
     <div>${right.join("")}</div>
   </div>`;
 
@@ -288,8 +295,9 @@ function render(report) {
      again when that room changes. A hardcoded width made the picture half the panel on a
      desktop and overflow it on a phone. */
   const stage = $("view").parentElement;
+  let drawn = null;
   const paint = () => {
-    const drawn = draw($("view"), report.tiles, sizeOf, roleOf, {
+    drawn = draw($("view"), report.tiles, sizeOf, roleOf, {
       width: stage.clientWidth - 32,
       maxScale: 48,
       inputs: report.ports?.inputs || [],
@@ -300,6 +308,7 @@ function render(report) {
   paint();
   if (window.ResizeObserver) new ResizeObserver(paint).observe(stage);
 
+  wireBlocks(report, () => drawn);
   wireKeep(report);
 }
 
@@ -309,6 +318,7 @@ async function run() {
     out.innerHTML = `<div class="card error">Colle une schematique, ou depose un fichier.</div>`;
     return;
   }
+  if (payload !== lastPayload) { marked = {}; lastPayload = payload; }
   $("go").disabled = true;
   out.innerHTML = `<div class="skeleton"></div>`;
   try {
@@ -363,9 +373,116 @@ drop.addEventListener("drop", async (e) => {
   run();
 });
 
+/* Clicking a block ---------------------------------------------------------------- */
+
+/**
+ * What the player marked by hand, kept across re-analyses of the same schematic.
+ *
+ * Guessing where a schematic plugs in is genuinely hard: a design has one intake and a
+ * dozen pipes that could physically take one, and nothing in the file says which the
+ * author meant. So the guess is a default and this is the answer.
+ */
+let marked = {};
+
+const rateLine = (label, rates, unit = "/ min", factor = 60) => {
+  const rows = Object.entries(rates || {}).filter(([, v]) => v > 0.001);
+  if (!rows.length) return "";
+  return rows.map(([item, value]) =>
+    `<div class="line"><span>${withIcon(item)}${escape(item)} ${label}</span>
+      <span class="num">${rate(value * factor)} ${unit}</span></div>`).join("");
+};
+
+function showBlock(report, tile) {
+  const panel = $("block");
+  if (!tile) {
+    panel.innerHTML = `<h2>Un bloc</h2><p class="empty">Clique un bloc sur l'image pour
+      voir ce qu'il fait, et pour dire si c'est par la que ca entre ou que ca sort.</p>`;
+    return;
+  }
+
+  const at = `${tile.x},${tile.y}`;
+  const role = {
+    conveyor: "convoyeur", conduit: "tuyau", junction: "jonction", router: "routeur",
+    bridge: "pont", sorter: "trieur", drill: "foreuse", pump: "pompe",
+    crafter: "usine", generator: "generateur", sink: "consommateur", power: "reseau electrique",
+  }[tile.role] || tile.role || "bloc";
+
+  const parts = [`<h2>${escape(tile.name)}</h2>
+    <p class="sub" style="margin:0 0 10px">${role} &middot; ${tile.size}x${tile.size}
+      &middot; en (${tile.x}, ${tile.y})</p>`];
+
+  if (tile.fed !== undefined) {
+    const share = Math.round(tile.fed * 100);
+    parts.push(`<div class="line"><span>Tourne a</span>
+      <span class="num ${share > 99 ? "good" : share > 0 ? "warn" : "bad"}">${share}%</span>
+      </div>`);
+  }
+  parts.push(rateLine("consomme", tile.needsLiquid, "/ s", 1));
+  parts.push(rateLine("consomme", Object.fromEntries(
+    Object.entries(tile.needs).map(([k, v]) =>
+      [k, v * (tile.craftTime ? 60 / tile.craftTime : 0)])), "/ min", 60));
+  parts.push(rateLine("produit", tile.through, "/ min", 60));
+  if (tile.powerOut) {
+    parts.push(`<div class="line"><span>Produit</span>
+      <span class="num good">${rate(tile.powerOut)} energie / s</span></div>`);
+  }
+  if (tile.power) {
+    parts.push(`<div class="line"><span>Consomme</span>
+      <span class="num warn">${rate(tile.power)} energie / s</span></div>`);
+  }
+  parts.push(`<div class="line"><span>Relie a</span>
+    <span class="num">${tile.fedBy} en entree, ${tile.feeds} en sortie</span></div>`);
+
+  const state = marked[at];
+  parts.push(`<div class="row">
+    <button type="button" id="mark-in" class="${state === "in" ? "primary" : ""}">
+      ${state === "in" ? "Entree" : "Definir comme entree"}</button>
+    <button type="button" id="mark-out" class="${state === "out" ? "primary" : ""}">
+      ${state === "out" ? "Sortie" : "Definir comme sortie"}</button>
+    ${state ? `<button type="button" id="mark-none">Retirer</button>` : ""}
+  </div>
+  <p class="hint-line">Ce que tu definis ici est garde avec la schematique, et remplace
+    ce que Forge avait devine.</p>`);
+
+  panel.innerHTML = parts.join("");
+
+  const set = (value) => {
+    if (value) marked[at] = value; else delete marked[at];
+    run();
+  };
+  $("mark-in")?.addEventListener("click", () => set(state === "in" ? null : "in"));
+  $("mark-out")?.addEventListener("click", () => set(state === "out" ? null : "out"));
+  $("mark-none")?.addEventListener("click", () => set(null));
+}
+
+/** Map a click on the picture back to the block under it. */
+function wireBlocks(report, drawnNow) {
+  const canvas = $("view");
+  if (!canvas) return;
+  canvas.style.cursor = "pointer";
+
+  canvas.addEventListener("click", (event) => {
+    const drawn = drawnNow();
+    if (!drawn) return;
+    const rect = canvas.getBoundingClientRect();
+    const tx = drawn.box.left + Math.floor((event.clientX - rect.left) / drawn.scale);
+    // Screen coordinates count down from the top; the game counts up from the bottom.
+    const ty = drawn.box.bottom + drawn.box.height - 1
+      - Math.floor((event.clientY - rect.top) / drawn.scale);
+
+    const hit = report.detail.find((tile) => {
+      const offset = Math.trunc(-(tile.size - 1) / 2);
+      return tx >= tile.x + offset && tx < tile.x + offset + tile.size
+        && ty >= tile.y + offset && ty < tile.y + offset + tile.size;
+    });
+    showBlock(report, hit || null);
+  });
+}
+
 /* Keeping a schematic ------------------------------------------------------------- */
 
 let me = null;
+let lastPayload = null;
 
 /**
  * The token Laravel expects, taken from the cookie it sets.
@@ -437,6 +554,7 @@ function wireKeep(report) {
             width: report.width, height: report.height, blocks: report.blocks,
             perMinute: report.perMinute, needs: report.needs,
             potential: report.potential, power: report.power,
+            marked,
           },
           thumbnail,
         }),

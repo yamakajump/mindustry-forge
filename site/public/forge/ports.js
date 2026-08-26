@@ -54,7 +54,42 @@ function upstream(graph, from) {
   return reached;
 }
 
-/** The box the build occupies, so "on the edge" means something. */
+const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+
+/**
+ * The sides of a carrier a pipe from outside could hand into.
+ *
+ * Empty, outside the build, and not the side the carrier itself points at. That last
+ * condition is the whole difference between eleven sockets and one: a conduit takes liquid
+ * from its back and its sides and never from its nose, so a column of pipes running down
+ * the left edge is not eleven places to plug a pump in.
+ */
+function openFaces(graph, node, box, occupied) {
+  const [fx, fy] = DIRECTIONS[node.rotation % 4];
+  const ahead = `${node.x + fx},${node.y + fy}`;
+  const found = [];
+
+  for (const [dx, dy] of DIRECTIONS) {
+    const x = node.x + dx;
+    const y = node.y + dy;
+    if (`${x},${y}` === ahead) continue;
+    if (occupied.has(`${x},${y}`)) continue;
+    if (x >= box.left && x <= box.right && y >= box.bottom && y <= box.top) continue;
+    found.push([dx, dy]);
+  }
+  return found;
+}
+
+/** Every tile the build stands on, so "empty" means empty. */
+function tilesOf(graph) {
+  const taken = new Set();
+  for (const node of graph.nodes) {
+    for (const [x, y] of node.footprint) taken.add(`${x},${y}`);
+  }
+  return taken;
+}
+
+/** The box the build occupies, so "outside" means something. */
 function boundary(graph) {
   let left = Infinity, right = -Infinity, bottom = Infinity, top = -Infinity;
   for (const node of graph.nodes) {
@@ -83,23 +118,25 @@ export function ports(graph, isLiquid, external = null) {
   const inputs = [];
   const outputs = [];
   const box = boundary(graph);
+  const occupied = tilesOf(graph);
 
   for (let index = 0; index < graph.nodes.length; index++) {
     const node = graph.nodes[index];
     if (!isCarrier(node.role)) continue;
     const carries = node.block.carries || "item";
 
-    // A dangling start is a socket, and so is a carrier on the edge of the build that
-    // leads to a machine the layout cannot feed itself.
+    // A socket is a face a pipe from outside could actually hand into: one that is empty,
+    // that faces out of the build, and that is not the carrier's own output side.
     //
-    // The first version only looked for dangling starts, which found none at all on the
-    // first schematic tried: its pipes run in a loop and the pumps live outside the copy.
-    // A player plugs that in at the edge, so that is where the sockets are.
+    // Two wrong versions before this one. Looking only for dangling starts found none at
+    // all here, because the pipes run in a loop and the pumps live outside the copy.
+    // Taking every carrier on the bounding box then found eleven, including six that were
+    // simply the left-hand column of a rectangle. Facing is what tells them apart: a
+    // conduit takes liquid from its back and its sides, never from its nose.
     const dangling = !graph.into[index].length && graph.out[index].length;
-    const onEdge = node.x === box.left || node.x === box.right
-      || node.y === box.bottom || node.y === box.top;
+    const open = openFaces(graph, node, box, occupied);
 
-    if (dangling || (onEdge && graph.out[index].length)) {
+    if (dangling || open.length) {
       const wants = {};
       for (const target of downstream(graph, index)) {
         const block = graph.nodes[target].block;
@@ -130,7 +167,7 @@ export function ports(graph, isLiquid, external = null) {
       }
       if (dangling || Object.keys(missing).length) {
         inputs.push({ index, x: node.x, y: node.y, block: node.name,
-                      carries, wants: missing });
+                      carries, wants: missing, faces: open });
       }
     }
 
@@ -161,23 +198,35 @@ export function ports(graph, isLiquid, external = null) {
  * The rate is what those machines want at full speed, so the answer is what the layout does
  * when nothing is starving it.
  */
+/**
+ * Which socket a designer would actually have used, per resource.
+ *
+ * The one that leads to the most demand. Sockets that want the same thing are alternatives
+ * rather than a set: eleven places to plug a water pipe in means one pipe and ten other
+ * places you could have put it. Saying "plug into eleven pipes" reads as needing eleven.
+ */
+export function mainPorts(inputs) {
+  const chosen = new Map();
+  for (const port of inputs) {
+    for (const [resource, rate] of Object.entries(port.wants)) {
+      if (resource.startsWith("*")) continue;
+      const held = chosen.get(resource);
+      if (!held || rate > held.rate) chosen.set(resource, { port, rate });
+    }
+  }
+  return chosen;
+}
+
 export function feedPorts(graph, isLiquid, external = null) {
   const { inputs } = ports(graph, isLiquid, external);
   const carrying = inputs.filter((port) =>
     Object.keys(port.wants).some((r) => !r.startsWith("*")));
   const feeds = {};
 
-  for (const port of carrying) {
-    const rates = {};
-    for (const [resource, rate] of Object.entries(port.wants)) {
-      if (resource.startsWith("*")) continue;
-      // Shared between the sockets that want the same thing. Handing each one the full
-      // rate would feed a schematic with fifteen edge pipes fifteen times over, which is
-      // how one reported fifteen thousand water a minute coming back out.
-      const sharing = carrying.filter((other) => other.wants[resource]).length || 1;
-      rates[resource] = rate / sharing;
-    }
-    if (Object.keys(rates).length) feeds[port.index] = rates;
+  // One socket per resource, not all of them. Feeding all of them fed the layout eleven
+  // times over; splitting between them starved every branch to an eleventh of its ask.
+  for (const [resource, { port, rate }] of mainPorts(carrying)) {
+    feeds[port.index] = { ...(feeds[port.index] || {}), [resource]: rate };
   }
   return feeds;
 }

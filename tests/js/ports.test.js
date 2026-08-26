@@ -59,8 +59,28 @@ test("a socket is not offered for something the layout makes itself", async () =
 });
 
 test("supplying by hand overrides the automatic feed", async () => {
-  const auto = await analyse(REAL);
-  const half = await analyse(REAL, { water: 30 });
-  assert.equal(half.fedItself, false);
-  assert.ok(half.power.made < auto.power.made, "moins d'eau, moins d'energie");
+  /* Compared against itself rather than against the automatic feed. The two do not enter
+     the network the same way: plugged in by itself, one socket carries everything, while a
+     stated supply is spread over every entry the resource can use. Comparing them measured
+     the routing, not the supply. */
+  const plenty = await analyse(REAL, { water: 120 });
+  const little = await analyse(REAL, { water: 20 });
+
+  assert.equal(plenty.fedItself, false);
+  assert.ok(plenty.power.made > little.power.made,
+    `${little.power.made} avec 20/s contre ${plenty.power.made} avec 120/s`);
+});
+
+test("a socket marked by hand replaces the guess", async () => {
+  /* Guessing where a schematic plugs in is genuinely hard: this one has fourteen faces a
+     pipe could physically hand into and one intake the author meant. So the guess is a
+     default, and what the player marks is the answer. */
+  const guessed = await analyse(REAL);
+  assert.ok(guessed.ports.inputs.length > 1, "plusieurs candidats sans consigne");
+
+  const chosen = await analyse(REAL, {}, { "4,15": "in" });
+  assert.deepEqual(Object.keys(chosen.marked), ["4,15"]);
+  assert.equal(chosen.ports.inputs.length, 1, "un seul point, celui qu'on a designe");
+  assert.deepEqual([chosen.ports.inputs[0].x, chosen.ports.inputs[0].y], [4, 15]);
+  assert.ok(chosen.power.made > 0, "et elle tourne en etant nourrie par la");
 });
