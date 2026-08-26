@@ -22,6 +22,10 @@ Route::get('/s/{schematic}', [SchematicController::class, 'show']);
    nothing else: this is a public schematic, and everything else about it is on its page. */
 Route::get('/api/schematiques/{schematic}/code', [SchematicController::class, 'code']);
 
+/* Everything the analyser needs to reopen one, including what its author marked by hand.
+   Stored from the first day and never read back. */
+Route::get('/api/schematiques/{schematic}', [SchematicController::class, 'read']);
+
 Route::middleware('auth')->group(function () {
     Route::get('/mes-schematiques', [SchematicController::class, 'mine']);
     Route::post('/api/schematiques', [SchematicController::class, 'store']);

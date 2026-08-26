@@ -254,3 +254,54 @@ it('ne fait de personne un moderateur par defaut', function () {
     // Relu depuis la base : c'est la valeur par defaut de la colonne qu'on teste.
     expect($someone->fresh()->moderator)->toBeFalse();
 });
+
+it('rend une schematique gardee telle qu\'on l\'a laissee', function () {
+    /* What its author marked by hand was stored from the first day and never read back:
+       reopening one threw away the one answer the tool cannot work out for itself. */
+    $owner = User::factory()->create();
+    $schematic = Schematic::factory()->for($owner)->create([
+        'name' => 'Ma presse',
+        'analysis' => ['marked' => ['3,7' => 'in']],
+    ]);
+
+    $this->actingAs($owner)
+        ->getJson("/api/schematiques/{$schematic->slug}")
+        ->assertOk()
+        ->assertJson([
+            'name' => 'Ma presse',
+            'mine' => true,
+            'marked' => ['3,7' => 'in'],
+        ]);
+});
+
+it('laisse corriger le nom, la description et le code', function () {
+    $owner = User::factory()->create();
+    $schematic = Schematic::factory()->for($owner)->create(['name' => 'Faute de frappe']);
+
+    $this->actingAs($owner)
+        ->patchJson("/api/schematiques/{$schematic->slug}", [
+            'name' => 'Presse a graphite',
+            'description' => 'Deux presses, une bande.',
+            'code' => 'bXNjaAF4nA==',
+            'analysis' => ['blocks' => 12, 'marked' => ['0,0' => 'in']],
+        ])
+        ->assertOk();
+
+    $fresh = $schematic->fresh();
+    expect($fresh->name)->toBe('Presse a graphite')
+        ->and($fresh->description)->toBe('Deux presses, une bande.')
+        ->and($fresh->code)->toBe('bXNjaAF4nA==')
+        // Les colonnes cherchables sont refaites depuis la nouvelle analyse.
+        ->and($fresh->blocks)->toBe(12)
+        ->and($fresh->analysis['marked'])->toBe(['0,0' => 'in']);
+});
+
+it('ne laisse pas un inconnu reecrire une schematique', function () {
+    $schematic = Schematic::factory()->create(['name' => 'Pas la tienne']);
+
+    $this->actingAs(User::factory()->create())
+        ->patchJson("/api/schematiques/{$schematic->slug}", ['name' => 'Volee'])
+        ->assertForbidden();
+
+    expect($schematic->fresh()->name)->toBe('Pas la tienne');
+});

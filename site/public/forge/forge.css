@@ -271,3 +271,16 @@ select {
 .card.ask { border-color: var(--accent); }
 .card.ask h2 { color: var(--accent); }
 .card.ask.waiting { border-color: var(--good); }
+
+/* What the rings on the preview mean. They had no legend at all, so a schematic came back
+   covered in green squares that a reader could only guess at. */
+.legend {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+  margin: 8px 2px 0; font-size: 12px; color: var(--ink);
+}
+.legend .dot {
+  width: 11px; height: 11px; border-radius: 2px; display: inline-block;
+  margin-right: 5px; vertical-align: -1px; border: 2px solid var(--good);
+}
+.legend .dot.out { border-color: var(--accent); }
+.legend .dim { color: var(--dim); flex-basis: 100%; }

@@ -357,27 +357,62 @@ function render(report) {
   /* Keeping it, which is the only thing on this page that needs a server. Offered after
      the answer rather than before it: nobody wants to name a schematic they have not seen
      analysed yet. */
-  right.push(`<div class="card"><h2>Garder</h2>
+  /* Editing one already kept, rather than only ever making new ones. A name typed wrong or
+     an intake marked wrongly was permanent, and the only way out was to delete it and
+     start over. */
+  const editing = opened.slug ? opened : null;
+  const chosen = editing ? editing.visibility : "private";
+
+  /* The name is on the card rather than left implied. Pasting a corrected string over an
+     open schematic is the point of editing one - a paste that lost five blocks is exactly
+     what a player wants to fix - so the string is allowed to change under it, and the card
+     says out loud which schematic is about to be overwritten. */
+  right.push(`<div class="card"><h2>${editing ? "Mettre a jour" : "Garder"}</h2>${
+    editing ? `<p class="hint-line" style="margin:0 0 10px">Tu modifies
+      <strong>${escape(editing.name)}</strong>, gardee le
+      ${escape(editing.kept || "")}. Le bouton ecrase ce qui est enregistre.</p>` : ""}
     <div class="row" id="keep-row">
-      <input type="text" id="keep-name" value="${escape(report.name)}"
+      <input type="text" id="keep-name"
+        value="${escape(editing ? editing.name : report.name)}"
         aria-label="Nom de la schematique">
-      <button class="primary" id="keep" type="button">Garder</button>
+      <button class="primary" id="keep" type="button">${
+        editing ? "Enregistrer" : "Garder"}</button>
       <label style="display:inline-flex;align-items:center;gap:7px;color:var(--dim)">
         qui la voit
         <select id="keep-visibility" aria-label="Qui peut la voir">
-          <option value="private">moi seul</option>
-          <option value="unlisted">par lien</option>
-          <option value="public">tout le monde</option>
+          <option value="private" ${chosen === "private" ? "selected" : ""}>moi seul</option>
+          <option value="unlisted" ${chosen === "unlisted" ? "selected" : ""}>par lien</option>
+          <option value="public" ${chosen === "public" ? "selected" : ""}>tout le monde</option>
         </select>
       </label>
     </div>
+    <textarea id="keep-desc" rows="2" placeholder="Une ligne pour dire ce qu'elle fait"
+      aria-label="Description">${escape(editing?.description || "")}</textarea>
+    ${editing ? `<div class="row" style="margin-top:8px">
+      <button type="button" id="keep-new">Garder comme une nouvelle</button>
+      <a class="button" href="/s/${escape(editing.slug)}">Voir sa page</a>
+    </div>` : ""}
     <p class="hint-line" id="keep-note"></p>
   </div>`);
+
+  /* What the rings on the picture mean. They had none: a schematic came back covered in
+     green squares with nothing anywhere saying what they were, and a reader is left to
+     guess that a tool meant to stop them guessing is guessing at them. */
+  const ringed = (report.ports?.inputs || []).length;
+  const outlets = (report.ports?.outputs || []).length;
+  const legend = ringed || outlets ? `<p class="legend">${
+    ringed ? `<span class="dot in"></span>${answered ? "Par la que ca entre"
+      : "Par la que Forge pense que ca entre"}` : ""
+  }${
+    outlets ? `<span class="dot out"></span>Par la que ca sort` : ""
+  }<span class="dim">Trait plein : retenu. Pointille : possible aussi.
+    Clique un bloc pour corriger.</span></p>` : "";
 
   out.innerHTML = `<div class="split">
     <div class="side">
       <div class="stage"><canvas id="view" role="img"
         aria-label="Apercu de ${escape(report.name)}, ${report.blocks} blocs"></canvas></div>
+      ${legend}
       <div id="block" class="card block-panel">
         <h2>Un bloc</h2>
         <p class="empty">Clique un bloc sur l'image pour voir ce qu'il fait, et pour dire
@@ -390,6 +425,8 @@ function render(report) {
   const known = new Map(report.graph.nodes.map((n) => [n.name, n]));
   const sizeOf = (name) => known.get(name)?.block.size || 1;
   const roleOf = (name) => known.get(name)?.role || "";
+  // Kept for the rest of the page, which draws the same schematic again for the preview.
+  measures = { sizeOf, roleOf };
   /* Sized from the room it actually has rather than from a number typed here, and drawn
      again when that room changes. A hardcoded width made the picture half the panel on a
      desktop and overflow it on a phone. */
@@ -515,6 +552,19 @@ let marked = {};
  * once: "it is those pipes", "let me point at them", or "nothing goes in".
  */
 let ports = { asked: false, sealed: false };
+
+/**
+ * The saved schematic this page is looking at, if it came from one.
+ *
+ * Kept so that reopening one is editing it rather than making a second copy, and so that
+ * the intakes its author marked by hand come back with it. They were stored from the first
+ * day and never read: reopening threw away the one answer the tool cannot work out for
+ * itself and asked for it again.
+ */
+let opened = {};
+
+/** How big and what kind each block is, worked out once per report and reused. */
+let measures = { sizeOf: () => 1, roleOf: () => "" };
 
 const rateLine = (label, rates, unit = "/ min", factor = 60) => {
   const rows = Object.entries(rates || {}).filter(([, v]) => v > 0.001);
@@ -664,43 +714,68 @@ function wireKeep(report) {
     return;
   }
 
-  button.addEventListener("click", async () => {
+  const save = async (slug) => {
+    /* Drawn again, clean, rather than photographing the canvas on screen.
+
+       The picture on screen carries the analysis: green rings on every socket Forge thinks
+       is an intake, yellow on the outlets. Sent as it was, those rings were baked into the
+       preview that shows up in a Discord unfurl and on the schematic's own page, where
+       nothing explains them and nobody asked for them.
+
+       Still drawn by the same renderer, so the unfurl cannot disagree with the page. */
+    const plate = document.createElement("canvas");
+    draw(plate, report.tiles, measures.sizeOf, measures.roleOf,
+         { width: 640, maxScale: 32 });
+
+    const body = {
+      name: $("keep-name").value.trim() || report.name,
+      description: $("keep-desc").value.trim() || null,
+      code: String(text.value).replace(/\s+/g, ""),
+      visibility: $("keep-visibility").value,
+      analysis: {
+        width: report.width, height: report.height, blocks: report.blocks,
+        perMinute: report.perMinute, needs: report.needs,
+        potential: report.potential, power: report.power,
+        // Kept so reopening it does not throw away the one answer the tool cannot work
+        // out for itself.
+        marked,
+      },
+      thumbnail: plate.toDataURL("image/png"),
+    };
+
+    const answer = await fetch(slug ? `/api/schematiques/${slug}` : "/api/schematiques", {
+      method: slug ? "PATCH" : "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-XSRF-TOKEN": token(),
+        Accept: "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    const said = await answer.json();
+    if (!answer.ok) throw new Error(said.message || "refuse");
+    return said;
+  };
+
+  const run = (slug, done) => async () => {
     button.disabled = true;
     note.textContent = "Enregistrement...";
     try {
-      /* The picture the page already drew, sent as it is. Redrawing it on the server would
-         mean a second renderer in another language, and a Discord unfurl that disagrees
-         with the page it links to. */
-      const thumbnail = $("view")?.toDataURL("image/png") || null;
-
-      const answer = await fetch("/api/schematiques", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-XSRF-TOKEN": token(),
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          name: $("keep-name").value.trim() || report.name,
-          code: String(text.value).replace(/\s+/g, ""),
-          visibility: $("keep-visibility").value,
-          analysis: {
-            width: report.width, height: report.height, blocks: report.blocks,
-            perMinute: report.perMinute, needs: report.needs,
-            potential: report.potential, power: report.power,
-            marked,
-          },
-          thumbnail,
-        }),
-      });
-      const body = await answer.json();
-      if (!answer.ok) throw new Error(body.message || "refuse");
-      note.innerHTML = `Garde. <a href="${body.url}">Voir la page</a>`;
+      const said = await save(slug);
+      note.innerHTML = `${done} <a href="${said.url}">Voir la page</a>`;
+      if (!slug && said.slug) opened = { ...said, mine: true };
     } catch (error) {
       note.textContent = `Impossible d'enregistrer : ${error.message}`;
+    } finally {
       button.disabled = false;
     }
-  });
+  };
+
+  button.addEventListener("click",
+    run(opened.slug || null, opened.slug ? "A jour." : "Gardee."));
+  // Same schematic, kept a second time: a variant worth keeping beside the original
+  // rather than instead of it.
+  $("keep-new")?.addEventListener("click", run(null, "Gardee comme une nouvelle."));
 }
 
 /* Fetched while the player is still pasting, so the picture appears with the numbers
@@ -708,12 +783,22 @@ function wireKeep(report) {
 loadSprites().catch(() => {});
 whoAmI();
 
-/* Arriving from a public page's "analyse chez moi" link. */
+/* Arriving from a schematic's page, to look at it or to change it. */
 const asked = new URLSearchParams(location.search).get("s");
 if (asked) {
-  fetch(`/api/schematiques/${encodeURIComponent(asked)}/code`)
-    .then((r) => (r.ok ? r.text() : null))
-    .then((code) => { if (code) { text.value = code; run(); } })
+  fetch(`/api/schematiques/${encodeURIComponent(asked)}`, {
+    headers: { Accept: "application/json" },
+  })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((found) => {
+      if (!found?.code) return;
+      text.value = found.code;
+      // Its author's own marks come back with it, and its author edits it in place.
+      marked = { ...(found.marked || {}) };
+      if (Object.keys(marked).length) ports = { asked: true, sealed: false };
+      if (found.mine) opened = found;
+      run();
+    })
     .catch(() => {});
 }
 </script>
