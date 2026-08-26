@@ -315,3 +315,10 @@ select {
 #palette-search:focus { border-color: var(--accent); outline: none; }
 .row.edit { margin-top: 10px; }
 .row.edit button { min-height: 38px; font-size: 13px; padding: 0 14px; }
+
+/* The ground under the schematic, painted rather than imagined. */
+.slide { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--dim); }
+.slide input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); }
+.slide .num { min-width: 34px; text-align: right; }
+#ores .chip.pick img, #grounds .chip.pick img { image-rendering: pixelated; }
+#ores, #grounds { max-height: 150px; }

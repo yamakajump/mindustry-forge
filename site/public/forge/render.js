@@ -327,14 +327,44 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   // is not exactly one to one.
   context.imageSmoothingEnabled = false;
 
+  /* The ground, under everything.
+     
+     Painted tiles win over the game's hatched schematic background, because a schematic
+     standing on a patch of copper ore is standing on copper ore and the hatching is only
+     there to say "this tile belongs to the build". An ore is an overlay: it goes over the
+     floor rather than instead of it, exactly as the game stacks them. */
+  const ground = options.ground || null;
+  const painted = new Set();
+  if (ground && sheet) {
+    for (const [at, layers] of Object.entries(ground)) {
+      const [x, y] = at.split(",").map(Number);
+      if (x < box.left || x >= box.left + box.width) continue;
+      if (y < box.bottom || y >= box.bottom + box.height) continue;
+      painted.add(at);
+
+      const px = (x - box.left) * scale;
+      const py = (box.height - (y - box.bottom) - 1) * scale;
+      for (const name of [layers.floor, layers.overlay]) {
+        const art = name && atlas?.sprites?.[`floor/${name}`];
+        if (art) context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
+      }
+    }
+  }
+
   const pattern = backing(context, scale);
   for (const tile of tiles) {
     const size = sizeOf(tile.name || tile.block);
     const offset = Math.trunc(-(size - 1) / 2);
-    context.fillStyle = pattern;
-    context.fillRect((tile.x + offset - box.left) * scale,
-                     (box.height - (tile.y + offset - box.bottom) - size) * scale,
-                     size * scale, size * scale);
+    for (let dx = 0; dx < size; dx++) {
+      for (let dy = 0; dy < size; dy++) {
+        const x = tile.x + offset + dx;
+        const y = tile.y + offset + dy;
+        if (painted.has(`${x},${y}`)) continue;
+        context.fillStyle = pattern;
+        context.fillRect((x - box.left) * scale,
+                         (box.height - (y - box.bottom) - 1) * scale, scale, scale);
+      }
+    }
   }
 
   // The apron, drawn as a grid so it reads as somewhere blocks go rather than as padding.
@@ -358,6 +388,16 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
 
   const feeds = blender(tiles, sizeOf, roleOf);
   const missing = [];
+
+  /* How solid the build is drawn.
+     
+     Painting the ground under a finished schematic is painting blind: the blocks cover
+     it. Fading them out is what makes the brush usable, and it answers a question of its
+     own besides - "what is this thing standing on" is not obvious from a picture where
+     the thing covers everything. */
+  context.save();
+  context.globalAlpha = options.opacity === undefined ? 1 : options.opacity;
+
   for (const tile of tiles) {
     const size = sizeOf(tile.name || tile.block);
     const offset = Math.trunc(-(size - 1) / 2);
@@ -416,6 +456,11 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
                         px, py, size * scale, size * scale);
     }
   }
+
+  // Faded with the build, not with the marks: a mark on a half transparent block is still
+  // an answer the player gave, and it is the one thing on the picture that has to stay
+  // legible while the ground underneath is being painted.
+  context.restore();
 
   // The marks, so the picture says where things go in and out. A list of coordinates
   // beside a picture makes a reader count tiles; a mark on the tile does not.

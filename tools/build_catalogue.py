@@ -25,7 +25,11 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "range", "carries", "output_per_second",
         "ammo", "reload", "ammo_per_shot", "shots_per_second", "liquid_capacity",
         "boost", "boost_phase", "boost_input", "boost_time", "phase_range_boost",
-        "no_overdrive", "privileged", "rotate")
+        "no_overdrive", "privileged", "rotate",
+        # The ground. What a drill on it pulls out and what a pump on it draws, which is
+        # the difference between "at best, on a full patch" and an actual figure.
+        "floor", "overlay", "floor_liquid", "drops", "drops_liquid", "liquid_multiplier",
+        "deep", "buildable", "unmineable", "pump_amount")
 
 
 def main() -> None:
@@ -35,7 +39,10 @@ def main() -> None:
     for name, entry in raw["blocks"].items():
         # A block with neither a role nor a build cost cannot appear in a schematic and
         # cannot affect one. Air, spawn markers, the wall-removal tool.
-        if not entry.get("role") and not entry.get("cost"):
+        #
+        # The ground is the exception: it never appears in a schematic and it decides what
+        # the schematic does, because a drill pulls out whatever it is standing on.
+        if not entry.get("role") and not entry.get("cost") and not entry.get("floor"):
             continue
         blocks[name] = {k: v for k, v in entry.items()
                         if k in KEEP and v not in (0, {}, "", None)}

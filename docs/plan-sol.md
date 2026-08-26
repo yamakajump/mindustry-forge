@@ -25,7 +25,7 @@ s'en apercevoir après avoir réécrit une deuxième version serait le gâchis h
 Autrement dit : le pont existe, le rendu en direct existe, le client existe. Ce qui manque
 est le greffon côté forge et la partie navigateur.
 
-## Étape A. Le sol dans le navigateur
+## Étape A. Le sol dans le navigateur - FAIT le 26/08/2026
 
 Utile tout de suite, sans serveur, et ça enlève une devinette de plus.
 
@@ -88,7 +88,7 @@ Les deux partagent tout sauf le déclencheur. On fait le pont d'abord, la file a
 
 ## Ordre
 
-A1 → A2 → A3 → A5 → A4 → A6, puis B7 → B8 → B9.
+A1 → A2 → A3 → A5 → A4 → A6 est fait. Reste B7 → B8 → B9.
 
 La transparence (A5) passe avant le pinceau (A4) parce qu'elle le rend utilisable, et le
 calcul (A6) passe en dernier parce que c'est le seul morceau qui a besoin que tout le

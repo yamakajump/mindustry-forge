@@ -6,7 +6,15 @@ l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 
 ## À faire
 
-### 1. Faire tourner le banc
+### 1. Le vrai moteur, avec le sol peint
+
+Le plan complet est dans `docs/plan-sol.md`. La moitié navigateur est faite : on peint le
+terrain, on voit à travers la schématique, et les foreuses et les pompes disent ce
+qu'elles sortent vraiment. Reste la moitié qui compte : porter le pont de `mindustry-ai`
+dans `bench/`, construire un monde depuis le sol peint, poser la schématique, et regarder
+le vrai moteur la faire tourner.
+
+### 2. Faire tourner le banc
 
 C'est le seul point qui reste sur la justesse des chiffres, et c'est le vrai.
 
@@ -19,7 +27,7 @@ C'est aussi ce qui remplace le simulateur, supprimé plutôt que réparé. Écri
 moteur de Mindustry en JavaScript à côté d'une copie qui marche du moteur de Mindustry,
 c'était la mauvaise moitié du travail.
 
-### 2. Mécanismes du jeu encore absents
+### 3. Mécanismes du jeu encore absents
 
 - **Chaleur** (Erekir) : pas modélisée du tout. Toute la moitié Erekir du jeu en dépend, et
   `reinforced-bridge-conduit` est classé « consommateur », ce qui est le symptôme.
@@ -34,19 +42,33 @@ c'était la mauvaise moitié du travail.
   accélérateur est alimenté dépend du calcul, qui dépend de la vitesse, qui dépend du
   bonus. Le chiffre nu est annoncé et le bonus est nommé à côté.
 
-### 3. Place de marché
+### 4. Place de marché
 
 - Comparer deux schématiques côte à côte.
 - Filtrer sur ce dont elle a besoin : « j'ai du charbon, montre ce que je peux faire
   tourner ».
 - Classement par cuivre investi et pas seulement par bloc.
 
-### 4. Reste
+### 5. Reste
 
 - Diagnostic explicite : « trois bandes reliées à rien », en tête plutôt qu'en bas.
 - Marquer plusieurs blocs d'un coup (glisser sur une rangée de tuyaux).
 
 ## Corrigé
+
+- [x] **Le sol.** 107 sols et minerais sortis du jeu avec ce qui compte : `itemDrop`,
+      `liquidDrop`, `liquidMultiplier`. Un pinceau à taille réglable, un curseur de
+      transparence pour voir sous la schématique, et le calcul qui s'en sert : une foreuse
+      annonce `60 × cases_couvertes / (drillTime + multiplicateur × dureté)` au lieu de
+      « au mieux, sur une tache pleine ». Une foreuse à moitié sur la tache est deux fois
+      plus lente, et une foreuse mécanique sur du titane ne creuse pas, elle ne peut pas.
+- [x] **Une foreuse produisait zéro.** Le registre ne donne aucune sortie à une foreuse,
+      parce que ce qu'elle fait dépend des cases sous elle : sans sol, une schématique de
+      foreuses et de bandes s'analysait en silence.
+- [x] **L'éditeur.** `schematic.js` sait écrire le format du jeu, pas seulement le lire.
+      Tourner, retirer, poser, avec un pourtour qui s'ouvre pour poser au delà du bord.
+- [x] **Marquer n'importe quel bloc**, pas seulement un transporteur : une bande venue de
+      dehors finit sur une presse aussi bien que sur une autre bande.
 
 - [x] **La devinette des entrées est supprimée, pas améliorée.** Forge choisissait le
       transporteur du bord le plus probable par ressource et alimentait la schématique par
