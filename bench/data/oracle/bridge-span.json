@@ -2,6 +2,7 @@
   "game_version": "release build 159.7",
   "ticks": 1800,
   "seconds": 30,
+  "pools": [],
   "containers": [
     {
       "block": "vault",

@@ -26,29 +26,34 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const KEPT = join(ROOT, "bench", "data", "oracle");
 
-const { analyse, buildGraph, useCatalogue } = await import(
-  new URL("../site/public/forge/analyse.js", import.meta.url));
-const { fromBase64, toBase64 } = await import(
+const { differences, KEPT, known, measured, paintedFor, ported } = await import(
+  new URL("./compare.mjs", import.meta.url));
+const { toBase64 } = await import(
   new URL("../site/public/forge/schematic.js", import.meta.url));
-const { World } = await import(new URL("../site/public/forge/engine/core.js", import.meta.url));
-const { behaviourOf } = await import(
-  new URL("../site/public/forge/engine/carriers.js", import.meta.url));
 
-const known = useCatalogue(JSON.parse(
-  readFileSync(join(ROOT, "site", "public", "forge", "blocks.json"), "utf8")));
 const sizeOf = (name) => known.blocks[name]?.size || 1;
 
 /** A content configuration, as the game writes it: type 5, a content kind, an id. */
 const held = (kind, id) => Uint8Array.from([5, kind, (id >> 8) & 255, id & 255]);
 const item = (name) => held(0, known.items[name].id);
+const liquid = (name) => held(4, known.liquids[name].id);
+
+/** A scenario may be a bare list of tiles, or tiles and the ground under them. */
+const shape = (built) => (Array.isArray(built) ? { tiles: built, ground: [] }
+  : { tiles: built.tiles, ground: built.ground || [] });
 
 /**
  * The scenarios.
  *
  * Small on purpose. A big schematic that disagrees tells you that something is wrong; a
  * line of eight belts that disagrees tells you which line of which class.
+ */
+/**
+ * A scenario is either a list of tiles, or a list of tiles and the ground under them.
+ *
+ * A drill on bare metal floor pulls up nothing, so a scenario that measures one has to say
+ * what it stands on. The same patch is painted in both engines, from the same list.
  */
 const SCENARIOS = {
   /* A source, a line, a vault. The plainest question there is: how fast does a belt go. */
@@ -176,6 +181,53 @@ const SCENARIOS = {
     { x: 2, y: 6, block: "vault", rotation: 0 },
   ],
 
+  /* A pipe. Liquids do not travel like items: they move by pressure, a fraction at a
+     time, so a settled line has a gradient along it and the far end is thinner than the
+     near end. The tank at the end is what makes that measurable. */
+  "pipe-water": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
+      ...Array.from({ length: 8 }, (_, i) => (
+        { x: i + 1, y: 0, block: "conduit", rotation: 0 })),
+      { x: 10, y: 0, block: "liquid-tank", rotation: 0 },
+    ],
+  }),
+
+  /* The same with a pulse conduit, which holds twice as much and pushes slightly harder. */
+  "pipe-pulse": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
+      ...Array.from({ length: 8 }, (_, i) => (
+        { x: i + 1, y: 0, block: "pulse-conduit", rotation: 0 })),
+      { x: 10, y: 0, block: "liquid-tank", rotation: 0 },
+    ],
+  }),
+
+  /* A drill on four tiles of copper. Its rate is the game's own formula over the tiles it
+     covers, and its warmup is the part a steady-state answer cannot express: it does not
+     start at full speed, it creeps up over the first second and a bit. */
+  "drill-copper": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "mechanical-drill", rotation: 0 },
+      { x: 2, y: 0, block: "conveyor", rotation: 0 },
+      { x: 3, y: 0, block: "conveyor", rotation: 0 },
+      { x: 5, y: 0, block: "vault", rotation: 0 },
+    ],
+    ground: [[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => `ore-copper@${x},${y}`),
+  }),
+
+  /* Half on the patch, so half as fast. Nothing anywhere multiplies by a half: it falls
+     out of counting the tiles. */
+  "drill-half": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "mechanical-drill", rotation: 0 },
+      { x: 2, y: 0, block: "conveyor", rotation: 0 },
+      { x: 3, y: 0, block: "conveyor", rotation: 0 },
+      { x: 5, y: 0, block: "vault", rotation: 0 },
+    ],
+    ground: [[0, 0], [0, 1]].map(([x, y]) => `ore-copper@${x},${y}`),
+  }),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -253,30 +305,6 @@ function lineUp(containers) {
     .sort((a, b) => a.at.localeCompare(b.at));
 }
 
-/** Run a schematic through the port, and report what each of its vaults holds. */
-async function port(code, ticks) {
-  const graph = buildGraph((await fromBase64(code)).tiles);
-  const world = new World(graph, behaviourOf);
-  for (let i = 0; i < ticks; i++) world.step();
-
-  const containers = world.builds
-    .filter((build) => build.role === "store")
-    .map((build) => ({
-      x: build.x, y: build.y,
-      items: Object.fromEntries([...build.items.counts].filter(([, n]) => n > 0)),
-    }));
-  return containers.length ? lineUp(containers) : [];
-}
-
-/** What the engine wrote down last time, if it has been asked. */
-function measured(name) {
-  const path = join(KEPT, `${name}.json`);
-  if (!existsSync(path)) return null;
-  const raw = JSON.parse(readFileSync(path, "utf8"));
-  const containers = raw.containers || [];
-  return { ticks: raw.ticks, containers: containers.length ? lineUp(containers) : [] };
-}
-
 const SECONDS = 30;
 const TICKS = SECONDS * 60;
 
@@ -285,9 +313,12 @@ mkdirSync(KEPT, { recursive: true });
 if (process.argv.includes("--measure")) {
   const commands = [];
   for (const [name, build] of Object.entries(SCENARIOS)) {
-    const code = await toBase64(check(name, build()), { tags: { name }, sizeOf });
+    const { tiles, ground } = shape(build());
+    const code = await toBase64(check(name, tiles), { tags: { name }, sizeOf });
     writeFileSync(join(KEPT, `${name}.txt`), code);
-    commands.push(`measure ${code} ${SECONDS} ../bench/data/oracle/${name}.json`);
+    writeFileSync(join(KEPT, `${name}.sol`), ground.join(" "));
+    commands.push(`measure ${code} ${SECONDS} ../bench/data/oracle/${name}.json`
+      + (ground.length ? ` ${ground.join(" ")}` : ""));
   }
   writeFileSync(join(KEPT, "commands.txt"), `${commands.join("\n")}\n`);
   console.log(`${commands.length} scenarios ecrits dans ${KEPT}`);
@@ -299,44 +330,30 @@ if (process.argv.includes("--measure")) {
 
 let worst = 0;
 let missing = 0;
-console.log(`scenario / coffre / objet      portage      jeu   ecart`);
-console.log(`${"-".repeat(62)}`);
+console.log(`scenario / place / ce qui s'y trouve   portage      jeu   ecart`);
+console.log(`${"-".repeat(66)}`);
 
 for (const [name, build] of Object.entries(SCENARIOS)) {
-  const code = await toBase64(check(name, build()), { tags: { name }, sizeOf });
-  const mine = await port(code, TICKS);
+  const { tiles, ground } = shape(build());
+  const code = await toBase64(check(name, tiles), { tags: { name }, sizeOf });
   const theirs = measured(name);
 
   if (!theirs) {
     missing++;
-    console.log(`${name.padEnd(20)} pas encore mesure`);
+    console.log(`${name.padEnd(28)} pas encore mesure`);
     continue;
   }
 
-  if (mine.length !== theirs.containers.length) {
-    worst = 1;
-    console.log(`${name.padEnd(20)} ${mine.length} coffres contre `
-      + `${theirs.containers.length}`);
-    continue;
-  }
-
-  for (let i = 0; i < mine.length; i++) {
-    const here = mine[i];
-    const there = theirs.containers[i];
-    const items = new Set([...Object.keys(here.items), ...Object.keys(there.items)]);
-    for (const item of items) {
-      const a = here.items[item] || 0;
-      const b = there.items[item] || 0;
-      const gap = b ? Math.abs(a - b) / b : (a ? 1 : 0);
-      worst = Math.max(worst, gap);
-      const label = `${name} ${here.at} ${item}`;
-      console.log(`${label.padEnd(30)} ${String(a).padStart(6)} ${String(b).padStart(8)}`
-        + `   ${a === b ? "exact" : `${(gap * 100).toFixed(1)}%`}`);
-    }
+  const mine = await ported(code, theirs.ticks, ground);
+  for (const gap of differences(mine, theirs)) {
+    worst = Math.max(worst, gap.gap);
+    console.log(`${`${name} ${gap.what}`.padEnd(38)}`
+      + `${String(gap.mine).padStart(8)} ${String(gap.theirs).padStart(8)}`
+      + `   ${gap.gap < 0.0001 ? "exact" : `${(gap.gap * 100).toFixed(1)}%`}`);
   }
 }
 
-console.log(`${"-".repeat(62)}`);
+console.log(`${"-".repeat(66)}`);
 if (missing) {
   console.log(`${missing} scenario(s) jamais mesures : relance avec --measure`);
 }

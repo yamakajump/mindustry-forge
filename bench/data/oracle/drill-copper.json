@@ -6,20 +6,14 @@
   "containers": [
     {
       "block": "vault",
-      "x": 23,
+      "x": 17,
       "y": 13,
       "items":{
-        "coal": 179
+        "copper": 5
       }
-    },
-    {
-      "block": "vault",
-      "x": 23,
-      "y": 16,
-      "items":{}
     }
   ],
   "per_second":{
-    "coal": 5.9666667
+    "copper": 0.16666667
   }
 }

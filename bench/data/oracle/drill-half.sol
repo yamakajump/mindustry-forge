@@ -1,0 +1,1 @@
+ore-copper@0,0 ore-copper@0,1

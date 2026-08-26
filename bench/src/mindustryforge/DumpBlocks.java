@@ -102,6 +102,10 @@ public class DumpBlocks {
             // makes one graphite every ninety frames and may offload every five - but it
             // is the difference between a machine that trickles and one that bursts.
             entry.put("dump_time", block.dumpTime);
+            // How hard a block pushes a liquid at the next one. `moveLiquid` compares the
+            // fraction it holds, times this, against the fraction the other holds, so a
+            // settled line has a gradient along it rather than a flat rate.
+            entry.put("liquid_pressure", block.liquidPressure);
             entry.put("health", block.health);
 
             // What it costs to build, which is what "compact" and "cheap" are scored on.

@@ -195,7 +195,14 @@ export class Build {
   }
 
   acceptLiquid(source, liquid) {
+    if (this.behaviour?.acceptLiquid) {
+      return this.behaviour.acceptLiquid(this, source, liquid);
+    }
     if (!this.block.liquid_capacity) return false;
+    // A machine only takes a liquid its recipe names, which is what stops a press from
+    // filling up with water it cannot use.
+    const wanted = this.block.input_liquid || {};
+    if (Object.keys(wanted).length && !(liquid in wanted)) return false;
     return (!this.liquid || this.liquid === liquid || this.liquidAmount < 0.2)
       && this.liquidAmount < this.liquidCapacity;
   }
@@ -208,8 +215,24 @@ export class Build {
    * one moves a lot; two pipes at the same level move nothing, which is why a settled line
    * has a gradient along it.
    */
-  moveLiquid(next, liquid) {
-    if (!next || !this.liquidAmount) return 0;
+  /**
+   * Where a liquid handed to this block really ends up.
+   *
+   * A liquid junction has no tank: asked where a liquid should go, it answers with
+   * whatever is on the far side, which may answer with the one beyond that. `moveLiquid`
+   * asks before it moves anything, so a chain of junctions is crossed in one step and
+   * never holds a drop.
+   */
+  liquidDestination(source, liquid, seen = 0) {
+    if (this.behaviour?.liquidDestination && seen < 32) {
+      return this.behaviour.liquidDestination(this, source, liquid, seen);
+    }
+    return this;
+  }
+
+  moveLiquid(target, liquid) {
+    const next = target?.liquidDestination(this, liquid);
+    if (!next || next === this || !this.liquidAmount) return 0;
     const held = this.liquid === liquid ? this.liquidAmount : 0;
     if (held <= 0) return 0;
 

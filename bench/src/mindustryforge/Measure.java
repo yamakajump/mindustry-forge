@@ -10,6 +10,7 @@ import mindustry.content.Blocks;
 import mindustry.game.Schematic;
 import mindustry.game.Team;
 import mindustry.type.Item;
+import mindustry.type.Liquid;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.StorageBlock.StorageBuild;
 
@@ -47,8 +48,8 @@ public class Measure implements ApplicationListener {
     private Path out;
     private boolean running;
 
-    /** One scenario waiting its turn. */
-    private record Job(String base64, float seconds, Path out) {
+    /** One scenario waiting its turn, with the ground it is to be run on. */
+    private record Job(String base64, float seconds, Path out, String[] ground) {
     }
 
     /**
@@ -61,8 +62,8 @@ public class Measure implements ApplicationListener {
     private final Seq<Job> waiting = new Seq<>();
 
     /** Take a scenario, and run it when the one before it is done. */
-    public void queue(String base64, float seconds, Path path) {
-        waiting.add(new Job(base64, seconds, path));
+    public void queue(String base64, float seconds, Path path, String[] ground) {
+        waiting.add(new Job(base64, seconds, path, ground));
         if (!running) {
             start(waiting.remove(0));
         }
@@ -76,8 +77,18 @@ public class Measure implements ApplicationListener {
      * the frames that follow.
      */
     private void start(Job job) {
+        ground = job.ground();
         begin(job.base64(), job.seconds(), job.out());
     }
+
+    /**
+     * Ore to paint under the schematic before it runs.
+     *
+     * <p>A drill makes nothing on bare metal floor, so a scenario that measures one has to
+     * say what it stands on. Written as `ore-copper@2,3` on the command line, in the
+     * schematic's own coordinates, so the browser and the game paint the same tiles.
+     */
+    private String[] ground = new String[0];
 
     public void begin(String base64, float seconds, Path path) {
         Schematic schematic;
@@ -103,6 +114,21 @@ public class Measure implements ApplicationListener {
         Vars.state.rules.waves = false;
         Vars.state.rules.attackMode = false;
         Vars.logic.play();
+
+        // The ground, before anything is built on it.
+        for (String painted : ground) {
+            String[] parts = painted.split("[@,]");
+            if (parts.length != 3) continue;
+            mindustry.world.Block floor = Vars.content.block(parts[0]);
+            Tile tile = Vars.world.tile(MARGIN + Integer.parseInt(parts[1]),
+                                        MARGIN + Integer.parseInt(parts[2]));
+            if (tile == null || floor == null) continue;
+            if (floor instanceof mindustry.world.blocks.environment.OverlayFloor) {
+                tile.setOverlay(floor);
+            } else if (floor instanceof mindustry.world.blocks.environment.Floor ground2) {
+                tile.setFloor(ground2);
+            }
+        }
 
         /* Stamped tile by tile rather than handed to `placeLoadout`, which insists on
            finding a core in the schematic and refuses anything else. Nothing here wants a
@@ -162,6 +188,30 @@ public class Measure implements ApplicationListener {
         root.put("game_version", mindustry.core.Version.combined());
         root.put("ticks", ticksRun);
         root.put("seconds", ticksRun / (float) Clock.TICKS_PER_SECOND);
+
+        /* Liquids too, and from every building rather than only from the containers.
+        
+           A liquid tank is a `LiquidRouter`, not a `StorageBlock`, so a scenario that ends
+           in one reported nothing at all. And unlike items, what matters about a liquid is
+           often where it settled rather than how much arrived: a line of pipe holds a
+           gradient, and that gradient is the answer. */
+        Jval pools = Jval.newArray();
+        for (Tile tile : Vars.world.tiles) {
+            if (tile.build == null || tile.build.tile != tile) continue;
+            if (tile.build.liquids == null) continue;
+            Liquid current = tile.build.liquids.current();
+            float amount = tile.build.liquids.currentAmount();
+            if (current == null || amount <= 0.001f) continue;
+
+            Jval one = Jval.newObject();
+            one.put("block", tile.block().name);
+            one.put("x", tile.x);
+            one.put("y", tile.y);
+            one.put("liquid", current.name);
+            one.put("amount", amount);
+            pools.asArray().add(one);
+        }
+        root.put("pools", pools);
 
         Jval stores = Jval.newArray();
         Jval totals = Jval.newObject();

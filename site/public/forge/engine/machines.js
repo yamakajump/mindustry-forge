@@ -128,6 +128,69 @@ function dumpOutputs(build, step) {
   }
 }
 
+/**
+ * A drill.
+ *
+ * What it pulls up is decided by the ground under it: the analysis works out which ore the
+ * most of its tiles hold and how many, and the rest is the game's own arithmetic. One item
+ * comes out every `(drillTime + hardnessDrillMultiplier * hardness) / covered` frames.
+ *
+ * `warmup` is the part worth transcribing rather than rounding off. A drill does not start
+ * at full speed: it creeps up at `warmupSpeed` a frame, so the first second and a bit is
+ * spent getting there, and a short measurement that ignores it reads a few per cent fast.
+ */
+const drill = {
+  begin(build) {
+    build.state.progress = 0;
+    build.state.warmup = 0;
+    build.state.dumpTimer = 0;
+  },
+
+  acceptItem() { return false; },
+
+  update(build, world, step) {
+    const dug = build.node.dug;
+    const delta = build.delta(step);
+    const speedUp = build.block.warmup_speed ?? 0.015;
+
+    if (!dug || build.items.total >= build.itemCapacity) {
+      build.state.warmup = approach(build.state.warmup, 0, speedUp * delta);
+      dumpDrill(build, step);
+      return;
+    }
+
+    // `getDrillTime` over the covered tiles, which is what `yieldOf` already worked out:
+    // its rate is `60 * covered / time`, so the delay between two items is the reciprocal.
+    const delay = (60 * dug.covered) / dug.rate;
+
+    build.state.warmup = approach(build.state.warmup, 1, speedUp * delta);
+    build.state.progress += delta * dug.covered * build.state.warmup;
+
+    if (build.state.progress >= delay) {
+      const batch = Math.floor(build.state.progress / delay);
+      for (let i = 0; i < batch && build.items.total < build.itemCapacity; i++) {
+        build.offload(dug.resource);
+      }
+      build.state.progress %= delay;
+    }
+    dumpDrill(build, step);
+  },
+};
+
+function dumpDrill(build, step) {
+  const every = build.block.dump_time || 5;
+  build.state.dumpTimer += build.delta(step);
+  if (build.state.dumpTimer < every) return;
+  build.state.dumpTimer = 0;
+  build.dump(build.items.first());
+}
+
+/** `Mathf.approachDelta`: move towards a target without overshooting it. */
+function approach(from, to, by) {
+  return from < to ? Math.min(to, from + by) : Math.max(to, from - by);
+}
+
 export const MACHINES = {
   crafter,
+  drill,
 };

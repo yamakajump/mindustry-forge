@@ -12,4 +12,8 @@ measure bXNjaAF4nD2KUQrDIBQEJ1WblHyUHsRDPZL3IUQFo4Hevpi0ZWEXZocZM2CTROXZ0pZl1eLX
 measure bXNjaAF4nCXKUQqDMBRE0RtjWqnYnbioEF5VqEZeouDuJYb5OAxcPlhDu/lVGIL6XxYdd5WUWvolyzqmeGgQuhC3U66ofCf1+7xkqR3u9Mc/A28A48BhnmFoCg22Pld5FSxd4Qb/IRci 30 ../bench/data/oracle/crafter-press.json
 measure bXNjaAF4nCXMSw6DMBADUCckIQi1XfcQHCqi0xapfDQJSNy+Il49e2HjhmDgljQLHqOmdxEdckl6yMuhn4rMQ153HQX+SPuvII7rcsi5Ku4fTdt3KjJsKjkDeAKA8YCHQQ+DigMszNVsDbBoiCOeBNKSSDpi+GJJQxzxJJCWRNJdNHVZV5VA4sUfankY0A== 30 ../bench/data/oracle/crafter-starved.json
 measure bXNjaAF4nCWLQQrCMBQFJ0ljLYIbz5FDhfDVgm3KT1Lx9pKWtxiY4TExGYY1LsIjaXxW0VC/OWwqpUjx3OYqSyi5aRKuKa+7/LJy0dyqKPeXxu09Vzkf+D22TwUmAOPBY45hsR0O12GOwMB4Sovr0nY9YBnhDx2eHE4= 30 ../bench/data/oracle/crafter-two-presses.json
+measure bXNjaAF4nC3IbQqEIBhF4WNaDlZLaVFS/pCZ7Etp+2HvcOE8cBnQCpP8GnB73MN0+xxOzfiLR4nLdG3lnAN23tJSYqb//9mnL+AAVGtq36FoBC0YoRU6wQqfSoOrPI/EEtQ= 30 ../bench/data/oracle/pipe-water.json
+measure bXNjaAF4nC3JawqAIBhE0WvaA6uluKgof0hl9nD/YV8MzIEZBrTCxGn32BSSdylvt9eMWzhzWNx95Gv2jN/s5iMuOTz0//tMcQUsgKpN6S8oKkELRqiFRmiFrlBhCy/DXhU2 30 ../bench/data/oracle/pipe-pulse.json
+measure bXNjaAF4nCXJSQqAMBAF0Z8JXbjwIjlU0zYY6AwEDXh7iULBWxQWOANfKAu2oyfVyLU16Q57Fj6pJCaN38HKtQx5akcYdOsFwAOAmdkfN7EIkxdMvBKq 30 ../bench/data/oracle/drill-copper.json ore-copper@0,0 ore-copper@1,0 ore-copper@0,1 ore-copper@1,1
+measure bXNjaAF4nCXIWwqAIBQA0fFF0VcbaVEXMwxuClFCuw8LBg4MA87gixyJaT131SWLbo75SDFL2aPo8n3GWEtLTz0JTW69AA9gevbHdSyh8wIAHBG6 30 ../bench/data/oracle/drill-half.json ore-copper@0,0 ore-copper@0,1
 measure bXNjaAF4nD2KWwqAIBQFR82K+mglLcrsEkFp2APafRgRB2ZgODQYRRHcKrRDmsdJ+n1zoaCdD1n7PZ7JC7WP4ZI7Jrrv9Ad7uXM5gBJA2Zfv0GhUBZgc0dhcFWWWoc56AM60Fo0= 30 ../bench/data/oracle/bridge-span.json
