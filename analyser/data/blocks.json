@@ -1,0 +1,6124 @@
+{
+  "game_version": "release build 159.7",
+  "build": 159,
+  "revision": 7,
+  "blocks":{
+    "air":{
+      "name": "air",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": -1,
+      "cost":{}
+    },
+    "spawn":{
+      "name": "spawn",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "remove-wall":{
+      "name": "remove-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "remove-ore":{
+      "name": "remove-ore",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "cliff":{
+      "name": "cliff",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "build1":{
+      "name": "build1",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build2":{
+      "name": "build2",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build3":{
+      "name": "build3",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build4":{
+      "name": "build4",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build5":{
+      "name": "build5",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build6":{
+      "name": "build6",
+      "size": 6,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build7":{
+      "name": "build7",
+      "size": 7,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build8":{
+      "name": "build8",
+      "size": 8,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build9":{
+      "name": "build9",
+      "size": 9,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build10":{
+      "name": "build10",
+      "size": 10,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build11":{
+      "name": "build11",
+      "size": 11,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build12":{
+      "name": "build12",
+      "size": 12,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build13":{
+      "name": "build13",
+      "size": 13,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build14":{
+      "name": "build14",
+      "size": 14,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build15":{
+      "name": "build15",
+      "size": 15,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "build16":{
+      "name": "build16",
+      "size": 16,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 10,
+      "cost":{}
+    },
+    "deep-water":{
+      "name": "deep-water",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "shallow-water":{
+      "name": "shallow-water",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "tainted-water":{
+      "name": "tainted-water",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "deep-tainted-water":{
+      "name": "deep-tainted-water",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "darksand-tainted-water":{
+      "name": "darksand-tainted-water",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "sand-water":{
+      "name": "sand-water",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "darksand-water":{
+      "name": "darksand-water",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "tar":{
+      "name": "tar",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "pooled-cryofluid":{
+      "name": "pooled-cryofluid",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "molten-slag":{
+      "name": "molten-slag",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "space":{
+      "name": "space",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "empty":{
+      "name": "empty",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "stone":{
+      "name": "stone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "crater-stone":{
+      "name": "crater-stone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "char":{
+      "name": "char",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "basalt":{
+      "name": "basalt",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "hotrock":{
+      "name": "hotrock",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "magmarock":{
+      "name": "magmarock",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "sand-floor":{
+      "name": "sand-floor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "darksand":{
+      "name": "darksand",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dirt":{
+      "name": "dirt",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "mud":{
+      "name": "mud",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dacite":{
+      "name": "dacite",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "rhyolite":{
+      "name": "rhyolite",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "rhyolite-crater":{
+      "name": "rhyolite-crater",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "rough-rhyolite":{
+      "name": "rough-rhyolite",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "regolith":{
+      "name": "regolith",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "yellow-stone":{
+      "name": "yellow-stone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "carbon-stone":{
+      "name": "carbon-stone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ferric-stone":{
+      "name": "ferric-stone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ferric-craters":{
+      "name": "ferric-craters",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "beryllic-stone":{
+      "name": "beryllic-stone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "crystalline-stone":{
+      "name": "crystalline-stone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "crystal-floor":{
+      "name": "crystal-floor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "yellow-stone-plates":{
+      "name": "yellow-stone-plates",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "red-stone":{
+      "name": "red-stone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dense-red-stone":{
+      "name": "dense-red-stone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "red-ice":{
+      "name": "red-ice",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "arkycite-floor":{
+      "name": "arkycite-floor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "arkyic-stone":{
+      "name": "arkyic-stone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "rhyolite-vent":{
+      "name": "rhyolite-vent",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "carbon-vent":{
+      "name": "carbon-vent",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "arkyic-vent":{
+      "name": "arkyic-vent",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "yellow-stone-vent":{
+      "name": "yellow-stone-vent",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "red-stone-vent":{
+      "name": "red-stone-vent",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "crystalline-vent":{
+      "name": "crystalline-vent",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "stone-vent":{
+      "name": "stone-vent",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "basalt-vent":{
+      "name": "basalt-vent",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "redmat":{
+      "name": "redmat",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "bluemat":{
+      "name": "bluemat",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "grass":{
+      "name": "grass",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "salt":{
+      "name": "salt",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "snow":{
+      "name": "snow",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ice":{
+      "name": "ice",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ice-snow":{
+      "name": "ice-snow",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "shale":{
+      "name": "shale",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "moss":{
+      "name": "moss",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "core-zone":{
+      "name": "core-zone",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "spore-moss":{
+      "name": "spore-moss",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "stone-wall":{
+      "name": "stone-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "spore-wall":{
+      "name": "spore-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dirt-wall":{
+      "name": "dirt-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dacite-wall":{
+      "name": "dacite-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ice-wall":{
+      "name": "ice-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "snow-wall":{
+      "name": "snow-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dune-wall":{
+      "name": "dune-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "regolith-wall":{
+      "name": "regolith-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "yellow-stone-wall":{
+      "name": "yellow-stone-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "rhyolite-wall":{
+      "name": "rhyolite-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "carbon-wall":{
+      "name": "carbon-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ferric-stone-wall":{
+      "name": "ferric-stone-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "beryllic-stone-wall":{
+      "name": "beryllic-stone-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "arkyic-wall":{
+      "name": "arkyic-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "crystalline-stone-wall":{
+      "name": "crystalline-stone-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "red-ice-wall":{
+      "name": "red-ice-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "red-stone-wall":{
+      "name": "red-stone-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "red-diamond-wall":{
+      "name": "red-diamond-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "sand-wall":{
+      "name": "sand-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "salt-wall":{
+      "name": "salt-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "shrubs":{
+      "name": "shrubs",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "shale-wall":{
+      "name": "shale-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "spore-pine":{
+      "name": "spore-pine",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "snow-pine":{
+      "name": "snow-pine",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "pine":{
+      "name": "pine",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "white-tree-dead":{
+      "name": "white-tree-dead",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "white-tree":{
+      "name": "white-tree",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "spore-cluster":{
+      "name": "spore-cluster",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "redweed":{
+      "name": "redweed",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "pur-bush":{
+      "name": "pur-bush",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "yellowcoral":{
+      "name": "yellowcoral",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "boulder":{
+      "name": "boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "snow-boulder":{
+      "name": "snow-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "shale-boulder":{
+      "name": "shale-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "sand-boulder":{
+      "name": "sand-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dacite-boulder":{
+      "name": "dacite-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "basalt-boulder":{
+      "name": "basalt-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "carbon-boulder":{
+      "name": "carbon-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ferric-boulder":{
+      "name": "ferric-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "beryllic-boulder":{
+      "name": "beryllic-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "yellow-stone-boulder":{
+      "name": "yellow-stone-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "arkyic-boulder":{
+      "name": "arkyic-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "crystal-cluster":{
+      "name": "crystal-cluster",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "vibrant-crystal-cluster":{
+      "name": "vibrant-crystal-cluster",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "crystal-blocks":{
+      "name": "crystal-blocks",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "crystal-orbs":{
+      "name": "crystal-orbs",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "crystalline-boulder":{
+      "name": "crystalline-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "red-ice-boulder":{
+      "name": "red-ice-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "rhyolite-boulder":{
+      "name": "rhyolite-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "red-stone-boulder":{
+      "name": "red-stone-boulder",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-floor":{
+      "name": "metal-floor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-floor-damaged":{
+      "name": "metal-floor-damaged",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-floor-2":{
+      "name": "metal-floor-2",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-floor-3":{
+      "name": "metal-floor-3",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-floor-4":{
+      "name": "metal-floor-4",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-floor-5":{
+      "name": "metal-floor-5",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dark-panel-1":{
+      "name": "dark-panel-1",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dark-panel-2":{
+      "name": "dark-panel-2",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dark-panel-3":{
+      "name": "dark-panel-3",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dark-panel-4":{
+      "name": "dark-panel-4",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dark-panel-5":{
+      "name": "dark-panel-5",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dark-panel-6":{
+      "name": "dark-panel-6",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "dark-metal":{
+      "name": "dark-metal",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-1":{
+      "name": "metal-tiles-1",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-2":{
+      "name": "metal-tiles-2",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-3":{
+      "name": "metal-tiles-3",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-4":{
+      "name": "metal-tiles-4",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-5":{
+      "name": "metal-tiles-5",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-6":{
+      "name": "metal-tiles-6",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-7":{
+      "name": "metal-tiles-7",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-8":{
+      "name": "metal-tiles-8",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-9":{
+      "name": "metal-tiles-9",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-10":{
+      "name": "metal-tiles-10",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-11":{
+      "name": "metal-tiles-11",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-12":{
+      "name": "metal-tiles-12",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-tiles-13":{
+      "name": "metal-tiles-13",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-wall-1":{
+      "name": "metal-wall-1",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-wall-2":{
+      "name": "metal-wall-2",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "metal-wall-3":{
+      "name": "metal-wall-3",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "colored-floor":{
+      "name": "colored-floor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "colored-wall":{
+      "name": "colored-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "character-overlay":{
+      "name": "character-overlay",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 40,
+      "cost":{}
+    },
+    "character-overlay-white":{
+      "name": "character-overlay-white",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 40,
+      "cost":{}
+    },
+    "rune-overlay":{
+      "name": "rune-overlay",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "rune-overlay-crux":{
+      "name": "rune-overlay-crux",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "pebbles":{
+      "name": "pebbles",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "tendrils":{
+      "name": "tendrils",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-copper":{
+      "name": "ore-copper",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-lead":{
+      "name": "ore-lead",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-scrap":{
+      "name": "ore-scrap",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-coal":{
+      "name": "ore-coal",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-titanium":{
+      "name": "ore-titanium",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-thorium":{
+      "name": "ore-thorium",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-beryllium":{
+      "name": "ore-beryllium",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-tungsten":{
+      "name": "ore-tungsten",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-crystal-thorium":{
+      "name": "ore-crystal-thorium",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-wall-thorium":{
+      "name": "ore-wall-thorium",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-wall-beryllium":{
+      "name": "ore-wall-beryllium",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "graphitic-wall":{
+      "name": "graphitic-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-wall-graphite":{
+      "name": "ore-wall-graphite",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "ore-wall-tungsten":{
+      "name": "ore-wall-tungsten",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "graphite-press":{
+      "name": "graphite-press",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 75,
+        "lead": 30
+      },
+      "role": "crafter",
+      "craft_time": 90,
+      "crafts_per_second": 0.6666667,
+      "output":{
+        "graphite": 1
+      },
+      "input":{
+        "coal": 2
+      },
+      "power": 0
+    },
+    "multi-press":{
+      "name": "multi-press",
+      "size": 3,
+      "item_capacity": 20,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 360,
+      "cost":{
+        "lead": 100,
+        "graphite": 50,
+        "titanium": 100,
+        "silicon": 25
+      },
+      "role": "crafter",
+      "craft_time": 30,
+      "crafts_per_second": 2,
+      "output":{
+        "graphite": 2
+      },
+      "input":{
+        "coal": 3
+      },
+      "power": 108
+    },
+    "silicon-smelter":{
+      "name": "silicon-smelter",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 30,
+        "lead": 25
+      },
+      "role": "crafter",
+      "craft_time": 40,
+      "crafts_per_second": 1.5,
+      "output":{
+        "silicon": 1
+      },
+      "input":{
+        "coal": 1,
+        "sand": 2
+      },
+      "power": 30
+    },
+    "silicon-crucible":{
+      "name": "silicon-crucible",
+      "size": 3,
+      "item_capacity": 30,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 395,
+      "cost":{
+        "metaglass": 80,
+        "titanium": 120,
+        "silicon": 60,
+        "plastanium": 35
+      },
+      "role": "crafter",
+      "craft_time": 90,
+      "crafts_per_second": 0.6666667,
+      "output":{
+        "silicon": 8
+      },
+      "input":{
+        "coal": 4,
+        "sand": 6,
+        "pyratite": 1
+      },
+      "power": 240
+    },
+    "kiln":{
+      "name": "kiln",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 60,
+        "lead": 30,
+        "graphite": 30
+      },
+      "role": "crafter",
+      "craft_time": 30,
+      "crafts_per_second": 2,
+      "output":{
+        "metaglass": 1
+      },
+      "input":{
+        "lead": 1,
+        "sand": 1
+      },
+      "power": 36
+    },
+    "plastanium-compressor":{
+      "name": "plastanium-compressor",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 320,
+      "cost":{
+        "lead": 115,
+        "graphite": 60,
+        "titanium": 80,
+        "silicon": 80
+      },
+      "role": "crafter",
+      "craft_time": 60,
+      "crafts_per_second": 1,
+      "output":{
+        "plastanium": 1
+      },
+      "input":{
+        "titanium": 2
+      },
+      "power": 180
+    },
+    "phase-weaver":{
+      "name": "phase-weaver",
+      "size": 2,
+      "item_capacity": 30,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 190,
+      "cost":{
+        "lead": 120,
+        "thorium": 75,
+        "silicon": 130
+      },
+      "role": "crafter",
+      "craft_time": 120,
+      "crafts_per_second": 0.5,
+      "output":{
+        "phase-fabric": 1
+      },
+      "input":{
+        "thorium": 4,
+        "sand": 10
+      },
+      "power": 300
+    },
+    "surge-smelter":{
+      "name": "surge-smelter",
+      "size": 3,
+      "item_capacity": 20,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 430,
+      "cost":{
+        "lead": 80,
+        "thorium": 70,
+        "silicon": 80
+      },
+      "role": "crafter",
+      "craft_time": 75,
+      "crafts_per_second": 0.8,
+      "output":{
+        "surge-alloy": 1
+      },
+      "input":{
+        "copper": 3,
+        "lead": 4,
+        "titanium": 2,
+        "silicon": 3
+      },
+      "power": 240
+    },
+    "cryofluid-mixer":{
+      "name": "cryofluid-mixer",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "lead": 65,
+        "titanium": 60,
+        "silicon": 40
+      },
+      "role": "crafter",
+      "craft_time": 120,
+      "crafts_per_second": 0.5,
+      "output":{},
+      "input":{
+        "titanium": 1
+      },
+      "power": 60
+    },
+    "pyratite-mixer":{
+      "name": "pyratite-mixer",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 50,
+        "lead": 25
+      },
+      "role": "crafter",
+      "craft_time": 80,
+      "crafts_per_second": 0.75,
+      "output":{
+        "pyratite": 1
+      },
+      "input":{
+        "coal": 1,
+        "lead": 2,
+        "sand": 2
+      },
+      "power": 12
+    },
+    "blast-mixer":{
+      "name": "blast-mixer",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "lead": 30,
+        "titanium": 20
+      },
+      "role": "crafter",
+      "craft_time": 80,
+      "crafts_per_second": 0.75,
+      "output":{
+        "blast-compound": 1
+      },
+      "input":{
+        "pyratite": 1,
+        "spore-pod": 1
+      },
+      "power": 24
+    },
+    "melter":{
+      "name": "melter",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 200,
+      "cost":{
+        "copper": 30,
+        "lead": 35,
+        "graphite": 45
+      },
+      "role": "crafter",
+      "craft_time": 10,
+      "crafts_per_second": 6,
+      "output":{},
+      "input":{
+        "scrap": 1
+      },
+      "power": 60
+    },
+    "separator":{
+      "name": "separator",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 30,
+        "titanium": 25
+      }
+    },
+    "disassembler":{
+      "name": "disassembler",
+      "size": 3,
+      "item_capacity": 20,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 465,
+      "cost":{
+        "titanium": 100,
+        "thorium": 80,
+        "silicon": 150,
+        "plastanium": 40
+      },
+      "role": "sink",
+      "input":{
+        "scrap": 1
+      }
+    },
+    "spore-press":{
+      "name": "spore-press",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 320,
+      "cost":{
+        "lead": 35,
+        "silicon": 30
+      },
+      "role": "crafter",
+      "craft_time": 20,
+      "crafts_per_second": 3,
+      "output":{},
+      "input":{
+        "spore-pod": 1
+      },
+      "power": 42
+    },
+    "pulverizer":{
+      "name": "pulverizer",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 30,
+        "lead": 25
+      },
+      "role": "crafter",
+      "craft_time": 40,
+      "crafts_per_second": 1.5,
+      "output":{
+        "sand": 1
+      },
+      "input":{
+        "scrap": 1
+      },
+      "power": 30
+    },
+    "coal-centrifuge":{
+      "name": "coal-centrifuge",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "lead": 30,
+        "graphite": 40,
+        "titanium": 20
+      },
+      "role": "crafter",
+      "craft_time": 30,
+      "crafts_per_second": 2,
+      "output":{
+        "coal": 1
+      },
+      "input":{},
+      "power": 42
+    },
+    "incinerator":{
+      "name": "incinerator",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 90,
+      "cost":{
+        "lead": 15,
+        "graphite": 5
+      }
+    },
+    "silicon-arc-furnace":{
+      "name": "silicon-arc-furnace",
+      "size": 3,
+      "item_capacity": 30,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 575,
+      "cost":{
+        "graphite": 80,
+        "beryllium": 70
+      },
+      "role": "crafter",
+      "craft_time": 50,
+      "crafts_per_second": 1.2,
+      "output":{
+        "silicon": 4
+      },
+      "input":{
+        "graphite": 1,
+        "sand": 4
+      },
+      "power": 300
+    },
+    "electrolyzer":{
+      "name": "electrolyzer",
+      "size": 3,
+      "item_capacity": 0,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 860,
+      "cost":{
+        "graphite": 40,
+        "silicon": 50,
+        "beryllium": 130,
+        "tungsten": 80
+      },
+      "role": "crafter",
+      "craft_time": 10,
+      "crafts_per_second": 6,
+      "output":{},
+      "input":{},
+      "power": 60
+    },
+    "atmospheric-concentrator":{
+      "name": "atmospheric-concentrator",
+      "size": 3,
+      "item_capacity": 0,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 755,
+      "cost":{
+        "silicon": 150,
+        "beryllium": 180,
+        "oxide": 60
+      },
+      "role": "crafter",
+      "craft_time": 80,
+      "crafts_per_second": 0.75,
+      "output":{},
+      "input":{},
+      "power": 120
+    },
+    "oxidation-chamber":{
+      "name": "oxidation-chamber",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 860,
+      "cost":{
+        "graphite": 80,
+        "silicon": 100,
+        "beryllium": 120,
+        "tungsten": 120
+      },
+      "role": "crafter",
+      "craft_time": 120,
+      "crafts_per_second": 0.5,
+      "output":{
+        "oxide": 1
+      },
+      "input":{
+        "beryllium": 1
+      },
+      "power": 30
+    },
+    "electric-heater":{
+      "name": "electric-heater",
+      "size": 2,
+      "item_capacity": 0,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 460,
+      "cost":{
+        "beryllium": 30,
+        "tungsten": 30,
+        "oxide": 30
+      },
+      "role": "crafter",
+      "craft_time": 80,
+      "crafts_per_second": 0.75,
+      "output":{},
+      "input":{},
+      "power": 100
+    },
+    "slag-heater":{
+      "name": "slag-heater",
+      "size": 3,
+      "item_capacity": 0,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 1040,
+      "cost":{
+        "beryllium": 20,
+        "tungsten": 50,
+        "oxide": 20
+      },
+      "role": "crafter",
+      "craft_time": 80,
+      "crafts_per_second": 0.75,
+      "output":{},
+      "input":{},
+      "power": 0
+    },
+    "phase-heater":{
+      "name": "phase-heater",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 510,
+      "cost":{
+        "beryllium": 30,
+        "oxide": 30,
+        "carbide": 30
+      },
+      "role": "crafter",
+      "craft_time": 480,
+      "crafts_per_second": 0.125,
+      "output":{},
+      "input":{
+        "phase-fabric": 1
+      },
+      "power": 0
+    },
+    "heat-redirector":{
+      "name": "heat-redirector",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 645,
+      "cost":{
+        "graphite": 10,
+        "tungsten": 10
+      }
+    },
+    "small-heat-redirector":{
+      "name": "small-heat-redirector",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 200,
+      "cost":{
+        "graphite": 8,
+        "surge-alloy": 3
+      }
+    },
+    "heat-router":{
+      "name": "heat-router",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 645,
+      "cost":{
+        "graphite": 10,
+        "tungsten": 15
+      }
+    },
+    "slag-incinerator":{
+      "name": "slag-incinerator",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 70,
+      "cost":{
+        "tungsten": 15
+      }
+    },
+    "carbide-crucible":{
+      "name": "carbide-crucible",
+      "size": 3,
+      "item_capacity": 20,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 900,
+      "cost":{
+        "thorium": 150,
+        "tungsten": 110,
+        "oxide": 60
+      },
+      "role": "crafter",
+      "craft_time": 33.75,
+      "crafts_per_second": 1.7777778,
+      "output":{
+        "carbide": 1
+      },
+      "input":{
+        "tungsten": 2,
+        "graphite": 3
+      },
+      "power": 120
+    },
+    "slag-centrifuge":{
+      "name": "slag-centrifuge",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 935,
+      "cost":{
+        "graphite": 60,
+        "silicon": 40,
+        "oxide": 40,
+        "carbide": 70
+      },
+      "role": "crafter",
+      "craft_time": 120,
+      "crafts_per_second": 0.5,
+      "output":{},
+      "input":{
+        "sand": 1
+      },
+      "power": 2
+    },
+    "surge-crucible":{
+      "name": "surge-crucible",
+      "size": 3,
+      "item_capacity": 20,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 825,
+      "cost":{
+        "graphite": 80,
+        "silicon": 100,
+        "tungsten": 80,
+        "oxide": 80
+      },
+      "role": "crafter",
+      "craft_time": 45,
+      "crafts_per_second": 1.3333334,
+      "output":{
+        "surge-alloy": 1
+      },
+      "input":{
+        "silicon": 3
+      },
+      "power": 90
+    },
+    "cyanogen-synthesizer":{
+      "name": "cyanogen-synthesizer",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 1150,
+      "cost":{
+        "silicon": 120,
+        "beryllium": 140,
+        "oxide": 40,
+        "carbide": 80
+      },
+      "role": "crafter",
+      "craft_time": 20,
+      "crafts_per_second": 3,
+      "output":{},
+      "input":{
+        "graphite": 1
+      },
+      "power": 120
+    },
+    "phase-synthesizer":{
+      "name": "phase-synthesizer",
+      "size": 3,
+      "item_capacity": 40,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 1115,
+      "cost":{
+        "thorium": 100,
+        "silicon": 100,
+        "tungsten": 200,
+        "carbide": 90
+      },
+      "role": "crafter",
+      "craft_time": 30,
+      "crafts_per_second": 2,
+      "output":{
+        "phase-fabric": 1
+      },
+      "input":{
+        "thorium": 2,
+        "sand": 6
+      },
+      "power": 480
+    },
+    "heat-reactor":{
+      "name": "heat-reactor",
+      "size": 3,
+      "item_capacity": 20,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 1005,
+      "cost":{
+        "graphite": 20,
+        "thorium": 80,
+        "oxide": 70,
+        "carbide": 10
+      },
+      "role": "crafter",
+      "craft_time": 600,
+      "crafts_per_second": 0.1,
+      "output":{
+        "fissile-matter": 1
+      },
+      "input":{
+        "thorium": 3
+      },
+      "power": 0
+    },
+    "copper-wall":{
+      "name": "copper-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 320,
+      "cost":{
+        "copper": 6
+      }
+    },
+    "copper-wall-large":{
+      "name": "copper-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 1280,
+      "cost":{
+        "copper": 24
+      }
+    },
+    "titanium-wall":{
+      "name": "titanium-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 440,
+      "cost":{
+        "titanium": 6
+      }
+    },
+    "titanium-wall-large":{
+      "name": "titanium-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 1760,
+      "cost":{
+        "titanium": 24
+      }
+    },
+    "plastanium-wall":{
+      "name": "plastanium-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 500,
+      "cost":{
+        "metaglass": 2,
+        "plastanium": 5
+      }
+    },
+    "plastanium-wall-large":{
+      "name": "plastanium-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 2000,
+      "cost":{
+        "metaglass": 8,
+        "plastanium": 20
+      }
+    },
+    "thorium-wall":{
+      "name": "thorium-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 800,
+      "cost":{
+        "thorium": 6
+      }
+    },
+    "thorium-wall-large":{
+      "name": "thorium-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 3200,
+      "cost":{
+        "thorium": 24
+      }
+    },
+    "phase-wall":{
+      "name": "phase-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 600,
+      "cost":{
+        "phase-fabric": 6
+      }
+    },
+    "phase-wall-large":{
+      "name": "phase-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 2400,
+      "cost":{
+        "phase-fabric": 24
+      }
+    },
+    "surge-wall":{
+      "name": "surge-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 920,
+      "cost":{
+        "surge-alloy": 6
+      }
+    },
+    "surge-wall-large":{
+      "name": "surge-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 3680,
+      "cost":{
+        "surge-alloy": 24
+      }
+    },
+    "door":{
+      "name": "door",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 400,
+      "cost":{
+        "titanium": 6,
+        "silicon": 4
+      }
+    },
+    "door-large":{
+      "name": "door-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 1600,
+      "cost":{
+        "titanium": 24,
+        "silicon": 16
+      }
+    },
+    "scrap-wall":{
+      "name": "scrap-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 240,
+      "cost":{
+        "scrap": 6
+      }
+    },
+    "scrap-wall-large":{
+      "name": "scrap-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 960,
+      "cost":{
+        "scrap": 24
+      }
+    },
+    "scrap-wall-huge":{
+      "name": "scrap-wall-huge",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 2160,
+      "cost":{
+        "scrap": 54
+      }
+    },
+    "scrap-wall-gigantic":{
+      "name": "scrap-wall-gigantic",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 3840,
+      "cost":{
+        "scrap": 96
+      }
+    },
+    "thruster":{
+      "name": "thruster",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 3520,
+      "cost":{
+        "scrap": 96
+      }
+    },
+    "beryllium-wall":{
+      "name": "beryllium-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 520,
+      "cost":{
+        "beryllium": 6
+      }
+    },
+    "beryllium-wall-large":{
+      "name": "beryllium-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 2080,
+      "cost":{
+        "beryllium": 24
+      }
+    },
+    "tungsten-wall":{
+      "name": "tungsten-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 720,
+      "cost":{
+        "tungsten": 6
+      }
+    },
+    "tungsten-wall-large":{
+      "name": "tungsten-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 2880,
+      "cost":{
+        "tungsten": 24
+      }
+    },
+    "blast-door":{
+      "name": "blast-door",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 2800,
+      "cost":{
+        "silicon": 24,
+        "tungsten": 24
+      }
+    },
+    "reinforced-surge-wall":{
+      "name": "reinforced-surge-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 1000,
+      "cost":{
+        "surge-alloy": 6,
+        "tungsten": 2
+      }
+    },
+    "reinforced-surge-wall-large":{
+      "name": "reinforced-surge-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 4000,
+      "cost":{
+        "surge-alloy": 24,
+        "tungsten": 8
+      }
+    },
+    "carbide-wall":{
+      "name": "carbide-wall",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 1080,
+      "cost":{
+        "thorium": 6,
+        "carbide": 6
+      }
+    },
+    "carbide-wall-large":{
+      "name": "carbide-wall-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 4320,
+      "cost":{
+        "thorium": 24,
+        "carbide": 24
+      }
+    },
+    "shielded-wall":{
+      "name": "shielded-wall",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 4160,
+      "cost":{
+        "phase-fabric": 20,
+        "surge-alloy": 12,
+        "beryllium": 12
+      }
+    },
+    "mender":{
+      "name": "mender",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 80,
+      "cost":{
+        "copper": 25,
+        "lead": 30
+      },
+      "role": "sink",
+      "input":{
+        "silicon": 1
+      }
+    },
+    "mend-projector":{
+      "name": "mend-projector",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 320,
+      "cost":{
+        "copper": 50,
+        "lead": 100,
+        "titanium": 25,
+        "silicon": 40
+      },
+      "role": "sink",
+      "input":{
+        "phase-fabric": 1
+      }
+    },
+    "overdrive-projector":{
+      "name": "overdrive-projector",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 175,
+      "cost":{
+        "lead": 100,
+        "titanium": 75,
+        "silicon": 75,
+        "plastanium": 30
+      },
+      "role": "sink",
+      "input":{
+        "phase-fabric": 1
+      }
+    },
+    "overdrive-dome":{
+      "name": "overdrive-dome",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 485,
+      "cost":{
+        "lead": 200,
+        "titanium": 130,
+        "silicon": 130,
+        "plastanium": 80,
+        "surge-alloy": 120
+      },
+      "role": "sink",
+      "input":{
+        "phase-fabric": 1,
+        "silicon": 1
+      }
+    },
+    "force-projector":{
+      "name": "force-projector",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 360,
+      "cost":{
+        "lead": 100,
+        "titanium": 75,
+        "silicon": 125
+      },
+      "role": "sink",
+      "input":{
+        "phase-fabric": 1
+      }
+    },
+    "shock-mine":{
+      "name": "shock-mine",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 50,
+      "cost":{
+        "lead": 25,
+        "silicon": 12
+      }
+    },
+    "radar":{
+      "name": "radar",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 60,
+      "cost":{
+        "graphite": 50,
+        "silicon": 60,
+        "beryllium": 10
+      }
+    },
+    "build-tower":{
+      "name": "build-tower",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 610,
+      "cost":{
+        "thorium": 60,
+        "silicon": 150,
+        "oxide": 40
+      }
+    },
+    "regen-projector":{
+      "name": "regen-projector",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 1040,
+      "cost":{
+        "silicon": 80,
+        "beryllium": 80,
+        "tungsten": 60,
+        "oxide": 40
+      },
+      "role": "sink",
+      "input":{
+        "phase-fabric": 1
+      }
+    },
+    "shockwave-tower":{
+      "name": "shockwave-tower",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 915,
+      "cost":{
+        "silicon": 150,
+        "surge-alloy": 50,
+        "tungsten": 100,
+        "oxide": 30
+      }
+    },
+    "shield-projector":{
+      "name": "shield-projector",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 360,
+      "cost":{}
+    },
+    "large-shield-projector":{
+      "name": "large-shield-projector",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 640,
+      "cost":{}
+    },
+    "conveyor":{
+      "name": "conveyor",
+      "size": 1,
+      "item_capacity": 3,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 45,
+      "cost":{
+        "copper": 1
+      },
+      "role": "conveyor",
+      "items_per_second": 6.5
+    },
+    "titanium-conveyor":{
+      "name": "titanium-conveyor",
+      "size": 1,
+      "item_capacity": 3,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 65,
+      "cost":{
+        "copper": 1,
+        "lead": 1,
+        "titanium": 1
+      },
+      "role": "conveyor",
+      "items_per_second": 10
+    },
+    "plastanium-conveyor":{
+      "name": "plastanium-conveyor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 90,
+      "cost":{
+        "graphite": 1,
+        "silicon": 1,
+        "plastanium": 1
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "armored-conveyor":{
+      "name": "armored-conveyor",
+      "size": 1,
+      "item_capacity": 3,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 280,
+      "cost":{
+        "metaglass": 1,
+        "thorium": 1,
+        "plastanium": 1
+      },
+      "role": "conveyor",
+      "items_per_second": 10
+    },
+    "junction":{
+      "name": "junction",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 30,
+      "cost":{
+        "copper": 3
+      },
+      "role": "junction",
+      "items_per_second": 2.3076923
+    },
+    "bridge-conveyor":{
+      "name": "bridge-conveyor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 6,
+        "lead": 6
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "phase-conveyor":{
+      "name": "phase-conveyor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 50,
+      "cost":{
+        "lead": 10,
+        "graphite": 10,
+        "silicon": 7,
+        "phase-fabric": 5
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "sorter":{
+      "name": "sorter",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 2,
+        "lead": 2
+      }
+    },
+    "inverted-sorter":{
+      "name": "inverted-sorter",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 2,
+        "lead": 2
+      }
+    },
+    "router":{
+      "name": "router",
+      "size": 1,
+      "item_capacity": 1,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 3
+      },
+      "role": "router"
+    },
+    "distributor":{
+      "name": "distributor",
+      "size": 2,
+      "item_capacity": 1,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 4,
+        "lead": 4
+      },
+      "role": "router"
+    },
+    "overflow-gate":{
+      "name": "overflow-gate",
+      "size": 1,
+      "item_capacity": 0,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 4,
+        "lead": 2
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "underflow-gate":{
+      "name": "underflow-gate",
+      "size": 1,
+      "item_capacity": 0,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 4,
+        "lead": 2
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "unloader":{
+      "name": "unloader",
+      "size": 1,
+      "item_capacity": 0,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 70,
+      "cost":{
+        "titanium": 25,
+        "silicon": 30
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "mass-driver":{
+      "name": "mass-driver",
+      "size": 3,
+      "item_capacity": 120,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 430,
+      "cost":{
+        "lead": 125,
+        "titanium": 125,
+        "thorium": 50,
+        "silicon": 75
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "duct":{
+      "name": "duct",
+      "size": 1,
+      "item_capacity": 1,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 90,
+      "cost":{
+        "beryllium": 1
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "armored-duct":{
+      "name": "armored-duct",
+      "size": 1,
+      "item_capacity": 1,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 140,
+      "cost":{
+        "beryllium": 2,
+        "tungsten": 1
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "duct-router":{
+      "name": "duct-router",
+      "size": 1,
+      "item_capacity": 1,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 90,
+      "cost":{
+        "beryllium": 10
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "overflow-duct":{
+      "name": "overflow-duct",
+      "size": 1,
+      "item_capacity": 1,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 90,
+      "cost":{
+        "graphite": 8,
+        "beryllium": 8
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "underflow-duct":{
+      "name": "underflow-duct",
+      "size": 1,
+      "item_capacity": 1,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 90,
+      "cost":{
+        "graphite": 8,
+        "beryllium": 8
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "duct-bridge":{
+      "name": "duct-bridge",
+      "size": 1,
+      "item_capacity": 4,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 90,
+      "cost":{
+        "beryllium": 15
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "duct-unloader":{
+      "name": "duct-unloader",
+      "size": 1,
+      "item_capacity": 0,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 120,
+      "cost":{
+        "graphite": 20,
+        "silicon": 20,
+        "tungsten": 10
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "surge-conveyor":{
+      "name": "surge-conveyor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 130,
+      "cost":{
+        "surge-alloy": 1,
+        "tungsten": 1
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "surge-router":{
+      "name": "surge-router",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 130,
+      "cost":{
+        "surge-alloy": 5,
+        "tungsten": 1
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "unit-cargo-loader":{
+      "name": "unit-cargo-loader",
+      "size": 3,
+      "item_capacity": 200,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 630,
+      "cost":{
+        "silicon": 80,
+        "surge-alloy": 50,
+        "oxide": 20
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "unit-cargo-unload-point":{
+      "name": "unit-cargo-unload-point",
+      "size": 2,
+      "item_capacity": 100,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 285,
+      "cost":{
+        "silicon": 60,
+        "tungsten": 60
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "mechanical-pump":{
+      "name": "mechanical-pump",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 15,
+        "metaglass": 10
+      }
+    },
+    "rotary-pump":{
+      "name": "rotary-pump",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 70,
+        "metaglass": 50,
+        "titanium": 35,
+        "silicon": 20
+      }
+    },
+    "impulse-pump":{
+      "name": "impulse-pump",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 430,
+      "cost":{
+        "copper": 80,
+        "metaglass": 90,
+        "titanium": 40,
+        "thorium": 35,
+        "silicon": 30
+      }
+    },
+    "conduit":{
+      "name": "conduit",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 45,
+      "cost":{
+        "metaglass": 1
+      }
+    },
+    "pulse-conduit":{
+      "name": "pulse-conduit",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 90,
+      "cost":{
+        "metaglass": 1,
+        "titanium": 2
+      }
+    },
+    "plated-conduit":{
+      "name": "plated-conduit",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 220,
+      "cost":{
+        "metaglass": 1,
+        "thorium": 2,
+        "plastanium": 1
+      }
+    },
+    "liquid-router":{
+      "name": "liquid-router",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "metaglass": 2,
+        "graphite": 4
+      }
+    },
+    "liquid-container":{
+      "name": "liquid-container",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "metaglass": 15,
+        "titanium": 10
+      }
+    },
+    "liquid-tank":{
+      "name": "liquid-tank",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 500,
+      "cost":{
+        "metaglass": 40,
+        "titanium": 30
+      }
+    },
+    "liquid-junction":{
+      "name": "liquid-junction",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "metaglass": 8,
+        "graphite": 4
+      }
+    },
+    "bridge-conduit":{
+      "name": "bridge-conduit",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "metaglass": 8,
+        "graphite": 4
+      }
+    },
+    "phase-conduit":{
+      "name": "phase-conduit",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 50,
+      "cost":{
+        "metaglass": 20,
+        "titanium": 10,
+        "silicon": 7,
+        "phase-fabric": 5
+      }
+    },
+    "reinforced-pump":{
+      "name": "reinforced-pump",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 380,
+      "cost":{
+        "silicon": 20,
+        "beryllium": 40,
+        "tungsten": 30
+      }
+    },
+    "reinforced-conduit":{
+      "name": "reinforced-conduit",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 250,
+      "cost":{
+        "beryllium": 2
+      }
+    },
+    "reinforced-liquid-junction":{
+      "name": "reinforced-liquid-junction",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 250,
+      "cost":{
+        "graphite": 4,
+        "beryllium": 8
+      }
+    },
+    "reinforced-bridge-conduit":{
+      "name": "reinforced-bridge-conduit",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 250,
+      "cost":{
+        "graphite": 8,
+        "beryllium": 20
+      }
+    },
+    "reinforced-liquid-router":{
+      "name": "reinforced-liquid-router",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 250,
+      "cost":{
+        "graphite": 8,
+        "beryllium": 4
+      }
+    },
+    "reinforced-liquid-container":{
+      "name": "reinforced-liquid-container",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 400,
+      "cost":{
+        "beryllium": 16,
+        "tungsten": 10
+      }
+    },
+    "reinforced-liquid-tank":{
+      "name": "reinforced-liquid-tank",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 900,
+      "cost":{
+        "beryllium": 50,
+        "tungsten": 40
+      }
+    },
+    "power-node":{
+      "name": "power-node",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 2,
+        "lead": 6
+      }
+    },
+    "power-node-large":{
+      "name": "power-node-large",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "lead": 10,
+        "titanium": 5,
+        "silicon": 3
+      }
+    },
+    "surge-tower":{
+      "name": "surge-tower",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 200,
+      "cost":{
+        "lead": 10,
+        "titanium": 7,
+        "silicon": 15,
+        "surge-alloy": 15
+      }
+    },
+    "diode":{
+      "name": "diode",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 40,
+      "cost":{
+        "metaglass": 10,
+        "silicon": 10,
+        "plastanium": 5
+      }
+    },
+    "battery":{
+      "name": "battery",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 5,
+        "lead": 20
+      }
+    },
+    "battery-large":{
+      "name": "battery-large",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 360,
+      "cost":{
+        "lead": 50,
+        "titanium": 20,
+        "silicon": 30
+      }
+    },
+    "combustion-generator":{
+      "name": "combustion-generator",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 25,
+        "lead": 15
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "thermal-generator":{
+      "name": "thermal-generator",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 40,
+        "lead": 50,
+        "metaglass": 40,
+        "graphite": 35,
+        "silicon": 35
+      }
+    },
+    "steam-generator":{
+      "name": "steam-generator",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 35,
+        "lead": 40,
+        "graphite": 25,
+        "silicon": 30
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "differential-generator":{
+      "name": "differential-generator",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 360,
+      "cost":{
+        "copper": 70,
+        "lead": 100,
+        "metaglass": 50,
+        "titanium": 50,
+        "silicon": 65
+      },
+      "role": "sink",
+      "input":{
+        "pyratite": 1
+      }
+    },
+    "rtg-generator":{
+      "name": "rtg-generator",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 245,
+      "cost":{
+        "lead": 100,
+        "thorium": 50,
+        "silicon": 75,
+        "plastanium": 75,
+        "phase-fabric": 25
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "solar-panel":{
+      "name": "solar-panel",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "lead": 10,
+        "silicon": 8
+      }
+    },
+    "solar-panel-large":{
+      "name": "solar-panel-large",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 450,
+      "cost":{
+        "lead": 60,
+        "silicon": 70,
+        "phase-fabric": 15
+      }
+    },
+    "thorium-reactor":{
+      "name": "thorium-reactor",
+      "size": 3,
+      "item_capacity": 30,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 700,
+      "cost":{
+        "lead": 300,
+        "metaglass": 50,
+        "graphite": 150,
+        "thorium": 150,
+        "silicon": 200
+      },
+      "role": "sink",
+      "input":{
+        "thorium": 1
+      }
+    },
+    "impact-reactor":{
+      "name": "impact-reactor",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 900,
+      "cost":{
+        "lead": 500,
+        "metaglass": 250,
+        "graphite": 400,
+        "thorium": 100,
+        "silicon": 300,
+        "surge-alloy": 250
+      },
+      "role": "sink",
+      "input":{
+        "blast-compound": 1
+      }
+    },
+    "beam-node":{
+      "name": "beam-node",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 90,
+      "cost":{
+        "beryllium": 8
+      }
+    },
+    "beam-tower":{
+      "name": "beam-tower",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 810,
+      "cost":{
+        "silicon": 10,
+        "beryllium": 30,
+        "oxide": 10
+      }
+    },
+    "beam-link":{
+      "name": "beam-link",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 1170,
+      "cost":{
+        "silicon": 250,
+        "phase-fabric": 75,
+        "surge-alloy": 75,
+        "beryllium": 250,
+        "oxide": 150,
+        "carbide": 75
+      }
+    },
+    "turbine-condenser":{
+      "name": "turbine-condenser",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 575,
+      "cost":{
+        "beryllium": 60
+      }
+    },
+    "chemical-combustion-chamber":{
+      "name": "chemical-combustion-chamber",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 825,
+      "cost":{
+        "graphite": 40,
+        "silicon": 30,
+        "tungsten": 20,
+        "oxide": 40
+      }
+    },
+    "pyrolysis-generator":{
+      "name": "pyrolysis-generator",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 935,
+      "cost":{
+        "graphite": 100,
+        "silicon": 100,
+        "oxide": 60,
+        "carbide": 60
+      }
+    },
+    "flux-reactor":{
+      "name": "flux-reactor",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 2850,
+      "cost":{
+        "graphite": 240,
+        "silicon": 480,
+        "surge-alloy": 120,
+        "oxide": 80,
+        "carbide": 60
+      }
+    },
+    "neoplasia-reactor":{
+      "name": "neoplasia-reactor",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 3900,
+      "cost":{
+        "silicon": 500,
+        "phase-fabric": 150,
+        "surge-alloy": 200,
+        "tungsten": 750,
+        "oxide": 150,
+        "carbide": 300
+      },
+      "role": "sink",
+      "input":{
+        "phase-fabric": 1
+      }
+    },
+    "mechanical-drill":{
+      "name": "mechanical-drill",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 12
+      },
+      "role": "drill",
+      "tier": 2,
+      "drill_time": 600,
+      "hardness_multiplier": 50,
+      "liquid_boost": 1.6
+    },
+    "pneumatic-drill":{
+      "name": "pneumatic-drill",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 18,
+        "graphite": 10
+      },
+      "role": "drill",
+      "tier": 3,
+      "drill_time": 400,
+      "hardness_multiplier": 50,
+      "liquid_boost": 1.6
+    },
+    "laser-drill":{
+      "name": "laser-drill",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 360,
+      "cost":{
+        "copper": 35,
+        "graphite": 30,
+        "titanium": 20,
+        "silicon": 30
+      },
+      "role": "drill",
+      "tier": 4,
+      "drill_time": 280,
+      "hardness_multiplier": 50,
+      "liquid_boost": 1.6
+    },
+    "blast-drill":{
+      "name": "blast-drill",
+      "size": 4,
+      "item_capacity": 20,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 765,
+      "cost":{
+        "copper": 65,
+        "titanium": 50,
+        "thorium": 75,
+        "silicon": 60
+      },
+      "role": "drill",
+      "tier": 5,
+      "drill_time": 280,
+      "hardness_multiplier": 50,
+      "liquid_boost": 1.8
+    },
+    "water-extractor":{
+      "name": "water-extractor",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 30,
+        "lead": 30,
+        "metaglass": 30,
+        "graphite": 30
+      }
+    },
+    "cultivator":{
+      "name": "cultivator",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 160,
+      "cost":{
+        "copper": 25,
+        "lead": 25,
+        "silicon": 10
+      },
+      "role": "crafter",
+      "craft_time": 100,
+      "crafts_per_second": 0.6,
+      "output":{
+        "spore-pod": 1
+      },
+      "input":{},
+      "power": 80
+    },
+    "oil-extractor":{
+      "name": "oil-extractor",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 430,
+      "cost":{
+        "copper": 150,
+        "lead": 115,
+        "graphite": 175,
+        "thorium": 115,
+        "silicon": 75
+      },
+      "role": "sink",
+      "input":{
+        "sand": 1
+      }
+    },
+    "vent-condenser":{
+      "name": "vent-condenser",
+      "size": 3,
+      "item_capacity": 0,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 575,
+      "cost":{
+        "graphite": 20,
+        "beryllium": 60
+      },
+      "role": "crafter",
+      "craft_time": 120,
+      "crafts_per_second": 0.5,
+      "output":{},
+      "input":{},
+      "power": 30
+    },
+    "cliff-crusher":{
+      "name": "cliff-crusher",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 255,
+      "cost":{
+        "graphite": 25,
+        "beryllium": 20
+      }
+    },
+    "large-cliff-crusher":{
+      "name": "large-cliff-crusher",
+      "size": 3,
+      "item_capacity": 20,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 950,
+      "cost":{
+        "silicon": 80,
+        "surge-alloy": 15,
+        "beryllium": 100,
+        "tungsten": 50
+      },
+      "role": "sink",
+      "input":{
+        "graphite": 1
+      }
+    },
+    "plasma-bore":{
+      "name": "plasma-bore",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 255,
+      "cost":{
+        "beryllium": 40
+      }
+    },
+    "large-plasma-bore":{
+      "name": "large-plasma-bore",
+      "size": 3,
+      "item_capacity": 20,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 1040,
+      "cost":{
+        "silicon": 100,
+        "beryllium": 100,
+        "tungsten": 70,
+        "oxide": 25
+      }
+    },
+    "impact-drill":{
+      "name": "impact-drill",
+      "size": 4,
+      "item_capacity": 40,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 1020,
+      "cost":{
+        "graphite": 60,
+        "silicon": 70,
+        "beryllium": 90
+      },
+      "role": "drill",
+      "tier": 6,
+      "drill_time": 720,
+      "hardness_multiplier": 0,
+      "liquid_boost": 1.75
+    },
+    "eruption-drill":{
+      "name": "eruption-drill",
+      "size": 5,
+      "item_capacity": 60,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 2500,
+      "cost":{
+        "thorium": 150,
+        "silicon": 300,
+        "tungsten": 250,
+        "oxide": 20
+      },
+      "role": "drill",
+      "tier": 7,
+      "drill_time": 281.25,
+      "hardness_multiplier": 0,
+      "liquid_boost": 2
+    },
+    "core-shard":{
+      "name": "core-shard",
+      "size": 3,
+      "item_capacity": 4000,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 1100,
+      "cost":{
+        "copper": 1000,
+        "lead": 800
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "core-foundation":{
+      "name": "core-foundation",
+      "size": 4,
+      "item_capacity": 9000,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 3500,
+      "cost":{
+        "copper": 3000,
+        "lead": 3000,
+        "silicon": 2000
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "core-nucleus":{
+      "name": "core-nucleus",
+      "size": 5,
+      "item_capacity": 13000,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 6000,
+      "cost":{
+        "copper": 8000,
+        "lead": 8000,
+        "thorium": 4000,
+        "silicon": 5000
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "core-bastion":{
+      "name": "core-bastion",
+      "size": 4,
+      "item_capacity": 2000,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 4500,
+      "cost":{
+        "graphite": 1000,
+        "silicon": 1000,
+        "beryllium": 800
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "core-citadel":{
+      "name": "core-citadel",
+      "size": 5,
+      "item_capacity": 3000,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 16000,
+      "cost":{
+        "silicon": 4000,
+        "beryllium": 4000,
+        "tungsten": 3000,
+        "oxide": 1000
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "core-acropolis":{
+      "name": "core-acropolis",
+      "size": 6,
+      "item_capacity": 4000,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 30000,
+      "cost":{
+        "silicon": 5000,
+        "beryllium": 6000,
+        "tungsten": 5000,
+        "oxide": 3000,
+        "carbide": 3000
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "container":{
+      "name": "container",
+      "size": 2,
+      "item_capacity": 300,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 220,
+      "cost":{
+        "titanium": 100
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "vault":{
+      "name": "vault",
+      "size": 3,
+      "item_capacity": 1000,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 495,
+      "cost":{
+        "titanium": 250,
+        "thorium": 125
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "reinforced-container":{
+      "name": "reinforced-container",
+      "size": 2,
+      "item_capacity": 160,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 480,
+      "cost":{
+        "graphite": 40,
+        "tungsten": 30
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "reinforced-vault":{
+      "name": "reinforced-vault",
+      "size": 3,
+      "item_capacity": 900,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 1080,
+      "cost":{
+        "thorium": 70,
+        "beryllium": 100,
+        "tungsten": 125
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "duo":{
+      "name": "duo",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 250,
+      "cost":{
+        "copper": 35
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "scatter":{
+      "name": "scatter",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 800,
+      "cost":{
+        "copper": 85,
+        "lead": 45
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "scorch":{
+      "name": "scorch",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 400,
+      "cost":{
+        "copper": 25,
+        "graphite": 22
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "hail":{
+      "name": "hail",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 260,
+      "cost":{
+        "copper": 40,
+        "graphite": 17
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "wave":{
+      "name": "wave",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 1000,
+      "cost":{
+        "copper": 25,
+        "lead": 75,
+        "metaglass": 45
+      }
+    },
+    "lancer":{
+      "name": "lancer",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": true,
+      "health": 1120,
+      "cost":{
+        "copper": 60,
+        "lead": 70,
+        "titanium": 30,
+        "silicon": 60
+      }
+    },
+    "arc":{
+      "name": "arc",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": true,
+      "health": 260,
+      "cost":{
+        "copper": 50,
+        "lead": 50
+      }
+    },
+    "parallax":{
+      "name": "parallax",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 640,
+      "cost":{
+        "graphite": 50,
+        "titanium": 110,
+        "silicon": 160
+      }
+    },
+    "swarmer":{
+      "name": "swarmer",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 1200,
+      "cost":{
+        "graphite": 35,
+        "titanium": 35,
+        "silicon": 30,
+        "plastanium": 45
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "salvo":{
+      "name": "salvo",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 960,
+      "cost":{
+        "copper": 100,
+        "graphite": 80,
+        "titanium": 50
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "segment":{
+      "name": "segment",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 1000,
+      "cost":{
+        "titanium": 40,
+        "thorium": 80,
+        "silicon": 130,
+        "phase-fabric": 40
+      }
+    },
+    "tsunami":{
+      "name": "tsunami",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 2250,
+      "cost":{
+        "lead": 400,
+        "metaglass": 100,
+        "titanium": 250,
+        "thorium": 100
+      }
+    },
+    "fuse":{
+      "name": "fuse",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 1980,
+      "cost":{
+        "copper": 225,
+        "graphite": 225,
+        "thorium": 100
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "ripple":{
+      "name": "ripple",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 1170,
+      "cost":{
+        "copper": 150,
+        "graphite": 135,
+        "titanium": 60
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "cyclone":{
+      "name": "cyclone",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 1305,
+      "cost":{
+        "copper": 200,
+        "titanium": 125,
+        "plastanium": 80
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "foreshadow":{
+      "name": "foreshadow",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 2400,
+      "cost":{
+        "copper": 1000,
+        "metaglass": 600,
+        "silicon": 600,
+        "plastanium": 200,
+        "surge-alloy": 300
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "spectre":{
+      "name": "spectre",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 2560,
+      "cost":{
+        "copper": 900,
+        "graphite": 300,
+        "thorium": 250,
+        "plastanium": 175,
+        "surge-alloy": 250
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "meltdown":{
+      "name": "meltdown",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": true,
+      "health": 3200,
+      "cost":{
+        "copper": 1200,
+        "lead": 350,
+        "graphite": 300,
+        "silicon": 325,
+        "surge-alloy": 325
+      }
+    },
+    "breach":{
+      "name": "breach",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 1620,
+      "cost":{
+        "graphite": 125,
+        "silicon": 150,
+        "beryllium": 150
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "diffuse":{
+      "name": "diffuse",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 1890,
+      "cost":{
+        "graphite": 200,
+        "silicon": 200,
+        "beryllium": 150,
+        "tungsten": 50
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "sublimate":{
+      "name": "sublimate",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 1890,
+      "cost":{
+        "silicon": 200,
+        "beryllium": 400,
+        "tungsten": 150,
+        "oxide": 40
+      }
+    },
+    "titan":{
+      "name": "titan",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 4000,
+      "cost":{
+        "thorium": 400,
+        "silicon": 300,
+        "tungsten": 250
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "disperse":{
+      "name": "disperse",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 4480,
+      "cost":{
+        "thorium": 50,
+        "silicon": 200,
+        "beryllium": 350,
+        "oxide": 50
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "afflict":{
+      "name": "afflict",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": true,
+      "health": 3520,
+      "cost":{
+        "graphite": 250,
+        "silicon": 200,
+        "surge-alloy": 100,
+        "oxide": 40
+      }
+    },
+    "lustre":{
+      "name": "lustre",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": true,
+      "health": 3360,
+      "cost":{
+        "graphite": 200,
+        "silicon": 250,
+        "oxide": 50,
+        "carbide": 90
+      }
+    },
+    "scathe":{
+      "name": "scathe",
+      "size": 4,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 3520,
+      "cost":{
+        "graphite": 400,
+        "silicon": 450,
+        "tungsten": 500,
+        "oxide": 100,
+        "carbide": 200
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "smite":{
+      "name": "smite",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 8750,
+      "cost":{
+        "silicon": 800,
+        "phase-fabric": 300,
+        "surge-alloy": 400,
+        "oxide": 200,
+        "carbide": 500
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "malign":{
+      "name": "malign",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": true,
+      "health": 9250,
+      "cost":{
+        "graphite": 500,
+        "silicon": 500,
+        "phase-fabric": 200,
+        "beryllium": 1000,
+        "carbide": 200
+      }
+    },
+    "ground-factory":{
+      "name": "ground-factory",
+      "size": 3,
+      "item_capacity": 60,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 360,
+      "cost":{
+        "copper": 50,
+        "lead": 120,
+        "silicon": 80
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "air-factory":{
+      "name": "air-factory",
+      "size": 3,
+      "item_capacity": 60,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 360,
+      "cost":{
+        "copper": 60,
+        "lead": 70,
+        "silicon": 60
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "naval-factory":{
+      "name": "naval-factory",
+      "size": 3,
+      "item_capacity": 70,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 360,
+      "cost":{
+        "copper": 150,
+        "lead": 130,
+        "metaglass": 120
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "additive-reconstructor":{
+      "name": "additive-reconstructor",
+      "size": 3,
+      "item_capacity": 80,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 360,
+      "cost":{
+        "copper": 200,
+        "lead": 120,
+        "silicon": 90
+      },
+      "role": "sink",
+      "input":{
+        "silicon": 40,
+        "graphite": 40
+      }
+    },
+    "multiplicative-reconstructor":{
+      "name": "multiplicative-reconstructor",
+      "size": 5,
+      "item_capacity": 260,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 1200,
+      "cost":{
+        "lead": 650,
+        "titanium": 350,
+        "thorium": 650,
+        "silicon": 450
+      },
+      "role": "sink",
+      "input":{
+        "silicon": 130,
+        "titanium": 80,
+        "metaglass": 40
+      }
+    },
+    "exponential-reconstructor":{
+      "name": "exponential-reconstructor",
+      "size": 7,
+      "item_capacity": 1700,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 3035,
+      "cost":{
+        "lead": 2000,
+        "titanium": 2000,
+        "thorium": 750,
+        "silicon": 1000,
+        "plastanium": 450,
+        "phase-fabric": 600
+      },
+      "role": "sink",
+      "input":{
+        "silicon": 850,
+        "titanium": 750,
+        "plastanium": 650
+      }
+    },
+    "tetrative-reconstructor":{
+      "name": "tetrative-reconstructor",
+      "size": 9,
+      "item_capacity": 2000,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 5830,
+      "cost":{
+        "lead": 4000,
+        "thorium": 1000,
+        "silicon": 3000,
+        "plastanium": 600,
+        "phase-fabric": 600,
+        "surge-alloy": 800
+      },
+      "role": "sink",
+      "input":{
+        "silicon": 1000,
+        "plastanium": 600,
+        "surge-alloy": 500,
+        "phase-fabric": 350
+      }
+    },
+    "repair-point":{
+      "name": "repair-point",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 30,
+        "lead": 30,
+        "silicon": 20
+      }
+    },
+    "repair-turret":{
+      "name": "repair-turret",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 205,
+      "cost":{
+        "thorium": 80,
+        "silicon": 90,
+        "plastanium": 60
+      }
+    },
+    "tank-fabricator":{
+      "name": "tank-fabricator",
+      "size": 3,
+      "item_capacity": 100,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 575,
+      "cost":{
+        "silicon": 200,
+        "beryllium": 150
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "ship-fabricator":{
+      "name": "ship-fabricator",
+      "size": 3,
+      "item_capacity": 140,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 575,
+      "cost":{
+        "silicon": 250,
+        "beryllium": 200
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "mech-fabricator":{
+      "name": "mech-fabricator",
+      "size": 3,
+      "item_capacity": 140,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 860,
+      "cost":{
+        "silicon": 200,
+        "beryllium": 250,
+        "tungsten": 10
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "tank-refabricator":{
+      "name": "tank-refabricator",
+      "size": 3,
+      "item_capacity": 80,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 860,
+      "cost":{
+        "silicon": 100,
+        "beryllium": 200,
+        "tungsten": 80
+      },
+      "role": "sink",
+      "input":{
+        "silicon": 40,
+        "tungsten": 30
+      }
+    },
+    "ship-refabricator":{
+      "name": "ship-refabricator",
+      "size": 3,
+      "item_capacity": 120,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 1040,
+      "cost":{
+        "silicon": 150,
+        "beryllium": 250,
+        "tungsten": 120,
+        "oxide": 15
+      },
+      "role": "sink",
+      "input":{
+        "silicon": 60,
+        "tungsten": 40
+      }
+    },
+    "mech-refabricator":{
+      "name": "mech-refabricator",
+      "size": 3,
+      "item_capacity": 100,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 860,
+      "cost":{
+        "silicon": 150,
+        "beryllium": 250,
+        "tungsten": 175
+      },
+      "role": "sink",
+      "input":{
+        "silicon": 50,
+        "tungsten": 40
+      }
+    },
+    "prime-refabricator":{
+      "name": "prime-refabricator",
+      "size": 5,
+      "item_capacity": 200,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 2500,
+      "cost":{
+        "thorium": 250,
+        "silicon": 400,
+        "tungsten": 200,
+        "oxide": 200
+      },
+      "role": "sink",
+      "input":{
+        "thorium": 80,
+        "silicon": 100
+      }
+    },
+    "tank-assembler":{
+      "name": "tank-assembler",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 2800,
+      "cost":{
+        "thorium": 500,
+        "silicon": 650,
+        "oxide": 150,
+        "carbide": 80
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "ship-assembler":{
+      "name": "ship-assembler",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 3600,
+      "cost":{
+        "thorium": 400,
+        "silicon": 900,
+        "tungsten": 550,
+        "oxide": 200,
+        "carbide": 100
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "mech-assembler":{
+      "name": "mech-assembler",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 3600,
+      "cost":{
+        "thorium": 600,
+        "silicon": 1000,
+        "tungsten": 550,
+        "oxide": 200,
+        "carbide": 200
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "basic-assembler-module":{
+      "name": "basic-assembler-module",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": true,
+      "health": 3050,
+      "cost":{
+        "thorium": 500,
+        "phase-fabric": 400,
+        "oxide": 250,
+        "carbide": 300
+      }
+    },
+    "unit-repair-tower":{
+      "name": "unit-repair-tower",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 285,
+      "cost":{
+        "graphite": 90,
+        "silicon": 90,
+        "tungsten": 80
+      }
+    },
+    "payload-conveyor":{
+      "name": "payload-conveyor",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 360,
+      "cost":{
+        "copper": 10,
+        "graphite": 10
+      }
+    },
+    "payload-router":{
+      "name": "payload-router",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 360,
+      "cost":{
+        "copper": 10,
+        "graphite": 15
+      }
+    },
+    "reinforced-payload-conveyor":{
+      "name": "reinforced-payload-conveyor",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 800,
+      "cost":{
+        "tungsten": 10
+      }
+    },
+    "reinforced-payload-router":{
+      "name": "reinforced-payload-router",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 800,
+      "cost":{
+        "tungsten": 15
+      }
+    },
+    "payload-mass-driver":{
+      "name": "payload-mass-driver",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": true,
+      "health": 645,
+      "cost":{
+        "graphite": 20,
+        "silicon": 50,
+        "tungsten": 40
+      }
+    },
+    "large-payload-mass-driver":{
+      "name": "large-payload-mass-driver",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": true,
+      "health": 2550,
+      "cost":{
+        "graphite": 100,
+        "silicon": 200,
+        "phase-fabric": 20,
+        "tungsten": 200,
+        "oxide": 30
+      }
+    },
+    "small-deconstructor":{
+      "name": "small-deconstructor",
+      "size": 3,
+      "item_capacity": 100,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 755,
+      "cost":{
+        "graphite": 80,
+        "silicon": 100,
+        "beryllium": 100,
+        "oxide": 40
+      }
+    },
+    "deconstructor":{
+      "name": "deconstructor",
+      "size": 5,
+      "item_capacity": 250,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 3195,
+      "cost":{
+        "silicon": 250,
+        "beryllium": 250,
+        "oxide": 100,
+        "carbide": 50
+      }
+    },
+    "constructor":{
+      "name": "constructor",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 860,
+      "cost":{
+        "silicon": 50,
+        "beryllium": 75,
+        "tungsten": 40
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "large-constructor":{
+      "name": "large-constructor",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 2500,
+      "cost":{
+        "thorium": 80,
+        "silicon": 150,
+        "tungsten": 200,
+        "oxide": 100
+      },
+      "role": "sink",
+      "input":{}
+    },
+    "payload-loader":{
+      "name": "payload-loader",
+      "size": 3,
+      "item_capacity": 100,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 645,
+      "cost":{
+        "graphite": 80,
+        "silicon": 160,
+        "tungsten": 90
+      }
+    },
+    "payload-unloader":{
+      "name": "payload-unloader",
+      "size": 3,
+      "item_capacity": 100,
+      "has_items": true,
+      "has_power": true,
+      "rotate": true,
+      "health": 645,
+      "cost":{
+        "graphite": 140,
+        "silicon": 220,
+        "tungsten": 180
+      }
+    },
+    "power-source":{
+      "name": "power-source",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "power-void":{
+      "name": "power-void",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "item-source":{
+      "name": "item-source",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{},
+      "role": "sink",
+      "input":{}
+    },
+    "item-void":{
+      "name": "item-void",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "liquid-source":{
+      "name": "liquid-source",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "liquid-void":{
+      "name": "liquid-void",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "payload-source":{
+      "name": "payload-source",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": true,
+      "health": 1000,
+      "cost":{}
+    },
+    "payload-void":{
+      "name": "payload-void",
+      "size": 5,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 1000,
+      "cost":{}
+    },
+    "heat-source":{
+      "name": "heat-source",
+      "size": 1,
+      "item_capacity": 0,
+      "has_items": true,
+      "has_power": false,
+      "rotate": true,
+      "health": 40,
+      "cost":{},
+      "role": "crafter",
+      "craft_time": 80,
+      "crafts_per_second": 0.75,
+      "output":{},
+      "input":{},
+      "power": 0
+    },
+    "illuminator":{
+      "name": "illuminator",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "lead": 8,
+        "graphite": 12,
+        "silicon": 8
+      }
+    },
+    "legacy-mech-pad":{
+      "name": "legacy-mech-pad",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "legacy-unit-factory":{
+      "name": "legacy-unit-factory",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{},
+      "role": "sink",
+      "input":{}
+    },
+    "legacy-unit-factory-air":{
+      "name": "legacy-unit-factory-air",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{},
+      "role": "sink",
+      "input":{}
+    },
+    "legacy-unit-factory-ground":{
+      "name": "legacy-unit-factory-ground",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 40,
+      "cost":{},
+      "role": "sink",
+      "input":{}
+    },
+    "command-center":{
+      "name": "command-center",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 160,
+      "cost":{}
+    },
+    "launch-pad":{
+      "name": "launch-pad",
+      "size": 3,
+      "item_capacity": 100,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 360,
+      "cost":{
+        "copper": 350,
+        "lead": 200,
+        "titanium": 150,
+        "silicon": 140
+      }
+    },
+    "advanced-launch-pad":{
+      "name": "advanced-launch-pad",
+      "size": 4,
+      "item_capacity": 100,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 640,
+      "cost":{
+        "copper": 350,
+        "lead": 300,
+        "titanium": 200,
+        "silicon": 250
+      }
+    },
+    "landing-pad":{
+      "name": "landing-pad",
+      "size": 4,
+      "item_capacity": 100,
+      "has_items": true,
+      "has_power": false,
+      "rotate": false,
+      "health": 640,
+      "cost":{
+        "copper": 200,
+        "graphite": 100,
+        "titanium": 100
+      }
+    },
+    "interplanetary-accelerator":{
+      "name": "interplanetary-accelerator",
+      "size": 7,
+      "item_capacity": 25000,
+      "has_items": true,
+      "has_power": true,
+      "rotate": false,
+      "health": 3920,
+      "cost":{
+        "copper": 16000,
+        "titanium": 12000,
+        "thorium": 13000,
+        "silicon": 11000,
+        "phase-fabric": 5000,
+        "surge-alloy": 6000
+      },
+      "role": "sink",
+      "input":{
+        "copper": 8000,
+        "lead": 8000,
+        "thorium": 4000,
+        "silicon": 5000
+      }
+    },
+    "message":{
+      "name": "message",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 5,
+        "graphite": 5
+      }
+    },
+    "switch":{
+      "name": "switch",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 5,
+        "graphite": 5
+      }
+    },
+    "micro-processor":{
+      "name": "micro-processor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 90,
+        "lead": 50,
+        "silicon": 50
+      }
+    },
+    "logic-processor":{
+      "name": "logic-processor",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 190,
+      "cost":{
+        "lead": 320,
+        "graphite": 60,
+        "thorium": 50,
+        "silicon": 80
+      }
+    },
+    "hyper-processor":{
+      "name": "hyper-processor",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 520,
+      "cost":{
+        "lead": 450,
+        "thorium": 75,
+        "silicon": 150,
+        "surge-alloy": 50
+      }
+    },
+    "memory-cell":{
+      "name": "memory-cell",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{
+        "copper": 30,
+        "graphite": 30,
+        "silicon": 30
+      }
+    },
+    "memory-bank":{
+      "name": "memory-bank",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 200,
+      "cost":{
+        "copper": 30,
+        "graphite": 80,
+        "silicon": 80,
+        "phase-fabric": 30
+      }
+    },
+    "logic-display":{
+      "name": "logic-display",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 360,
+      "cost":{
+        "lead": 100,
+        "metaglass": 50,
+        "silicon": 50
+      }
+    },
+    "large-logic-display":{
+      "name": "large-logic-display",
+      "size": 6,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 1800,
+      "cost":{
+        "lead": 200,
+        "metaglass": 100,
+        "silicon": 150,
+        "phase-fabric": 75
+      }
+    },
+    "tile-logic-display":{
+      "name": "tile-logic-display",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 50,
+      "cost":{
+        "lead": 8,
+        "metaglass": 8,
+        "silicon": 8,
+        "phase-fabric": 3
+      }
+    },
+    "canvas":{
+      "name": "canvas",
+      "size": 2,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 255,
+      "cost":{
+        "silicon": 10,
+        "beryllium": 10
+      }
+    },
+    "large-canvas":{
+      "name": "large-canvas",
+      "size": 3,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 665,
+      "cost":{
+        "silicon": 15,
+        "surge-alloy": 5,
+        "beryllium": 15
+      }
+    },
+    "reinforced-message":{
+      "name": "reinforced-message",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 100,
+      "cost":{
+        "graphite": 10,
+        "beryllium": 5
+      }
+    },
+    "world-processor":{
+      "name": "world-processor",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "world-cell":{
+      "name": "world-cell",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "world-message":{
+      "name": "world-message",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    },
+    "world-switch":{
+      "name": "world-switch",
+      "size": 1,
+      "item_capacity": 10,
+      "has_items": false,
+      "has_power": false,
+      "rotate": false,
+      "health": 40,
+      "cost":{}
+    }
+  },
+  "items":{
+    "copper":{
+      "name": "copper",
+      "hardness": 1,
+      "cost": 0.5,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "lead":{
+      "name": "lead",
+      "hardness": 1,
+      "cost": 0.7,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "metaglass":{
+      "name": "metaglass",
+      "hardness": 0,
+      "cost": 1.5,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "graphite":{
+      "name": "graphite",
+      "hardness": 0,
+      "cost": 1,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "sand":{
+      "name": "sand",
+      "hardness": 0,
+      "cost": 1,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "coal":{
+      "name": "coal",
+      "hardness": 2,
+      "cost": 1,
+      "explosiveness": 0.2,
+      "flammability": 1
+    },
+    "titanium":{
+      "name": "titanium",
+      "hardness": 3,
+      "cost": 1,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "thorium":{
+      "name": "thorium",
+      "hardness": 4,
+      "cost": 1.1,
+      "explosiveness": 0.2,
+      "flammability": 0
+    },
+    "scrap":{
+      "name": "scrap",
+      "hardness": 0,
+      "cost": 0.5,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "silicon":{
+      "name": "silicon",
+      "hardness": 0,
+      "cost": 0.8,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "plastanium":{
+      "name": "plastanium",
+      "hardness": 0,
+      "cost": 1.3,
+      "explosiveness": 0.2,
+      "flammability": 0.1
+    },
+    "phase-fabric":{
+      "name": "phase-fabric",
+      "hardness": 0,
+      "cost": 1.3,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "surge-alloy":{
+      "name": "surge-alloy",
+      "hardness": 0,
+      "cost": 1.2,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "spore-pod":{
+      "name": "spore-pod",
+      "hardness": 0,
+      "cost": 1,
+      "explosiveness": 0,
+      "flammability": 1.15
+    },
+    "blast-compound":{
+      "name": "blast-compound",
+      "hardness": 0,
+      "cost": 1,
+      "explosiveness": 1.2,
+      "flammability": 0.4
+    },
+    "pyratite":{
+      "name": "pyratite",
+      "hardness": 0,
+      "cost": 1,
+      "explosiveness": 0.4,
+      "flammability": 1.4
+    },
+    "beryllium":{
+      "name": "beryllium",
+      "hardness": 3,
+      "cost": 1.2,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "tungsten":{
+      "name": "tungsten",
+      "hardness": 5,
+      "cost": 1.5,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "oxide":{
+      "name": "oxide",
+      "hardness": 0,
+      "cost": 1.2,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "carbide":{
+      "name": "carbide",
+      "hardness": 0,
+      "cost": 1.4,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "fissile-matter":{
+      "name": "fissile-matter",
+      "hardness": 0,
+      "cost": 1,
+      "explosiveness": 0,
+      "flammability": 0
+    },
+    "dormant-cyst":{
+      "name": "dormant-cyst",
+      "hardness": 0,
+      "cost": 1,
+      "explosiveness": 0,
+      "flammability": 0.1
+    }
+  }
+}

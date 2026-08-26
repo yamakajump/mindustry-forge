@@ -31,6 +31,6 @@ dependencies {
 }
 
 jar {
-    archiveFileName = "mindustry-ai-bridge.jar"
+    archiveFileName = "mindustry-forge-bench.jar"
     from(rootDir) { include "plugin.json" }
 }

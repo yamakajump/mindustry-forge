@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#0e0d0c"/>
-  <!-- Une ligne de convoyeurs qui monte vers un core: le projet en un glyphe. -->
-  <rect x="13" y="14" width="6" height="14" rx="1" fill="#8b8781"/>
-  <path d="M16 4 L22 12 H10 Z" fill="#ffd37f"/>
-  <rect x="13" y="18" width="6" height="2" fill="#0e0d0c"/>
-  <rect x="13" y="23" width="6" height="2" fill="#0e0d0c"/>
-</svg>
