@@ -10,7 +10,7 @@
  * `mindustry.world.consumers`, Mindustry v159.7.
  */
 
-import { TICKS } from "./core.js";
+import { DIRECTIONS, TICKS } from "./core.js";
 
 /**
  * How much of a frame this machine gets.
@@ -206,7 +206,129 @@ function approach(from, to, by) {
   return from < to ? Math.min(to, from + by) : Math.max(to, from - by);
 }
 
+/**
+ * A factory that makes units.
+ *
+ * The same shape as any other factory, with one difference that matters: what comes out is
+ * not an item. It never reaches a belt and never reaches a container, so the only way to
+ * count it is to count what is standing on the map afterwards.
+ *
+ * It carries a list of plans, one per unit it can make, and the schematic says which is
+ * selected. A plan is a unit, how long it takes, and what it costs, so a factory's rate is
+ * `60 / time` a second at best and whatever its ingredients allow in practice: the answer
+ * to "how fast does this make daggers, and does my silicon keep up".
+ */
+const unitFactory = {
+  begin(build) {
+    build.state.progress = 0;
+    build.state.made = 0;
+    build.state.payload = null;
+    build.state.plan = planOf(build);
+  },
+
+  acceptItem(build, source, item) {
+    const plan = build.state.plan;
+    if (!plan) return false;
+    return item in plan.requirements && build.items.get(item) < roomFor(build, item);
+  },
+
+  update(build, world, step) {
+    const plan = build.state.plan;
+    if (!plan) return;
+
+    /* A finished unit is held as a payload until there is somewhere to put it down, and
+       the factory stops dead while it waits. `shouldConsume` is `payload == null`.
+    
+       This is not a detail. Measured against the engine, a factory boxed in on the side it
+       faces built exactly one dagger and then sat on sixty silicon and forty lead for the
+       rest of the run, and the port that ignored the payload happily built a second. */
+    if (build.state.payload) {
+      if (releasePayload(build, world)) build.state.made++;
+      return;
+    }
+
+    // Everything the plan asks for, and the grid's share of the power.
+    for (const [item, amount] of Object.entries(plan.requirements)) {
+      if (build.items.get(item) < amount) return;
+    }
+    const power = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+    if (power <= 0) return;
+
+    build.state.progress += build.delta(step) * power;
+    if (build.state.progress < plan.time) return;
+
+    for (const [item, amount] of Object.entries(plan.requirements)) {
+      build.items.remove(item, amount);
+    }
+    build.state.progress %= plan.time;
+    build.state.payload = plan.unit;
+    if (releasePayload(build, world)) build.state.made++;
+  },
+};
+
+/**
+ * Put a finished unit down, if there is room.
+ *
+ * `moveOutPayload` walks it out of the side the factory faces, which has to be clear of
+ * buildings. A factory pointed into a wall builds one unit and stops.
+ */
+function releasePayload(build, world) {
+  const [dx, dy] = DIRECTIONS[build.rotation];
+  const size = build.size;
+  const offset = Math.trunc(-(size - 1) / 2);
+  const from = [build.x + offset + (dx > 0 ? size - 1 : 0),
+                build.y + offset + (dy > 0 ? size - 1 : 0)];
+  if (world.at(from[0] + dx, from[1] + dy)) return false;
+
+  build.state.payload = null;
+  return true;
+}
+
+/**
+ * How much of one item a factory will hold.
+ *
+ * `getMaximumAccepted` reads a table built in `init` from **every** plan, not from the one
+ * that is selected: twice the largest amount any of them asks for. A ground factory
+ * building daggers therefore stops at sixty silicon and forty lead, because a nova wants
+ * thirty silicon and twenty lead and a dagger wants ten of each.
+ *
+ * Capped at the block's own capacity instead, the port held sixty of both and a scenario
+ * about a stalled factory disagreed by exactly those twenty lead.
+ */
+function roomFor(build, item) {
+  let most = 0;
+  for (const plan of build.block.plans || []) {
+    most = Math.max(most, (plan.requirements[item] || 0) * 2);
+  }
+  return most;
+}
+
+/**
+ * Which plan a factory is set to.
+ *
+ * The first one when nobody has said, which is a claim the measurement had to settle
+ * twice. `currentPlan` is declared as -1 in the source, which reads like "an unconfigured
+ * factory builds nothing", and on that reading the default was changed to none. The engine
+ * then built a dagger out of a factory with no configuration at all, so the field is set
+ * somewhere between placement and the first frame and the plain reading was wrong.
+ *
+ * Written down because it is the second time in this file that reading the source beat
+ * measuring it, and lost.
+ */
+function planOf(build) {
+  const plans = build.block.plans || [];
+  if (!plans.length) return null;
+
+  const config = build.node.config;
+  if (config?.type === 1) return plans[config.value] || plans[0];
+  if (config?.type === 5 && config.content === 6) {
+    return plans.find((plan) => plan.unit_id === config.id) || plans[0];
+  }
+  return plans[0];
+}
+
 export const MACHINES = {
   crafter,
   drill,
+  "unit-factory": unitFactory,
 };

@@ -4,6 +4,63 @@
   "seconds": 30,
   "pools": [],
   "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "laser-drill",
+      "x": 13,
+      "y": 13,
+      "efficiency": 0.9090909
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 1
+      }
+    },
+    {
+      "block": "vault",
+      "x": 18,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 38
+      }
+    },
+    {
+      "block": "combustion-generator",
+      "x": 12,
+      "y": 15,
+      "efficiency": 1,
+      "holds":{
+        "coal": 10
+      }
+    },
+    {
+      "block": "router",
+      "x": 12,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "coal": 1
+      }
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 17,
+      "efficiency": 1
+    }
+  ],
   "containers": [
     {
       "block": "vault",

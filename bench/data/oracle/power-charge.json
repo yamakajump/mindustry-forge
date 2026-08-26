@@ -11,6 +11,39 @@
       "charge": 0.44450676
     }
   ],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 12,
+      "efficiency": 1,
+      "holds":{
+        "coal": 3
+      }
+    },
+    {
+      "block": "combustion-generator",
+      "x": 14,
+      "y": 12,
+      "efficiency": 1,
+      "holds":{
+        "coal": 10
+      }
+    },
+    {
+      "block": "battery",
+      "x": 15,
+      "y": 12,
+      "efficiency": 0
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

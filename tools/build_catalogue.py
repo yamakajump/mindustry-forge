@@ -34,7 +34,7 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         # real speeds, not the figures the game prints for a player.
         "speed", "junction_speed", "junction_capacity", "transport_time",
         "overflow", "invert", "overflow_speed", "recharge", "output_router",
-        "dump_time", "kind", "liquid_pressure", "power_capacity", "accepts", "drinks", "warmup_speed")
+        "dump_time", "kind", "liquid_pressure", "power_capacity", "accepts", "drinks", "warmup_speed", "plans")
 
 
 def main() -> None:
@@ -59,6 +59,7 @@ def main() -> None:
         "blocks": blocks,
         "items": raw["items"],
         "liquids": raw["liquids"],
+        "units": raw["units"],
     }, separators=(",", ":")), encoding="utf-8")
 
     print(f"{len(blocks)} blocs sur {len(raw['blocks'])}, "

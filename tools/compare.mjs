@@ -25,8 +25,15 @@ const { behaviourOf } = await import(
 const { gridsOf } = await import(new URL("../site/public/forge/engine/power.js", import.meta.url));
 const { yieldOf } = await import(new URL("../site/public/forge/ground.js", import.meta.url));
 
+/** Which measured blocks count as machines, so both sides pick the same ones. */
+const MACHINE_ROLES = new Set(["crafter", "unit-factory", "generator", "drill"]);
+
 export const known = useCatalogue(JSON.parse(
   readFileSync(join(ROOT, "site", "public", "forge", "blocks.json"), "utf8")));
+
+const MACHINE_BLOCKS = new Set(Object.entries(known.blocks)
+  .filter(([, block]) => MACHINE_ROLES.has(block.role))
+  .map(([name]) => name));
 
 /**
  * Line things up so they can be compared one to one.
@@ -85,10 +92,34 @@ export async function ported(code, ticks, ground = []) {
     .filter((build) => (build.block.power_capacity || 0) > 0)
     .map((build) => ({ x: build.x, y: build.y, charge: build.state.charge || 0 }));
 
+  /* What the machines are holding when the clock stops.
+  
+     Not the belts: an item halfway along one is a sub-tile position and whether it has
+     been handed on at frame eighteen hundred is a coin toss neither engine owes the other.
+     A machine's stock is not: a factory that stalled with sixty silicon in it stalled with
+     sixty silicon in it, and that is the whole result of a scenario about stalling. */
+  const stocks = world.builds
+    .filter((build) => ["crafter", "unit-factory", "generator", "drill"].includes(build.role))
+    .filter((build) => build.items.total > 0)
+    .map((build) => ({
+      x: build.x, y: build.y,
+      items: Object.fromEntries([...build.items.counts].filter(([, n]) => n > 0)),
+    }));
+
+  const units = {};
+  for (const build of world.builds) {
+    const made = build.state.made || 0;
+    if (!made) continue;
+    const name = build.state.plan?.unit;
+    if (name) units[name] = (units[name] || 0) + made;
+  }
+
   return {
     containers: lineUp(containers, ["items"]),
     pools: lineUp(pools, ["liquid", "amount"]),
     batteries: lineUp(batteries, ["charge"]),
+    stocks: lineUp(stocks, ["items"]),
+    units,
   };
 }
 
@@ -102,6 +133,10 @@ export function measured(name) {
     containers: lineUp(raw.containers || [], ["items"]),
     pools: lineUp(raw.pools || [], ["liquid", "amount"]),
     batteries: lineUp(raw.batteries || [], ["charge"]),
+    stocks: lineUp((raw.running || [])
+      .filter((one) => one.holds && MACHINE_BLOCKS.has(one.block))
+      .map((one) => ({ x: one.x, y: one.y, items: one.holds })), ["items"]),
+    units: raw.units || {},
   };
 }
 
@@ -154,6 +189,31 @@ export function differences(mine, theirs) {
       out.push({ what: `${here.at} ${there.liquid}`,
                  mine: here.amount.toFixed(1), theirs: there.amount.toFixed(1), gap });
     }
+  }
+
+  if (mine.stocks.length !== theirs.stocks.length) {
+    out.push({ what: "machines qui retiennent", mine: mine.stocks.length,
+               theirs: theirs.stocks.length, gap: 1 });
+  } else {
+    for (let i = 0; i < mine.stocks.length; i++) {
+      const here = mine.stocks[i];
+      const there = theirs.stocks[i];
+      const items = new Set([...Object.keys(here.items), ...Object.keys(there.items)]);
+      for (const item of items) {
+        const a = here.items[item] || 0;
+        const b = there.items[item] || 0;
+        out.push({ what: `${here.at} retient ${item}`, mine: a, theirs: b,
+                   gap: b ? Math.abs(a - b) / b : (a ? 1 : 0) });
+      }
+    }
+  }
+
+  const madeUnits = new Set([...Object.keys(mine.units), ...Object.keys(theirs.units)]);
+  for (const unit of madeUnits) {
+    const a = mine.units[unit] || 0;
+    const b = theirs.units[unit] || 0;
+    out.push({ what: `${unit} sortis`, mine: a, theirs: b,
+               gap: b ? Math.abs(a - b) / b : (a ? 1 : 0) });
   }
 
   if (mine.batteries.length !== theirs.batteries.length) {

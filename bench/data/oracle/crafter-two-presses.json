@@ -4,6 +4,75 @@
   "seconds": 30,
   "pools": [],
   "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 3
+      }
+    },
+    {
+      "block": "router",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 1
+      }
+    },
+    {
+      "block": "graphite-press",
+      "x": 15,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 10
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 17,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "graphite": 19
+      }
+    },
+    {
+      "block": "graphite-press",
+      "x": 14,
+      "y": 15,
+      "efficiency": 0
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 17,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 14,
+      "y": 19,
+      "efficiency": 0
+    }
+  ],
   "containers": [
     {
       "block": "vault",

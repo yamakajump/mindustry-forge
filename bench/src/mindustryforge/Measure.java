@@ -113,6 +113,13 @@ public class Measure implements ApplicationListener {
         Vars.state.rules.editor = false;
         Vars.state.rules.waves = false;
         Vars.state.rules.attackMode = false;
+        /* A unit factory refuses to build when its team is at its unit cap, and the cap
+           is worked out from the cores a team owns. A world laid down for a measurement
+           has no core, so the cap was zero and every factory sat idle: the engine made
+           nothing while the port made daggers, and the port was the one telling the
+           truth about the blocks. */
+        Vars.state.rules.unitCapVariable = false;
+        Vars.state.rules.unitCap = 500;
         Vars.logic.play();
 
         // The ground, before anything is built on it.
@@ -233,6 +240,46 @@ public class Measure implements ApplicationListener {
             charges.asArray().add(one);
         }
         root.put("batteries", charges);
+
+        /* And the units standing on the map, which is the only way to measure a factory:
+           what it makes is not an item and never reaches a container. */
+        Jval units = Jval.newObject();
+        for (mindustry.gen.Unit unit : mindustry.gen.Groups.unit) {
+            String name = unit.type.name;
+            units.put(name, (units.get(name) == null ? 0 : units.get(name).asFloat()) + 1);
+        }
+        root.put("units", units);
+
+        /* Every building, with how well it was running when the clock stopped.
+        
+           Not for comparing - the port and the engine are compared on what came out - but
+           for finding out why nothing did. A factory that made no units is either
+           unconfigured, unpowered or unfed, and `efficiency` says which in one number. */
+        Jval running = Jval.newArray();
+        for (Tile tile : Vars.world.tiles) {
+            if (tile.build == null || tile.build.tile != tile) continue;
+            Jval one = Jval.newObject();
+            one.put("block", tile.block().name);
+            one.put("x", tile.x);
+            one.put("y", tile.y);
+            one.put("efficiency", tile.build.efficiency);
+            if (tile.build instanceof mindustry.world.blocks.units.UnitFactory.UnitFactoryBuild f) {
+                one.put("plan", f.currentPlan);
+                one.put("progress", f.progress);
+                one.put("payload", f.payload != null);
+            }
+            if (tile.build.items != null && tile.build.items.total() > 0) {
+                Jval held = Jval.newObject();
+                for (Item item : Vars.content.items()) {
+                    if (tile.build.items.get(item) > 0) {
+                        held.put(item.name, tile.build.items.get(item));
+                    }
+                }
+                one.put("holds", held);
+            }
+            running.asArray().add(one);
+        }
+        root.put("running", running);
 
         Jval stores = Jval.newArray();
         Jval totals = Jval.newObject();
