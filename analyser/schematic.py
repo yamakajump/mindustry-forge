@@ -39,21 +39,22 @@ MAX_SIDE = 32767
 #: Type id for a null object in TypeIO. Every block a layout holds is unconfigured.
 CONFIG_NULL = b"\x00"
 
-#: How many tiles a side each block covers, read off the engine's own `Block.size` rather
-#: than eyeballed. Anything not named here covers one tile, which is true of every carrier.
-#:
-#: It matters for the declared width and height and nothing else, since a schematic stores
-#: only a block's anchor tile. A design whose rightmost block is a two-wide drill overflows
-#: the box its own coordinates suggest, and used to be declared one short: a 1x7 schematic
-#: holding a 2x2 drill, which is not a shape.
-BLOCK_SIZES = {
-    "distributor": 2, "mechanical-drill": 2, "pneumatic-drill": 2, "laser-drill": 3,
-    "graphite-press": 2, "silicon-smelter": 2, "kiln": 2, "thermal-generator": 2,
-}
-
-
 def size_of(block: str) -> int:
-    return BLOCK_SIZES.get(block, 1)
+    """How many tiles a side a block covers.
+
+    Asked of the registry the game itself printed, not of a table kept here. There was a
+    table here, listing eight blocks by hand, and it was the same mistake this repository
+    is built to avoid: it covered the blocks somebody happened to use and silently called
+    everything else one tile wide.
+
+    It matters for the declared width and height, since a schematic stores only a block's
+    anchor tile. A design whose rightmost block is a two-wide drill overflows the box its
+    own coordinates suggest, and used to be declared one short: a 1x7 schematic holding a
+    2x2 drill, which is not a shape.
+    """
+    from analyser.blocks import catalogue
+
+    return catalogue().size_of(block)
 
 
 def anchor_offset(size: int) -> int:
@@ -90,22 +91,6 @@ def unpack_point(packed: int) -> tuple[int, int]:
     return (packed >> 16) & 0xFFFF, packed & 0xFFFF
 
 
-def cells_of(design) -> list:
-    """The cells to write down: the ones that stood, if the bench has spoken.
-
-    A design asks for more than it gets whenever a block lands on a tile something else
-    already holds, and only the accepted ones were part of what was measured. Writing the
-    requested ones publishes a schematic that is not the design the number belongs to:
-    seen on a real run, seventeen cells asked for and twelve standing, so a catalogue
-    would have handed a player five blocks of fiction.
-    """
-    placed = getattr(design, "placed", None)
-    if placed:
-        return list(placed)
-    layout = design.to_layout() if hasattr(design, "to_layout") else design
-    return list(layout.cells())
-
-
 def cropped(cells) -> tuple[int, int, int, int, list]:
     """The design's own bounding box, and its cells moved into it.
 
@@ -133,9 +118,9 @@ def cropped(cells) -> tuple[int, int, int, int, list]:
     return left, bottom, right - left + 1, top - bottom + 1, moved
 
 
-def write(design, name: str = "forge", description: str = "") -> bytes:
-    """Serialise a design as `.msch` bytes."""
-    _, _, width, height, cells = cropped(cells_of(design))
+def write(tiles, name: str = "forge", description: str = "") -> bytes:
+    """Serialise `(x, y, block, rotation)` tiles as `.msch` bytes."""
+    _, _, width, height, cells = cropped(tiles)
 
     if not cells:
         raise ValueError("an empty design has nothing to write")
@@ -175,9 +160,9 @@ def write(design, name: str = "forge", description: str = "") -> bytes:
     return HEADER + bytes([VERSION]) + zlib.compress(body.getvalue())
 
 
-def to_base64(design, name: str = "forge", description: str = "") -> str:
+def to_base64(tiles, name: str = "forge", description: str = "") -> str:
     """The string a player pastes into the game. This is the deliverable."""
-    return base64.b64encode(write(design, name, description)).decode("ascii")
+    return base64.b64encode(write(tiles, name, description)).decode("ascii")
 
 
 def read(payload: bytes) -> dict:
@@ -231,28 +216,3 @@ def read(payload: bytes) -> dict:
 
 def from_base64(text: str) -> dict:
     return read(base64.b64decode(text))
-
-
-def as_layout(parsed: dict, width: int, height: int,
-              offset: tuple[int, int] = (0, 0)):
-    """Put a parsed schematic back onto a grid, so the bench can stamp it again.
-
-    The offset is where its lower left corner goes. A schematic is cropped to its own
-    bounding box and has therefore forgotten where it stood, which is exactly why a
-    catalogue entry carries that offset: a design measured against an output it can no
-    longer reach is a design that measures zero.
-
-    Tiles falling outside the grid are dropped, and the caller is expected to notice by
-    comparing what came back against how many tiles went in. Silently accepting a design
-    that half fits would re-measure something other than what was submitted.
-    """
-    from forge.layout import empty
-
-    palette = ("air",) + tuple(parsed["palette"])
-    grid = empty(width, height, palette)
-    for x, y, block, rotation in parsed["tiles"]:
-        tx, ty = x + offset[0], y + offset[1]
-        if 0 <= tx < width and 0 <= ty < height:
-            grid.blocks[ty * width + tx] = palette.index(block)
-            grid.rotations[ty * width + tx] = rotation
-    return grid
