@@ -81,3 +81,13 @@ export function paste(tiles, name = "essai") {
   const body = deflateSync(Buffer.concat(parts));
   return Buffer.concat([Buffer.from("msch"), Buffer.from([1]), body]).toString("base64");
 }
+
+/**
+ * Where things go in, said the way a player says it.
+ *
+ * Since the guess was dropped, nothing is fed unless somebody marked a tile for it. A test
+ * that hands a schematic four copper a second now has to say which belt it arrives on,
+ * which is the same thing the page asks for.
+ */
+export const inAt = (...marks) => Object.fromEntries(
+  marks.map(([x, y, resource]) => [`${x},${y}`, { side: "in", resource }]));
