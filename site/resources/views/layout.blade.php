@@ -13,6 +13,7 @@
   <a class="brand" href="/">Mindustry <span>Forge</span></a>
   <nav>
     <a href="/">Analyser</a>
+    <a href="/schematiques">Parcourir</a>
     @auth
       <a href="/mes-schematiques">Mes schematiques</a>
       <form method="post" action="/deconnexion" class="inline">@csrf

@@ -282,3 +282,33 @@ test("a junction crosses two lines without merging them", async () => {
   assert.ok(out.produced.copper === undefined || out.produced.copper <= 4.001,
     "rien n'est duplique en traversant");
 });
+
+test("a turret eats what it is loaded with", async () => {
+  /* Filed as a sink that consumed nothing, a belt feeding one carried items into a hole
+     and the layout read as wasting them. */
+  const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [2, 0, "duo", 0]];
+  const out = await analyse(paste(tiles), { copper: 10 });
+
+  const turret = out.detail.find((t) => t.name === "duo");
+  assert.equal(turret.role, "turret");
+  assert.ok(!out.idle.duo, "une tourelle nourrie n'est pas du gaspillage");
+  assert.ok(!out.produced.copper, "le cuivre entre dedans, il ne ressort pas");
+});
+
+test("a vault is somewhere a line delivers to", async () => {
+  const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [3, 0, "vault", 0]];
+  const out = await analyse(paste(tiles), { copper: 5 });
+  assert.ok(!out.produced.copper || out.produced.copper <= 5.001);
+  assert.ok(!out.idle.vault, "un coffre au bout d'une ligne n'est pas relie a rien");
+});
+
+test("an unloader beside a container is where a line starts", async () => {
+  /* It pulls rather than being pushed to, so nothing upstream feeds it, and a line
+     beginning at one used to begin at nothing at all. */
+  const tiles = [[0, 0, "vault", 0], [3, 0, "unloader", 0], [4, 0, "conveyor", 0]];
+  const out = await analyse(paste(tiles));
+
+  const unloader = out.detail.find((t) => t.name === "unloader");
+  assert.equal(unloader.role, "unloader");
+  assert.ok(!out.idle.unloader, "un deverseur colle a un coffre fait quelque chose");
+});

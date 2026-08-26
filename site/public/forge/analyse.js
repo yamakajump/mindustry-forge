@@ -108,7 +108,7 @@ function outputsOf(node) {
   // offloaders gave the first real schematic 39 outgoing links from its batteries and 49
   // from its steam generators: every drop of water supplied to it drained into a battery
   // and the layout reported producing nothing at all.
-  if (node.role === "power" || node.role === "sink") return [];
+  if (node.role === "power" || node.role === "sink" || node.role === "turret") return [];
   if ((node.role === "crafter" || node.role === "generator")
       && !Object.keys(node.block.output || {}).length
       && !Object.keys(node.block.output_liquid || {}).length) {
@@ -151,6 +151,10 @@ function accepts(node, fromTile) {
   }
   // A drill makes its own ore and takes nothing. Feeding one is a wasted belt.
   if (node.role === "drill") return false;
+  // A store takes anything and an unloader takes nothing: it pulls, it is not pushed to.
+  if (node.role === "store") return true;
+  if (node.role === "unloader") return false;
+  if (node.role === "turret") return true;
   return node.role === "crafter" || node.role === "sink" || node.role === "generator" ||
     Object.keys(node.block.input || {}).length > 0 ||
     Object.keys(node.block.input_liquid || {}).length > 0;
@@ -320,6 +324,22 @@ function solveFlow(graph, supply) {
         const rate = made[index][resource] || 0;
         if (rate > SETTLED) sources[index] = (sources[index] || 0) + rate;
       }
+      // An unloader beside a container is where a line starts. It pulls rather than being
+      // pushed to, so nothing upstream feeds it and a line beginning at one used to begin
+      // at nothing at all.
+      if (!liquid) {
+        for (let index = 0; index < nodes; index++) {
+          const node = graph.nodes[index];
+          if (node.role !== "unloader" || !graph.out[index].length) continue;
+          const beside = graph.nodes.some((other) =>
+            other.role === "store"
+            && Math.abs(other.x - node.x) + Math.abs(other.y - node.y) <= 2);
+          if (beside) {
+            sources[index] = (sources[index] || 0)
+              + (node.block.items_per_second || 11);
+          }
+        }
+      }
       if (!Object.keys(sources).length) continue;
 
       const out = throughput(graph, {
@@ -378,12 +398,17 @@ function solveFlow(graph, supply) {
 function capacityFor(node, resource, liquid) {
   const carries = node.block.carries;
   if (carries && (carries === "liquid") !== liquid) return 0;
-  if (node.role === "conveyor" || node.role === "junction" || node.role === "bridge") {
+  if (node.role === "conveyor" || node.role === "junction" || node.role === "bridge"
+      || node.role === "unloader") {
     return node.block.items_per_second || Infinity;
   }
+  // A store holds and hands back: it passes anything, which is what makes an unloader
+  // beside a vault a source for the line after it.
+  if (node.role === "store") return Infinity;
   // A machine passes nothing on: what leaves it is what it makes, which is a separate
   // source rather than the same flow continuing.
-  if (node.role === "crafter" || node.role === "generator" || node.role === "sink") {
+  if (node.role === "crafter" || node.role === "generator" || node.role === "sink"
+      || node.role === "turret") {
     return Infinity;
   }
   if (node.role === "power" || node.role === "unknown") return 0;
@@ -404,6 +429,18 @@ function appetiteFor(node, resource, isExit) {
     if ((carries === "liquid") !== isLiquid(resource)) return 0;
     return node.block.items_per_second || Infinity;
   }
+  // A turret eats what it is loaded with, at the rate it fires. How often it fires is not
+  // in a still picture, so this is the rate while firing and the report says so rather
+  // than pretending a schematic knows when a wave arrives.
+  if (node.role === "turret") {
+    const ammo = node.block.ammo || [];
+    if (!ammo.includes(resource)) return 0;
+    return (node.block.shots_per_second || 0) * (node.block.ammo_per_shot || 1);
+  }
+  // A store swallows whatever reaches it, which is what makes a line into a vault a line
+  // that delivers rather than a line that ends in the air.
+  if (node.role === "store") return Infinity;
+
   if (node.role === "crafter" || node.role === "generator" || node.role === "sink") {
     const wants = appetite(node.block);
     if (wants[resource] > 0) return wants[resource];
@@ -445,7 +482,7 @@ function deliveredFlow(graph, solved) {
   const total = {};
   for (let index = 0; index < graph.nodes.length; index++) {
     const node = graph.nodes[index];
-    if (node.role === "sink") {
+    if (node.role === "sink" || node.role === "turret" || node.role === "store") {
       for (const [item, rate] of Object.entries(solved.arriving[index])) {
         addTo(total, item, rate);
       }

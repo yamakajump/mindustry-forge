@@ -224,3 +224,8 @@ details.supply input[type=text] { width: 280px; }
 .block-panel { margin: 0; }
 .block-panel .sub { margin: 0 0 10px; }
 .stage canvas { cursor: pointer; }
+
+select {
+  background: var(--bg); color: var(--ink); border: 2px solid var(--edge);
+  border-radius: 6px; padding: 10px 12px; min-height: 44px; font: inherit;
+}

@@ -123,3 +123,56 @@ it('donne a chaque schematique une adresse imprevisible', function () {
         ->and($first->slug)->not->toBe((string) $first->id)
         ->and($second->slug)->not->toBe((string) $second->id);
 });
+
+it('trouve une schematique par ce qu elle produit', function () {
+    // The thing no other Mindustry site can do: they search names and hand-typed tags,
+    // because that is all they hold.
+    Schematic::factory()->create([
+        'public' => true, 'name' => 'Presse a graphite',
+        'produces' => ['graphite' => 40.0],
+    ]);
+    Schematic::factory()->create([
+        'public' => true, 'name' => 'Four a silicium',
+        'produces' => ['silicon' => 25.0],
+    ]);
+
+    $this->get('/schematiques?produit=graphite')
+        ->assertOk()
+        ->assertSee('Presse a graphite')
+        ->assertDontSee('Four a silicium');
+});
+
+it('ne confond pas produire et couter', function () {
+    // "graphite" must not match a schematic that merely needs graphite to be built, which
+    // is what a LIKE over the whole analysis would have done.
+    Schematic::factory()->create([
+        'public' => true, 'name' => 'Coute du graphite',
+        'produces' => ['silicon' => 10.0], 'needs' => ['graphite' => 90.0],
+    ]);
+
+    $this->get('/schematiques?produit=graphite')
+        ->assertOk()
+        ->assertDontSee('Coute du graphite');
+});
+
+it('met les mieux faites devant, pas les plus recentes', function () {
+    // A list sorted by date is a list of whoever posted last; a list sorted by output per
+    // block is a list of the good ones.
+    Schematic::factory()->create([
+        'public' => true, 'name' => 'Grosse et molle',
+        'blocks' => 200, 'power_made' => 400, 'power_used' => 0,
+    ]);
+    Schematic::factory()->create([
+        'public' => true, 'name' => 'Petite et vive',
+        'blocks' => 10, 'power_made' => 300, 'power_used' => 0,
+    ]);
+
+    $page = $this->get('/schematiques?tri=best')->assertOk()->getContent();
+    expect(strpos($page, 'Petite et vive'))->toBeLessThan(strpos($page, 'Grosse et molle'));
+});
+
+it('ne montre pas les schematiques privees dans la vitrine', function () {
+    Schematic::factory()->create(['public' => false, 'name' => 'Gardee pour moi']);
+
+    $this->get('/schematiques')->assertOk()->assertDontSee('Gardee pour moi');
+});
