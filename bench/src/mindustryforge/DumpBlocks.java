@@ -12,7 +12,10 @@ import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.Duct;
 import mindustry.world.blocks.distribution.ItemBridge;
 import mindustry.world.blocks.distribution.OverflowGate;
+import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.distribution.Sorter;
+import mindustry.world.blocks.storage.StorageBlock;
+import mindustry.world.blocks.storage.Unloader;
 import mindustry.world.blocks.distribution.Junction;
 import mindustry.world.blocks.distribution.Router;
 import mindustry.world.blocks.production.Drill;
@@ -253,6 +256,42 @@ public class DumpBlocks {
             entry.put("input", inputsOf(block));
             entry.put("input_liquid", liquidInputsOf(block));
             entry.put("craft_time", itemDurationOf(block));
+            return;
+        }
+        if (block instanceof ItemTurret turret) {
+            // A turret eats ammunition, and it was filed as a sink that consumed nothing:
+            // a belt feeding one carried items into a hole and the layout read as wasting
+            // them. How fast it eats depends on how often it fires, which a still picture
+            // cannot know, so the rate here is the rate while firing and is labelled so.
+            entry.put("role", "turret");
+            entry.put("carries", "item");
+            entry.put("reload", turret.reload);
+            entry.put("ammo_per_shot", turret.ammoPerShot);
+            entry.put("shots_per_second", TPS / Math.max(1f, turret.reload));
+
+            Jval ammo = Jval.newArray();
+            for (Item item : turret.ammoTypes.keys()) {
+                ammo.asArray().add(Jval.valueOf(item.name));
+            }
+            entry.put("ammo", ammo);
+            entry.put("input_liquid", liquidInputsOf(block));
+            entry.put("power", powerOf(block));
+            return;
+        }
+        if (block instanceof Unloader unloader) {
+            // It pulls out of whatever container it touches, so it is a source rather than
+            // a sink: modelled as neither, a line starting at one started at nothing.
+            entry.put("role", "unloader");
+            entry.put("carries", "item");
+            entry.put("items_per_second", unloader.speed * TPS);
+            return;
+        }
+        if (block instanceof StorageBlock) {
+            // A vault, a container, a core. It takes anything and gives anything back to
+            // whatever pulls from it.
+            entry.put("role", "store");
+            entry.put("carries", "item");
+            entry.put("item_capacity", block.itemCapacity);
             return;
         }
         if (block.hasItems && block.acceptsItems) {

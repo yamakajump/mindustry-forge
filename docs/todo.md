@@ -14,6 +14,11 @@ l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 - [x] **Jonction** : passe tout droit, entrée d'un côté sortie de l'opposé, au lieu de
       diffuser aux quatre côtés et de mélanger les lignes qu'elle sert à croiser.
 - [x] **Trieur** : sa configuration est enfin utilisée.
+- [x] **Tourelles** : elles mangent leurs munitions au lieu d'être des puits sans
+      consommation. Le débit est celui du tir ; à quelle fréquence elle tire n'est pas dans
+      une image fixe, et le rapport le dit plutôt que de faire semblant.
+- [x] **Déverseur et conteneurs** : un déverseur collé à un coffre est un début de ligne,
+      et un coffre au bout d'une ligne est une destination.
 - [x] **Superposition au défilement.** L'aperçu collant passait par-dessus le panneau de
       bloc. La colonne entière colle désormais, pas l'image seule.
 - [x] Icônes des liquides et des pompes conseillées.
@@ -25,11 +30,11 @@ l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 
 ### 1. Mécanismes du jeu encore absents ou faux
 
-- **Portes de trop-plein et de sous-flux** : modélisées comme des routeurs. Le jeu leur
-  donne une priorité, tout droit d'abord, sur les côtés seulement si ça bloque.
-- **Déverseur** : prend dans un conteneur, pas modélisé.
-- **Munitions des tourelles** : elles ressortent en puits sans consommation.
-- **Chaleur** (Erekir) : pas modélisée du tout.
+- **Chaleur** (Erekir) : pas modélisée du tout. Toute la moitié Erekir du jeu en dépend.
+- **Portes de trop-plein** : laissées en routeurs, et c'est un choix. Le jeu envoie tout
+  droit si ça passe et sur les côtés sinon ; avec un flot maximal ce choix ne change pas
+  le débit total, seulement quelle branche le porte. Ça deviendra faux le jour où le site
+  dira *où* passe la matière et pas seulement combien.
 
 ### 3. Vérifier les chiffres contre le vrai jeu
 
@@ -39,10 +44,13 @@ les autres, et `verified` reste faux tant que ça ne tourne pas.
 
 ### 4. Place de marché
 
-- Recherche par besoin : « il me faut 100 graphite/min », pas par mot-clé.
-- Classements : meilleur débit par bloc, par cuivre investi, sous N blocs.
+- [x] **Vitrine publique** avec recherche par ce qu'une schématique produit, et tri par
+      débit par bloc plutôt que par date. Un tri par date est un classement de qui a posté
+      en dernier ; un tri par débit par bloc est un classement des bonnes.
 - Comparer deux schématiques côte à côte.
-- Étiquettes déduites de l'analyse plutôt que tapées.
+- Filtrer aussi sur ce dont elle a besoin : « j'ai du charbon, montre ce que je peux
+  faire tourner ».
+- Classement par cuivre investi et pas seulement par bloc.
 
 ### 5. Reste
 

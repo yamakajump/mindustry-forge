@@ -3471,10 +3471,9 @@
         "titanium": 25,
         "silicon": 30
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "unloader",
+      "carries": "item",
+      "items_per_second": 327.27274
     },
     "mass-driver":{
       "name": "mass-driver",
@@ -4714,10 +4713,8 @@
         "copper": 1000,
         "lead": 800
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "store",
+      "carries": "item"
     },
     "core-foundation":{
       "name": "core-foundation",
@@ -4732,10 +4729,8 @@
         "lead": 3000,
         "silicon": 2000
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "store",
+      "carries": "item"
     },
     "core-nucleus":{
       "name": "core-nucleus",
@@ -4751,10 +4746,8 @@
         "thorium": 4000,
         "silicon": 5000
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "store",
+      "carries": "item"
     },
     "core-bastion":{
       "name": "core-bastion",
@@ -4769,10 +4762,8 @@
         "silicon": 1000,
         "beryllium": 800
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "store",
+      "carries": "item"
     },
     "core-citadel":{
       "name": "core-citadel",
@@ -4788,10 +4779,8 @@
         "tungsten": 3000,
         "oxide": 1000
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "store",
+      "carries": "item"
     },
     "core-acropolis":{
       "name": "core-acropolis",
@@ -4808,10 +4797,8 @@
         "oxide": 3000,
         "carbide": 3000
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "store",
+      "carries": "item"
     },
     "container":{
       "name": "container",
@@ -4824,10 +4811,8 @@
       "cost":{
         "titanium": 100
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "store",
+      "carries": "item"
     },
     "vault":{
       "name": "vault",
@@ -4841,10 +4826,8 @@
         "titanium": 250,
         "thorium": 125
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "store",
+      "carries": "item"
     },
     "reinforced-container":{
       "name": "reinforced-container",
@@ -4858,10 +4841,8 @@
         "graphite": 40,
         "tungsten": 30
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "store",
+      "carries": "item"
     },
     "reinforced-vault":{
       "name": "reinforced-vault",
@@ -4876,10 +4857,8 @@
         "beryllium": 100,
         "tungsten": 125
       },
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
-      "power": 0
+      "role": "store",
+      "carries": "item"
     },
     "duo":{
       "name": "duo",
@@ -4892,8 +4871,16 @@
       "cost":{
         "copper": 35
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 20,
+      "ammo_per_shot": 1,
+      "shots_per_second": 3,
+      "ammo": [
+        "copper",
+        "graphite",
+        "silicon"
+      ],
       "input_liquid":{},
       "power": 0
     },
@@ -4909,8 +4896,16 @@
         "copper": 85,
         "lead": 45
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 18,
+      "ammo_per_shot": 1,
+      "shots_per_second": 3.3333333,
+      "ammo": [
+        "scrap",
+        "lead",
+        "metaglass"
+      ],
       "input_liquid":{},
       "power": 0
     },
@@ -4926,8 +4921,15 @@
         "copper": 25,
         "graphite": 22
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 6,
+      "ammo_per_shot": 1,
+      "shots_per_second": 10,
+      "ammo": [
+        "coal",
+        "pyratite"
+      ],
       "input_liquid":{},
       "power": 0
     },
@@ -4943,8 +4945,16 @@
         "copper": 40,
         "graphite": 17
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 60,
+      "ammo_per_shot": 1,
+      "shots_per_second": 1,
+      "ammo": [
+        "graphite",
+        "silicon",
+        "pyratite"
+      ],
       "input_liquid":{},
       "power": 0
     },
@@ -5027,8 +5037,16 @@
         "silicon": 30,
         "plastanium": 45
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 34.285713,
+      "ammo_per_shot": 1,
+      "shots_per_second": 1.75,
+      "ammo": [
+        "blast-compound",
+        "pyratite",
+        "surge-alloy"
+      ],
       "input_liquid":{},
       "power": 0
     },
@@ -5045,8 +5063,18 @@
         "graphite": 80,
         "titanium": 50
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 29,
+      "ammo_per_shot": 1,
+      "shots_per_second": 2.0689654,
+      "ammo": [
+        "copper",
+        "graphite",
+        "pyratite",
+        "silicon",
+        "thorium"
+      ],
       "input_liquid":{},
       "power": 0
     },
@@ -5096,8 +5124,15 @@
         "graphite": 225,
         "thorium": 100
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 35,
+      "ammo_per_shot": 1,
+      "shots_per_second": 1.7142857,
+      "ammo": [
+        "titanium",
+        "thorium"
+      ],
       "input_liquid":{},
       "power": 0
     },
@@ -5114,8 +5149,18 @@
         "graphite": 135,
         "titanium": 60
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 120,
+      "ammo_per_shot": 2,
+      "shots_per_second": 0.5,
+      "ammo": [
+        "graphite",
+        "silicon",
+        "pyratite",
+        "blast-compound",
+        "plastanium"
+      ],
       "input_liquid":{},
       "power": 0
     },
@@ -5132,8 +5177,17 @@
         "titanium": 125,
         "plastanium": 80
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 10,
+      "ammo_per_shot": 1,
+      "shots_per_second": 6,
+      "ammo": [
+        "metaglass",
+        "blast-compound",
+        "plastanium",
+        "surge-alloy"
+      ],
       "input_liquid":{},
       "power": 0
     },
@@ -5152,8 +5206,14 @@
         "plastanium": 200,
         "surge-alloy": 300
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 200,
+      "ammo_per_shot": 5,
+      "shots_per_second": 0.3,
+      "ammo": [
+        "surge-alloy"
+      ],
       "input_liquid":{},
       "power": 600
     },
@@ -5172,8 +5232,16 @@
         "plastanium": 175,
         "surge-alloy": 250
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 7,
+      "ammo_per_shot": 1,
+      "shots_per_second": 8.571428,
+      "ammo": [
+        "graphite",
+        "thorium",
+        "pyratite"
+      ],
       "input_liquid":{},
       "power": 0
     },
@@ -5209,8 +5277,16 @@
         "silicon": 150,
         "beryllium": 150
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 40,
+      "ammo_per_shot": 2,
+      "shots_per_second": 1.5,
+      "ammo": [
+        "beryllium",
+        "tungsten",
+        "carbide"
+      ],
       "input_liquid":{
         "water": 15
       },
@@ -5230,8 +5306,16 @@
         "beryllium": 150,
         "tungsten": 50
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 30,
+      "ammo_per_shot": 3,
+      "shots_per_second": 2,
+      "ammo": [
+        "graphite",
+        "oxide",
+        "silicon"
+      ],
       "input_liquid":{
         "water": 15
       },
@@ -5268,8 +5352,16 @@
         "silicon": 300,
         "tungsten": 250
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 138,
+      "ammo_per_shot": 4,
+      "shots_per_second": 0.4347826,
+      "ammo": [
+        "thorium",
+        "carbide",
+        "oxide"
+      ],
       "input_liquid":{
         "water": 30,
         "hydrogen": 5
@@ -5290,8 +5382,17 @@
         "beryllium": 350,
         "oxide": 50
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 9,
+      "ammo_per_shot": 1,
+      "shots_per_second": 6.6666665,
+      "ammo": [
+        "tungsten",
+        "thorium",
+        "silicon",
+        "surge-alloy"
+      ],
       "input_liquid":{
         "water": 20
       },
@@ -5347,8 +5448,16 @@
         "oxide": 100,
         "carbide": 200
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 600,
+      "ammo_per_shot": 15,
+      "shots_per_second": 0.1,
+      "ammo": [
+        "carbide",
+        "phase-fabric",
+        "surge-alloy"
+      ],
       "input_liquid":{
         "water": 15
       },
@@ -5369,8 +5478,14 @@
         "oxide": 200,
         "carbide": 500
       },
-      "role": "sink",
-      "input":{},
+      "role": "turret",
+      "carries": "item",
+      "reload": 100,
+      "ammo_per_shot": 2,
+      "shots_per_second": 0.6,
+      "ammo": [
+        "surge-alloy"
+      ],
       "input_liquid":{
         "water": 15
       },
