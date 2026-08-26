@@ -284,3 +284,21 @@ select {
 }
 .legend .dot.out { border-color: var(--accent); }
 .legend .dim { color: var(--dim); flex-basis: 100%; }
+
+/* Marking a block as a way in or a way out. The one thing on the block panel the
+   schematic cannot answer by itself. */
+.mark .chips { gap: 6px; }
+.chip.pick {
+  cursor: pointer; border: 2px solid var(--edge); background: var(--raised);
+  color: var(--ink); font: inherit; font-size: 12px; min-height: 32px;
+}
+.chip.pick:hover { border-color: var(--accent); }
+.chip.pick.on { background: var(--good); border-color: var(--good); color: #10140f; }
+
+/* A tile that has been marked, said in the list beside the picture as well as on it. */
+.pin {
+  display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+  border: 2px solid var(--good); margin-right: 7px; vertical-align: -1px;
+}
+.pin.out { border-color: var(--accent); }
+.block-panel.waiting { border-color: var(--good); }

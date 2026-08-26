@@ -11,9 +11,12 @@ import assert from "node:assert/strict";
 
 import { analyse, buildGraph, solve } from "../../site/public/forge/analyse.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
-import { loadCatalogue, paste } from "./helpers.js";
+import { inAt, loadCatalogue, paste } from "./helpers.js";
 
 const known = loadCatalogue();
+
+/** Where the real schematic takes its water, said once rather than in every test. */
+const EAU = { "4,15": { side: "in", resource: "water" } };
 
 /** A real schematic, pasted by a real player through a chat, checksum and all. */
 const REAL = "bXNjaAF4nE1Sy27TQBS9HjszHid2yoptVdaWEEj0K1izqCo0iSeRhWMbe5yqQvwAEqISP8AX8gW05j5SQqT45Pq+zjk3kMFFAtm2a4Nvw3vXg/ryFXTjNr4Z4eLm6ubVbueur93t718PV7eQtO7g4eUHF/xw2Xd3+Hzz9vW7S9/6YX8Py8qP26HuQ921ADnkTf15qqty6CZsgLyfmtGXuK2a6gDFZqir/Tk2Gxew7B7WY/DuUO5pqgvdAOtt55pyixSHejftPazPrUd/jxXZdmpCfeTqYmorP+ya7q7cI1F4Eerg2no6nMuXJ2L4/hMsx74bfNkPfkTNrKpsu8qXjRtwF8BH4E8c4SOCmH4riWKJEokWECsEbeb56Sd+j4qyBiKCFCJKWkMN8zw/cjKT5FJgJTX5c80frikkuYYoAVqjCJRAAipC0LQ8wlXYEIGFWCNkhhlSB3LAHYre5mcCSAmHc8uaJCmkzmqAaSscpOhtjoLmp9MghS2x6I5ToF4GBZFlOzhKBNAQeqkFDNkTQ0r2POA3qAwLVxAnvFIRKIGEuCbi5A9yMl5giMtTBCvJ7Dk5KPKhoBskKCSmvbhyiWCJ8YJyQB5RiZYTajmhlhNqOaGWE2pZ/J0XYwDmn5OcJQXz48kPTcamCDlR50JmKpDQKQzPkw4UYjiNDxZiWMhpHIX5//8QI24bOhBaR3wJ0M4VQpZKuBLIBQoBdsLKmaycyRItC1bOZOVMlkRrBBb97STaimjiMfOcVMZzgZVALlAI4Ma/lba3pg==";
@@ -55,14 +58,15 @@ test("a belt caps at its own speed", () => {
 
 test("a press turns coal into graphite at its own pace", async () => {
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [2, 0, "graphite-press", 0]];
-  const out = await analyse(paste(tiles), { coal: 4 });
+  const out = await analyse(paste(tiles), { coal: 4 }, inAt([0, 0, "coal"]));
   close(out.perMinute.graphite, 40, "one graphite every ninety ticks");
   assert.equal(out.produced.coal, undefined, "the coal became graphite");
 });
 
 test("a starved machine is named rather than averaged", async () => {
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [2, 0, "graphite-press", 0]];
-  const out = await analyse(paste(tiles), { coal: (2 * 60 / 90) / 3 });
+  const out = await analyse(paste(tiles), { coal: (2 * 60 / 90) / 3 },
+                          inAt([0, 0, "coal"]));
   assert.equal(out.bottleneck[0], "graphite-press");
   close(out.bottleneck[1], 1 / 3, "fed a third of what it wants");
 });
@@ -70,7 +74,7 @@ test("a starved machine is named rather than averaged", async () => {
 test("a stranded machine is waste and not the bottleneck", async () => {
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [2, 0, "graphite-press", 0],
                  [2, 8, "graphite-press", 0]];
-  const out = await analyse(paste(tiles), { coal: 4 });
+  const out = await analyse(paste(tiles), { coal: 4 }, inAt([0, 0, "coal"]));
   assert.deepEqual(out.idle, { "graphite-press": 1 });
   assert.equal(out.bottleneck, null, "the connected press runs flat out");
 });
@@ -79,14 +83,14 @@ test("a stranded belt is not fed and does not count as output", async () => {
   /* Supply arrives on the edge of the network that carries it, and is split across the
      entry points rather than repeated at each, so what comes out is what went in. */
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [9, 9, "conveyor", 0]];
-  const out = await analyse(paste(tiles), { coal: 4 });
+  const out = await analyse(paste(tiles), { coal: 4 }, inAt([0, 0, "coal"]));
   assert.deepEqual(out.idle, { conveyor: 1 });
   assert.ok(!out.produced.coal, "ce qui entre et ressort n'est pas une production");
 });
 
 test("oversupply is reported rather than swallowed", async () => {
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [2, 0, "graphite-press", 0]];
-  const out = await analyse(paste(tiles), { coal: 4 });
+  const out = await analyse(paste(tiles), { coal: 4 }, inAt([0, 0, "coal"]));
   close(out.surplus.coal, 4 - 2 * 60 / 90, "a press eats 1.33 coal a second");
 });
 
@@ -101,7 +105,8 @@ test("a smelter declares its power draw", async () => {
      nothing. */
   const running = await analyse(paste([
     [0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [2, 0, "silicon-smelter", 0],
-  ]), { coal: 4, sand: 8 });
+    [0, 1, "conveyor", 3], [1, 1, "conveyor", 3],
+  ]), { coal: 4, sand: 8 }, inAt([0, 0, "coal"], [0, 1, "sand"]));
   assert.ok(running.power.spent > 0, `${running.power.spent} energie consommee`);
   assert.equal(running.power.made, 0, "un four ne produit pas d'energie");
 });
@@ -145,7 +150,7 @@ test("a bridge keeps its link instead of breaking the read", async () => {
 test("a string damaged in transit is read anyway and says so", async () => {
   /* Refusing a build the reader can see perfectly well helps nobody: 1,102 bytes decoded
      cleanly and the whole thing was rejected over the last two checksum bytes. */
-  const out = await analyse(REAL, {});
+  const out = await analyse(REAL, {}, EAU);
   assert.equal(out.altered, true, "the checksum did not match");
   assert.ok(out.truncated > 0, "and the tail was lost, which the report must say");
   assert.ok(out.blocks >= 90, "while the blocks that did read are kept");
@@ -177,7 +182,7 @@ test("a water to power schematic reports power, not the coal it makes on the way
      block registry carried item inputs and nothing else, so a cultivator declared no
      inputs at all and made spore pods out of nothing, and a steam generator was filed as
      a sink that swallowed coal without consuming it. */
-  const out = await analyse(REAL, { water: 120 });
+  const out = await analyse(REAL, { water: 120 }, EAU);
 
   assert.ok(out.power.made > 1000, `${out.power.made} energie produite`);
   assert.ok(out.power.net > 0, "un groupe electrogene produit plus qu il ne consomme");
@@ -188,8 +193,8 @@ test("a water to power schematic reports power, not the coal it makes on the way
 test("more water means more power", async () => {
   /* The relationship a player would check first, and the one that stayed flat at zero
      through three earlier versions of this model. */
-  const little = await analyse(REAL, { water: 30 });
-  const plenty = await analyse(REAL, { water: 120 });
+  const little = await analyse(REAL, { water: 30 }, EAU);
+  const plenty = await analyse(REAL, { water: 120 }, EAU);
   assert.ok(plenty.power.made > little.power.made * 1.3,
     `${little.power.made} contre ${plenty.power.made}`);
 });
@@ -197,7 +202,7 @@ test("more water means more power", async () => {
 test("what was handed in is not counted as what came out", async () => {
   /* Fed at every edge pipe and counted on the way out, one schematic reported fifteen
      thousand water a minute of production, which buried the number that mattered. */
-  const out = await analyse(REAL, { water: 100 });
+  const out = await analyse(REAL, { water: 100 }, EAU);
   assert.ok(!out.perMinute.water, "l'eau fournie n'est pas une production");
 });
 
@@ -222,13 +227,13 @@ test("a battery neither takes nor hands on anything", async () => {
 test("a block on the power grid is not a block somebody forgot to connect", async () => {
   /* Batteries and nodes carry nothing on the item network by design. Calling twenty-one
      of them "connected to nothing" buried the two bridges that really were. */
-  const out = await analyse(REAL, { water: 120 });
+  const out = await analyse(REAL, { water: 120 }, EAU);
   assert.ok(!out.idle.battery, "une batterie fait son travail sur le reseau electrique");
   assert.ok(!out.idle["power-node-large"]);
 });
 
 test("a rate that rounds to zero is not reported as a product", async () => {
-  const out = await analyse(REAL, { water: 120 });
+  const out = await analyse(REAL, { water: 120 }, EAU);
   for (const [item, n] of Object.entries(out.perMinute)) {
     assert.ok(n >= 0.1, `${item} affiche ${n} par minute`);
   }
@@ -239,7 +244,7 @@ test("a bridge that claims to reach three hundred tiles is not linked", async ()
      copied, and those come back as nonsense: five bridges in one real schematic claimed to
      reach 365 tiles left and 394 down, and were drawn as bars across the whole picture.
      The game's own rules settle it: along one axis, never diagonally, never past range. */
-  const parsed = await analyse(REAL, { water: 60 });
+  const parsed = await analyse(REAL, { water: 60 }, EAU);
   const bridges = parsed.graph.nodes.filter((n) => n.role === "bridge");
   assert.ok(bridges.length > 10, `${bridges.length} ponts`);
 
@@ -260,7 +265,7 @@ test("a pipe carries one liquid at a time", async () => {
      water refuses oil until the water is nearly gone. Letting a pipe carry both let the
      network mix them, and a liquid tank came out reporting 32 oil and 6,011 water a minute
      through the same three tiles. */
-  const out = await analyse(REAL, {});
+  const out = await analyse(REAL, {}, EAU);
   const mixing = out.detail.filter((tile) =>
     (tile.role === "conduit" || tile.role === "junction")
     && Object.values(tile.through || {}).filter((v) => v > 0.001).length > 1);
@@ -377,7 +382,7 @@ test("what arrives is spread over the machines waiting for it", async () => {
      hands material out round by round. */
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "router", 0],
                  [2, 0, "graphite-press", 0], [0, 1, "graphite-press", 0]];
-  const out = await analyse(paste(tiles), { coal: 1 });
+  const out = await analyse(paste(tiles), { coal: 1 }, inAt([0, 0, "coal"]));
 
   const presses = out.detail.filter((t) => t.name === "graphite-press");
   assert.equal(presses.length, 2);
@@ -391,7 +396,7 @@ test("a machine nothing feeds stays at nothing", async () => {
      wired to no belt at all is worth seeing. */
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "graphite-press", 0],
                  [8, 8, "graphite-press", 0]];
-  const out = await analyse(paste(tiles), { coal: 4 });
+  const out = await analyse(paste(tiles), { coal: 4 }, inAt([0, 0, "coal"]));
 
   const presses = out.detail.filter((t) => t.name === "graphite-press")
     .sort((a, b) => b.fed - a.fed);
@@ -419,7 +424,7 @@ test("a container is a buffer an unloader draws from, not a hole", async () => {
      halves of one belt had nothing to do with each other. */
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "container", 0], [3, 0, "unloader", 0],
                  [4, 0, "conveyor", 0], [5, 0, "conveyor", 0]];
-  const out = await analyse(paste(tiles), { copper: 4 });
+  const out = await analyse(paste(tiles), { copper: 4 }, inAt([0, 0, "copper"]));
 
   const last = out.detail.filter((d) => d.name === "conveyor").pop();
   close(last.through.copper, 4, "ce qui est entre dans le coffre ressort du deverseur");
@@ -430,9 +435,12 @@ test("an unloader hands on eleven items a second, not three hundred", async () =
      thirty times too fast and a container behind one looked like a mine. */
   close(known.blocks["unloader"].items_per_second, 11, "onze par seconde");
 
-  const tiles = [[0, 0, "conveyor", 0], [1, 0, "container", 0], [3, 0, "unloader", 0],
+  /* Fed straight into the container, so the belt in front is not what limits it: the
+     unloader offers eleven a second and the titanium belt behind it takes ten. */
+  const tiles = [[1, 0, "container", 0], [3, 0, "unloader", 0],
                  [4, 0, "titanium-conveyor", 0]];
-  const out = await analyse(paste(tiles), { copper: 40 });
+  // Le collage recadre sur la boite : le coffre retombe en (0, 0).
+  const out = await analyse(paste(tiles), { copper: 40 }, inAt([0, 0, "copper"]));
   const belt = out.detail.find((d) => d.name === "titanium-conveyor");
   close(belt.through.copper, 10, "la bande en titane porte dix, le deverseur en offre onze");
 });
@@ -450,7 +458,7 @@ test("a liquid a machine drinks is not reported as wasted", async () => {
   /* Counted on `block.input` alone, a liquid ingredient was never counted as eaten: a
      layout fed exactly the water its cultivators drink reported wasting all of it, on the
      same page that said the cultivators were running flat out. */
-  const out = await analyse(REAL, {});
+  const out = await analyse(REAL, {}, EAU);
   assert.ok(!out.surplus.water,
             `l'eau bue n'est pas gaspillee : ${JSON.stringify(out.surplus)}`);
 });
@@ -466,10 +474,11 @@ test("a build standing on its own sources is not asked where it plugs in", async
 
 test("sealed means nothing arrives from outside", async () => {
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "graphite-press", 0]];
-  const open = await analyse(paste(tiles), {}, null, { sealed: false });
-  const shut = await analyse(paste(tiles), {}, null, { sealed: true });
+  const marked = await analyse(paste(tiles), {}, inAt([0, 0, "coal"]));
+  const shut = await analyse(paste(tiles), {}, inAt([0, 0, "coal"]), { sealed: true });
 
   const press = (report) => report.detail.find((d) => d.name === "graphite-press");
-  assert.ok(press(open).fed > 0, "ouverte, la presse est alimentee par le bord");
+  assert.ok(press(marked).fed > 0, "marquee, la presse est alimentee");
   close(press(shut).fed, 0, "scellee, rien n'arrive et rien ne tourne");
+  assert.equal(shut.awaiting, false, "scellee est une reponse, pas une absence de reponse");
 });

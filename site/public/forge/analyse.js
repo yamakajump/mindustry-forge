@@ -17,7 +17,7 @@
 
 import { fromBase64 } from "./schematic.js";
 import { demand, requirements } from "./needs.js";
-import { ports, feedPorts, mainPorts } from "./ports.js";
+import { candidates, feedFrom, markable, marksOf, readMarks } from "./marks.js";
 import { throughput } from "./maxflow.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
@@ -25,9 +25,6 @@ const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
 /** Ticks in a second. The game states craft times and drill times in ticks. */
 const TICKS = 60;
-
-/** Rounds of pushing supply forward before a layout is called unsettled. */
-const ROUNDS = 200;
 
 /** Below this, two rates are the same number, in items a second. */
 const SETTLED = 1e-4;
@@ -381,7 +378,6 @@ function speedUp(nodes) {
 const addTo = (rates, item, amount) => {
   rates[item] = (rates[item] || 0) + amount;
 };
-const totalOf = (rates) => Object.values(rates).reduce((a, b) => a + b, 0);
 
 /**
  * Push supply forward to a fixed point.
@@ -862,42 +858,6 @@ function arrivingAt(graph, through, index, pull) {
   return total;
 }
 
-/**
- * Blocks nothing inside the schematic feeds, which is where the outside comes in.
- *
- * A block leading nowhere is not one of them. Feeding an orphan belt handed it the full
- * supply and counted every item straight back out as delivered: the first real schematic
- * this ran on reported 240 coal a minute out of one stranded conveyor.
- */
-function entrances(graph, resource) {
-  const carries = isLiquid(resource) ? "liquid" : "item";
-  const on = graph.nodes.filter((n) => n.block.carries === carries);
-
-  // A belt from outside arrives at the edge of what was copied, so the entry points are
-  // the carriers on the boundary. Asking instead for blocks with nothing feeding them
-  // finds none at all in a layout whose network loops, which is most power schematics:
-  // the first one tried this way had nineteen entry points, every one of them a battery,
-  // and every drop of water supplied drained into one.
-  if (!on.length) return [];
-  const left = Math.min(...on.map((n) => n.x));
-  const right = Math.max(...on.map((n) => n.x));
-  const bottom = Math.min(...on.map((n) => n.y));
-  const top = Math.max(...on.map((n) => n.y));
-
-  const edge = [];
-  for (let index = 0; index < graph.nodes.length; index++) {
-    const node = graph.nodes[index];
-    if (node.block.carries !== carries || !graph.out[index].length) continue;
-    if (node.x === left || node.x === right || node.y === bottom || node.y === top) {
-      edge.push(index);
-    }
-  }
-  // A network entirely inside its own box still has to be fed somewhere, and the head of
-  // it is as good a place as any.
-  return edge.length ? edge
-    : graph.nodes.map((_, i) => i).filter((i) =>
-        graph.nodes[i].block.carries === carries && graph.out[i].length);
-}
 
 /** Blocks that neither receive nor deliver anything. */
 function orphans(graph) {
@@ -962,67 +922,6 @@ function surplusOf(graph, solved, feeds) {
  * than guessed. A schematic torn out of a base is a middle: a press with no drill in the
  * picture makes nothing at all, and calling that a broken design would be wrong.
  */
-/**
- * Flag the socket to actually use, so the picture can say which one rather than ringing
- * fourteen tiles in the same colour and leaving the reader to guess.
- */
-function markMain(found, marked) {
-  // A player's choice wins over the guess, and silences it: showing thirteen suggestions
-  // beside the one they picked is arguing with them.
-  if (marked) {
-    return {
-      ...found,
-      inputs: found.inputs
-        .filter((port) => marked[`${port.x},${port.y}`] === "in")
-        .map((port) => ({ ...port, main: true })),
-    };
-  }
-  const best = new Set(
-    [...mainPorts(found.inputs).values()].map(({ port }) => port.index));
-  return {
-    ...found,
-    inputs: found.inputs.map((port) => ({ ...port, main: best.has(port.index) })),
-  };
-}
-
-/**
- * Feed exactly the tiles the player marked as inputs.
- *
- * Each gets what the machines behind it are waiting for, and when several are marked for
- * the same resource the demand is shared: two water pipes marked means two water pipes,
- * not two schematics.
- */
-function feedMarked(graph, marked, outside, liquid) {
-  const wanted = [];
-  for (let index = 0; index < graph.nodes.length; index++) {
-    const node = graph.nodes[index];
-    if (marked[`${node.x},${node.y}`] !== "in") continue;
-    wanted.push(index);
-  }
-  if (!wanted.length) return {};
-
-  const feeds = {};
-  for (const [resource, rate] of Object.entries(outside)) {
-    if (resource.startsWith("*")) continue;
-    const carries = liquid(resource) ? "liquid" : "item";
-    const able = wanted.filter((i) => (graph.nodes[i].block.carries || "item") === carries);
-    if (!able.length) continue;
-    for (const index of able) {
-      feeds[index] = { ...(feeds[index] || {}), [resource]: rate / able.length };
-    }
-  }
-  return feeds;
-}
-
-/**
- * Analyse a schematic.
- *
- * `chosen` is what the player marked by hand: `{ "4,15": "in", "9,3": "out" }`. Guessing
- * where a schematic plugs in is genuinely hard, and the guess is a default rather than an
- * answer: a design has one intake and eleven pipes that could physically take one, and
- * nothing in the file says which the author meant. So the tool proposes and the player
- * decides, and what they decide is kept with the schematic.
- */
 export async function analyse(text, supply = {}, chosen = null, { sealed = false } = {}) {
   await loadCatalogue();
   noteLiquids();
@@ -1034,33 +933,24 @@ export async function analyse(text, supply = {}, chosen = null, { sealed = false
   // A belt that starts from nowhere is where something arrives, and the machines behind it
   // say what. Asking the player instead was asking them to state what the schematic
   // already says, and it meant a layout nobody had described analysed to nothing at all.
-  const outside = demand(graph).outside;
-  const marked = chosen && Object.keys(chosen).length ? chosen : null;
+  const { outside, wanted } = demand(graph);
+  const marks = readMarks(chosen);
+  const marked = Object.keys(marks).length ? marks : null;
 
   // A build with its own sandbox taps in it feeds itself, and there is nothing to ask: the
   // player already answered by placing the sources. Fed through its edge pipes as well, a
   // reactor farm was handed cryofluid twice over.
   const selfFed = graph.nodes.some((node) => node.role === "source" && node.configured);
-  // Sealed means nothing arrives from outside: a sandbox build, a piece of pixel art, a
-  // design that grows everything it eats. Said rather than guessed, because the guess is
-  // the thing a player cannot check and a wrong one produces confident nonsense.
-  const socketed = sealed || (selfFed && !marked) ? {}
-    : marked ? feedMarked(graph, marked, outside, isLiquid)
-    : feedPorts(graph, isLiquid, outside);
-
-  // A stated supply overrides it, for "what does this do on half the water I have".
-  // Split across the entry points rather than repeated at each: handed to all of them, a
-  // schematic with fifteen edge conduits was fed fifteen hundred and duly reported
-  // fifteen thousand water a minute coming back out.
-  const feeds = Object.keys(supply).length ? {} : socketed;
-  for (const [resource, rate] of Object.entries(supply)) {
-    const where = entrances(graph, resource);
-    if (!where.length) continue;
-    const each = rate / where.length;
-    for (const index of where) {
-      feeds[index] = { ...(feeds[index] || {}), [resource]: each };
-    }
-  }
+  // Nothing arrives unless somebody says where from.
+  //
+  // The version before this guessed: it fed the layout through whichever boundary carrier
+  // looked likeliest, and everything on the page was computed from that choice. On a real
+  // schematic that is a coin toss, and a wrong coin toss produced a full page of
+  // throughputs that looked computed. Sealed is the other answer, for a sandbox build or
+  // a piece of pixel art: nothing goes in, and that is a fact rather than a failure.
+  const feeds = sealed || (selfFed && !marked) ? {}
+    : marked ? feedFrom(graph, marked, outside, isLiquid, supply)
+    : {};
 
   const solved = solve(graph, feeds);
 
@@ -1150,10 +1040,20 @@ export async function analyse(text, supply = {}, chosen = null, { sealed = false
     // than in rates. Computed rather than asked for: nobody knows offhand that a layout
     // drinks eighteen water a second, and everybody can picture two mechanical pumps.
     needs: requirements(graph, catalogue),
-    // Where to plug it in, named by tile. Not "it needs water" but "the pipe at 0,7 wants
-    // water", which is the difference between a fact and an instruction.
-    ports: markMain(ports(graph, isLiquid, outside), marked),
-    marked: marked || {},
+    // What the player marked, with what each tile handles: not "it needs water" but "this
+    // pipe has to bring 8,640 water a minute", which is the difference between a fact and
+    // an instruction.
+    ports: marksOf(graph, marks, feeds, solved),
+    marks,
+    // What could be picked on each tile, so the panel offers a short list rather than the
+    // whole catalogue. A pipe is never offered coal.
+    offers: Object.fromEntries(graph.nodes
+      .filter(markable)
+      .map((node) => [`${node.x},${node.y}`,
+                      candidates(node, outside, wanted, catalogue, isLiquid)])),
+    // Whether anything has been said yet. Nothing that depends on where it plugs in is
+    // worth showing until it has.
+    awaiting: !marked && !sealed && !selfFed,
     fedItself: !Object.keys(supply).length,
     sealed,
     // Whether it holds its own taps, which is what makes the question of where it plugs in

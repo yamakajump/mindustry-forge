@@ -43,11 +43,27 @@ c'était la mauvaise moitié du travail.
 
 ### 4. Reste
 
-- Les entrées et sorties définies à la main doivent être rejouées à l'ouverture d'une
-  schématique gardée.
 - Diagnostic explicite : « trois bandes reliées à rien », en tête plutôt qu'en bas.
+- Marquer plusieurs blocs d'un coup (glisser sur une rangée de tuyaux).
 
 ## Corrigé
+
+- [x] **La devinette des entrées est supprimée, pas améliorée.** Forge choisissait le
+      transporteur du bord le plus probable par ressource et alimentait la schématique par
+      là ; tout le reste de la page découlait de ce choix. Sur une conception réelle c'est
+      un coup de dé, l'image revenait sous quatorze anneaux verts dont un légèrement plus
+      vif, et rien ne disait lequel était lequel. `ports.js` et son test sont supprimés,
+      remplacés par `marks.js` : le joueur marque, Forge compte.
+- [x] **Ce qui passe est dessiné sur la tuile**, l'icône de la ressource dans l'anneau. Un
+      anneau dit « ici » ; un anneau avec une goutte d'eau dedans dit « de l'eau, ici ».
+- [x] **Une fois l'entrée marquée**, la carte « il lui faut » dit ce que ce tuyau précis
+      doit amener, et en combien de pompes ou de foreuses.
+- [x] **Un tuyau ne « produit » pas de l'eau**, il la porte. Le même chiffre veut dire deux
+      choses selon le bloc.
+- [x] **Le panneau de bloc ne se referme plus** quand on marque : il fallait retrouver le
+      bloc pour choisir la ressource.
+- [x] **L'aperçu enregistré ne porte plus les annotations.** C'était une photo du canvas,
+      anneaux compris, et c'est cette image qui part dans un lien Discord.
 
 - [x] **Le simulateur, supprimé.** `simulate.js` disait -408 énergie/s là où le modèle
       analytique dit +2 402, avec les générateurs à 0 % sur une schématique qui s'appelle

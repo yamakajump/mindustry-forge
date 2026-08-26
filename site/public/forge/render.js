@@ -11,8 +11,6 @@
  * reads as an L rather than as a rectangle with holes.
  */
 
-const TILE = 32;
-
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
@@ -180,16 +178,30 @@ function drawBridge(context, node, box, scale) {
  * picture has to count tiles to find it; a mark on the tile itself is the same fact
  * without the counting.
  */
-function marker(context, port, box, scale, colour, incoming) {
+function marker(context, port, box, scale, colour) {
   const x = (port.x - box.left) * scale;
   const y = (box.height - (port.y - box.bottom) - 1) * scale;
+  const width = Math.max(2, scale * 0.11);
 
   context.save();
   context.strokeStyle = colour;
-  context.lineWidth = Math.max(2, scale * 0.09);
-  context.setLineDash(incoming ? [] : [scale * 0.22, scale * 0.16]);
-  context.strokeRect(x + context.lineWidth / 2, y + context.lineWidth / 2,
-                     scale - context.lineWidth, scale - context.lineWidth);
+  context.lineWidth = width;
+  context.strokeRect(x + width / 2, y + width / 2, scale - width, scale - width);
+
+  // What travels through it, drawn on it. A ring says "here"; a ring with a drop of water
+  // in it says "water, here", which is the whole of what the mark is for. Drawn at a bit
+  // over half a tile and floated above the block, so the block underneath stays readable.
+  const icon = port.resource && atlas?.sprites?.[`item/${port.resource}`];
+  if (icon && sheet) {
+    const size = scale * 0.62;
+    const left = x + (scale - size) / 2;
+    const top = y + (scale - size) / 2;
+    context.fillStyle = "rgba(10, 12, 16, .72)";
+    context.beginPath();
+    context.arc(x + scale / 2, y + scale / 2, size * 0.62, 0, Math.PI * 2);
+    context.fill();
+    context.drawImage(sheet, icon.x, icon.y, icon.w, icon.h, left, top, size, size);
+  }
   context.restore();
 }
 
@@ -374,16 +386,17 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
     }
   }
 
-  // Sockets, so the picture says where to plug it in. A list of coordinates beside a
-  // picture makes a reader count tiles; a mark on the tile does not.
+  // The marks, so the picture says where things go in and out. A list of coordinates
+  // beside a picture makes a reader count tiles; a mark on the tile does not.
+  //
+  // Only what the player said, drawn solid. There used to be a second, faded ring on every
+  // tile that could have been an intake, which on a real schematic meant fourteen green
+  // squares with one of them slightly brighter, and no way to tell which was which.
   for (const port of options.inputs || []) {
-    // The one to use is drawn solid; the others are places it could have gone instead,
-    // and ringing all fourteen the same way said "you need fourteen pipes".
-    marker(context, port, box, scale,
-           port.main ? "#84d98b" : "#84d98b66", port.main !== false);
+    marker(context, port, box, scale, "#84d98b");
   }
   for (const port of options.outputs || []) {
-    marker(context, port, box, scale, "#ffd37f", false);
+    marker(context, port, box, scale, "#ffd37f");
   }
 
   drawPowerLinks(context, tiles, sizeOf, box, scale);

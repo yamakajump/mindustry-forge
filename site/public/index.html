@@ -117,71 +117,60 @@ function render(report) {
     style="width:20px;height:20px;fill:currentColor;stroke:none"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>`;
 
   /* Where it plugs in, asked rather than assumed.
-     
+
      Guessing is a coin toss: a design has one intake and a dozen pipes that could
      physically be it, and nothing in the file says which the author meant. Guessing wrong
      does not produce a blank, it produces a page of throughputs that look computed and are
-     not, which is worse than producing nothing. So the guess is offered as a proposal and
-     everything that depends on it waits for an answer. */
-  // A build standing on its own sandbox sources has already answered: nothing arrives
-  // from outside, because everything it drinks is poured inside it.
-  const answered = ports.asked || report.selfFed;
-  const sockets2 = report.ports?.inputs || [];
-  const guessed = {};
-  for (const port of sockets2) {
-    for (const resource of Object.keys(port.wants)) {
-      const seen = guessed[resource] || { n: 0, carries: port.carries };
-      seen.n++;
-      guessed[resource] = seen;
-    }
-  }
-  const byHand = Object.keys(report.marked || {}).length;
+     not, which is worse than producing nothing. So it is asked, once, and everything that
+     depends on it waits for the answer. */
+  const answered = !report.awaiting;
+  const inputs = report.ports?.inputs || [];
+  const outlets = report.ports?.outputs || [];
 
-  if (!answered) {
-    const said = Object.entries(guessed).map(([resource, seen]) => {
-      // The fuel wildcard is a question, not an item: a generator that burns anything
-      // states a duration and no ingredient, and printing "*combustible" beside a pipe
-      // icon reads as a bug.
-      const label = resource.startsWith("*")
-        ? "un combustible quelconque"
-        : `${withIcon(resource)}${escape(resource)}`;
-      const kind = seen.carries === "liquid" ? "tuyau" : "bande";
-      return `<div class="line"><span>${label}</span>
-        <span class="num">${seen.n} ${kind}${seen.n > 1 ? "s" : ""}</span></div>`;
-    }).join("");
+  const markLine = (port, colour) => {
+    const label = port.resource
+      ? `${withIcon(port.resource)}${escape(port.resource)}`
+      : `<span style="color:var(--dim)">a preciser</span>`;
+    return `<div class="line"><span><span class="pin ${colour}"></span>
+      ${escape(port.name)} en (${port.x}, ${port.y})</span>
+      <span class="num">${label}${port.rate > 0.001
+        ? ` &nbsp;${rate(port.rate * 60)} / min` : ""}</span></div>`;
+  };
 
-    right.push(`<div class="card ask"><h2>Par ou ca entre ?</h2>${
-      byHand
-        ? `<p class="hint-line" style="margin-top:0">Tu as marque
-           <strong>${byHand}</strong> bloc${byHand > 1 ? "s" : ""} a la main.</p>`
-        : said
-          ? `<p class="hint-line" style="margin-top:0">Forge propose ceci, entoure en vert
-             sur l'image :</p>${said}`
-          : `<p class="hint-line" style="margin-top:0">Forge ne voit aucune entree :
-             elle a l'air de se suffire a elle-meme.</p>`
+  if (!answered || inputs.length || outlets.length) {
+    right.push(`<div class="card ${answered ? "" : "ask"}">
+      <h2>Entrees et sorties</h2>${
+      inputs.length || outlets.length
+        ? inputs.map((p) => markLine(p, "in")).join("")
+          + outlets.map((p) => markLine(p, "out")).join("")
+        : `<p class="hint-line" style="margin-top:0">Rien de marque pour l'instant.</p>`
     }<div class="row" style="margin-top:12px">
-      <button type="button" class="primary" id="ports-ok">${
-        byHand || said ? "C'est ca, calcule" : "Calcule quand meme"}</button>
-      <button type="button" id="ports-hand">Je marque moi-meme</button>
-      <button type="button" id="ports-sealed">Rien n'entre</button>
+      <button type="button" class="${answered ? "" : "primary"}" id="ports-mark">${
+        inputs.length || outlets.length ? "Marquer autre chose" : "Marquer sur l'image"}</button>
+      <button type="button" id="ports-sealed">Rien n'entre ni ne sort</button>
+      ${inputs.length || outlets.length
+        ? `<button type="button" id="ports-clear">Tout effacer</button>` : ""}
     </div>
-    <p class="hint-line">Tant que ce n'est pas dit, les debits ne sont pas affiches. Une
-      entree devinee de travers donne des chiffres faux avec l'air d'etre sur de lui, et
-      c'est pire que de ne rien dire.</p>
+    <p class="hint-line">${answered
+      ? "Clique une bande ou un tuyau sur l'image pour en ajouter ou en corriger un."
+      : "Clique une bande ou un tuyau sur l'image, dis si c'est une entree ou une sortie, "
+        + "et ce qui y passe. Forge ne devine pas : sur une conception un peu grosse, "
+        + "deviner l'arrivee est un coup de de, et un coup de de rate donne une page de "
+        + "chiffres qui ont l'air calcules."}</p>
     </div>`);
   }
 
   /* What it takes to feed this, computed rather than asked for. Nobody knows offhand that
      a layout drinks eighteen water a second; everybody can picture two mechanical pumps.
-     This card comes first because it is the question a player has before any other. */
-  /* Where to plug it in, grouped by what each socket wants. Eighteen pipes listed one by
-     one is a wall of coordinates; "eighteen pipes want water" with the tiles ringed on the
-     picture is the same fact, read at a glance. */
+
+     This is the half a schematic can answer by itself, and it is worth saying that it is a
+     different half from the one above: what a layout eats comes from its machines and is a
+     fact; where it plugs in comes from its author's intent and is not. So this shows
+     straight away, and once a tile has been marked it also says how much has to arrive on
+     that particular tile. */
   const sockets = {};
-  for (const port of report.ports?.inputs || []) {
-    for (const resource of Object.keys(port.wants)) {
-      (sockets[resource] = sockets[resource] || []).push(port);
-    }
+  for (const port of inputs) {
+    if (port.resource) (sockets[port.resource] = sockets[port.resource] || []).push(port);
   }
 
   const needs = report.needs || [];
@@ -197,12 +186,15 @@ function render(report) {
         ? `<div class="chips" style="margin:6px 0 8px">${best.map((o) =>
             `<span class="chip"><span class="num">${o.count}</span> ${escape(o.block)}</span>`)
             .join(`<span style="color:var(--dim);align-self:center">ou</span>`)}</div>`
-        : "") + (where.length && answered
-        ? `<p class="hint-line" style="margin:0 0 10px">A brancher sur
-           <strong>${where.length}</strong>
-           ${where[0].carries === "liquid" ? "tuyau" : "bande"}${where.length > 1 ? "x" : ""},
-           entoure${where.length > 1 ? "s" : ""} en vert sur l'image.</p>`
-        : "");
+        : "") + (where.length
+        ? `<p class="hint-line" style="margin:0 0 10px">${where.length > 1
+             ? `Reparti sur les <strong>${where.length}</strong>
+                ${where[0].carries === "liquid" ? "tuyaux" : "bandes"} marques, soit
+                ${rate(need.perMinute / where.length)} / min chacun.`
+             : `Sur le ${where[0].carries === "liquid" ? "tuyau" : "bande"} marque en
+                (${where[0].x}, ${where[0].y}).`}</p>`
+        : `<p class="hint-line" style="margin:0 0 10px">Marque la bande ou le tuyau par
+           ou ca doit arriver, sur l'image.</p>`);
     }).join("")}<p class="hint-line">Debit maximal, foreuse posee sur une tache pleine.
       Sur une tache a moitie couverte il en faut deux fois plus.</p></div>`);
   }
@@ -395,18 +387,18 @@ function render(report) {
     <p class="hint-line" id="keep-note"></p>
   </div>`);
 
-  /* What the rings on the picture mean. They had none: a schematic came back covered in
-     green squares with nothing anywhere saying what they were, and a reader is left to
-     guess that a tool meant to stop them guessing is guessing at them. */
-  const ringed = (report.ports?.inputs || []).length;
-  const outlets = (report.ports?.outputs || []).length;
-  const legend = ringed || outlets ? `<p class="legend">${
-    ringed ? `<span class="dot in"></span>${answered ? "Par la que ca entre"
-      : "Par la que Forge pense que ca entre"}` : ""
+  /* What the rings on the picture mean. They had no legend at all, and worse, half of them
+     meant "Forge thinks maybe": a schematic came back under fourteen green squares, one
+     slightly brighter than the others, and nothing anywhere said which was which. Now
+     there is only one kind of ring, it is only ever there because somebody put it there,
+     and it carries the icon of what travels through it. */
+  const legend = inputs.length || outlets.length ? `<p class="legend">${
+    inputs.length ? `<span class="dot in"></span>Par la que ca entre` : ""
   }${
-    outlets ? `<span class="dot out"></span>Par la que ca sort` : ""
-  }<span class="dim">Trait plein : retenu. Pointille : possible aussi.
-    Clique un bloc pour corriger.</span></p>` : "";
+    outlets.length ? `<span class="dot out"></span>Par la que ca sort` : ""
+  }<span class="dim">Clique une bande ou un tuyau pour en marquer un autre.</span></p>`
+  : `<p class="legend"><span class="dim">Clique une bande ou un tuyau sur l'image pour dire
+     par ou ca entre et par ou ca sort.</span></p>`;
 
   out.innerHTML = `<div class="split">
     <div class="side">
@@ -447,23 +439,19 @@ function render(report) {
   wireBlocks(report, () => drawn);
   wireKeep(report);
 
-  const answer = (how) => {
-    ports = { asked: true, sealed: how === "sealed" };
+  $("ports-sealed")?.addEventListener("click", () => {
+    marked = {};
+    sealed = true;
     run();
-  };
-  $("ports-ok")?.addEventListener("click", () => answer("guess"));
-  $("ports-sealed")?.addEventListener("click", () => answer("sealed"));
-  $("ports-hand")?.addEventListener("click", () => {
-    // Not an answer yet: it says "I will point at them", and the question stays until a
-    // block has actually been marked.
-    const card = document.querySelector(".card.ask");
-    if (card) {
-      card.classList.add("waiting");
-      card.querySelector(".hint-line:last-of-type").textContent =
-        "Clique une bande ou un tuyau sur l'image, puis \"Definir comme entree\". "
-        + "Le calcul repart des que tu en as marque un.";
-    }
+  });
+  $("ports-clear")?.addEventListener("click", () => {
+    marked = {};
+    sealed = false;
+    run();
+  });
+  $("ports-mark")?.addEventListener("click", () => {
     $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    $("block")?.classList.add("waiting");
   });
 }
 
@@ -475,7 +463,8 @@ async function run() {
   }
   if (payload !== lastPayload) {
     marked = {};
-    ports = { asked: false, sealed: false };
+    sealed = false;
+    looking = null;
     lastPayload = payload;
   }
   $("go").disabled = true;
@@ -485,7 +474,7 @@ async function run() {
        published stays theirs, and the page costs nothing to host however many people
        use it. */
     const [report] = await Promise.all([
-      analyse(payload, parseSupply($("supply").value), marked, { sealed: ports.sealed }),
+      analyse(payload, parseSupply($("supply").value), marked, { sealed }),
       loadSprites(),
     ]);
     render(report);
@@ -551,7 +540,10 @@ let marked = {};
  * it produces a full page of throughputs that look computed and are not. Better to ask
  * once: "it is those pipes", "let me point at them", or "nothing goes in".
  */
-let ports = { asked: false, sealed: false };
+let sealed = false;
+
+/** The block the panel is showing, kept so that marking one does not close it. */
+let looking = null;
 
 /**
  * The saved schematic this page is looking at, if it came from one.
@@ -603,7 +595,11 @@ function showBlock(report, tile) {
   parts.push(rateLine("consomme", Object.fromEntries(
     Object.entries(tile.needs).map(([k, v]) =>
       [k, v * (tile.craftTime ? 60 / tile.craftTime : 0)])), "/ min", 60));
-  parts.push(rateLine("produit", tile.through, "/ min", 60));
+  // A pipe does not produce water, it carries it. The same figure means two different
+  // things depending on the block it sits on, and calling it production on a conduit read
+  // as the tool having found a spring in the middle of a pipe.
+  const makes = ["crafter", "generator", "drill", "pump", "source"].includes(tile.role);
+  parts.push(rateLine(makes ? "produit" : "porte", tile.through, "/ min", 60));
   if (tile.powerOut) {
     parts.push(`<div class="line"><span>Produit</span>
       <span class="num good">${rate(tile.powerOut)} energie / s</span></div>`);
@@ -615,28 +611,69 @@ function showBlock(report, tile) {
   parts.push(`<div class="line"><span>Relie a</span>
     <span class="num">${tile.fedBy} en entree, ${tile.feeds} en sortie</span></div>`);
 
-  const state = marked[at];
-  parts.push(`<div class="row">
-    <button type="button" id="mark-in" class="${state === "in" ? "primary" : ""}">
-      ${state === "in" ? "Entree" : "Definir comme entree"}</button>
-    <button type="button" id="mark-out" class="${state === "out" ? "primary" : ""}">
-      ${state === "out" ? "Sortie" : "Definir comme sortie"}</button>
-    ${state ? `<button type="button" id="mark-none">Retirer</button>` : ""}
-  </div>
-  <p class="hint-line">Ce que tu definis ici est garde avec la schematique, et remplace
-    ce que Forge avait devine.</p>`);
+  /* Marking, which is the one thing on this panel the schematic cannot answer by itself.
+
+     Two questions, in order: is this a way in or a way out, and what travels on it. The
+     second is a short list rather than a free field, because a pipe can only ever hold a
+     liquid the layout is short of, and offering the whole catalogue would be asking the
+     player to do the narrowing that the schematic already did. */
+  const mark = marked[at]
+    ? (typeof marked[at] === "string" ? { side: marked[at], resource: null } : marked[at])
+    : null;
+  const offered = report.offers?.[at] || [];
+
+  if (offered.length || mark) {
+    const side = (which, label) => `<button type="button" data-side="${which}"
+      class="${mark?.side === which ? "primary" : ""}">${label}</button>`;
+
+    parts.push(`<div class="mark">
+      <div class="row">${side("in", "Entree")}${side("out", "Sortie")}${
+        mark ? `<button type="button" data-side="">Retirer</button>` : ""}</div>${
+      mark?.side === "in"
+        ? (offered.length
+            ? `<p class="hint-line" style="margin:10px 0 6px">Qu'est-ce qui arrive ici ?</p>
+               <div class="chips">${offered.map((resource) =>
+                 `<button type="button" class="chip pick ${
+                   mark.resource === resource ? "on" : ""}" data-resource="${
+                   escape(resource)}">${withIcon(resource, 15)}${escape(resource)}</button>`
+                 ).join("")}</div>`
+            : `<p class="hint-line" style="margin:10px 0 0">Cette schematique ne manque de
+               rien qui puisse passer par la.</p>`)
+        : mark?.side === "out"
+          ? `<p class="hint-line" style="margin:10px 0 0">Ce qui sort n'est pas un choix :
+             c'est ce qui arrive jusqu'ici. Toi tu dis ou, la schematique dit quoi.</p>`
+          : ""
+    }</div>
+    <p class="hint-line">Garde avec la schematique. Forge ne devine pas les entrees :
+      sur une conception un peu grosse c'est un coup de de.</p>`);
+  }
 
   panel.innerHTML = parts.join("");
 
-  const set = (value) => {
-    if (value) marked[at] = value; else delete marked[at];
-    // Pointing at an intake is an answer to the question, so the page stops asking.
-    if (Object.keys(marked).length) ports = { asked: true, sealed: false };
-    run();
-  };
-  $("mark-in")?.addEventListener("click", () => set(state === "in" ? null : "in"));
-  $("mark-out")?.addEventListener("click", () => set(state === "out" ? null : "out"));
-  $("mark-none")?.addEventListener("click", () => set(null));
+  panel.querySelector(".mark")?.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+
+    if (button.dataset.side !== undefined) {
+      const which = button.dataset.side;
+      if (!which || mark?.side === which) delete marked[at];
+      else {
+        // One offer means no question: a pipe on a layout short of nothing but water
+        // carries water, and asking would be theatre.
+        marked[at] = { side: which, resource: which === "in" && offered.length === 1
+          ? offered[0] : (mark?.resource ?? null) };
+      }
+      sealed = false;
+      run();
+      return;
+    }
+
+    if (button.dataset.resource) {
+      marked[at] = { side: "in", resource: button.dataset.resource };
+      sealed = false;
+      run();
+    }
+  });
 }
 
 /** Map a click on the picture back to the block under it. */
@@ -659,8 +696,15 @@ function wireBlocks(report, drawnNow) {
       return tx >= tile.x + offset && tx < tile.x + offset + tile.size
         && ty >= tile.y + offset && ty < tile.y + offset + tile.size;
     });
+    looking = hit ? `${hit.x},${hit.y}` : null;
     showBlock(report, hit || null);
   });
+
+  // Marking a block re-runs the analysis, which redraws the page. Without this the panel
+  // came back empty every time, so picking what arrives meant finding the block again.
+  if (looking) {
+    showBlock(report, report.detail.find((t) => `${t.x},${t.y}` === looking) || null);
+  }
 }
 
 /* Keeping a schematic ------------------------------------------------------------- */
@@ -795,7 +839,7 @@ if (asked) {
       text.value = found.code;
       // Its author's own marks come back with it, and its author edits it in place.
       marked = { ...(found.marked || {}) };
-      if (Object.keys(marked).length) ports = { asked: true, sealed: false };
+      sealed = !!found.sealed;
       if (found.mine) opened = found;
       run();
     })
