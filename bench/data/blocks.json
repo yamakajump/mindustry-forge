@@ -4103,9 +4103,12 @@
         "plastanium": 1
       },
       "power": 0,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "stack-conveyor",
+      "carries": "item",
+      "items_per_second": 40,
+      "speed": 0.06666667,
+      "recharge": 2,
+      "output_router": true
     },
     "armored-conveyor":{
       "name": "armored-conveyor",
@@ -4472,9 +4475,12 @@
         "tungsten": 1
       },
       "power": 1,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "stack-conveyor",
+      "carries": "item",
+      "items_per_second": 50,
+      "speed": 0.083333336,
+      "recharge": 2,
+      "output_router": false
     },
     "surge-router":{
       "name": "surge-router",

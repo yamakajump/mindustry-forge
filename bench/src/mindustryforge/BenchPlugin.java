@@ -18,12 +18,35 @@ import java.nio.file.Paths;
  */
 public class BenchPlugin extends Plugin {
 
+    private final Measure measure = new Measure();
+
+    /**
+     * Hooked into the game's own loop, because the world only moves when the loop runs.
+     *
+     * A command cannot advance the world from inside itself: it arms a countdown and the
+     * frames that follow finish the job.
+     */
+    @Override
+    public void init() {
+        arc.Core.app.addListener(measure);
+    }
+
     @Override
     public void registerServerCommands(CommandHandler handler) {
         handler.register("dump-blocks", "[path]",
                 "Write every block and item the game knows to JSON.", args -> {
             Path out = args.length > 0 ? Paths.get(args[0]) : DumpBlocks.defaultOut();
             DumpBlocks.dump(out);
+        });
+
+        /* The oracle. The browser carries a transcription of the game's update loop, and a
+           transcription is worth nothing unless something can tell it apart from a
+           plausible invention. The only thing that can is the engine it came from. */
+        handler.register("measure", "<schematique> [secondes] [chemin]",
+                "Run a schematic in the real engine and write down what came out.", args -> {
+            float seconds = args.length > 1 ? Float.parseFloat(args[1]) : 30f;
+            Path out = args.length > 2 ? Paths.get(args[2]) : Paths.get("bench", "data", "mesure.json");
+            measure.queue(args[0], seconds, out);
         });
 
         Log.info("[forge] bench ready");

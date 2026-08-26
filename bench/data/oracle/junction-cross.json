@@ -1,0 +1,27 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "containers": [
+    {
+      "block": "vault",
+      "x": 17,
+      "y": 14,
+      "items":{
+        "copper": 193
+      }
+    },
+    {
+      "block": "vault",
+      "x": 14,
+      "y": 17,
+      "items":{
+        "lead": 193
+      }
+    }
+  ],
+  "per_second":{
+    "copper": 6.4333334,
+    "lead": 6.4333334
+  }
+}
