@@ -37,6 +37,10 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.power.BeamNode;
+import mindustry.world.blocks.distribution.StackRouter;
+import mindustry.world.blocks.distribution.DuctBridge;
+import mindustry.world.blocks.distribution.DuctRouter;
 import mindustry.world.blocks.power.VariableReactor;
 import mindustry.world.blocks.power.NuclearReactor;
 import mindustry.world.blocks.power.ImpactReactor;
@@ -150,12 +154,20 @@ public class DumpBlocks {
             // fraction it holds, times this, against the fraction the other holds, so a
             // settled line has a gradient along it rather than a flat rate.
             entry.put("liquid_pressure", block.liquidPressure);
+            /* Whether a pipe pointed at nothing spills. The class sets it one way and the
+               block the other: `ArmoredConduit` declares `leaks = false` and
+               `reinforced-conduit` turns it back on, so reading the class gets it wrong
+               for the only two blocks it applies to. */
+            if (block instanceof Conduit pipe && pipe.leaks) entry.put("leaks", true);
             // What a battery holds. A buffered consumer asks for nothing and stores a lot,
             // which is exactly what tells a battery apart from a machine.
             if (block.consPower != null && block.consPower.buffered) {
                 entry.put("power_capacity", block.consPower.capacity);
             }
             entry.put("health", block.health);
+            /* Whether a beam stops at it. Only insulation stops one: a titanium wall does
+               not, which is contrary to every instinct and is the game's rule. */
+            if (block.insulated) entry.put("insulated", true);
 
             // What it costs to build, which is what "compact" and "cheap" are scored on.
             Jval cost = Jval.newObject();
@@ -316,10 +328,41 @@ public class DumpBlocks {
             // Same shape as an overflow gate, on Erekir's carrier instead of Serpulo's.
             entry.put("role", "duct");
             entry.put("carries", "item");
-            entry.put("items_per_second", TPS / Math.max(1f, overflowDuct.speed) * 2f);
+            entry.put("items_per_second", TPS / Math.max(1f, overflowDuct.speed));
             entry.put("duct_speed", overflowDuct.speed);
             entry.put("overflow", true);
             if (overflowDuct.invert) entry.put("invert", true);
+            return;
+        }
+        /* Three Erekir carriers that do not extend anything the reader recognised, so all
+           three fell through to "sink" and swallowed whatever was handed to them. A duct
+           router is not a `Router`, a duct bridge is not an `ItemBridge`, and a surge
+           router is a duct router with a stack. An Erekir schematic built on any of them
+           read as a line that produced nothing. */
+        if (block instanceof StackRouter stack) {
+            // Checked before `DuctRouter`, which it extends.
+            entry.put("role", "stack-router");
+            entry.put("carries", "item");
+            entry.put("duct_speed", stack.speed);
+            // It runs without power, at a seventh of the speed: `efficiency + 1`, and the
+            // one is the part that does not come off the grid.
+            entry.put("base_efficiency", stack.baseEfficiency);
+            entry.put("items_per_second", TPS / Math.max(1f, stack.speed) * block.itemCapacity);
+            return;
+        }
+        if (block instanceof DuctRouter router) {
+            entry.put("role", "duct-router");
+            entry.put("carries", "item");
+            entry.put("duct_speed", router.speed);
+            entry.put("items_per_second", TPS / Math.max(1f, router.speed));
+            return;
+        }
+        if (block instanceof DuctBridge span) {
+            entry.put("role", "duct-bridge");
+            entry.put("carries", "item");
+            entry.put("duct_speed", span.speed);
+            entry.put("range", span.range);
+            entry.put("items_per_second", TPS / Math.max(1f, span.speed));
             return;
         }
         if (block instanceof Duct duct) {
@@ -327,7 +370,11 @@ public class DumpBlocks {
               // carries it across in `speed` frames, so its rate falls out of that rather
               // than out of spacing.
             entry.put("carries", "item");
-            entry.put("items_per_second", TPS / Math.max(1f, duct.speed) * 2f);
+            /* `60 / speed`, which is `Duct.setStats`. The doubling that used to be here
+               came from reading `progress += edelta() / speed * 2` as "two steps a frame
+               so twice the rate", but the threshold moves with `speed` as well: an item
+               takes `ceil(speed - 0.5)` updates to cross, which is `speed`. */
+            entry.put("items_per_second", TPS / Math.max(1f, duct.speed));
             // Frames to carry one item across, which is what the simulation needs: a duct
             // holds exactly one thing at a time and its rate falls out of that.
             entry.put("duct_speed", duct.speed);
@@ -426,6 +473,16 @@ public class DumpBlocks {
             // factory with no power at all.
             entry.put("role", "power");
             entry.put("power_out", source.powerProduction * TPS);
+            return;
+        }
+        if (block instanceof BeamNode beam) {
+            /* Erekir's wire, which is a battery rather than a wire: `outputsPower` and
+               `consumesPower` are both true and the consumer is buffered, so the game
+               files it under batteries and it holds a thousand. It matched no branch at
+               all before this, so a beam node carried no power and joined no grid: an
+               Erekir base wired entirely with them read as unpowered. */
+            entry.put("role", "power");
+            entry.put("range", beam.range);
             return;
         }
         if (block instanceof PowerNode || block instanceof Battery) {

@@ -41,6 +41,20 @@ const KNOWN_GAPS = {
   "power-plenty": 0.03,
 };
 
+/**
+ * Scenarios whose answer is "nothing at all", on purpose.
+ *
+ * The guard below exists to catch a scenario that measures nothing by accident: a belt
+ * stopping a tile short, a source configured with nothing. For these the emptiness **is**
+ * the result, and a disagreement would still show, because a vault the game filled and the
+ * port did not is a difference in that vault whether or not anything else moved.
+ */
+const NOTHING_HAPPENS = new Set([
+  // An armoured duct refuses a side feed from anything that is not a duct. That is the
+  // whole block, and it reads as a vault that never gets a single item.
+  "duct-armored-side",
+]);
+
 const scenarios = readdirSync(KEPT)
   .filter((name) => name.endsWith(".json"))
   .map((name) => name.replace(/\.json$/, ""));
@@ -57,7 +71,8 @@ for (const name of scenarios) {
                               stockedFor(name));
 
     const gaps = differences(mine, engine);
-    assert.ok(gaps.length > 0, "le moteur a fait quelque chose de mesurable");
+    assert.ok(gaps.length > 0 || NOTHING_HAPPENS.has(name),
+              "le moteur a fait quelque chose de mesurable");
 
     const slack = KNOWN_GAPS[name] || 0.0001;
     for (const gap of gaps) {

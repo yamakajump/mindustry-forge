@@ -43,7 +43,7 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "power_production", "item_duration_multipliers", "explode_on_full",
         "min_efficiency", "display_efficiency_scale", "floating", "item_duration",
         "heating", "coolant_power", "ambient_cooldown_time", "fuel_item",
-        "max_heat", "unstable_speed", "item_worth")
+        "max_heat", "unstable_speed", "item_worth", "leaks", "insulated")
 
 
 def main() -> None:

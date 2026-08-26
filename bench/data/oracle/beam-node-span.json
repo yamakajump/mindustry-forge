@@ -1,0 +1,84 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [
+    {
+      "block": "beam-node",
+      "x": 14,
+      "y": 13,
+      "charge": 0
+    },
+    {
+      "block": "beam-node",
+      "x": 24,
+      "y": 13,
+      "charge": 0
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "combustion-generator",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 10
+      }
+    },
+    {
+      "block": "beam-node",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "beam-node",
+      "x": 24,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "laser-drill",
+      "x": 26,
+      "y": 13,
+      "efficiency": 0.9090909
+    },
+    {
+      "block": "conveyor",
+      "x": 28,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 30,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 39
+      }
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 30,
+      "y": 13,
+      "items":{
+        "copper": 39
+      }
+    }
+  ],
+  "per_second":{
+    "copper": 1.3
+  }
+}

@@ -18,7 +18,7 @@
  * number for both is how a design with an isolated reactor reads as fine.
  */
 
-import { TICKS } from "./core.js";
+import { DIRECTIONS, TICKS } from "./core.js";
 import { heatReaching } from "./machines.js";
 
 /** Blocks whose class is a wire or a battery: they carry the grid but ask nothing of it. */
@@ -77,6 +77,10 @@ export function gridsOf(world) {
       const other = world.at(build.x + (packed >> 16), build.y + ((packed << 16) >> 16));
       if (other && owner.has(other)) join(build, other);
     }
+    // And a beam node's four beams, which carry no configuration at all.
+    for (const other of beamsOf(build, world)) {
+      if (owner.has(other)) join(build, other);
+    }
   }
 
   const grids = new Map();
@@ -86,6 +90,39 @@ export function gridsOf(world) {
     grids.get(root).push(build);
   }
   return [...grids.values()].map((builds) => new Grid(builds));
+}
+
+/**
+ * `BeamNode.updateDirections`: what a beam node reaches.
+ *
+ * Four straight lines, one per direction, and the **first** block with power in each is
+ * the one it links to. Nothing about it is configured, which is why a schematic full of
+ * beam nodes carries no link information and why reading only a power node's saved links
+ * leaves an Erekir base entirely unpowered.
+ *
+ * Two rules that read backwards. A wall does **not** stop a beam: only insulation does, and
+ * a titanium wall is not insulated, so a beam passes straight through it. And a power node
+ * in the way is skipped rather than linked, without stopping the scan: the beam carries on
+ * to whatever is behind it.
+ */
+function beamsOf(build, world) {
+  if (!build.block.range || build.block.kind !== "BeamNode") return [];
+
+  const found = [];
+  const offset = Math.trunc(build.size / 2);
+  for (const [dx, dy] of DIRECTIONS) {
+    for (let i = 1 + offset; i <= build.block.range + offset; i++) {
+      const other = world.at(build.x + dx * i, build.y + dy * i);
+      if (other?.block.insulated) break;
+      if (other && (other.block.power > 0 || other.block.power_out > 0
+                    || other.block.power_production > 0 || other.role === "power")
+          && other.block.kind !== "PowerNode") {
+        found.push(other);
+        break;
+      }
+    }
+  }
+  return found;
 }
 
 /** One grid, and what it does every frame. */
