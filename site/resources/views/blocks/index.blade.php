@@ -25,15 +25,36 @@
     @endforeach
   </select>
 
-  <label for="planete">{{ __('blocs.index.planete') }}</label>
-  <select name="planete" id="planete">
-    <option value="">{{ __('blocs.index.partout') }}</option>
-    <option value="serpulo" @selected($planet === 'serpulo')>{{ __('blocs.planete.serpulo') }}</option>
-    <option value="erekir" @selected($planet === 'erekir')>{{ __('blocs.planete.erekir') }}</option>
-  </select>
-
   <button class="primary" type="submit">{{ __('blocs.index.filtrer') }}</button>
 </form>
+
+{{-- Le monde en tete, et en gros.
+
+     On joue Serpulo ou Erekir, jamais les deux a la fois, et les deux arbres ne partagent
+     presque rien : melanges, les 254 blocs mettent un convoyeur a cote d'une gaine
+     renforcee. Ce choix etait une entree parmi d'autres dans une liste deroulante, reglee
+     sur « les deux » ; c'est la premiere question qu'un joueur se pose, donc elle passe
+     devant les autres.
+
+     Des liens et non des boutons : chaque monde a son adresse, elle se partage et
+     s'indexe, et la page marche sans JavaScript. Les comptes sont dits parce qu'un choix
+     qui retire cent blocs doit annoncer combien il retire. --}}
+<nav class="bloc-mondes" aria-label="{{ __('blocs.index.planete') }}">
+  @foreach([\App\Http\Controllers\BlockController::DEFAULT_PLANET, 'erekir'] as $monde)
+    <a href="?planete={{ $monde }}{{ $chosen ? '&categorie='.$chosen : '' }}"
+       class="bloc-monde @if($planet === $monde) on @endif"
+       @if($planet === $monde) aria-current="page" @endif>
+      <span class="bloc-monde-nom">{{ __(\App\Services\BlockCatalogue::planetKey($monde)) }}</span>
+      <span class="bloc-monde-compte">{{ $counts[$monde] }} {{ __('blocs.index.blocs') }}</span>
+    </a>
+  @endforeach
+  <a href="?planete=tout{{ $chosen ? '&categorie='.$chosen : '' }}"
+     class="bloc-monde @if($planet === '') on @endif"
+     @if($planet === '') aria-current="page" @endif>
+    <span class="bloc-monde-nom">{{ __('blocs.index.partout') }}</span>
+    <span class="bloc-monde-compte">{{ $counts['tout'] }} {{ __('blocs.index.blocs') }}</span>
+  </a>
+</nav>
 
 @if($categories === [])
   <div class="card"><p class="empty">{{ __('blocs.index.vide') }}</p></div>
