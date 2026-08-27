@@ -1,0 +1,11 @@
+{
+  "schema.gestion.confirmer-suppression": "Supprimer \"{nom}\" ? C'est definitif.",
+  "schema.gestion.copie": "Copie",
+  "schema.gestion.copier": "Copier",
+  "schema.gestion.note-par-lien": "Par lien : elle marche pour qui l'a, et reste hors de la vitrine.",
+  "schema.gestion.note-privee": "Privee : toi seul la vois.",
+  "schema.gestion.note-publique": "Publiee : elle est dans la vitrine et classee avec les autres.",
+  "schema.gestion.pas-enregistre": "Pas enregistre : {raison}",
+  "schema.gestion.pas-supprimee": "Pas supprimee : {raison}",
+  "schema.gestion.refuse": "refuse ({code})"
+}
