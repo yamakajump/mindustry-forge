@@ -35,6 +35,10 @@
         Choisir un fichier
         <input type="file" id="file" accept=".msch" aria-label="Choisir un fichier .msch">
       </label>
+      <button id="build" type="button">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M17.5 14v7M14 17.5h7"/></svg>
+        Construire depuis zero
+      </button>
       <button id="paste" type="button">
         <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/></svg>
         Coller le presse-papiers
@@ -58,12 +62,18 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
   <div id="out" aria-live="polite"></div>
 </main>
 
+<!-- L'editeur vit hors de <main>, qui est borne a 1120 pixels de large : le plateau prend
+     tout l'ecran, et une largeur maximale pensee pour un article de texte n'a rien a lui
+     dire. -->
+<div id="editor"></div>
+
 <script type="module">
-import { analyse, catalogueOf } from "./forge/analyse.js";
+import { analyse, catalogueOf, loadCatalogue } from "./forge/analyse.js";
 import { fromBase64, toBase64 } from "./forge/schematic.js";
 import { loadSprites, draw, itemIcon, bounds } from "./forge/render.js";
 import { Live } from "./forge/live.js";
 import { gridsOf } from "./forge/engine/power.js";
+import { mountEditor } from "./forge/editor/mount.js";
 
 const $ = (id) => document.getElementById(id);
 const text = $("text"), out = $("out"), drop = $("drop");
@@ -364,74 +374,15 @@ function render(report) {
   const used = [...new Set(report.tiles.map((tile) => tile.name))]
     .filter((name) => catalogueOf()?.blocks?.[name])
     .sort();
-  right.push(`<div class="card"><h2>Poser un bloc</h2>
-    <p class="hint-line" style="margin:0 0 8px">Choisis un bloc, puis clique une case vide
-      sur l'image ${placing ? "" : "&mdash; un pourtour s'ouvre autour pour poser au dela du bord"}. ${placing
-        ? `<strong>${escape(placing)}</strong> est en main : echap pour le reposer.`
-        : "Clique un bloc pose pour le tourner ou l'enlever."}</p>
-    <input type="search" id="palette-search" placeholder="Chercher dans les 253 blocs"
-      aria-label="Chercher un bloc">
-    <div class="chips palette" id="palette">${
-      used.map((name) => `<button type="button" class="chip pick ${
-        placing === name ? "on" : ""}" data-block="${escape(name)}">${
-        blockIcon(name)}${escape(name)}</button>`).join("")
-    }</div>
-  </div>`);
+  /* L'edition a demenage.
 
-  /* The ground, painted rather than imagined.
-  
-     Until now a drill was reported at its best case, "on a full patch", which is the tool
-     admitting it does not know what the drill is standing on. Paint the ore and the
-     question has an answer: the game's own formula needs the number of covered tiles and
-     nothing else. */
-  const floors = Object.entries(catalogueOf()?.blocks || {})
-    .filter(([, block]) => block.floor);
-  const ores = floors.filter(([, block]) => block.drops || block.drops_liquid);
-  const plain = floors.filter(([, block]) => !block.drops && !block.drops_liquid);
-  const painted = Object.keys(ground).length;
+     Elle vivait ici, en trois cartes empilees au milieu du rapport, entre « Goulot » et
+     « Garder » : on editait au milieu de ses resultats, avec une palette de 253 pastilles a
+     plat et un pinceau qui peignait sous les blocs sans les voir. Elle a maintenant son
+     mode a elle, plein ecran, avec les mecaniques de pose du jeu.
 
-  right.push(`<div class="card"><h2>Le sol</h2>
-    <p class="hint-line" style="margin:0 0 8px">${brush.floor
-      ? `<strong>${escape(brush.floor)}</strong> au pinceau : clique ou glisse sur l'image,
-         echap pour le poser.`
-      : "Peins le terrain sous la schematique, et les foreuses et les pompes disent ce"
-        + " qu'elles sortent vraiment au lieu de leur meilleur cas."}</p>
+     Le bouton « Editer cette schematique », en haut de la colonne de gauche, y mene. */
 
-    <label class="slide"><span>Transparence</span>
-      <input type="range" id="fade" min="0" max="100" value="${Math.round(opacity * 100)}">
-    </label>
-
-    <div class="row" style="margin:8px 0">
-      <label class="slide" style="flex:1"><span>Pinceau</span>
-        <input type="range" id="brush-size" min="1" max="7" step="2" value="${brush.size}">
-        <span class="num">${brush.size}x${brush.size}</span></label>
-      ${painted ? `<button type="button" id="ground-clear">Effacer le sol</button>` : ""}
-    </div>
-
-    <p class="hint-line" style="margin:6px 0 4px">Minerais et liquides</p>
-    <div class="chips palette" id="ores">${
-      ores.map(([name, block]) => `<button type="button" class="chip pick ${
-        brush.floor === name ? "on" : ""}" data-floor="${escape(name)}">${
-        blockIcon(name, 16, "floor/")}${withIcon(block.drops || block.drops_liquid, 14)}${
-        escape(name)}</button>`).join("")
-    }</div>
-
-    <p class="hint-line" style="margin:10px 0 4px">Terrains</p>
-    <div class="chips palette" id="grounds">${
-      plain.slice(0, 60).map(([name]) => `<button type="button" class="chip pick ${
-        brush.floor === name ? "on" : ""}" data-floor="${escape(name)}">${
-        blockIcon(name, 16, "floor/")}${escape(name)}</button>`).join("")
-    }</div>
-    ${painted ? `<p class="hint-line" style="margin-top:10px"><strong>${painted}</strong>
-      case${painted > 1 ? "s" : ""} peinte${painted > 1 ? "s" : ""}.</p>` : ""}
-  </div>`);
-
-  /* Keeping it, which is the only thing on this page that needs a server. Offered after
-     the answer rather than before it: nobody wants to name a schematic they have not seen
-     analysed yet. */
-  /* Editing one already kept, rather than only ever making new ones. A name typed wrong or
-     an intake marked wrongly was permanent, and the only way out was to delete it and
-     start over. */
   const editing = opened.slug ? opened : null;
   const chosen = editing ? editing.visibility : "private";
 
@@ -482,6 +433,12 @@ function render(report) {
 
   out.innerHTML = `<div class="split">
     <div class="side">
+      <div class="row" style="margin:0 0 10px">
+        <button type="button" id="to-editor">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+          Editer cette schematique
+        </button>
+      </div>
       <div class="stage"><canvas id="view" role="img"
         aria-label="Apercu de ${escape(report.name)}, ${report.blocks} blocs"></canvas></div>
       <div class="row run-row">
@@ -519,11 +476,9 @@ function render(report) {
       width: stage.clientWidth - 32,
       maxScale: 48,
       // Room to put something down beyond the edge, but only while something is waiting
-      // to be put down. The brush needs it too: the ground around a build is exactly
-      // where the drills that feed it would go.
-      margin: placing || brush.floor ? 2 : 0,
+      // to be put down.
+      margin: 0,
       ground,
-      opacity,
       inputs: report.ports?.inputs || [],
       outputs: report.ports?.outputs || [],
       /* Absent unless the player pressed the button, and then it is a world that has
@@ -541,6 +496,8 @@ function render(report) {
   wireBlocks(report, () => drawn, paint);
   wireKeep(report);
 
+  $("to-editor")?.addEventListener("click", () => enterEditor(report.tiles));
+
   $("ports-sealed")?.addEventListener("click", () => {
     marked = {};
     sealed = true;
@@ -551,61 +508,6 @@ function render(report) {
     sealed = false;
     run();
   });
-  $("palette")?.addEventListener("click", (event) => {
-    const chip = event.target.closest("[data-block]");
-    if (!chip) return;
-    placing = placing === chip.dataset.block ? null : chip.dataset.block;
-    for (const other of $("palette").querySelectorAll("[data-block]")) {
-      other.classList.toggle("on", other.dataset.block === placing);
-    }
-    // Redrawn rather than re-analysed: choosing a block changes nothing about the
-    // schematic, it only opens the apron around it.
-    paint();
-    $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
-
-  $("palette-search")?.addEventListener("input", (event) => {
-    const asked = event.target.value.trim().toLowerCase();
-    const names = asked
-      ? Object.keys(catalogueOf()?.blocks || {})
-          .filter((name) => name.includes(asked)).slice(0, 40).sort()
-      : used;
-    $("palette").innerHTML = names.map((name) =>
-      `<button type="button" class="chip pick ${placing === name ? "on" : ""}"
-        data-block="${escape(name)}">${blockIcon(name)}${escape(name)}</button>`).join("")
-      || `<span class="hint-line">Aucun bloc de ce nom.</span>`;
-  });
-
-  /* The brush. Painting redraws rather than re-analyses, because the ground only changes
-     what a drill or a pump pulls out and the analysis is re-run once the stroke ends. */
-  for (const id of ["ores", "grounds"]) {
-    $(id)?.addEventListener("click", (event) => {
-      const chip = event.target.closest("[data-floor]");
-      if (!chip) return;
-      brush.floor = brush.floor === chip.dataset.floor ? null : chip.dataset.floor;
-      placing = null;
-      for (const other of document.querySelectorAll("[data-floor]")) {
-        other.classList.toggle("on", other.dataset.floor === brush.floor);
-      }
-      paint();
-      $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-  }
-
-  $("fade")?.addEventListener("input", (event) => {
-    opacity = Number(event.target.value) / 100;
-    paint();
-  });
-  $("brush-size")?.addEventListener("input", (event) => {
-    brush.size = Number(event.target.value);
-    event.target.parentElement.querySelector(".num").textContent =
-      `${brush.size}x${brush.size}`;
-  });
-  $("ground-clear")?.addEventListener("click", () => {
-    ground = {};
-    run();
-  });
-
   $("ports-mark")?.addEventListener("click", () => {
     $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
     $("block")?.classList.add("waiting");
@@ -689,19 +591,85 @@ async function run() {
   }
 }
 
-/* Escape puts the palette down. A block stays armed after being placed, because putting
-   down a line of belt is one click per tile and disarming between each would be absurd;
-   the cost of that is needing a way out that is not hunting for the chip again. */
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || (!placing && !brush.floor)) return;
-  placing = null;
-  brush.floor = null;
-  for (const chip of document.querySelectorAll("[data-floor]")) chip.classList.remove("on");
-  for (const chip of document.querySelectorAll("#palette [data-block]")) {
-    chip.classList.remove("on");
+/* ------------------------------------------------------------------------------------
+   La bascule entre analyser et editer.
+
+   Le mode garde son propre plateau plutot que de repasser par la chaine string -> analyse
+   a chaque geste. Reserialiser une schematique de trois cents blocs a chaque clic serait
+   du travail jete, et surtout l historique d annulation ne survivrait pas a l aller-retour.
+
+   Le plateau n est donc pas detruit en revenant sur l analyse : il est mis de cote, et
+   reediter reprend exactement ou on s etait arrete, ctrl+Z compris.
+   ------------------------------------------------------------------------------------ */
+let editor = null;
+
+/**
+ * Le plateau mis de cote en sortant, et la schematique qu il decrivait alors.
+ *
+ * Les deux vont ensemble : reprendre le plateau n est legitime que si la chaine n a pas
+ * bouge entre temps. Coller une autre schematique pendant qu on etait sur le rapport doit
+ * repartir d un plateau neuf, sinon on editerait l ancienne en croyant editer la nouvelle.
+ */
+let kept = null;
+let keptFor = null;
+
+async function enterEditor(tiles = null) {
+  /* Le catalogue est demande explicitement : `catalogueOf` ne rend quelque chose qu apres
+     une premiere analyse, et « construire depuis zero » est justement le chemin ou aucune
+     analyse n a eu lieu. */
+  let known;
+  try {
+    [known] = await Promise.all([loadCatalogue(), loadSprites()]);
+  } catch (error) {
+    out.innerHTML = `<div class="card error">${escape(error.message)}</div>`;
+    return;
   }
-  run();
-});
+  if (editor) editor.destroy();
+  const same = kept && keptFor === lastPayload;
+  editor = mountEditor({
+    host: $("editor"),
+    board: same ? kept : null,
+    tiles: tiles || [],
+    ground,
+    catalogue: known,
+    onAnalyse: leaveEditor,
+  });
+  document.body.style.overflow = "hidden";
+}
+
+async function leaveEditor(board) {
+  const built = board.tiles;
+  ground = board.ground;
+  const mounted = editor;
+  editor = null;
+  document.body.style.overflow = "";
+  mounted.destroy();
+
+  if (!built.length) {
+    out.innerHTML = `<div class="card">Rien a analyser : le plateau est vide.</div>`;
+    return;
+  }
+  /* La schematique redevient la chaine que le jeu lit, qui reste la source de verite de
+     tout le reste de la page : l analyse, la sauvegarde et le presse-papiers travaillent
+     dessus et n ont pas a savoir qu un editeur existe. */
+  text.value = await toBase64(built, {
+    tags: { name: "sans nom" },
+    sizeOf: (name) => known(name),
+    priorityOf: (name) => catalogueOf()?.blocks?.[name]?.schematic_priority || 0,
+  });
+  lastPayload = String(text.value).replace(/\s+/g, "");
+  /* Le plateau est garde tel quel, historique compris : la bascule ne doit rien couter.
+     Un editeur ou revenir en arriere efface ce qu on pouvait defaire est un editeur ou
+     personne ne bascule, donc ou l analyse ne sert plus a rien pendant qu on construit. */
+  kept = board;
+  keptFor = lastPayload;
+  await run();
+}
+
+/** La taille d un bloc, prise au catalogue plutot qu au rapport, qui n existe pas encore. */
+const known = (name) => catalogueOf()?.blocks?.[name]?.size || 1;
+
+$("build").addEventListener("click", () => enterEditor([]));
 
 $("go").addEventListener("click", run);
 text.addEventListener("keydown", (e) => {
@@ -764,33 +732,19 @@ let sealed = false;
 let looking = null;
 
 /**
- * The block waiting to be put down, if the palette has one selected.
- *
- * Editing here rewrites the pasted string rather than keeping a parallel copy of the
- * schematic. There is one source of truth, it is the same string the game reads, and
- * every part of the page that already works off it keeps working without knowing that
- * anything was edited.
- */
-let placing = null;
-
-/**
  * The ground the schematic is standing on, tile by tile.
  *
- * `{ "x,y": { floor, overlay } }`, the game's own two layers: an ore is laid over a floor
- * rather than instead of it. Painted rather than read out of a save, because the question
- * it answers is "what would this do if I put it there", and there is no there yet.
+ * `{ "x,y": { floor, overlay, wall } }`, the game's own layers: an ore is laid over a floor
+ * rather than instead of it. Painted in the editor rather than read out of a save, because
+ * the question it answers is "what would this do if I put it there", and there is no there
+ * yet. The report only reads it; painting moved to the editor, where the brush can see what
+ * it is doing.
  *
  * It is what turns "at best, on a full patch" into a figure. A drill's rate in the game is
  * `(drillTime + hardness * multiplier) / tiles covered`, and until now the tiles covered
  * were imagined.
  */
 let ground = {};
-
-/** What the brush is holding, and how wide it paints. */
-let brush = { floor: null, size: 1 };
-
-/** How solid the build is drawn, so the ground under it can be seen and painted. */
-let opacity = 1;
 
 /**
  * The saved schematic this page is looking at, if it came from one.
@@ -1063,43 +1017,6 @@ function wireBlocks(report, drawnNow, repaint) {
     ];
   };
 
-  let painting = false;
-  const dab = (event) => {
-    if (!brush.floor) return;
-    const spot = at(event);
-    if (!spot) return;
-    const block = catalogueOf()?.blocks?.[brush.floor] || {};
-    const layer = block.overlay ? "overlay" : "floor";
-    const reach = Math.floor(brush.size / 2);
-    for (let dx = -reach; dx <= reach; dx++) {
-      for (let dy = -reach; dy <= reach; dy++) {
-        const key = `${spot[0] + dx},${spot[1] + dy}`;
-        const was = ground[key] || {};
-        ground[key] = { ...was, [layer]: brush.floor };
-        // An ore is laid over ground, never over nothing. Painting one onto a bare tile
-        // drew a half transparent sprite over the page itself, which reads as a hole.
-        if (layer === "overlay" && !was.floor) ground[key].floor = "stone";
-      }
-    }
-    repaint();
-  };
-
-  canvas.addEventListener("pointerdown", (event) => {
-    if (!brush.floor) return;
-    painting = true;
-    canvas.setPointerCapture(event.pointerId);
-    dab(event);
-  });
-  canvas.addEventListener("pointermove", (event) => { if (painting) dab(event); });
-  for (const kind of ["pointerup", "pointercancel"]) {
-    canvas.addEventListener(kind, () => {
-      if (!painting) return;
-      painting = false;
-      // The stroke is over: now the numbers are worth redoing.
-      run();
-    });
-  }
-
   canvas.addEventListener("click", (event) => {
     const drawn = drawnNow();
     if (!drawn) return;
@@ -1114,13 +1031,6 @@ function wireBlocks(report, drawnNow, repaint) {
       return tx >= tile.x + offset && tx < tile.x + offset + tile.size
         && ty >= tile.y + offset && ty < tile.y + offset + tile.size;
     });
-    // A block chosen in the palette turns a click into a placement, on an empty tile.
-    if (placing && !hit) {
-      edit((tiles) => [...tiles, { x: tx, y: ty, block: placing, rotation: 0 }]);
-      return;
-    }
-    if (brush.floor) return;   // painting is handled on the move, not on the click
-
     looking = hit ? `${hit.x},${hit.y}` : null;
     showBlock(report, hit || null);
   });
@@ -1209,6 +1119,9 @@ function wireKeep(report) {
         // out for itself.
         marked,
       },
+      /* Le sol part a cote de l analyse, pas dedans : ce qui est dans `analysis` est ce que
+         l analyse a trouve, le sol est ce que l auteur a dessine. */
+      ground: Object.keys(ground).length ? ground : null,
       thumbnail: plate.toDataURL("image/png"),
     };
 
@@ -1264,6 +1177,10 @@ if (asked) {
       text.value = found.code;
       // Its author's own marks come back with it, and its author edits it in place.
       marked = { ...(found.marked || {}) };
+      /* Et le terrain sur lequel elle a ete concue. Sans lui, rouvrir une schematique
+         rendait ses foreuses muettes : le rapport repassait a « au mieux, sur une tache
+         pleine », alors que son auteur avait pris la peine de peindre le sol. */
+      ground = { ...(found.ground || {}) };
       sealed = !!found.sealed;
       if (found.mine) opened = found;
       run();
