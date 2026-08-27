@@ -2,22 +2,31 @@
 #######################################################################
 # Sauvegarde quotidienne de mindustry-forge.
 #
-# Ce que ce script protege : une migration qui se passe mal, une
-# suppression accidentelle, une bibliotheque de schematiques effacee.
-# Autrement dit la panne probable, celle qui vient d'ici.
+# Deux niveaux, parce qu'ils ne protegent pas des memes pannes :
+#   - une copie locale, qui repond a une migration ratee ou a une
+#     suppression, c'est-a-dire au cas frequent ;
+#   - une copie chiffree chez Scaleway, qui repond a la perte du serveur,
+#     c'est-a-dire au cas rare et definitif.
 #
-# Ce qu'il ne protege PAS : la perte du serveur lui-meme. Les copies
-# vivent sur le meme disque que la base. Un envoi hors site chiffre
-# (comme celui de codwingz-api vers Scaleway) reste a faire, et demande
-# son propre bucket : melanger un site public avec les factures legales
-# dans un meme depot chiffre serait un raccourci qu'on regretterait.
+# Le chiffrement se fait cote rclone, contenu ET noms de fichiers : le
+# depot distant ne voit que des octets sans structure. Les phrases de
+# passe ne sont ecrites nulle part sur cette machine en clair, et vivent
+# dans Claude\secrets\scaleway-backup-mindustry-forge.txt. Sans elles,
+# les sauvegardes distantes sont definitivement illisibles.
+#
+# Le bucket a son propre projet Scaleway et sa propre cle API : une
+# compromission de ce serveur ne donne pas acces aux sauvegardes de
+# facturation de CodWingz, qui vivent ailleurs.
 #######################################################################
 set -euo pipefail
 
 DB_NAME="mindustry_forge"
+APP_DIR="/var/www/mindustry-forge"
 BACKUP_ROOT="/var/backups/mindustry-forge"
 DB_DIR="${BACKUP_ROOT}/db"
+REMOTE="scw-mforge-crypt"
 RETENTION_LOCAL_DAYS=14
+RETENTION_REMOTE_DAYS=90
 STAMP=$(date +%F_%H%M%S)
 LOG_TAG="mforge-backup"
 
@@ -46,10 +55,24 @@ log "Dump ecrit : ${DUMP} ($(du -h "$DUMP" | cut -f1))"
 # Le .env porte la cle applicative et les identifiants Discord : sans lui,
 # une restauration de la base ne redonne pas un site qui fonctionne.
 ENV_COPY="${BACKUP_ROOT}/env_${STAMP}.txt"
-cp /var/www/mindustry-forge/site/.env "$ENV_COPY"
+cp "${APP_DIR}/site/.env" "$ENV_COPY"
 chmod 600 "$ENV_COPY"
 
-log "Purge des copies de plus de ${RETENTION_LOCAL_DAYS} jours..."
+if command -v rclone > /dev/null && rclone listremotes | grep -q "^${REMOTE}:"; then
+    log "Envoi hors site (chiffre) vers ${REMOTE}..."
+    rclone copy "$DUMP" "${REMOTE}:db/" --no-traverse
+    rclone copy "$ENV_COPY" "${REMOTE}:env/" --no-traverse
+    log "Purge distante au-dela de ${RETENTION_REMOTE_DAYS} jours..."
+    rclone delete "${REMOTE}:db/" --min-age "${RETENTION_REMOTE_DAYS}d"
+    rclone delete "${REMOTE}:env/" --min-age "${RETENTION_REMOTE_DAYS}d"
+else
+    # Volontairement bruyant : une sauvegarde qui ne part plus hors site
+    # sans que personne ne le sache est pire que pas de sauvegarde du tout,
+    # parce qu'on continue a compter dessus.
+    log "ATTENTION : remote ${REMOTE} introuvable, la sauvegarde reste locale"
+fi
+
+log "Purge locale au-dela de ${RETENTION_LOCAL_DAYS} jours..."
 find "$DB_DIR" -name "${DB_NAME}_*.sql.gz" -mtime "+${RETENTION_LOCAL_DAYS}" -delete
 find "$BACKUP_ROOT" -maxdepth 1 -name "env_*.txt" -mtime "+${RETENTION_LOCAL_DAYS}" -delete
 
