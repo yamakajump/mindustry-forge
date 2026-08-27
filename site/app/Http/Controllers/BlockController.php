@@ -31,6 +31,15 @@ class BlockController extends Controller
     /** What a block name is allowed to look like, so a lookup cannot be a paragraph. */
     private const NAME = '/^[a-z][a-z0-9-]{0,39}$/';
 
+    /** The two worlds the game is played on. */
+    public const PLANETS = ['serpulo', 'erekir'];
+
+    /** The value that asks for both at once, which is no filter at all. */
+    public const ANY = 'tout';
+
+    /** Where the game starts, and where there is the most to show. */
+    public const DEFAULT_PLANET = 'serpulo';
+
     /**
      * Every block worth a page, in the game's own grouping.
      *
@@ -47,8 +56,24 @@ class BlockController extends Controller
             $chosen = '';
         }
 
-        $planet = (string) $request->query('planete', '');
-        if (! in_array($planet, ['serpulo', 'erekir'], true)) {
+        /*
+         * Un monde est choisi par defaut, et ce n'est pas un detail de confort.
+         *
+         * On joue Serpulo ou Erekir, jamais les deux a la fois, et les deux arbres
+         * technologiques ne partagent presque rien : melanges, les 254 blocs mettent un
+         * convoyeur a cote d'une gaine renforcee, que le meme joueur ne posera jamais dans
+         * la meme partie. Mesure sur le catalogue : 139 blocs Serpulo, 102 Erekir, et
+         * seulement 13 qui appartiennent aux deux.
+         *
+         * Serpulo parce que c'est la ou le jeu commence et ou il y a le plus a montrer. Le
+         * choix est en tete de page avec ses comptes, donc rien n'est cache : « les deux »
+         * reste a un clic, et l'ancien comportement s'obtient par `?planete=tout`.
+         */
+        $planet = (string) $request->query('planete', self::DEFAULT_PLANET);
+        if (! in_array($planet, [...self::PLANETS, self::ANY], true)) {
+            $planet = self::DEFAULT_PLANET;
+        }
+        if ($planet === self::ANY) {
             $planet = '';
         }
 
@@ -72,10 +97,38 @@ class BlockController extends Controller
             'categories' => $categories,
             'chosen' => $chosen,
             'planet' => $planet,
+            // Les comptes a cote de chaque monde : un choix qui cache la moitie du
+            // catalogue doit au moins dire combien il cache.
+            'counts' => self::countsByPlanet(),
             'allCategories' => array_keys(BlockCatalogue::byCategory()),
             'total' => count(BlockCatalogue::all()),
             'gameVersion' => BlockCatalogue::gameVersion(),
         ]);
+    }
+
+    /**
+     * How many blocks each world holds, and how many belong to both.
+     *
+     * Shown beside the choice so that picking one is an informed gesture rather than a
+     * filter that quietly removes a hundred blocks.
+     *
+     * @return array<string, int>
+     */
+    private static function countsByPlanet(): array
+    {
+        $counts = array_fill_keys([...self::PLANETS, self::ANY], 0);
+
+        foreach (BlockCatalogue::all() as $block) {
+            $counts[self::ANY]++;
+            // Un bloc qui n'appartient a aucun monde appartient aux deux : le convoyeur est
+            // sur Serpulo et sur Erekir, et le retirer des deux listes le rendrait
+            // introuvable partout.
+            foreach ($block->planet() === null ? self::PLANETS : [$block->planet()] as $world) {
+                $counts[$world]++;
+            }
+        }
+
+        return $counts;
     }
 
     public function show(string $name): View
