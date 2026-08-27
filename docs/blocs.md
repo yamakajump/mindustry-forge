@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **105 classes à reproduire**, pour 228 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 59 sur 105
+## Fait : 61 sur 105
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -142,7 +142,7 @@ second, c'est une intuition qui a l'air d'un portage.
       duct-router
 - [x] `ForceProjector` - 1 bloc
       force-projector
-- [ ] `Fracker` - 1 bloc
+- [x] `Fracker` - 1 bloc
       oil-extractor
 - [x] `HeaterGenerator` - 1 bloc
       neoplasia-reactor
@@ -204,7 +204,7 @@ second, c'est une intuition qui a l'air d'un portage.
       shielded-wall
 - [ ] `ShockwaveTower` - 1 bloc
       shockwave-tower
-- [ ] `SolidPump` - 1 bloc
+- [x] `SolidPump` - 1 bloc
       water-extractor
 - [x] `StackRouter` - 1 bloc
       surge-router
@@ -231,16 +231,15 @@ Une case cochée dit que la classe est transcrite et mesurée, pas
 qu'aucun de ses blocs ne pose problème. Ce qui manque encore, nommé
 plutôt que laissé à découvrir :
 
-- **Un bloc ne retient qu'un liquide à la fois.** Le jeu, lui, garde un
-  compteur par liquide et n'utilise `current()` que pour décider ce
-  qu'il accepte. Ça ne se voit que sur les blocs qui en boivent deux :
-  `chemical-combustion-chamber` (ozone et arkycite), `pyrolysis-generator`
-  (scorie et arkycite), `neoplasia-reactor` (arkycite et eau). Les trois
-  sont d'Erekir, aucun n'est mesuré, et aucun ne tournera correctement
-  tant que le module liquide n'aura pas plusieurs cases. Les deux
-  foreuses à percussion sont dans le même cas pour leur **bonus** :
-  elles veulent de l'eau et de l'ozone en même temps, donc le bonus est
-  transcrit et non mesuré. Leur marche normale, elle, est mesurée.
+- **Les charges utiles n'existent pas.** Aucun bloc qui porte, pose ou
+  consomme une unité empaquetée n'est reproduit : `PayloadConveyor`,
+  `PayloadRouter`, `Reconstructor`, `UnitAssembler` et le reste de la
+  famille. Ils sont dans la liste, non cochés, et une schématique qui en
+  contient est lue comme si ces blocs ne faisaient rien.
+
+- **Les processeurs ne s'exécutent pas.** `LogicBlock` lit un programme
+  qui peut piloter n'importe quel bloc de la schématique. Rien de ça
+  n'est simulé, et ça ne le sera probablement jamais.
 
 ## Posés par un joueur, mais sans effet sur ce qui circule
 

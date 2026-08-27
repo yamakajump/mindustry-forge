@@ -37,6 +37,8 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.production.Fracker;
+import mindustry.world.blocks.production.SolidPump;
 import mindustry.world.meta.Attribute;
 import mindustry.world.blocks.production.BurstDrill;
 import mindustry.world.blocks.production.WallCrafter;
@@ -694,6 +696,31 @@ public class DumpBlocks {
 
             entry.put("input", inputsOf(crafter));
             entry.put("input_liquid", liquidInputsOf(crafter));
+            return;
+        }
+        if (block instanceof SolidPump ground) {
+            /* A pump that makes liquid out of dry land: a water extractor and an oil
+               extractor. Filed under pumps, both read as pumps that need liquid ground and
+               so made nothing at all, which is exactly backwards - a solid pump only works
+               where the ground is **not** liquid.
+
+               The two differ by one number that changes everything. `baseEfficiency` is 1
+               for the water extractor, so it works anywhere and the ground attribute is a
+               bonus; it is 0 for the oil extractor, so the attribute is the whole output
+               and an oil extractor off the sand makes nothing. */
+            entry.put("role", "solid-pump");
+            entry.put("carries", "liquid");
+            entry.put("pump_amount", ground.pumpAmount);
+            entry.put("base_efficiency", ground.baseEfficiency);
+            if (ground.attribute != null) entry.put("attribute", ground.attribute.name);
+            if (ground.result != null) {
+                Jval out = Jval.newObject();
+                out.put(ground.result.name, ground.pumpAmount * TPS);
+                entry.put("output_liquid", out);
+            }
+            if (block instanceof Fracker fracker) entry.put("item_use_time", fracker.itemUseTime);
+            entry.put("input", inputsOf(block));
+            entry.put("input_liquid", liquidInputsOf(block));
             return;
         }
         if (block instanceof Pump pump) {

@@ -42,7 +42,7 @@ export function efficiencyOf(build, step) {
        machine runs and the tank drains sixty times too fast. */
     const wanted = (rate / TICKS) * build.delta(step);
     if (wanted <= 0) continue;
-    const held = build.liquid === liquid ? build.liquidAmount : 0;
+    const held = build.liquids.get(liquid);
     efficiency = Math.min(efficiency, held / wanted);
     if (efficiency <= 0) return 0;
   }
@@ -68,7 +68,7 @@ function shouldConsume(build) {
     if (build.items.get(item) + amount > build.itemCapacity) return false;
   }
   for (const liquid of Object.keys(build.block.output_liquid || {})) {
-    const held = build.liquid === liquid ? build.liquidAmount : 0;
+    const held = build.liquids.get(liquid);
     if (held >= build.liquidCapacity - 0.001) return false;
   }
   return true;
@@ -171,9 +171,7 @@ const crafter = {
       }
       // And what it drinks is drunk continuously too. `ConsumeLiquid.update`.
       for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
-        if (build.liquid === liquid) {
-          build.liquidAmount = Math.max(0, build.liquidAmount - (rate / TICKS) * drink);
-        }
+        build.liquids.remove(liquid, (rate / TICKS) * drink);
       }
     }
 
@@ -515,10 +513,7 @@ const separator = {
     }
 
     for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
-      if (efficiency > 0 && build.liquid === liquid) {
-        build.liquidAmount = Math.max(
-          0, build.liquidAmount - (rate / TICKS) * build.delta(step) * efficiency);
-      }
+      if (efficiency > 0) build.liquids.remove(liquid, (rate / TICKS) * build.delta(step) * efficiency);
     }
 
     const every = build.block.dump_time || 5;
@@ -630,7 +625,7 @@ const beamDrill = {
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
       const wanted = (rate / TICKS) * delta;
       if (wanted <= 0) continue;
-      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      const held = build.liquids.get(liquid);
       efficiency = Math.min(efficiency, held / wanted);
     }
     efficiency = Math.max(0, Math.min(1, efficiency));
@@ -641,21 +636,17 @@ const beamDrill = {
     for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
       const wanted = (rate / TICKS) * delta;
       if (wanted <= 0) continue;
-      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      const held = build.liquids.get(liquid);
       boost = Math.min(boost, held / wanted);
     }
     boost = Math.max(0, Math.min(1, boost));
     const multiplier = 1 + ((block.optional_boost_intensity ?? 1) - 1) * boost;
 
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
-      if (build.liquid === liquid) {
-        build.liquidAmount = Math.max(0, build.liquidAmount - (rate / TICKS) * delta * efficiency);
-      }
+      build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
     }
     for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
-      if (build.liquid === liquid) {
-        build.liquidAmount = Math.max(0, build.liquidAmount - (rate / TICKS) * delta * boost);
-      }
+      build.liquids.remove(liquid, (rate / TICKS) * delta * boost);
     }
 
     const each = (block.drill_time || 200)
@@ -710,7 +701,7 @@ const wallCrafter = {
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
       const wanted = (rate / TICKS) * delta;
       if (wanted <= 0) continue;
-      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      const held = build.liquids.get(liquid);
       efficiency = Math.min(efficiency, held / wanted);
     }
     efficiency = Math.max(0, Math.min(1, efficiency));
@@ -720,7 +711,7 @@ const wallCrafter = {
     for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
       const wanted = (rate / TICKS) * delta;
       if (wanted <= 0) continue;
-      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      const held = build.liquids.get(liquid);
       wet = Math.min(1, held / wanted);
     }
     const stocked = Object.keys(block.boost_input || {}).length > 0
@@ -742,15 +733,10 @@ const wallCrafter = {
     }
 
     for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
-      if (build.liquid === liquid) {
-        build.liquidAmount = Math.max(0, build.liquidAmount - (rate / TICKS) * delta * wet);
-      }
+      build.liquids.remove(liquid, (rate / TICKS) * delta * wet);
     }
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
-      if (build.liquid === liquid) {
-        build.liquidAmount = Math.max(
-          0, build.liquidAmount - (rate / TICKS) * delta * efficiency);
-      }
+      build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
     }
 
     if (!room || !made) return;
@@ -802,7 +788,7 @@ const burstDrill = {
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
       const wanted = (rate / TICKS) * delta;
       if (wanted <= 0) continue;
-      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      const held = build.liquids.get(liquid);
       efficiency = Math.min(efficiency, held / wanted);
     }
     efficiency = Math.max(0, Math.min(1, efficiency));
@@ -812,21 +798,16 @@ const burstDrill = {
     for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
       const wanted = (rate / TICKS) * delta;
       if (wanted <= 0) continue;
-      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      const held = build.liquids.get(liquid);
       wet = Math.min(1, held / wanted);
     }
     const speed = (1 + ((block.liquid_boost ?? 1) - 1) * wet) * efficiency;
 
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
-      if (build.liquid === liquid) {
-        build.liquidAmount = Math.max(
-          0, build.liquidAmount - (rate / TICKS) * delta * efficiency);
-      }
+      build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
     }
     for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
-      if (build.liquid === liquid) {
-        build.liquidAmount = Math.max(0, build.liquidAmount - (rate / TICKS) * delta * wet);
-      }
+      build.liquids.remove(liquid, (rate / TICKS) * delta * wet);
     }
 
     // No `dominantItems` here, unlike an ordinary drill: the ore count multiplies the

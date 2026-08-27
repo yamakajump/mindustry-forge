@@ -134,8 +134,7 @@ const liquidSource = {
   update(build) {
     const liquid = build.node.configured;
     if (!liquid) return;
-    build.liquid = liquid;
-    build.liquidAmount = build.liquidCapacity;
+    build.liquids.add(liquid, build.liquidCapacity - build.liquids.get(liquid));
     build.dumpLiquid(liquid);
   },
 
@@ -202,8 +201,81 @@ const liquidSpan = {
   },
 };
 
+/**
+ * A solid pump: water and oil squeezed out of dry ground.
+ *
+ * `fraction = validTiles + boost`, where `validTiles` is the count of tiles it may work on
+ * times `baseEfficiency` over its own area, and `boost` is the ground attribute summed and
+ * divided the same way. One number decides which of the two halves matters: a water
+ * extractor has `baseEfficiency` 1, so it works on any dry ground and wet ground is a
+ * bonus; an oil extractor has 0, so the sand under it is the **whole** output and one off
+ * the sand makes nothing at all.
+ *
+ * A fracker eats one sand every `itemUseTime` ticks on top, on a counter of its own that
+ * only advances while it is running.
+ */
+const solidPump = {
+  begin(build) {
+    build.state.used = 0;
+  },
+
+  acceptItem(build, source, item) {
+    return build.wants(item) && build.items.get(item) < build.itemCapacity;
+  },
+
+  update(build, world, step) {
+    const block = build.block;
+    const delta = build.delta(step);
+    const made = Object.keys(block.output_liquid || {})[0];
+    if (!made) return;
+
+    const area = (block.size || 1) ** 2;
+    const fraction = Math.max(0,
+      (build.node.dry || 0) * (block.base_efficiency || 0) / area
+      + (build.node.attrsum || 0) / area);
+
+    let efficiency = block.power > 0 ? (build.state.power ?? 1) : 1;
+    for (const [item, amount] of Object.entries(block.input || {})) {
+      if (build.items.get(item) < amount) efficiency = 0;
+    }
+    for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
+      const wanted = (rate / TICKS) * delta;
+      if (wanted <= 0) continue;
+      const held = build.liquids.get(liquid);
+      efficiency = Math.min(efficiency, held / wanted);
+    }
+    efficiency = Math.max(0, Math.min(1, efficiency));
+
+    if (efficiency > 0) {
+      /* The item is taken **before** the pumping, on a counter that only moves while it is
+         running: a fracker with no water does not burn sand waiting for some. */
+      if (build.state.used >= (block.item_use_time || Infinity)) {
+        build.state.used -= block.item_use_time;
+        for (const [item, amount] of Object.entries(block.input || {})) {
+          build.items.remove(item, amount);
+        }
+      }
+      build.state.used += delta * efficiency;
+
+      for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
+        build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
+      }
+    }
+
+    /* `maxPump = min(liquidCapacity - typeLiquid(), pumpAmount * delta * fraction *
+       efficiency)`, and `typeLiquid()` is what it holds **of the result**: a fracker full
+       of the water it drinks still has room for its oil. */
+    if (efficiency > 0 && build.liquids.get(made) < build.liquidCapacity - 0.001) {
+      const rate = block.output_liquid[made] / TICKS;
+      build.addLiquid(made, rate * delta * fraction * efficiency);
+    }
+    build.dumpLiquid(made);
+  },
+};
+
 export const LIQUIDS = {
   conduit,
+  "solid-pump": solidPump,
   "liquid-span": liquidSpan,
   router: liquidRouter,
   junction: liquidJunction,

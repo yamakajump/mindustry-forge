@@ -7764,9 +7764,15 @@
         "graphite": 30
       },
       "power": 90,
-      "role": "pump",
-      "output_per_second": 26.4,
+      "role": "solid-pump",
+      "carries": "liquid",
       "pump_amount": 0.11,
+      "base_efficiency": 1,
+      "attribute": "water",
+      "output_liquid":{
+        "water": 6.6
+      },
+      "input":{},
       "input_liquid":{}
     },
     "cultivator":{
@@ -7835,9 +7841,18 @@
         "silicon": 75
       },
       "power": 180,
-      "role": "pump",
-      "output_per_second": 135,
+      "role": "solid-pump",
+      "carries": "liquid",
       "pump_amount": 0.25,
+      "base_efficiency": 0,
+      "attribute": "oil",
+      "output_liquid":{
+        "oil": 15
+      },
+      "item_use_time": 60,
+      "input":{
+        "sand": 1
+      },
       "input_liquid":{
         "water": 9
       }
@@ -8537,10 +8552,10 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "water": 1,
         "slag": 1,
-        "cryofluid": 1,
-        "oil": 1
+        "water": 1,
+        "oil": 1,
+        "cryofluid": 1
       },
       "input_liquid":{}
     },
@@ -8799,10 +8814,10 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "water": 0.4,
         "slag": 0.4,
-        "cryofluid": 0.4,
-        "oil": 0.4
+        "water": 0.4,
+        "oil": 0.4,
+        "cryofluid": 0.4
       },
       "input_liquid":{}
     },
