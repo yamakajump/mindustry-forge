@@ -161,8 +161,14 @@ def build_truetype() -> None:
     Il vit dans resources/ et pas dans public/ : personne ne doit le telecharger, il ne
     sert qu'au serveur qui compose les cartes de partage.
     """
-    face = TTFont(FONT)
+    #: `recalcTimestamp=False` matters more than it looks. fontTools rewrites `head.modified`
+    #: **on save**, not on load, so without it the same input produced a different file on
+    #: every run: a build that changed nothing left the working tree dirty, with a diff
+    #: reading "Bin 28268 -> 28268 bytes" that says nothing about what moved. Setting the
+    #: field by hand after loading does not help, which is the trap: the save overwrites it.
+    face = TTFont(FONT, recalcTimestamp=False)
     face.flavor = None
+
     out = ROOT / "site/resources/fonts/forge.ttf"
     out.parent.mkdir(parents=True, exist_ok=True)
     face.save(out)
