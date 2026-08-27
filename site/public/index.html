@@ -239,10 +239,28 @@ function render(report) {
       Sur une tache a moitie couverte il en faut deux fois plus.</p></div>`);
   }
 
-  /* And what it gives back once it has all that, which is what a player is shopping for. */
+  /* And what it gives back once it has all that, which is what a player is shopping for.
+
+     La carte se lit juste apres « Il lui faut », et ce n'est pas un hasard : le plafond
+     ci-dessous ne vaut qu'aux conditions que la carte du dessus enumere. Les separer, ou
+     mettre ce chiffre en haut de page, en ferait un debit qu'on citerait sans ses
+     conditions. Il est annonce « au mieux » pour la meme raison. */
   const full = report.potential || { made: 0, spent: 0 };
-  if (full.made > 0.01 || full.spent > 0.01) {
+  const ceiling = Object.entries(report.potentialPerMinute || {}).sort((a, b) => b[1] - a[1]);
+  if (full.made > 0.01 || full.spent > 0.01 || ceiling.length) {
     right.push(`<div class="card"><h2>Une fois nourrie a fond</h2>
+      ${ceiling.map(([item, n]) => `<div class="line"><span>Au mieux ${withIcon(item)}
+           ${escape(item)}</span>
+         <span class="num good">${rate(n)} / min</span></div>`).join("")}
+      ${ceiling.length && needs.length
+        ? `<p class="hint-line" style="margin:6px 0 10px">Plafond, pas mesure : ce que ses
+             machines sortiraient a plein regime si on lui amenait
+             ${needs.filter((n) => !n.resource.startsWith("*"))
+                .map((n) => escape(n.resource)).join(", ") || "ce qui lui manque"}.
+             ${answered
+               ? "Ce qu'elle fait branchee comme elle est se lit plus bas."
+               : "Marque ses entrees pour savoir ce qu'elle fait vraiment."}</p>`
+        : ""}
       ${full.made > 0.01
         ? `<div class="line"><span>Produit</span>
              <span class="num good">${rate(full.made)} energie / s</span></div>` : ""}

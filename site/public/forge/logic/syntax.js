@@ -34,6 +34,14 @@ const isNumber = (text) =>
 /** How the game names the blocks it links: the block, then which one. */
 const LOOKS_LINKED = /^[a-z][a-z-]*\d+$/;
 
+/**
+ * A problem that belongs to the whole program rather than to a line.
+ *
+ * Aimed at the first line rather than at none, because the list is clickable: a problem
+ * that goes nowhere when clicked is a problem the reader thinks is broken.
+ */
+const NOWHERE = { line: 0, start: 0, end: 0 };
+
 /** Written by these instructions into their first operand, so not a link even if it looks it. */
 const ASSIGNS = new Set(["set", "op", "sensor", "getlink", "radar", "read", "lookup",
                          "packcolor", "unpackcolor", "ulocate", "uradar", "getblock",
@@ -93,7 +101,7 @@ export function tokenize(text) {
            reading: whatever this file said about it would be about a program nobody runs. */
         push({ text: source.slice(column), start: column, end: source.length,
                line, kind: "chaine", unterminated: true });
-        return { lines, statements, fatal: "guillemet-ouvert",
+        return { lines, statements, fatal: "outils.logique.probleme.guillemet-ouvert",
                  fatalAt: { line, start: column, end: source.length } };
       }
       const token = push({ text: source.slice(column, close + 1), start: column,
@@ -103,7 +111,7 @@ export function tokenize(text) {
 
       const next = source[column];
       if (next !== undefined && !BREAKS.has(next)) {
-        return { lines, statements, fatal: "espace-attendu",
+        return { lines, statements, fatal: "outils.logique.probleme.espace-attendu",
                  fatalAt: { line, start: column, end: column + 1 } };
       }
       continue;
@@ -132,6 +140,14 @@ export function parse(text, { links = [] } = {}) {
   const problems = [];
   const limits = catalogueOf().limits;
 
+  /* Every key is written out whole, here and everywhere else, rather than a family and a
+     suffix joined at the last moment. A key that only exists once the page is running is a
+     key no test can check and a line no translator can find, and `tests/js/i18n.test.js`
+     refuses a whole file over one. */
+  const say = (key, severity, at, params = {}) => problems.push({
+    key, severity, line: at.line, start: at.start, end: at.end, params,
+  });
+
   /* A fatal error is recorded and reading carries on over what the lexer did manage to
      read. The game refuses the whole program either way, and it is told so; but an editor
      that drops its colours and its other warnings the moment a quote is left open is an
@@ -149,11 +165,9 @@ export function parse(text, { links = [] } = {}) {
       const name = first.text.slice(0, -1);
       first.kind = "etiquette";
       if (labels.has(name)) {
-        problems.push({ key: "etiquette-double", severity: "refus", line: first.line,
-                        start: first.start, end: first.end, params: { nom: name } });
+        say("outils.logique.probleme.etiquette-double", "refus", first, { nom: name });
       } else if (labels.size >= 500) {
-        problems.push({ key: "etiquettes-trop", severity: "refus", line: first.line,
-                        start: first.start, end: first.end, params: { maximum: 500 } });
+        say("outils.logique.probleme.etiquettes-trop", "refus", first, { maximum: 500 });
       } else {
         labels.set(name, statements.length);
       }
@@ -195,24 +209,23 @@ export function parse(text, { links = [] } = {}) {
     if (!known) {
       name.kind = "inconnu";
       entry.noop = true;
-      problems.push({ key: "instruction-inconnue", severity: "erreur", line: name.line,
-                      start: name.start, end: name.end, params: { nom: name.text } });
+      say("outils.logique.probleme.instruction-inconnue", "erreur", name, { nom: name.text });
       continue;
     }
 
     if (known.privileged) {
       name.kind = "monde";
       entry.noop = true;
-      problems.push({ key: "instruction-monde", severity: "erreur", line: name.line,
-                      start: name.start, end: name.end, params: { nom: known.name } });
+      say("outils.logique.probleme.instruction-monde", "erreur", name, { nom: known.name });
     }
 
     if (operands.length > known.operands.length) {
       const extra = operands[known.operands.length];
       const last = operands[operands.length - 1];
-      problems.push({ key: "operandes-en-trop", severity: "avertissement", line: extra.line,
-                      start: extra.start, end: last.line === extra.line ? last.end : extra.end,
-                      params: { compte: operands.length - known.operands.length } });
+      say("outils.logique.probleme.operandes-en-trop", "avertissement",
+          { line: extra.line, start: extra.start,
+            end: last.line === extra.line ? last.end : extra.end },
+          { compte: operands.length - known.operands.length });
     }
 
     operands.forEach((token, index) => {
@@ -225,12 +238,12 @@ export function parse(text, { links = [] } = {}) {
 
   const bytes = new TextEncoder().encode(text).length;
   if (bytes > limits.code_bytes) {
-    problems.push({ key: "programme-trop-long", severity: "erreur", line: 0, start: 0, end: 0,
-                    params: { octets: bytes, maximum: limits.code_bytes } });
+    say("outils.logique.probleme.programme-trop-long", "erreur", NOWHERE,
+        { octets: bytes, maximum: limits.code_bytes });
   }
   if (links.length > limits.links) {
-    problems.push({ key: "liens-trop", severity: "erreur", line: 0, start: 0, end: 0,
-                    params: { compte: links.length, maximum: limits.links } });
+    say("outils.logique.probleme.liens-trop", "erreur", NOWHERE,
+        { compte: links.length, maximum: limits.links });
   }
 
   return { ...lexed, statements, labels, variables, problems, bytes };
@@ -252,7 +265,7 @@ function classify(token, shape, context) {
        assumed. */
     token.kind = "inconnu";
     entry.noop = true;
-    problems.push({ key: "valeur-inconnue", severity: "erreur", line: token.line,
+    problems.push({ key: "outils.logique.probleme.valeur-inconnue", severity: "erreur", line: token.line,
                     start: token.start, end: token.end,
                     params: { valeur: token.text, liste: shape.enum } });
     return;
@@ -264,7 +277,7 @@ function classify(token, shape, context) {
       token.kind = "nombre";
       const target = Number(token.text);
       if (target < 0 || target >= statements.length) {
-        problems.push({ key: "saut-hors-programme", severity: "avertissement",
+        problems.push({ key: "outils.logique.probleme.saut-hors-programme", severity: "avertissement",
                         line: token.line, start: token.start, end: token.end,
                         params: { cible: target, compte: statements.length } });
       }
@@ -272,7 +285,7 @@ function classify(token, shape, context) {
     }
     token.kind = "etiquette";
     if (!labels.has(token.text)) {
-      problems.push({ key: "etiquette-absente", severity: "refus", line: token.line,
+      problems.push({ key: "outils.logique.probleme.etiquette-absente", severity: "refus", line: token.line,
                       start: token.start, end: token.end, params: { nom: token.text } });
     }
     return;
@@ -303,7 +316,7 @@ function classify(token, shape, context) {
      an error: nothing here can tell a forgotten link from a variable called `cell1`, and
      the escape hatch is that anything the program assigns to is left alone. */
   if (LOOKS_LINKED.test(token.text) && !variables.has(token.text)) {
-    problems.push({ key: "lien-inconnu", severity: "avertissement", line: token.line,
+    problems.push({ key: "outils.logique.probleme.lien-inconnu", severity: "avertissement", line: token.line,
                     start: token.start, end: token.end, params: { nom: token.text } });
   }
 }
