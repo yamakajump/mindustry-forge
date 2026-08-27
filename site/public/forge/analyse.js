@@ -78,8 +78,17 @@ function outputsOf(node) {
   // handing to all four sides, a line of pipes fed itself in both directions, and the last
   // pipe of a run was never the end of anything: it pointed back at its neighbour, so the
   // solver could find no exit at all and the whole line carried nothing.
+  /* A duct hands forward and only forward, exactly like a belt: `Duct.updateTile` moves
+     its one item to `front()` and nowhere else. It reached this file with no branch at all
+     and fell through to the ring below, which offered all four sides - and then `accepts`
+     refused every one of them, so an Erekir line had no edges and carried nothing.
+
+     An overflow or underflow duct keeps the ring, because the sides are the whole of what
+     it is for. Read off the game's own flag rather than listed by name, as the overflow
+     gate above it already is. */
   if (node.role === "conveyor" || node.role === "conduit"
-      || node.role === "stack-conveyor") {
+      || node.role === "stack-conveyor"
+      || (node.role === "duct" && !node.block.overflow)) {
     const [dx, dy] = DIRECTIONS[node.rotation % 4];
     return [[node.x + dx, node.y + dy]];
   }
@@ -94,6 +103,13 @@ function outputsOf(node) {
     // is pushed.
     return DIRECTIONS.map(([dx, dy]) => [node.x + dx, node.y + dy]);
   }
+  /* A duct bridge is nothing like an item bridge and shares none of its machinery. It
+     carries no configuration at all: it looks along the way it points and links to the
+     first bridge of its own kind within range. Nothing here can see the other blocks, so
+     it hands on nothing and the edge is added once the map exists, beside the unloader's.
+     Given the ring below it would have fed its four neighbours, which is what a duct
+     bridge exists not to do. */
+  if (node.role === "duct-bridge") return [];
   if (node.role === "bridge") {
     // A bridge carries over a gap to the tile it remembers, and that memory is the whole
     // point of it: without reading the link, a line that jumps a wall reads as two
@@ -163,8 +179,34 @@ function accepts(node, fromTile, from = null) {
     const [dx, dy] = DIRECTIONS[node.rotation % 4];
     return !(fromTile[0] === node.x + dx && fromTile[1] === node.y + dy);
   }
+  /* The rule the engine already ports and the oracle already holds: a plain duct takes
+     from every side but the one it points at, and an armoured one takes only from directly
+     behind, plus from other ducts pointed at it.
+
+     Missing entirely, a duct fell through to the last line of this function, which asks a
+     block for a recipe. A duct has none, so it accepted nothing from anybody: seven ducts
+     in a row had no edges between them and thirteen recorded scenarios read as inert - the
+     whole of Erekir's item transport, on a live site.
+
+     The armoured case is not a nicety. `armored-duct` is the block a player uses precisely
+     so that the vault beside it cannot feed it, and treating it as a plain duct would turn
+     a deliberate wall into a leak. Its family test is the edge itself: since a duct now
+     hands forward only, an edge from another duct exists only where that duct points here,
+     which is the game's `source.facing(...) == this`. */
+  if (node.role === "duct") {
+    const [dx, dy] = DIRECTIONS[node.rotation % 4];
+    if (fromTile[0] === node.x + dx && fromTile[1] === node.y + dy) return false;
+    if (!node.block.armored) return true;
+    if (from?.role === "duct" || from?.role === "duct-bridge") return true;
+    const [bx, by] = DIRECTIONS[(node.rotation + 2) % 4];
+    return fromTile[0] === node.x + bx && fromTile[1] === node.y + by;
+  }
+  // A duct unloader pulls out of the container behind it; nothing is ever pushed into one.
+  if (node.role === "duct-unloader") return false;
   if (node.role === "junction" || node.role === "router"
-      || node.role === "bridge" || node.role === "sorter") {
+      || node.role === "bridge" || node.role === "sorter"
+      || node.role === "duct-router" || node.role === "duct-bridge"
+      || node.role === "stack-router") {
     return true;
   }
   /* `acceptItem` is `items.total() < itemCapacity && linkValid()`: a mass driver set to
@@ -350,7 +392,9 @@ export function buildGraph(tiles) {
   // handed an invented supply out of nowhere, of whatever resource was being solved for.
   // The two halves of the same belt had nothing to do with each other.
   for (let index = 0; index < nodes.length; index++) {
-    if (nodes[index].role !== "unloader") continue;
+    // Erekir's unloader pulls exactly as Serpulo's does, and was left out of this loop, so
+    // a duct unloader stood against a full vault and drew nothing out of it.
+    if (nodes[index].role !== "unloader" && nodes[index].role !== "duct-unloader") continue;
     const touching = new Set();
     for (const [cx, cy] of nodes[index].footprint) {
       for (const [dx, dy] of DIRECTIONS) {
@@ -362,6 +406,57 @@ export function buildGraph(tiles) {
       edges.push([store, index]);
       // The container is no longer where the line ends: what arrives keeps going.
       nodes[store].drained = true;
+    }
+  }
+
+  /* A duct bridge aims rather than remembers. `DuctBridge` looks along its rotation and
+     links to the **first** bridge of its own kind within range, so a chain is built by
+     pointing them at each other and a third bridge in between shortens the reach of the one
+     behind it. Walked here rather than in `outputsOf`, which cannot see its neighbours.
+
+     `DirectionBridge.findLink` matches on the block's **name**, not on its class, and it
+     does not stop at anything else on the way: a duct standing between two bridges does not
+     block the beam, and a third bridge does, by being found first. Written as "stop at the
+     first block of any kind", the middle span of a three bridge chain linked to nothing,
+     because a plain duct sat between it and its partner. */
+  for (let index = 0; index < nodes.length; index++) {
+    const node = nodes[index];
+    if (node.role !== "duct-bridge") continue;
+    const [dx, dy] = DIRECTIONS[node.rotation % 4];
+    const reach = node.block.range || 4;
+    let linked = false;
+    for (let step = 1; step <= reach; step++) {
+      const found = at.get(`${node.x + dx * step},${node.y + dy * step}`);
+      if (found === undefined || nodes[found].name !== node.name) continue;
+      edges.push([index, found]);
+      linked = true;
+      /* The receiving end blocks the face the beam lands on, and refuses it for ever:
+         `acceptItem` tests `!occupied[(side + 2) % 4]`, and the sending bridge writes
+         itself into `occupied[its own rotation]`. A duct pressed against that side is
+         refused by the game and looks like a fault in the layout.
+
+         It is the whole point of `duct-bridge-span`, where a second source feeds the very
+         face a beam arrives on: the game delivers beryllium and nothing else, and without
+         this the solve delivered fifteen graphite a second that no player would ever
+         see. */
+      const [bx, by] = DIRECTIONS[(node.rotation + 2) % 4];
+      const blocked = at.get(`${nodes[found].x + bx},${nodes[found].y + by}`);
+      if (blocked !== undefined && blocked !== index) {
+        for (let e = edges.length - 1; e >= 0; e--) {
+          if (edges[e][0] === blocked && edges[e][1] === found) edges.splice(e, 1);
+        }
+      }
+      break;
+    }
+    /* With nobody to link to it is an ordinary block pushing at whatever is in front of it,
+       which is what the last bridge of a chain does for a living: without this the beam
+       arrived and stopped there, and a span that crossed a wall delivered into the bridge
+       rather than out of it. */
+    if (linked) continue;
+    const front = at.get(`${node.x + dx},${node.y + dy}`);
+    if (front !== undefined && front !== index
+        && accepts(nodes[front], [node.x, node.y], node)) {
+      edges.push([index, front]);
     }
   }
 
@@ -801,8 +896,15 @@ function capacityFor(node, resource, liquid) {
     return node.dug?.resource === resource
       ? node.dug.rate * speed * (node.block.size || 1) ** 2 : 0;
   }
+  /* A duct is not infinite either, and it was: with no branch here it fell through to the
+     `Infinity` at the end of this function, so the moment the edges existed a duct line
+     would have carried whatever was poured into it. Fifteen a second is the figure the
+     game prints and the one the engine divides out of `duct_speed`. */
   if (node.role === "conveyor" || node.role === "junction" || node.role === "bridge"
-      || node.role === "unloader" || node.role === "stack-conveyor") {
+      || node.role === "unloader" || node.role === "stack-conveyor"
+      || node.role === "duct" || node.role === "duct-router"
+      || node.role === "duct-bridge" || node.role === "duct-unloader"
+      || node.role === "stack-router") {
     // A liquid junction and a liquid bridge state no item rate, because they carry no
     // items. Their ceiling is the same as a pipe's.
     if (node.block.carries === "liquid") return (node.block.liquid_capacity || 10) * TICKS;
