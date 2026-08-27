@@ -398,6 +398,28 @@ details.supply input[type=text] { width: 280px; }
 .block-panel .sub { margin: 0 0 10px; }
 .stage canvas { cursor: pointer; }
 
+/*
+ * Une icone du jeu, servie a l'unite par `/icone/{famille}/{nom}.png`.
+ *
+ * Une seule regle pour tout le site, et pas une par surface : le planificateur, le cout de
+ * construction d'une schematique et le wiki des blocs montrent les memes images et doivent
+ * les montrer pareil. Deux regles qui se ressemblent finissent toujours par diverger d'un
+ * pixel, et personne ne sait plus laquelle fait autorite.
+ *
+ * `pixelated` parce que ce sont des sprites de 32 pixels : un lissage a cette taille en fait
+ * une tache grise, et le jeu lui-meme les dessine a bords durs.
+ *
+ * Onze liquides n'ont aucune icone, l'atlas n'exportant pas leur famille. L'adresse repond
+ * donc 404 pour eux, expres, plutot que de servir un carre gris qui cacherait le trou : les
+ * pages qui en affichent doivent degrader en nom seul, en le sachant plutot qu'en le
+ * decouvrant.
+ */
+.icone {
+  image-rendering: pixelated;
+  vertical-align: -3px;
+  flex: none;
+}
+
 /* La largeur naturelle d'une liste deroulante est celle de son plus long libelle, et rien
    ne la borne par defaut : sur la page des schematiques en 320 px, le choix « n'importe
    quoi » faisait 281 px dans une ligne de 221 et poussait la page 3 px hors de l'ecran.
