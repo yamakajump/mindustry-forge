@@ -202,6 +202,14 @@
         <a class="button" href="/?s={{ $schematic->slug }}">{{
           $schematic->managedBy(auth()->user()) ? 'Modifier' : 'Analyser chez moi' }}</a>
 
+        {{-- Le geste part d'ici, pas d'une page vide. Personne n'arrive au comparateur avec
+             deux identifiants en tete : on est sur une schematique et on se demande comment
+             elle se situe. Un cote est donc deja rempli et il n'en reste qu'un a choisir. --}}
+        @if($schematic->visibility === \App\Models\Schematic::PUBLIC)
+          <a class="button" href="/comparer?a={{ $schematic->slug }}">{{
+            __('schema.comparer.comparer-avec') }}</a>
+        @endif
+
         {{-- Vers l'editeur de logique, et seulement quand il y a quelque chose a y ouvrir.
              Le compte vient de l'analyse deja stockee, donc la page ne decode rien pour le
              savoir : sur les quatre-vingt-seize schematiques mesurees dans la vitrine, six
