@@ -9,6 +9,61 @@
  */
 
 return [
+    /*
+     * The comparison page.
+     *
+     * No figure goes through a placeholder: when a key is missing Laravel returns the key
+     * without substituting, so the value would disappear outright. The view puts the
+     * numbers against these words instead.
+     */
+    'comparer' => [
+        'titre' => 'Comparer deux schematiques',
+        'sous-titre' => "Les deux ont ete lues par le meme moteur, donc la difference se
+            soustrait au lieu de se deviner sur deux captures d'ecran.",
+        'gauche' => 'A gauche',
+        'droite' => 'A droite',
+        'identifiant' => 'identifiant',
+        'comparer' => 'Comparer',
+        'aide' => "L'identifiant est la fin de l'adresse d'une schematique, apres /s/.",
+        'a-choisir' => 'Des schematiques a comparer',
+        'rien-a-comparer' => "Rien de publie pour l'instant.",
+        'energie' => 'energie',
+
+        'ce-quelles-font' => 'Ce qu\'elles font toutes les deux',
+        'lune-pas-lautre' => "Ce que l'une fait et pas l'autre",
+        'la-place' => 'La place et le courant',
+        'le-cout' => "Ce qu'elles coutent a poser",
+        'ce-qui-bloque' => 'Ce qui les arrete',
+        'rien-ne-bloque' => 'rien de signale',
+
+        'mesure-blocs' => 'Blocs poses',
+        'mesure-emprise' => 'Emprise au sol',
+        'mesure-energie' => 'Energie a fournir',
+
+        'ecart-lecture' => "L'ecart est celui de gauche moins celui de droite : en vert, la
+            gauche en fait plus.",
+        'non-soustrait' => 'pas soustrait',
+        'ecart' => 'ecart',
+
+        /*
+         * The three refusals, and they are what makes the page worth having.
+         *
+         * A single figure mixing things that do not belong on one axis reads as a verdict,
+         * which is exactly the fault repaired on the net-power ranking.
+         */
+        'rien-en-commun' => "Ces deux schematiques ne produisent rien en commun, donc il n'y
+            a pas de vainqueur a designer. Classer du graphite contre du silicium reviendrait
+            a decreter qu'un graphite vaut un silicium.",
+        'plafond' => "Ces chiffres sont des plafonds, pas des mesures : personne n'a dit a ces
+            schematiques ou elles se branchent, donc c'est ce qu'elles feraient au mieux.",
+        'kinds-melanges' => "Un des deux chiffres est une mesure et l'autre un plafond. Ils
+            sont montres cote a cote et volontairement pas soustraits : leur difference ne
+            voudrait rien dire.",
+        'pas-de-verdict' => "Aucun vainqueur n'est designe. Une schematique qui produit plus
+            et coute trois fois plus cher n'est pas meilleure, c'est un autre marche, et vous
+            etes seul a savoir lequel vous voulez.",
+    ],
+
     'gestion' => [
         'qui-peut-voir' => 'Qui peut la voir',
         'privee' => 'Privee',

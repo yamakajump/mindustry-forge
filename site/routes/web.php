@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlockCardController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
+use App\Http\Controllers\CompareController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SocialCardController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +53,15 @@ Route::post('/deconnexion', [AuthController::class, 'logout']);
 
 Route::get('/schematiques', [BrowseController::class, 'index']);
 Route::get('/s/{schematic}', [SchematicController::class, 'show']);
+
+/*
+ * Two schematics side by side, which is the question the catalogue creates.
+ *
+ * Both come in as query parameters rather than as path segments: the page is reachable and
+ * useful with neither, with one, or with both, and an address whose meaning changes with
+ * how much of it is filled in is an address that has to be a query.
+ */
+Route::get('/comparer', [CompareController::class, 'index']);
 
 /* What Discord shows when the link above is pasted. An address of its own rather than the
    raw preview: a plan is square or very long depending on what was copied, and an unfurler
