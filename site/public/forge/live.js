@@ -234,45 +234,51 @@ export function drawRunning(context, gear, build, tile, size, box, scale, ticks)
   const side = size * scale;
   const heat = running(build, ticks);
 
-  /* A drill's rotor, which is in no drawing chain: `Drill` draws its own layers in `draw()`
-     rather than delegating to a `DrawBlock`, so there is nothing to dump and the sprites
-     are the only thing that says a block has one. Skipped for anything that **does** have a
-     chain, which knows better.
+  /* A block with a turning part is drawn from its own three layers, never from the
+     flattened sprite: `block-<name>-full` has the rotor baked into it standing still, and a
+     turning copy over that leaves the still one showing through underneath.
+
+     Two sources for the rotor and they do not overlap. A crafter names it in its drawing
+     chain, with a speed. A drill has no chain at all - `Drill.draw` stacks its own layers
+     rather than delegating to a `DrawBlock` - so there is nothing to dump and the sprite
+     names are the only thing that says it has one.
 
      `Drill.draw`: the angle is `timeDrilled * rotateSpeed`, and `timeDrilled` only advances
      while the drill is warm, so one with nothing under it slows to a stop rather than
      freezing mid-turn. */
-  const rotor = atlas?.sprites?.[`${name}#rotator`] || atlas?.sprites?.[`${name}#spinner`];
+  const spins = (build.block.drawers || []).find((one) => one.kind === "rotator");
+  const rotor = spins
+    ? atlas?.sprites?.[`${name}#${spins.suffix.slice(1)}`]
+    : (atlas?.sprites?.[`${name}#rotator`] || atlas?.sprites?.[`${name}#spinner`]);
   const plate = atlas?.sprites?.[`${name}#base`];
-  if (rotor && plate && !(build.block.drawers || []).length) {
-    const turned = (spun.get(build) || 0) + (build.state.warmup ?? heat.warmup) * ticks;
-    spun.set(build, turned);
+  if (!rotor || !plate) return false;
 
-    context.drawImage(sheet, plate.x, plate.y, plate.w, plate.h,
+  const turned = (spun.get(build) || 0) + (build.state.warmup ?? heat.warmup) * ticks;
+  spun.set(build, turned);
+
+  context.drawImage(sheet, plate.x, plate.y, plate.w, plate.h,
+                    spot.cx - side / 2, spot.cy - side / 2, side, side);
+  context.save();
+  context.translate(spot.cx, spot.cy);
+  context.rotate(-turned * (spins?.rotate_speed ?? 2) * Math.PI / 180);
+  context.drawImage(sheet, rotor.x, rotor.y, rotor.w, rotor.h,
+                    -side / 2, -side / 2, side, side);
+  context.restore();
+
+  const cap = atlas?.sprites?.[`${name}#top`];
+  if (cap) {
+    context.drawImage(sheet, cap.x, cap.y, cap.w, cap.h,
                       spot.cx - side / 2, spot.cy - side / 2, side, side);
-    context.save();
-    context.translate(spot.cx, spot.cy);
-    context.rotate(-turned * 2 * Math.PI / 180);
-    context.drawImage(sheet, rotor.x, rotor.y, rotor.w, rotor.h,
-                      -side / 2, -side / 2, side, side);
-    context.restore();
-
-    const cap = atlas?.sprites?.[`${name}#top`];
-    if (cap) {
-      context.drawImage(sheet, cap.x, cap.y, cap.w, cap.h,
-                        spot.cx - side / 2, spot.cy - side / 2, side, side);
-    }
-    // The ore a drill is pulling out, in that ore's colour. `drawMineItem`.
-    const seam = atlas?.sprites?.[`${name}#item`];
-    const dug = build.node?.dug?.resource;
-    if (seam && dug) {
-      const colour = gear.catalogue?.items?.[dug]?.color || "#ffffff";
-      context.drawImage(tinted(sheet, seam, `${name}#item`, colour),
-                        spot.cx - side / 2, spot.cy - side / 2, side, side);
-    }
-    return true;
   }
-  return false;
+  // The ore a drill is pulling out, in that ore's colour. `Drill.drawMineItem`.
+  const seam = atlas?.sprites?.[`${name}#item`];
+  const dug = build.node?.dug?.resource;
+  if (seam && dug) {
+    const colour = gear.catalogue?.items?.[dug]?.color || "#ffffff";
+    context.drawImage(tinted(sheet, seam, `${name}#item`, colour),
+                      spot.cx - side / 2, spot.cy - side / 2, side, side);
+  }
+  return true;
 }
 
 /**
@@ -291,6 +297,9 @@ export function drawLayers(context, gear, build, tile, size, box, scale, ticks) 
      in what colour, breathing how fast. Read rather than guessed - an electrolyser's glow
      is lilac and a kiln's is red, and nothing in the file name says so. */
   for (const layer of chain) {
+    // The rotor is already down, laid by `drawRunning` between the plate and the cap,
+    // because that is the only place it does not cover a still copy of itself.
+    if (layer.kind === "rotator") continue;
     paintLayer(context, gear, build, layer, spot, size * scale, heat, ticks);
   }
 }
