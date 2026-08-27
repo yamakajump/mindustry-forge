@@ -1,5 +1,6 @@
-<!-- The header image and the social preview go here, above the title, once the art
-     direction lands them. See docs/direction-artistique.md. -->
+<p align="center">
+  <img src="site/public/brand/depot-entete.jpg" alt="Mindustry Forge" width="900">
+</p>
 
 # Mindustry Forge
 
@@ -30,6 +31,11 @@ npm run oracle          # replays every recorded scenario against its measuremen
 
 **Largest disagreement: 0.00%, over 164 recorded scenarios** (27 August 2026). Two of them
 have never been measured, and say so rather than passing quietly.
+
+**This runs on every push.** The replay needs no server and no game, only the measurements
+already recorded, so continuous integration does it in seconds and fails the build past two
+percent. It is a gate, not a log line. `node tools/gap.mjs` runs beside it without a gate,
+so the figure below lands in the record of every run instead of in somebody's memory.
 
 Nobody else can make that claim, because nobody else has the bench.
 
@@ -62,10 +68,6 @@ node tools/gap.mjs
 
 Moving the report onto the engine changes every number on the site at once, so it is stated
 work rather than silent work. `docs/todo.md` carries it.
-
-**One caveat on the bench, stated because it matters.** `npm run oracle` is run by hand.
-Continuous integration runs the unit suites and the migrations, not the oracle, so a
-regression against the game is caught by whoever thinks to look. Wiring it in is open work.
 
 ## It runs on your machine
 
@@ -175,6 +177,11 @@ from Mindustry v159.7, the version pinned throughout this repository. Reading a 
 wiki is how a tool comes to disagree with the game about what a player just pasted.
 
 ## Contributing
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) says what this project is strict about, so you can
+decide before writing code whether the rules suit you. Conduct is in
+[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), and vulnerabilities go through GitHub's private
+reporting rather than an issue: [`SECURITY.md`](SECURITY.md).
 
 `docs/fonctionnalites.md` is the plan: what exists, what is being built, and who holds what.
 `docs/todo.md` names the known defects, including the one above.
