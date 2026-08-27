@@ -24,6 +24,15 @@ Route::get('/', fn () => response()->file(public_path('index.html')));
  */
 Route::get('/editer', fn () => response()->file(public_path('index.html')));
 
+/*
+ * The logic editor, a static page of its own rather than a mode of the analyser.
+ *
+ * A route rather than the file served as it lies: nginx looks for `index.html` in no
+ * directory at all, so `/outils/logique/` would answer nothing, and `/outils/logique.html`
+ * is an address nobody wants to still be honouring in ten years.
+ */
+Route::get('/outils/logique', fn () => response()->file(public_path('outils/logique.html')));
+
 Route::get('/auth/discord', [AuthController::class, 'start'])->name('login');
 Route::get('/auth/discord/callback', [AuthController::class, 'callback']);
 Route::post('/deconnexion', [AuthController::class, 'logout']);
