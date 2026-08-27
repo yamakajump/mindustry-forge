@@ -14,14 +14,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn () => response()->file(public_path('index.html')));
 
 /*
- * L'éditeur, qui est la même page.
+ * The editor, which is the same page.
  *
- * Il se monte en plein écran par-dessus l'analyseur, donc il n'avait pas d'adresse à lui
- * et rien ne pouvait pointer dessus : onze modules en production, aucun lien vers eux. La
- * page lit son propre chemin au chargement pour savoir lequel des deux ouvrir.
+ * It mounts full screen over the analyser, so it had no address of its own and nothing
+ * could point at it: eleven modules in production and not one link to them. The page reads
+ * its own path on load to know which of the two to open.
  *
- * Une route plutôt qu'un fragment `#editer` : un fragment ne part pas au serveur, donc il
- * ne se partage pas dans un fil Discord et ne s'indexe pas.
+ * A route rather than a `#editer` fragment: a fragment never reaches the server, so it
+ * cannot be shared in a Discord thread and cannot be indexed.
  */
 Route::get('/editer', fn () => response()->file(public_path('index.html')));
 
