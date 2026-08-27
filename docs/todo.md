@@ -68,9 +68,15 @@ après mille huit cents images ne sait pas dire laquelle a divergé. Il sert pou
 - **Le souffle d'une explosion.** `kill()` vide le bloc et le ferme, et un bloc mort
   n'accepte plus rien, mais le jeu emporte aussi une partie de ce qui le touchait.
   `reactor-neoplasia-full` est construit autour de ce trou.
-- **Le vol des unités.** Une unité posée au sol reste posée ; dans le jeu elle marche, et le
-  jeu refuse une dépose tant qu'une autre unité chevauche encore la case. C'est le risque
-  dominant sur tout scénario d'usine dépassant deux unités.
+- **Le fret aérien, à moitié.** `cargo.js` fait voler l'unité, la charge et la décharge, et
+  `units.js` porte la physique de vol du jeu. Ce qui manque n'est pas du code : au moment où
+  l'unité naît, `AIController` tire `Mathf.random(40)` pour décaler son premier ciblage, et
+  ce tirage vient du générateur partagé de la partie. Rien dans une schématique ne le
+  détermine, donc la cadence d'un aller-retour ne peut pas être tenue contre le moteur image
+  par image. `cargo-unset` mesure ce qui est certain : un point de déchargement que personne
+  n'a réglé ne reçoit jamais rien. Les deux classes restent décochées pour cette raison.
+- **Les unités au sol.** Une unité posée par une usine reste posée ici ; dans le jeu elle
+  marche, et le jeu refuse une dépose tant qu'une autre unité chevauche encore la case.
 
 ### 4. Relancer l'audit une troisieme fois
 

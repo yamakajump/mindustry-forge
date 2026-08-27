@@ -216,9 +216,9 @@ second, c'est une intuition qui a l'air d'un portage.
       parallax
 - [x] `UnitAssemblerModule` - 1 bloc - il donne acces au plan du dessus, sans trou de palier
       basic-assembler-module
-- [ ] `UnitCargoLoader` - 1 bloc
+- [ ] `UnitCargoLoader` - 1 bloc - porte, mais sa cadence tient a un tirage au hasard
       unit-cargo-loader
-- [ ] `UnitCargoUnloadPoint` - 1 bloc
+- [ ] `UnitCargoUnloadPoint` - 1 bloc - idem : mesure a moitie, pas cochee
       unit-cargo-unload-point
 - [x] `Unloader` - 1 bloc - tire hors d'un coffre, onze par seconde
       unloader

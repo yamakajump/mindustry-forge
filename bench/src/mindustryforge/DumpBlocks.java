@@ -51,6 +51,8 @@ import mindustry.world.blocks.payloads.BlockProducer;
 import mindustry.type.UnitType;
 import mindustry.world.blocks.units.Reconstructor;
 import mindustry.world.blocks.units.UnitAssembler;
+import mindustry.world.blocks.units.UnitCargoLoader;
+import mindustry.world.blocks.units.UnitCargoUnloadPoint;
 import mindustry.world.blocks.units.UnitAssemblerModule;
 import mindustry.world.blocks.payloads.PayloadVoid;
 import mindustry.world.blocks.payloads.PayloadSource;
@@ -809,6 +811,24 @@ public class DumpBlocks {
                Erekir base wired entirely with them read as unpowered. */
             entry.put("role", "power");
             entry.put("range", beam.range);
+            return;
+        }
+        if (block instanceof UnitCargoLoader tether) {
+            /* Il construit exactement une unite puis cesse de consommer quoi que ce soit,
+               et cette unite est tout son debit : elle va au chargeur, prend ce qu'elle peut
+               porter, vole jusqu'a un point de dechargement regle sur cet objet, et le lache
+               par bouffees. Le debit est donc un aller-retour. */
+            entry.put("role", "cargo-loader");
+            entry.put("carries", "item");
+            entry.put("unit_build_time", tether.unitBuildTime);
+            entry.put("unit_type", tether.unitType.name);
+            entry.put("input_liquid", liquidInputsOf(block));
+            return;
+        }
+        if (block instanceof UnitCargoUnloadPoint point) {
+            entry.put("role", "cargo-unload");
+            entry.put("carries", "item");
+            entry.put("stale_time", point.staleTimeDuration);
             return;
         }
         if (block instanceof UnitAssemblerModule module) {
