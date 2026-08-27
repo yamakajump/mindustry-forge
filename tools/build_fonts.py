@@ -14,6 +14,19 @@ Licensing, stated rather than assumed: Mindustry's code is GPL-3, and Anuke allo
 game's assets to be used by community tools and fan sites. That is the same footing every
 other Mindustry site stands on, including the one this borrows its shape from. If that ever
 changes the fallback is one line of CSS.
+
+That reasoning holds for the icon font and not for the other one, which this file used to
+miss. `monospace.woff` is **Fira Code Medium**, `Copyright 2014-2021 The Fira Code Project
+Authors`, under the **SIL Open Font License 1.1**. Anuke redistributes it; he did not write
+it, so his position on his own assets says nothing about it.
+
+The OFL allows redistribution and subsetting outright. What it asks is that the copyright
+notice and the licence text travel with the font. Subsetting keeps the notice, inside the
+file's own `name` table. The licence text is `site/public/forge/fonts/FiraCode-OFL.txt`,
+and `fonts/README.md` next to it says which file is which.
+
+Read the `name` table before trusting any of this a second time; it took one command and
+it contradicted what everyone here had assumed.
 """
 
 from __future__ import annotations
