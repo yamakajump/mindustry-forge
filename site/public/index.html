@@ -71,6 +71,8 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
 import { analyse, catalogueOf, loadCatalogue } from "./forge/analyse.js";
 import { fromBase64, toBase64 } from "./forge/schematic.js";
 import { loadSprites, draw, itemIcon, bounds } from "./forge/render.js";
+import { Live } from "./forge/live.js";
+import { gridsOf } from "./forge/engine/power.js";
 import { mountEditor } from "./forge/editor/mount.js";
 
 const $ = (id) => document.getElementById(id);
@@ -439,6 +441,16 @@ function render(report) {
       </div>
       <div class="stage"><canvas id="view" role="img"
         aria-label="Apercu de ${escape(report.name)}, ${report.blocks} blocs"></canvas></div>
+      <div class="row run-row">
+        <button type="button" id="run-play" class="primary">Faire tourner</button>
+        <button type="button" id="run-reset" hidden>Remettre a zero</button>
+        <label class="run-speed" hidden id="run-speed-box">
+          Vitesse
+          <input type="range" id="run-speed" min="1" max="16" step="1" value="1">
+          <span id="run-rate">x1</span>
+        </label>
+        <span class="dim" id="run-clock"></span>
+      </div>
       ${legend}
       <div id="block" class="card block-panel">
         <h2>Un bloc</h2>
@@ -469,11 +481,17 @@ function render(report) {
       ground,
       inputs: report.ports?.inputs || [],
       outputs: report.ports?.outputs || [],
+      /* Absent unless the player pressed the button, and then it is a world that has
+         already been stepped this frame rather than a clock the picture keeps for itself. */
+      world: living?.world || null,
+      stepped: living?.stepped || 0,
+      catalogue: catalogueOf(),
     });
     if (drawn.missing.length) console.warn("sprites manquants :", drawn.missing);
   };
   paint();
   if (window.ResizeObserver) new ResizeObserver(paint).observe(stage);
+  wireRun(report, paint);
 
   wireBlocks(report, () => drawn, paint);
   wireKeep(report);
@@ -741,6 +759,14 @@ let opened = {};
 /** How big and what kind each block is, worked out once per report and reused. */
 let measures = { sizeOf: () => 1, roleOf: () => "" };
 
+/* The schematic while it is running, or nothing while it is a still picture.
+ *
+ * Module level rather than passed down, because the one thing that draws it is a closure
+ * built when the report was laid out and the one thing that steps it is a button wired
+ * afterwards. `stepped` rides along with it: the renderer needs to know how many of the
+ * game's ticks went by since the last picture, not how many pictures went by. */
+let living = null;
+
 const rateLine = (label, rates, unit = "/ min", factor = 60) => {
   const rows = Object.entries(rates || {}).filter(([, v]) => v > 0.001);
   if (!rows.length) return "";
@@ -896,6 +922,79 @@ function showBlock(report, tile) {
 }
 
 /** Map a click on the picture back to the block under it. */
+/**
+ * Watching a schematic run, rather than reading a number about it.
+ *
+ * The picture and the report come from the same two things: the same graph and the same
+ * supply the player entered. That is the whole claim of the button, and it only holds
+ * because the engine underneath is the one measured tick for tick against a headless
+ * server. A belt animated on a wall clock would look identical and mean nothing.
+ *
+ * `stepped` is handed to the renderer rather than left implicit: the screen redraws
+ * whenever it likes and the game runs at sixty ticks a second, so a belt's scroll and a
+ * rotor's angle have to advance by the ticks that actually went by and not by one a frame.
+ */
+function wireRun(report, repaint) {
+  const play = $("run-play");
+  if (!play) return;
+
+  let live = null;
+  let frame = 0;
+
+  const clock = () => {
+    const seconds = live ? live.world.tick / 60 : 0;
+    $("run-clock").textContent = live
+      ? `${seconds.toFixed(1)} s de jeu` : "";
+  };
+
+  const stop = () => {
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    live?.pause();
+    play.textContent = "Faire tourner";
+    living = null;
+    repaint();
+  };
+
+  const loop = (now) => {
+    frame = requestAnimationFrame(loop);
+    const stepped = live.advance(now);
+    living = { world: live.world, stepped };
+    repaint();
+    clock();
+  };
+
+  play.addEventListener("click", () => {
+    if (live?.running) { stop(); return; }
+    if (!live) {
+      live = new Live(report.graph, {
+        catalogue: catalogueOf(),
+        feeds: report.feeds || {},
+        gridsOf,
+      });
+      $("run-reset").hidden = false;
+      $("run-speed-box").hidden = false;
+    }
+    live.play();
+    play.textContent = "Arreter";
+    frame = requestAnimationFrame(loop);
+  });
+
+  $("run-reset")?.addEventListener("click", () => {
+    stop();
+    live = null;
+    $("run-reset").hidden = true;
+    $("run-speed-box").hidden = true;
+    $("run-clock").textContent = "";
+  });
+
+  $("run-speed")?.addEventListener("input", (event) => {
+    const rate = Number(event.target.value);
+    if (live) live.rate = rate;
+    $("run-rate").textContent = `x${rate}`;
+  });
+}
+
 function wireBlocks(report, drawnNow, repaint) {
   const canvas = $("view");
   if (!canvas) return;

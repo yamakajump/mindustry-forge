@@ -171,7 +171,61 @@ Ce qui reste se range en trois tas, et le tri compte plus que la liste :
   tourner ».
 - Classement par cuivre investi et pas seulement par bloc.
 
-### 10. Reste
+### 10. L'image qui bouge : ce qu'elle couvre, et ce qu'elle ne couvre pas
+
+`site/public/forge/live.js` fait tourner le schéma dans le navigateur et le redessine, à
+partir du **même moteur** que le rapport et que le banc. C'est toute la valeur du bouton :
+une bande animée sur `Date.now()` aurait exactement la même tête et ne voudrait rien dire.
+
+Ce qui est porté, avec la source du jeu en face :
+
+- Le défilement des bandes, `(Time.time * speed * 8 * efficiency) % 4` (`Conveyor.draw`),
+  et l'arrêt sur image d'une bande bouchée (`clogHeat`).
+- Les objets sur les bandes à leur position exacte, `xs` compris : un objet entré par le
+  côté est plaqué contre ce côté et revient au milieu en un cinquième de seconde. Le
+  décalage latéral et l'insertion **au milieu de la file** (`mid`) ont été ajoutés au
+  moteur pour ça, et ne changent aucun débit mesuré.
+- Les objets dans les ducts, interpolés du bord d'entrée au bord de sortie (`recDir`), ce
+  qui fait qu'un objet tourne visiblement le coin au lieu de traverser en ligne droite.
+- Le liquide dans les conduits et dans tout bloc qui a une image `-liquid` : teinte de ce
+  qu'il contient, opacité égale à son remplissage (`Drawf.liquid`).
+- Les rotors, tournés par le `warmup` réellement atteint (`Drill.draw`), et le minerai
+  qu'une foreuse sort, teinté de sa couleur (`drawMineItem`).
+- Les lueurs, les chaleurs et les flammes, **avec les constantes du bloc** et pas des
+  constantes devinées. `bench/data/blocks.json` porte la chaîne de dessin du jeu à plat
+  (`DrawGlowRegion`, `DrawHeatRegion`, `DrawHeatOutput`, `DrawFlame`, `DrawRegion`,
+  `DrawLiquidRegion`), parce que la couleur vit dans le `DrawBlock` et nulle part ailleurs :
+  l'électrolyseur est lilas, le four à chaux orangé, le four à silicium jaune pâle, et
+  aucun nom de fichier ne le dit.
+- Les drones d'un assembleur et d'un chargeur de fret, à leur position de vol.
+- Un bloc qui meurt : il se désagrège une demi-seconde au lieu de disparaître entre deux
+  images.
+
+Ce qui **n'est pas** dessiné, et pourquoi :
+
+- **La tourelle ne tourne pas.** Rien dans un schéma ne lui donne quoi que ce soit à viser.
+  Un canon qui balaie pour faire joli serait la seule chose en mouvement sur l'image qui
+  ment.
+- **Les drones sortent souvent du cadre.** Le carré de travail d'un assembleur est à
+  `(area_size + size) / 2` cases devant lui, donc hors de ce qui a été copié. Ce n'est pas
+  un défaut de rendu : c'est là qu'ils sont.
+- **Les textures de fluide animées** du jeu (`renderer.fluidFrames`) sont générées à
+  l'exécution ; le conduit est teinté à la place, ce qui est la règle de tous les autres
+  blocs à liquide.
+- **Le tremblement d'une flamme.** `DrawFlame` ajoute un `Mathf.random` à son rayon et à son
+  opacité à chaque image. Volontairement laissé de côté : ce serait la seule chose de cette
+  image qui différerait entre deux passages de la même schématique, et tout le reste ici est
+  rejouable.
+- **Une teinte remplace la couleur au lieu de la multiplier.** Le jeu fait
+  `Draw.color(c)` puis dessine, ce qui multiplie ; un canvas ne sait faire qu'un
+  `source-in`, qui remplace. Sans écart visible sur les masques blancs que le jeu fournit
+  pour ça, et c'est ce que sont toutes les couches teintées ici.
+- **`clogHeat` n'est pas dans le moteur.** Il est recalculé par le rendu, parce que le
+  `blendbits` dont il dépend est une notion de dessin. Conséquence à connaître : le jeu
+  interdit à un déchargeur de puiser dans une bande bouchée (`canUnload`), et ça, le moteur
+  ne le modélise pas.
+
+### 11. Reste
 
 - Diagnostic explicite : « trois bandes reliées à rien », en tête plutôt qu'en bas.
 - Marquer plusieurs blocs d'un coup (glisser sur une rangée de tuyaux).

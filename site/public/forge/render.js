@@ -11,6 +11,10 @@
  * reads as an L rather than as a rectangle with holes.
  */
 
+import {
+  beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
+} from "./live.js";
+
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
@@ -478,23 +482,53 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   context.save();
   context.globalAlpha = options.opacity === undefined ? 1 : options.opacity;
 
-  for (const tile of tiles) {
-    const size = sizeOf(tile.name || tile.block);
-    const offset = Math.trunc(-(size - 1) / 2);
-    const found = atlas?.sprites?.[tile.name || tile.block];
-    // Screen coordinates count down from the top; the game counts up from the bottom.
-    const px = (tile.x + offset - box.left) * scale;
-    const py = (box.height - (tile.y + offset - box.bottom) - size) * scale;
+  /* What is running, if anything is.
 
+     `world` is a simulation that has already been stepped this frame; `stepped` is how many
+     of the game's own ticks that was. Both are absent for a still picture, and every branch
+     below reduces to what it drew before. */
+  const world = options.world || null;
+  const stepped = options.stepped || 0;
+  const gear = { atlas, sheet, catalogue: options.catalogue || null };
+
+  /* Three passes over the tiles rather than one, because the game draws in layers and not
+     in tile order (`mindustry.graphics.Layer`): a belt goes down at `block - 0.2`, what
+     rides it at `block - 0.1`, and every other block at `block`. Drawn in tile order, an
+     item riding a belt past a smelter disappears behind the smelter on one side of it and
+     not on the other. */
+  const drawn = [];
+  for (const tile of tiles) {
+    const name = tile.name || tile.block;
+    const size = sizeOf(name);
+    const offset = Math.trunc(-(size - 1) / 2);
+    drawn.push({
+      tile, name, size, role: roleOf(name),
+      // Screen coordinates count down from the top; the game counts up from the bottom.
+      px: (tile.x + offset - box.left) * scale,
+      py: (box.height - (tile.y + offset - box.bottom) - size) * scale,
+    });
+  }
+
+  const one = (part) => {
+    const { tile, name, size, role, px, py } = part;
+    const found = atlas?.sprites?.[name];
     if (!found) {
-      missing.push(tile.name || tile.block);
+      missing.push(name);
       context.fillStyle = "rgba(255, 128, 128, .35)";
       context.fillRect(px, py, size * scale, size * scale);
-      continue;
+      return;
     }
 
-    const name = tile.name || tile.block;
-    const role = roleOf(name);
+    const build = world?.at(tile.x, tile.y) || null;
+    if (build?.state.dead) {
+      // Gone, and drawn coming apart for half a second rather than vanishing between two
+      // frames, which reads as a rendering fault instead of as a reactor going up.
+      const died = world.gone?.get(build);
+      drawWreck(context, tile, size, box, scale,
+                died === undefined ? 0 : world.tick - died);
+      return;
+    }
+
     const spins = turns(name, role);
 
     // The square of colour under a configured block, which is how the game says what a
@@ -503,7 +537,7 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
     // Without it twelve sources side by side are twelve identical blank frames.
     let art = found;
     if (tile.tint) {
-      const plain = atlas?.sprites?.[`${tile.name || tile.block}#plain`];
+      const plain = atlas?.sprites?.[`${name}#plain`];
       if (plain) {
         // The bare frame rather than the composite, whose middle is the cross the game
         // draws when nothing is set: painted under that, the colour never showed.
@@ -518,9 +552,23 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
     let flip = 1;
     if (role === "conveyor" || role === "conduit") {
       const chosen = carrierShape(tile, feeds);
-      const variant = atlas?.sprites?.[`${name}#${chosen.shape}`];
+      /* Kept on the tile for the cargo pass, which has to lay a conduit's liquid into the
+         same shape the plate was drawn in. */
+      part.shape = chosen.shape;
+      part.flip = chosen.flip;
+      /* A belt that is running is four sprites and not one: `Conveyor.draw` picks between
+         them with `(Time.time * speed * 8 * efficiency) % 4`, so the scroll is the belt's
+         own speed and a stalled belt stands still. */
+      const frame = build && role === "conveyor"
+        ? beltFrame(build, world.tick, chosen.shape, stepped) : 0;
+      const variant = atlas?.sprites?.[`${name}#${chosen.shape}-${frame}`]
+        || atlas?.sprites?.[`${name}#${chosen.shape}`];
       if (variant) { art = variant; flip = chosen.flip; }
     }
+
+    // A drill draws itself out of its own layers instead, because the flattened sprite has
+    // its rotor baked into it standing still.
+    if (build && drawRunning(context, gear, build, tile, size, box, scale, stepped)) return;
 
     if (spins || flip !== 1) {
       context.save();
@@ -535,7 +583,21 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
       context.drawImage(sheet, art.x, art.y, art.w, art.h,
                         px, py, size * scale, size * scale);
     }
+
+    // And what glows, heats or burns on top of it, once the plate is down.
+    if (build) drawLayers(context, gear, build, tile, size, box, scale, stepped);
+  };
+
+  for (const part of drawn) if (CARRIER_ROLES.has(part.role)) one(part);
+  if (world) {
+    drawCargo(context, gear, world,
+              drawn.filter((part) => CARRIER_ROLES.has(part.role))
+                   .map((part) => Object.assign(part.tile,
+                        { shape: part.shape ?? 0, flip: part.flip ?? 1 })),
+              sizeOf, roleOf, box, scale);
   }
+  for (const part of drawn) if (!CARRIER_ROLES.has(part.role)) one(part);
+  if (world) drawFlyers(context, gear, world, box, scale);
 
   // Faded with the build, not with the marks: a mark on a half transparent block is still
   // an answer the player gave, and it is the one thing on the picture that has to stay
