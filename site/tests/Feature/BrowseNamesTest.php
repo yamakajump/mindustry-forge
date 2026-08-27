@@ -1,22 +1,23 @@
 <?php
 
 use App\Models\Schematic;
-use App\Models\SchematicItem;
 use App\Support\Thing;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-/** A public schematic with a measured figure, which is what the filter offers. */
+/**
+ * A public schematic carrying both figures, as every real one does.
+ *
+ * The measurement and the ceiling are written from the same analysis, by two passes. A
+ * fixture that wrote only one described a schematic that cannot exist, and the listing
+ * filters on the ceiling, which is the only figure the imported catalogue has.
+ */
 function produces(string $name, string $item, float $rate = 100): Schematic
 {
     $schematic = Schematic::factory()->create([
         'visibility' => Schematic::PUBLIC, 'name' => $name, 'blocks' => 30,
-    ]);
-    $schematic->items()->delete();
-    $schematic->items()->create([
-        'item' => $item, 'sens' => SchematicItem::PRODUIT, 'kind' => SchematicItem::MESURE,
-        'rate' => $rate, 'rate_per_block' => $rate / 30,
+        'analysis' => ['potentialPerMinute' => [$item => $rate]],
     ]);
 
     return $schematic;

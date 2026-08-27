@@ -107,10 +107,15 @@
       ci-dessus et le classement devient un vrai rendement&nbsp;: combien la schematique
       en sort, pour la place qu'elle prend.</p>
   @else
-    <p class="hint-line">Classees sur ce qu'elles sortent en
-      <strong>{{ $makes === $powerKey ? 'energie' : $makes }}</strong>, rapporte a leur
-      taille. L'electricite qu'une schematique consomme ne la penalise pas&nbsp;: c'est un
-      prerequis, indique sur sa page.</p>
+    {{-- La nature du chiffre est dite avec le chiffre, jamais apres. C'est la condition a
+         laquelle la vitrine a le droit de chercher sur des plafonds : les nommer n'est pas
+         les melanger a des mesures. --}}
+    <p class="hint-line">Classees sur ce qu'elles pourraient sortir en
+      <strong>{{ $makes === $powerKey ? 'energie' : \App\Support\Thing::name($makes) }}</strong>,
+      alimentees a fond, rapporte a leur taille. Un plafond et non un releve&nbsp;: une
+      schematique arrachee d'une base n'a pas la foreuse qui l'alimentait, donc ce qu'elle
+      fait vraiment depend de la votre. L'electricite qu'elle consomme ne la penalise
+      pas&nbsp;: c'est un prerequis, indique sur sa page.</p>
   @endif
 
   {{-- Ce qui est mis a part, dit avec son compte et un lien pour le voir.
@@ -186,8 +191,19 @@
               <span class="good">{{ number_format($power, 0, ',', ' ') }} energie/s</span>
               <span class="hint-line">{{ __('schema.page.au-mieux') }}</span> &middot;
             @endif
-            @foreach(array_slice($schematic->produces ?? [], 0, 2, true) as $item => $itemRate)
-              {{ number_format($itemRate, 0, ',', ' ') }} {{ $item }}/min &middot;
+            {{-- Le plafond, parce que c'est sur lui que la page classe : montrer la mesure
+                 sous un classement fait sur autre chose ferait dire a la tuile autre chose
+                 que la liste qui l'a rangee. Et il est nomme comme tel, chaque fois. --}}
+            {{-- L'unite suit la chose et non la colonne. `schematic_items.rate` en porte deux
+                 sans que son nom le dise : les objets y sont par minute, l'energie par
+                 seconde. Ecrire « 60 energie/min » etait la faute exacte contre laquelle une
+                 autre voie venait de me mettre en garde, et je l'ai faite quand meme. --}}
+            @foreach(array_slice($schematic->plafonds(), 0, 2, true) as $item => $itemRate)
+              {{ number_format($itemRate, 0, ',', ' ') }}
+              {{ $item === $powerKey
+                  ? 'energie/s'
+                  : \App\Support\Thing::name($item).'/min' }}
+              <span class="hint-line">{{ __('schema.page.au-mieux') }}</span> &middot;
             @endforeach
           @endif
           {{ $schematic->blocks }} blocs &middot; {{ $schematic->credit() }}

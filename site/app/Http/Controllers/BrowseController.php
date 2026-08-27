@@ -88,7 +88,9 @@ class BrowseController extends Controller
             $holds = '';
         }
 
-        $query = Schematic::query()->with('user')->listed();
+        // `items` charge en une fois : chaque tuile lit son plafond, et sans ca une page de
+        // vingt-quatre ferait vingt-quatre requetes de plus.
+        $query = Schematic::query()->with(['user', 'items'])->listed();
         if ($holds !== '') {
             $query->whereExists(fn ($sub) => $sub
                 ->selectRaw('1')
@@ -103,11 +105,29 @@ class BrowseController extends Controller
             // must not require reading every row on the site.
             $query->join('schematic_items', 'schematic_items.schematic_id', '=', 'schematics.id')
                 ->where('schematic_items.item', $makes)
-                // Ce qui sort, et constate. La table sait aussi dire ce qui entre et ce
-                // qu'une schematique ferait alimentee a fond ; melanger un plafond a une
-                // mesure dans un meme classement serait mentir sans que rien ne le dise.
+                /*
+                 * Le plafond, et lui seul.
+                 *
+                 * Exiger une mesure rendait le catalogue muet : 117 schematiques en portent
+                 * une contre 6 775 qui portent un plafond, et ni le graphite ni le silicium
+                 * n'avaient un seul resultat alors que 844 et 1 700 plans en produisent.
+                 * Ce n'est pas un accident qui se resorbera : une schematique arrachee d'une
+                 * base n'a pas la foreuse qui l'alimentait, donc son debit mesure vaut zero
+                 * et le restera.
+                 *
+                 * Le plafond seul, et non « plafond ou mesure », parce qu'un classement qui
+                 * melange les deux natures est exactement la faute reparee sur l'energie
+                 * nette. Et il n'exclut personne : le plafond se calcule avec une
+                 * alimentation infinie, donc il est toujours superieur ou egal a la mesure,
+                 * et toute schematique qui a une mesure non nulle a aussi un plafond. Une
+                 * seule nature dans un seul ordre, sans rien perdre.
+                 *
+                 * La regle n'est pas assouplie, elle est appliquee : un plafond ne s'affiche
+                 * jamais sans dire qu'il en est un. La phrase sous les filtres le dit, et
+                 * chaque tuile le repete a cote de son chiffre.
+                 */
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
-                ->where('schematic_items.kind', SchematicItem::MESURE)
+                ->where('schematic_items.kind', SchematicItem::PLAFOND)
                 ->select('schematics.*');
         }
 
@@ -215,7 +235,10 @@ class BrowseController extends Controller
             ->join('schematics', 'schematics.id', '=', 'schematic_items.schematic_id')
             ->where('schematics.visibility', Schematic::PUBLIC)
             ->where('schematic_items.sens', SchematicItem::PRODUIT)
-            ->where('schematic_items.kind', SchematicItem::MESURE)
+            // La meme nature que le classement, sans quoi la liste proposerait du graphite
+            // et la page n'afficherait rien : un filtre qui offre ce qu'il ne sait pas
+            // rendre est pire qu'un filtre qui ne l'offre pas.
+            ->where('schematic_items.kind', SchematicItem::PLAFOND)
             ->groupBy('schematic_items.item')
             ->orderByRaw('count(*) desc')
             ->limit(20)
