@@ -412,6 +412,12 @@ et donc du lancement. Le contenu est identique apres parsing. Mais dans un diff 
 personne ne distingue un reordonnancement d'un vrai changement, et c'est comme ca qu'une
 regeneration cache une regression. Les sorties concernees sont triees a la source.
 
+**Pendant une fusion, `git diff` contre `origin/...` ment.** Le tronc bouge plus vite qu'un
+cycle fusion-tests-push, donc comparer contre la branche distante juste après une
+résolution compare contre une cible qui a déjà avancé, et affiche des suppressions qui
+n'existent pas. Une voie a cru supprimer trente-quatre lignes du travail d'une autre. La
+bonne référence pendant une fusion est `MERGE_HEAD`, pas `origin/<branche>`.
+
 **`consumes_power` peut valoir vrai sans aucune consommation.** La presse à graphite est
 mécanique dans le jeu. Se fier à la présence de `power` et `power_out`, jamais au booléen.
 
