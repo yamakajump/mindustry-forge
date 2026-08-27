@@ -81,6 +81,7 @@ import mindustry.world.blocks.power.NuclearReactor;
 import mindustry.world.blocks.power.ImpactReactor;
 import mindustry.world.blocks.power.ThermalGenerator;
 import mindustry.world.blocks.power.HeaterGenerator;
+import mindustry.world.blocks.power.PowerDiode;
 import mindustry.world.blocks.power.PowerNode;
 import mindustry.world.blocks.heat.HeatConductor;
 import mindustry.world.blocks.heat.HeatProducer;
@@ -257,6 +258,20 @@ public class DumpBlocks {
             /* Whether a beam stops at it. Only insulation stops one: a titanium wall does
                not, which is contrary to every instinct and is the game's rule. */
             if (block.insulated) entry.put("insulated", true);
+            /* Un noeud pose sans lien enregistre se relie tout seul a ce qui passe a
+               portee : `placed()` appelle `getPotentialLinks` des que `power.links`
+               est vide. Sans ces trois champs, un schema dont les liens n ont pas ete
+               copies laissait chaque bloc seul sur sa grille. */
+            if (block instanceof PowerNode node) {
+                entry.put("laser_range", node.laserRange);
+                entry.put("max_nodes", node.maxNodes);
+                if (!node.autolink) entry.put("no_autolink", true);
+                /* Un beam-link ne se relie qu a un autre beam-link : cinq cents
+                   cases de portee et personne d autre au bout. */
+                if (node.sameBlockConnection) entry.put("same_block_link", true);
+            }
+            // Vrai par defaut : ce qui le met a faux ne rejoint aucune grille.
+            if (!block.connectedPower) entry.put("no_connected_power", true);
 
             // What it costs to build, which is what "compact" and "cheap" are scored on.
             Jval cost = Jval.newObject();
@@ -772,6 +787,13 @@ public class DumpBlocks {
                Erekir base wired entirely with them read as unpowered. */
             entry.put("role", "power");
             entry.put("range", beam.range);
+            return;
+        }
+        if (block instanceof PowerDiode) {
+            /* Le seul bloc qui deplace de la charge entre deux grilles sans etre sur
+               aucune des deux. Classe en `sink`, deux grilles que le jeu maintient au meme
+               niveau restaient l une pleine et l autre a plat. */
+            entry.put("role", "diode");
             return;
         }
         if (block instanceof PowerNode || block instanceof Battery) {
