@@ -1,0 +1,40 @@
+# Surveille les vulnerabilites connues des dependances.
+#
+# Tourne aussi une fois par semaine, et pas seulement aux commits : une CVE
+# est publiee quand elle est publiee, pas quand on touche au code. Un depot
+# calme est justement celui ou une faille reste le plus longtemps sans etre
+# vue.
+#
+# Seul Laravel est audite ici, et c'est voulu : l'analyseur est du JavaScript
+# ecrit a la main, `package.json` ne declare aucune dependance et ne sert qu'a
+# porter les scripts. Un job npm n'aurait rien a lire.
+name: audit des dependances
+
+on:
+  push:
+    branches: [main, "restart/**"]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  composer:
+    name: Composer
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+
+      # --no-dev : une faille dans Pint ou Pest ne tourne jamais en production.
+      # Les signaler ici noierait celles qui comptent vraiment.
+      - name: Vulnerabilites connues
+        run: composer audit --no-dev
