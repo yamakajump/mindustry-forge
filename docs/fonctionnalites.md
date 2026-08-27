@@ -136,6 +136,40 @@ coûtent pas la même chose à construire, et c'est ce qui décide en début de 
 - **Possède** : une migration (colonne de coût), `BrowseController`.
 - **Dépend de** : à séquencer après A4 pour ne pas croiser deux migrations sur la même table.
 
+## A8bis. Les liens d'un processeur qui ne portent pas
+
+Un processeur déclare les blocs qu'il pilote. Rien ne vérifie qu'il les atteint, donc une
+schématique peut être collée avec un lien mort sans que la page le dise, et le joueur
+découvre en jeu que sa tourelle n'a jamais reçu d'ordre.
+
+La règle du jeu est prouvée, lue dans le bytecode de `LogicBlock.validLink` en v159.7 :
+
+```
+dx² + dy²  <  (logic_range + taille_cible / 2)²
+```
+
+Euclidienne, **stricte** (un lien posé pile à la portée est refusé, même piège que le
+propulseur de masse), entre centres de bâtiments, et le rayon reçoit la demi-taille de la
+cible : un vault 3x3 est joignable une case et demie plus loin qu'un convoyeur.
+
+Tout est en place : `centre()` d'`analyse.js` calcule déjà le bon centre, recoupé contre
+`Block.offset` du jeu sur les tailles 1 à 5, et le catalogue porte `logic_range` en cases
+depuis la normalisation des unités. C'est du travail droit.
+
+**Ça vit dans l'analyse, pas dans l'éditeur de logique, et c'est mesuré.** Dans l'éditeur,
+un lien n'est qu'un nom et deux décalages : pas de bloc, donc pas de taille, donc la
+formule ne s'applique pas. Le nom vient de `LogicBlock.getLinkName`, qui coupe sur les
+tirets et garde le dernier morceau, et la transformation est destructrice. Passée sur les
+245 blocs constructibles : **32 des 114 noms de lien ne permettent pas de déduire la
+taille**. `additive-reconstructor` fait 3x3 et `tetrative-reconstructor` fait 9x9, même nom.
+
+Un avertissement de portée dans l'éditeur se tromperait donc sur les reconstructeurs, les
+foreuses et les réacteurs. N'en afficher aucun est le bon choix : un avertissement qui crie
+sur un montage qui marche, on l'éteint, et on éteint la colonne avec.
+
+- **Possède** : `site/public/forge/logic.js`, la partie liens d'`analyse.js`, ses tests.
+- **Dépend de** : rien, la normalisation des unités est faite.
+
 ## A7. Le vérificateur de tenue
 
 `blast.js` modélise déjà le souffle d'une explosion et ce qu'il détruit. De là : « ton
