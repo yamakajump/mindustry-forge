@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\BlockCatalogue;
 use App\Services\EngineVersion;
+use App\Services\GameMarkup;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -200,8 +201,25 @@ class Schematic extends Model
         // comparing two reactors is comparing. Note this is not the consumption rule in
         // reverse: a factory's power draw never touches its ranking on graphite. It is
         // that when energy is the product, the product is the surplus.
-        if ($this->powerSpare() > 0) {
-            $rows[SchematicItem::POWER] = $this->powerSpare();
+        /* Read from the measured budget, not from `powerSpare()`.
+         *
+         * `power_made` is filled from `analysis['potential']`, which is the ceiling: what
+         * the layout would make fed flat out. Indexed here it became a `mesure` row, and
+         * the listing filters on exactly that kind - with a comment saying that mixing a
+         * ceiling into a measured ranking would be lying without saying so. It was, and
+         * nothing said so: 195 rows carried the same number twice, once honestly as a
+         * ceiling and once falsely as a measurement, and "the ones that produce the most"
+         * was ranking on ceilings while believing it ranked on measurements.
+         *
+         * A reactor farm with no fuel declared measures zero, and zero is the true answer
+         * to "what does this plan produce as given". Its ceiling is written by
+         * `indexWhatItCouldMake`, under the kind that says what it is.
+         */
+        $analysis = (array) $this->analysis;
+        $measured = (array) ($analysis['power'] ?? []);
+        $spare = (float) ($measured['made'] ?? 0) - (float) ($measured['spent'] ?? 0);
+        if ($spare > 0) {
+            $rows[SchematicItem::POWER] = $spare;
         }
 
         // Only the measured output is rebuilt here. Ceilings and consumption are written
@@ -288,6 +306,25 @@ class Schematic extends Model
                 ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
             );
         }
+    }
+
+    /**
+     * The name as a reader should see it, with the game's colour markup taken out.
+     *
+     * `name` stays exactly as the source wrote it, and this is the only thing any surface
+     * should print. Not stripped on the way in: a stripper we get wrong once would already
+     * have eaten the original by the time we notice, and correcting it would mean
+     * re-collecting fifteen thousand entries. Not stripped surface by surface either -
+     * that is the arrangement that produced the defect, where the listing and the page
+     * remembered and the share card did not.
+     *
+     * The edit form is the one place that deliberately shows the raw name: somebody
+     * renaming their own schematic must see what they wrote, or saving would quietly
+     * destroy the colours they chose.
+     */
+    public function displayName(): string
+    {
+        return GameMarkup::strip((string) $this->name);
     }
 
     /** Everything it makes, one row each, indexed so the listing can search and rank on it. */

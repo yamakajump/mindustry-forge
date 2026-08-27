@@ -96,6 +96,37 @@ Piège coûteux : ajouter un pool PHP-FPM demande un `systemctl restart`, pas un
 `reload`. Un reload réutilise les sockets hérités, le nouveau pool n'apparaît
 jamais, et aucun message d'erreur ne le signale.
 
+## ⚖️ Le défaut qui revient : un chiffre juste, à côté de sa question
+
+Six fois le 27/08/2026, sous six visages différents, le même défaut. À chaque fois un
+nombre **exact**, calculé correctement, affiché à l'endroit qui pose une autre question.
+
+| Ce qui était juste | La question posée | Ce que ça donnait |
+|---|---|---|
+| le courant net | « laquelle produit le plus » | une usine classée derrière une schématique vide |
+| le plafond d'énergie | « combien elle mesure » | 480 mégawatts sur un plan que personne ne peut poser |
+| le débit d'un robinet de bac à sable | « que produit ce plan » | 36 millions d'eau par minute |
+| le plafond, rangé en mesure | « celles qui produisent le plus » | 3 364 schématiques classées sur ce qu'elles ne font pas |
+| la position relative d'un lien | « quel bloc relier » | une carte de cases vides |
+| le rapport d'aspect du panneau | « quelle taille faire le dessin » | des plans écrasés, d'autres hors cadre |
+
+Aucun n'était une erreur de calcul, et **aucun n'aurait été trouvé par un test qui vérifie
+un nombre**. Ils se voient en lisant la phrase autour, ou en ouvrant la page.
+
+**La règle** : avant d'afficher un chiffre, dire à voix haute la question à laquelle la
+surface prétend répondre. Si le chiffre répond à une question voisine, il est faux à cet
+endroit-là même s'il est vrai partout ailleurs. Un plafond ne s'affiche jamais sans dire
+qu'il en est un.
+
+**Et le corollaire, qui a coûté le sixième cas.** Une voie qui avait passé la journée à
+mesurer le travail des autres et à avoir raison trois fois a dessiné un carré à côté d'un
+fichier qu'elle avait elle-même écrit, qui disait disque. Sa conclusion :
+
+> Les trois fois où j'ai eu raison, je mesurais le travail d'un autre. Là où j'ai eu tort,
+> c'était le mien, et je n'ai rien mesuré du tout.
+
+Ce n'est pas de mesurer qu'on oublie. C'est de se mesurer soi.
+
 ## 📏 Conventions
 
 ### La langue : anglais dans le dépôt, français sur le site

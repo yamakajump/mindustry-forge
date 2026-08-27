@@ -68,28 +68,67 @@
   <div class="atelier">
     <div>
       <div id="editeur"></div>
+      <p class="lecture" id="lecture" aria-live="polite"></p>
+      <!-- Le geste courant d'abord, seul sur sa rangee. Dans le jeu on colle du code dans
+           un processeur : c'est ce que fait ce bouton, et c'est le seul qui n'oblige a
+           fabriquer une schematique autour de rien. -->
       <div class="row">
-        <button class="primary" id="copier" type="button">
+        <button class="primary" id="copier-code" type="button">
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/></svg>
-          <span data-i18n="outils.logique.copier">Copier la schematique</span>
+          <span data-i18n="outils.logique.copier-code">Copier le code</span>
         </button>
-        <button id="telecharger" type="button">
-          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 19h16"/></svg>
-          <span data-i18n="outils.logique.telecharger">Telecharger le .msch</span>
-        </button>
-        <button id="coller" type="button">
+        <button id="coller-code" type="button">
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3M4 12h16M8 16h8"/></svg>
-          <span data-i18n="outils.logique.coller">Coller une schematique</span>
+          <span data-i18n="outils.logique.coller-code">Coller du code</span>
         </button>
-        <label class="file">
-          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></svg>
-          <span data-i18n="outils.logique.importer">Ouvrir une schematique</span>
-          <input type="file" id="fichier" name="fichier" accept=".msch" aria-label="Ouvrir une schematique">
-        </label>
         <button id="exemple" type="button" data-i18n="outils.logique.exemple">
           Charger un exemple
         </button>
       </div>
+
+      <!-- La schematique ensuite, repliee. Elle sert a poser le processeur deja programme
+           dans une base ; c'est un besoin reel et ce n'est pas le premier. -->
+      <details class="par-schematique">
+        <summary data-i18n="outils.logique.par-schematique">
+          Passer par une schematique de processeur
+        </summary>
+        <p class="hint-line" data-i18n="outils.logique.par-schematique-aide">
+          Utile pour poser le processeur deja programme, avec ses liens, plutot que de
+          recopier le code dans un processeur que tu as deja construit.
+        </p>
+        <div class="row">
+          <button id="copier" type="button">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/></svg>
+            <span data-i18n="outils.logique.copier">Copier la schematique</span>
+          </button>
+          <button id="telecharger" type="button">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 19h16"/></svg>
+            <span data-i18n="outils.logique.telecharger">Telecharger le .msch</span>
+          </button>
+          <button id="coller" type="button">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3M4 12h16M8 16h8"/></svg>
+            <span data-i18n="outils.logique.coller">Coller une schematique</span>
+          </button>
+          <label class="file">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></svg>
+            <span data-i18n="outils.logique.importer">Ouvrir une schematique</span>
+            <input type="file" id="fichier" name="fichier" accept=".msch" aria-label="Ouvrir une schematique">
+          </label>
+        </div>
+
+        <h3 data-i18n="outils.logique.liens">Liens</h3>
+        <p class="hint-line" data-i18n="outils.logique.liens-aide">
+          Ce que le processeur pose dans la schematique sera relie a ces blocs. Le nom est
+          celui que le programme emploie, et les deux nombres disent de combien de cases le
+          bloc est a droite et au-dessus du processeur.
+        </p>
+        <ul class="liens" id="liens"></ul>
+        <div class="row">
+          <button id="ajouter-lien" type="button" data-i18n="outils.logique.lien-ajouter">
+            Ajouter un lien
+          </button>
+        </div>
+      </details>
       <p class="etat" id="etat" aria-live="polite"></p>
     </div>
 
@@ -99,26 +138,6 @@
         <select id="bloc" name="bloc" aria-label="Processeur"></select>
         <p class="mesures" id="mesures"></p>
         <p class="hint-line" id="rattrapage"></p>
-      </section>
-
-      <section class="card">
-        <h2 data-i18n="outils.logique.liens">Liens</h2>
-        <p class="hint-line" data-i18n="outils.logique.liens-aide">
-          Le nom est celui que le programme emploie, et les deux nombres disent ou se
-          trouve le bloc par rapport au processeur, en cases.
-        </p>
-        <div class="entetes" aria-hidden="true">
-          <span data-i18n="outils.logique.lien-nom">Nom</span>
-          <span data-i18n="outils.logique.lien-dx">Vers la droite</span>
-          <span data-i18n="outils.logique.lien-dy">Vers le haut</span>
-          <span></span>
-        </div>
-        <ul class="liens" id="liens"></ul>
-        <div class="row">
-          <button id="ajouter-lien" type="button" data-i18n="outils.logique.lien-ajouter">
-            Ajouter un lien
-          </button>
-        </div>
       </section>
 
       <section class="card">
@@ -135,6 +154,7 @@ import { loadCatalogue, catalogueOf } from "../forge/logic/catalogue.js";
 import { LogicEditor } from "../forge/logic/editor.js";
 import { toSchematic, toSchematicBytes, fromSchematic } from "../forge/logic/program.js";
 import { timingOf, ticksAsText, secondsAsText } from "../forge/logic/timing.js";
+import { readingOf } from "../forge/logic/reading.js";
 import { t, ready, translate } from "../forge/i18n.js";
 
 const $ = (id) => document.getElementById(id);
@@ -169,6 +189,18 @@ translate(document);
 let liens = LIENS_EXEMPLE.map((lien) => ({ ...lien }));
 
 const editeur = new LogicEditor($("editeur"), { onChange: rendre });
+
+/* La ligne du curseur, dite en clair. La forme que le jeu stocke place l'operateur avant
+   ses operandes, et personne ne la lit d'un coup d'oeil ; la lecture met le signe entre
+   les deux. Elle suit le curseur autant que la frappe, sinon elle parlerait de la ligne
+   precedente des qu'on monte d'un cran. */
+const direLaLigne = () => {
+  $("lecture").textContent = readingOf(editeur.statementAtCaret()) ?? "";
+};
+
+for (const quand of ["keyup", "click", "input"]) {
+  editeur.input.addEventListener(quand, direLaLigne);
+}
 
 for (const bloc of catalogue.processors) {
   if (bloc.world) continue;
@@ -288,6 +320,7 @@ function dessinerLiens() {
     item.className = "lien";
 
     const nom = champ("text", lien.name, t("outils.logique.lien-nom"), "", `lien-${index}-nom`);
+    nom.placeholder = t("outils.logique.lien-nom");
     nom.oninput = () => { lien.name = nom.value.trim(); majLiens(); };
 
     const dx = champ("text", lien.dx, t("outils.logique.lien-dx"), "pos", `lien-${index}-dx`);
@@ -343,6 +376,29 @@ const sortie = () => toSchematic({
   block: $("bloc").value,
   name: "programme",
 });
+
+/* Le geste que le jeu demande vraiment : dans Mindustry on ouvre un processeur et on
+   colle du code dedans. Aucun bouton ne le faisait, et les quatre qui existaient obligeaient
+   tous a fabriquer une schematique autour d'un seul bloc. */
+$("copier-code").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(editeur.value);
+    dire(t("outils.logique.code-copie"), "bien");
+  } catch (erreur) {
+    dire(erreur.message, "mal");
+  }
+};
+
+$("coller-code").onclick = async () => {
+  try {
+    const texte = await navigator.clipboard.readText();
+    if (!texte.trim()) return dire(t("outils.logique.presse-papiers-vide"), "mal");
+    editeur.value = texte;
+    dire(t("outils.logique.code-colle", { compte: editeur.report.statements.length }), "bien");
+  } catch (erreur) {
+    dire(erreur.message, "mal");
+  }
+};
 
 $("copier").onclick = async () => {
   try {

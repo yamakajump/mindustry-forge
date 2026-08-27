@@ -49,8 +49,8 @@ function assets() {
  * version of the game that is no longer ours, and a panel that stays empty tells a visitor
  * that the site is broken when it is the schematic that is.
  */
-async function plan(panel) {
-  const code = panel.dataset.code || "";
+async function plan(panel, fetched = null) {
+  const code = fetched ?? panel.dataset.code ?? "";
 
   /* An early return here left the panel showing "drawing the plan..." for ever, which is
      the one thing this whole change exists to stop: a panel that says something untrue and
@@ -95,26 +95,35 @@ async function plan(panel) {
   const box = bounds(parsed.tiles, sizeOf);
 
   const paint = () => {
-    /* The scale is derived from the height the panel has, not only from its width. The
-       renderer sizes a plan on its longest side, so a 5 by 13 schematic drawn 220 wide comes
-       out 570 tall, and a list gives its thumbnails 150.
+    const roomWide = Math.max(120, panel.clientWidth - PADDING);
+    const roomTall = panel.clientHeight;
 
-       `max-height: 100%` was tried first and does not work: measured in Chrome, a canvas in
-       a 150 pixel grid cell with that rule still computes to 195. The height is decided
-       here instead, where it can be. */
-    const room = Math.max(120, panel.clientWidth - PADDING);
-    const tall = panel.clientHeight;
-    const maxScale = tall > 0 ? Math.max(4, Math.floor(tall / box.height)) : 48;
+    draw(canvas, parsed.tiles, sizeOf, roleOf, {
+      width: roomWide,
+      maxScale: roomTall > 0 ? Math.max(4, Math.floor(roomTall / box.height)) : 48,
+      margin: 0,
+    });
 
-    draw(canvas, parsed.tiles, sizeOf, roleOf, { width: room, maxScale, margin: 0 });
-
-    /* A net, for the plans too tall for arithmetic to save: the renderer never goes below
-       eight pixels a tile, so anything past nineteen tiles high still overflows a 150 pixel
-       box. Fixing the height and freeing the width keeps the proportions, because a canvas
-       carries its ratio in its own attributes. */
-    if (tall > 0 && canvas.getBoundingClientRect().height > tall) {
-      canvas.style.height = `${tall}px`;
-      canvas.style.width = "auto";
+    /* Then made to fit, on both axes at once and with one factor.
+     *
+     * The renderer never draws a tile smaller than eight pixels, which is right on a page
+     * where the picture may scroll and wrong in a box that cannot: a 35 by 9 plan comes out
+     * 280 pixels wide inside a tile that has 220, whatever scale is asked for. Two of the
+     * twenty-four plans on the live list spilled over their neighbours that way.
+     *
+     * One factor for both dimensions is the whole point. Constraining the height alone,
+     * which is what this did first, squashes anything wider than it is tall. And the
+     * factor is applied to both styles rather than by setting one to `auto`: measured in
+     * Chrome, a canvas with `height` fixed and `width: auto` in a grid cell does not fall
+     * back on its own ratio the way a replaced element is supposed to. */
+    const shown = canvas.getBoundingClientRect();
+    if (shown.width > 0 && shown.height > 0) {
+      const fit = Math.min(1, roomWide / shown.width,
+        roomTall > 0 ? roomTall / shown.height : 1);
+      if (fit < 1) {
+        canvas.style.width = `${Math.round(shown.width * fit)}px`;
+        canvas.style.height = `${Math.round(shown.height * fit)}px`;
+      }
     }
   };
 
@@ -133,4 +142,33 @@ function fail(panel, message) {
 
 for (const panel of document.querySelectorAll("[data-code]")) {
   plan(panel);
+}
+
+/* Tiles whose code was too big to travel in the page ask for it themselves, and only when
+   they are about to be looked at. Fetching all of them on load would put back exactly the
+   weight the cap removed, on a visitor who may never scroll that far. */
+const waiting = document.querySelectorAll("[data-slug]");
+if (waiting.length) {
+  const fetchAndDraw = async (panel) => {
+    try {
+      const answer = await fetch(`/api/schematiques/${panel.dataset.slug}/code`);
+      if (!answer.ok) throw new Error(String(answer.status));
+      await plan(panel, (await answer.text()).trim());
+    } catch {
+      fail(panel, "Cette schematique n'a pas pu etre chargee.");
+    }
+  };
+
+  if (typeof IntersectionObserver === "function") {
+    const watcher = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        watcher.unobserve(entry.target);
+        fetchAndDraw(entry.target);
+      }
+    }, { rootMargin: "200px" });
+    for (const panel of waiting) watcher.observe(panel);
+  } else {
+    for (const panel of waiting) fetchAndDraw(panel);
+  }
 }

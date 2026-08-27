@@ -188,6 +188,54 @@ a.discord {
 a.discord:hover { background: var(--discord-hover); text-decoration: none; }
 
 main { max-width: 1120px; margin: 0 auto; padding: 24px; }
+
+/* ------------------------------------------------------------------------------------
+   L'accueil d'une page vide.
+
+   Ce qui suit ne se voit que tant que rien n'a ete analyse. La capture de Corentin du
+   27/08 montrait un champ de texte, quatre boutons, et deux mille pixels de noir dessous :
+   la page ne disait pas ce que fait l'outil, ne montrait aucun resultat, et ne laissait pas
+   deviner qu'il y a un catalogue derriere.
+
+   Le champ de collage ne bouge pas. C'est le geste principal et il etait deja bien place ;
+   ce qui manquait etait autour, pas a la place.
+   ------------------------------------------------------------------------------------ */
+
+.accroche { margin: 8px 0 20px; }
+.accroche h1 {
+  margin: 0 0 8px; font-size: 30px; line-height: 1.25; letter-spacing: .2px;
+}
+.accroche .lede { margin: 0; max-width: 62ch; color: var(--dim); font-size: 16px; }
+
+.accueil {
+  margin-top: 28px; padding-top: 24px; border-top: 2px solid var(--edge);
+  display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 28px;
+  align-items: start;
+}
+
+/* La capture est une preuve, pas une decoration : c'est un vrai rapport avec de vrais
+   chiffres. D'ou le cadre du site autour d'elle plutot qu'une ombre portee. */
+.apercu { margin: 0; }
+.apercu img {
+  display: block; width: 100%; height: auto;
+  border: 2px solid var(--edge); border-radius: var(--radius); background: var(--stage);
+}
+
+.accueil-mots h2 { margin: 0 0 10px; font-size: 19px; }
+.accueil-mots p { margin: 0 0 12px; color: var(--dim); }
+
+.porte { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.porte .dim { color: var(--dim); }
+.porte .button { text-decoration: none; }
+
+@media (max-width: 860px) {
+  /* Une colonne, et la capture passe en second : sur un telephone, la phrase qui dit
+     quoi faire vaut mieux en premier qu'une image qu'il faut agrandir pour lire. */
+  .accueil { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .apercu { order: 2; }
+  .accroche h1 { font-size: 24px; }
+  .accroche .lede { font-size: 15px; }
+}
 .flash {
   max-width: 1120px; margin: 16px auto 0; padding: 12px 16px;
   background: var(--bad-panel); border: 2px solid var(--bad); border-radius: var(--radius);
@@ -196,6 +244,13 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 
 .split { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 1fr); gap: 20px; }
 @media (max-width: 860px) { .split { grid-template-columns: minmax(0, 1fr); } }
+
+/* The plan's panel takes the height of the plan, not of the column beside it.
+   A grid item stretches by default, so a wide flat schematic left the panel as tall as the
+   report next to it: measured on a 35 by 9 plan, 792 pixels of panel for 117 pixels of
+   drawing, and 657 of emptiness underneath. Only the schematic page is concerned; the
+   analyser nests its own stage inside `.side`, so `>` leaves it alone. */
+.split > .stage { align-self: start; }
 
 .stage {
   background: var(--stage); border: 2px solid var(--edge); border-radius: var(--radius);

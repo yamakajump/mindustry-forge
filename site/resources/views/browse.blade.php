@@ -79,10 +79,13 @@
             @if(strlen($schematic->code) <= 16384)
               <div class="noimg" data-code="{{ $schematic->code }}">pas d'apercu</div>
             @else
-              <div class="noimg">apercu trop lourd pour la liste</div>
+              {{-- Past the cap the code is fetched instead of carried, and only once the
+                   tile comes into view. The bound is what protects a list that asked for
+                   none of this; a hole in the grid is not the price of keeping it. --}}
+              <div class="noimg" data-slug="{{ $schematic->slug }}">pas d'apercu</div>
             @endif
           @endif
-          <h3>{{ $schematic->name }}</h3>
+          <h3>{{ $schematic->displayName() }}</h3>
         </a>
         <p class="meta">
           {{-- Un robinet de bac a sable se dit ici aussi. Une vignette qui annonce
@@ -92,7 +95,8 @@
             <span class="warn">{{ __('schema.page.bac-a-sable-court') }}</span> &middot;
           @else
             @if($power > 0.5)
-              <span class="good">{{ number_format($power, 0, ',', ' ') }} energie/s</span> &middot;
+              <span class="good">{{ number_format($power, 0, ',', ' ') }} energie/s</span>
+              <span class="hint-line">{{ __('schema.page.au-mieux') }}</span> &middot;
             @endif
             @foreach(array_slice($schematic->produces ?? [], 0, 2, true) as $item => $itemRate)
               {{ number_format($itemRate, 0, ',', ' ') }} {{ $item }}/min &middot;

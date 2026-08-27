@@ -5,14 +5,21 @@ use App\Http\Controllers\BlockCardController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CompareController;
+use App\Http\Controllers\IconController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SocialCardController;
 use Illuminate\Support\Facades\Route;
 
 /*
- * The analyser itself is a static page and stays one: it needs no server, so it does not
- * get one. Everything here is what a server is actually for, which is remembering things
- * and letting other people see them.
+ * The analyser computes nothing on the server, and stays that way: the reading, the graph
+ * and the bottleneck all happen in the visitor's browser. Everything else here is what a
+ * server is actually for, which is remembering things and letting other people see them.
+ *
+ * It does go through PHP, though, and this line is the proof. An earlier wording said the
+ * page "needs no server, so it does not get one", which reads as a fact and is not one:
+ * Laravel boots on every hit of `/`, and the response carries a session cookie. Somebody
+ * planning work on the home page believed it, and weighed a cost that did not exist.
+ * A comment that states an intention in the present tense will be read as a measurement.
  */
 Route::get('/', fn () => response()->file(public_path('index.html')));
 
@@ -83,6 +90,17 @@ Route::get('/blocs/{name}', [BlockController::class, 'show']);
 /* The thumbnail the page above unfurls into. Two hundred and fifty-four pages all shared
    the site's generic image, so every block link looked like every other one. */
 Route::get('/blocs/{name}/carte.jpg', [BlockCardController::class, 'show']);
+
+/* One block's or one item's picture, for the pages that put names in a list. The sprite
+   sheet the analyser draws with weighs 1.28 MB; the same ten icons cut out weigh 8 kB.
+
+   Deliberately not under /forge/, where it would have been the obvious place. The vhost
+   serves that prefix as static files with `try_files $uri =404`, and the regex block above
+   it only rescues js, css and json: a .png that is not on disk would answer 404 in
+   production without ever reaching PHP, while working perfectly behind `artisan serve`,
+   which routes everything. */
+Route::get('/icone/{family}/{name}.png', [IconController::class, 'show'])
+    ->where('name', '[a-z0-9-]+');
 
 /* The string itself, so the analyser can pull one in from a shared link. Plain text and
    nothing else: this is a public schematic, and everything else about it is on its page. */
