@@ -14,7 +14,6 @@ uses(RefreshDatabase::class);
  * figures are bounded, the picture is checked for being a picture, and somebody else's
  * schematic stays somebody else's.
  */
-
 function analysis(array $extra = []): array
 {
     return array_merge([

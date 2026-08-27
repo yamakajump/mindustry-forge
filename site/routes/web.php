@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\SchematicController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +16,7 @@ Route::get('/auth/discord', [AuthController::class, 'start'])->name('login');
 Route::get('/auth/discord/callback', [AuthController::class, 'callback']);
 Route::post('/deconnexion', [AuthController::class, 'logout']);
 
-Route::get('/schematiques', [\App\Http\Controllers\BrowseController::class, 'index']);
+Route::get('/schematiques', [BrowseController::class, 'index']);
 Route::get('/s/{schematic}', [SchematicController::class, 'show']);
 
 /* The string itself, so the analyser can pull one in from a shared link. Plain text and

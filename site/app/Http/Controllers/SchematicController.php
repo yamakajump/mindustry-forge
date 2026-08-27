@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Schematic;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -136,7 +137,7 @@ class SchematicController extends Controller
     }
 
     /** The raw string, for the analyser's "analyse chez moi" link. */
-    public function code(Schematic $schematic): \Illuminate\Http\Response
+    public function code(Schematic $schematic): Response
     {
         abort_unless($schematic->visibleTo(auth()->user()), 404);
 
