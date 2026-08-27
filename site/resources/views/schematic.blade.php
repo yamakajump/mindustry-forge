@@ -29,15 +29,24 @@
   @if($schematic->managedBy(auth()->user()))
     <script src="/forge/manage.js" type="module" defer></script>
   @endif
+  @unless($preview)
+    <script src="/forge/apercu.js" type="module" defer></script>
+  @endunless
 @endpush
 
 @section('body')
 <div class="split">
-  <div class="stage">
+  {{-- A stored preview when the author's browser uploaded one while saving, and the plan
+       drawn here otherwise. Nothing imported has a stored preview: that PNG is made by the
+       browser of whoever saves their own work, and an import never goes down that path.
+       Drawing it from the code costs one sprite sheet and 126 ms, and needs nothing
+       backfilled for the fifteen thousand pages that had an empty panel. --}}
+  <div class="stage"
+       @unless($preview) data-code="{{ $schematic->code }}" @endunless>
     @if($preview)
       <img src="{{ $preview }}" alt="Apercu de {{ $schematic->name }}">
     @else
-      <p class="empty">Pas d'apercu enregistre.</p>
+      <p class="empty">Dessin du plan...</p>
     @endif
   </div>
 
