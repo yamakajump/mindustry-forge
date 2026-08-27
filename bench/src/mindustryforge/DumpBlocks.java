@@ -359,6 +359,22 @@ public class DumpBlocks {
                cost. A constructor's whole clock is the build time of whatever it was set
                to, so it has to be carried for every block and not only for the buildable
                ones. */
+            /* De quoi dessiner un bloc **en marche**, et pas seulement au repos.
+               Les couches animees ne se devinent pas au nom du fichier : `-glow` est
+               tantot une lueur rouge de four, tantot une lueur bleue d electrolyseur, et
+               la couleur vit dans le `DrawBlock` du bloc et nulle part ailleurs. Devinee,
+               elle est fausse la moitie du temps ; dumpee, elle est celle du jeu. */
+            Jval painted = drawersOf(block);
+            if (painted.asArray().size > 0) {
+                entry.put("drawers", painted);
+                /* La vitesse a laquelle une usine monte en regime. Elle ne change aucun
+                   debit - `getProgressIncrease` lit `edelta`, pas `warmup` - et elle est
+                   toute la difference entre une lueur qui s allume et une lueur qui claque
+                   d une image a l autre. */
+                if (block instanceof mindustry.world.blocks.production.GenericCrafter oven) {
+                    entry.put("warmup_speed", oven.warmupSpeed);
+                }
+            }
             entry.put("build_time", block.buildTime);
             /* Whether a beam stops at it. Only insulation stops one: a titanium wall does
                not, which is contrary to every instinct and is the game's rule. */
@@ -1496,6 +1512,101 @@ public class DumpBlocks {
      * drill is standing on. `itemDrop` and `liquidDrop` are what the game asks when a
      * drill or a pump looks down, so they are what gets asked here.
      */
+    /**
+     * La chaine de dessin d un bloc, a plat, reduite a ce qu un canvas sait refaire.
+     *
+     * <p>Le jeu empile des {@code DrawBlock} : une plaque, un rotor, une lueur additive qui
+     * pulse avec le warmup, une teinte de chaleur qui suit le {@code heatFrac}. Chacun porte
+     * ses propres constantes - couleur, echelle de pulsation, vitesse de rotation - et c est
+     * exactement ce qu un rendu fidele doit lire au lieu de le supposer.
+     *
+     * <p>Seuls les dessinateurs qui bougent sont dumpes. {@code DrawDefault} et compagnie ne
+     * disent rien qu une image fixe ne dise deja.
+     */
+    private static Jval drawersOf(Block block) {
+        Jval list = Jval.newArray();
+        if (!(block instanceof mindustry.world.blocks.production.GenericCrafter
+                || block instanceof mindustry.world.blocks.heat.HeatProducer
+                || block instanceof mindustry.world.blocks.heat.HeatConductor
+                || block instanceof mindustry.world.blocks.production.Separator
+                || block instanceof mindustry.world.blocks.power.PowerGenerator)) {
+            return list;
+        }
+        mindustry.world.draw.DrawBlock drawer = drawerField(block);
+        if (drawer == null) return list;
+        flatten(drawer, list);
+        return list;
+    }
+
+    /** Le champ {@code drawer}, qui n est declare que sur certaines familles de blocs. */
+    private static mindustry.world.draw.DrawBlock drawerField(Block block) {
+        try {
+            java.lang.reflect.Field field = block.getClass().getField("drawer");
+            Object value = field.get(block);
+            return value instanceof mindustry.world.draw.DrawBlock painted ? painted : null;
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            return null;
+        }
+    }
+
+    private static void flatten(mindustry.world.draw.DrawBlock drawer, Jval list) {
+        if (drawer instanceof mindustry.world.draw.DrawMulti many) {
+            for (mindustry.world.draw.DrawBlock one : many.drawers) flatten(one, list);
+            return;
+        }
+        Jval one = Jval.newObject();
+        if (drawer instanceof mindustry.world.draw.DrawGlowRegion glow) {
+            one.put("kind", "glow");
+            one.put("suffix", glow.suffix);
+            one.put("color", hex(glow.color));
+            one.put("alpha", glow.alpha);
+            one.put("scale", glow.glowScale);
+            one.put("intensity", glow.glowIntensity);
+            one.put("rotate_speed", glow.rotateSpeed);
+        } else if (drawer instanceof mindustry.world.draw.DrawHeatRegion heat) {
+            one.put("kind", "heat");
+            one.put("suffix", heat.suffix);
+            one.put("color", hex(heat.color));
+            one.put("alpha", heat.color.a);
+            one.put("pulse", heat.pulse);
+            one.put("scale", heat.pulseScl);
+        } else if (drawer instanceof mindustry.world.draw.DrawHeatOutput out) {
+            one.put("kind", "heat");
+            one.put("suffix", "-heat");
+            one.put("color", hex(out.heatColor));
+            one.put("alpha", out.heatColor.a);
+            one.put("pulse", out.heatPulse);
+            one.put("scale", out.heatPulseScl);
+        } else if (drawer instanceof mindustry.world.draw.DrawRegion turned
+                && turned.rotateSpeed != 0f) {
+            one.put("kind", "rotator");
+            one.put("suffix", turned.suffix);
+            one.put("rotate_speed", turned.rotateSpeed);
+        } else if (drawer instanceof mindustry.world.draw.DrawLiquidRegion wet) {
+            one.put("kind", "liquid");
+            one.put("suffix", wet.suffix);
+            if (wet.drawLiquid != null) one.put("liquid", wet.drawLiquid.name);
+        } else if (drawer instanceof mindustry.world.draw.DrawLiquidTile tile) {
+            one.put("kind", "liquid");
+            one.put("suffix", "-liquid");
+            if (tile.drawLiquid != null) one.put("liquid", tile.drawLiquid.name);
+        } else if (drawer instanceof mindustry.world.draw.DrawFlame flame) {
+            one.put("kind", "flame");
+            one.put("color", hex(flame.flameColor));
+            one.put("radius", flame.flameRadius);
+            one.put("scale", flame.flameRadiusScl);
+            one.put("magnitude", flame.flameRadiusMag);
+        } else {
+            return;
+        }
+        list.asArray().add(one);
+    }
+
+    /** Une couleur du jeu, en `#rrggbb`, parce que c est ce qu un canvas comprend. */
+    private static String hex(arc.graphics.Color colour) {
+        return "#" + colour.toString().substring(0, 6);
+    }
+
     private static void describeFloor(Block block, Jval entry) {
         /* A static wall that drops something, which is Erekir's whole ore economy: there
            are no patches on the ground there, the ore is in the cliffs and a plasma bore

@@ -175,6 +175,11 @@ const crafter = {
     if (block.heat_requirement) build.state.heat = heatReaching(build);
 
     const efficiency = efficiencyOf(build, step);
+    /* Retenu, pas seulement calcule. Rien dans le moteur ne le relit - une usine avance sur
+       `edelta` et pas sur son regime - mais le rendu en a besoin : `warmup` monte vers lui,
+       et c est `warmup` qui allume la lueur d un four. Un enregistrement, pas un
+       comportement. */
+    build.state.efficiency = efficiency;
 
     if (efficiency > 0) {
       /* Two boosts that look alike and are not.
