@@ -269,6 +269,18 @@ select {
 /* The card that asks where a schematic plugs in. Marked out, because everything below it
    is waiting on the answer and a card that looks like the others reads as a result. */
 .card.ask { border-color: var(--accent); }
+
+/* Where a schematic came from, when it did not come from here. Set apart in the warning
+   colour and not in the error one: an imported schematic is not a problem, it is a thing
+   the reader has to know before trusting anything under it. Muted text on purpose, so it
+   reads as a note about the page rather than as a result the page produced. */
+.card.notice { border-color: var(--warn); }
+.card.notice p { margin: 0 0 8px; color: var(--dim); font-size: 13.5px; line-height: 1.5; }
+.card.notice p:last-child { margin-bottom: 0; }
+.card.notice a { color: var(--warn); }
+
+/* The same fact, compressed to one word for a list of a hundred tiles. */
+.from { color: var(--warn); opacity: .85; cursor: help; }
 .card.ask h2 { color: var(--accent); }
 .card.ask.waiting { border-color: var(--good); }
 

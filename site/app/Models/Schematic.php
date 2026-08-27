@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\EngineVersion;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,10 +34,49 @@ class Schematic extends Model
 
     public const VISIBILITIES = [self::PRIVATE, self::UNLISTED, self::PUBLIC];
 
+    /**
+     * Where a schematic came from.
+     *
+     * Most of what this site will hold was not posted here, and pretending otherwise would
+     * be the one thing that turns an aggregator into a theft. The origin travels with the
+     * row and it is shown on the page.
+     */
+    public const UPLOAD = 'upload';
+
+    public const MINDUSTRY_TOOL = 'mindustry-tool';
+
+    public const MINDUSTRY_SCHEMATICS = 'mindustryschematics';
+
+    /** What each source is called out loud, and where a schematic of theirs lives. */
+    private const SOURCES = [
+        self::MINDUSTRY_TOOL => [
+            'name' => 'mindustry-tool.com',
+            'page' => 'https://mindustry-tool.com/schematics/%s',
+        ],
+        self::MINDUSTRY_SCHEMATICS => [
+            'name' => 'mindustryschematics.com',
+            'page' => 'https://mindustryschematics.com/schematics/%s',
+        ],
+    ];
+
     protected $fillable = [
         'user_id', 'slug', 'name', 'description', 'code', 'visibility',
         'analysis', 'width', 'height', 'blocks', 'power_made', 'power_used',
         'produces', 'needs',
+        'source', 'source_id', 'author', 'fetched_at', 'source_meta',
+        'analysed_at', 'engine_version',
+    ];
+
+    /**
+     * The column default, repeated where the model can see it.
+     *
+     * A database default only applies on the way in, so a schematic that had just been
+     * built and not read back had a null `source` and cheerfully reported itself as
+     * imported. The origin has to be right on an object nobody has saved yet, because that
+     * is the object the upload route works with.
+     */
+    protected $attributes = [
+        'source' => self::UPLOAD,
     ];
 
     protected $casts = [
@@ -44,6 +84,9 @@ class Schematic extends Model
         'analysis' => 'array',
         'produces' => 'array',
         'needs' => 'array',
+        'source_meta' => 'array',
+        'fetched_at' => 'datetime',
+        'analysed_at' => 'datetime',
     ];
 
     /** In the public list. Unlisted schematics are reachable and not listed. */
@@ -52,11 +95,19 @@ class Schematic extends Model
         return $query->where('visibility', self::PUBLIC);
     }
 
-    /** Whether this user may open its page at all. */
+    /**
+     * Whether this user may open its page at all.
+     *
+     * The null check on `user_id` is not decoration. Imported schematics have no account
+     * here, and they land private until the catalogue is deliberately published; without
+     * it, a private import (`user_id` null) compared against a signed-out visitor
+     * (`$user?->id` null) matched, and the entire unpublished catalogue was readable by
+     * anybody not logged in. Nullable columns compare equal to absent users.
+     */
     public function visibleTo(?User $user): bool
     {
         return $this->visibility !== self::PRIVATE
-            || $this->user_id === $user?->id
+            || ($this->user_id !== null && $this->user_id === $user?->id)
             || (bool) $user?->moderator;
     }
 
@@ -75,6 +126,71 @@ class Schematic extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** Whether it was collected from somewhere else rather than posted here. */
+    public function imported(): bool
+    {
+        return $this->source !== self::UPLOAD;
+    }
+
+    /**
+     * Who to credit, whoever they are and wherever they posted.
+     *
+     * A member's name, or the name the source recorded, or an admission. The admission
+     * matters: some entries on both catalogues have no author recorded at all, and writing
+     * "anonyme" is honest where quietly printing nothing reads like the site claiming it.
+     */
+    public function credit(): string
+    {
+        return $this->user?->name
+            ?? ($this->author !== null && trim($this->author) !== ''
+                ? $this->author
+                : 'auteur inconnu');
+    }
+
+    /** What the source is called out loud, for a page that has to name it. */
+    public function sourceName(): ?string
+    {
+        return self::SOURCES[$this->source]['name'] ?? null;
+    }
+
+    /**
+     * The schematic's own page at the source it came from.
+     *
+     * A credit that cannot be followed is not a credit. Both patterns were checked against
+     * the live sites rather than guessed: mindustry-tool answers a redirect to its locale
+     * from the bare path, so the bare path is what is stored here and it survives them
+     * changing locales.
+     */
+    public function sourceUrl(): ?string
+    {
+        $page = self::SOURCES[$this->source]['page'] ?? null;
+
+        return $page !== null && $this->source_id !== null
+            ? sprintf($page, rawurlencode($this->source_id))
+            : null;
+    }
+
+    /**
+     * Whether the stored figures came out of an engine that no longer exists.
+     *
+     * A schematic analysed before this column existed answers true, because nothing
+     * recorded which engine produced its numbers and a site selling measurements does not
+     * get to assume.
+     */
+    public function analysisIsStale(): bool
+    {
+        return $this->engine_version !== EngineVersion::current();
+    }
+
+    /** What the re-analysis pass reaches for: everything the current engine has not seen. */
+    public function scopeStale($query)
+    {
+        return $query->where(fn ($q) => $q
+            ->where('engine_version', '!=', EngineVersion::current())
+            ->orWhereNull('engine_version'))
+            ->orderByRaw('analysed_at is not null, analysed_at asc');
     }
 
     public function getRouteKeyName(): string
@@ -124,7 +240,13 @@ class Schematic extends Model
 
         $power = (array) ($analysis['potential'] ?? []);
 
+        // Stamped here rather than by each caller. Every route that takes an analysis in
+        // goes through this method, so this is the one place that cannot be forgotten, and
+        // a figure stored without knowing which engine produced it is a figure this site
+        // has no business calling measured.
         return [
+            'analysed_at' => now(),
+            'engine_version' => EngineVersion::current(),
             'width' => min(4096, max(0, (int) ($analysis['width'] ?? 0))),
             'height' => min(4096, max(0, (int) ($analysis['height'] ?? 0))),
             'blocks' => min(65535, max(0, (int) ($analysis['blocks'] ?? 0))),
