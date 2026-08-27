@@ -113,11 +113,17 @@ d'écrire la migration**, parce que ça touche un schéma que d'autres chantiers
 
 ## A5. Le wiki des blocs
 
-`blocks.json` porte 253 blocs avec leurs vrais chiffres, extraits du jeu par le banc, pas
+`blocks.json` porte 395 blocs avec leurs vrais chiffres, extraits du jeu par le banc, pas
 recopiés d'un wiki. Une page par bloc : recette, débit, consommation, portée, ce qui
 l'alimente, ce qu'il alimente, et les schématiques du catalogue qui l'utilisent.
 
 Leur wiki est rédigé à la main. Celui-ci se régénère à chaque version du jeu.
+
+**254 pages, pas 395.** Sur les 395 entrées, 141 sont marquées `hidden` : des blocs
+internes, sols et superpositions, sans recette ni intérêt pour un joueur. Cent quarante et
+une pages vides seraient du contenu mince, que le référencement punit au lieu d'ignorer.
+Les 18 conditionnels (`sandboxOnly`, `debugOnly`, `campaignOnly`) sont publiés avec la
+mention de leur condition.
 
 - **Possède** : routes `/blocs`, ses vues, un service de lecture du catalogue.
 - **Dépend de** : rien.
@@ -330,6 +336,11 @@ Relevé en demandant à chaque session, pas en devinant.
 | Moteur de simulation | la même, tant qu'elle porte des comportements | `site/public/forge/engine/**` |
 | Mode édition | terminé, plus personne | `site/public/forge/editor/`, `tests/js/editor/`, `docs/audit-pose.md`, `docs/plan-edition.md` |
 | Place de marché, Laravel, déploiement | le pilote | `site/app/**`, vues Blade, migrations, `deployment/` |
+| Socle multilingue puis nav | `feat/i18n-nav` | `site/lang/`, `i18n.js`, `layout.blade.php`, la nav de `index.html`, le header de `forge.css` |
+| Wiki des blocs | `feat/wiki-blocs` | routes `/blocs`, ses vues, son service de catalogue, `schematic_blocks` |
+| Éditeur de logique | `feat/editeur-logique` | `logic.js` et ses modules d'édition, sa page |
+| Collecteur | `feat/collecteur` | `site/app/Console/Commands/`, son script Node |
+| Direction artistique | `feat/direction-artistique` | logo, favicons, image OG, manifest. **Pas** `:root` ni le head tant que la nav est en cours |
 
 Deux règles nées de la journée :
 
@@ -337,11 +348,43 @@ Deux règles nées de la journée :
 sont des artefacts générés**, par `tools/build_catalogue.py` et `tools/build_sprites.py`.
 Personne ne les édite à la main. La session qui change un générateur régénère.
 
-**Deux pièges relevés par la voie édition**, qui coûteront une demi-journée à qui les
-redécouvre : MySQL réordonne les clés d'un objet JSON et SQLite non, donc un test qui
-compare un ordre passe en local et casse en CI ; et le serveur de développement doit
-envoyer `no-store`, sinon le navigateur sert un fichier périmé et on débogue du code déjà
-corrigé.
+## Les pièges déjà payés
+
+Chacun a coûté du temps à quelqu'un. Les relire vaut mieux que les redécouvrir.
+
+**MySQL réordonne les clés d'un objet JSON, SQLite non.** Un test qui compare un ordre
+passe en local et casse en CI.
+
+**Le serveur de développement doit envoyer `no-store`**, sinon le navigateur sert un
+fichier périmé et on débogue du code déjà corrigé.
+
+**Le répertoire du shell est réinitialisé après chaque commande** dans les sessions de
+travail. Préfixer chaque commande par son `cd`. Un `cd` fait une seule fois renvoie la
+commande suivante dans le répertoire principal partagé, ce qui est exactement ce que les
+worktrees existent pour empêcher. Les chaînes `cd X && a && b` restent sûres, c'est un seul
+shell.
+
+**`consumes_power` peut valoir vrai sans aucune consommation.** La presse à graphite est
+mécanique dans le jeu. Se fier à la présence de `power` et `power_out`, jamais au booléen.
+
+**Le champ `range` de `blocks.json` mélange deux unités**, et rien ne le signale. Il est en
+cases pour les ponts, les nœuds à faisceau, les foreuses à plasma, les propulseurs de masse
+et les projecteurs de surcharge ; en unités monde, huit par case, pour toutes les tourelles,
+les répareurs et les tours de choc. `DumpBlocks.java` divise par huit à trois endroits et
+recopie le champ brut ailleurs, parce que dans le jeu `ItemBridge.range` est un entier de
+cases et `BaseTurret.range` un flottant de distance. Le nombre seul ne permet pas de
+trancher : le 4 d'un pont et le 40 d'un répareur sont plausibles dans les deux unités.
+
+Le vrai correctif est dans le dumper, qui doit écrire l'unité à côté de la valeur ou tout
+ramener en cases. **Personne ne tient le dumper depuis la fin de la voie rendu** : c'est un
+petit chantier à part, à prendre par qui régénérera le catalogue.
+
+**Le débit d'un bloc dans le catalogue est un plafond nominal, pas une mesure.** C'est ce
+qu'il ferait alimenté à fond, seul, sans goulot. Le chiffre que le reste du site présente
+comme mesuré vient du solveur, alimentation et boost compris, et il est souvent plus bas.
+Une page qui affiche les deux de la même façon reproduit exactement l'erreur du classement
+par énergie nette, corrigée le 27/08 : présenter comme une mesure ce qui n'en est pas une,
+sur le seul site qui vend des mesures.
 
 # L'état des branches
 
