@@ -1373,10 +1373,14 @@ const laserTurret = {
     const block = build.block;
     if (build.state.reload <= 0) return;
 
+    /* In float, like the rest of the game: the counter this is racing is a float and the
+       last drink before it stops is decided by a comparison against it. Half a unit of
+       water, once, over a thirty second run. */
     const held = build.liquids.currentAmount;
-    const used = Math.min(held, block.coolant_amount || 0) * build.delta(step);
+    const used = Math.fround(Math.min(held, block.coolant_amount || 0) * build.delta(step));
     if (used <= 0) return;
-    build.state.reload -= used * (block.coolant_worth?.[build.liquids.current] || 0);
+    build.state.reload = Math.fround(build.state.reload
+      - Math.fround(used * (block.coolant_worth?.[build.liquids.current] || 0)));
     build.liquids.remove(build.liquids.current, used);
   },
 };

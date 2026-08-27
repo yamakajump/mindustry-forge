@@ -114,6 +114,16 @@ export class Held {
  * and the boost on both burst drills, all of which want two liquids at once: an oil
  * extractor drinks water and makes oil, and with one slot it could do neither.
  */
+/**
+ * A single precision float, which is what every number in the game is.
+ *
+ * The port counts in double and the game in float, and most of the time nothing turns on
+ * it. Three places it does: a counter compared against a threshold, an accumulator compared
+ * against one, and a liquid amount, which is not compared against anything but is handed on
+ * as a fraction of itself sixty times a second until the difference is a whole unit.
+ */
+const f32 = Math.fround;
+
 export class Liquids {
   constructor() {
     this.amounts = new Map();
@@ -131,9 +141,13 @@ export class Liquids {
     return sum;
   }
 
+  /* Stored in **float**, because `LiquidModule` is a `float[]`. A tank does not hold a
+     rounder number in double, it holds a slightly different one, and the difference
+     compounds: a pipe hands over a fraction of what it holds sixty times a second, so by
+     the end of a run the two engines are a whole unit apart on a gradient. */
   add(liquid, amount) {
     if (amount <= 0) return 0;
-    this.amounts.set(liquid, this.get(liquid) + amount);
+    this.amounts.set(liquid, Math.fround(this.get(liquid) + amount));
     this.current = liquid;
     return amount;
   }
@@ -142,7 +156,7 @@ export class Liquids {
   remove(liquid, amount) {
     const taken = Math.min(this.get(liquid), amount);
     if (taken <= 0) return 0;
-    this.amounts.set(liquid, this.get(liquid) - taken);
+    this.amounts.set(liquid, Math.fround(this.get(liquid) - taken));
     this.current = liquid;
     return taken;
   }
@@ -336,7 +350,7 @@ export class Build {
    */
   addLiquid(liquid, amount) {
     // The cap is per liquid, as the game's is: `liquidCapacity - liquids.get(liquid)`.
-    const room = Math.max(0, this.liquidCapacity - this.liquids.get(liquid));
+    const room = Math.max(0, f32(this.liquidCapacity - this.liquids.get(liquid)));
     return this.liquids.add(liquid, Math.min(room, amount));
   }
 
@@ -403,12 +417,16 @@ export class Build {
     const held = this.liquids.get(liquid);
     if (held <= 0) return 0;
 
+    /* Every step in **float**, because every step of the game's is. A pipe hands over a
+       fraction of a fraction sixty times a second and the rounding compounds: measured on a
+       meltdown draining a tank, the two engines ended a run a whole unit apart. */
     const theirs = next.liquids.get(liquid);
-    const ofract = theirs / (next.block.liquid_capacity || 10);
-    const fract = held / this.liquidCapacity * (this.block.liquid_pressure ?? 1);
+    const ofract = f32(theirs / (next.block.liquid_capacity || 10));
+    const fract = f32(f32(held / this.liquidCapacity) * (this.block.liquid_pressure ?? 1));
 
-    let flow = Math.min(Math.max(0, Math.min(1, fract - ofract)) * this.liquidCapacity, held);
-    flow = Math.min(flow, (next.block.liquid_capacity || 10) - theirs);
+    let flow = Math.min(
+      f32(Math.max(0, Math.min(1, f32(fract - ofract))) * this.liquidCapacity), held);
+    flow = Math.min(flow, f32((next.block.liquid_capacity || 10) - theirs));
 
     if (flow > 0 && ofract <= fract && next.acceptLiquid(this, liquid)) {
       const taken = next.addLiquid(liquid, flow);
@@ -443,10 +461,11 @@ export class Build {
       other = other.liquidDestination?.(this, liquid);
       if (!other || !other.block.has_liquids || !other.liquids) continue;
       if (!this.canDumpLiquid(other, liquid)) continue;
-      const ofract = other.liquids.get(liquid) / (other.block.liquid_capacity || 10);
-      const fract = this.liquids.get(liquid) / this.liquidCapacity;
+      const ofract = f32(other.liquids.get(liquid) / (other.block.liquid_capacity || 10));
+      const fract = f32(this.liquids.get(liquid) / this.liquidCapacity);
       if (ofract < fract) {
-        this.transferLiquid(other, (fract - ofract) * this.liquidCapacity / scaling, liquid);
+        this.transferLiquid(
+          other, f32(f32(f32(fract - ofract) * this.liquidCapacity) / scaling), liquid);
       }
     }
   }
@@ -458,8 +477,8 @@ export class Build {
   }
 
   transferLiquid(next, amount, liquid) {
-    const flow = Math.min((next.block.liquid_capacity || 10) - next.liquids.get(liquid),
-                          amount);
+    const flow = Math.min(
+      f32((next.block.liquid_capacity || 10) - next.liquids.get(liquid)), amount);
     if (next.acceptLiquid(this, liquid)) {
       next.liquids.add(liquid, flow);
       this.liquids.remove(liquid, flow);
