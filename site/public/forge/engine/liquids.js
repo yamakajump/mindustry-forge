@@ -273,8 +273,24 @@ const solidPump = {
   },
 };
 
+/**
+ * The sandbox liquid drain.
+ *
+ * `addLiquid` rather than a counter, then thrown away: what matters for a measurement is
+ * that the pipe in front of it never backs up.
+ */
+const liquidVoid = {
+  begin(build) { build.state.voided = 0; },
+  acceptLiquid() { return true; },
+  update(build) {
+    build.state.voided += build.liquids.total;
+    build.liquids.clear();
+  },
+};
+
 export const LIQUIDS = {
   conduit,
+  void: liquidVoid,
   "solid-pump": solidPump,
   "liquid-span": liquidSpan,
   router: liquidRouter,
