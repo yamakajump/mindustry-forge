@@ -142,6 +142,27 @@
       </div>
     @endif
 
+    {{-- Ce qu'elle coute a poser.
+
+         Le chiffre vient de l'analyse, qui le tient de `Block.requirements` : c'est ce que
+         le jeu retire du noyau, a l'unite pres. Range dans l'ordre des identifiants
+         d'objets du jeu, celui que le joueur lit sur tous les panneaux, et pas dans l'ordre
+         alphabetique qui mettrait le beryllium en tete d'une construction de Serpulo.
+
+         L'icone est decorative : le nom est ecrit a cote, et un lecteur d'ecran qui entend
+         « copper copper » n'apprend rien. --}}
+    @if($schematic->cost() !== [])
+      <div class="card"><h2>{{ __('schema.page.cout') }}</h2>
+        @foreach($schematic->cost() as $item => $amount)
+          <div class="line">
+            <span><img src="/icone/objet/{{ $item }}.png?t=32" width="16" height="16"
+                       alt="" loading="lazy"> {{ $item }}</span>
+            <span class="num">{{ number_format($amount, 0, ',', ' ') }}</span></div>
+        @endforeach
+        <p class="hint-line">{{ __('schema.page.cout-aide') }}</p>
+      </div>
+    @endif
+
     {{-- Ce qu'il faut lui amener pour qu'elle tourne.
          L'electricite y figure au meme titre que le charbon, et c'est nouveau : la page
          ne parlait d'energie que lorsqu'il y en avait en trop, donc une chaine a silicium
