@@ -209,12 +209,50 @@ it('dit la meme chose que le dictionnaire du navigateur la ou les deux parlent',
     }
 });
 
-it('tourne en francais meme sans fichier .env', function () {
-    /* Le .env n est pas versionne. Si la valeur par defaut de config/app.php restait `en`,
-       la CI et les tests tourneraient dans une langue sans dictionnaire, et tout le monde
-       verrait des cles brutes en integration sans comprendre pourquoi. */
+it('tourne en francais ici et maintenant', function () {
+    /* La valeur effective, celle qui decide de ce qu un lecteur voit. Elle a deja servi :
+       le script qui monte les worktrees recopiait un `.env` anterieur au socle, et les sept
+       dossiers travaillaient en `en` sans que personne le sache. */
     expect(config('app.locale'))->toBe('fr');
     expect(config('app.fallback_locale'))->toBe('fr');
+});
+
+it('tomberait sur le francais meme sans fichier .env', function () {
+    /* L autre moitie, et celle que le nom du test ci-dessus promettait sans la tenir. Un
+       `.env` present impose sa valeur, donc lire `config()` ne dit rien du defaut ecrit
+       dans le fichier. Or c est ce defaut, et lui seul, qui protege la CI et le serveur de
+       production, ou aucun `.env` de developpement ne traine.
+
+       La variable est donc retiree des trois endroits ou `env()` va la chercher, le temps
+       de relire le fichier de configuration. */
+    $before = [$_ENV['APP_LOCALE'] ?? null, $_SERVER['APP_LOCALE'] ?? null, getenv('APP_LOCALE')];
+    unset($_ENV['APP_LOCALE'], $_SERVER['APP_LOCALE']);
+    putenv('APP_LOCALE');
+
+    try {
+        $bare = require config_path('app.php');
+    } finally {
+        [$env, $server, $put] = $before;
+        if ($env !== null) {
+            $_ENV['APP_LOCALE'] = $env;
+        }
+        if ($server !== null) {
+            $_SERVER['APP_LOCALE'] = $server;
+        }
+        if ($put !== false) {
+            putenv("APP_LOCALE={$put}");
+        }
+    }
+
+    expect($bare['locale'])->toBe('fr', 'config/app.php doit porter le francais lui-meme');
+    expect($bare['fallback_locale'])->toBe('fr');
+});
+
+it('remet la variable d environnement comme elle etait', function () {
+    /* Le test precedent demonte l environnement du processus. S il le remontait mal, il
+       laisserait les tests suivants dans une autre langue, et le rapport designerait
+       n importe qui sauf lui. */
+    expect(config('app.locale'))->toBe('fr');
 });
 
 it('garde les unites en mots nus, pour qu un chiffre ne disparaisse jamais', function () {
