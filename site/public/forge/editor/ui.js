@@ -216,3 +216,78 @@ export function sizeGauge(host, MAX_SIZE) {
     host.classList.toggle("full", worst >= MAX_SIZE);
   };
 }
+
+
+/**
+ * La liste des raccourcis, aux touches du jeu.
+ *
+ * Relevée dans `Binding` de la v159.7, et pas choisie. Un joueur qui arrive ici a déjà ces
+ * gestes dans les doigts : lui en imposer d'autres, ce serait lui demander de désapprendre
+ * les siens pour se servir d'un outil qui parle de son jeu.
+ *
+ * Les trois seuls écarts sont listés à part et chacun a sa raison. Un panneau d'aide qui
+ * cache ses divergences est un panneau qui ment.
+ */
+const SHORTCUTS = [
+  ["Bâtir", [
+    ["clic gauche", "poser"],
+    ["glisser", "tracer une ligne, ou remplir une zone"],
+    ["molette", "tourner ce qu'on tient"],
+    ["ctrl", "placement diagonal, en escalier"],
+    ["clic droit", "casser"],
+    ["clic droit glissé", "casser une zone"],
+    ["clic milieu", "reprendre le bloc visé, avec sa rotation"],
+    ["R tenu + molette", "tourner un bloc déjà posé"],
+    ["échap", "reposer ce qu'on tient"],
+  ]],
+  ["Sélection", [
+    ["F + glisser", "sélectionner une zone"],
+    ["glisser dedans", "la déplacer"],
+    ["Z", "miroir gauche-droite"],
+    ["X", "miroir haut-bas"],
+    ["ctrl+C", "copier, collable dans le jeu"],
+    ["ctrl+V", "coller, y compris depuis le jeu"],
+    ["suppr", "supprimer"],
+  ]],
+  ["Vue et historique", [
+    ["molette, main vide", "zoomer"],
+    ["ctrl+molette", "zoomer même en tenant un bloc"],
+    ["clic milieu glissé", "déplacer la vue"],
+    ["espace + glisser", "déplacer la vue"],
+    ["ctrl+Z", "annuler"],
+    ["ctrl+Y", "refaire"],
+  ]],
+];
+
+/** Ce qui diffère du jeu, et pourquoi. Dit plutôt que caché. */
+const DIVERGENCES = [
+  ["La molette zoome aussi", "le jeu la réserve à la rotation et suit le joueur du regard ; "
+    + "ici il n'y a personne à suivre, donc elle zoome dès qu'on n'a rien en main"],
+  ["Déplacer la vue", "le jeu n'en a pas besoin, sa caméra suit le joueur"],
+  ["Q ne fait rien", "le jeu s'en sert pour vider la file de construction, et il n'y a "
+    + "pas de file ici"],
+];
+
+export function showHelp(host) {
+  const already = host.querySelector(".editor-help");
+  if (already) return already.remove();
+
+  const panel = document.createElement("div");
+  panel.className = "editor-help";
+  panel.innerHTML = `
+    <div class="sheet">
+      <h2>Les raccourcis, comme dans le jeu</h2>
+      ${SHORTCUTS.map(([title, rows]) => `<section><h3>${escape(title)}</h3>
+        ${rows.map(([keys, what]) => `<div class="row">
+          <kbd>${escape(keys)}</kbd><span>${escape(what)}</span></div>`).join("")}
+      </section>`).join("")}
+      <section class="apart"><h3>Les trois écarts, et pourquoi</h3>
+        ${DIVERGENCES.map(([what, why]) => `<div class="row">
+          <b>${escape(what)}</b><span>${escape(why)}</span></div>`).join("")}
+      </section>
+      <button type="button" class="primary">Fermer</button>
+    </div>`;
+  panel.querySelector("button").onclick = () => panel.remove();
+  panel.onclick = (event) => { if (event.target === panel) panel.remove(); };
+  host.appendChild(panel);
+}

@@ -422,6 +422,9 @@ select {
 
 .editor-stage { grid-area: stage; position: relative; overflow: hidden; }
 .editor-stage canvas { display: block; image-rendering: pixelated; cursor: crosshair; }
+/* Le plateau prend le focus au clic pour que les raccourcis marchent, mais il n'a pas a
+   porter le liseré d'un champ de formulaire : c'est une surface de dessin, pas une saisie. */
+.editor-stage canvas:focus, .editor-stage canvas:focus-visible { outline: none; }
 
 /* La raison d'un refus, sous le curseur et nulle part ailleurs. Un bandeau en haut de page
    serait lu une fois puis jamais, et une notification empilée serait un journal d'erreurs
@@ -478,4 +481,36 @@ select {
 }
 .editor-pick button {
   min-height: 30px; padding: 0 10px; font-size: 12.5px; border-width: 1px;
+}
+
+/* Le panneau des raccourcis. Il dit aussi ce qui diffère du jeu : un panneau d'aide qui
+   cache ses divergences est un panneau qui ment. */
+.editor-help {
+  position: fixed; inset: 0; z-index: 70; display: grid; place-items: center;
+  background: rgba(9, 11, 14, .72); padding: 24px;
+}
+.editor-help .sheet {
+  background: var(--panel); border: 2px solid var(--edge); border-radius: var(--radius);
+  padding: 20px 24px; max-width: 720px; max-height: 88vh; overflow: auto;
+}
+.editor-help h2 { margin: 0 0 4px; font-size: 17px; color: var(--accent); }
+.editor-help h3 {
+  margin: 18px 0 8px; font-size: 12px; letter-spacing: .8px; color: var(--dim);
+  text-transform: uppercase;
+}
+.editor-help .row {
+  display: grid; grid-template-columns: 160px 1fr; gap: 12px; align-items: baseline;
+  margin: 0 0 5px; font-size: 13.5px;
+}
+.editor-help kbd {
+  background: var(--raised); border: 1px solid var(--edge); border-bottom-width: 2px;
+  border-radius: 4px; padding: 2px 7px; font-family: var(--mono); font-size: 11.5px;
+  color: var(--ink); justify-self: start;
+}
+.editor-help .apart { border-top: 1px solid var(--edge); margin-top: 18px; }
+.editor-help .apart b { color: var(--warn); font-weight: 600; }
+.editor-help .sheet > button { margin-top: 18px; }
+.editor-foot button.ghost {
+  min-height: 26px; padding: 0 10px; font-size: 12px; border-width: 1px;
+  background: transparent; color: var(--dim);
 }

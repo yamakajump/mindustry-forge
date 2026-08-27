@@ -5,9 +5,15 @@
  * main pose, le clic droit casse. Ajouter des boutons de mode reviendrait à inventer une
  * ergonomie que le joueur devrait désapprendre pour retrouver la sienne.
  *
- * Une seule divergence assumée avec le jeu : la molette zoome au lieu de tourner. Sur une
- * page web, une molette qui ne défile ni ne zoome est un piège. La rotation garde `R`, et
- * shift+molette pour ceux qui ont le geste dans les doigts.
+ * Les raccourcis sont relevés dans `Binding` de la v159.7, pas choisis : molette pour
+ * tourner, ctrl pour le placement diagonal, F pour sélectionner, Z et X pour les miroirs,
+ * clic milieu pour reprendre un bloc, R maintenu pour en tourner un déjà posé. Un joueur
+ * qui arrive ici a déjà ces gestes dans les doigts, et lui en imposer d'autres serait lui
+ * demander de désapprendre les siens pour se servir d'un outil qui parle de son jeu.
+ *
+ * Trois écarts seulement, tous listés dans le panneau d'aide plutôt que cachés : la molette
+ * zoome quand la main est vide, la vue se déplace au clic milieu glissé, et Q ne fait rien
+ * faute de file de construction à vider.
  */
 
 import { draw, spriteOf } from "../render.js";
@@ -17,7 +23,7 @@ import { canPlace } from "./rules.js";
 import { flip, inBox, rotateBy, translate } from "./selection.js";
 import { fromBase64, toBase64 } from "../schematic.js";
 import { createCamera } from "./camera.js";
-import { mountRail, sizeGauge } from "./ui.js";
+import { mountRail, showHelp, sizeGauge } from "./ui.js";
 
 const SHELL = `
   <div class="editor-bar">
@@ -33,7 +39,7 @@ const SHELL = `
     <span class="editor-size"></span>
   </div>
   <div class="editor-rail"></div>
-  <div class="editor-stage"><canvas></canvas>
+  <div class="editor-stage"><canvas tabindex="0" aria-label="Le plateau"></canvas>
     <div class="editor-pick" hidden>
       <button type="button" data-pick="copy" title="Copier (ctrl+C)">Copier</button>
       <button type="button" data-pick="turn" title="Tourner d un quart">↻</button>
@@ -45,7 +51,7 @@ const SHELL = `
   <div class="editor-foot">
     <span class="hints"></span>
     <span class="spacer"></span>
-    <span><kbd>molette</kbd> zoom · <kbd>clic milieu</kbd> déplacer</span>
+    <button type="button" class="ghost" data-do="help">? raccourcis</button>
   </div>`;
 
 /**
@@ -91,8 +97,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   /** Ce qui a été copié, et ce qui attend d'être posé au prochain clic. */
   let clipboard = null;
   let pasting = null;
-  /** La touche « placement diagonal », maintenue. */
+  /* Les touches maintenues qui changent le sens d'un geste, aux touches du jeu :
+     ctrl pour le placement diagonal, F pour sélectionner, R pour tourner un bloc posé. */
   let diagonal = false;
+  let selecting = false;
+  let turning = false;
   /** Un déplacement de sélection en cours : d'où il est parti, et ce qu'il emporte. */
   let moving = null;
   /** Le pont qu'on est en train de recibler, tant qu'on n'a pas désigné sa cible. */
@@ -129,15 +138,25 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
     if (selection) {
       hints.innerHTML = `<strong>${picked().length} blocs</strong> sélectionnés ·
+        <kbd>glisser dedans</kbd> déplacer · <kbd>Z</kbd> <kbd>X</kbd> miroirs ·
         <kbd>ctrl+C</kbd> copier · <kbd>suppr</kbd> supprimer · <kbd>échap</kbd> désélectionner`;
       return;
     }
+    if (turning) {
+      hints.innerHTML = `<kbd>R</kbd> tenu · <strong>molette</strong> sur un bloc posé
+        pour le tourner sur place`;
+      return;
+    }
+    if (selecting) {
+      hints.innerHTML = `<kbd>F</kbd> tenu · <strong>glisse</strong> pour sélectionner une zone`;
+      return;
+    }
     hints.innerHTML = held
-      ? `<strong>${held}</strong> en main · <kbd>glisser</kbd> tracer une ligne ·
-         <kbd>R</kbd> tourner · <kbd>clic droit</kbd> casser · <kbd>Q</kbd> reprendre un bloc ·
-         <kbd>échap</kbd> reposer`
-      : `Choisis un bloc à gauche · <kbd>Q</kbd> en reprendre un pose ·
-         <kbd>ctrl+glisser</kbd> sélectionner · <kbd>ctrl+V</kbd> coller ·
+      ? `<strong>${held}</strong> en main · <kbd>molette</kbd> tourner ·
+         <kbd>glisser</kbd> tracer · <kbd>ctrl</kbd> diagonale ·
+         <kbd>clic droit</kbd> casser · <kbd>échap</kbd> reposer`
+      : `Choisis un bloc à gauche · <kbd>F</kbd> sélectionner ·
+         <kbd>clic milieu</kbd> reprendre un bloc · <kbd>ctrl+V</kbd> coller ·
          <kbd>ctrl+Z</kbd> annuler`;
   }
 
@@ -430,6 +449,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
      pose : c'est la répartition du jeu, moins la molette qui zoome ici. */
   canvas.addEventListener("pointerdown", (event) => {
     canvas.setPointerCapture(event.pointerId);
+    /* Rendre la main au plateau. Cliquer un élément non focusable ne déplace pas le focus :
+       après avoir tapé trois lettres dans la recherche, il y restait, et le garde-fou « ne
+       pas intercepter les touches dans un champ de saisie » tuait alors **tous** les
+       raccourcis sans que rien ne le dise. */
+    canvas.focus({ preventScroll: true });
     cursor = tileUnder(event);
 
     /* Le clic milieu fait deux choses selon qu'il glisse ou non : appuyé et relâché sur
@@ -456,12 +480,12 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     /* Attraper la sélection elle-même la déplace. C'est le geste attendu partout ailleurs
        et il manquait : on pouvait tourner et retourner une sélection, mais pas la bouger,
        ce qui est pourtant la raison numéro un d'en faire une. */
-    if (event.button === 0 && !event.ctrlKey && !event.metaKey && insideSelection(cursor)) {
+    if (event.button === 0 && !selecting && insideSelection(cursor)) {
       moving = { from: cursor, tiles: picked() };
       paint();
       return;
     }
-    if (event.button === 0 && (event.ctrlKey || event.metaKey)) {
+    if (event.button === 0 && selecting) {
       picking = cursor;
       selection = null;
       showPickBar();
@@ -553,10 +577,44 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   /* Sans ça, casser un bloc ouvre le menu contextuel du navigateur par dessus le plateau. */
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 
+  /**
+   * La molette, qui fait deux choses selon ce qu'on tient.
+   *
+   * C'est le jeu qui en décide ainsi et c'est bien vu : `Binding.rotate` et `Binding.zoom`
+   * sont **tous les deux** sur la molette, et `DesktopInput` tranche en regardant si un bloc
+   * orientable est en main. Tourner est le geste qu'on fait cent fois en construisant ;
+   * zoomer, celui qu'on fait entre deux constructions.
+   *
+   * Ctrl force le zoom, exactement comme dans le jeu, pour reculer sans reposer ce qu'on
+   * tient. Et R maintenu au dessus d'un bloc posé le tourne sur place, ce que le jeu appelle
+   * `rotatePlaced` et qui ne marche que sur les blocs `quickRotate`.
+   */
   canvas.addEventListener("wheel", (event) => {
     event.preventDefault();
+    const way = event.deltaY > 0 ? -1 : 1;
+
+    if (turning && cursor) {
+      const under = board.at(cursor.x, cursor.y);
+      const block = under && catalogue.blocks[under.block];
+      if (block?.rotate && block?.quick_rotate) {
+        board.apply({
+          remove: [under],
+          place: [{ ...under, rotation: ((((under.rotation || 0) + way) % 4) + 4) % 4 }],
+        });
+        paint();
+        return;
+      }
+    }
+
+    if (held && catalogue.blocks[held]?.rotate && !event.ctrlKey && !event.metaKey) {
+      rotation = (((rotation + way) % 4) + 4) % 4;
+      rail.setHeld(held, rotation);
+      paint();
+      return;
+    }
+
     const rect = canvas.getBoundingClientRect();
-    camera.zoomAt(event.deltaY > 0 ? 0.85 : 1.18,
+    camera.zoomAt(way > 0 ? 1.18 : 0.85,
                   event.clientX - rect.left, event.clientY - rect.top, viewportOf());
     paint();
   }, { passive: false });
@@ -814,10 +872,30 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (typing) return;
     const ctrl = event.ctrlKey || event.metaKey;
 
+    const key = event.key.toLowerCase();
+
     if (event.code === "Space") { spacing = true; event.preventDefault(); return; }
-    /* Maj maintenue : placement diagonal, comme dans le jeu. La molette garde le zoom, qui
-       est ce qu'une molette fait sur une page web, et la rotation garde R. */
-    if (event.key === "Shift" && !diagonal) { diagonal = true; paint(); return; }
+    /* Les touches maintenues, relevées dans `Binding` de la v159.7 plutôt que choisies :
+       ctrl pour la diagonale, F pour sélectionner, R pour tourner un bloc posé. Un joueur
+       qui arrive ici a déjà ces gestes dans les doigts. */
+    if ((event.key === "Control" || event.key === "Meta") && !diagonal) {
+      diagonal = true;
+      paint();
+      return;
+    }
+    if (key === "f" && !selecting) { selecting = true; say(); return; }
+    if (key === "r" && !turning) { turning = true; say(); return; }
+
+    /* Z et X retournent la sélection, comme `schematicFlipX` et `schematicFlipY`. Sans
+       sélection ils ne font rien, plutôt que de retourner tout le plateau. */
+    if (key === "z" && !ctrl && selection) {
+      reshape((tiles) => flip(tiles, "x", catalogue));
+      return;
+    }
+    if (key === "x" && !ctrl && selection) {
+      reshape((tiles) => flip(tiles, "y", catalogue));
+      return;
+    }
     if (ctrl && event.key.toLowerCase() === "z") {
       (event.shiftKey ? board.redo : board.undo)();
       settle();
@@ -854,12 +932,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
-    if (event.key.toLowerCase() === "q") { pipette(); return; }
-    if (event.key.toLowerCase() === "r" && held) {
-      rotation = (rotation + 1) % 4;
-      rail.setHeld(held, rotation);
-      paint();
-    }
+    /* Q ne fait rien, et c'est voulu : le jeu s'en sert pour vider la file de construction.
+       La pipette reste sur le clic milieu, comme `Binding.pick`. */
   };
   /**
    * Ce qu'il faut oublier quand le plateau bouge sous nos pieds.
@@ -878,8 +952,14 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   const onKeyUp = (event) => {
+    const key = event.key.toLowerCase();
     if (event.code === "Space") spacing = false;
-    if (event.key === "Shift" && diagonal) { diagonal = false; paint(); }
+    if ((event.key === "Control" || event.key === "Meta") && diagonal) {
+      diagonal = false;
+      paint();
+    }
+    if (key === "f" && selecting) { selecting = false; say(); }
+    if (key === "r" && turning) { turning = false; say(); }
   };
 
   /**
@@ -910,6 +990,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   host.querySelector('[data-do="undo"]').onclick = () => { board.undo(); settle(); };
   host.querySelector('[data-do="redo"]').onclick = () => { board.redo(); settle(); };
   host.querySelector('[data-mode="analyse"]').onclick = () => onAnalyse(board);
+  host.querySelector('[data-do="help"]').onclick = () => showHelp(host);
 
   const resize = window.ResizeObserver ? new ResizeObserver(() => paint()) : null;
   resize?.observe(stage);
