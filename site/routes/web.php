@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Route;
  */
 Route::get('/', fn () => response()->file(public_path('index.html')));
 
+/* L'editeur de logique, statique lui aussi. Une route plutot que le fichier servi tel quel :
+   nginx ne cherche `index.html` dans aucun dossier, et `/outils/logique.html` est une adresse
+   qu'on n'a pas envie de garder dix ans. */
+Route::get('/outils/logique', fn () => response()->file(public_path('outils/logique.html')));
+
 Route::get('/auth/discord', [AuthController::class, 'start'])->name('login');
 Route::get('/auth/discord/callback', [AuthController::class, 'callback']);
 Route::post('/deconnexion', [AuthController::class, 'logout']);
