@@ -1430,6 +1430,10 @@ public class DumpBlocks {
             entry.put("coolant_power", nuclear.coolantPower);
             entry.put("ambient_cooldown_time", nuclear.ambientCooldownTime);
             entry.put("heat_output", nuclear.heatOutput);
+            /* Un reacteur tient deux chaleurs : `heat` dans zero-un pour la
+               surchauffe, et `heatProgress` dans zero-quinze pour ce que lisent ses
+               voisins, qui rampe vers la premiere a cette vitesse. */
+            entry.put("heat_warmup_rate", nuclear.heatWarmupRate);
             entry.put("item_duration", nuclear.itemDuration);
             if (nuclear.fuelItem != null) entry.put("fuel_item", nuclear.fuelItem.name);
         }

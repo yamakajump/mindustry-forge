@@ -12,7 +12,8 @@
  * Mindustry v159.7.
  */
 
-import { bridgeLink, DIRECTIONS, TICKS } from "./core.js";
+import { bridgeAccepts, bridgeDumps, bridgeLink, DIRECTIONS, TICKS }
+  from "./core.js";
 import { MACHINES } from "./machines.js";
 import { LIQUIDS } from "./liquids.js";
 import { POWER } from "./power.js";
@@ -540,7 +541,12 @@ const bridge = {
   },
 
   acceptItem(build, source, item) {
-    return build.items.total < build.itemCapacity;
+    return build.items.total < build.itemCapacity && bridgeAccepts(build, source);
+  },
+
+  /** `canDump` is `checkDump`: never back down a beam that feeds it. */
+  canDump(build, other, item) {
+    return bridgeDumps(build, other);
   },
 
   update(build, world, step) {

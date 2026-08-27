@@ -293,6 +293,7 @@ const burner = {
     build.state.multiplier = 1;
     build.state.durationScale = 1;
     build.state.warmup = 0;
+    build.state.dead = false;
   },
 
   acceptItem(build, source, item) {
@@ -300,6 +301,8 @@ const burner = {
   },
 
   update(build, world, step) {
+    if (build.state.dead) { build.state.running = 0; return; }
+
     const block = build.block;
     const delta = build.delta(step);
 
@@ -366,11 +369,25 @@ const burner = {
       build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
     }
 
-    // And one that comes out, which is what a pyrolysis generator is for. A neoplasia
-    // reactor that cannot get rid of its neoplasm kills itself; here it simply fills up.
+    /* And one that comes out, which is what a pyrolysis generator is for. A neoplasia
+       reactor whose neoplasm has nowhere to go calls `kill()` on itself, and the flag was
+       in the catalogue and read by nothing: eighty units in four seconds, then the block is
+       gone and the grid behind it collapses. Left running, the port reported two hundred
+       and fifty two thousand units of energy over thirty seconds where the game makes
+       thirty three thousand, and declared a schematic that forgot its neoplasm pipe
+       perfectly sound. */
     for (const [liquid, rate] of Object.entries(block.output_liquid || {})) {
       build.addLiquid(liquid, (rate / TICKS) * delta * build.state.running);
       build.dumpLiquid(liquid);
+      if (block.explode_on_full
+          && build.liquids.get(liquid) >= build.liquidCapacity - 0.01) {
+        build.state.dead = true;
+        build.state.running = 0;
+        build.state.heat = 0;
+        build.items.clear();
+        build.liquids.clear();
+        return;
+      }
     }
 
     // `generateTime` runs down as a fraction of one item, last of all.
@@ -515,9 +532,10 @@ const impact = {
  */
 const nuclear = {
   begin(build) {
+    build.state.overheat = 0;
     build.state.heat = 0;
     build.state.running = 0;
-    build.state.timer = Infinity;
+    build.state.burned = null;
     build.state.dead = false;
   },
 
@@ -536,16 +554,27 @@ const nuclear = {
     if (held > 0) {
       const fullness = held / build.itemCapacity;
       build.state.running = fullness;
-      build.state.heat += fullness * (block.heating || 0) * Math.min(delta, 4);
-      build.state.timer += delta;
-      if (build.state.timer >= (block.item_duration || 360)) {
-        build.state.timer = 0;
+      build.state.overheat += fullness * (block.heating || 0) * Math.min(delta, 4);
+
+      /* `timer(timerFuel, itemDuration)` is an `Interval`, and an `Interval` compares the
+         **map clock** against the date it last fired. It does not accumulate anything, so a
+         reactor that sat empty for ten seconds has ten seconds on the counter the moment a
+         thorium arrives and burns it in that frame.
+
+         Counted as a stopwatch that only runs while there is fuel, a reactor fed one
+         thorium every ten seconds burned the first, stacked the rest, and reported sixty
+         power a second at the end of the run where the game burns each one on arrival and
+         produces almost nothing. */
+      const since = build.state.burned === null
+        ? Infinity : world.tick - build.state.burned;
+      if (since >= (block.item_duration || 360)) {
+        build.state.burned = world.tick;
         build.items.remove(fuel);
       }
     } else {
       build.state.running = 0;
-      build.state.heat = Math.max(
-        0, build.state.heat - delta / (block.ambient_cooldown_time || 1200));
+      build.state.overheat = Math.max(
+        0, build.state.overheat - delta / (block.ambient_cooldown_time || 1200));
     }
 
     // Cooling, by hand: whatever is in the tank, at `coolantPower` per unit.
@@ -554,18 +583,30 @@ const nuclear = {
        `liquids.remove(liquids.current(), ...)`: it cools with **whatever it happens to be
        holding**, not with the liquid its filter names. Water poured into a thorium reactor
        cools it exactly as cryofluid does. */
-    if (build.state.heat > 0 && build.liquids.currentAmount > 0) {
-      const used = Math.min(build.liquids.currentAmount, build.state.heat / power);
-      build.state.heat -= used * power;
+    if (build.state.overheat > 0 && build.liquids.currentAmount > 0) {
+      const used = Math.min(build.liquids.currentAmount, build.state.overheat / power);
+      build.state.overheat -= used * power;
       build.liquids.remove(build.liquids.current, used);
     }
 
-    build.state.heat = Math.min(1, Math.max(0, build.state.heat));
-    if (build.state.heat >= 0.999) {
+    build.state.overheat = Math.min(1, Math.max(0, build.state.overheat));
+
+    /* Two heats, and only one of them leaves the block. `heat` in nought to one is how
+       close it is to blowing up; `heatProgress`, which is what `heat()` hands to a heat
+       consumer, is that times `heatOutput` and creeps towards it at `heatWarmupRate` a
+       frame. Fifteen to one for a thorium reactor, and the port passed on the wrong one:
+       a crucible beside it read a fifteenth of the heat it should and ran at almost
+       nothing where the game runs it flat out. */
+    build.state.heat = approach(build.state.heat,
+                                build.state.overheat * (block.heat_output || 0),
+                                (block.heat_warmup_rate ?? 1) * delta);
+
+    if (build.state.overheat >= 0.999) {
       // `kill()`. The block is gone, and so is everything that was inside it: a reactor
       // that overheated does not sit there holding twenty five thorium.
       build.state.dead = true;
       build.state.running = 0;
+      build.state.heat = 0;
       build.items.clear();
       build.liquids.clear();
     }
