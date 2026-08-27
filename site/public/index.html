@@ -378,7 +378,8 @@ function render(report) {
       lines.push(`<div class="line">
         <span>${escape(link.from)} → ${escape(link.to)} (${link.target[0]}, ${
           link.target[1]}), ${escape(t("analyse.logique.hors-portee"))}</span>
-        <span class="num bad">${rate(link.distance)} / ${rate(link.reach)}</span></div>`);
+        <span class="num bad">${rate(link.distance)}&nbsp;/&nbsp;${
+          rate(link.reach)}</span></div>`);
     }
 
     right.push(`<div class="card"><h2>${escape(t("analyse.logique.titre"))}</h2>
