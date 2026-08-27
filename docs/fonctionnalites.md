@@ -364,6 +364,13 @@ commande suivante dans le répertoire principal partagé, ce qui est exactement 
 worktrees existent pour empêcher. Les chaînes `cd X && a && b` restent sûres, c'est un seul
 shell.
 
+**`php artisan serve` annonce « Server running » même quand le port est déjà pris.** Une
+worktree isole le dépôt, pas la machine : les ports sont partagés par tout le monde. Une
+session qui démarre sur un port occupé lit tranquillement l'application d'une autre sans
+qu'aucun message ne l'en avertisse, et débogue un écran qui n'est pas le sien. Choisir un
+port à soi, et le vérifier avec une ressource qui n'existe que chez soi plutôt qu'avec la
+page d'accueil.
+
 **`consumes_power` peut valoir vrai sans aucune consommation.** La presse à graphite est
 mécanique dans le jeu. Se fier à la présence de `power` et `power_out`, jamais au booléen.
 
