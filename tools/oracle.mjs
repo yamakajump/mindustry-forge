@@ -39,6 +39,8 @@ const held = (kind, id) => Uint8Array.from([5, kind, (id >> 8) & 255, id & 255])
 const item = (name) => held(0, known.items[name].id);
 const liquid = (name) => held(4, known.liquids[name].id);
 const unit = (name) => held(6, known.units[name].id);
+/** A block, which is what a constructor's recipe is. Content type one. */
+const blockOf = (name) => held(1, known.blocks[name].id);
 
 /**
  * A power node's links, as the game writes them: a `Point2[]`, each packed into one int,
@@ -983,6 +985,29 @@ const SCENARIOS = {
     // And five wide again, covering 12..16.
     { x: 14, y: 0, block: "payload-void", rotation: 0 },
   ],
+
+  /* Un constructeur, qui mange des objets et sort un **bloc** comme cargaison.
+
+     Le seul bloc du jeu dont les ingredients et l'horloge sont tous deux sa configuration :
+     ce qu'il mange est le cout de construction de ce qu'on lui demande, et le temps qu'il
+     met est le temps de construction de ce bloc la, lui-meme derive du cout.
+
+     C'est le **grand** constructeur ici, et pas le petit, pour une raison qui a coute une
+     mesure : le petit porte une liste de sept blocs et refuse en silence tout ce qui n'y
+     est pas, et les sept sont d'Erekir, donc invisibles sur un monde de Serpulo. Il ne
+     rapporte alors aucune recette, ne consomme rien, et reste a zero l'air en pleine sante.
+     Le grand n'a pas de liste, seulement une fourchette de tailles. */
+  "constructor-drills": () => ({
+    tiles: [
+      // Covers -2..2, reaching three tiles east.
+      { x: 0, y: 0, block: "large-constructor", rotation: 0, raw: blockOf("laser-drill") },
+      { x: 0, y: 3, block: "power-source", rotation: 0 },
+      { x: 4, y: 0, block: "payload-conveyor", rotation: 0 },
+      { x: 8, y: 0, block: "payload-void", rotation: 0 },
+    ],
+    stock: ["copper*1000@0,0", "graphite*1000@0,0",
+            "titanium*1000@0,0", "silicon*1000@0,0"],
+  }),
 
   /* Un routeur a charge utile, qui envoie la cargaison d'un cote puis de l'autre.
 

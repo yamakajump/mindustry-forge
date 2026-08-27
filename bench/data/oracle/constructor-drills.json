@@ -1,0 +1,50 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "payloads": [
+    {
+      "block": "large-constructor",
+      "x": 14,
+      "y": 14,
+      "payload": "laser-drill"
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "large-constructor",
+      "x": 14,
+      "y": 14,
+      "efficiency": 1,
+      "holds":{
+        "copper": 650,
+        "graphite": 700,
+        "titanium": 800,
+        "silicon": 700
+      }
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 18,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-void",
+      "x": 22,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "power-source",
+      "x": 14,
+      "y": 17,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

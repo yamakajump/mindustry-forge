@@ -127,6 +127,15 @@ public class Measure implements ApplicationListener {
            truth about the blocks. */
         Vars.state.rules.unitCapVariable = false;
         Vars.state.rules.unitCap = 500;
+        /* The environment is left alone on purpose.
+
+           Turning it up to `Env.any` looked like a way to let a constructor accept an
+           Erekir recipe on a Serpulo world. It is not: `supportsEnv` is
+           `(envEnabled & env) != 0 && (envDisabled & env) == 0`, so an environment with
+           every bit set means every block that **disables** one is refused. A payload
+           source stopped making daggers, and three scenarios went from four payloads to
+           none. What a block is allowed to make is a property of the world, and a
+           scenario that needs another world should say so rather than widen this one. */
         Vars.logic.play();
 
         // The ground, before anything is built on it.

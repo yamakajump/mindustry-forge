@@ -37,6 +37,8 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.payloads.Constructor;
+import mindustry.world.blocks.payloads.BlockProducer;
 import mindustry.type.UnitType;
 import mindustry.world.blocks.units.Reconstructor;
 import mindustry.world.blocks.payloads.PayloadVoid;
@@ -130,6 +132,10 @@ public class DumpBlocks {
             // only honest way to write a list of what is left to port, because it is the
             // game's own list rather than one typed from memory.
             entry.put("kind", kindOf(block));
+            /* The game's own number for this block. A schematic stores a constructor's
+               recipe the way it stores a sorter's item, as a content type and an id, and
+               turning that back into a name needs the registry rather than a guess. */
+            entry.put("id", block.id);
             entry.put("size", block.size);
             entry.put("item_capacity", block.itemCapacity);
             // How much a block can hold, which a steady-state calculation never needed and
@@ -203,6 +209,12 @@ public class DumpBlocks {
                 entry.put("power_capacity", block.consPower.capacity);
             }
             entry.put("health", block.health);
+            /* How long this block takes to build, which is not a field anyone typed: it is
+               derived from the requirements in `Block.init` as the sum of amount times item
+               cost. A constructor's whole clock is the build time of whatever it was set
+               to, so it has to be carried for every block and not only for the buildable
+               ones. */
+            entry.put("build_time", block.buildTime);
             /* Whether a beam stops at it. Only insulation stops one: a titanium wall does
                not, which is contrary to every instinct and is the game's rule. */
             if (block.insulated) entry.put("insulated", true);
@@ -391,6 +403,24 @@ public class DumpBlocks {
                conveyor on a map moves on the same frame. */
             entry.put("move_time", carrier.moveTime);
             entry.put("payload_limit", carrier.payloadLimit);
+            return;
+        }
+        if (block instanceof BlockProducer maker) {
+            /* A constructor: items in, a **block** out as cargo. Its recipe is its
+               configuration, so its ingredients and its clock both change with what a
+               player set it to, and neither can be written down here. */
+            entry.put("role", "constructor");
+            entry.put("carries", "payload");
+            entry.put("build_speed", maker.buildSpeed);
+            /* And what it is allowed to be set to. A constructor is not a general purpose
+               factory: it carries a list of seven blocks, and a configuration outside that
+               list is silently refused. Set to something it will not make, it reports no
+               recipe, `shouldConsume` is false, and it sits at zero looking healthy. */
+            if (block instanceof Constructor picky && !picky.filter.isEmpty()) {
+                Jval allowed = Jval.newArray();
+                for (Block one : picky.filter) allowed.asArray().add(Jval.valueOf(one.name));
+                entry.put("produces", allowed);
+            }
             return;
         }
         if (block instanceof PayloadSource) {

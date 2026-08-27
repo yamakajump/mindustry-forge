@@ -482,6 +482,11 @@ export class World {
        same schematic laid down two tiles over sorts differently. Left at the origin here
        and set to what the bench uses when the two are being held against each other. */
     this.origin = [0, 0];
+
+    /* The block registry, for the one block that needs to look another one up: a
+       constructor's recipe is its configuration, so what it eats and how long it takes are
+       properties of a block it was merely pointed at. */
+    this.catalogue = null;
   }
 
   /** `Tile.pos()`: the world position of a block, packed into one int as the game packs it. */

@@ -19,7 +19,7 @@ SOURCE = Path("bench/data/blocks.json")
 TARGET = Path("site/public/forge/blocks.json")
 
 #: What the analysis reads. Everything else the game knows about a block is weight.
-KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
+KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output",
         "input_liquid", "output_liquid", "power", "power_out",
         "tier", "drill_time", "hardness_multiplier", "cost", "item_capacity",
         "range", "carries", "output_per_second",
@@ -56,7 +56,7 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         # Les charges utiles : une unite ou un bloc transporte comme cargaison.
         "move_time", "payload_limit", "payload_speed", "payload_rotate_speed",
         "outputs_payload", "accepts_payload", "construct_time", "upgrades",
-        "capacities")
+        "capacities", "build_time", "build_speed", "produces")
 
 
 def main() -> None:

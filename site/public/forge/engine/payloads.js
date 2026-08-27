@@ -377,7 +377,83 @@ function roomFor(build, item) {
   return build.block.capacities?.[item] ?? build.itemCapacity;
 }
 
+/**
+ * A constructor: items in, a block out as cargo.
+ *
+ * The only block in the game whose ingredients **and** whose clock are both its
+ * configuration. What it eats is the build cost of whatever it was set to, and how long it
+ * takes is that block's build time, which is itself derived from the cost rather than
+ * written down anywhere.
+ *
+ * Its cap is twice the recipe, per ingredient, and zero for anything the recipe does not
+ * name: a constructor set to nothing accepts nothing at all.
+ */
+const constructor = {
+  begin(build) {
+    build.state.payload = null;
+    build.state.payVector = [0, 0];
+    build.state.payRotation = 0;
+    build.state.progress = 0;
+  },
+
+  acceptItem(build, source, item) {
+    return build.items.get(item) < recipeRoom(build, item);
+  },
+
+  acceptPayload() { return false; },
+
+  update(build, world, step_) {
+    const made = allowedRecipe(build);
+    const recipe = made ? build.world.catalogue?.blocks?.[made] : null;
+    const cost = recipe?.cost || {};
+
+    let efficiency = made ? 1 : 0;
+    for (const [item, amount] of Object.entries(cost)) {
+      if (build.items.get(item) < amount) efficiency = 0;
+    }
+    if (build.block.power > 0) efficiency = Math.min(efficiency, build.state.power ?? 1);
+    build.state.wants = made && build.state.payload === null ? 1 : 0;
+
+    if (made && efficiency > 0 && build.state.payload === null) {
+      build.state.progress += (build.block.build_speed ?? 0.4) * efficiency * build.delta(step_);
+      if (build.state.progress >= (recipe.build_time || 1)) {
+        for (const [item, amount] of Object.entries(cost)) build.items.remove(item, amount);
+        build.state.payload = made;
+        build.state.payVector = [0, 0];
+        // `progress %= 1f` again, and again it throws the leftover away.
+        build.state.progress %= 1;
+        build.state.made = (build.state.made || 0) + 1;
+      }
+    }
+
+    moveOutPayload(build, world);
+  },
+};
+
+/**
+ * What it was set to, if it is allowed to make it.
+ *
+ * `canProduce`: a constructor carries a list of seven blocks and refuses a configuration
+ * outside it. Set to something it will not make it reports no recipe at all, `shouldConsume`
+ * is false, and it sits at zero looking perfectly healthy.
+ */
+function allowedRecipe(build) {
+  const made = build.node.configured;
+  if (!made) return null;
+  const list = build.block.produces;
+  return !list || list.includes(made) ? made : null;
+}
+
+/** `getMaximumAccepted`: twice the recipe, and nothing for what the recipe does not name. */
+function recipeRoom(build, item) {
+  const made = allowedRecipe(build);
+  const recipe = made ? build.world.catalogue?.blocks?.[made] : null;
+  const amount = recipe?.cost?.[item];
+  return amount ? amount * 2 : 0;
+}
+
 export const PAYLOADS = {
+  constructor,
   "payload-conveyor": payloadConveyor,
   "payload-router": payloadRouter,
   "payload-source": payloadSource,
