@@ -1,17 +1,17 @@
 /**
- * Le rail, la barre du haut et la barre d'état.
+ * The rail, the top bar and the status bar.
  *
- * Tout ce qui n'est pas le plateau tient ici, et tient peu de place : 280 pixels à gauche
- * et deux barres fines. Le plateau est le produit, le reste lui cède la place.
+ * Everything that is not the board lives here, and takes little room: 280 pixels on the left
+ * and two thin bars. The board is the product; the rest gives way to it.
  *
- * Aucune liste de blocs n'est écrite à la main. Les catégories, les planètes et les coûts
- * sortent du catalogue, qui sort du jeu : une deuxième copie de la donnée du jeu est
- * exactement ce que ce dépôt passe son temps à éviter.
+ * No list of blocks is written by hand. The categories, the worlds and the costs come out of
+ * the catalogue, which comes out of the game: a second copy of the game's data is exactly
+ * what this repository spends its time avoiding.
  */
 
 import { itemIcon } from "../render.js";
 
-/** Le sprite d'un bloc, mis en cache : la même pastille est redessinée à chaque recherche. */
+/** A block's sprite, cached: the same chip is redrawn on every search. */
 const icons = new Map();
 function iconOf(name, pixels = 26) {
   const key = `${name}@${pixels}`;
@@ -22,7 +22,7 @@ function iconOf(name, pixels = 26) {
 const escape = (s) => String(s).replace(/[<>&"]/g, (c) =>
   ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]));
 
-/** Ce qu'un bloc coûte à construire, dit dans la langue du joueur. */
+/** What a block costs to build, said in the player's language. */
 function costOf(block) {
   const parts = Object.entries(block?.cost || {});
   if (!parts.length) return "gratuit";
@@ -30,23 +30,22 @@ function costOf(block) {
 }
 
 /**
- * Les blocs qu'un joueur peut poser.
+ * The blocks a player can place.
  *
- * Un sol n'est pas un bloc qu'on pose, et un bloc sans coût de construction n'existe pas
- * dans une schématique : sans ce tri, la palette proposait l'air, les marqueurs d'apparition
- * et l'outil qui efface le minerai.
+ * A floor is not a block you place, and a block with no build cost does not exist inside a
+ * schematic: without this filter the palette offered air, the spawn markers and the tool
+ * that erases ore.
  *
- * Triés par l'identifiant du jeu, qui suit l'ordre de son propre registre : à l'intérieur
- * d'une catégorie, un convoyeur arrive avant un convoyeur titane, comme dans l'arbre
- * technologique. L'ordre alphabétique mettrait « titanium-conveyor » avant « conveyor »,
- * ce qui n'est l'ordre de rien.
+ * Sorted by the game's own id, which follows the order of its own registry: inside a
+ * category, a conveyor comes before a titanium conveyor, as in the tech tree. Alphabetical
+ * order would put "titanium-conveyor" before "conveyor", which is the order of nothing.
  */
 export function buildables(catalogue) {
   return Object.entries(catalogue.blocks)
-    /* Le tri du jeu, et non celui qu'on avait inventé. `buildVisibility` dit ce que le menu
-       de construction montre, et `placeablePlayer` si un joueur peut le poser du tout.
-       Trier sur « il a un coût de construction » laissait passer des blocs cachés, réservés
-       au bac à sable ou à l'éditeur de carte, que personne ne peut poser dans une partie. */
+    /* The game's filter, and not the one we had invented. `buildVisibility` says what the
+       build menu shows, and `placeablePlayer` whether a player can place it at all.
+       Filtering on "it has a build cost" let through hidden blocks, reserved for the sandbox
+       or the map editor, that nobody can place in a game. */
     .filter(([, block]) => block.build_visibility === "shown"
       && block.placeable_player !== false && block.cost)
     .map(([name, block]) => ({ name, block }))
@@ -54,11 +53,11 @@ export function buildables(catalogue) {
 }
 
 /**
- * Le nom français d'une catégorie du jeu.
+ * The French name of a game category.
  *
- * C'est de la traduction d'interface, pas de la donnée de jeu : les catégories elles-mêmes
- * sortent du catalogue, et une catégorie inconnue de cette table s'affiche telle quelle
- * plutôt que de disparaître.
+ * This is interface translation, not game data: the categories themselves come out of the
+ * catalogue, and a category this table does not know is shown as it stands rather than
+ * disappearing.
  */
 const CATEGORIES = {
   turret: "Tourelles", production: "Production", distribution: "Distribution",
@@ -69,11 +68,11 @@ const CATEGORIES = {
 const PLANETS = { serpulo: "Serpulo", erekir: "Erekir" };
 
 /**
- * Les trois couches du sol, comme le jeu les empile.
+ * The three layers of the ground, the way the game stacks them.
  *
- * Un minerai va **par dessus** un sol, pas à sa place, et un mur va par dessus les deux.
- * Les séparer dans l'interface est ce qui évite d'avoir à deviner, en voyant une pastille
- * de cuivre, si la poser effacera la pierre qui est dessous.
+ * An ore goes **over** a floor, not in its place, and a wall goes over both. Keeping them
+ * apart in the interface is what saves somebody, looking at a copper chip, from having to
+ * guess whether placing it will erase the stone underneath.
  */
 const LAYERS = [
   { key: "floor", label: "Sols",
@@ -82,7 +81,7 @@ const LAYERS = [
   { key: "wall", label: "Murs", of: (block) => block.wall },
 ];
 
-/** Les outils du pinceau, ceux de l'éditeur de carte du jeu. */
+/** The brush tools, the ones from the game's own map editor. */
 const TOOLS = [
   { key: "pencil", label: "Crayon", hint: "peindre à la main, taille réglable" },
   { key: "rect", label: "Rectangle", hint: "remplir une zone d'un glissé" },
@@ -90,7 +89,7 @@ const TOOLS = [
   { key: "eraser", label: "Gomme", hint: "effacer le sol peint" },
 ];
 
-/** Ce que le catalogue offre pour peindre, rangé par couche. */
+/** What the catalogue offers to paint with, filed by layer. */
 export function grounds(catalogue) {
   return LAYERS.map((layer) => ({
     ...layer,
@@ -102,16 +101,16 @@ export function grounds(catalogue) {
 }
 
 /**
- * Monte le rail et rend de quoi le tenir à jour.
+ * Mount the rail and return the handles that keep it up to date.
  *
- * `onPick` reçoit le nom du bloc choisi, ou `null` quand on repose ce qu'on avait en main.
+ * `onPick` receives the name of the chosen block, or `null` when what was held is put down.
  */
 export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   const all = buildables(catalogue);
   const layers = grounds(catalogue);
 
-  /* Les catégories et les planètes présentes, prises au catalogue plutôt qu'écrites ici.
-     Une liste tenue à la main se met à mentir le jour où le jeu en ajoute une. */
+  /* The categories and worlds that are actually present, taken from the catalogue rather
+     than written here. A hand-kept list starts lying the day the game adds one. */
   const categories = [...new Set(all.map(({ block }) => block.category))].filter(Boolean);
   const planets = [...new Set(all.map(({ block }) => block.planet))].filter(Boolean);
 
@@ -168,10 +167,10 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   let planet = "";
   let category = "";
 
-  /** Ce que le pinceau tient : quelle couche, quel bloc, quel outil, quelle taille. */
+  /** What the brush holds: which layer, which block, which tool, which size. */
   const brush = { layer: "floor", block: null, tool: "pencil", size: 1 };
 
-  /* Les pastilles de sol, dessinées une fois : elles ne se filtrent pas et ne bougent pas. */
+  /* The ground chips, drawn once: they are not filtered and they do not move. */
   for (const layer of layers) {
     const box = groundPanel.querySelector(`[data-layer="${layer.key}"] .chips`);
     box.innerHTML = layer.blocks.map((name) => {
@@ -201,7 +200,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     }).join("");
   };
 
-  /** Un groupe de filtres où un seul choix vaut à la fois. */
+  /** A group of filters where only one choice holds at a time. */
   const wireFilter = (selector, attribute, set) => {
     host.querySelector(selector).addEventListener("click", (event) => {
       const chip = event.target.closest(`[data-${attribute}]`);
@@ -215,19 +214,18 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   };
   wireFilter(".planets", "planet", (v) => { planet = v; });
 
-  /* La categorie est une liste deroulante et non des pastilles, faute de place : les onze
-     pastilles occupaient cinq rangees, soit un tiers de la hauteur du rail, contre une
-     ligne ici. Le jeu les montre en icones sur une seule rangee, mais ses icones de
-     categorie ne sont pas dans l atlas et aller les chercher dans le jar est un chantier
-     a lui seul. Une liste deroulante ne cache aucune option, contrairement a une rangee
-     qui defile. */
+  /* The category is a dropdown rather than chips, for want of room: the eleven chips took
+     five rows, a third of the height of the rail, against one line here. The game shows them
+     as icons on a single row, but its category icons are not in the atlas and fetching them
+     out of the jar is a job of its own. A dropdown hides no option, unlike a row that
+     scrolls. */
   host.querySelector("select.cats").addEventListener("change", (event) => {
     category = event.target.value;
     paint();
   });
 
   const rail = {
-    /** Ce qui est en main, dit en toutes lettres : rien n'apprend les raccourcis à celui qui arrive. */
+    /** What is held, spelled out: nothing teaches the shortcuts to somebody arriving. */
     setHeld(name, rotation = 0) {
       holding = name;
       for (const chip of grid.querySelectorAll("[data-block]")) {
@@ -253,8 +251,8 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   grid.addEventListener("click", (event) => {
     const chip = event.target.closest("[data-block]");
     if (!chip) return;
-    /* Recliquer le bloc qu'on tient le repose. Sans ça, la seule façon de vider la main est
-       échap, et il faut le savoir. */
+    /* Clicking the held block again puts it down. Without this, the only way to empty the
+       hand is escape, and you have to know that. */
     onPick(chip.dataset.block === holding ? null : chip.dataset.block);
   });
 
@@ -264,11 +262,11 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   });
 
   /* ------------------------------------------------------------------------------------
-     L'onglet sol.
+     The ground tab.
 
-     Bâtir et peindre sont deux intentions, avec deux palettes et deux jeux d'outils. Il n'y
-     a pas de barre d'outils du côté bâtir parce que le jeu n'en a pas ; il y en a une ici
-     parce que l'éditeur de carte du jeu en a une. L'asymétrie est voulue.
+     Building and painting are two intentions, with two palettes and two sets of tools. There
+     is no toolbar on the building side because the game has none; there is one here because
+     the game's map editor has one. The asymmetry is deliberate.
      ------------------------------------------------------------------------------------ */
 
   const sizeRange = groundPanel.querySelector(".size input");
@@ -286,10 +284,11 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     filters.hidden = onGround;
     searchRow.hidden = onGround;
     held.hidden = onGround;
-    /* La transparence bascule toute seule : passer sur le sol fond les blocs pour qu'on
-       voie ce qu'on peint, revenir les rend opaques. C'est ce qui supprime la peinture à
-       l'aveugle sans demander un geste de plus, et c'était le défaut principal de l'édition
-       d'avant, où le curseur vivait dans une autre carte que le pinceau. */
+    /* The fade switches on its own: moving to the ground tab melts the blocks so that what
+       is being painted can be seen, and coming back makes them solid again. That is what
+       removes painting blind without asking for one more gesture, and it was the main defect
+       of the previous editing mode, where the cursor lived on a different map from the
+       brush. */
     onTab?.(which, onGround ? Number(fadeRange.value) / 100 : 1, brush);
   }
 
@@ -339,10 +338,10 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
 }
 
 /**
- * La jauge de taille du haut.
+ * The size gauge at the top.
  *
- * Elle est permanente et pas seulement présente au moment du refus : une limite dure qu'on
- * découvre quand elle mord est une limite qui donne l'impression d'un bug.
+ * It is permanent, not merely present at the moment of refusal: a hard limit discovered when
+ * it bites is a limit that feels like a bug.
  */
 export function sizeGauge(host, MAX_SIZE) {
   host.innerHTML = `<span class="num"></span>
@@ -359,14 +358,14 @@ export function sizeGauge(host, MAX_SIZE) {
 
 
 /**
- * La liste des raccourcis, aux touches du jeu.
+ * The list of shortcuts, on the game's own keys.
  *
- * Relevée dans `Binding` de la v159.7, et pas choisie. Un joueur qui arrive ici a déjà ces
- * gestes dans les doigts : lui en imposer d'autres, ce serait lui demander de désapprendre
- * les siens pour se servir d'un outil qui parle de son jeu.
+ * Read out of `Binding` in v159.7, not chosen. A player arriving here already has those
+ * gestures in their fingers: imposing different ones would be asking them to unlearn their
+ * own in order to use a tool that talks about their game.
  *
- * Les trois seuls écarts sont listés à part et chacun a sa raison. Un panneau d'aide qui
- * cache ses divergences est un panneau qui ment.
+ * The only three departures are listed separately and each has its reason. A help panel that
+ * hides where it diverges is a panel that lies.
  */
 const SHORTCUTS = [
   ["Bâtir", [
@@ -399,7 +398,7 @@ const SHORTCUTS = [
   ]],
 ];
 
-/** Ce qui diffère du jeu, et pourquoi. Dit plutôt que caché. */
+/** What differs from the game, and why. Said rather than hidden. */
 const DIVERGENCES = [
   ["La molette zoome aussi", "le jeu la réserve à la rotation et suit le joueur du regard ; "
     + "ici il n'y a personne à suivre, donc elle zoome dès qu'on n'a rien en main"],

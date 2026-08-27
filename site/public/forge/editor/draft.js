@@ -1,18 +1,17 @@
 /**
- * Le brouillon, gardé dans le navigateur.
+ * The draft, kept in the browser.
  *
- * Vingt minutes de construction ne doivent pas tenir à un onglet qu'on ferme par erreur.
- * Le plateau part dans `localStorage` à chaque geste, et revient à l'ouverture.
+ * Twenty minutes of building must not hang on a tab closed by mistake. The board goes into
+ * `localStorage` on every gesture and comes back when the editor opens.
  *
- * Il est **proposé**, jamais restauré d'office. Écraser silencieusement ce que quelqu'un
- * vient de coller par un brouillon vieux de trois jours est pire que de perdre le
- * brouillon : dans un cas on perd du travail qu'on savait avoir, dans l'autre on perd du
- * travail qu'on croyait avoir devant les yeux.
+ * It is **offered**, never restored on its own. Quietly overwriting what somebody has just
+ * pasted with a three-day-old draft is worse than losing the draft: one loses work you knew
+ * you had, the other loses work you thought was in front of you.
  */
 
 const KEY = "forge:brouillon";
 
-/** Combien de temps un brouillon vaut encore la peine d'être proposé. */
+/** How long a draft is still worth offering. */
 const KEEP_FOR = 7 * 24 * 60 * 60 * 1000;
 
 export function keepDraft(board, now) {
@@ -28,8 +27,8 @@ export function keepDraft(board, now) {
       ground: board.ground,
     }));
   } catch {
-    /* Un navigateur en navigation privée refuse d'écrire, et un quota plein aussi. Perdre
-       le brouillon est ennuyeux ; faire tomber l'éditeur pour ça serait absurde. */
+    /* A browser in private mode refuses to write, and so does a full quota. Losing the
+       draft is a nuisance; bringing the editor down over it would be absurd. */
   }
 }
 
@@ -47,13 +46,17 @@ export function readDraft(now) {
 export function dropDraft() {
   try {
     localStorage.removeItem(KEY);
-  } catch { /* voir plus haut */ }
+  } catch { /* see above */ }
 }
 
-/** Depuis combien de temps, dit comme on le dirait à voix haute. */
+/** How long ago, said the way somebody would say it out loud. */
 export function ageOf(at, now) {
-  /* Sous la minute, on ne compte pas : `Math.round` sur trente secondes annonçait « il y a
-     1 minute » pour un brouillon écrit à l'instant même. */
+  /* Under a minute is not counted: `Math.round` on thirty seconds announced "one minute
+     ago" for a draft written that very second.
+
+     The strings below stay French because a player reads them. They are also written in
+     plain text rather than going through `t()`, which is a gap in the i18n groundwork
+     rather than something to fix inside a translation pass. */
   if (now - at < 60000) return "à l'instant";
   const minutes = Math.round((now - at) / 60000);
   if (minutes < 60) return `il y a ${minutes} minute${minutes > 1 ? "s" : ""}`;
