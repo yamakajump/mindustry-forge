@@ -6,7 +6,43 @@ l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 
 ## À faire
 
-### 1. Relancer l'audit sur ce qui vient d'être écrit
+### 1. Finir l'audit
+
+Le rapport complet est dans `docs/audit-2026-08.md` : 39 défauts survivants sur 50
+proposés, chacun passé par trois sceptiques. Douze sont corrigés et mesurés, dans l'ordre
+que le rapport recommandait lui-même.
+
+Corrigés : l'anneau de voisinage des blocs de taille paire et son ordre ; le courant qui
+ne traverse pas un consommateur ; une machine à sec qui ne demande rien ; la temporisation
+et le curseur du routeur ; les deux règles du déchargeur ; le bonus à l'eau des foreuses
+et le ×2 des foreuses à percussion sur le béryllium ; l'efficacité de la pompe ;
+l'alternance du trieur ; le débit d'une jonction ; le convoyeur de phase sans courant ;
+l'ordre grilles-avant-blocs. Plus les cinq scénarios morts.
+
+Reste, par ordre de rendement décroissant :
+
+- **Un conduit qui pointe dans le vide ne fuit pas** (1.12). Le drapeau `leaks` est dans le
+  catalogue et lu nulle part. Une conduite ouverte bloque la ligne ici et se vidange en
+  continu dans le jeu.
+- **L'électrolyseur cale dès qu'un seul de ses deux gaz est plein** (1.15). Avec
+  `dumpExtraLiquid`, le jeu continue et perd le surplus.
+- **Une usine d'unités face à un bloc non solide est bloquée à vie** (1.13). Le jeu dépose
+  l'unité au sol dès que la case devant n'est pas solide.
+- **Le mass driver refuse tout objet** (1.16), et son lien n'est pas relu.
+- **`dumpLiquid` rejoue `moveLiquid`** au lieu de sa propre formule, et le pont à liquide
+  passe le mauvais `scaling`. À corriger **dans le même commit** : aujourd'hui la première
+  erreur masque la seconde.
+- Le reste de la section 2 du rapport : ordre de `dump(null)`, `checkAccept` des ponts,
+  warmup du pont à liquide, faces de l'overflow duct, `beamsOf` qui compare des chaînes, le
+  compteur de combustible qui se fige, la chaleur interne d'un réacteur au thorium,
+  `explodeOnFull`, `liquidOutputDirections`, et la consommation à réservoir plein d'une
+  pompe solide.
+
+Neuf blocs ne sont touchés par aucun scénario et portent chacun un défaut confirmé :
+électrolyseur, réacteur néoplasique, convoyeur et conduit de phase, pont à conduit, pompes
+renforcée, rotative et à impulsion, mass driver. Le banc ne couvre pas ce qu'il ne pose pas.
+
+### 2. Relancer l'audit sur ce qu'il n'a pas vu
 
 Un audit multi-agent a relu le moteur classe par classe contre la source du jeu, avec
 trois sceptiques par trouvaille. Il a tourné **avant** les charges utiles, le module
@@ -18,7 +54,7 @@ solides. Tout ce code n'a donc jamais été relu par personne d'autre que celui 
 bougé, plus le harnais, dont deux réglages ont changé depuis : le stock de départ
 (objets et liquides) et l'appel à `placed()`.
 
-### 2. Le reste de la famille des charges utiles
+### 3. Le reste de la famille des charges utiles
 
 Le socle est là et mesuré : la cargaison glisse, les convoyeurs battent sur l'horloge de
 la carte, le reconstructeur consomme, le constructeur fabrique. Ce qui manque demande une
@@ -32,7 +68,7 @@ avec son contenu**.
 Un `BuildPayload` porte aujourd'hui un nom ; il lui faudra porter des objets et des
 liquides.
 
-### 3. `UnitAssembler`
+### 4. `UnitAssembler`
 
 Transcrit à moitié et non coché, pour une raison précise. Ses quatre drones et son
 énergie se mesurent en trente secondes ; l'unité qu'il assemble demande trois mille
@@ -40,7 +76,7 @@ images **et** que les drones soient en position, ce qui dépend de leur vol. Il 
 soit un modèle de vol minimal, soit un scénario plus long, et le banc accepte déjà une
 durée par scénario.
 
-### 4. Les processeurs : déclarer, pas simuler
+### 5. Les processeurs : déclarer, pas simuler
 
 Un processeur ne consomme rien du tout, ni énergie ni objets. Son seul effet sur un débit
 passe par une instruction, `control`, sur les blocs qu'il pilote. Simuler tout
@@ -56,19 +92,19 @@ Ce qu'il faut faire à la place, en deux temps :
    liens **écrits**. Un processeur qui ne fait que `sensor` et `print` ne change aucun
    débit, et c'est la majorité de ceux qu'on croise.
 
-### 5. La longue traîne des blocs
+### 6. La longue traîne des blocs
 
 `docs/blocs.md` tient le compte, généré depuis la liste de classes du jeu. Une case
 cochée veut dire transcrite **et** mesurée dans un vrai serveur.
 
-### 6. Place de marché
+### 7. Place de marché
 
 - Comparer deux schématiques côte à côte.
 - Filtrer sur ce dont elle a besoin : « j'ai du charbon, montre ce que je peux faire
   tourner ».
 - Classement par cuivre investi et pas seulement par bloc.
 
-### 7. Reste
+### 8. Reste
 
 - Diagnostic explicite : « trois bandes reliées à rien », en tête plutôt qu'en bas.
 - Marquer plusieurs blocs d'un coup (glisser sur une rangée de tuyaux).
