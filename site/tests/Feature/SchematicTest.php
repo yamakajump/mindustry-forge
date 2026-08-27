@@ -330,7 +330,11 @@ it('garde le sol avec la schematique et le rend en la rouvrant', function () {
         ->assertCreated();
 
     $kept = Schematic::first();
-    expect($kept->ground)->toBe($sol);
+    /* `toEqual` et non `toBe` : MySQL range les cles d un objet JSON par longueur puis par
+       octets, donc `wall` ressort avant `floor` alors qu on les avait ecrites dans l autre
+       sens. L ordre des cles d un objet JSON ne veut rien dire, et l exiger faisait passer
+       ce test sur SQLite et echouer en production. */
+    expect($kept->ground)->toEqual($sol);
 
     $this->actingAs($user)
         ->getJson("/api/schematiques/{$kept->slug}")
@@ -372,6 +376,6 @@ it('modifie le sol d une schematique sans toucher au reste', function () {
         ->assertOk();
 
     $kept->refresh();
-    expect($kept->ground)->toBe(['5,5' => ['floor' => 'sand', 'overlay' => 'ore-lead']])
+    expect($kept->ground)->toEqual(['5,5' => ['floor' => 'sand', 'overlay' => 'ore-lead']])
         ->and($kept->name)->toBe('Avant');
 });
