@@ -1,0 +1,105 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12,
+      "liquid": "slag",
+      "amount": 9999.667
+    },
+    {
+      "block": "pyrolysis-generator",
+      "x": 14,
+      "y": 13,
+      "liquid": "water",
+      "amount": 45.897373
+    },
+    {
+      "block": "pyrolysis-generator",
+      "x": 14,
+      "y": 13,
+      "liquid": "slag",
+      "amount": 150
+    },
+    {
+      "block": "pyrolysis-generator",
+      "x": 14,
+      "y": 13,
+      "liquid": "arkycite",
+      "amount": 150
+    },
+    {
+      "block": "conduit",
+      "x": 16,
+      "y": 13,
+      "liquid": "water",
+      "amount": 6.0819736
+    },
+    {
+      "block": "liquid-tank",
+      "x": 18,
+      "y": 13,
+      "liquid": "water",
+      "amount": 547.6822
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 14,
+      "liquid": "arkycite",
+      "amount": 9999.333
+    }
+  ],
+  "batteries": [
+    {
+      "block": "battery-large",
+      "x": 15,
+      "y": 16,
+      "charge": 0.8390532
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "pyrolysis-generator",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conduit",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "liquid-tank",
+      "x": 18,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "battery-large",
+      "x": 15,
+      "y": 16,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

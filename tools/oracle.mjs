@@ -926,11 +926,46 @@ const SCENARIOS = {
      multiplication: an ordinary drill on sixteen tiles runs sixteen times as often, this
      one runs at the same pace and hands over sixteen at a time. Twelve seconds of nothing
      and then a lump, which is what backs a belt up.
-     There is no boosted twin here, and the reason is worth writing down: both burst
-     drills want two liquids at once, water and ozone or hydrogen and cyanogen, and a block
-     in this engine holds one. The boost is transcribed and cannot be measured until the
-     liquid module has more than one slot. */
+     The boosted twin wants water and ozone at the same time, which is the pair this
+     engine could not hold until the liquid module grew more than one slot. */
   "burst-drill": () => burst(false),
+  "burst-drill-boosted": () => burst(true),
+
+  /* A pyrolysis generator, which drinks two liquids and pours a third: slag and arkycite
+     in, water out, and no items anywhere. The block that the one-liquid module made
+     impossible, and the reason it was worth fixing rather than working around. */
+  "gen-pyrolysis": () => [
+    // Covers 0..2 by 0..2.
+    { x: 1, y: 1, block: "pyrolysis-generator", rotation: 0 },
+    { x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("slag") },
+    { x: -1, y: 2, block: "liquid-source", rotation: 0, raw: liquid("arkycite") },
+    { x: 3, y: 1, block: "conduit", rotation: 0 },
+    // Covers 4..6 by 0..2.
+    { x: 5, y: 1, block: "liquid-tank", rotation: 0 },
+    // Covers 1..3 by 3..5, against the generator's top edge.
+    { x: 2, y: 4, block: "battery-large", rotation: 0 },
+  ],
+
+  /* A water extractor, which squeezes water out of **dry** ground: `canPump` is
+     `!floor.isLiquid`, so standing one in a lake is what stops it. Its base efficiency is
+     one, so it works on any dry floor and the ground's water attribute is a bonus on top.
+     Bare metal has none, so this is the plain case: 0.11 a frame, 6.6 a second. */
+  "extractor-water": () => ({
+    tiles: [
+      // Covers 0..1 by 0..1.
+      { x: 0, y: 0, block: "water-extractor", rotation: 0 },
+      { x: -1, y: 0, block: "power-source", rotation: 0 },
+      { x: 2, y: 0, block: "conduit", rotation: 0 },
+      // Covers 3..5 by -1..1.
+      { x: 4, y: 0, block: "liquid-tank", rotation: 0 },
+    ],
+  }),
+
+  /* An oil extractor, whose base efficiency is **zero**: the sand under it is the whole
+     output and one off the sand makes nothing at all. Nine tiles of sand at 0.7 give 0.7,
+     so it pumps at seven tenths of its nameplate and no rate table says so. */
+  "extractor-oil": () => extractor(true),
+  "extractor-oil-bare": () => extractor(false),
 
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
@@ -1032,6 +1067,27 @@ function bore(lines) {
   };
 }
 
+/** An oil extractor, on sand or on bare floor. */
+function extractor(sandy) {
+  const ground = [];
+  if (sandy) {
+    for (let x = 0; x <= 2; x++) for (let y = 0; y <= 2; y++) ground.push(`sand-floor@${x},${y}`);
+  }
+  return {
+    tiles: [
+      // Covers 0..2 by 0..2.
+      { x: 1, y: 1, block: "oil-extractor", rotation: 0 },
+      { x: -1, y: 1, block: "power-source", rotation: 0 },
+      { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("sand") },
+      { x: -1, y: 2, block: "liquid-source", rotation: 0, raw: liquid("water") },
+      { x: 3, y: 1, block: "conduit", rotation: 0 },
+      // Covers 4..6 by 0..2.
+      { x: 5, y: 1, block: "liquid-tank", rotation: 0 },
+    ],
+    ground,
+  };
+}
+
 /** A cliff crusher facing two walls of the same kind. */
 function crusher(wall) {
   return {
@@ -1046,7 +1102,7 @@ function crusher(wall) {
   };
 }
 
-/** An impact drill on sixteen tiles of copper. */
+/** An impact drill on sixteen tiles of copper, with ozone to speed it up or without. */
 function burst(boosted) {
   const tiles = [
     // Covers 1..4 by 1..4.

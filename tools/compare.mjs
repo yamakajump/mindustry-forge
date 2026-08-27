@@ -23,7 +23,7 @@ const { World } = await import(new URL("../site/public/forge/engine/core.js", im
 const { behaviourOf } = await import(
   new URL("../site/public/forge/engine/carriers.js", import.meta.url));
 const { gridsOf } = await import(new URL("../site/public/forge/engine/power.js", import.meta.url));
-const { attributeOf, beamOf, wallSumOf, yieldOf } = await import(
+const { attributeOf, beamOf, dryTilesOf, wallSumOf, yieldOf } = await import(
   new URL("../site/public/forge/ground.js", import.meta.url));
 
 /**
@@ -54,17 +54,20 @@ const MACHINE_BLOCKS = new Set(Object.entries(known.blocks)
  * world differently, so everything is placed relative to the leftmost and lowest of its
  * own kind and matched in that order.
  */
-function lineUp(list, keys) {
+function lineUp(list, keys, tie = null) {
   if (!list.length) return [];
   const left = Math.min(...list.map((one) => one.x));
   const bottom = Math.min(...list.map((one) => one.y));
+  const order = (one) => one.at + (tie ? `\u0000${one[tie]}` : "");
   return list
     .map((one) => {
       const out = { at: `${one.x - left},${one.y - bottom}` };
       for (const key of keys) out[key] = one[key];
       return out;
     })
-    .sort((a, b) => a.at.localeCompare(b.at));
+    // A tiebreaker where one position can hold several rows, which a block holding two
+    // liquids does: sorted by position alone the two sides pair them off differently.
+    .sort((a, b) => order(a).localeCompare(order(b)));
 }
 
 /**
@@ -109,8 +112,7 @@ function fill(world, stock) {
     if (!build) continue;
     if (what.includes("~")) {
       const [liquid, amount] = what.split("~");
-      build.liquid = liquid;
-      build.liquidAmount = Number(amount);
+      build.liquids.add(liquid, Number(amount));
     } else {
       const [item, count] = what.split("*");
       build.items.add(item, Number(count));
@@ -128,6 +130,7 @@ export async function ported(code, ticks, ground = [], stock = []) {
     node.attrsum = attributeOf(node, painted, known);
     node.beam = beamOf(node, painted, known);
     node.wallsum = wallSumOf(node, painted, known);
+    node.dry = dryTilesOf(node, painted, known);
   }
 
   const world = new World(graph, behaviourOf).wire(gridsOf);
@@ -145,10 +148,9 @@ export async function ported(code, ticks, ground = [], stock = []) {
       items: Object.fromEntries([...build.items.counts].filter(([, n]) => n > 0)),
     }));
 
-  const pools = world.builds
-    .filter((build) => build.liquid && build.liquidAmount > 0.001)
-    .map((build) => ({ x: build.x, y: build.y,
-                       liquid: build.liquid, amount: build.liquidAmount }));
+  const pools = world.builds.flatMap((build) =>
+    [...build.liquids.held()].map(([liquid, amount]) => (
+      { x: build.x, y: build.y, liquid, amount })));
 
   const batteries = world.builds
     .filter((build) => (build.block.power_capacity || 0) > 0)
@@ -182,7 +184,7 @@ export async function ported(code, ticks, ground = [], stock = []) {
 
   return {
     containers: lineUp(containers, ["items"]),
-    pools: lineUp(pools, ["liquid", "amount"]),
+    pools: lineUp(pools, ["liquid", "amount"], "liquid"),
     batteries: lineUp(batteries, ["charge"]),
     stocks: lineUp(stocks, ["items"]),
     ammo: lineUp(ammo, ["ammo"]),
@@ -198,7 +200,7 @@ export function measured(name) {
   return {
     ticks: raw.ticks,
     containers: lineUp(raw.containers || [], ["items"]),
-    pools: lineUp(raw.pools || [], ["liquid", "amount"]),
+    pools: lineUp(raw.pools || [], ["liquid", "amount"], "liquid"),
     batteries: lineUp(raw.batteries || [], ["charge"]),
     stocks: lineUp((raw.running || [])
       .filter((one) => one.holds && MACHINE_BLOCKS.has(one.block))
@@ -261,12 +263,39 @@ export function differences(mine, theirs) {
     for (let i = 0; i < mine.pools.length; i++) {
       const here = mine.pools[i];
       const there = theirs.pools[i];
+      /* Half a unit is the resolution of a settled pipeline, and it is not a tolerance
+         granted out of kindness: it is the difference between asking "how much is there"
+         and "which pipe is it in". A gradient is a fixed point the two engines approach
+         from different sides, `moveLiquid` steps by fractions of a unit, and the residue
+         in the first pipe of a run lands a few tenths apart while the **total** across the
+         run comes out the same to a hundredth. So the total is checked exactly, below, and
+         the distribution is checked to half a unit. */
       const size = Math.max(there.amount, 1);
-      const gap = here.liquid !== there.liquid
-        ? 1 : Math.abs(here.amount - there.amount) / size;
+      const apart = Math.abs(here.amount - there.amount);
+      const gap = here.liquid !== there.liquid ? 1
+        : apart <= 0.5 ? 0 : apart / size;
       out.push({ what: `${here.at} ${there.liquid}`,
                  mine: here.amount.toFixed(1), theirs: there.amount.toFixed(1), gap });
     }
+  }
+
+  /* And the total of each liquid, everywhere, compared to a hundredth.
+  
+     This is the half of the liquid comparison that has to be strict. Where a settled
+     gradient puts its last half unit is the order two engines updated three tanks in;
+     whether the run is holding six hundred units or five hundred and ninety is a fact
+     about the blocks, and nothing may lose or invent a drop. */
+  const liquids = new Set([...mine.pools.map((one) => one.liquid),
+                           ...theirs.pools.map((one) => one.liquid)]);
+  for (const liquid of liquids) {
+    const sum = (pools) => pools
+      .filter((one) => one.liquid === liquid)
+      .reduce((total, one) => total + one.amount, 0);
+    const a = sum(mine.pools);
+    const b = sum(theirs.pools);
+    const apart = Math.abs(a - b);
+    out.push({ what: `${liquid} en tout`, mine: a.toFixed(2), theirs: b.toFixed(2),
+               gap: apart <= 0.01 ? 0 : apart / Math.max(b, 1) });
   }
 
   if (mine.stocks.length !== theirs.stocks.length) {

@@ -262,17 +262,24 @@ public class Measure implements ApplicationListener {
         for (Tile tile : Vars.world.tiles) {
             if (tile.build == null || tile.build.tile != tile) continue;
             if (tile.build.liquids == null) continue;
-            Liquid current = tile.build.liquids.current();
-            float amount = tile.build.liquids.currentAmount();
-            if (current == null || amount <= 0.001f) continue;
+            /* Every liquid it holds, not only `current()`.
 
-            Jval one = Jval.newObject();
-            one.put("block", tile.block().name);
-            one.put("x", tile.x);
-            one.put("y", tile.y);
-            one.put("liquid", current.name);
-            one.put("amount", amount);
-            pools.asArray().add(one);
+               `current` is whichever was added last, which for a block that holds one is
+               the same thing and for a block that holds two is a coin toss: an oil
+               extractor drinks water and makes oil, and reporting one of the two picked a
+               different winner on each side of the comparison. */
+            for (Liquid liquid : Vars.content.liquids()) {
+                float amount = tile.build.liquids.get(liquid);
+                if (amount <= 0.001f) continue;
+
+                Jval one = Jval.newObject();
+                one.put("block", tile.block().name);
+                one.put("x", tile.x);
+                one.put("y", tile.y);
+                one.put("liquid", liquid.name);
+                one.put("amount", amount);
+                pools.asArray().add(one);
+            }
         }
         root.put("pools", pools);
 

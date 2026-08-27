@@ -288,14 +288,18 @@ const burner = {
       for (const [item, amount] of Object.entries(block.input)) {
         if (!alight && build.items.get(item) < amount) efficiency = 0;
       }
-    } else if (!alight && !fuel) {
+    } else if (block.accepts && !alight && !fuel) {
+      /* Only if it eats items at all. Two of the seven do not: a pyrolysis generator and a
+         chemical combustion chamber run on liquid alone, `hasItems` is false, and the item
+         branch of `updateTile` never executes. Asked for a fuel they do not take, both sat
+         at zero for ever. */
       efficiency = 0;
     }
 
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
       const wanted = (rate / TICKS) * delta;
       if (wanted <= 0) continue;
-      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      const held = build.liquids.get(liquid);
       efficiency = Math.min(efficiency, held / wanted);
     }
     if (block.power > 0) efficiency = Math.min(efficiency, build.state.power ?? 1);
@@ -331,10 +335,7 @@ const burner = {
 
     // A liquid ingredient, drunk by the frame and scaled by how well it is running.
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
-      if (build.liquid === liquid) {
-        build.liquidAmount = Math.max(
-          0, build.liquidAmount - (rate / TICKS) * delta * efficiency);
-      }
+      build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
     }
 
     // And one that comes out, which is what a pyrolysis generator is for. A neoplasia
@@ -440,7 +441,7 @@ const impact = {
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
       const wanted = (rate / TICKS) * delta;
       if (wanted <= 0) continue;
-      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      const held = build.liquids.get(liquid);
       efficiency = Math.min(efficiency, held / wanted);
     }
     const status = build.state.power ?? 1;
@@ -465,10 +466,7 @@ const impact = {
     }
 
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
-      if (build.liquid === liquid && efficiency > 0) {
-        build.liquidAmount = Math.max(
-          0, build.liquidAmount - (rate / TICKS) * delta * efficiency);
-      }
+      if (efficiency > 0) build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
     }
 
     build.state.running = build.state.warmup ** 5;
@@ -524,10 +522,14 @@ const nuclear = {
 
     // Cooling, by hand: whatever is in the tank, at `coolantPower` per unit.
     const power = block.coolant_power || 0.5;
-    if (build.state.heat > 0 && build.liquidAmount > 0) {
-      const used = Math.min(build.liquidAmount, build.state.heat / power);
+    /* `min(liquids.currentAmount(), heat / coolantPower)` and then
+       `liquids.remove(liquids.current(), ...)`: it cools with **whatever it happens to be
+       holding**, not with the liquid its filter names. Water poured into a thorium reactor
+       cools it exactly as cryofluid does. */
+    if (build.state.heat > 0 && build.liquids.currentAmount > 0) {
+      const used = Math.min(build.liquids.currentAmount, build.state.heat / power);
       build.state.heat -= used * power;
-      build.liquidAmount = Math.max(0, build.liquidAmount - used);
+      build.liquids.remove(build.liquids.current, used);
     }
 
     build.state.heat = Math.min(1, Math.max(0, build.state.heat));
@@ -537,7 +539,7 @@ const nuclear = {
       build.state.dead = true;
       build.state.running = 0;
       build.items.clear();
-      build.liquidAmount = 0;
+      build.liquids.clear();
     }
   },
 };
@@ -572,7 +574,7 @@ const variable = {
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
       const wanted = (rate / TICKS) * delta;
       if (wanted <= 0) continue;
-      const has = build.liquid === liquid ? build.liquidAmount : 0;
+      const has = build.liquids.get(liquid);
       efficiency = Math.min(efficiency, has / wanted);
     }
     efficiency = Math.max(0, Math.min(1, efficiency));
@@ -585,10 +587,7 @@ const variable = {
     efficiency *= target;
 
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
-      if (build.liquid === liquid) {
-        build.liquidAmount = Math.max(
-          0, build.liquidAmount - (rate / TICKS) * delta * efficiency);
-      }
+      build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
     }
 
     build.state.running = efficiency;
@@ -596,7 +595,7 @@ const variable = {
       build.state.dead = true;
       build.state.running = 0;
       build.items.clear();
-      build.liquidAmount = 0;
+      build.liquids.clear();
     }
 
     // Read for next frame, which is when the consumption pass will look at it.

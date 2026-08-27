@@ -1017,9 +1017,9 @@ const turretIdle = {
     // turret reloads without it, just slower.
     const coolant = block.coolant_amount || 0;
     const worth = block.coolant_worth?.[build.liquid] || 0;
-    if (coolant > 0 && worth > 0 && efficiency > 0 && build.liquidAmount > 0) {
-      const used = Math.min(build.liquidAmount, coolant * delta);
-      build.liquidAmount -= used;
+    if (coolant > 0 && worth > 0 && efficiency > 0 && build.liquids.currentAmount > 0) {
+      const used = Math.min(build.liquids.currentAmount, coolant * delta);
+      build.liquids.remove(build.liquids.current, used);
       build.state.reload += used * worth * efficiency;
     }
   },
@@ -1050,10 +1050,11 @@ const laserTurret = {
     const block = build.block;
     if (build.state.reload <= 0) return;
 
-    const used = Math.min(build.liquidAmount, block.coolant_amount || 0) * build.delta(step);
+    const held = build.liquids.currentAmount;
+    const used = Math.min(held, block.coolant_amount || 0) * build.delta(step);
     if (used <= 0) return;
-    build.state.reload -= used * (block.coolant_worth?.[build.liquid] || 0);
-    build.liquidAmount = Math.max(0, build.liquidAmount - used);
+    build.state.reload -= used * (block.coolant_worth?.[build.liquids.current] || 0);
+    build.liquids.remove(build.liquids.current, used);
   },
 };
 

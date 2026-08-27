@@ -79,6 +79,65 @@ export class Held {
 }
 
 /**
+ * What a building is holding, liquid by liquid.
+ *
+ * `mindustry.world.modules.LiquidModule`: a counter per liquid, plus a **current** one that
+ * is simply whatever was added last. The two are easy to confuse and the difference is the
+ * whole design. A block holds as many liquids as it likes; what `current` decides is what
+ * it will **accept**, because `acceptLiquid` is `current == liquid || currentAmount < 0.2`.
+ *
+ * Held as one scalar for a long time here, which read as "a block holds one liquid" and is
+ * a different rule. It cost nothing until it cost three Erekir generators, an oil extractor
+ * and the boost on both burst drills, all of which want two liquids at once: an oil
+ * extractor drinks water and makes oil, and with one slot it could do neither.
+ */
+export class Liquids {
+  constructor() {
+    this.amounts = new Map();
+    /* Water, and not nothing. `LiquidModule` starts its cursor on liquid zero, so an empty
+       block reads as holding water, and `acceptLiquid` on an empty block passes through the
+       `currentAmount < 0.2` arm rather than the `current == liquid` one either way. */
+    this.current = null;
+  }
+
+  get(liquid) { return this.amounts.get(liquid) || 0; }
+  get currentAmount() { return this.current ? this.get(this.current) : 0; }
+  get total() {
+    let sum = 0;
+    for (const amount of this.amounts.values()) sum += amount;
+    return sum;
+  }
+
+  add(liquid, amount) {
+    if (amount <= 0) return 0;
+    this.amounts.set(liquid, this.get(liquid) + amount);
+    this.current = liquid;
+    return amount;
+  }
+
+  /** `remove` moves the cursor too, which is `add` with a negative number underneath. */
+  remove(liquid, amount) {
+    const taken = Math.min(this.get(liquid), amount);
+    if (taken <= 0) return 0;
+    this.amounts.set(liquid, this.get(liquid) - taken);
+    this.current = liquid;
+    return taken;
+  }
+
+  clear() {
+    this.amounts.clear();
+    this.current = null;
+  }
+
+  /** Every liquid it actually holds, for the report. */
+  *held() {
+    for (const [liquid, amount] of this.amounts) {
+      if (amount > 0.0001) yield [liquid, amount];
+    }
+  }
+}
+
+/**
  * One building.
  *
  * Behaviour lives in a table of roles rather than in a class hierarchy, because the thing
@@ -97,8 +156,7 @@ export class Build {
     this.size = node.block.size || 1;
 
     this.items = new Held();
-    this.liquid = null;
-    this.liquidAmount = 0;
+    this.liquids = new Liquids();
 
     /** The rotating cursor `dump` walks `proximity` from. */
     this.cdump = 0;
@@ -115,6 +173,12 @@ export class Build {
 
   get itemCapacity() { return this.block.item_capacity || 10; }
   get liquidCapacity() { return this.block.liquid_capacity || 10; }
+
+  /* `liquids.current()` and `liquids.currentAmount()`, under the names the rest of this
+     engine already used when a block could only hold one. Reading them is fine; anything
+     that knows **which** liquid it means should say so and use `liquids.get`. */
+  get liquid() { return this.liquids.current; }
+  get liquidAmount() { return this.liquids.currentAmount; }
 
   /** `Building.delta()`: the frame, scaled by anything speeding this block up. */
   delta(step) { return step * this.timeScale; }
@@ -198,12 +262,9 @@ export class Build {
    * the amount separately is what makes that fall out instead of having to be enforced.
    */
   addLiquid(liquid, amount) {
-    if (!this.liquid || this.liquidAmount <= 0.0001) this.liquid = liquid;
-    if (this.liquid !== liquid) return 0;
-    const room = Math.max(0, this.liquidCapacity - this.liquidAmount);
-    const taken = Math.min(room, amount);
-    this.liquidAmount += taken;
-    return taken;
+    // The cap is per liquid, as the game's is: `liquidCapacity - liquids.get(liquid)`.
+    const room = Math.max(0, this.liquidCapacity - this.liquids.get(liquid));
+    return this.liquids.add(liquid, Math.min(room, amount));
   }
 
   acceptLiquid(source, liquid) {
@@ -215,13 +276,23 @@ export class Build {
        like something that can hold water: a source beside one filled it, and a wire ended
        up with ten units of water in it. */
     if (!this.block.has_liquids) return false;
-    // A machine only takes a liquid its recipe names, which is what stops a press from
-    // filling up with water it cannot use.
-    if (this.block.drinks && !this.block.drinks.includes(liquid)) return false;
-    const wanted = this.block.input_liquid || {};
-    if (!this.block.drinks && Object.keys(wanted).length && !(liquid in wanted)) return false;
-    return (!this.liquid || this.liquid === liquid || this.liquidAmount < 0.2)
-      && this.liquidAmount < this.liquidCapacity;
+    /* A machine takes a liquid its recipe names and **nothing else**, which is what stops
+       a press from filling up with water it cannot use - and, less obviously, what stops a
+       water extractor from taking back the water it just pushed out. It consumes no liquid
+       at all, so it accepts none: without that it and the pipe in front of it passed the
+       same water back and forth and the tank at the end stayed empty.
+
+       `drinks` is the game's own `liquidFilter`, which is exactly `consumesLiquid`. */
+    if (!this.block.drinks?.includes(liquid)) return false;
+
+    /* And that is the whole of `Building.acceptLiquid`: `hasLiquids && consumesLiquid`.
+
+       The famous "one liquid at a time" rule is **not** here. It lives in the overrides -
+       a pipe, a tank, a liquid turret - and those are the blocks a player notices it on.
+       Applied to every block instead, an oil extractor could not take the water it drinks
+       once it held a fifth of a unit of the oil it makes: it oscillated between the two
+       and produced a sixth of what the game produces. */
+    return this.liquids.get(liquid) < this.liquidCapacity;
   }
 
   /**
@@ -249,11 +320,11 @@ export class Build {
 
   moveLiquid(target, liquid) {
     const next = target?.liquidDestination(this, liquid);
-    if (!next || next === this || !this.liquidAmount) return 0;
-    const held = this.liquid === liquid ? this.liquidAmount : 0;
+    if (!next || next === this) return 0;
+    const held = this.liquids.get(liquid);
     if (held <= 0) return 0;
 
-    const theirs = next.liquid === liquid ? next.liquidAmount : 0;
+    const theirs = next.liquids.get(liquid);
     const ofract = theirs / (next.block.liquid_capacity || 10);
     const fract = held / this.liquidCapacity * (this.block.liquid_pressure ?? 1);
 
@@ -262,7 +333,7 @@ export class Build {
 
     if (flow > 0 && ofract <= fract && next.acceptLiquid(this, liquid)) {
       const taken = next.addLiquid(liquid, flow);
-      this.liquidAmount -= taken;
+      this.liquids.remove(liquid, taken);
       return taken;
     }
     return 0;
@@ -270,8 +341,7 @@ export class Build {
 
   /** `dumpLiquid`: offer it round the neighbours, cursor rotating, as items are. */
   dumpLiquid(liquid, scaling = 2) {
-    const held = this.liquid === liquid ? this.liquidAmount : 0;
-    if (held <= 0.0001 || !this.proximity.length) return;
+    if (this.liquids.get(liquid) <= 0.0001 || !this.proximity.length) return;
 
     const start = this.cdump;
     for (let i = 0; i < this.proximity.length; i++) {
@@ -279,7 +349,7 @@ export class Build {
       const other = this.proximity[(i + start) % this.proximity.length];
       if (!other.acceptLiquid?.(this, liquid)) continue;
       this.moveLiquid(other, liquid);
-      if (this.liquidAmount <= 0.0001) return;
+      if (this.liquids.get(liquid) <= 0.0001) return;
     }
   }
 

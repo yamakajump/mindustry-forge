@@ -90,6 +90,26 @@ export function beamOf(node, ground, catalogue) {
 }
 
 /**
+ * How many of the tiles under a solid pump it can work on.
+ *
+ * `canPump` for a solid pump is `!floor.isLiquid`, which reads backwards until you see
+ * what the block is: a water extractor squeezes water out of **dry** ground, so standing
+ * it in a lake is what stops it.
+ */
+export function dryTilesOf(node, ground, catalogue, bare = "metal-floor") {
+  if (node.role !== "solid-pump" || !ground || !catalogue) return 0;
+  let dry = 0;
+  for (const [x, y] of footprintOf(node)) {
+    /* A tile nobody painted is bare floor, and bare floor is dry. Read as "unknown, so
+       not countable", a water extractor on an unpainted map made nothing at all, which is
+       the opposite of the truth: it is the one block that works **anywhere** dry. */
+    const floor = catalogue.blocks[layersAt(ground, x, y).floor || bare];
+    if (floor && !floor.floor_liquid) dry++;
+  }
+  return dry;
+}
+
+/**
  * How much sand is in the cliff a wall crafter is pressed against.
  *
  * The same geometry as a beam drill and a shorter reach: only the tile **immediately** in
