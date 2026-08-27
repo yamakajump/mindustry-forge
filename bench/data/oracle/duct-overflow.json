@@ -29,9 +29,36 @@
       }
     },
     {
-      "block": "duct",
+      "block": "conveyor",
       "x": 15,
       "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "vault",
+      "x": 18,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 146
+      }
+    },
+    {
+      "block": "duct",
+      "x": 14,
+      "y": 14,
       "efficiency": 1,
       "holds":{
         "copper": 1
@@ -39,43 +66,33 @@
     },
     {
       "block": "vault",
-      "x": 17,
-      "y": 13,
-      "efficiency": 0,
-      "holds":{
-        "copper": 448
-      }
-    },
-    {
-      "block": "duct",
-      "x": 14,
-      "y": 14,
-      "efficiency": 1
-    },
-    {
-      "block": "vault",
       "x": 14,
       "y": 16,
-      "efficiency": 0
+      "efficiency": 0,
+      "holds":{
+        "copper": 298
+      }
     }
   ],
   "containers": [
     {
       "block": "vault",
-      "x": 17,
+      "x": 18,
       "y": 13,
       "items":{
-        "copper": 448
+        "copper": 146
       }
     },
     {
       "block": "vault",
       "x": 14,
       "y": 16,
-      "items":{}
+      "items":{
+        "copper": 298
+      }
     }
   ],
   "per_second":{
-    "copper": 14.933333
+    "copper": 14.8
   }
 }

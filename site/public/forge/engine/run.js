@@ -95,8 +95,14 @@ class Tap {
  * rather than a factory running, and counting them reports a design as slower than it is
  * for as long as the measurement is short.
  */
-export function simulate(graph, { feeds = {}, stock = {}, seconds = 20, warmup = 5 } = {}) {
+export function simulate(graph, {
+  feeds = {}, stock = {}, seconds = 20, warmup = 5, catalogue = null,
+} = {}) {
   const world = new World(graph, behaviourOf);
+  /* Two blocks need to look another one up rather than only themselves: a constructor
+     reads the build cost of what it was set to, and an unset unloader walks the game's own
+     item list in the game's own order. Without it they both do nothing at all. */
+  world.catalogue = catalogue;
 
   // What a container starts out holding. A vault full of copper with an unloader beside it
   // is an ordinary thing to want to measure, and it cannot be expressed as a rate.

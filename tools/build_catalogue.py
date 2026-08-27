@@ -56,7 +56,7 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
         # Les charges utiles : une unite ou un bloc transporte comme cargaison.
         "move_time", "payload_limit", "payload_speed", "payload_rotate_speed",
         "outputs_payload", "accepts_payload", "construct_time", "upgrades",
-        "capacities", "build_time", "build_speed", "produces", "incinerable")
+        "capacities", "build_time", "build_speed", "produces", "incinerable", "instant_transfer")
 
 
 def main() -> None:

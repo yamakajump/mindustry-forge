@@ -140,25 +140,69 @@ function pass(build, next, item) {
  * there is, and it is why a router splits evenly without anything computing a half.
  */
 const router = {
-  begin(build) { build.state.from = null; },
+  begin(build) {
+    build.state.item = null;
+    build.state.from = null;
+    build.state.time = 0;
+  },
 
+  /** One item, and not one **stack**: `lastItem == null && items.total() == 0`. */
   acceptItem(build, source, item) {
-    return build.items.total === 0;
+    return build.state.item === null && build.items.total === 0;
   },
 
   handleItem(build, source, item) {
     build.items.add(item);
+    build.state.item = item;
+    build.state.time = 0;
     build.state.from = source;
   },
 
-  canDump(build, other, item) {
-    return other !== build.state.from;
-  },
+  update(build, world, step) {
+    if (build.state.item === null && build.items.total > 0) {
+      build.state.item = build.items.first();
+    }
+    if (build.state.item === null) return;
 
-  update(build) {
-    if (build.items.total) build.dump();
+    /* Eight frames, and only towards another router or a block that transfers instantly.
+       Towards a belt, a duct or a machine it lets go on the same frame it received.
+
+       This was a plain `dump()` before, so a chain of routers carried eleven items a
+       second where the game carries seven and a half: forty seven per cent too much, and
+       invisible to every scenario because they all ended on a belt or a vault. */
+    build.state.time += (1 / (build.block.speed || 8)) * build.delta(step);
+
+    const target = routerTarget(build, build.state.item, false);
+    if (!target) return;
+    const waits = target.role === "router" || target.block.instant_transfer;
+    if (waits && build.state.time < 1) return;
+
+    // Walked twice: once to find, once to move the cursor. The second walk advances it
+    // past every neighbour it looked at, refusals included.
+    routerTarget(build, build.state.item, true);
+    target.handleItem(build, build.state.item);
+    build.items.remove(build.state.item);
+    build.state.item = null;
   },
 };
+
+/**
+ * `Router.getTileTarget`.
+ *
+ * The cursor is read once before the walk and advanced inside it, so the order is fixed
+ * even as it moves. And an item handed in by an **overflow gate** is never handed back to
+ * it, which is what stops the two of them passing one item to and fro for ever.
+ */
+function routerTarget(build, item, set) {
+  const start = build.cdump;
+  for (let i = 0; i < build.proximity.length; i++) {
+    const other = build.proximity[(i + start) % build.proximity.length];
+    if (set) build.cdump = (build.cdump + 1) % build.proximity.length;
+    if (other === build.state.from && build.state.from?.block.overflow) continue;
+    if (other.acceptItem(build, item)) return other;
+  }
+  return null;
+}
 
 /**
  * A junction.
@@ -313,39 +357,143 @@ const store = {
  * `60 / speed`, which is eleven a second for the plain one.
  */
 const unloader = {
-  begin(build) { build.state.timer = 0; },
+  begin(build) {
+    build.state.timer = 0;
+    build.state.rotations = 0;
+    build.state.used = new Map();
+  },
 
   acceptItem() { return false; },
 
   update(build, world, step) {
-    const speed = TICKS / (build.block.items_per_second || 11);
+    const speed = build.block.speed || 5.4545;
     build.state.timer += build.delta(step);
-    if (build.state.timer < speed) return;
-    build.state.timer -= speed;
+    /* Not a metronome. Below the threshold it returns and **keeps** the surplus, so the
+       counter runs away while there is nothing to do; on a failed attempt it is clamped
+       back to the threshold so it retries every frame until it works. The rate is a
+       ceiling, not a cadence. */
+    if (build.state.timer < speed || build.proximity.length < 2) return;
 
     const wanted = build.node.configured;
-    const froms = build.proximity.filter((other) => other.role === "store");
-    if (!froms.length) return;
+    const sides = neighboursOf(build);
 
-    // Out of the fullest, into anything else that will have it.
-    froms.sort((a, b) => b.items.total - a.items.total);
-    for (const from of froms) {
-      const items = wanted ? [wanted] : [...from.items.counts.keys()];
-      for (const item of items) {
-        if (!from.items.has(item)) continue;
-        for (const to of build.proximity) {
-          if (to === from || to.role === "store" && to.items.total >= from.items.total) {
-            continue;
-          }
-          if (!to.acceptItem(build, item)) continue;
-          from.items.remove(item);
-          to.handleItem(build, item);
-          return;
-        }
+    let moved = false;
+    const item = wanted
+      ? (pairFor(build, sides, wanted) ? wanted : null)
+      : firstPossible(build, sides);
+
+    if (item) {
+      /* `rotations = item.id` even when the unloader is set to one item, which is a
+         harmless oddity of the game's and is kept because the next unset walk starts from
+         it. */
+      build.state.rotations = itemId(build, item);
+
+      for (const side of sides) {
+        const most = side.build.getMaximumAccepted
+          ? side.build.getMaximumAccepted(item) : side.build.itemCapacity;
+        side.loadFactor = most === 0 ? 0 : side.build.items.get(item) / most;
+        side.lastUsed = (build.state.used.get(side.build) || 0) + 1;
+        build.state.used.set(side.build, side.lastUsed);
+      }
+
+      sides.sort(compareSides);
+
+      const to = sides.find((one) => one.canLoad);
+      const from = [...sides].reverse().find((one) => one.canUnload);
+
+      /* The rule that stops two identical blocks passing one item back and forth for ever:
+         if the source could also receive, and the two are equally full **in proportion**,
+         nothing moves. */
+      if (to && from && (from.loadFactor !== to.loadFactor || !from.canLoad)) {
+        to.build.handleItem(build, item);
+        from.build.items.remove(item);
+        build.state.used.set(to.build, 0);
+        build.state.used.set(from.build, 0);
+        moved = true;
       }
     }
+
+    build.state.timer = moved ? build.state.timer % speed
+                              : Math.min(build.state.timer, speed);
   },
 };
+
+/**
+ * Which neighbours an unloader may use, and for what.
+ *
+ * Two rules, both easy to get backwards. It may take out of **anything** whose block is
+ * `unloadable`, which is nearly everything and includes a crafter and a drill: an unloader
+ * against a graphite press really does pull graphite out of it. And it may never put into
+ * a **store or a core**, whatever the numbers say: `canLoad` is
+ * `!(other instanceof CoreBuild || other instanceof StorageBuild)`.
+ *
+ * Read as "out of a container, into anything emptier", an unloader against a press moved
+ * nothing where the game moves eleven a second, and an unloader between two vaults moved
+ * eleven a second where the game moves none.
+ */
+function neighboursOf(build) {
+  const out = [];
+  for (const other of build.proximity) {
+    const storage = other.role === "store" || other.role === "core";
+    const canTake = other.block.unloadable
+      && (build.block.allow_core_unload || !storage);
+    if (!storage || canTake) {
+      out.push({ build: other, notStorage: !storage, canLoad: false,
+                 canUnload: false, loadFactor: 0, lastUsed: 0 });
+    }
+  }
+  return out;
+}
+
+/** `isPossibleItem`: is there a giver **and** a taker, and are they two different blocks. */
+function pairFor(build, sides, item) {
+  let giver = false;
+  let taker = false;
+  let distinct = false;
+  for (const side of sides) {
+    side.canLoad = side.notStorage && side.build.acceptItem(build, item);
+    side.canUnload = side.build.block.unloadable && side.build.items.get(item) > 0;
+    distinct = distinct || (giver && side.canLoad) || (taker && side.canUnload);
+    giver = giver || side.canUnload;
+    taker = taker || side.canLoad;
+  }
+  return distinct;
+}
+
+/**
+ * Unset, it walks the item list from where it left off and takes the first that works.
+ *
+ * A rotation over **item kinds** and not over containers, which is why an unset unloader
+ * between one vault holding two metals alternates evenly between them.
+ */
+function firstPossible(build, sides) {
+  const order = build.world?.catalogue?.items;
+  if (!order) return null;
+  const names = Object.keys(order);
+  for (let i = 0; i < names.length; i++) {
+    const item = names[(build.state.rotations + i + 1) % names.length];
+    if (pairFor(build, sides, item)) return item;
+  }
+  return null;
+}
+
+const itemId = (build, item) => build.world?.catalogue?.items?.[item]?.id ?? 0;
+
+/**
+ * `Unloader.comparator`, five criteria and every one of them load bearing.
+ *
+ * Ascending, so the bottom of the list is the destination and the top is the source. The
+ * last one is a least-recently-used tiebreak, and it is what shares an unloader's output
+ * evenly between two belts instead of saturating whichever came first.
+ */
+function compareSides(a, b) {
+  const bool = (x, y) => (x === y ? 0 : x ? 1 : -1);
+  return bool(!a.notStorage, !b.notStorage)
+    || bool(a.canUnload && !a.canLoad, b.canUnload && !b.canLoad)
+    || bool(a.canUnload || !a.canLoad, b.canUnload || !b.canLoad)
+    || (a.loadFactor - b.loadFactor)
+    || (b.lastUsed - a.lastUsed);
+}
 
 /**
  * A bridge.

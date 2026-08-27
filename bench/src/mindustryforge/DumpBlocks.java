@@ -196,6 +196,10 @@ public class DumpBlocks {
             // fraction it holds, times this, against the fraction the other holds, so a
             // settled line has a gradient along it rather than a flat rate.
             entry.put("liquid_pressure", block.liquidPressure);
+            /* Whether a router will wait before handing to it. Two blocks set it, a sorter
+               and an overflow gate, and it is the difference between a router chain at
+               eleven items a second and at seven and a half. */
+            if (block.instantTransfer) entry.put("instant_transfer", true);
             /* How fast cargo slides into place and turns. Both are on `PayloadBlock` and
                neither is ever redefined: 0.7 pixels and 5 degrees a frame. A payload spends
                real time arriving, and a reconstructor does not start on the frame the
@@ -602,8 +606,13 @@ public class DumpBlocks {
             entry.put("carries", "item");
             return;
         }
-        if (block instanceof Router) {
+        if (block instanceof Router plain) {
             entry.put("role", "router");
+            /* Eight frames to hand on, and only towards another router or a block that
+               transfers instantly. Towards a belt or a machine it lets go the same frame.
+               Without it a chain of routers carries eleven items a second where the game
+               carries seven and a half. */
+            entry.put("speed", plain.speed);
             entry.put("carries", "item");
             return;
         }
@@ -892,6 +901,10 @@ public class DumpBlocks {
             // `speed * 60` it came out at 327 items a second instead of 11: thirty times
             // too fast, and a container behind one looked like an inexhaustible mine.
             entry.put("items_per_second", TPS / Math.max(0.0001f, unloader.speed));
+            // Frames between two pulls, which is what the simulation counts. `60 / speed`
+            // is what a player reads; `speed` is what the block actually uses.
+            entry.put("speed", unloader.speed);
+            if (unloader.allowCoreUnload) entry.put("allow_core_unload", true);
             return;
         }
         if (block instanceof ItemSource source) {

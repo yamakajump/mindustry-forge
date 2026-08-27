@@ -43,6 +43,12 @@ const KNOWN_GAPS = {
      updated in rather than a fact about the block. The half unit is one frame: the engine
      runs one more update of the world than the countdown counts. */
   "turret-meltdown-drain": 0.05,
+  /* Un routeur qui partage entre deux presses. Les deux sortent dix-huit graphite, au
+     chiffre pres, et l'une des deux garde neuf charbons la ou le jeu en garde dix. Le debit
+     est identique et le tampon d'une des deux branches se cale une image plus tot : le
+     curseur du routeur sert l'est avant le nord, et la difference vit dans la case que le
+     tampon vient d'ouvrir. Nomme plutot qu'arrondi, comme les autres. */
+  "crafter-two-presses": 0.11,
 };
 
 /**
