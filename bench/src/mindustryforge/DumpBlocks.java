@@ -15,6 +15,7 @@ import mindustry.world.blocks.distribution.Duct;
 import mindustry.world.blocks.distribution.ItemBridge;
 import mindustry.world.blocks.distribution.OverflowDuct;
 import mindustry.world.blocks.distribution.OverflowGate;
+import mindustry.world.blocks.distribution.MassDriver;
 import mindustry.world.blocks.environment.Floor;
 import mindustry.world.blocks.environment.OverlayFloor;
 import mindustry.world.blocks.defense.OverdriveProjector;
@@ -612,6 +613,27 @@ public class DumpBlocks {
                 entry.put("buffer_speed", buffered.speed);
                 entry.put("buffer_capacity", buffered.bufferCapacity);
             }
+            return;
+        }
+        if (block instanceof MassDriver driver) {
+            /* Sans branche a lui, le mass driver tombait dans le repli `sink` : aucun
+               `ConsumeItems`, donc ni `accepts` ni `input` dans le catalogue, donc
+               `wants()` repondait non a tout et une paire de drivers relies transportait
+               zero objet par seconde. */
+            entry.put("role", "mass-driver");
+            entry.put("carries", "item");
+            /* En cases, comme celle d un pont : le jeu la tient en pixels et tout
+               le reste du catalogue compte en cases. */
+            entry.put("range", driver.range / 8f);
+            entry.put("rotate_speed", driver.rotateSpeed);
+            entry.put("min_distribute", driver.minDistribute);
+            entry.put("reload", driver.reload);
+            entry.put("bullet_speed", driver.bulletSpeed);
+            entry.put("bullet_lifetime", driver.bulletLifetime);
+            entry.put("translation", driver.translation);
+            /* Le debit annonce dans la fiche du jeu : une salve de `itemCapacity` toutes
+               les `reload` images, plafonnee par ce que le recepteur peut ecouler. */
+            entry.put("items_per_second", driver.itemCapacity * (TPS / driver.reload));
             return;
         }
         if (block instanceof OverflowGate gate) {

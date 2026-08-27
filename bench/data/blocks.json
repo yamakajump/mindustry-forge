@@ -7139,9 +7139,16 @@
         "silicon": 75
       },
       "power": 105,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "mass-driver",
+      "carries": "item",
+      "range": 55,
+      "rotate_speed": 5,
+      "min_distribute": 10,
+      "reload": 200,
+      "bullet_speed": 5.5,
+      "bullet_lifetime": 200,
+      "translation": 7,
+      "items_per_second": 36
     },
     "duct":{
       "name": "duct",
@@ -9890,10 +9897,10 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "water": 1,
         "slag": 1,
-        "cryofluid": 1,
-        "oil": 1
+        "water": 1,
+        "oil": 1,
+        "cryofluid": 1
       },
       "input_liquid":{}
     },
@@ -10180,10 +10187,10 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "water": 0.4,
         "slag": 0.4,
-        "cryofluid": 0.4,
-        "oil": 0.4
+        "water": 0.4,
+        "oil": 0.4,
+        "cryofluid": 0.4
       },
       "input_liquid":{}
     },
