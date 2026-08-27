@@ -51,7 +51,7 @@ export async function loadCatalogue() {
 
 /** The catalogue in use, once one is. */
 export function catalogueOf() {
-  if (!catalogue) throw new Error("catalogue pas encore charge");
+  if (!catalogue) throw new Error("the catalogue has not been loaded yet");
   return catalogue;
 }
 

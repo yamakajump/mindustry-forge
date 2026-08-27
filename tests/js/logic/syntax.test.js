@@ -1,14 +1,14 @@
 /**
- * Ce que l'oracle ne peut pas dire.
+ * What the oracle cannot say.
  *
- * `oracle.test.js` tient l'analyseur contre le jeu : memes instructions, memes noops, memes
- * refus. Mais le jeu ne previent de rien, et c'est tout l'interet de l'outil. Il ne dit pas
- * « ce saut vise une ligne qui n'existe pas », il saute et le programme s'arrete ; il ne dit
- * pas « cell1 n'est relie a rien », il lit null.
+ * `oracle.test.js` holds the parser against the game: same instructions, same noops, same
+ * refusals. But the game warns about nothing, and that is the whole point of the tool. It
+ * does not say "this jump aims at a line that does not exist", it jumps and the program
+ * stops; it does not say "cell1 is linked to nothing", it reads null.
  *
- * Ces avertissements-la sont a nous, donc ils sont testes ici, un par un, avec le cas ou ils
- * ne doivent surtout pas se declencher juste a cote. Un avertissement qui crie sur du code
- * correct est un avertissement qu'on eteint, et on eteint la colonne entiere avec.
+ * Those warnings are ours, so they are tested here one by one, each next to the case where
+ * it must not fire. A warning that shouts at correct code is a warning people switch off,
+ * and they switch off the whole column with it.
  */
 
 import test from "node:test";
@@ -68,8 +68,8 @@ test("un nom qui ressemble a un lien absent est signale", () => {
 });
 
 test("un nom que le programme ecrit lui-meme n'est pas un lien oublie", () => {
-  /* `getlink` remplit `bloc1` : c'est une variable qui contient un batiment, pas un lien.
-     Sans cette exception l'outil crierait sur la facon idiomatique de parcourir ses liens. */
+  /* `getlink` fills `bloc1`: a variable holding a building, not a link. Without this
+     exception the tool would shout at the idiomatic way of walking your own links. */
   assert.deepEqual(keys("getlink bloc1 0\nprint bloc1\n"), []);
 });
 
@@ -100,8 +100,8 @@ test("trop de liens est signale sans qu'il faille les taper", () => {
 test("un guillemet ouvert refuse le programme sans effacer le reste", () => {
   const report = parse('set x 1\nprint "jamais referme\n');
   assert.ok(refused(report));
-  /* La ligne d'avant garde ses couleurs : un editeur qui devient aveugle pendant qu'on
-     tape une chaine est un editeur qu'on regarde devenir aveugle a chaque chaine. */
+  /* The line before keeps its colours: an editor that goes blind while a string is being
+     typed is an editor you watch go blind on every string. */
   assert.equal(report.lines[0].tokens[0].kind, "instruction");
   assert.equal(report.statements.length, 1);
 });

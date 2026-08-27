@@ -94,7 +94,7 @@ export function quote(value) {
 /** How big a processor is, from the catalogue rather than from a table kept here. */
 function processor(name) {
   const found = catalogueOf().processors.find((entry) => entry.name === name);
-  if (!found) throw new Error(`${name} n'est pas un processeur`);
+  if (!found) throw new Error(`${name} is not a processor`);
   return found;
 }
 
@@ -111,6 +111,9 @@ export async function toSchematicBytes({ code = "", links = [], block = "micro-p
 
   const limits = catalogueOf().limits;
   if (config.length > limits.config_bytes) {
+    /* French, and not by oversight: this one reaches a player, because the page shows the
+       message of whatever the copy button threw. It should be a dictionary key like every
+       other sentence a player reads, and it is not one yet. */
     throw new Error(
       `configuration de ${config.length} octets, le jeu en accepte ${limits.config_bytes}`);
   }

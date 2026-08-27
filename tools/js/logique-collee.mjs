@@ -1,13 +1,13 @@
 /**
- * La schematique qu'on donne au jeu pour lui demander ce qu'il en lit.
+ * The schematic handed to the game so it can be asked what it reads in it.
  *
- * Un seul programme, ecrit une fois, et deux lecteurs : `tools/build_logic_paste.py` le
- * fabrique et le passe a Mindustry, et `tests/js/logic/collee.test.js` le refabrique et le
- * compare a ce que le jeu en a dit. Ecrit ici plutot que dans les deux, parce que deux
- * copies d'un programme d'epreuve finissent par prouver deux choses differentes.
+ * One program, written once, with two readers: `tools/build_logic_paste.py` builds it and
+ * passes it to Mindustry, and `tests/js/logic/collee.test.js` rebuilds it and compares it to
+ * what the game said. Written here rather than in both, because two copies of a trial
+ * program end up proving two different things.
  *
- * Il vise les coins qui font perdre du temps : un commentaire, une etiquette, une chaine
- * avec des espaces, un lien negatif dans les deux directions, un saut par nom.
+ * It aims at the corners that cost time: a comment, a label, a string with spaces in it, a
+ * link negative on both axes, and a jump by name.
  */
 
 import { readFileSync } from "node:fs";
@@ -23,7 +23,7 @@ export function catalogue() {
     new URL("../../site/public/forge/logic/instructions.json", import.meta.url), "utf8")));
 }
 
-/** Le programme d'epreuve, tel quel. */
+/** The trial program, as it stands. */
 export function build() {
   return new Program()
     .comment("lit une cellule et l'affiche")
@@ -38,9 +38,9 @@ export function build() {
     .line("jump", "boucle", "always");
 }
 
-/* Lance directement plutot qu'importe. `pathToFileURL` plutot qu'un `file://`
-   assemble a la main : sous Windows le chemin devient `file:///C:/...`, la comparaison
-   tombait a faux et le script sortait sans rien ecrire, en silence et en code 0. */
+/* Run directly rather than imported. `pathToFileURL` rather than a hand-assembled
+   `file://`: on Windows the path becomes `file:///C:/...`, the comparison read false, and
+   the script exited without writing anything, silently and with status 0. */
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   catalogue();
   process.stdout.write(await build().toSchematic({ block: BLOCK, name: "epreuve" }));

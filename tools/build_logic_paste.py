@@ -1,19 +1,18 @@
-"""Coller une schematique dans le vrai jeu, et noter ce qu'il en lit.
+"""Paste a schematic into the real game, and write down what it reads.
 
     python tools/build_logic_paste.py
 
-Le programme d'un processeur sort de trois formats emboites : la schematique, la
-configuration d'une case, le bloc compresse du programme. Les trois sont ecrits dans ce
-depot, et un aller-retour entre eux ne prouve qu'une chose, que ce code est d'accord avec
-ce code.
+A processor's program comes out of three nested formats: the schematic, one tile's
+configuration, the compressed program blob. All three are written in this repository, and a
+round trip between them proves one thing only, that this code agrees with this code.
 
-Alors : `tools/js/logique-collee.mjs` fabrique la schematique, `tools/LogicPaste.java` la
-donne a `Schematics.readBase64` comme le fait la touche coller du jeu, et le verdict part
-dans `bench/data/logique-collee.json`. Le test le relit sans avoir besoin d'une JVM.
+So: `tools/js/logique-collee.mjs` builds the schematic, `tools/LogicPaste.java` hands it to
+`Schematics.readBase64` exactly as the game's paste key does, and the verdict goes to
+`bench/data/logique-collee.json`. The test reads it back without needing a JVM.
 
-Ce que ca a trouve du premier coup : l'octet de version d'une configuration de processeur
-vaut 1, pas 0. Les deux se relisent, parce que le lecteur du jeu le jette, donc l'erreur
-etait invisible d'ici. `matches_game_writer` est le champ qui l'a dite.
+What it found on the first pass: the version byte of a processor configuration is 1, not 0.
+Both sides read either one back, because the game's reader discards it, so the mistake was
+invisible from here. `matches_game_writer` is the field that said so.
 """
 
 from __future__ import annotations
@@ -27,7 +26,7 @@ BUILDER = Path("tools/js/logique-collee.mjs")
 PASTE = Path("tools/LogicPaste.java")
 TARGET = Path("bench/data/logique-collee.json")
 
-#: Où les autres scripts du dépôt vont chercher le jeu, depuis le dossier parent.
+#: Where the other scripts in this repository look for the game, from the parent folder.
 DEFAULT_CLASSES = Path("../mindustry-ai/mindustry-env/server-release.jar")
 
 
@@ -51,8 +50,8 @@ def main() -> None:
     if seen.returncode:
         raise SystemExit(seen.stderr.strip() or "java a echoue")
 
-    # Le jeu bavarde sur ses secteurs au chargement du contenu ; seule la derniere ligne
-    # est la reponse.
+    # The game chatters about its sectors while loading content; only the last line is the
+    # answer.
     verdict = json.loads(seen.stdout.strip().splitlines()[-1])
     args.target.write_text(
         json.dumps(verdict, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

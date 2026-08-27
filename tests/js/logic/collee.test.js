@@ -1,20 +1,20 @@
 /**
- * La schematique qu'on produit, relue par le vrai jeu.
+ * The schematic we produce, read back by the real game.
  *
- * Un programme de processeur traverse trois formats emboites, et les trois sont ecrits ici.
- * Un aller-retour d'un bout a l'autre ne prouve donc rien : il montre que ce depot est
- * d'accord avec lui-meme, ce qui reste vrai le jour ou il a tort.
+ * A processor program crosses three nested formats and all three are written here. A round
+ * trip from one end to the other therefore proves nothing: it shows this repository agrees
+ * with itself, which stays true on the day it is wrong.
  *
- * `bench/data/logique-collee.json` est ce que Mindustry a lu, pour de vrai, dans la
- * schematique fabriquee par `tools/js/logique-collee.mjs` : `Schematics.readBase64`, la
- * meme fonction que la touche coller du jeu. `tools/build_logic_paste.py` le reprend quand
- * le programme d'epreuve change. Ce test refabrique la meme schematique et exige que notre
- * lecteur y trouve exactement ce que le jeu y a trouve.
+ * `bench/data/logique-collee.json` is what Mindustry actually read in the schematic built by
+ * `tools/js/logique-collee.mjs`, through `Schematics.readBase64`, the same function the
+ * game's paste key calls. `tools/build_logic_paste.py` re-takes it when the trial program
+ * changes. This test rebuilds the same schematic and demands that our reader find in it
+ * exactly what the game found.
  *
- * `matches_game_writer` est le champ qui a servi : il compare nos octets a ceux de
- * `LogicBlock.compress`, et il valait faux, parce que l'octet de version d'une
- * configuration de processeur vaut 1 et qu'on ecrivait 0. Les deux se relisaient, des deux
- * cotes, sans que rien ne le signale.
+ * `matches_game_writer` is the field that earned its keep: it compares our bytes to those of
+ * `LogicBlock.compress`, and it read false, because the version byte of a processor
+ * configuration is 1 and we were writing 0. Both sides read it back fine, and nothing said
+ * a word.
  */
 
 import test from "node:test";

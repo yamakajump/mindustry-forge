@@ -1,13 +1,12 @@
 /**
- * Le format de sortie, du cote de ceux qui l'appelleront.
+ * The output format, from the side of whoever will call it.
  *
- * Deux chantiers a venir fabriquent du code de processeur au lieu de le taper : une image
- * vers un afficheur, une image vers une toile. Ils passeront par `Program` et par
- * `toSchematic`, sans jamais taper une ligne a la main. Donc ce qui est teste ici, ce n'est
- * pas l'editeur, c'est l'interface : ce qu'un appelant obtient, et ce qu'il obtient quand il
- * demande l'impossible.
+ * Two chantiers to come produce processor code instead of typing it: an image onto a
+ * display, an image onto a canvas. Both will go through `Program` and `toSchematic` without
+ * ever typing a line by hand. So what is tested here is not the editor, it is the interface:
+ * what a caller gets, and what it gets when it asks for the impossible.
  *
- * L'aller-retour avec le vrai jeu est dans `collee.test.js`. Ici, les bords.
+ * The round trip against the real game is in `collee.test.js`. Here, the edges.
  */
 
 import test from "node:test";
@@ -38,9 +37,8 @@ test("un programme vide est une chaine vide, pas un saut de ligne", () => {
 });
 
 test("une chaine perd ce que le jeu ne sait pas lire", () => {
-  /* `LParser.string` n'a aucun echappement : il court jusqu'au guillemet suivant. Un
-     guillemet garde dans une chaine ne produit pas un texte bizarre, il refuse tout le
-     programme. */
+  /* `LParser.string` has no escapes at all: it runs to the next quote. A quote kept inside
+     a string does not produce odd text, it refuses the whole program. */
   assert.equal(quote('dit "bonjour"'), '"dit bonjour"');
   assert.equal(quote("deux\nlignes"), '"deuxlignes"');
 });
@@ -86,12 +84,12 @@ test("la taille de la schematique vient du bloc choisi", async () => {
 
 test("un bloc qui n'est pas un processeur est refuse plutot qu'ecrit", async () => {
   await assert.rejects(() => toSchematic({ code: "end\n", block: "router" }),
-    /n'est pas un processeur/);
+    /is not a processor/);
 });
 
 test("un programme trop gros pour la configuration est refuse avant d'etre ecrit", async () => {
-  /* Du texte que la compression ne peut pas ecraser, sinon cent kilo-octets de la meme
-     lettre tiennent dans deux cents et le test ne teste rien. */
+  /* Text the compressor cannot crush, or a hundred kilobytes of the same letter fit in two
+     hundred and the test tests nothing. */
   let code = "";
   for (let at = 0; code.length < catalogue.limits.code_bytes; at++) {
     code += `set v${at} ${(at * 2654435761) % 1000000007}\n`;
