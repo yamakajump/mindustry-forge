@@ -66,11 +66,18 @@
 
   <div class="bloc-grid">
     @foreach($blocks as $name => $block)
-      @php($sprite = \App\Services\Sprites::block($name, 48))
       <a class="bloc-tile" href="/blocs/{{ $name }}">
-        @if($sprite)
-          <span class="sprite sprite-tile" style="{{ $sprite }}" aria-hidden="true"></span>
-        @endif
+        {{-- Une image par bloc plutot que la feuille entiere en fond.
+
+             Mesure sur cette page : elle telechargeait 1 393 ko, dont 1 311 pour `atlas.png`,
+             soit 94 % du poids pour montrer 254 vignettes. Chaque icone servie a l'unite pese
+             environ un kilooctet, et `loading="lazy"` fait que seules celles a l'ecran
+             partent : personne ne regarde 254 vignettes a la fois.
+
+             `t=32` et pas 64 : ces sprites sont nativement en 32 pixels, et `pixelated`
+             agrandit sans rien perdre. Demander 64 doublerait le poids pour les memes pixels. --}}
+        <img class="icone bloc-tile-image" src="/icone/bloc/{{ $name }}.png?t=32"
+             width="48" height="48" loading="lazy" decoding="async" alt="">
         <span class="bloc-name">{{ $block->title() }}</span>
         <span class="bloc-id">{{ $name }}</span>
       </a>
