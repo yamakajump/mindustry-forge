@@ -23,7 +23,13 @@ use Illuminate\Support\Str;
  */
 class CatalogueSeeder extends Seeder
 {
-    /** How many, by default. The two existing catalogues hold about this between them. */
+    /**
+     * How many, by default. The two existing catalogues hold about this between them.
+     *
+     * Overridable with `CATALOGUE_SEED_COUNT`, because continuous integration wants a few
+     * hundred rows to check that the queries run at all, and only a machine measuring
+     * something wants fifteen thousand.
+     */
     private const COUNT = 15000;
 
     /** Inserted in blocks, because fifteen thousand round trips is its own benchmark. */
@@ -41,11 +47,12 @@ class CatalogueSeeder extends Seeder
         $author = User::first() ?? User::factory()->create();
         $engine = EngineVersion::current();
         $now = now();
+        $wanted = max(1, (int) env('CATALOGUE_SEED_COUNT', self::COUNT));
 
         $made = 0;
-        while ($made < self::COUNT) {
+        while ($made < $wanted) {
             $rows = [];
-            $size = min(self::CHUNK, self::COUNT - $made);
+            $size = min(self::CHUNK, $wanted - $made);
 
             for ($i = 0; $i < $size; $i++) {
                 $n = $made + $i;
@@ -61,6 +68,8 @@ class CatalogueSeeder extends Seeder
                 $makes = self::ITEMS[$n % count(self::ITEMS)];
                 $needs = self::ITEMS[($n * 7 + 3) % count(self::ITEMS)];
                 $blocks = 4 + ($n * 13) % 400;
+                $powerMade = ($n * 37) % 6000;
+                $powerUsed = ($n * 11) % 2000;
 
                 $rows[] = [
                     'user_id' => $imported ? null : $author->id,
@@ -83,8 +92,11 @@ class CatalogueSeeder extends Seeder
                     'width' => 4 + $n % 60,
                     'height' => 4 + $n % 40,
                     'blocks' => $blocks,
-                    'power_made' => ($n * 37) % 6000,
-                    'power_used' => ($n * 11) % 2000,
+                    'power_made' => $powerMade,
+                    'power_used' => $powerUsed,
+                    // Written by hand because this insert goes round Eloquent for speed,
+                    // and so misses the hook that normally keeps this column in step.
+                    'power_per_block' => ($powerMade - $powerUsed) / max(1, $blocks),
                     'produces' => json_encode([$makes => 10 + $n % 300]),
                     'needs' => json_encode([$needs => 5 + $n % 150]),
                     'views' => $n % 900,

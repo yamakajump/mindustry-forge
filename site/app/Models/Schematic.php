@@ -62,7 +62,7 @@ class Schematic extends Model
     protected $fillable = [
         'user_id', 'slug', 'name', 'description', 'code', 'visibility',
         'analysis', 'width', 'height', 'blocks', 'power_made', 'power_used',
-        'produces', 'needs',
+        'power_per_block', 'produces', 'needs',
         'source', 'source_id', 'author', 'fetched_at', 'source_meta',
         'analysed_at', 'engine_version',
     ];
@@ -126,6 +126,23 @@ class Schematic extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Keep the ranking column in step with what it is derived from.
+     *
+     * Derived once, on the way out, whatever wrote the row: the upload route, a moderator
+     * editing a name, the ingestion pass, a factory in a test. Computing it only where the
+     * analysis arrives would leave every other path writing a schematic whose stored rank
+     * disagrees with its own figures, and the listing would quietly sort by the stale one.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $schematic) {
+            $schematic->power_per_block =
+                ((float) $schematic->power_made - (float) $schematic->power_used)
+                / max(1, (int) $schematic->blocks);
+        });
     }
 
     /** Whether it was collected from somewhere else rather than posted here. */
@@ -239,6 +256,9 @@ class Schematic extends Model
         }
 
         $power = (array) ($analysis['potential'] ?? []);
+        $made = max(0, (float) ($power['made'] ?? 0));
+        $used = max(0, (float) ($power['spent'] ?? 0));
+        $blocks = min(65535, max(0, (int) ($analysis['blocks'] ?? 0)));
 
         // Stamped here rather than by each caller. Every route that takes an analysis in
         // goes through this method, so this is the one place that cannot be forgotten, and
@@ -249,9 +269,11 @@ class Schematic extends Model
             'engine_version' => EngineVersion::current(),
             'width' => min(4096, max(0, (int) ($analysis['width'] ?? 0))),
             'height' => min(4096, max(0, (int) ($analysis['height'] ?? 0))),
-            'blocks' => min(65535, max(0, (int) ($analysis['blocks'] ?? 0))),
-            'power_made' => max(0, (float) ($power['made'] ?? 0)),
-            'power_used' => max(0, (float) ($power['spent'] ?? 0)),
+            'blocks' => $blocks,
+            'power_made' => $made,
+            'power_used' => $used,
+            // `power_per_block`, the column the default ranking reads, is not here: it is
+            // derived on save so that every write path gets it, not just this one.
             'produces' => $produces,
             'needs' => $needs,
         ];
