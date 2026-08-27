@@ -304,3 +304,55 @@
   font: 13px/1.5 var(--mono);
   color: var(--k-valeur, #d7b3ff);
 }
+
+/* Opened from a schematic ---------------------------------------------------------------- */
+
+/*
+ * Which processor, out of however many the schematic holds.
+ *
+ * A list rather than a pair of tabs, because measurement said so: of ninety-six schematics
+ * taken from the live catalogue, forty per cent carry a processor and forty-five per cent of
+ * those carry more than one. The worst of them carries twenty-two, which no row of tabs
+ * survives.
+ */
+.venu-de {
+  max-width: 1400px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 2px solid var(--edge);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+.venu-de-titre { margin: 0 0 10px; font-size: 14px; }
+
+.venu-de-retour { font-size: 13px; }
+
+.processeurs {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.processeur {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 2px 10px;
+  align-items: baseline;
+  padding: 7px 12px;
+  min-height: auto;
+  font-size: 13px;
+  text-align: left;
+}
+
+/* The block, the position and the line count. "Processor 3 of 22" tells a reader nothing;
+   "a micro processor at 14, 6, forty lines" tells them which one they meant. */
+.processeur b { font-weight: 600; }
+.processeur .ou { color: var(--dim); font-family: var(--mono); font-size: 12px; }
+.processeur .combien { color: var(--dim); font-size: 12px; }
+
+.processeur.ouvert { border-color: var(--accent); background: #2b323c; }
