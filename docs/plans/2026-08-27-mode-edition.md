@@ -880,11 +880,20 @@ Dans `render.js`, sortir de `draw` le calcul de `box` (aujourd'hui lignes 305 à
 
 Quand `camera` est présent, `draw` ne redimensionne plus le canvas sur le contenu : il prend `viewport`, garde `camera.scale` comme échelle, et ne dessine que les tuiles qui tombent dans la boîte.
 
-- [ ] **Étape 4 : Ajouter les calques mis en cache**
+- [ ] **Étape 4 : Mesurer avant de mettre en calques**
 
-Toujours dans `draw`, quand `camera` est présent : peindre le sol et les blocs dans deux canvas hors écran gardés entre deux appels, et ne les repeindre que lorsque leur version change. `draw` accepte pour ça deux options de plus, `groundVersion` et `tilesVersion`, deux nombres que l'appelant incrémente quand il a changé quelque chose.
+Le plan prévoyait ici deux canvas hors écran, un pour le sol et un pour les blocs, repeints
+seulement quand leur version change. **Reporté après mesure**, décision prise le 27/08/2026.
 
-Le repère est le tableau de bord de `mindustry-ai`, qui a rencontré ce mur et l'a résolu ainsi : 4 096 tuiles repeintes à chaque `pointermove` pendant un tracé sont un diaporama.
+Le repère invoqué était le tableau de bord de `mindustry-ai`, qui a rencontré ce mur et l'a
+résolu ainsi. Mais il repeint jusqu'à 65 000 tuiles réparties sur six parties simultanées,
+là où un schéma est plafonné à 64 × 64, soit 4 096 cases dont seules les occupées portent un
+sprite. Écrire un cache pour un problème qu'on n'a pas mesuré, c'est ajouter deux états à
+tenir cohérents contre une lenteur supposée.
+
+La mesure se fait donc en tâche 7, quand le plateau existe : compter le temps d'un `draw`
+sur une schématique dense pendant un tracé. Au-dessus de 8 ms par image, on met en calques
+et on l'écrit ici. En dessous, on ne le fait pas et on l'écrit aussi.
 
 - [ ] **Étape 5 : Vérifier que le rapport n'a pas bougé**
 

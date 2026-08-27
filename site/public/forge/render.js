@@ -289,31 +289,71 @@ function blender(tiles, sizeOf, roleOf) {
 }
 
 /**
+ * Which region of the world the drawing covers, in tiles.
+ *
+ * Two callers, two ways of deciding. The report has no camera: it frames the build itself,
+ * plus an apron when a block is waiting to be put down. The editor has one: it frames
+ * whatever the player is looking at, and the build may be half off screen or lost in the
+ * middle of an empty plain.
+ *
+ * Everything downstream is written against this box, so making the editor work is a matter
+ * of handing `draw` a different box rather than a second `draw`. That mattered: this
+ * repository has already paid for a second implementation of one question, deleted
+ * `simulate.js` over it, and said so in `docs/todo.md`.
+ *
+ * The camera box is deliberately fractional. Rounding it to whole tiles would leave the
+ * canvas a few pixels short of its own frame, which reads as a thin dead border that moves
+ * when you pan.
+ */
+export function viewportBox({ tight, apron = 0, camera = null, viewport = null }) {
+  if (camera && viewport) {
+    const width = viewport.width / camera.scale;
+    const height = viewport.height / camera.scale;
+    return {
+      left: camera.x - width / 2,
+      bottom: camera.y - height / 2,
+      width,
+      height,
+    };
+  }
+  if (!apron) return tight;
+  return {
+    left: tight.left - apron, bottom: tight.bottom - apron,
+    width: tight.width + apron * 2, height: tight.height + apron * 2,
+  };
+}
+
+/**
  * Draw the schematic onto a canvas, sized to fit the space it is given.
  *
  * Returns the scale used, so a caller can map a click back to a tile.
+ *
+ * Pass `camera` and `viewport` to draw a view of the world instead of a portrait of the
+ * schematic: the canvas then takes the size of the viewport, the scale comes from the
+ * camera, and the build is drawn wherever it happens to be.
  */
 export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   const context = canvas.getContext("2d");
   const tight = bounds(tiles, sizeOf);
 
   /* An apron of empty tiles around the build, for putting blocks down beyond its edge.
-     
+
      Without it a packed schematic cannot be extended at all: the first one tried had not a
      single free tile inside its own box, so every click landed on something and the
      palette had nowhere to put anything. Only asked for while a block is waiting to be
      placed, because the rest of the time it is empty space around a picture. */
   const apron = Math.max(0, options.margin || 0);
-  const box = apron
-    ? { left: tight.left - apron, bottom: tight.bottom - apron,
-        width: tight.width + apron * 2, height: tight.height + apron * 2 }
-    : tight;
+  const camera = options.camera || null;
+  const viewport = options.viewport || null;
+  const box = viewportBox({ tight, apron, camera, viewport });
   const room = options.width || canvas.clientWidth || 480;
 
   // Whole pixels per tile. A fractional scale makes 32 pixel art shimmer along its own
   // grid lines, which reads as a rendering fault rather than as pixel art.
   const fit = Math.floor(room / Math.max(box.width, box.height));
-  const scale = Math.max(8, Math.min(options.maxScale || 48, fit));
+  const scale = camera
+    ? camera.scale
+    : Math.max(8, Math.min(options.maxScale || 48, fit));
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
   canvas.width = Math.round(box.width * scale * dpr);
