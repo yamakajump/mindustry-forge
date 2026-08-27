@@ -2,6 +2,7 @@
   "name": "mindustry-forge",
   "private": true,
   "type": "module",
+  "license": "AGPL-3.0-or-later",
   "description": "Analyse a Mindustry schematic in the browser: what it makes, where it chokes, what it wastes",
   "scripts": {
     "test": "node --test \"tests/js/**/*.test.js\"",
