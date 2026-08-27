@@ -1,0 +1,36 @@
+name: Idea
+description: Something the site could do and does not.
+labels: ["idea"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before writing: [`docs/fonctionnalites.md`](../blob/main/docs/fonctionnalites.md)
+        lists what is planned and what was deliberately refused, with the reasons. If your
+        idea is already there, saying that you want it is still useful.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you were trying to do
+      description: >
+        The situation, not the solution. "I wanted to know which of two graphite lines is
+        better" tells us more than "add a comparison button", because it leaves room for a
+        better answer than the one you had in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: today
+    attributes:
+      label: What you do today instead
+      description: Even if the answer is "I gave up". Especially then.
+    validations:
+      required: false
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you imagined
+    validations:
+      required: false

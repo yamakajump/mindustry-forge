@@ -2,13 +2,11 @@
 #
 # Les deux autres workflows de ce depot (tests.yml, verify-catalogue.yml)
 # datent de la structure d'avant le restart et ne couvrent pas site/.
-# Celui-ci se declenche aussi sur la branche de travail, pas seulement
-# sur main : c'est elle qui part en production.
 name: site
 
 on:
   push:
-    branches: [main, "restart/**"]
+    branches: [main]
   pull_request:
 
 jobs:

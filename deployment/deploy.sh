@@ -17,7 +17,7 @@ set -euo pipefail
 
 APP_DIR="/var/www/mindustry-forge"
 SITE_DIR="${APP_DIR}/site"
-BRANCH="${DEPLOY_BRANCH:-restart/place-de-marche}"
+BRANCH="${DEPLOY_BRANCH:-main}"
 DB_NAME="mindustry_forge"
 DUMP_DIR="/var/backups/mindustry-forge/pre-deploy"
 PHP_FPM="php8.3-fpm"
