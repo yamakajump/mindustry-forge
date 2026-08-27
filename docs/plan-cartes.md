@@ -81,16 +81,34 @@ because a schematic can stand on painted ground. But a schematic is at most 64x6
 million sprites to make a thumbnail is the wrong shape of answer.
 
 The game's own answer is one pixel per tile taken from the floor's `mapColor`, which is
-what `MapIO.generatePreview` does. Ours cannot do that yet:
+what `MapIO.generatePreview` does.
+
+**This section said that was one line in the dumper. It is not, and the measurement is
+below.** Booted headless against the pinned jar, with `ContentLoader.createBaseContent()`:
 
 ```
-environment blocks in blocks.json : 102
-of those carrying a map colour    : 0
+floors the game knows        : 107
+of those with a map colour   : 13     and all thirteen are ores
+stone, sand-floor, grass,
+darksand, shale, ice, snow   : 000000ff
+ore-copper                   : d99d73ff
 ```
 
-So the preview needs one line in `tools/build_catalogue.py` and nothing else. That is the
-same answer as the colour registry needed for stripping tags out of names, and the two
-should be dumped in the same pass.
+The thirteen that answer are the ones whose colour is written into the block declaration,
+which for ores is the item's colour. Every terrain floor is black, because the game derives
+its map colour from the sprite when the texture atlas loads, and a headless server never
+loads one. Asking the dumper for it returns black for the whole terrain, which would draw
+every map as a black square and look like a rendering bug rather than a missing input.
+
+So the map colour has to come from the sprites, and we already have them: `atlas.png` is
+built by `tools/build_sprites.py` from the game's own assets, and the average of a floor's
+sprite is the same quantity by the same route the game takes. That is a different pass in a
+different tool, and it is worth knowing before somebody spends an afternoon on the dumper.
+
+The colour registry needed for stripping tags out of names **is** a dumper line, and it has
+been done: `Colors` is read from the game and written to `colors.json`, deliberately beside
+the catalogue rather than inside it, since `EngineVersion` hashes `blocks.json` and a
+colour cannot change a single figure in it.
 
 ## What this says about the order
 
@@ -99,12 +117,13 @@ third step rather than the first, for a reason that is a measurement and not an 
 the existing editor handles 4 096 tiles, and a map is 124 times that. A viewport, tiling
 and a level of detail are a different rendering problem, not the current editor scaled up.
 Whereas reading a map is a few hundred lines because the format lets us skip what is hard,
-and showing one is a dumper line away.
+and showing one needs the floor colours, which is a pass over sprites we already hold.
 
 The first slice worth doing, in order:
 
-1. `mapColor` and the colour registry into the dumper, one pass, one PR. Both are blocked
-   on the bench and both unblock something else.
+1. ~~`mapColor` and the colour registry into the dumper.~~ The registry is done. The map
+   colour is not a dumper field at all, see above: it comes from averaging the floor
+   sprites in `tools/build_sprites.py`, which is where the assets already are.
 2. A `.msav` reader for `meta`, `content` and the map region, skipping the rest. Held
    against the game the way `.msch` is: a map read here and a map read by the server have
    to agree on the terrain, or the reader is wrong.

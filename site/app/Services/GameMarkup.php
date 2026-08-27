@@ -24,21 +24,29 @@ namespace App\Services;
  *     `[Silicon]` included, is text.
  *   - An unclosed `[` is text.
  *
- * The last named case is deliberately not handled here, and that is the whole reason this
- * class exists as a subset rather than as a copy. It needs the game's colour registry, and
- * the same argument that keeps the block catalogue out of a hand-written list keeps a
- * colour list out of one: it belongs beside `blocks.json`, dumped by the bench. Until it
- * is, `[green]` survives and `[Silicon]` survives, which is the pair of outcomes worth
- * having. Half the defect closed today beats all of it closed next week, and the missing
- * half cannot break a correct name.
+ * That last case is why this reads a file instead of holding a list. The registry is dumped
+ * from `Colors` by the bench, the same way the block catalogue is, because a colour list
+ * typed here would be a second copy of the game's data right until the game adds a colour.
+ * It sits in `colors.json` rather than in `blocks.json` on purpose: `EngineVersion` hashes
+ * the catalogue, so putting a colour there would mark fifteen thousand stored analyses
+ * stale to add something that cannot change a single one of their figures.
+ *
+ * Both cases are kept because the game keeps both, and its lookup is exact: `[GREEN]` and
+ * `[green]` are markup, `[Green]` is a title.
  *
  * Written as a scan rather than as a regular expression, because that is what the game
- * does, and because the day the registry lands only `markupAt()` grows.
+ * does, and because a pattern cannot express "only if this name is registered".
  */
 class GameMarkup
 {
     /** How many hex digits a colour may carry, either side included. */
     private const HEX = [2, 8];
+
+    /** Where the bench leaves the game's own registry. */
+    private const REGISTRY = 'forge/colors.json';
+
+    /** @var array<string, string>|null */
+    private static ?array $named = null;
 
     /**
      * The text without the markup this class is sure about.
@@ -90,11 +98,31 @@ class GameMarkup
     }
 
     /**
+     * Every name the game answers to, read once from what the bench dumped.
+     *
+     * An empty registry is not a failure to shout about: it means the file has not been
+     * generated yet, and the honest behaviour then is to leave `[green]` alone rather than
+     * to guess. A tag left in is visible and gets reported; a title eaten is gone.
+     *
+     * @return array<string, string>
+     */
+    private static function named(): array
+    {
+        if (self::$named === null) {
+            $path = public_path(self::REGISTRY);
+            $found = is_file($path) ? json_decode((string) file_get_contents($path), true) : null;
+            self::$named = is_array($found) ? $found : [];
+        }
+
+        return self::$named;
+    }
+
+    /**
      * Where the markup starting after this bracket ends, or null if it is not markup.
      *
-     * Only the two unambiguous forms. A named colour returns null on purpose: without the
-     * game's registry there is no way to tell `[green]` from `[Silicon]`, and guessing
-     * wrong in that direction destroys somebody's title.
+     * A name is only markup when the registry holds that exact key, which is the game's own
+     * test. Anything else is copied through, and that is the safe direction: `[Silicon]` is
+     * somebody's title and there is one in the catalogue.
      */
     private static function markupAt(string $text, int $start, int $length): ?int
     {
@@ -108,7 +136,14 @@ class GameMarkup
         }
 
         if ($text[$start] !== '#') {
-            return null;
+            // A named colour, if the game knows that name. The closing bracket is found
+            // first so an unclosed one falls through to text, as it does in the game.
+            $close = strpos($text, ']', $start);
+
+            return $close !== false
+                && array_key_exists(substr($text, $start, $close - $start), self::named())
+                ? $close + 1
+                : null;
         }
 
         for ($at = $start + 1; $at < $length; $at++) {
