@@ -41,10 +41,14 @@ const BUILT = new RegExp(DOMAIN + "(?:[.][a-z0-9-]*)+(?:[$][{]|[{][$])");
 const ATTRIBUTE = /data-i18n(?:-[a-z-]+)?="([^"]+)"/g;
 
 /**
- * Every browser source that could name a key: the modules, and the static page.
+ * Every browser source that could name a key: the modules, and the pages.
  *
- * `i18n.js` is not one of them. It is the mechanism, not a caller, and the keys in its
- * documentation are examples of the shape rather than strings anyone puts on screen.
+ * Nothing is excluded, and that is deliberate. This scan used to skip any file called
+ * `i18n.js`, on the grounds that the mechanism is not one of its own callers. It was a
+ * name, not a place: the logic editor shipped its own `logic/i18n.js` relay holding fifty
+ * strings, and the exclusion made every one of them invisible here. Excluding by exact
+ * path would have closed that case; excluding nothing closes the ones nobody has invented
+ * yet, and it costs a documentation example that no longer looks like a real key.
  */
 function sources() {
   const found = [];
@@ -53,13 +57,16 @@ function sources() {
       const path = `${dir}/${name}`;
       if (statSync(at(path)).isDirectory()) {
         if (name !== "lang") walk(path);
-      } else if (name.endsWith(".js") && name !== "i18n.js") {
+      } else if (name.endsWith(".js") || name.endsWith(".html")) {
         found.push(path);
       }
     }
   };
-  walk("public/forge");
-  found.push("public/index.html");
+
+  /* Parcourus plutot que nommes un a un : il arrive une page par chantier de parite, et
+     une page oubliee ici est une page dont personne ne verifie les cles. */
+  walk("public");
+
   return found;
 }
 
