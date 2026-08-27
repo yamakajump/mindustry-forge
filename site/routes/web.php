@@ -10,9 +10,15 @@ use App\Http\Controllers\SocialCardController;
 use Illuminate\Support\Facades\Route;
 
 /*
- * The analyser itself is a static page and stays one: it needs no server, so it does not
- * get one. Everything here is what a server is actually for, which is remembering things
- * and letting other people see them.
+ * The analyser computes nothing on the server, and stays that way: the reading, the graph
+ * and the bottleneck all happen in the visitor's browser. Everything else here is what a
+ * server is actually for, which is remembering things and letting other people see them.
+ *
+ * It does go through PHP, though, and this line is the proof. An earlier wording said the
+ * page "needs no server, so it does not get one", which reads as a fact and is not one:
+ * Laravel boots on every hit of `/`, and the response carries a session cookie. Somebody
+ * planning work on the home page believed it, and weighed a cost that did not exist.
+ * A comment that states an intention in the present tense will be read as a measurement.
  */
 Route::get('/', fn () => response()->file(public_path('index.html')));
 
