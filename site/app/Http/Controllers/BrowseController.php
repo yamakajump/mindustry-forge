@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Schematic;
 use App\Models\SchematicItem;
+use App\Services\BlockCatalogue;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -64,7 +66,36 @@ class BrowseController extends Controller
             $order = 'new';
         }
 
+        /* Creative builds are set aside by default, and the page says so with a link that
+           brings them back. Corentin asked for "a part", not "dehors": a catalogue that
+           announces fifteen thousand schematics and quietly serves fourteen would be lying
+           about its own size, which is the fault this repository spent a day closing.
+
+           A schematic built for a sandbox server, or built to make one lag, is not a worse
+           design - it is an answer to another question, and it sat at the top of the energy
+           ranking ahead of every real factory. */
+        $creative = $request->query('creatif') === 'oui';
+
+        /* Which block it has to contain. The question a player actually asks - "show me
+           what people build with a thorium reactor" - and the one the site could not answer
+           at all until `schematic_blocks` stopped being empty.
+
+           Matched against the catalogue rather than taken on trust: a name that is not a
+           block returns nothing, and the page says so, where a free-text `LIKE` would have
+           returned a plausible-looking wrong list for a typo. */
+        $holds = (string) $request->query('bloc', '');
+        if ($holds !== '' && ! BlockCatalogue::has($holds)) {
+            $holds = '';
+        }
+
         $query = Schematic::query()->with('user')->listed();
+        if ($holds !== '') {
+            $query->whereExists(fn ($sub) => $sub
+                ->selectRaw('1')
+                ->from('schematic_blocks')
+                ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
+                ->where('schematic_blocks.block', $holds));
+        }
 
         if ($makes !== '') {
             // A join on the index rather than a key in a JSON blob: "graphite" must not
@@ -78,6 +109,32 @@ class BrowseController extends Controller
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
                 ->where('schematic_items.kind', SchematicItem::MESURE)
                 ->select('schematics.*');
+        }
+
+        /* Counted on the list the reader is looking at, filters and all, and not on the
+           catalogue.
+
+           It said 4,475 on every page, which is the right count of the whole catalogue and
+           the wrong answer to "how many did this page set aside". On
+           `?produit=power&tri=output` the true answer was zero: those schematics were
+           already gone, dropped by the measured-versus-ceiling rule because their measured
+           energy is nought, so this filter had nothing left to remove. A page that sets
+           nothing aside announced four and a half thousand.
+
+           Counted before the exclusion is applied rather than as the difference of two
+           totals, and forwards through the block index, for the reason written where that
+           first count was: a difference means two passes over the whole filtered set. */
+        $setAside = $creative ? 0 : (clone $query)
+            ->whereExists(fn ($sub) => $sub
+                ->selectRaw('1')
+                ->from('schematic_blocks')
+                ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
+                ->whereIn('schematic_blocks.block', Schematic::sandboxBlocks()))
+            ->distinct()
+            ->count('schematics.id');
+
+        if (! $creative) {
+            $query->ordinary();
         }
 
         $query = match ($order) {
@@ -106,10 +163,18 @@ class BrowseController extends Controller
             'schematics' => $query->paginate(24)->withQueryString(),
             'makes' => $makes,
             'order' => $order,
+            'creative' => $creative,
+            // A page that says how many it is holding back is a page a reader can
+            // disagree with - as long as the figure is this page's and not the catalogue's.
+            'setAside' => $setAside,
             'orders' => self::ORDERS,
             // Offered rather than typed: the analysis already knows what exists, so a
             // player picks from what is actually there instead of guessing a spelling.
             'items' => $this->itemsOnOffer(),
+            'holds' => $holds,
+            // Offered from what is actually in the catalogue, same reason as the items: a
+            // player picks a name that exists instead of guessing how it is spelled.
+            'blocks' => $this->blocksOnOffer(),
             'powerKey' => SchematicItem::POWER,
         ]);
     }
@@ -123,6 +188,27 @@ class BrowseController extends Controller
      * twenty. That was briefly patched with a ten minute cache; indexing what a schematic
      * makes removed the reason for the cache along with the cost.
      */
+    /**
+     * Every block a public schematic is built from, commonest first.
+     *
+     * Capped at two hundred: the list goes into a `datalist` on every render of the page,
+     * and the whole catalogue would be four hundred names of markup nobody scrolls past
+     * the first dozen of. The cap is a display decision and it is stated rather than left
+     * to be discovered - a search for a block outside it still works, it simply is not
+     * suggested.
+     */
+    private function blocksOnOffer(): array
+    {
+        return DB::table('schematic_blocks')
+            ->join('schematics', 'schematics.id', '=', 'schematic_blocks.schematic_id')
+            ->where('schematics.visibility', Schematic::PUBLIC)
+            ->groupBy('schematic_blocks.block')
+            ->orderByRaw('count(*) desc')
+            ->limit(200)
+            ->pluck('schematic_blocks.block')
+            ->all();
+    }
+
     private function itemsOnOffer(): array
     {
         return SchematicItem::query()

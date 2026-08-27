@@ -20,6 +20,9 @@ return [
     'page' => [
         'bac-a-sable' => 'Alimentee par une source de bac a sable',
         'bac-a-sable-court' => 'source de bac a sable',
+        'cout' => 'Ce qu elle coute',
+        'cout-aide' => "Ce que le jeu retire de ton noyau quand tu la poses, a l'unite
+            pres : c'est `Block.requirements` additionne bloc par bloc, pas une estimation.",
         /*
          * Le courant affiche vient de `analysis['potential']`, donc du plafond, et le
          * dire est la moitie de la correction : l'autre moitie est de ne plus le ranger
@@ -49,9 +52,16 @@ return [
             soustrait au lieu de se deviner sur deux captures d'ecran.",
         'gauche' => 'A gauche',
         'droite' => 'A droite',
-        'identifiant' => 'identifiant',
+        'identifiant' => 'un nom, ou un identifiant',
         'comparer' => 'Comparer',
-        'aide' => "L'identifiant est la fin de l'adresse d'une schematique, apres /s/.",
+        'aide' => "Tape un nom, ou colle la fin d'une adresse apres /s/.",
+        'trouvees' => 'Ce qui porte ce nom',
+        'blocs' => 'blocs',
+        'par' => 'par',
+        'rien-trouve' => 'Rien ne porte ce nom.',
+        'mettre-a-gauche' => 'a gauche',
+        'mettre-a-droite' => 'a droite',
+        'comparer-avec' => 'Comparer avec une autre',
         'a-choisir' => 'Des schematiques a comparer',
         'rien-a-comparer' => "Rien de publie pour l'instant.",
         'energie' => 'energie',

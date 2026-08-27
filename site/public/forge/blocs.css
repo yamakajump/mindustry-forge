@@ -27,14 +27,11 @@
 .bloc-tile .bloc-name { display: block; font-size: 13px; margin-top: 7px; line-height: 1.3; }
 .bloc-tile .bloc-id { display: block; color: var(--dim); font-size: 11px; font-family: var(--mono); }
 
-/* The window onto `atlas.png`. Pixelated on purpose: these are 32-pixel sprites and the
-   game draws them hard-edged, so smoothing them would make the wiki disagree with the
-   screen the player is looking at. */
-.sprite {
-  display: inline-block; image-rendering: pixelated;
-  background-repeat: no-repeat; vertical-align: middle; flex: none;
-}
-.sprite-tile { margin: 0 auto; }
+/* Les vignettes et le portrait viennent de `/icone/{famille}/{nom}.png`, une image par
+   bloc, et portent la classe `.icone` partagee de `forge.css`. Il n'y a plus de fenetre
+   sur la feuille : elle pesait 1 311 ko sur une page qui en telecharge 58. */
+.bloc-tile-image { display: block; margin: 0 auto; }
+.bloc-portrait { flex: none; }
 
 .bloc-head { display: flex; gap: 16px; align-items: flex-start; margin: 0 0 6px; }
 .bloc-head h1 { margin: 0 0 2px; font-size: 23px; font-weight: 400; letter-spacing: .3px; }
@@ -99,3 +96,25 @@
 }
 
 .bloc-none { color: var(--dim); font-size: 12.5px; margin: 4px 0 0; }
+
+/*
+ * Le choix du monde, en tete de la page des blocs.
+ *
+ * Des liens et non des boutons : chaque monde a son adresse, qui se partage et s'indexe, et
+ * la page reste entiere sans JavaScript. Assez gros pour etre la premiere chose qu'on voit
+ * et pour etre vise au doigt, ce qui est aussi la regle des 44 pixels.
+ */
+.bloc-mondes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+
+.bloc-monde {
+  display: flex; flex-direction: column; gap: 2px;
+  min-height: 56px; padding: 8px 18px; justify-content: center;
+  background: var(--panel); border: 2px solid var(--edge); border-radius: var(--radius);
+  color: var(--ink); touch-action: manipulation;
+}
+.bloc-monde:hover { border-color: var(--accent); text-decoration: none; }
+.bloc-monde.on { border-color: var(--accent); background: var(--raised); }
+.bloc-monde.on .bloc-monde-nom { color: var(--accent); }
+
+.bloc-monde-nom { font-size: 15px; }
+.bloc-monde-compte { color: var(--dim); font-size: 12px; font-family: var(--mono); }

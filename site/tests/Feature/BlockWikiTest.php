@@ -85,8 +85,12 @@ it('dit ou trouver ce que le bloc consomme, y compris au sol', function () {
     // prints it in plain text rather than pointing at a dead link. That is why this looks
     // for the title and not for the `sand-floor` identifier: the identifier only ever
     // appears in an href.
-    $page->assertSee('Pulverizer')
-        ->assertSee('Sand floor')
+    //
+    // The titles are the game's own French, since `Block::title()` reads the bundle the jar
+    // carries. They were `Pulverizer` and `Sand floor` here, which was the identifier with
+    // its dashes taken out and offered to a French reader.
+    $page->assertSee('Pulvérisateur')
+        ->assertSee('Sable')
         ->assertDontSee('/blocs/sand-floor');
 });
 
@@ -175,4 +179,40 @@ it('filtre par categorie et par planete', function () {
     $this->get('/blocs?categorie=nimportequoi&planete=mars')
         ->assertOk()
         ->assertSee('silicon-smelter');
+});
+
+it('choisit un monde par defaut plutot que de melanger les deux', function () {
+    /* On joue Serpulo ou Erekir, jamais les deux a la fois, et les deux arbres ne partagent
+       presque rien : melanges, les 254 blocs mettaient un convoyeur a cote d une gaine
+       renforcee, que le meme joueur ne posera jamais dans la meme partie. Mesure sur le
+       catalogue : 139 blocs Serpulo, 102 Erekir, 13 communs. */
+    $page = $this->get('/blocs')->assertOk();
+
+    $page->assertSee('silicon-smelter')          // Serpulo
+        ->assertDontSee('silicon-arc-furnace');  // Erekir
+
+    // Un convoyeur n appartient a aucun des deux mondes, donc il appartient aux deux : le
+    // retirer des deux listes le rendrait introuvable partout.
+    $page->assertSee('conveyor');
+});
+
+it('laisse demander les deux mondes, et dit combien chacun en porte', function () {
+    $tout = $this->get('/blocs?planete=tout')->assertOk();
+
+    $tout->assertSee('silicon-smelter')
+        ->assertSee('silicon-arc-furnace');
+
+    /* Les comptes a cote de chaque monde. Un choix qui retire une centaine de blocs doit
+       annoncer combien il retire, sinon c est un filtre qui se fait passer pour un
+       catalogue complet. */
+    $tout->assertSee('254')   // les deux
+        ->assertSee('152')    // Serpulo, communs compris
+        ->assertSee('115');   // Erekir, communs compris
+});
+
+it('retombe sur le monde par defaut plutot que de refuser une planete inventee', function () {
+    $this->get('/blocs?planete=mars')
+        ->assertOk()
+        ->assertSee('silicon-smelter')
+        ->assertDontSee('silicon-arc-furnace');
 });

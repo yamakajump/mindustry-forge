@@ -272,55 +272,6 @@
 
 /* The plan, and the schematic folded away ------------------------------------------------ */
 
-/*
- * Linking a block is a click in the game, so it is a click here.
- *
- * The panel used to ask for two signed integers, "to the right" and "up", which is the
- * arithmetic the machine should have been doing. The processor sits at the centre, its own
- * square is drawn and disabled because a link to itself is what the game refuses, and the
- * two numbers stay editable beside the list: a link can reach further than nine squares,
- * and a typed value is sometimes faster than an aimed click.
- */
-.plan {
-  display: grid;
-  grid-template-columns: repeat(var(--cases, 9), 1fr);
-  gap: 2px;
-  margin: 0 0 12px;
-  max-width: 260px;
-}
-
-.plan .case {
-  aspect-ratio: 1;
-  min-height: 0;
-  padding: 0;
-  border-radius: 3px;
-  border: 1px solid var(--edge);
-  background: #171c22;
-  color: var(--dim);
-  font: 10px/1 var(--mono);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.plan .case:hover { border-color: var(--accent); background: #1f252d; }
-
-.plan .case.prise {
-  background: var(--k-lien, #86d7ff);
-  border-color: var(--k-lien, #86d7ff);
-  color: #10141a;
-  font-weight: 600;
-}
-
-/* Le processeur lui-meme : dessine, jamais cliquable. C'est lui qui donne son sens au
-   reste du plan, donc il reste visible au lieu d'etre un trou. */
-.plan .case.processeur {
-  background: var(--accent);
-  border-color: var(--accent);
-  opacity: 1;
-  cursor: default;
-}
-
 .par-schematique {
   margin-top: 12px;
   border: 2px solid var(--edge);
@@ -338,3 +289,70 @@
 
 .par-schematique > summary:hover { color: var(--ink); }
 .par-schematique[open] > summary { color: var(--ink); margin-bottom: 4px; }
+
+/*
+ * The reading of the line under the caret.
+ *
+ * A fixed height, so the page does not shift under the hand every time the caret crosses a
+ * line that has nothing to say. Coloured like a value and set in the same monospace as the
+ * code: it is a translation of the line above, not a second line of code, and it must not
+ * be mistaken for one.
+ */
+.lecture {
+  margin: 6px 2px 0;
+  min-height: 1.5em;
+  font: 13px/1.5 var(--mono);
+  color: var(--k-valeur, #d7b3ff);
+}
+
+/* Opened from a schematic ---------------------------------------------------------------- */
+
+/*
+ * Which processor, out of however many the schematic holds.
+ *
+ * A list rather than a pair of tabs, because measurement said so: of ninety-six schematics
+ * taken from the live catalogue, forty per cent carry a processor and forty-five per cent of
+ * those carry more than one. The worst of them carries twenty-two, which no row of tabs
+ * survives.
+ */
+.venu-de {
+  max-width: 1400px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 2px solid var(--edge);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+.venu-de-titre { margin: 0 0 10px; font-size: 14px; }
+
+.venu-de-retour { font-size: 13px; }
+
+.processeurs {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.processeur {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 2px 10px;
+  align-items: baseline;
+  padding: 7px 12px;
+  min-height: auto;
+  font-size: 13px;
+  text-align: left;
+}
+
+/* The block, the position and the line count. "Processor 3 of 22" tells a reader nothing;
+   "a micro processor at 14, 6, forty lines" tells them which one they meant. */
+.processeur b { font-weight: 600; }
+.processeur .ou { color: var(--dim); font-family: var(--mono); font-size: 12px; }
+.processeur .combien { color: var(--dim); font-size: 12px; }
+
+.processeur.ouvert { border-color: var(--accent); background: #2b323c; }

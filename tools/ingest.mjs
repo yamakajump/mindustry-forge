@@ -52,6 +52,11 @@ const KEPT = [
   // right shape for this file - the analysis returns a graph that cannot be serialised -
   // but it is also a list somebody has to remember to add to, and nobody did.
   "power", "potential", "potentialPerMinute", "asTheGameSaysIt", "logic",
+  // `held` and not `detail`. The analysis carries both, and `detail` is one object per
+  // block: keeping it would store two and a half thousand of them for one schematic to
+  // answer a question a thirty-entry dictionary answers. `schematic_blocks` was empty on
+  // all 15,533 rows because neither was on this list.
+  "held",
   "awaiting", "sealed", "selfFed", "settled", "altered", "truncated",
 ];
 

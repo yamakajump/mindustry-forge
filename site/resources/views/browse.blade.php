@@ -30,8 +30,33 @@
       @endforeach
     </select>
 
+    <label class="lead" for="bloc" style="margin:0">{{ __('vitrine.bloc.label') }}</label>
+    <input name="bloc" id="bloc" list="blocs" value="{{ $holds }}"
+           placeholder="{{ __('vitrine.bloc.exemple') }}" autocomplete="off">
+    {{-- Les noms proposes viennent de ce que le catalogue contient vraiment, pas d'une
+         liste tapee : un joueur choisit un nom qui existe au lieu de deviner comment il
+         s'ecrit. Plafonne a deux cents, ce qui est dit dans le controleur plutot que
+         laisse a decouvrir. --}}
+    <datalist id="blocs">
+      @foreach($blocks as $block)
+        <option value="{{ $block }}"></option>
+      @endforeach
+    </datalist>
+
     <button class="primary" type="submit">Chercher</button>
   </div>
+
+  @if($holds !== '')
+    <p class="hint-line">{{ __('vitrine.bloc.filtrees') }}
+      <strong>{{ $holds }}</strong>.
+      <a href="{{ request()->fullUrlWithQuery(['bloc' => null]) }}">{{
+        __('vitrine.bloc.enlever') }}</a></p>
+  @elseif(request()->query('bloc'))
+    {{-- Un nom qui n'est pas un bloc ne filtre rien, et le dire vaut mieux que rendre la
+         liste entiere comme si de rien n'etait : une faute de frappe renverrait sinon une
+         page plausible et fausse. --}}
+    <p class="hint-line">{{ __('vitrine.bloc.inconnu') }}</p>
+  @endif
 
   {{-- Sans item choisi, il n'y a rien contre quoi mesurer un rendement : classer
        quarante graphite/min devant vingt-cinq silicium/min reviendrait a decreter qu'un
@@ -46,6 +71,26 @@
       <strong>{{ $makes === $powerKey ? 'energie' : $makes }}</strong>, rapporte a leur
       taille. L'electricite qu'une schematique consomme ne la penalise pas&nbsp;: c'est un
       prerequis, indique sur sa page.</p>
+  @endif
+
+  {{-- Ce qui est mis a part, dit avec son compte et un lien pour le voir.
+
+       Un catalogue qui annonce quinze mille schematiques et en sert quatorze mille sans un
+       mot mentirait sur sa propre taille, ce qui est exactement la faute que ce depot a
+       passe la journee a fermer. Le compte est donc affiche, et le lien defait le filtre :
+       un lecteur peut etre en desaccord avec la regle et la contourner en un clic. --}}
+  @if($creative)
+    <p class="hint-line">{{ __('vitrine.creatif.affichees') }}
+      <a href="{{ request()->fullUrlWithQuery(['creatif' => null]) }}">{{
+        __('vitrine.creatif.remettre') }}</a></p>
+  @elseif($setAside > 0)
+    {{-- Le singulier a sa propre cle plutot qu'un « (s) ». Le compte reste hors de la
+         chaine traduite : une cle manquante rendrait la cle sans substituer, et le nombre
+         disparaitrait de la seule phrase qui existe pour le donner. --}}
+    <p class="hint-line">{{ $setAside }} {{ __($setAside === 1
+      ? 'vitrine.creatif.mise-a-part' : 'vitrine.creatif.mises-a-part') }}
+      <a href="{{ request()->fullUrlWithQuery(['creatif' => 'oui']) }}">{{
+        __('vitrine.creatif.montrer') }}</a></p>
   @endif
 </form>
 
@@ -91,6 +136,9 @@
           {{-- Un robinet de bac a sable se dit ici aussi. Une vignette qui annonce
                999 971 energie/s est la meme phrase fausse que la page, en plus court et
                vue par plus de monde. --}}
+          @if($schematic->creative())
+            <span class="warn">{{ __('vitrine.creatif.etiquette') }}</span> &middot;
+          @endif
           @if($schematic->fedBySandbox())
             <span class="warn">{{ __('schema.page.bac-a-sable-court') }}</span> &middot;
           @else

@@ -62,9 +62,19 @@ test("les anciennes orthographes du jeu passent sans un mot", () => {
     { links: [{ name: "sorter1", dx: 1, dy: 0 }] }), []);
 });
 
-test("un nom qui ressemble a un lien absent est signale", () => {
-  assert.deepEqual(keys("print cell1\n"), ["outils.logique.probleme.lien-inconnu"]);
+test("un nom qui ressemble a un lien absent est signale, quand il y a des liens", () => {
+  assert.deepEqual(keys("print cell1\n", { links: [{ name: "cell2", dx: 0, dy: 1 }] }),
+    ["outils.logique.probleme.lien-inconnu"]);
   assert.deepEqual(keys("print cell1\n", { links: [{ name: "cell1", dx: 0, dy: 1 }] }), []);
+});
+
+test("et pas du tout quand le processeur n'a ete relie a rien", () => {
+  /* Un programme ecrit pour etre colle dans un processeur qui existe deja dans le jeu ne
+     declare aucun lien ici, et il n'en a aucun a declarer : le cablage a ete fait dans le
+     jeu, en cliquant. Avertir alors mettrait un trait sous chaque nom de bloc du programme
+     sans rien dire de vrai sur aucun, ce qui est la facon dont une colonne entiere
+     d'avertissements se fait eteindre. */
+  assert.deepEqual(keys("print cell1\nprint vault1\ncontrol enabled conveyor1 1 0 0 0\n"), []);
 });
 
 test("un nom que le programme ecrit lui-meme n'est pas un lien oublie", () => {

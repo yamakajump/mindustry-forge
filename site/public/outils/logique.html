@@ -65,9 +65,15 @@
     </p>
   </header>
 
+  <!-- Ce dont on est parti, quand on est parti de quelque chose. Cache tant que la page est
+       ouverte seule, parce qu'une banniere vide occupe la place de la premiere ligne de
+       code. -->
+  <section class="venu-de" id="venu-de" hidden></section>
+
   <div class="atelier">
     <div>
       <div id="editeur"></div>
+      <p class="lecture" id="lecture" aria-live="polite"></p>
       <!-- Le geste courant d'abord, seul sur sa rangee. Dans le jeu on colle du code dans
            un processeur : c'est ce que fait ce bouton, et c'est le seul qui n'oblige a
            fabriquer une schematique autour de rien. -->
@@ -114,6 +120,19 @@
             <input type="file" id="fichier" name="fichier" accept=".msch" aria-label="Ouvrir une schematique">
           </label>
         </div>
+
+        <h3 data-i18n="outils.logique.liens">Liens</h3>
+        <p class="hint-line" data-i18n="outils.logique.liens-aide">
+          Ce que le processeur pose dans la schematique sera relie a ces blocs. Le nom est
+          celui que le programme emploie, et les deux nombres disent de combien de cases le
+          bloc est a droite et au-dessus du processeur.
+        </p>
+        <ul class="liens" id="liens"></ul>
+        <div class="row">
+          <button id="ajouter-lien" type="button" data-i18n="outils.logique.lien-ajouter">
+            Ajouter un lien
+          </button>
+        </div>
       </details>
       <p class="etat" id="etat" aria-live="polite"></p>
     </div>
@@ -124,22 +143,6 @@
         <select id="bloc" name="bloc" aria-label="Processeur"></select>
         <p class="mesures" id="mesures"></p>
         <p class="hint-line" id="rattrapage"></p>
-      </section>
-
-      <section class="card">
-        <h2 data-i18n="outils.logique.liens">Liens</h2>
-        <p class="hint-line" data-i18n="outils.logique.liens-aide">
-          Dans le jeu, tu cliques le bloc a relier. Ici, tu cliques sa case : le processeur
-          est au centre, et le nom est celui que le programme emploie.
-        </p>
-        <div class="plan" id="plan" role="application"
-             aria-label="Ou se trouve le bloc, par rapport au processeur"></div>
-        <ul class="liens" id="liens"></ul>
-        <div class="row">
-          <button id="ajouter-lien" type="button" data-i18n="outils.logique.lien-ajouter">
-            Ajouter un lien
-          </button>
-        </div>
       </section>
 
       <section class="card">
@@ -156,6 +159,8 @@ import { loadCatalogue, catalogueOf } from "../forge/logic/catalogue.js";
 import { LogicEditor } from "../forge/logic/editor.js";
 import { toSchematic, toSchematicBytes, fromSchematic } from "../forge/logic/program.js";
 import { timingOf, ticksAsText, secondsAsText } from "../forge/logic/timing.js";
+import { readingOf } from "../forge/logic/reading.js";
+import { processorsIn, schematicNamed } from "../forge/logic/opened.js";
 import { t, ready, translate } from "../forge/i18n.js";
 
 const $ = (id) => document.getElementById(id);
@@ -170,12 +175,6 @@ plein:
 control enabled conveyor1 0 0 0 0
 jump 0 always
 `;
-
-/* Jusqu'ou le plan des liens montre, en cases autour du processeur. Neuf sur neuf couvre
-   tout ce qu'un micro processeur peut atteindre, et un lien plus lointain se tape encore a
-   la main a cote. Declaree ici et pas au bord de son usage : le premier dessin arrive avant,
-   et une constante lue avant sa ligne ne fait pas une valeur vide, elle jette. */
-const PORTEE = 4;
 
 const LIENS_EXEMPLE = [{ name: "vault1", dx: 2, dy: 0 }, { name: "conveyor1", dx: -1, dy: 0 }];
 
@@ -196,6 +195,18 @@ translate(document);
 let liens = LIENS_EXEMPLE.map((lien) => ({ ...lien }));
 
 const editeur = new LogicEditor($("editeur"), { onChange: rendre });
+
+/* La ligne du curseur, dite en clair. La forme que le jeu stocke place l'operateur avant
+   ses operandes, et personne ne la lit d'un coup d'oeil ; la lecture met le signe entre
+   les deux. Elle suit le curseur autant que la frappe, sinon elle parlerait de la ligne
+   precedente des qu'on monte d'un cran. */
+const direLaLigne = () => {
+  $("lecture").textContent = readingOf(editeur.statementAtCaret()) ?? "";
+};
+
+for (const quand of ["keyup", "click", "input"]) {
+  editeur.input.addEventListener(quand, direLaLigne);
+}
 
 for (const bloc of catalogue.processors) {
   if (bloc.world) continue;
@@ -299,64 +310,7 @@ function problemesDesLiens() {
 
 /* The links ------------------------------------------------------------------------------ */
 
-/**
- * Le plan, et la liste qui le suit.
- *
- * Dans le jeu, relier un bloc a un processeur se fait en le cliquant. Ici on demandait deux
- * entiers signes, « vers la droite » et « vers le haut », c'est-a-dire le calcul que la
- * machine aurait du faire. Le plan le fait faire au doigt : le processeur est au centre, on
- * clique la case, les deux nombres suivent.
- *
- * Ils restent modifiables a cote, parce qu'un lien peut viser plus loin que ce qu'un plan
- * de neuf cases sur neuf montre, et parce qu'une valeur tapee est parfois plus rapide qu'un
- * clic vise.
- */
-function dessinerPlan() {
-  const plan = $("plan");
-  plan.innerHTML = "";
-  plan.style.setProperty("--cases", 2 * PORTEE + 1);
-
-  const occupees = new Map();
-  liens.forEach((lien, index) => occupees.set(`${lien.dx},${lien.dy}`, { lien, index }));
-
-  for (let dy = PORTEE; dy >= -PORTEE; dy--) {
-    for (let dx = -PORTEE; dx <= PORTEE; dx++) {
-      const centre = dx === 0 && dy === 0;
-      const pose = occupees.get(`${dx},${dy}`);
-
-      const case_ = document.createElement("button");
-      case_.type = "button";
-      case_.className = `case${centre ? " processeur" : ""}${pose ? " prise" : ""}`;
-      case_.textContent = centre ? "" : (pose ? pose.lien.name.slice(0, 2) || "?" : "");
-      case_.setAttribute("aria-label", centre
-        ? t("outils.logique.plan-processeur")
-        : t("outils.logique.plan-case", { dx, dy }));
-
-      /* Le centre est le processeur lui-meme : rien a relier, et un lien sur sa propre case
-         est ce que le jeu refuse. Il reste dessine, parce que c'est lui qui donne son sens
-         a tout le reste du plan. */
-      if (centre) case_.disabled = true;
-      else case_.onclick = () => poserOuRetirer(dx, dy);
-
-      plan.append(case_);
-    }
-  }
-}
-
-/** Un clic pose un lien sur une case libre, et retire celui qui l'occupait sinon. */
-function poserOuRetirer(dx, dy) {
-  const at = liens.findIndex((lien) => lien.dx === dx && lien.dy === dy);
-  if (at >= 0) liens.splice(at, 1);
-  else liens.push({ name: "", dx, dy });
-
-  dessinerLiens();
-  majLiens();
-  if (at < 0) $("liens").querySelector("li:last-child input")?.focus();
-}
-
 function dessinerLiens() {
-  dessinerPlan();
-
   const liste = $("liens");
   liste.innerHTML = "";
 
@@ -373,13 +327,13 @@ function dessinerLiens() {
 
     const nom = champ("text", lien.name, t("outils.logique.lien-nom"), "", `lien-${index}-nom`);
     nom.placeholder = t("outils.logique.lien-nom");
-    nom.oninput = () => { lien.name = nom.value.trim(); dessinerPlan(); majLiens(); };
+    nom.oninput = () => { lien.name = nom.value.trim(); majLiens(); };
 
     const dx = champ("text", lien.dx, t("outils.logique.lien-dx"), "pos", `lien-${index}-dx`);
-    dx.oninput = () => { lien.dx = entier(dx.value); dessinerPlan(); majLiens(); };
+    dx.oninput = () => { lien.dx = entier(dx.value); majLiens(); };
 
     const dy = champ("text", lien.dy, t("outils.logique.lien-dy"), "pos", `lien-${index}-dy`);
-    dy.oninput = () => { lien.dy = entier(dy.value); dessinerPlan(); majLiens(); };
+    dy.oninput = () => { lien.dy = entier(dy.value); majLiens(); };
 
     const retirer = document.createElement("button");
     retirer.type = "button";
@@ -535,6 +489,124 @@ async function lire(source) {
     liens: liens.length,
   }), "bien");
 }
+
+/* Ouvert depuis une schematique ---------------------------------------------------------- */
+
+/**
+ * Le mode que Corentin a decrit : « ca ouvre l'editeur logique mais en fonction du schema
+ * en particulier ».
+ *
+ * L'editeur seul ecrit le programme d'un processeur qu'un joueur construira plus tard, donc
+ * il n'a aucun bloc dont parler et n'en propose aucun. Ouvert depuis une schematique, il les
+ * a tous : de vrais noms, de vraies positions, et des liens faits en cliquant dans le jeu
+ * plutot que tapes en deux entiers ici.
+ *
+ * Mesure sur quatre-vingt-seize schematiques de la vitrine : 45 % de celles qui portent un
+ * processeur en portent plusieurs, et l'une d'elles en porte vingt-deux. Le choix n'est donc
+ * pas une commodite, et c'est une liste plutot que deux onglets.
+ */
+let processeurs = [];
+let venuDe = null;
+
+/* Lequel est ouvert, declare avec les autres et pas au bord de son usage : `dessinerVenuDe`
+   le lit, et une variable lue avant sa ligne jette au lieu de valoir vide. Deja paye une
+   fois aujourd'hui, sur `PORTEE`. */
+let ouvert = -1;
+
+const slug = new URLSearchParams(location.search).get("s");
+if (slug) ouvrirDepuis(slug);
+
+async function ouvrirDepuis(nom) {
+  try {
+    venuDe = nom;
+    processeurs = await processorsIn(await schematicNamed(nom));
+  } catch (erreur) {
+    dire(t("outils.logique.venu-refuse", { raison: erreur.message }), "mal");
+    return;
+  }
+
+  if (!processeurs.length) {
+    dire(t("outils.logique.venu-sans-processeur"), "mal");
+    return;
+  }
+
+  dessinerVenuDe();
+  /* Un seul processeur, on l'ouvre : demander a choisir dans une liste d'un seul element est
+     une question dont la reponse est deja connue. */
+  if (processeurs.length === 1) choisirProcesseur(0);
+}
+
+function dessinerVenuDe() {
+  const carte = $("venu-de");
+  carte.hidden = false;
+  carte.innerHTML = "";
+
+  const titre = document.createElement("p");
+  titre.className = "venu-de-titre";
+  titre.textContent = t("outils.logique.venu-titre", { compte: processeurs.length });
+  carte.append(titre);
+
+  const liste = document.createElement("ul");
+  liste.className = "processeurs";
+
+  processeurs.forEach((un, index) => {
+    const item = document.createElement("li");
+    const bouton = document.createElement("button");
+    bouton.type = "button";
+    bouton.className = `processeur${index === ouvert ? " ouvert" : ""}`;
+    /* Le bloc, la position et le nombre de lignes. « Processeur 3 sur 22 » ne dit rien a
+       personne ; « un micro processeur en 14, 6, quarante lignes » dit lequel on visait. */
+    bouton.innerHTML = `<b></b><span class="ou"></span><span class="combien"></span>`;
+    bouton.querySelector("b").textContent = etiquetteDe(un.block);
+    bouton.querySelector(".ou").textContent = t("outils.logique.venu-position",
+      { x: un.x, y: un.y });
+    bouton.querySelector(".combien").textContent = un.unreadable
+      ? t("outils.logique.venu-illisible")
+      : t("outils.logique.venu-lignes", { compte: un.lines });
+
+    bouton.onclick = () => choisirProcesseur(index);
+    item.append(bouton);
+    liste.append(item);
+  });
+
+  carte.append(liste);
+
+  const retour = document.createElement("a");
+  retour.className = "venu-de-retour";
+  retour.href = `/s/${encodeURIComponent(venuDe)}`;
+  retour.textContent = t("outils.logique.venu-retour");
+  carte.append(retour);
+
+  const note = document.createElement("p");
+  note.className = "hint-line";
+  /* Dit avant qu'on edite, pas apres : ce mode lit la schematique, il ne la reecrit pas
+     encore, et laisser croire l'inverse ferait perdre un programme. */
+  note.textContent = t("outils.logique.venu-note");
+  carte.append(note);
+}
+
+function choisirProcesseur(index) {
+  const un = processeurs[index];
+  if (!un) return;
+  ouvert = index;
+
+  liens = un.links.map((lien) => ({ ...lien }));
+  dessinerLiens();
+  majLiens();
+  editeur.value = un.code;
+  if (catalogue.processors.some((bloc) => bloc.name === un.block)) $("bloc").value = un.block;
+
+  dessinerVenuDe();
+  dire(un.unreadable
+    ? t("outils.logique.venu-illisible")
+    : t("outils.logique.venu-ouvert", { compte: editeur.report.statements.length,
+                                        liens: liens.length }), "bien");
+}
+
+/** Le nom du bloc tel que le catalogue l'ecrit, ou le nom brut s'il n'y est pas. */
+const etiquetteDe = (nom) =>
+  catalogue.processors.find((bloc) => bloc.name === nom)?.label ?? nom;
+
 </script>
 </body>
 </html>

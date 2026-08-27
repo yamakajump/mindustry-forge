@@ -72,7 +72,13 @@
       <input id="quantite" type="number" min="1" max="100000" step="1" value="100"
              inputmode="numeric">
       <select id="objet"></select>
-      <label class="lead" for="objet" data-i18n="outils.planificateur.par-minute">par minute</label>
+      <!-- Une cadence choisie plutot qu'imposee. Une chaine de fin de partie se pense a la
+           seconde, un debut de partie a la minute, et convertir de tete pendant qu'on
+           dimensionne une usine est exactement le calcul que cette page existe pour eviter. -->
+      <select id="cadence" aria-label="Cadence">
+        <option value="minute" data-i18n="outils.planificateur.par-minute">par minute</option>
+        <option value="seconde" data-i18n="outils.planificateur.par-seconde">par seconde</option>
+      </select>
       <select id="planete">
         <option value="serpulo">Serpulo</option>
         <option value="erekir">Erekir</option>
@@ -95,6 +101,7 @@
 import { loadCatalogue } from "../forge/analyse.js";
 import { plan } from "../forge/plan.js";
 import { t, translate, ready } from "../forge/i18n.js";
+import { loadNames, nameOf } from "../forge/noms.js";
 
 /* Chaque hypothese nommee en toutes lettres, jamais un prefixe suivi d'une variable. Une
    cle collee au rendu est une cle qu'aucun controle ne voit, donc le jour ou `plan.js` en
@@ -114,11 +121,18 @@ const $ = (id) => document.getElementById(id);
 const sortie = $("sortie");
 
 const catalogue = await loadCatalogue("../forge/blocks.json");
-await ready;
+/* Les noms du jeu, charges avec le reste. Dix-huit kilo-octets, et sans eux la page affiche
+   des identifiants redresses : `Blast drill` au lieu de `Foreuse a explosion`. */
+await Promise.all([loadNames(), ready]);
 
 /* Les objets qu'on peut demander : ce que le jeu sait fabriquer, plus ce qu'il sait
    extraire. Proposes plutot que tapes, pour qu'un joueur choisisse dans ce qui existe au
    lieu de deviner une orthographe. */
+/** Quelle unite le joueur a choisie. Lue au meme endroit par le calcul et par l'affichage. */
+function parSeconde() {
+  return $("cadence").value === "seconde";
+}
+
 function objetsProposes(planete) {
   const noms = new Set();
   for (const [nom, bloc] of Object.entries(catalogue.blocks)) {
@@ -134,10 +148,17 @@ function remplirObjets() {
   const planete = $("planete").value;
   const garde = $("objet").value;
   $("objet").innerHTML = "";
-  for (const nom of objetsProposes(planete)) {
+  /* Triees sur le nom affiche et pas sur l'identifiant : une liste francaise rangee dans
+     l'ordre alphabetique anglais met « Charbon » avant « Cuivre » et « Sable » apres
+     « Silicium », ce qui se lit comme un desordre. */
+  const objets = objetsProposes(planete)
+    .map((nom) => ({ nom, affiche: lisible(nom) }))
+    .sort((a, b) => a.affiche.localeCompare(b.affiche, "fr"));
+
+  for (const { nom, affiche } of objets) {
     const option = document.createElement("option");
     option.value = nom;
-    option.textContent = nom;
+    option.textContent = affiche;
     $("objet").append(option);
   }
   if ([...$("objet").options].some((o) => o.value === garde)) $("objet").value = garde;
@@ -146,16 +167,97 @@ function remplirObjets() {
 const nombre = (valeur, decimales = 2) =>
   Number(valeur).toLocaleString("fr-FR", { maximumFractionDigits: decimales });
 
+/*
+ * Le nom d'un bloc ou d'un objet, tel qu'on peut le montrer aujourd'hui.
+ *
+ * Le catalogue ne porte aucun nom lisible : `items.copper.name` vaut « copper », et un bloc
+ * n'a que son identifiant. Un joueur francophone lisait donc « silicon-smelter » et
+ * « blast-drill » en toutes lettres.
+ *
+ * Le vrai correctif n'est pas ici : le jeu embarque ses propres traductions, et
+ * `DumpBlocks.java` peut lire `Core.bundle` pour sortir un nom francais par bloc, ce qui
+ * vaut infiniment mieux qu'une table de 254 entrees ecrite a la main et vieillie a chaque
+ * version. En attendant, l'identifiant redresse se lit deja beaucoup mieux que l'identifiant
+ * brut. Meme regle que `Block::title()` cote PHP, et les deux bougeront ensemble le jour ou
+ * le catalogue portera de vrais noms.
+ */
+/* Le nom que le jeu lui donne, dans la langue du lecteur, et l'identifiant redresse quand
+   il n'en donne aucun. Le repli sert a dix-sept blocs que le jeu ne nomme dans aucune de ses
+   trente-sept langues, et au premier rendu si les noms ne sont pas encore charges. */
+const lisible = (id, famille = null) => nameOf(famille || familleDe(id), id);
+
+/*
+ * De quelle famille une chose releve, demande au catalogue plutot qu'ecrit en liste.
+ *
+ * L'adresse des icones sert trois familles, et le catalogue sait deja dans laquelle ranger
+ * un nom : ce qui est dans `items` est un objet, ce qui est dans `liquids` un liquide, le
+ * reste un bloc. Une liste tenue a la main se mettrait a mentir des que le jeu en ajoute un.
+ */
+const familleDe = (nom) =>
+  (catalogue.items?.[nom] && "objet")
+  || (catalogue.liquids?.[nom] && "liquide")
+  || "bloc";
+
+/** Une chose du jeu : son icone, et son nom. */
+function chose(nom, famille = null, taille = 20) {
+  const span = document.createElement("span");
+  span.className = "plan-chose";
+  const img = document.createElement("img");
+  img.className = "icone";
+  img.src = `/icone/${famille || familleDe(nom)}/${encodeURIComponent(nom)}.png?t=32`;
+  img.width = taille;
+  img.height = taille;
+  img.loading = "lazy";
+  /* Vide, parce que le nom est ecrit juste a cote : un lecteur d'ecran qui annonce
+     « sable sable » est pire qu'un qui ne dit rien. */
+  img.alt = "";
+  /* Quatre blocs sur 395 n'ont pas d'image, `air` et trois usines d'unites hors d'age, que
+     personne n'affiche ici. Si l'un passait quand meme, l'image cassee se retire elle-meme
+     et le nom reste : une icone manquante ne doit pas se voir. */
+  img.addEventListener("error", () => img.remove());
+  span.append(img, document.createTextNode(lisible(nom, famille || familleDe(nom))));
+  return span;
+}
+
+/* Accepte un texte ou un noeud des deux cotes. Une deuxieme fonction pour le cas « avec
+   icone » aurait double la mise en page pour une difference qui tient dans un `append`. */
 function ligne(gauche, droite, classe = "") {
   const div = document.createElement("div");
   div.className = "line";
   const a = document.createElement("span");
-  a.textContent = gauche;
+  a.append(gauche);
   const b = document.createElement("span");
   b.className = classe;
-  b.textContent = droite;
+  b.append(droite);
   div.append(a, b);
   return div;
+}
+
+/** La fleche entre ce qu'on pose et ce que ca sort. */
+function fleche() {
+  const span = document.createElement("span");
+  span.className = "plan-fleche";
+  span.textContent = "→";
+  return span;
+}
+
+/** Plusieurs choses a la suite, separees par une barre : les foreuses au choix. */
+function choix(noms, famille) {
+  const span = document.createElement("span");
+  span.className = "plan-choix";
+  noms.forEach((entree, i) => {
+    if (i) {
+      const sep = document.createElement("span");
+      sep.className = "plan-fleche";
+      sep.textContent = "/";
+      span.append(sep);
+    }
+    const groupe = document.createElement("span");
+    groupe.className = "plan-chose";
+    groupe.append(document.createTextNode(`${entree.count} `), chose(entree.block, famille, 18));
+    span.append(groupe);
+  });
+  return span;
 }
 
 function carte(titreCle) {
@@ -215,26 +317,48 @@ function dessiner(resultat) {
        perdu est pire qu'un mot illisible sur un site qui ne vend que des chiffres. */
     const droite = `${etape.whole} ${t("outils.planificateur.blocs")}`
       + ` - ${nombre(etape.load * 100, 0)} ${t("outils.planificateur.de-charge")}`;
-    usines.append(ligne(`${etape.block} - ${etape.item}`, droite,
-      etape.load < 0.999 ? "warn" : "good"));
+    const gauche = document.createElement("span");
+    gauche.className = "plan-paire";
+    gauche.append(chose(etape.block, "bloc"), fleche(), chose(etape.item));
+    usines.append(ligne(gauche, droite, etape.load < 0.999 ? "warn" : "good"));
   }
   sortie.append(usines);
 
   if (resultat.raw.length) {
     const sol = carte("outils.planificateur.a-fournir");
     for (const brut of resultat.raw) {
-      const debit = `${nombre(brut.perMinute, 1)} ${t("outils.planificateur.par-min")}`;
+      /* Le nombre reste hors de la traduction. Une clef manquante rend la clef sans
+         substituer, donc `t("...", { n })` ferait disparaitre le chiffre en silence, et sur
+         un site qui ne vend que des chiffres c'est l'information qui part. */
+      const droite = document.createElement("span");
+      droite.className = "plan-paire";
+      droite.append(document.createTextNode(parSeconde()
+        ? `${nombre(brut.perMinute / 60, 2)}${t("outils.planificateur.par-sec")}`
+        : `${nombre(brut.perMinute, 1)}${t("outils.planificateur.par-min")}`));
+
       /* Plusieurs foreuses proposees, pas seulement la meilleure. `needs.js` les classe par
          nombre croissant, donc la premiere est toujours la plus grosse du jeu : repondre
          « une foreuse a explosifs » a « il me faut du sable » est exact et inutilisable,
          parce que personne ne debloque la foreuse de fin de partie pour du sable. Le
-         planificateur montre le choix au lieu de le faire a la place du joueur. */
-      const choix = brut.options.slice(0, 3)
-        .map((option) => `${option.count} ${option.block}`).join(" / ");
-      const droite = choix
-        ? `${debit} - ${choix}`
-        : `${debit} - ${t("outils.planificateur.sans-source")}`;
-      sol.append(ligne(brut.resource, droite));
+         planificateur montre le choix au lieu de le faire a la place du joueur.
+
+         Quatre, et pas trois. La liste etant triee par nombre croissant, couper a trois
+         retirait toujours la derniere, qui est la moins chere a debloquer : la foreuse
+         mecanique sur Serpulo, le foreur a plasma sur Erekir. La coupe supprimait donc
+         systematiquement la seule option que possede quelqu'un qui commence, c'est-a-dire
+         le lecteur qui a le plus besoin de cet ecran. Quatre est le vivier reel d'un monde,
+         mesure dans le catalogue, et la planete est toujours choisie ici. */
+      const options = brut.options.slice(0, 4);
+      if (options.length) {
+        droite.append(fleche(), choix(options, "bloc"));
+      } else {
+        const rien = document.createElement("span");
+        rien.className = "plan-fleche";
+        rien.textContent = t("outils.planificateur.sans-source");
+        droite.append(rien);
+      }
+
+      sol.append(ligne(chose(brut.resource), droite));
     }
     sortie.append(sol);
   }
@@ -245,7 +369,7 @@ function dessiner(resultat) {
       `${nombre(resultat.power, 0)} ${t("outils.planificateur.energie-seconde")}`, "warn"));
   }
   for (const [objet, quantite] of Object.entries(resultat.cost)) {
-    bilan.append(ligne(objet, nombre(quantite, 0)));
+    bilan.append(ligne(chose(objet), nombre(quantite, 0)));
   }
   sortie.append(bilan);
 }
@@ -254,12 +378,21 @@ function calculer(evenement) {
   evenement?.preventDefault();
   dessiner(plan(catalogue, {
     item: $("objet").value,
-    perMinute: Number($("quantite").value),
+    /* Converti ici et nulle part ailleurs : le moteur raisonne en debit par minute, et
+       laisser deux unites circuler dans le calcul est la facon dont un facteur soixante
+       finit par manquer a un seul endroit.
+
+       La valeur de l'option est le nom de l'unite et pas son facteur. Avec le facteur ecrit
+       dans le HTML, la premiere version portait 60 sur « par minute » et 1 sur « par
+       seconde », c'est-a-dire l'inverse, et rien ne le disait : la page repondait, avec des
+       chiffres soixante fois trop grands. Un nom se relit, un multiplicateur non. */
+    perMinute: Number($("quantite").value) * (parSeconde() ? 60 : 1),
     planet: $("planete").value,
   }));
 }
 
 $("planete").addEventListener("change", () => { remplirObjets(); calculer(); });
+$("cadence").addEventListener("change", () => calculer());
 $("demande").addEventListener("submit", calculer);
 
 remplirObjets();

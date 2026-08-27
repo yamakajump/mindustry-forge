@@ -172,6 +172,7 @@ public class DumpBlocks {
         root.put("game_version", Version.combined());
         root.put("build", Version.build);
         root.put("revision", Version.revision);
+        root.put("colors", namedColours());
 
         Jval blocks = Jval.newObject();
         for (Block block : Vars.content.blocks()) {
@@ -1735,6 +1736,32 @@ public class DumpBlocks {
         }
         if (floor.isDeep()) entry.put("deep", true);
         entry.put("buildable", floor.hasSurface() || floor.placeableOn);
+    }
+
+    /**
+     * Every colour the game answers to by name, which is what tells markup from a title.
+     *
+     * <p>A schematic name may carry Mindustry's colour markup, and 1 233 of the collected
+     * ones do. Stripping it needs the rule the game uses, and that rule is not a pattern:
+     * {@code Strings.parseColorMarkup} treats {@code [name]} as a colour only when
+     * {@code Colors.get(name)} finds one. Everything else is text, which is why a schematic
+     * really called {@code [Silicon]Stackable Thin Crusibles} must survive untouched while
+     * {@code [green]} must not.
+     *
+     * <p>So the answer cannot be a list typed into a PHP file, for the same reason the block
+     * catalogue is not one: it would be a second copy of the game's data, right until the
+     * game adds a colour. Dumped here, it is read from {@code Colors} itself.
+     *
+     * <p>Both cases are kept because the game keeps both. {@code Colors} registers
+     * {@code GREEN} and {@code green} as separate keys, and the lookup is exact, so
+     * {@code [Green]} is not markup and must not be treated as any.
+     */
+    private static Jval namedColours() {
+        Jval out = Jval.newObject();
+        for (var entry : arc.graphics.Colors.getColors()) {
+            out.put(entry.key, entry.value.toString());
+        }
+        return out;
     }
 
     /**

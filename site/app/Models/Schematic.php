@@ -378,11 +378,31 @@ class Schematic extends Model
     public static function countBlocks(mixed $analysis): array
     {
         $counts = [];
-        foreach ((array) ($analysis['detail'] ?? []) as $tile) {
-            $name = is_array($tile) ? ($tile['name'] ?? null) : null;
-            if (is_string($name) && $name !== '') {
-                $key = substr($name, 0, 40);
-                $counts[$key] = ($counts[$key] ?? 0) + 1;
+
+        /* `held` first, `detail` after, and both on purpose.
+         *
+         * `held` is the compact inventory the analysis now returns, and it is the only one
+         * that survives `tools/ingest.mjs`: its whitelist never carried `detail`, so every
+         * collected schematic stored an analysis without it and `schematic_blocks` was
+         * empty on all 15,533 rows. The browser posts the whole report, `detail` included,
+         * so that path always worked - which is why nothing looked broken.
+         *
+         * The fallback stays for exactly that reason: an analysis stored before this
+         * change, or posted by a page that has not been reloaded, still has to be read.
+         */
+        foreach ((array) ($analysis['held'] ?? []) as $name => $count) {
+            if (is_string($name) && $name !== '' && is_numeric($count) && $count > 0) {
+                $counts[substr($name, 0, 40)] = (int) $count;
+            }
+        }
+
+        if ($counts === []) {
+            foreach ((array) ($analysis['detail'] ?? []) as $tile) {
+                $name = is_array($tile) ? ($tile['name'] ?? null) : null;
+                if (is_string($name) && $name !== '') {
+                    $key = substr($name, 0, 40);
+                    $counts[$key] = ($counts[$key] ?? 0) + 1;
+                }
             }
         }
 
@@ -446,6 +466,89 @@ class Schematic extends Model
     public function fedBySandbox(): bool
     {
         return $this->sandboxTaps() !== [];
+    }
+
+    /**
+     * What it costs to put down, item by item, in the order the game lists them.
+     *
+     * Read from the analysis rather than recomputed from `schematic_blocks` times the
+     * catalogue. The analysis already worked it out from `Block.requirements`, which is the
+     * same arithmetic, and a second implementation would be a second thing to have wrong -
+     * on the figure a player checks against their own core before pasting.
+     *
+     * Sorted by the game's own item id, so copper comes before lead and titanium before
+     * thorium, which is the order a player reads on every panel in the game. Alphabetical
+     * would put beryllium first on a Serpulo build.
+     */
+    public function cost(): array
+    {
+        $cost = [];
+        // Parenthesised, because a cast binds tighter than `??` and the same slip cost a
+        // round trip an hour ago on `analysis['power']`.
+        $analysis = (array) $this->analysis;
+        foreach ((array) ($analysis['cost'] ?? []) as $item => $amount) {
+            /* An empty name passes `is_string`, which is exactly the shape a hand-made
+               payload takes. A name the catalogue has never heard of is kept, though: a
+               mod item dropped in silence would understate what the layout costs, which is
+               the same fault as dropping a mod block from the inventory. Its icon will
+               404 and its figure will be right, which is the better half to keep. */
+            if (is_string($item) && $item !== '' && is_numeric($amount) && $amount > 0) {
+                $cost[substr($item, 0, 40)] = (int) $amount;
+            }
+        }
+
+        return BlockCatalogue::inGameOrder($cost);
+    }
+
+    /**
+     * Every block the game only hands out in a sandbox, named by the game and not by us.
+     *
+     * Ten of them: the four sources, the four voids, the heat source and the thruster. A
+     * schematic holding one cannot be built in an ordinary game, which is a fact rather
+     * than a matter of taste - and the reason the test is on blocks and never on a name.
+     * `Def Mega Base (sandbox)` gives itself away; `useless box` and `Server lagger` do
+     * not, and they are the same lot.
+     *
+     * Cached statically because it is a property of the catalogue, not of a row.
+     */
+    public static function sandboxBlocks(): array
+    {
+        static $names = null;
+        if ($names !== null) {
+            return $names;
+        }
+
+        $names = [];
+        foreach (BlockCatalogue::all() as $name => $block) {
+            if ($block->visibility() === 'sandboxOnly') {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * Whether it is a creative build rather than something to put in a base.
+     *
+     * Read off the inventory, so it costs no analysis: `schematic_blocks` is the table the
+     * whole of this hangs on, and it was empty until the analysis started returning one.
+     */
+    public function creative(): bool
+    {
+        return $this->blocksHeld()
+            ->whereIn('block', self::sandboxBlocks())
+            ->exists();
+    }
+
+    /** The listing's half of the same question, answered in SQL rather than row by row. */
+    public function scopeOrdinary($query)
+    {
+        return $query->whereNotExists(fn ($sub) => $sub
+            ->selectRaw('1')
+            ->from('schematic_blocks')
+            ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
+            ->whereIn('schematic_blocks.block', self::sandboxBlocks()));
     }
 
     /** Which blocks it is built from, one row per kind, indexed so the wiki can search it. */

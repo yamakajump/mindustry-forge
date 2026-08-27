@@ -142,6 +142,27 @@
       </div>
     @endif
 
+    {{-- Ce qu'elle coute a poser.
+
+         Le chiffre vient de l'analyse, qui le tient de `Block.requirements` : c'est ce que
+         le jeu retire du noyau, a l'unite pres. Range dans l'ordre des identifiants
+         d'objets du jeu, celui que le joueur lit sur tous les panneaux, et pas dans l'ordre
+         alphabetique qui mettrait le beryllium en tete d'une construction de Serpulo.
+
+         L'icone est decorative : le nom est ecrit a cote, et un lecteur d'ecran qui entend
+         « copper copper » n'apprend rien. --}}
+    @if($schematic->cost() !== [])
+      <div class="card"><h2>{{ __('schema.page.cout') }}</h2>
+        @foreach($schematic->cost() as $item => $amount)
+          <div class="line">
+            <span><img class="icone" src="/icone/objet/{{ $item }}.png?t=32"
+                       width="16" height="16" alt="" loading="lazy"> {{ $item }}</span>
+            <span class="num">{{ number_format($amount, 0, ',', ' ') }}</span></div>
+        @endforeach
+        <p class="hint-line">{{ __('schema.page.cout-aide') }}</p>
+      </div>
+    @endif
+
     {{-- Ce qu'il faut lui amener pour qu'elle tourne.
          L'electricite y figure au meme titre que le charbon, et c'est nouveau : la page
          ne parlait d'energie que lorsqu'il y en avait en trop, donc une chaine a silicium
@@ -201,6 +222,24 @@
         <button class="primary" id="copy" type="button">Copier</button>
         <a class="button" href="/?s={{ $schematic->slug }}">{{
           $schematic->managedBy(auth()->user()) ? 'Modifier' : 'Analyser chez moi' }}</a>
+
+        {{-- Le geste part d'ici, pas d'une page vide. Personne n'arrive au comparateur avec
+             deux identifiants en tete : on est sur une schematique et on se demande comment
+             elle se situe. Un cote est donc deja rempli et il n'en reste qu'un a choisir. --}}
+        @if($schematic->visibility === \App\Models\Schematic::PUBLIC)
+          <a class="button" href="/comparer?a={{ $schematic->slug }}">{{
+            __('schema.comparer.comparer-avec') }}</a>
+        @endif
+
+        {{-- Vers l'editeur de logique, et seulement quand il y a quelque chose a y ouvrir.
+             Le compte vient de l'analyse deja stockee, donc la page ne decode rien pour le
+             savoir : sur les quatre-vingt-seize schematiques mesurees dans la vitrine, six
+             sur dix n'ont aucun processeur, et un bouton mort sur six pages sur dix apprend
+             au lecteur a ne plus lire cette rangee. --}}
+        @if (data_get($schematic->analysis, 'logic.processors', 0) > 0)
+          <a class="button" href="/outils/logique?s={{ $schematic->slug }}">
+            Ouvrir la logique</a>
+        @endif
       </div>
       <p class="hint-line">Colle-la dans Mindustry avec ctrl+v.</p>
     </div>
