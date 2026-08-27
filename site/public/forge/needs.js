@@ -10,6 +10,8 @@
  * each drill actually produces, straight out of the game's own numbers.
  */
 
+import { drillTimeOf } from "./ground.js";
+
 const TICKS = 60;
 
 /**
@@ -77,19 +79,91 @@ export function demand(graph) {
 }
 
 /**
+ * Whether a block pulls an item out of the ground at all.
+ *
+ * Asked of the catalogue rather than matched against a list of roles. The list was
+ * `role === "drill"`, which is the four Serpulo drills and nothing else, so a plasma bore
+ * (`beam-drill`) and an impact drill (`burst-drill`) were never offered and Erekir's
+ * tungsten had no source at all. Replacing one list with a longer one only moves the day it
+ * goes stale to the next time the game adds a class.
+ *
+ * A block that takes time to bring something up and states how hard an ore it can reach is
+ * a drill, whatever the game calls its class. The tier is what keeps the cliff crushers
+ * out: they carry a `drill_time` and eat cliffs rather than ore, so they have no tier, and
+ * they already appear as makers of sand through their recipe.
+ */
+const extractsOre = (block) => (block.drill_time || 0) > 0 && (block.tier || 0) > 0;
+
+/**
+ * Whether a block is a tap on the ground rather than something fed from elsewhere.
+ *
+ * `shown` is doing real work here: the sandbox item and liquid sources also state an output
+ * a second, and telling a player to plan their base around a block the game only hands them
+ * in a sandbox would be worse than saying nothing.
+ */
+const isTap = (block) => (block.output_per_second || 0) > 0 && block.build_visibility === "shown";
+
+/**
+ * Whether the world being planned for can build it.
+ *
+ * A block on neither world belongs to both. Without this an Erekir schematic was told to
+ * install a blast drill, which is a correct rate attached to a block that cannot be placed
+ * there, and that is the worst shape a wrong answer can take: it reads as an instruction.
+ */
+const buildableOn = (block, planet) => !planet || !block.planet || block.planet === planet;
+
+/**
+ * How many tiles of ore a drill works at once.
+ *
+ * Two shapes, and the game's, not a rounding. An ordinary drill and a burst drill both
+ * cover their whole footprint, so a three by three works nine tiles. A beam drill fires one
+ * line out of each tile across the face it points at, so it works its width and not its
+ * area: `Block.nearbySide` in the game, and `beamOf` here.
+ *
+ * Told apart by the reach they state rather than by their class name, for the same reason
+ * as `extractsOre`: only a drill that fires at a distance has a `range`.
+ */
+const oreTilesOf = (block) => {
+  const size = block.size || 1;
+  return block.range ? size : size * size;
+};
+
+/**
+ * Which world a layout belongs to, when it says so.
+ *
+ * Read off the blocks that are actually placed. Most blocks belong to a world and a few
+ * belong to none, so a schematic made of Erekir blocks is an Erekir schematic and the
+ * shopping list should not offer it Serpulo drills. A layout built only of blocks that
+ * belong to neither, or of both at once, gets no filter rather than a guess.
+ */
+export function planetOf(graph) {
+  const seen = new Set();
+  for (const node of graph?.nodes || []) {
+    if (node.block?.planet) seen.add(node.block.planet);
+  }
+  return seen.size === 1 ? [...seen][0] : null;
+}
+
+/**
  * How many of each producer it takes to cover a rate.
  *
  * A drill's speed depends on the ore under it, so the figure here is the best case: a full
  * footprint of that ore. Said as a best case rather than as a promise, because a drill on
  * half a patch does half as much and a player who is told otherwise will build half a
  * factory.
+ *
+ * `planet` narrows the answer to what can actually be placed. It is optional so that a
+ * caller who genuinely wants the whole game can have it, and every caller inside this
+ * repository passes one.
  */
-export function producers(catalogue, resource, rate) {
+export function producers(catalogue, resource, rate, planet = null) {
   const options = [];
   const item = catalogue.items?.[resource];
 
   for (const [name, block] of Object.entries(catalogue.blocks)) {
-    if (block.role === "pump" && block.output_per_second) {
+    if (!buildableOn(block, planet)) continue;
+
+    if (isTap(block)) {
       // A pump only pumps what is under it, so it covers any liquid; which one is the
       // map's business, not the schematic's.
       if (!item) {
@@ -98,30 +172,39 @@ export function producers(catalogue, resource, rate) {
       }
       continue;
     }
-    if (block.role !== "drill" || !item) continue;
-    // The game's own formula: harder ore takes a drill longer, and a bigger drill covers
-    // more tiles of it.
+    if (!item || !extractsOre(block)) continue;
     if (block.tier < item.hardness) continue;
-    const time = (block.drill_time || 0) + (block.hardness_multiplier || 0) * item.hardness;
+
+    // The game's own formula, and the engine's own function rather than a second copy of
+    // it. `drillTimeOf` knows that a burst drill pays no hardness at all and that a couple
+    // of drills halve their time on one ore, neither of which a transcription here had.
+    const time = drillTimeOf(block, resource, item.hardness);
     if (time <= 0) continue;
-    const tiles = (block.size || 1) ** 2;
-    const each = (tiles * TICKS) / time;
+
+    const each = (oreTilesOf(block) * TICKS) / time;
     options.push({ block: name, each, count: Math.ceil(rate / each) });
   }
 
-  return options.sort((a, b) => a.count - b.count);
+  // Fewest blocks first, then the game's own numbering, so that two options needing the
+  // same count come back in the same order every time rather than in whatever order the
+  // catalogue was walked in.
+  return options.sort((a, b) => a.count - b.count
+    || (catalogue.blocks[a.block]?.id ?? Infinity) - (catalogue.blocks[b.block]?.id ?? Infinity));
 }
 
 /** What it takes to feed the whole layout, ready to show. */
 export function requirements(graph, catalogue) {
   const { outside } = demand(graph);
+  // Worked out once for the whole list rather than per row: it is a property of the
+  // schematic, not of the thing being asked for.
+  const world = planetOf(graph);
   const rows = [];
   for (const [resource, rate] of Object.entries(outside)) {
     rows.push({
       resource,
       rate,
       perMinute: rate * 60,
-      options: resource.startsWith("*") ? [] : producers(catalogue, resource, rate),
+      options: resource.startsWith("*") ? [] : producers(catalogue, resource, rate, world),
     });
   }
   return rows.sort((a, b) => b.rate - a.rate);

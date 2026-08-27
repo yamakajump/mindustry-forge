@@ -74,24 +74,6 @@ export function makersOf(catalogue, item, planet = null) {
     .map(([name]) => name);
 }
 
-/**
- * The producers `needs.js` offers, minus the ones the chosen world cannot build.
- *
- * `producers` answers for the whole game: it matches on `role === "drill"`, which is the
- * four Serpulo drills and nothing else, and it filters by no world at all. So an Erekir
- * plan came back advising a blast drill, a block that cannot be placed there, and no plasma
- * bore at all because a bore's role is `beam-drill`.
- *
- * Filtered here rather than fixed there on purpose. `needs.js` is in `EngineVersion`, so
- * touching it restamps every stored analysis on the site, and the same gap is showing in
- * the analyser's own panel today. That is a repair to sequence with the pilot, not one to
- * slip into a tool's branch. Until then this refuses to advise a block a player cannot
- * build, which is the half of the bug that is mine to keep out of.
- */
-function buildable(catalogue, options, planet) {
-  return options.filter(({ block }) => onPlanet(catalogue.blocks[block] || {}, planet));
-}
-
 /** Everything that comes out of the ground somewhere, whatever else can also make it. */
 export function minables(catalogue) {
   const found = new Set();
@@ -196,9 +178,10 @@ export function plan(catalogue, { item, perMinute, planet = null, choices = {} }
         resource: current,
         perSecond: need,
         perMinute: need * 60,
-        // Drills and pumps, straight from `needs.js`, which already answers this and
-        // already says that its figure is a best case on a full patch of ore.
-        options: buildable(catalogue, producers(catalogue, current, need), planet),
+        // Drills and pumps, straight from `needs.js`, which already answers this, already
+        // narrows it to what the chosen world can build, and already says that its figure
+        // is a best case on a full patch of ore.
+        options: producers(catalogue, current, need, planet),
       });
       continue;
     }
@@ -250,7 +233,7 @@ export function plan(catalogue, { item, perMinute, planet = null, choices = {} }
       resource: liquid,
       perSecond: rate,
       perMinute: rate * 60,
-      options: buildable(catalogue, producers(catalogue, liquid, rate), planet),
+      options: producers(catalogue, liquid, rate, planet),
     });
   }
 
