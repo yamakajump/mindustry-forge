@@ -61,6 +61,34 @@ Ce qui suit est ce qu'il a dit, pas une reformulation adoucie : un defaut requal
     dessous. Aucun appel a l'action, rien qui montre ce que l'outil sait faire ni qu'un
     catalogue de quinze mille schematiques existe derriere. Voie accueil.
 
+### La suite de la revue, meme soiree
+
+13. **Les deroulants ne parlent pas.** « Dans les deroulements c'est pas intuitif, il n'y a
+    pas les icones, il n'y a pas de petites images aussi pour trier par. » Le filtre « qui
+    produit » liste vingt-deux objets et onze liquides en texte nu, avec leurs identifiants
+    anglais. L'adresse d'icone existe depuis ce soir. Voie DA.
+
+14. **Les cartes n'existent pas.** « Il y a aussi un truc que t'as completement oublie :
+    c'est les maps. Faut que tu te renseignes de comment ca fonctionne tous ces systemes. »
+    Rien dans le depot ne lit un `.msav`. Le concurrent en publie un catalogue avec apercus,
+    telechargements et un generateur. Premiere etape : comprendre le format, pas collecter.
+    Voie collecte.
+
+15. **Les blocs melangent les deux planetes.** « Sur les blocs tu peux separer pour les deux
+    planetes par defaut. Tu fais une grosse selection avec les deux grosses planetes, les
+    memes qui pourraient tourner comme dans le jeu. Ca pourrait etre incroyable, avec du
+    three.js. » Deux demandes distinctes : la separation, qui est mecanique, et la selection
+    en volume, qui est un chantier a part entiere.
+
+16. **La foreuse mecanique manque au planificateur.** Verifie : `mechanical-drill` est dans
+    le catalogue, `kind=Drill`, `size=2`, `build_visibility=shown`, et le planificateur ne
+    propose que blast, laser et pneumatic. C'est celle qu'on a au debut du jeu, donc la
+    seule qui compte pour quelqu'un qui commence. Voie planificateur.
+
+17. **Le planificateur ne compte qu'a la minute.** « Il faut selectionner par seconde. »
+    Voie planificateur.
+
+
 ## À faire
 
 ### 1. L'audit, deux fois
