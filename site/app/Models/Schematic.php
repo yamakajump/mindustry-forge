@@ -175,11 +175,18 @@ class Schematic extends Model
             $rows[SchematicItem::POWER] = $this->powerSpare();
         }
 
-        $this->items()->whereNotIn('item', array_keys($rows) ?: [''])->delete();
+        // Only the measured output is rebuilt here. Ceilings and consumption are written
+        // by whoever works them out, and wiping them from this method would mean a save
+        // that renamed a schematic silently dropped what another pass had established.
+        $mine = $this->items()
+            ->where('sens', SchematicItem::PRODUIT)
+            ->where('kind', SchematicItem::MESURE);
+
+        (clone $mine)->whereNotIn('item', array_keys($rows) ?: [''])->delete();
 
         foreach ($rows as $item => $rate) {
             $this->items()->updateOrCreate(
-                ['item' => $item],
+                ['item' => $item, 'sens' => SchematicItem::PRODUIT, 'kind' => SchematicItem::MESURE],
                 ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
             );
         }

@@ -12,9 +12,25 @@ use Illuminate\Support\Facades\Route;
  */
 Route::get('/', fn () => response()->file(public_path('index.html')));
 
-/* L'editeur de logique, statique lui aussi. Une route plutot que le fichier servi tel quel :
-   nginx ne cherche `index.html` dans aucun dossier, et `/outils/logique.html` est une adresse
-   qu'on n'a pas envie de garder dix ans. */
+/*
+ * The editor, which is the same page.
+ *
+ * It mounts full screen over the analyser, so it had no address of its own and nothing
+ * could point at it: eleven modules in production and not one link to them. The page reads
+ * its own path on load to know which of the two to open.
+ *
+ * A route rather than a `#editer` fragment: a fragment never reaches the server, so it
+ * cannot be shared in a Discord thread and cannot be indexed.
+ */
+Route::get('/editer', fn () => response()->file(public_path('index.html')));
+
+/*
+ * The logic editor, a static page of its own rather than a mode of the analyser.
+ *
+ * A route rather than the file served as it lies: nginx looks for `index.html` in no
+ * directory at all, so `/outils/logique/` would answer nothing, and `/outils/logique.html`
+ * is an address nobody wants to still be honouring in ten years.
+ */
 Route::get('/outils/logique', fn () => response()->file(public_path('outils/logique.html')));
 
 Route::get('/auth/discord', [AuthController::class, 'start'])->name('login');
