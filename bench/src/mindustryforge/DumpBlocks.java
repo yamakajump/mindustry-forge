@@ -104,6 +104,7 @@ import mindustry.world.blocks.production.AttributeCrafter;
 import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.production.Separator;
 import mindustry.world.blocks.production.HeatCrafter;
+import mindustry.entities.bullet.BulletType;
 import mindustry.world.consumers.Consume;
 import mindustry.type.LiquidStack;
 import mindustry.world.consumers.ConsumeItems;
@@ -129,14 +130,37 @@ import java.nio.file.Paths;
  * it, stamped with the version it came from, and the analyser refuses a table whose
  * version does not match the bench it is checked against.
  *
- * <p>Run with {@code java -jar server-release.jar} and the command {@code dump-blocks}.
+ * <p>Run with {@code java -jar server-release.jar} and the command
+ * {@code dump-blocks <path>}. The server writes the file within a few seconds and then
+ * <strong>keeps its console open for ever</strong>: it is a server, and dumping is not a
+ * reason for it to stop. Piping the command in with {@code echo} therefore blocks until
+ * something kills the process, long after the file is complete and correct. Wait for the
+ * file, not for the exit code.
+ *
+ * <p>Two dumps of one unchanged game must be identical byte for byte, because that is the
+ * only thing that lets a diff of this 450 kB file mean anything. Anywhere the game hands
+ * over an {@link arc.struct.ObjectMap}, iterate the content registry instead: its order is
+ * the content id, which is the same in every run, while a map's is the identity hash,
+ * which is not.
  */
 public class DumpBlocks {
 
     /** Ticks per second, which is what turns the game's per-tick figures into per-second. */
     private static final float TPS = 60f;
 
-    /** Pixels to a tile, which is what turns the game's ranges into tiles. */
+    /**
+     * Pixels to a tile, which is what turns the game's ranges into tiles.
+     *
+     * <p><strong>Every distance in this file is written in tiles.</strong> The game is of
+     * two minds about it: {@code ItemBridge.range} is a count of tiles and
+     * {@code BaseTurret.range} is a float of world units, eight times larger, and for a
+     * long time this dump copied each one straight through. The result was a {@code range}
+     * field carrying two units with nothing to tell them apart, since a bridge's 4 and a
+     * mender's 40 are both plausible either way. Every reader then had to guess from the
+     * block's class, and a wrong guess is a wrong number rather than an exception.
+     *
+     * <p>So: divide here, once, and let no distance leave this file in world units.
+     */
     private static final float TILESIZE = 8f;
 
     public static void dump(Path out) {
@@ -1367,9 +1391,21 @@ public class DumpBlocks {
             }
             if (block instanceof LiquidTurret liquidTurret) {
                 entry.put("role", "turret-idle");
+                /* Walked in content order rather than in the map's own, because
+                   `LiquidTurret.ammoTypes` is a plain `ObjectMap` whose iteration follows
+                   the identity hash and therefore changes from one run to the next. Two
+                   dumps of an untouched game disagreed on `wave` and `tsunami` for exactly
+                   this reason, which is eight lines of noise in the middle of a 450 kB
+                   diff and no way to tell them from a real regression.
+
+                   `ItemTurret.ammoTypes` is an `OrderedMap` and does not have the fault,
+                   which is why only one of the two tables is walked this way. Checked in
+                   the v159.7 bytecode rather than assumed. */
                 Jval ammo = Jval.newObject();
-                liquidTurret.ammoTypes.each((liquid, type) ->
-                    ammo.put(liquid.name, type.ammoMultiplier));
+                for (Liquid liquid : Vars.content.liquids()) {
+                    BulletType type = liquidTurret.ammoTypes.get(liquid);
+                    if (type != null) ammo.put(liquid.name, type.ammoMultiplier);
+                }
                 if (ammo.asObject().size > 0) entry.put("ammo_types", ammo);
             }
             entry.put("input_liquid", liquidInputsOf(block));
