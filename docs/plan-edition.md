@@ -189,12 +189,17 @@ Rien de tout ça ne rentre dans `index.html`, qui fait déjà 1 176 lignes. Un d
 |---|---|
 | `state.js` | Les blocs posés, le sol, la boîte de 64×64, l'historique |
 | `rules.js` | Une pose est-elle légale, et sinon pourquoi, en français affichable |
-| `tools.js` | Pose, tracé de ligne, casse, sélection, pinceau, pot, pipette |
+| `lines.js` | Ce qu'un glissé pose : le L des convoyeurs, la ligne droite des autres |
+| `selection.js` | Copier, coller, tourner, retourner un groupe de blocs |
+| `camera.js` | Origine, échelle, conversion écran vers tuile et retour |
 | `ui.js` | Rail, onglets, palette, barre d'état, raccourcis |
 | `mount.js` | Branche le tout sur le canvas et sur la bascule Analyser / Éditer |
 
-`rules.js` et `tools.js` sont du calcul pur, sans navigateur, donc testés dans le
-`npm test` existant. Une règle de sol sans test n'est pas une règle, c'est une intention.
+Les cinq premiers sont du calcul pur, sans navigateur, donc testés dans le `npm test`
+existant. Une règle de sol sans test n'est pas une règle, c'est une intention. `camera.js`
+mérite d'exister seul parce que la conversion écran vers tuile est exactement l'endroit où
+vivent les erreurs d'une case : un demi-pixel de travers pose le bloc à côté de là où le
+joueur l'a vu, et rien à l'écran ne dit pourquoi.
 
 ## Ce qui reste dehors, volontairement
 
