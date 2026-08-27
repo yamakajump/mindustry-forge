@@ -1019,6 +1019,9 @@ function wireKeep(report) {
         // out for itself.
         marked,
       },
+      /* Le sol part a cote de l analyse, pas dedans : ce qui est dans `analysis` est ce que
+         l analyse a trouve, le sol est ce que l auteur a dessine. */
+      ground: Object.keys(ground).length ? ground : null,
       thumbnail: plate.toDataURL("image/png"),
     };
 
@@ -1074,6 +1077,10 @@ if (asked) {
       text.value = found.code;
       // Its author's own marks come back with it, and its author edits it in place.
       marked = { ...(found.marked || {}) };
+      /* Et le terrain sur lequel elle a ete concue. Sans lui, rouvrir une schematique
+         rendait ses foreuses muettes : le rapport repassait a « au mieux, sur une tache
+         pleine », alors que son auteur avait pris la peine de peindre le sol. */
+      ground = { ...(found.ground || {}) };
       sealed = !!found.sealed;
       if (found.mine) opened = found;
       run();

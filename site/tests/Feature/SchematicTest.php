@@ -304,3 +304,74 @@ it('ne laisse pas un inconnu reecrire une schematique', function () {
 
     expect($schematic->fresh()->name)->toBe('Pas la tienne');
 });
+
+/**
+ * Le sol survit a l enregistrement.
+ *
+ * Sans lui, une schematique gardee puis rouverte perdait son terrain, et ses foreuses
+ * repassaient a « au mieux, sur une tache pleine », ce qui est l aveu que l outil ne sait
+ * pas sur quoi elles sont. L auteur avait pourtant pris la peine de le peindre.
+ */
+it('garde le sol avec la schematique et le rend en la rouvrant', function () {
+    $user = User::factory()->create();
+    $sol = [
+        '0,0' => ['floor' => 'stone', 'overlay' => 'ore-copper'],
+        '1,0' => ['floor' => 'sand'],
+        '2,0' => ['floor' => 'stone', 'wall' => 'stone-wall'],
+    ];
+
+    $this->actingAs($user)
+        ->postJson('/api/schematiques', [
+            'name' => 'Foreuse sur cuivre',
+            'code' => 'bXNjaAF4nD',
+            'analysis' => analysis(),
+            'ground' => $sol,
+        ])
+        ->assertCreated();
+
+    $kept = Schematic::first();
+    expect($kept->ground)->toBe($sol);
+
+    $this->actingAs($user)
+        ->getJson("/api/schematiques/{$kept->slug}")
+        ->assertOk()
+        ->assertJsonPath('ground.0,0.overlay', 'ore-copper')
+        ->assertJsonPath('ground.2,0.wall', 'stone-wall');
+});
+
+it('refuse un sol plus grand que la limite du jeu', function () {
+    /* 64 x 64 fait 4 096 cases. Une de plus est soit un bug, soit quelqu un qui essaie de
+       remplir la base de donnees par la porte de derriere. */
+    $user = User::factory()->create();
+    $trop = [];
+    for ($i = 0; $i <= 4096; $i++) {
+        $trop["{$i},0"] = ['floor' => 'stone'];
+    }
+
+    $this->actingAs($user)
+        ->postJson('/api/schematiques', [
+            'name' => 'Trop de sol',
+            'code' => 'bXNjaAF4nD',
+            'analysis' => analysis(),
+            'ground' => $trop,
+        ])
+        ->assertStatus(422);
+});
+
+it('modifie le sol d une schematique sans toucher au reste', function () {
+    $user = User::factory()->create();
+    $kept = Schematic::factory()->for($user)->create([
+        'ground' => ['0,0' => ['floor' => 'stone']],
+        'name' => 'Avant',
+    ]);
+
+    $this->actingAs($user)
+        ->patchJson("/api/schematiques/{$kept->slug}", [
+            'ground' => ['5,5' => ['floor' => 'sand', 'overlay' => 'ore-lead']],
+        ])
+        ->assertOk();
+
+    $kept->refresh();
+    expect($kept->ground)->toBe(['5,5' => ['floor' => 'sand', 'overlay' => 'ore-lead']])
+        ->and($kept->name)->toBe('Avant');
+});
