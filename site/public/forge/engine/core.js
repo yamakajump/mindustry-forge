@@ -185,6 +185,7 @@ export class Build {
 
   /** `Building.acceptItem`: does this recipe call for it, and is there room. */
   acceptItem(source, item) {
+    if (this.state.dead) return false;
     if (this.behaviour?.acceptItem) return this.behaviour.acceptItem(this, source, item);
     return this.wants(item) && this.items.get(item) < this.itemCapacity;
   }
@@ -284,6 +285,12 @@ export class Build {
   }
 
   acceptLiquid(source, liquid) {
+    /* A block that killed itself is **gone**, and the two blocks that can do it, a thorium
+       reactor that overheated and a neoplasia reactor with nowhere to put its neoplasm,
+       both stand next to the sources that were feeding them. Emptied but still willing, the
+       dead reactor filled straight back up from its own supply and read as a live block
+       holding a tankful. */
+    if (this.state.dead) return false;
     if (this.behaviour?.acceptLiquid) {
       return this.behaviour.acceptLiquid(this, source, liquid);
     }
@@ -458,6 +465,61 @@ export class Build {
     if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 0 : 2;
     return dy > 0 ? 1 : 3;
   }
+}
+
+/**
+ * `ItemBridge.checkAccept`, which is most of what makes a bridge a bridge.
+ *
+ * Two rules, and the port had neither. **Without a link, a bridge accepts nothing at all**
+ * except from another bridge pointing at it: it is the far end of somebody else's beam and
+ * not a block a belt may push into. **With a link, it refuses whatever arrives from the
+ * face it sends out of**, so a beam cannot be fed backwards through its own exit.
+ *
+ * Reading only the capacity, the terminal bridge of a chain swallowed whatever a belt
+ * pushed onto it and spread it round with `dump`: up to thirteen items a second of traffic
+ * that does not exist, and the jam upstream that a reader is looking for never appeared.
+ */
+export function bridgeAccepts(build, source) {
+  if (!source) return true;
+  // `linked(source)`: a bridge set to this one may always feed it.
+  if (pointsAt(source, build)) return true;
+
+  const target = bridgeTarget(build);
+  if (!target) return false;
+  return build.relativeTo(target) !== build.relativeTo(source);
+}
+
+/** `ItemBridge.checkDump`. */
+export function bridgeDumps(build, other) {
+  const target = bridgeTarget(build);
+  if (target) return build.relativeTo(target) !== build.relativeTo(other);
+
+  // Unlinked, it still refuses to pour back towards anything that is feeding it.
+  const side = build.relativeTo(other);
+  return !feedersOf(build).some((feeder) => build.relativeTo(feeder) === side);
+}
+
+/** Where a bridge sends, or nothing when it is not set or the far end is gone. */
+function bridgeTarget(build) {
+  const link = build.node.link;
+  return link ? build.world?.at(link[0], link[1]) || null : null;
+}
+
+const pointsAt = (source, build) =>
+  Boolean(source.node?.link) && bridgeTarget(source) === build;
+
+/**
+ * `incoming`: which bridges are pointed at this one.
+ *
+ * Worked out once and kept, because nothing in a schematic moves: a bridge's link is read
+ * off the tile and never changes while the clock runs.
+ */
+function feedersOf(build) {
+  if (!build.state.feeders) {
+    build.state.feeders = (build.world?.builds || [])
+      .filter((other) => other !== build && pointsAt(other, build));
+  }
+  return build.state.feeders;
 }
 
 /** `content.items()` order, which is what `dump(null)` walks. */

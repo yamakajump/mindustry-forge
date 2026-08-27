@@ -223,9 +223,12 @@ const crafter = {
  * What a booster liquid is worth this frame, between nothing and one.
  *
  * `optionalEfficiency` in the game, and it is **capped by the block's real efficiency**:
- * a bore full of hydrogen on a grid at half coverage gets half the boost, not all of it.
+ * `optionalEfficiency = min(optionalEfficiency, minEfficiency)`, where the minimum runs
+ * over every mandatory consumer and not only over the grid. A bore full of hydrogen on a
+ * grid at half coverage gets half the boost, and a bore short of the liquid it actually
+ * needs gets that fraction of it too.
  */
-function boostShare(build, step) {
+function boostShare(build, step, capped = null) {
   let share = 1;
   let any = false;
   for (const [liquid, rate] of Object.entries(build.block.boost_liquid || {})) {
@@ -235,8 +238,8 @@ function boostShare(build, step) {
     share = Math.min(share, build.liquids.get(liquid) / wanted);
   }
   if (!any) return 0;
-  const grid = build.block.power > 0 ? (build.state.power ?? 1) : 1;
-  return Math.max(0, Math.min(share, grid));
+  const cap = capped ?? (build.block.power > 0 ? (build.state.power ?? 1) : 1);
+  return Math.max(0, Math.min(share, cap));
 }
 
 /** And drinking it, at whatever share it got. */
@@ -382,7 +385,7 @@ const drill = {
        drank it and got nothing for it: a pipe laid over a drill farm changed no number in
        the report, where the game gives sixty per cent more. */
     const grid = build.block.power > 0 ? (build.state.power ?? 1) : 1;
-    const wet = boostShare(build, step);
+    const wet = boostShare(build, step, grid);
     const speed = (1 + ((build.block.liquid_boost ?? 1) - 1) * wet) * grid;
     drinkBoost(build, step, wet);
     if (speed <= 0) {
@@ -714,8 +717,9 @@ const beamDrill = {
     efficiency = Math.max(0, Math.min(1, efficiency));
     if (efficiency <= 0) return;
 
-    // And the optional half, which speeds it up rather than gating it.
-    const boost = boostShare(build, step);
+    // And the optional half, which speeds it up rather than gating it, capped by what the
+    // mandatory half is already worth.
+    const boost = boostShare(build, step, efficiency);
     const multiplier = 1 + ((block.optional_boost_intensity ?? 1) - 1) * boost;
 
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
@@ -781,7 +785,7 @@ const wallCrafter = {
     efficiency = Math.max(0, Math.min(1, efficiency));
 
     // The two boosters, which the game says outright are not meant to be used together.
-    const wet = boostShare(build, step);
+    const wet = boostShare(build, step, efficiency);
     const stocked = Object.keys(block.boost_input || {}).length > 0
       && Object.entries(block.boost_input).every(([item, n]) => build.items.get(item) >= n);
 

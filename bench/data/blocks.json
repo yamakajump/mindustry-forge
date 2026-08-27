@@ -8476,6 +8476,7 @@
       "coolant_power": 0.5,
       "ambient_cooldown_time": 1200,
       "heat_output": 15,
+      "heat_warmup_rate": 1,
       "item_duration": 360,
       "fuel_item": "thorium"
     },
@@ -9901,9 +9902,9 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "oil": 1,
         "slag": 1,
         "water": 1,
+        "oil": 1,
         "cryofluid": 1
       },
       "input_liquid":{}
@@ -10191,9 +10192,9 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "oil": 0.4,
         "slag": 0.4,
         "water": 0.4,
+        "oil": 0.4,
         "cryofluid": 0.4
       },
       "input_liquid":{}

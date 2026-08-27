@@ -1421,6 +1421,94 @@ const SCENARIOS = {
   "mass-driver-unset": () => SCENARIOS["mass-driver-pair"]().map((tile) =>
     (tile.block === "mass-driver" ? { ...tile, raw: undefined } : tile)),
 
+  /* A belt pushing onto the far end of a bridge chain, which the game refuses outright.
+     `checkAccept` is the whole of what makes a bridge a bridge: without a link it takes
+     nothing except from a bridge pointed at it, and with one it refuses whatever comes back
+     through its own exit. Reading only the capacity, the terminal bridge swallowed what the
+     belt pushed onto it and spread it round with `dump`. The router is what turns that into
+     a number: refused, the lead all piles into its own vault. */
+  "bridge-terminal-fed": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "bridge-conveyor", rotation: 0,
+      raw: point(3, 0) },
+    { x: 5, y: 0, block: "bridge-conveyor", rotation: 0 },
+    { x: 6, y: 0, block: "conveyor", rotation: 0 },
+    // Couvre 7..9 par -1..1.
+    { x: 8, y: 0, block: "vault", rotation: 0 },
+
+    { x: 5, y: 4, block: "item-source", rotation: 0, raw: item("lead") },
+    { x: 5, y: 3, block: "conveyor", rotation: 3 },
+    { x: 5, y: 2, block: "conveyor", rotation: 3 },
+    { x: 5, y: 1, block: "router", rotation: 0 },
+    // Couvre 2..4 par 1..3, contre le flanc ouest du routeur.
+    { x: 3, y: 2, block: "vault", rotation: 0 },
+  ],
+
+  /* And the same rule on the liquid side: a bridge conduit standing beside a tank, set to
+     nothing. Nothing enters it in the game, so the far tank stays dry for thirty seconds.
+     Accepting on capacity alone, the port drained the near tank into the far one. */
+  "liquid-bridge-idle": () => [
+    { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
+    { x: 1, y: 0, block: "conduit", rotation: 0 },
+    // Couvre 2..4 par -1..1.
+    { x: 3, y: 0, block: "liquid-tank", rotation: 0 },
+    { x: 5, y: 0, block: "bridge-conduit", rotation: 0 },
+    { x: 6, y: 0, block: "conduit", rotation: 0 },
+    // Couvre 7..9 par -1..1.
+    { x: 8, y: 0, block: "liquid-tank", rotation: 0 },
+  ],
+
+  /* A thorium reactor fed slower than it burns: one tile of ore under a laser drill makes
+     a thorium about every eight seconds and the reactor wants one every six.
+
+     Which is the shape that reads `timer(timerFuel, itemDuration)`. An `Interval` compares
+     the map clock against the date it last fired and accumulates nothing, so a reactor that
+     stood empty burns the next thorium the frame it arrives. Counted as a stopwatch that
+     only runs while there is fuel, the port never reached three hundred and sixty and piled
+     the thorium up instead. */
+  "reactor-drip": () => ({
+    tiles: [
+      // Couvre 0..2 par 0..2, sur une seule case de minerai.
+      { x: 1, y: 1, block: "laser-drill", rotation: 0 },
+      /* Deux chambres a combustion plutot qu une source de courant : une source est un
+         `PowerNode`, elle se relie toute seule a tout ce qui passe a portee au moment de la
+         pose, batterie comprise, et le scenario mesurait son courant a elle. */
+      { x: 0, y: 3, block: "combustion-generator", rotation: 0 },
+      { x: 0, y: 4, block: "item-source", rotation: 0, raw: item("coal") },
+      { x: 1, y: 3, block: "combustion-generator", rotation: 0 },
+      { x: 1, y: 4, block: "item-source", rotation: 0, raw: item("coal") },
+
+      { x: 3, y: 1, block: "conveyor", rotation: 0 },
+      // Couvre 4..6 par 0..2.
+      { x: 5, y: 1, block: "thorium-reactor", rotation: 0 },
+      // Refroidi, sinon le scenario mesure une explosion plutot qu un compteur.
+      { x: 5, y: 3, block: "liquid-source", rotation: 0, raw: liquid("cryofluid") },
+      // Sur la grille du reacteur et sur elle seule : ce qu elle a pris est la mesure.
+      { x: 7, y: 1, block: "battery", rotation: 0 },
+    ],
+    ground: ["ore-thorium@1,1"],
+  }),
+
+  /* A neoplasia reactor with nowhere to put its neoplasm. `explodeOnFull` was in the
+     catalogue and read by nothing: it fills its eighty in four seconds and calls `kill()`,
+     taking the grid with it. Left running, the port reported seven and a half times the
+     energy and declared a schematic that forgot its neoplasm pipe perfectly sound. */
+  "reactor-neoplasia-full": () => ({
+    tiles: [
+      // Couvre 0..4 par 0..4.
+      { x: 2, y: 2, block: "neoplasia-reactor", rotation: 0 },
+      { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("phase-fabric") },
+      { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("arkycite") },
+    ],
+    /* Son eau en reserve plutot qu une source de plus. Ce que la mort du reacteur fait
+       autour de lui, le portage ne le modelise pas : le jeu emporte une partie de ce qui
+       touche un bloc de cinq sur cinq qui saute, donc le scenario ne pose que ce qui a
+       survecu a la mesure. Ce qu il verifie est le reacteur lui-meme : il n est plus la,
+       et il ne reste rien dedans. */
+    stock: ["water~80@2,2"],
+  }),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },

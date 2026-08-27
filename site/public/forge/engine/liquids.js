@@ -14,7 +14,8 @@
  * Source: `mindustry.world.blocks.liquid.*`, Mindustry v159.7.
  */
 
-import { bridgeLink, DIRECTIONS, TICKS } from "./core.js";
+import { bridgeAccepts, bridgeDumps, bridgeLink, DIRECTIONS, TICKS }
+  from "./core.js";
 
 /**
  * A pipe.
@@ -124,9 +125,14 @@ const liquidJunction = {
 const liquidBridge = {
   begin(build) { build.state.warmup = 0; },
 
+  /* And the same `checkAccept` an item bridge has, which nothing here read: without a link
+     a bridge conduit accepts from nobody except a bridge pointed at it, and with one it
+     refuses whatever comes back through its own exit. A stray bridge conduit beside a tank
+     drained it and spread the liquid round, where in the game nothing enters it at all. */
   acceptLiquid(build, source, liquid) {
     return (!build.liquid || build.liquid === liquid || build.liquidAmount < 0.2)
-      && build.liquidAmount < build.liquidCapacity;
+      && build.liquidAmount < build.liquidCapacity
+      && bridgeAccepts(build, source);
   },
 
   update(build, world, step) {
@@ -156,10 +162,9 @@ const liquidBridge = {
     }
   },
 
-  /** `canDumpLiquid` is `checkDump`: never back down its own beam. */
+  /** `canDumpLiquid` is `checkDump`, the same one an item bridge uses. */
   canDumpLiquid(build, other) {
-    return !(other.node?.link
-      && build.world?.at(other.node.link[0], other.node.link[1]) === build);
+    return bridgeDumps(build, other);
   },
 };
 

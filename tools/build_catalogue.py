@@ -57,7 +57,7 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
         "move_time", "payload_limit", "payload_speed", "payload_rotate_speed",
         "outputs_payload", "accepts_payload", "construct_time", "upgrades",
         "capacities", "build_time", "build_speed", "produces", "incinerable", "instant_transfer",
-        "consumes_power", "outputs_power_flag", "conductive_power", "power_node", "liquid_output_directions", "no_dump_extra", "ignore_liquid_fullness", "solid",
+        "consumes_power", "outputs_power_flag", "conductive_power", "power_node", "heat_warmup_rate", "liquid_output_directions", "no_dump_extra", "ignore_liquid_fullness", "solid",
         # Le mass driver, qui lance ses objets a distance.
         "rotate_speed", "min_distribute", "reload", "bullet_speed",
         "bullet_lifetime", "translation",
