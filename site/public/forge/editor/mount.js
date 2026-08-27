@@ -16,7 +16,7 @@
  * faute de file de construction à vider.
  */
 
-import { draw, spriteOf } from "../render.js";
+import { draw, itemIcon, spriteOf } from "../render.js";
 import { createBoard, footprint, MAX_SIZE } from "./state.js";
 import { lineOf, linksByConfig, reachOf } from "./lines.js";
 import { canPlace } from "./rules.js";
@@ -24,6 +24,7 @@ import { flip, inBox, rotateBy, translate } from "./selection.js";
 import { fromBase64, toBase64 } from "../schematic.js";
 import { createCamera } from "./camera.js";
 import { mountRail, showHelp, sizeGauge } from "./ui.js";
+import { choicesFor, configFor, readsAs } from "./configure.js";
 
 const SHELL = `
   <div class="editor-bar">
@@ -40,6 +41,7 @@ const SHELL = `
   </div>
   <div class="editor-rail"></div>
   <div class="editor-stage"><canvas tabindex="0" aria-label="Le plateau"></canvas>
+    <div class="editor-picker" hidden></div>
     <div class="editor-pick" hidden>
       <button type="button" data-pick="copy" title="Copier (ctrl+C)">Copier</button>
       <button type="button" data-pick="turn" title="Tourner d un quart">↻</button>
@@ -83,6 +85,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   let held = null;
   let rotation = 0;
+  /** Ce que le bloc en main retient, quand la pipette l'a rapporté avec. */
+  let heldConfig = null;
   let cursor = null;
   let refusal = null;
   let panning = null;
@@ -124,6 +128,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     onPick(name) {
       held = name;
       rotation = 0;
+      heldConfig = null;
       rail.setHeld(held, rotation);
       say();
       paint();
@@ -213,7 +218,12 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   function pending() {
     if (!held || !cursor) return [];
     const from = drawing || cursor;
-    return lineOf(from, cursor, held, catalogue, rotation, { diagonal, board });
+    const plans = lineOf(from, cursor, held, catalogue, rotation, { diagonal, board });
+    if (!heldConfig) return plans;
+    /* La configuration ne suit que les blocs restés du type qu'on tient : un glissé peut
+       avoir transformé certains plans en jonctions ou en ponts, et leur coller la
+       configuration d'un trieur écrirait n'importe quoi dans le fichier. */
+    return plans.map((plan) => (plan.block === held ? { ...plan, config: heldConfig } : plan));
   }
 
   /** Ce qu'un déplacement de sélection poserait, à sa nouvelle place. */
@@ -891,6 +901,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   const pickBar = host.querySelector(".editor-pick");
+  const picker = host.querySelector(".editor-picker");
 
   function showPickBar() {
     if (!selection || !picked().length) {
@@ -945,9 +956,62 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       && Math.max(Math.abs(other.x - tile.x), Math.abs(other.y - tile.y)) <= reach);
   }
 
+  /**
+   * Régler ce qu'un bloc retient : l'objet d'un trieur, le liquide d'une source.
+   *
+   * Une petite palette flottante posée contre le bloc, avec l'icône de chaque objet. Un
+   * deuxième clic sur le même bloc efface sa configuration, ce que le jeu appelle
+   * `clearOnDoubleTap` et qui est la seule façon de remettre un trieur à zéro sans le
+   * casser.
+   */
+  function offerContent(tile) {
+    const choices = choicesFor(catalogue.blocks[tile.block], catalogue);
+    if (!choices.length) return false;
+
+    const already = readsAs(tile, catalogue);
+    picker.innerHTML = choices.map((choice) => {
+      const src = itemIcon(choice.name, 32, choice.family === "liquid" ? "liquid/" : "item/");
+      return `<button type="button" data-pick-content="${choice.name}"
+        title="${choice.name}" aria-pressed="${choice.name === already}">${
+        src ? `<img src="${src}" alt="${choice.name}">` : choice.name.slice(0, 3)}</button>`;
+    }).join("") + `<button type="button" data-pick-content="" title="Rien">∅</button>`;
+
+    picker.dataset.at = `${tile.x},${tile.y}`;
+    picker.hidden = false;
+    const viewport = viewportOf();
+    const { px, py } = camera.rectOf(tile.x, tile.y + 1, viewport);
+    picker.style.left = `${Math.max(4, Math.min(px, viewport.width - 240))}px`;
+    picker.style.top = `${Math.max(4, py - 4)}px`;
+    return true;
+  }
+
+  picker.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-pick-content]");
+    if (!button) return;
+    const [x, y] = picker.dataset.at.split(",").map(Number);
+    const tile = board.at(x, y);
+    picker.hidden = true;
+    if (!tile) return;
+
+    const chosen = choicesFor(catalogue.blocks[tile.block], catalogue)
+      .find((choice) => choice.name === button.dataset.pickContent);
+    board.apply({
+      remove: [tile],
+      /* `raw` est effacé en même temps : il porte les octets d'origine relus d'un fichier,
+         et les laisser ferait rejouer l'ancienne configuration à l'écriture, par dessus
+         celle qu'on vient de choisir. */
+      place: [{ ...tile, raw: undefined, config: chosen ? configFor(chosen) : null }],
+    });
+    say();
+    paint();
+  });
+
   /** Le clic gauche, main vide, sur un bloc posé. */
   function poke(point) {
     const under = board.at(point.x, point.y);
+    picker.hidden = true;
+
+    if (under && !linking && offerContent(under)) return;
 
     if (linking) {
       const armed = linking;
@@ -1042,6 +1106,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (!under) return;
     held = under.block;
     rotation = under.rotation || 0;
+    /* `copyConfig` : le jeu ramene la configuration avec le bloc, et 390 blocs l autorisent.
+       Reprendre un trieur regle sur du cuivre pour le reposer vide serait reprendre autre
+       chose que ce qu on a vise. */
+    heldConfig = catalogue.blocks[under.block]?.copy_config ? under.config || null : null;
     rail.setHeld(held, rotation);
     say();
     paint();

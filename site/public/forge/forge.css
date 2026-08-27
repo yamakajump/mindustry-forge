@@ -552,3 +552,17 @@ select {
   color: var(--ink); border-color: var(--accent); background: #2f2a1c;
 }
 .editor-ground .wipe { margin-top: 16px; width: 100%; min-height: 34px; font-size: 12.5px; }
+
+/* Le choisisseur de contenu : ce qu'un trieur laisse passer, ce qu'une source fabrique.
+   Posé contre le bloc, comme la barre de sélection, et pour la même raison. */
+.editor-picker {
+  position: absolute; z-index: 4; max-width: 236px;
+  display: flex; flex-wrap: wrap; gap: 3px;
+  background: var(--panel); border: 2px solid var(--accent); border-radius: 6px; padding: 4px;
+}
+.editor-picker button {
+  min-height: 30px; width: 30px; padding: 0; justify-content: center; border-width: 1px;
+  border-radius: 4px; font-size: 11px;
+}
+.editor-picker button[aria-pressed="true"] { border-color: var(--accent); background: #2f2a1c; }
+.editor-picker img { width: 20px; height: 20px; image-rendering: pixelated; }
