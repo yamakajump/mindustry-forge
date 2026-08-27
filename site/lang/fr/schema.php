@@ -9,6 +9,12 @@
  */
 
 return [
+    'unite' => [
+        'energie' => 'energie',
+        'par-seconde' => '/ s',
+        'par-minute' => '/ min',
+    ],
+
     /*
      * A sandbox tap, said rather than quoted.
      *
