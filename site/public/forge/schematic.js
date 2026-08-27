@@ -305,6 +305,37 @@ class Writer {
  * registry the game printed, and a second copy of that table in this file is a second
  * thing to be wrong.
  */
+/**
+ * Écrire une configuration, dans le codage de `TypeIO.writeObject` de la v159.7.
+ *
+ * Le lecteur garde les octets bruts de ce qu'il a lu, et l'écrivain les rejoue tels quels :
+ * une schématique collée puis recopiée ressort à l'identique sans que ce fichier ait à
+ * savoir écrire quoi que ce soit. Parfait tant que rien ne **crée** de configuration.
+ *
+ * L'éditeur en crée. Un glissé de ponts pose une chaîne dont chaque maillon vise le
+ * suivant, et sans ces quelques lignes cette chaîne sortait du site en file de ponts qui
+ * s'ignorent : l'image était juste, le fichier était faux, et rien ne le disait.
+ *
+ * Seuls deux types sont écrits, parce que seuls deux sont créés ici : le point relatif d'un
+ * pont ou d'un pylône, et le contenu d'un trieur ou d'une source. Une configuration d'un
+ * autre type venue d'un fichier repart par ses octets bruts, intacte.
+ */
+function writeConfig(writer, tile) {
+  if (tile.raw?.length) return writer.bytes(tile.raw);
+  const config = tile.config;
+  if (!config) return writer.u8(0);
+
+  if (config.type === 7) {
+    return writer.u8(7).i32(config.dx | 0).i32(config.dy | 0);
+  }
+  if (config.type === 5) {
+    return writer.u8(5).u8(config.content).i16(config.id);
+  }
+  /* Un type qu'on ne sait pas écrire est écrit comme « rien », et pas au petit bonheur :
+     inventer des octets décale tout ce qui suit et rend le fichier illisible par le jeu. */
+  return writer.u8(0);
+}
+
 export async function write(tiles, { tags = {}, sizeOf = () => 1 } = {}) {
   if (!tiles.length) throw new Error("une schematique vide ne se copie pas");
 
@@ -340,7 +371,7 @@ export async function write(tiles, { tags = {}, sizeOf = () => 1 } = {}) {
   for (const tile of tiles) {
     body.u8(palette.indexOf(tile.block));
     body.i32(((tile.x - left) << 16) | ((tile.y - bottom) & 0xFFFF));
-    body.bytes(tile.raw?.length ? tile.raw : new Uint8Array([0]));
+    writeConfig(body, tile);
     body.u8(tile.rotation || 0);
   }
 

@@ -203,9 +203,17 @@ public class DumpBlocks {
             entry.put("group", block.group.name());
             if (block.group.anyReplace) entry.put("group_any_replace", true);
             if (block.subclass != null) entry.put("subclass", block.subclass.getSimpleName());
-            /* Le drapeau qui decide si un glisse trace en L ou en ligne droite. Les bandes,
-               les conduits et les gaines l ont ; un routeur ne l a pas. */
+            /* Le drapeau qui autorise le trace par recherche de chemin plutot que par
+               escalier, quand le placement diagonal est demande. Les bandes, les conduits
+               et les gaines l ont ; un routeur ne l a pas. */
             if (block.conveyorPlacement) entry.put("conveyor_placement", true);
+            /* Comment un glisse trace, lu dans `InputHandler.iterateLine`. Le defaut est une
+               ligne droite sur l axe dominant ; la touche « placement diagonal » bascule
+               vers un escalier ou un A*, et quelques blocs inversent ce basculement pour que
+               leur comportement le plus utile soit celui qu on obtient sans toucher a rien. */
+            if (!block.allowDiagonal) entry.put("allow_diagonal", false);
+            if (block.swapDiagonalPlacement) entry.put("swap_diagonal_placement", true);
+            if (block.allowRectanglePlacement) entry.put("allow_rectangle_placement", true);
             if (!block.replaceable) entry.put("replaceable", false);
             if (block.alwaysReplace) entry.put("always_replace", true);
             if (block.quickRotate) entry.put("quick_rotate", true);
@@ -363,6 +371,11 @@ public class DumpBlocks {
                    engine would be dividing twice. */
                 entry.put("power_production", generator.powerProduction * TPS);
             }
+
+            /* La portee d un pylone, en tuiles. Elle vit dans `laserRange` et non dans
+               `range`, qui reste vide pour eux : sans elle, un glisse de pylones ne sait pas
+               a quel espacement les poser pour qu ils se voient encore. */
+            if (block instanceof PowerNode node) entry.put("laser_range", node.laserRange);
 
             describeRole(block, entry);
             describeFloor(block, entry);

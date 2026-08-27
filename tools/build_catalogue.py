@@ -82,6 +82,9 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
         "category", "group", "group_any_replace", "subclass", "planet",
         "conveyor_placement", "replaceable", "always_replace", "quick_rotate",
         "privileged", "placeable_on", "requires_water", "placeable_liquid",
+        # Comment un glisse trace, et jusqu ou un pont ou un pylone porte.
+        "allow_diagonal", "swap_diagonal_placement", "allow_rectangle_placement",
+        "laser_range",
         )
 
 #: Les champs dont `False` est l information, et non l absence d information.
@@ -91,7 +94,7 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
 #: valait vrai par défaut, mais `replaceable` et `placeable_on` valent **vrai** par défaut
 #: dans le jeu et ne sont écrits que là où ils sont faux. Les jeter revenait à supprimer la
 #: seule chose qu'ils avaient à dire.
-FALSE_MATTERS = ("replaceable", "placeable_on")
+FALSE_MATTERS = ("replaceable", "placeable_on", "allow_diagonal")
 
 
 def main() -> None:

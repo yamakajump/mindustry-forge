@@ -116,9 +116,15 @@ function drawBridge(context, node, box, scale) {
   // tiles away and were drawn as bars across the whole picture.
   if (!node.link) return;
 
-  const span = atlas?.sprites?.[`${node.name}-bridge`];
-  const arrow = atlas?.sprites?.[`${node.name}-arrow`];
-  const cap = atlas?.sprites?.[`${node.name}-end`];
+  /* `name` du côté de l'analyse, `block` du côté de l'éditeur : le reste de `draw` accepte
+     déjà les deux et celui-ci ne le faisait pas. La travée cherchait alors le sprite
+     `undefined-bridge`, ne le trouvait pas, et sortait sans rien dire : les ponts posés
+     dans l'éditeur s'affichaient sans aucune travée, donc sans qu'on puisse voir qui était
+     relié à qui. */
+  const name = node.name || node.block;
+  const span = atlas?.sprites?.[`${name}-bridge`];
+  const arrow = atlas?.sprites?.[`${name}-arrow`];
+  const cap = atlas?.sprites?.[`${name}-end`];
   if (!span) return;
 
   const at = (x, y) => [(x - box.left) * scale + scale / 2,

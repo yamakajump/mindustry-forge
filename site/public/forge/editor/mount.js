@@ -12,7 +12,7 @@
 
 import { draw, spriteOf } from "../render.js";
 import { createBoard, footprint, MAX_SIZE } from "./state.js";
-import { lineOf } from "./lines.js";
+import { lineOf, linksByConfig, reachOf } from "./lines.js";
 import { canPlace } from "./rules.js";
 import { flip, inBox, rotateBy, translate } from "./selection.js";
 import { fromBase64, toBase64 } from "../schematic.js";
@@ -91,6 +91,12 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   /** Ce qui a été copié, et ce qui attend d'être posé au prochain clic. */
   let clipboard = null;
   let pasting = null;
+  /** La touche « placement diagonal », maintenue. */
+  let diagonal = false;
+  /** Un déplacement de sélection en cours : d'où il est parti, et ce qu'il emporte. */
+  let moving = null;
+  /** Le pont qu'on est en train de recibler, tant qu'on n'a pas désigné sa cible. */
+  let linking = null;
 
   function viewportOf() {
     return { width: stage.clientWidth || 800, height: stage.clientHeight || 600 };
@@ -110,6 +116,12 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   /** La barre d'état dit les gestes du moment, pas tous les gestes possibles. */
   function say() {
+    if (linking) {
+      hints.innerHTML = `<strong>${linking.block}</strong> armé ·
+        <kbd>clic</kbd> sur un pont vert pour le viser ·
+        <kbd>clic dessus</kbd> pour couper sa liaison · <kbd>échap</kbd> annuler`;
+      return;
+    }
     if (pasting) {
       hints.innerHTML = `<strong>${pasting.length} blocs</strong> à poser ·
         <kbd>clic</kbd> poser · <kbd>maj+clic</kbd> poser en série · <kbd>échap</kbd> annuler`;
@@ -140,8 +152,19 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   function pending() {
     if (!held || !cursor) return [];
     const from = drawing || cursor;
-    return lineOf(from, cursor, held, catalogue, rotation);
+    return lineOf(from, cursor, held, catalogue, rotation, { diagonal, board });
   }
+
+  /** Ce qu'un déplacement de sélection poserait, à sa nouvelle place. */
+  function moved() {
+    if (!moving || !cursor) return [];
+    return translate(moving.tiles, cursor.x - moving.from.x, cursor.y - moving.from.y);
+  }
+
+  /** La case est-elle dans la sélection retenue ? */
+  const insideSelection = (point) => selection && point
+    && point.x >= selection.left && point.x < selection.left + selection.width
+    && point.y >= selection.bottom && point.y < selection.bottom + selection.height;
 
   /**
    * Le plus long début d'une fournée qui tient encore dans les 64 × 64.
@@ -170,24 +193,65 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * rendait la main vide sans rien expliquer : le joueur a fait un geste, il doit obtenir
    * ce que ce geste avait de légal.
    */
-  function judge(plans) {
-    const keep = fitting(plans);
-    const batch = plans.slice(0, keep);
-    return plans.map((plan, i) => ({
-      plan,
-      verdict: i < keep
-        ? canPlace(board, plan, catalogue, batch)
-        : { ok: false, why: "64 tuiles de côté, le jeu n'en accepte pas plus" },
-    }));
+  function judge(plans, ignore = null) {
+    /* Les blocs qu'un déplacement emporte sont retirés du plateau le temps du jugement.
+       Sans ça, bouger une sélection d'une seule case la déclare illégale d'un bout à
+       l'autre : chaque bloc bute sur l'exemplaire de lui-même qu'il est en train de
+       quitter, et le fantôme est rouge partout sans qu'on comprenne pourquoi. */
+    const kept = board.tiles;
+    if (ignore && ignore.length) {
+      const leaving = new Set(ignore);
+      board.tiles = kept.filter((tile) => !leaving.has(tile));
+    }
+    try {
+      const keep = fitting(plans);
+      const batch = plans.slice(0, keep);
+      return plans.map((plan, i) => ({
+        plan,
+        verdict: i < keep
+          ? canPlace(board, plan, catalogue, batch)
+          : { ok: false, why: "64 tuiles de côté, le jeu n'en accepte pas plus" },
+      }));
+    } finally {
+      board.tiles = kept;
+    }
+  }
+
+  /**
+   * Redonner à chaque pont la case qu'il vise, pour que le rendu dessine la travée.
+   *
+   * `render.js` ne dessine un pont que s'il porte un champ `link` en coordonnées absolues,
+   * et il refuse volontairement de le déduire du décalage brut : dans de vraies
+   * schématiques, cinq ponts prétendaient porter à 365 cases et se dessinaient en barres
+   * d'un bout à l'autre de l'image. L'analyse le valide donc contre la portée du bloc.
+   *
+   * Ici l'éditeur crée le lien lui-même, mais il ne suffit pas de le poser une fois : un
+   * pont qu'on déplace, qu'on tourne ou qu'on annule garderait un lien vers une case où il
+   * n'y a plus rien. Recalculé à chaque image, contre la portée, il ne peut pas mentir.
+   */
+  function relink() {
+    for (const tile of board.tiles) {
+      const block = catalogue.blocks[tile.block];
+      if (!linksByConfig(block)) continue;
+      const reach = reachOf(block);
+      const config = tile.config;
+      if (!config || config.type !== 7 || !reach) { tile.link = null; continue; }
+      const far = Math.max(Math.abs(config.dx), Math.abs(config.dy));
+      const target = board.at(tile.x + config.dx, tile.y + config.dy);
+      tile.link = far <= reach && target?.block === tile.block
+        ? [tile.x + config.dx, tile.y + config.dy] : null;
+    }
   }
 
   function paint() {
+    relink();
     const viewport = viewportOf();
     draw(canvas, board.tiles, sizeOf, roleOf, {
       camera, viewport, ground: board.ground, grid: true,
     });
     updateGauge(board.box());
     outline(viewport);
+    linkable(viewport);
     ghost(viewport);
     showPickBar();
   }
@@ -225,7 +289,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    */
   function ghost(viewport) {
     if (picking || selection) frame(viewport);
-    const plans = pasting ? pastedAt() : pending();
+    const plans = moving ? moved() : pasting ? pastedAt() : pending();
     if (erasing) {
       erased(viewport);
       showWhy(null);
@@ -242,7 +306,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     context.imageSmoothingEnabled = false;
 
     let why = null;
-    for (const { plan, verdict } of judge(plans)) {
+    for (const { plan, verdict } of judge(plans, moving?.tiles)) {
       if (!verdict.ok) why = verdict.why;
 
       const size = sizeOf(plan.block);
@@ -389,6 +453,14 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
+    /* Attraper la sélection elle-même la déplace. C'est le geste attendu partout ailleurs
+       et il manquait : on pouvait tourner et retourner une sélection, mais pas la bouger,
+       ce qui est pourtant la raison numéro un d'en faire une. */
+    if (event.button === 0 && !event.ctrlKey && !event.metaKey && insideSelection(cursor)) {
+      moving = { from: cursor, tiles: picked() };
+      paint();
+      return;
+    }
     if (event.button === 0 && (event.ctrlKey || event.metaKey)) {
       picking = cursor;
       selection = null;
@@ -399,7 +471,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (event.button === 0 && held) {
       drawing = cursor;
       paint();
+      return;
     }
+    if (event.button === 0) poke(cursor);
   });
 
   canvas.addEventListener("pointermove", (event) => {
@@ -422,6 +496,20 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
     cursor = tileUnder(event);
 
+    if (moving) {
+      const after = moved();
+      const before = moving.tiles;
+      moving = null;
+      /* Retirer et reposer en un seul geste : sinon un déplacement d'une case retire les
+         blocs puis les repose sur eux-mêmes, et l'annulation en demande deux. */
+      if (after.length) {
+        board.apply({ remove: before, place: after });
+        selection = boxAround(after);
+      }
+      showPickBar();
+      paint();
+      return;
+    }
     if (picking) {
       const zone = rectOf(picking, cursor);
       picking = null;
@@ -467,12 +555,6 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   canvas.addEventListener("wheel", (event) => {
     event.preventDefault();
-    if (event.shiftKey && held) {
-      rotation = (rotation + (event.deltaY > 0 ? 3 : 1)) % 4;
-      rail.setHeld(held, rotation);
-      paint();
-      return;
-    }
     const rect = canvas.getBoundingClientRect();
     camera.zoomAt(event.deltaY > 0 ? 0.85 : 1.18,
                   event.clientX - rect.left, event.clientY - rect.top, viewportOf());
@@ -609,6 +691,107 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     fading = setTimeout(say, 2600);
   }
 
+  /* ----------------------------------------------------------------------------------
+     Recibler un pont, comme dans le jeu.
+
+     Cliquer un pont posé, main vide, l'arme ; le clic suivant sur un pont du même type et
+     à portée écrit la liaison. Recliquer le même pont la coupe. C'est le geste du jeu, et
+     sans lui on ne pouvait ni voir qui parle à qui, ni le changer : une chaîne posée d'un
+     glissé était figée pour toujours.
+     ---------------------------------------------------------------------------------- */
+
+  /** Les cases qu'un pont armé peut viser : même bloc, à portée, et pas lui-même. */
+  function targetsFor(tile) {
+    const reach = reachOf(catalogue.blocks[tile.block]);
+    return board.tiles.filter((other) => other !== tile && other.block === tile.block
+      && Math.max(Math.abs(other.x - tile.x), Math.abs(other.y - tile.y)) <= reach);
+  }
+
+  /** Le clic gauche, main vide, sur un bloc posé. */
+  function poke(point) {
+    const under = board.at(point.x, point.y);
+
+    if (linking) {
+      const armed = linking;
+      linking = null;
+      if (!under || under === armed) {
+        /* Recliquer le pont qu'on venait d'armer coupe sa liaison, ce qui est la seule
+           façon de défaire un lien sans casser le pont. */
+        if (under === armed && armed.config) {
+          board.apply({ remove: [armed], place: [{ ...armed, config: null, link: null }] });
+        }
+        say();
+        paint();
+        return;
+      }
+      if (targetsFor(armed).includes(under)) {
+        board.apply({
+          remove: [armed],
+          place: [{ ...armed, link: null,
+                    config: { type: 7, dx: under.x - armed.x, dy: under.y - armed.y } }],
+        });
+      } else {
+        flash("ce pont est hors de portée, ou n'est pas du même type");
+      }
+      say();
+      paint();
+      return;
+    }
+
+    if (under && linksByConfig(catalogue.blocks[under.block])) {
+      linking = under;
+      say();
+      paint();
+    }
+  }
+
+  /** Les cibles possibles et le trait vers le curseur, tant qu'un pont est armé. */
+  function linkable(viewport) {
+    if (!linking) return;
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const middle = (tile) => {
+      const { px, py, size } = camera.rectOf(tile.x, tile.y, viewport);
+      return [px + size / 2, py + size / 2];
+    };
+
+    // La portée, en carré, comme le jeu la mesure.
+    const reach = reachOf(catalogue.blocks[linking.block]);
+    const corner = camera.rectOf(linking.x - reach, linking.y + reach, viewport);
+    context.strokeStyle = "rgba(255, 211, 127, .35)";
+    context.setLineDash([3, 3]);
+    context.lineWidth = 1;
+    context.strokeRect(corner.px, corner.py,
+                       (reach * 2 + 1) * camera.scale, (reach * 2 + 1) * camera.scale);
+    context.setLineDash([]);
+
+    for (const target of targetsFor(linking)) {
+      const { px, py, size } = camera.rectOf(target.x, target.y, viewport);
+      context.strokeStyle = "#84d98b";
+      context.lineWidth = 2;
+      context.strokeRect(px + 1, py + 1, size - 2, size - 2);
+    }
+
+    const [fromX, fromY] = middle(linking);
+    context.strokeStyle = "#ffd37f";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(fromX, fromY);
+    if (cursor) {
+      const { px, py, size } = camera.rectOf(cursor.x, cursor.y, viewport);
+      context.lineTo(px + size / 2, py + size / 2);
+    }
+    context.stroke();
+
+    const { px, py, size } = camera.rectOf(linking.x, linking.y, viewport);
+    context.strokeStyle = "#ffd37f";
+    context.strokeRect(px + 1, py + 1, size - 2, size - 2);
+    context.restore();
+  }
+
   /**
    * Reprendre en main un bloc déjà posé, avec sa rotation.
    *
@@ -632,18 +815,27 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     const ctrl = event.ctrlKey || event.metaKey;
 
     if (event.code === "Space") { spacing = true; event.preventDefault(); return; }
+    /* Maj maintenue : placement diagonal, comme dans le jeu. La molette garde le zoom, qui
+       est ce qu'une molette fait sur une page web, et la rotation garde R. */
+    if (event.key === "Shift" && !diagonal) { diagonal = true; paint(); return; }
     if (ctrl && event.key.toLowerCase() === "z") {
       (event.shiftKey ? board.redo : board.undo)();
-      paint();
+      settle();
       event.preventDefault();
       return;
     }
-    if (ctrl && event.key.toLowerCase() === "y") { board.redo(); paint(); return; }
+    if (ctrl && event.key.toLowerCase() === "y") { board.redo(); settle(); return; }
     if (ctrl && event.key.toLowerCase() === "c") { copy(); event.preventDefault(); return; }
     if ((event.key === "Delete" || event.key === "Backspace") && selection) {
       const gone = picked();
       selection = null;
       if (gone.length) board.apply({ remove: gone });
+      paint();
+      return;
+    }
+    if (event.key === "Escape" && linking) {
+      linking = null;
+      say();
       paint();
       return;
     }
@@ -669,7 +861,26 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
     }
   };
-  const onKeyUp = (event) => { if (event.code === "Space") spacing = false; };
+  /**
+   * Ce qu'il faut oublier quand le plateau bouge sous nos pieds.
+   *
+   * Une annulation remet les blocs où ils étaient, mais la sélection, elle, était restée où
+   * on venait de les traîner : le cadre ambre survivait autour d'une case vide, avec sa
+   * barre d'actions qui n'agissait plus sur rien. Un pont armé a le même problème s'il
+   * disparaît entre temps.
+   */
+  function settle() {
+    selection = null;
+    linking = null;
+    showPickBar();
+    say();
+    paint();
+  }
+
+  const onKeyUp = (event) => {
+    if (event.code === "Space") spacing = false;
+    if (event.key === "Shift" && diagonal) { diagonal = false; paint(); }
+  };
 
   /**
    * Ce que le joueur colle, venu du jeu ou d'ailleurs.
@@ -696,8 +907,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   document.addEventListener("keyup", onKeyUp);
   document.addEventListener("paste", onPaste);
 
-  host.querySelector('[data-do="undo"]').onclick = () => { board.undo(); paint(); };
-  host.querySelector('[data-do="redo"]').onclick = () => { board.redo(); paint(); };
+  host.querySelector('[data-do="undo"]').onclick = () => { board.undo(); settle(); };
+  host.querySelector('[data-do="redo"]').onclick = () => { board.redo(); settle(); };
   host.querySelector('[data-mode="analyse"]').onclick = () => onAnalyse(board);
 
   const resize = window.ResizeObserver ? new ResizeObserver(() => paint()) : null;
