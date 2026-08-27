@@ -20,6 +20,14 @@ return [
     'page' => [
         'bac-a-sable' => 'Alimentee par une source de bac a sable',
         'bac-a-sable-court' => 'source de bac a sable',
+        /*
+         * Le courant affiche vient de `analysis['potential']`, donc du plafond, et le
+         * dire est la moitie de la correction : l'autre moitie est de ne plus le ranger
+         * parmi les mesures. Une ferme de reacteurs sans carburant declare a un plafond
+         * de 1 950 000 et une mesure de zero, et les deux sont vrais.
+         */
+        'energie-plafond' => 'Energie nette, au mieux',
+        'au-mieux' => 'au mieux',
         'bac-a-sable-aide' => "Un robinet de bac a sable donne autant qu'on lui demande, donc
             ce que cette schematique sort n'est pas une mesure de ce que ses blocs font :
             c'est ce qu'un robinet permet. Elle reste lisible et analysable, elle n'est

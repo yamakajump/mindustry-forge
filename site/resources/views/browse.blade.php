@@ -92,7 +92,8 @@
             <span class="warn">{{ __('schema.page.bac-a-sable-court') }}</span> &middot;
           @else
             @if($power > 0.5)
-              <span class="good">{{ number_format($power, 0, ',', ' ') }} energie/s</span> &middot;
+              <span class="good">{{ number_format($power, 0, ',', ' ') }} energie/s</span>
+              <span class="hint-line">{{ __('schema.page.au-mieux') }}</span> &middot;
             @endif
             @foreach(array_slice($schematic->produces ?? [], 0, 2, true) as $item => $itemRate)
               {{ number_format($itemRate, 0, ',', ' ') }} {{ $item }}/min &middot;

@@ -127,8 +127,12 @@
       </div>
     @elseif($power > 0.5 || $made->isNotEmpty())
       <div class="card"><h2>Sortie</h2>
+        {{-- « au mieux », parce que la colonne vient de `analysis['potential']` : c'est
+             ce que la disposition ferait alimentee a fond, pas ce qu'elle a ete mesuree
+             faisant. Le meme mot que la page de comparaison emploie deja, et pour la meme
+             raison : un plafond ne s'affiche jamais sans dire qu'il en est un. --}}
         @if($power > 0.5)
-          <div class="line"><span>Energie nette</span>
+          <div class="line"><span>{{ __('schema.page.energie-plafond') }}</span>
             <span class="num good">{{ number_format($power, 0, ',', ' ') }} / s</span></div>
         @endif
         @foreach($schematic->produces ?? [] as $item => $itemRate)
