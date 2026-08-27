@@ -761,40 +761,92 @@ const duct = {
 const overflowDuct = {
   ...duct,
 
+  begin(build) {
+    build.state.progress = 0;
+    build.state.current = null;
+    build.state.flip = 0;
+  },
+
+  /* `OverflowDuct.acceptItem` is written from scratch rather than inherited, and it is
+     stricter than a duct's in exactly one way: **only the rear face passes**. Inheriting
+     the duct's rule, which takes from everywhere but the front, a duct laid against one of
+     its sides pushed fifteen items a second through it where the game jams the side line
+     completely. */
+  acceptItem(build, source, item) {
+    return !build.state.current && build.items.total === 0
+      && arrivesFrom(build, source) === build.rotation;
+  },
+
+  /* Its own `handleItem`, which sets what it is carrying **and** starts the clock at minus
+     one. Same arithmetic as a duct's in the end, `ceil(speed - 0.5)` updates to cross, and
+     worth transcribing rather than reasoning about: read as starting from zero, this came
+     out at thirty items a second where the game carries fifteen. */
+  handleItem(build, source, item) {
+    build.state.current = item;
+    build.state.progress = -1;
+    build.items.add(item);
+  },
+
   update(build, world, step) {
     const speed = build.block.duct_speed || 5;
+    const gate = 1 - 1 / speed;
+    build.state.progress += (build.delta(step) / speed) * 2;
 
     if (!build.state.current) {
       build.state.progress = 0;
-      if (build.items.total) build.state.current = build.items.first();
-      return;
+    } else if (build.state.progress >= gate) {
+      const target = overflowTarget(build, world);
+      if (target) {
+        target.handleItem(build, build.state.current);
+        // `cdump = cdump == 0 ? 2 : 0`, which is what alternates the two sides.
+        build.state.flip = build.state.flip === 0 ? 2 : 0;
+        build.items.remove(build.state.current);
+        build.state.current = null;
+        build.state.progress %= gate;
+      }
     }
 
-    build.state.progress += build.delta(step);
-    if (build.state.progress < speed - 1) return;
-
-    const item = build.state.current;
-    const ahead = build.facing(world);
-    const invert = build.block.invert;
-
-    // Straight on first, unless it is the inverted one, which prefers the sides.
-    const order = invert ? [sideOf(build, world, 1), sideOf(build, world, 3), ahead]
-      : [ahead, sideOf(build, world, 1), sideOf(build, world, 3)];
-
-    for (const target of order) {
-      if (!target?.acceptItem(build, item)) continue;
-      target.handleItem(build, item);
-      build.items.remove(item);
-      build.state.current = null;
-      build.state.progress %= speed - 1;
-      return;
+    // Picked up at the **end** of the update, so the item that arrived this frame does not
+    // start moving until the next one.
+    if (!build.state.current && build.items.total) {
+      build.state.current = build.items.first();
     }
   },
 };
 
-function sideOf(build, world, turn) {
-  const [dx, dy] = DIRECTIONS[(build.rotation + turn) % 4];
-  return world.at(build.x + dx, build.y + dy);
+/** `OverflowDuct.target`: straight on when it can, to the sides when it cannot. */
+function overflowTarget(build, world) {
+  const item = build.state.current;
+  const invert = build.block.invert;
+  const at = (turn) => {
+    const [dx, dy] = DIRECTIONS[(build.rotation + turn) % 4];
+    return world.at(build.x + dx, build.y + dy);
+  };
+  const takes = (other) => Boolean(other) && other.acceptItem(build, item);
+
+  // An underflow duct prefers its sides, and only then what it points at.
+  if (invert) {
+    const left = at(1);
+    const right = at(3);
+    const lc = takes(left);
+    const rc = takes(right);
+    if (lc && !rc) return left;
+    if (rc && !lc) return right;
+    if (lc && rc) return build.state.flip === 0 ? left : right;
+  }
+
+  const front = build.facing(world);
+  if (takes(front)) return front;
+  // And it stops there: an underflow duct never falls back to what it points at twice.
+  if (invert) return null;
+
+  /* `mod(rotation + ((i + cdump + 1) % 3 - 1), 4)` for i in minus one to one, skipping the
+     way it points. Which is the two sides, in an order the flip bit decides. */
+  for (const turn of (build.state.flip === 0 ? [3, 1] : [1, 3])) {
+    const side = at(turn);
+    if (takes(side)) return side;
+  }
+  return null;
 }
 
 /**

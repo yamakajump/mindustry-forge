@@ -428,6 +428,36 @@ const SCENARIOS = {
     { x: 2, y: 3, block: "vault", rotation: 0 },
   ],
 
+  /* An overflow duct on its own, straight through, which pins its cycle. It has no
+     `handleItem` of its own, so its clock starts at zero where a duct's starts at minus
+     one: an item crosses in `ceil((speed - 1) / 2)` updates rather than `speed`. Two frames
+     against four, thirty items a second against fifteen, and nothing in the shape above
+     could see it because the belt downstream was the bottleneck. */
+  "duct-overflow-straight": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "overflow-duct", rotation: 0 },
+    { x: 3, y: 0, block: "vault", rotation: 0 },
+  ],
+
+  /* And an overflow duct fed from the side, which the game refuses outright: its
+     `acceptItem` is written from scratch and only the rear face passes. Inheriting a plain
+     duct's rule, which takes from everywhere but the front, the port pushed a full duct's
+     worth through a face that is closed.
+
+     The router is what makes the difference a number: refused, everything piles into the
+     near vault and the far one stays empty. */
+  "duct-overflow-side-fed": () => [
+    { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 0, y: 0, block: "conveyor", rotation: 0 },
+    { x: 1, y: 0, block: "router", rotation: 0 },
+    // Pointe au nord, donc son arriere est au sud et le routeur le prend par le flanc.
+    { x: 2, y: 0, block: "overflow-duct", rotation: 1 },
+    // Ce que le routeur pousse vers le sud : couvre 0..2 par -3..-1.
+    { x: 1, y: -2, block: "vault", rotation: 0 },
+    // Ce qui sortirait du duct : couvre 2..4 par 1..3.
+    { x: 3, y: 2, block: "vault", rotation: 0 },
+  ],
+
   /* A turret at the end of a belt, with nobody shooting at it. It fills to its capacity
      and then refuses, which is the half of a turret a still picture can answer: not how
      fast it eats, but how much it swallows before it backs the belt up. */
@@ -545,6 +575,27 @@ const SCENARIOS = {
     { x: 3, y: 0, block: "conveyor", rotation: 0 },
     { x: 4, y: 0, block: "conveyor", rotation: 0 },
     { x: 6, y: 0, block: "vault", rotation: 0 },
+  ],
+
+  /* The same separator with its outlet leading nowhere: five belt tiles and a dead end.
+     They fill, the separator fills to its ten behind them, and everything stops. Which
+     four of the four metals it is still holding is the measurement.
+
+     Written to pin `dump(null)`, which walks `content.items()` by id in the game and walked
+     a Map here. It does not: a separator makes one item every thirty-five frames and offers
+     one every five, so it never holds two at once until the belt closes, and once the belt
+     is closed nothing moves at all. The order is transcribed because it is what the game
+     does, not because anything here can see it. */
+  "separator-jammed": () => [
+    { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("slag") },
+    { x: 0, y: 1, block: "power-source", rotation: 0 },
+    // Covers 1..2 by 0..1.
+    { x: 1, y: 0, block: "separator", rotation: 0 },
+    { x: 3, y: 0, block: "conveyor", rotation: 0 },
+    { x: 4, y: 0, block: "conveyor", rotation: 0 },
+    { x: 5, y: 0, block: "conveyor", rotation: 0 },
+    { x: 6, y: 0, block: "conveyor", rotation: 0 },
+    { x: 7, y: 0, block: "conveyor", rotation: 0 },
   ],
 
   /* A disassembler, which is the same class with an item to eat as well: it takes scrap
@@ -746,6 +797,26 @@ const SCENARIOS = {
       { x: 18, y: 1, block: "vault", rotation: 0 },
     ],
     ground: [13, 14, 15].flatMap((x) => [0, 1, 2].map((y) => `ore-copper@${x},${y}`)),
+  }),
+
+  /* The same beam, with a power node standing in the way. A beam node does not link to a
+     power node: it steps over it and carries on to whatever is behind. Compared by the name
+     of its class, `LongPowerNode` and `PowerSource` both slipped through, so the beam
+     stopped dead on a beam link and left the drill behind it alone on its own grid at
+     coverage zero, making nothing at all. */
+  "beam-node-through-link": () => ({
+    tiles: [
+      { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
+      { x: 1, y: 1, block: "combustion-generator", rotation: 0 },
+      { x: 2, y: 1, block: "beam-node", rotation: 0 },
+      // Couvre 3..5 par 0..2, sans lien a lui : un fil mort en travers du faisceau.
+      { x: 4, y: 1, block: "beam-link", rotation: 0 },
+      // Couvre 6..8 par 0..2, derriere le fil.
+      { x: 7, y: 1, block: "laser-drill", rotation: 0 },
+      { x: 9, y: 1, block: "conveyor", rotation: 0 },
+      { x: 11, y: 1, block: "vault", rotation: 0 },
+    ],
+    ground: [6, 7, 8].flatMap((x) => [0, 1, 2].map((y) => `ore-copper@${x},${y}`)),
   }),
 
   /* A wave with a tank of water and nothing to shoot at. It holds its ten units for the

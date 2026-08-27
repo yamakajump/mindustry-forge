@@ -171,6 +171,11 @@ public class DumpBlocks {
             if (block.consumesPower) entry.put("consumes_power", true);
             if (block.outputsPower) entry.put("outputs_power_flag", true);
             if (block.conductivePower) entry.put("conductive_power", true);
+            /* Un noeud a faisceau saute par-dessus un power node sans s y accrocher
+               et continue son balayage. `LongPowerNode` et `PowerSource` en heritent
+               tous les deux, donc comparer le nom de la classe laissait le faisceau
+               s arreter dessus et la foreuse derriere seule sur sa grille. */
+            if (block instanceof PowerNode) entry.put("power_node", true);
             entry.put("rotate", block.rotate);
             // Frames between two attempts to hand an output on. It rarely binds - a press
             // makes one graphite every ninety frames and may offload every five - but it

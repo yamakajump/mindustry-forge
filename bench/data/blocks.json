@@ -7989,6 +7989,7 @@
       "unloadable": true,
       "has_liquids": false,
       "has_power": true,
+      "power_node": true,
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
@@ -8014,6 +8015,7 @@
       "unloadable": true,
       "has_liquids": false,
       "has_power": true,
+      "power_node": true,
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
@@ -8040,6 +8042,7 @@
       "unloadable": true,
       "has_liquids": false,
       "has_power": true,
+      "power_node": true,
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
@@ -8590,6 +8593,7 @@
       "unloadable": true,
       "has_liquids": false,
       "has_power": true,
+      "power_node": true,
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
@@ -9897,9 +9901,9 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
+        "oil": 1,
         "slag": 1,
         "water": 1,
-        "oil": 1,
         "cryofluid": 1
       },
       "input_liquid":{}
@@ -10187,9 +10191,9 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
+        "oil": 0.4,
         "slag": 0.4,
         "water": 0.4,
-        "oil": 0.4,
         "cryofluid": 0.4
       },
       "input_liquid":{}
@@ -12374,6 +12378,7 @@
       "has_liquids": false,
       "has_power": true,
       "outputs_power_flag": true,
+      "power_node": true,
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,

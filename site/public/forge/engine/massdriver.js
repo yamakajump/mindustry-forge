@@ -15,6 +15,7 @@
  * and so is the flight.
  */
 
+import { byItemId } from "./core.js";
 import { turnToward } from "./payloads.js";
 
 const TILE = 8;
@@ -165,7 +166,8 @@ function fire(build, target) {
 
   const packet = new Map();
   let used = 0;
-  for (const item of itemOrder(build)) {
+  // `content.items()` order, which is the order a salvo is packed in.
+  for (const item of byItemId(build, [...build.items.counts.keys()])) {
     const take = Math.min(build.items.get(item), build.itemCapacity - used);
     if (take <= 0) continue;
     packet.set(item, take);
@@ -179,14 +181,6 @@ function fire(build, target) {
     Math.max(0, (distanceBetween(build, target) - reach * 2)
       / (build.block.bullet_speed ?? 5.5)));
   target.state.incoming.push({ items: packet, from: build, left: flight });
-}
-
-/** `content.items()` order, which is the order a salvo is packed in. */
-function itemOrder(build) {
-  const known = build.world?.catalogue?.items;
-  const held = [...build.items.counts.keys()];
-  if (!known) return held;
-  return held.sort((a, b) => (known[a]?.id ?? 0) - (known[b]?.id ?? 0));
 }
 
 /** `handlePayload`: a salvo lands, and a receiver may hold twice its capacity. */

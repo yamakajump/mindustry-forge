@@ -122,7 +122,9 @@ export function gridsOf(world) {
  * Two rules that read backwards. A wall does **not** stop a beam: only insulation does, and
  * a titanium wall is not insulated, so a beam passes straight through it. And a power node
  * in the way is skipped rather than linked, without stopping the scan: the beam carries on
- * to whatever is behind it.
+ * to whatever is behind it. Which is a **class**, not a name: `LongPowerNode` and
+ * `PowerSource` both extend `PowerNode`, so a beam node aimed through either of them used
+ * to stop dead and leave whatever was behind it alone on its own grid.
  */
 function beamsOf(build, world) {
   if (!build.block.range || build.block.kind !== "BeamNode") return [];
@@ -135,7 +137,7 @@ function beamsOf(build, world) {
       if (other?.block.insulated) break;
       if (other && (other.block.power > 0 || other.block.power_out > 0
                     || other.block.power_production > 0 || other.role === "power")
-          && other.block.kind !== "PowerNode") {
+          && !other.block.power_node) {
         found.push(other);
         break;
       }
