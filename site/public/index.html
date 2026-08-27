@@ -789,6 +789,7 @@ async function peuplerVitrine() {
       <span class="deja-chiffres">
         <span class="num">${escape(String(s.debit))}</span> ${escape(s.produit)}
         ${escape(s.unite)}
+        <span class="dim">${escape(s["au-mieux"])}</span>
         &middot; <span class="num">${escape(String(s.blocs))}</span>
         ${escape(t("vitrine.accueil.blocs"))}
       </span></a></li>`).join("");
