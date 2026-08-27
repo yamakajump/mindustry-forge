@@ -154,3 +154,16 @@ test("un geste vide ne remplit pas l historique", () => {
   assert.equal(plateau.apply({ place: [] }), false);
   assert.equal(plateau.undo(), false);
 });
+
+test("une fournee entiere est jugee ensemble, pas bloc par bloc", () => {
+  /* Cent convoyeurs sur un plateau vide : chacun mesure une case de large et tient donc
+     tout seul dans les 64. C est ensemble qu ils debordent, et c est ensemble qu il faut
+     les juger, sinon un glisse assez long fabrique une schematique que le jeu refuse. */
+  const plateau = board();
+  const ligne = Array.from({ length: 100 },
+    (_, i) => ({ x: i, y: 0, block: "conveyor", rotation: 0 }));
+  assert.equal(plateau.fits(ligne[99]), true, "un bloc seul tient toujours");
+  assert.equal(plateau.fits(ligne), false, "la ligne entiere devrait deborder");
+  assert.equal(plateau.fits(ligne.slice(0, 64)), true);
+  assert.equal(plateau.fits(ligne.slice(0, 65)), false);
+});

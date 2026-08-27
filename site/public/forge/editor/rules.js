@@ -71,11 +71,15 @@ const liquidOf = (layers, catalogue) =>
  * à être affichée telle quelle sous le curseur. Un refus sans raison lisible est un refus
  * que le joueur vit comme un bug.
  */
-export function canPlace(board, plan, catalogue) {
+export function canPlace(board, plan, catalogue, batch = null) {
   const block = catalogue.blocks[plan.block];
   if (!block) return no(`${plan.block} n'existe pas dans le jeu`);
 
-  if (!board.fits(plan)) {
+  /* La limite de taille se juge sur la fournée entière quand il y en a une. Un glissé de
+     cent convoyeurs voit chacun de ses blocs tenir tout seul, puisqu'un bloc mesuré seul
+     fait une case de large : sans la fournée, l'éditeur laisserait fabriquer une
+     schématique de cent de long que le jeu refuse d'ouvrir. */
+  if (!board.fits(batch || plan)) {
     return no("64 tuiles de côté, le jeu n'en accepte pas plus");
   }
 

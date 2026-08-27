@@ -71,8 +71,16 @@ export function createBoard({ tiles = [], ground = {}, sizeOf }) {
 
   board.box = () => boxOf(board.tiles, sizeOf);
 
-  board.fits = (plan) => {
-    const box = boxOf([...board.tiles, plan], sizeOf);
+  /**
+   * Est-ce que poser ça garde la boîte dans 64 × 64 ?
+   *
+   * Accepte un bloc ou toute une fournée, et la fournée n'est pas la somme des blocs : un
+   * glissé de cent convoyeurs sur un plateau vide voit chacun de ses blocs tenir tout seul,
+   * puisque chacun mesuré seul fait une case de large. C'est ensemble qu'ils débordent.
+   */
+  board.fits = (plans) => {
+    const batch = Array.isArray(plans) ? plans : [plans];
+    const box = boxOf([...board.tiles, ...batch], sizeOf);
     return box.width <= MAX_SIZE && box.height <= MAX_SIZE;
   };
 

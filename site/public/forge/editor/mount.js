@@ -11,7 +11,8 @@
  */
 
 import { draw, spriteOf } from "../render.js";
-import { createBoard,  MAX_SIZE } from "./state.js";
+import { createBoard, footprint, MAX_SIZE } from "./state.js";
+import { lineOf } from "./lines.js";
 import { canPlace } from "./rules.js";
 import { createCamera } from "./camera.js";
 import { mountRail, sizeGauge } from "./ui.js";
@@ -70,6 +71,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   let refusal = null;
   let panning = null;
   let spacing = false;
+  /** La case où un glissé a commencé, tant qu'il dure. */
+  let drawing = null;
+  /** Le coin où une casse en rectangle a commencé, tant qu'elle dure. */
+  let erasing = null;
 
   function viewportOf() {
     return { width: stage.clientWidth || 800, height: stage.clientHeight || 600 };
@@ -90,15 +95,64 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   /** La barre d'état dit les gestes du moment, pas tous les gestes possibles. */
   function say() {
     hints.innerHTML = held
-      ? `<strong>${held}</strong> en main · <kbd>R</kbd> tourner ·
-         <kbd>clic droit</kbd> casser · <kbd>échap</kbd> reposer · <kbd>ctrl+Z</kbd> annuler`
-      : `Choisis un bloc à gauche · <kbd>clic droit</kbd> casser ·
-         <kbd>ctrl+Z</kbd> annuler`;
+      ? `<strong>${held}</strong> en main · <kbd>glisser</kbd> tracer une ligne ·
+         <kbd>R</kbd> tourner · <kbd>clic droit</kbd> casser · <kbd>Q</kbd> reprendre un bloc ·
+         <kbd>échap</kbd> reposer`
+      : `Choisis un bloc à gauche · <kbd>Q</kbd> en reprendre un pose ·
+         <kbd>clic droit glisse</kbd> effacer une zone · <kbd>ctrl+Z</kbd> annuler`;
   }
 
-  /** Le plan qui serait posé si on cliquait maintenant. */
-  const planAt = () => (cursor && held
-    ? { x: cursor.x, y: cursor.y, block: held, rotation } : null);
+  /**
+   * Ce que le geste en cours poserait.
+   *
+   * Un clic sans glissé et un glissé sont le même geste vu à deux instants : tant que le
+   * bouton n'est pas relâché, la ligne se recalcule sous le curseur. Les traiter séparément
+   * donnait deux chemins de code pour une seule intention, et l'un des deux finit toujours
+   * par diverger de l'autre.
+   */
+  function pending() {
+    if (!held || !cursor) return [];
+    const from = drawing || cursor;
+    return lineOf(from, cursor, held, catalogue, rotation);
+  }
+
+  /**
+   * Le plus long début d'une fournée qui tient encore dans les 64 × 64.
+   *
+   * Par dichotomie plutôt qu'en retirant un bloc à la fois : mesurer la boîte coûte un
+   * parcours de tout le plateau, et un glissé de cent blocs sur une base de quatre mille
+   * ferait cent parcours là où sept suffisent.
+   */
+  function fitting(plans) {
+    if (board.fits(plans)) return plans.length;
+    let low = 0;
+    let high = plans.length;
+    while (low < high) {
+      const middle = Math.ceil((low + high) / 2);
+      if (board.fits(plans.slice(0, middle))) low = middle;
+      else high = middle - 1;
+    }
+    return low;
+  }
+
+  /**
+   * Le verdict de chaque bloc d'une fournée.
+   *
+   * Un glissé trop long pose ce qui tient et refuse le reste, au lieu de tout refuser en
+   * bloc. Tout refuser était le premier comportement, et sur un glissé de cent cases il
+   * rendait la main vide sans rien expliquer : le joueur a fait un geste, il doit obtenir
+   * ce que ce geste avait de légal.
+   */
+  function judge(plans) {
+    const keep = fitting(plans);
+    const batch = plans.slice(0, keep);
+    return plans.map((plan, i) => ({
+      plan,
+      verdict: i < keep
+        ? canPlace(board, plan, catalogue, batch)
+        : { ok: false, why: "64 tuiles de côté, le jeu n'en accepte pas plus" },
+    }));
+  }
 
   function paint() {
     const viewport = viewportOf();
@@ -135,28 +189,39 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Le fantôme du bloc en main, dessiné par dessus le rendu.
+   * Les fantômes de ce que le geste poserait, dessinés par dessus le rendu.
    *
-   * Vert ou rouge, et la raison du refus juste sous le curseur. Un refus muet est ce que
-   * l'éditeur d'avant faisait, et personne ne devinait qu'une case occupée refusait la pose.
+   * Vert ou rouge, un par bloc, et la raison du refus juste sous le curseur. Un refus muet
+   * est ce que l'éditeur d'avant faisait, et personne ne devinait qu'une case occupée
+   * refusait la pose.
    */
   function ghost(viewport) {
-    let why = null;
-    const plan = planAt();
-    if (plan) {
-      const verdict = canPlace(board, plan, catalogue);
-      const context = canvas.getContext("2d");
-      const dpr = canvas.width / (viewport.width || 1);
-      context.save();
-      context.setTransform(dpr, 0, 0, dpr, 0, 0);
-      context.imageSmoothingEnabled = false;
+    const plans = pending();
+    if (erasing) {
+      erased(viewport);
+      showWhy(null);
+      return;
+    }
+    if (!plans.length) {
+      showWhy(null);
+      return;
+    }
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.imageSmoothingEnabled = false;
 
-      const size = sizeOf(held);
+    let why = null;
+    for (const { plan, verdict } of judge(plans)) {
+      if (!verdict.ok) why = verdict.why;
+
+      const size = sizeOf(plan.block);
       const offset = Math.trunc(-(size - 1) / 2);
       const { px, py } = camera.rectOf(plan.x + offset, plan.y + offset + size - 1, viewport);
       const span = camera.scale * size;
 
-      const art = spriteOf(held);
+      const art = spriteOf(plan.block);
       if (art) {
         context.globalAlpha = 0.55;
         context.drawImage(art.sheet, art.x, art.y, art.w, art.h, px, py, span, span);
@@ -168,18 +233,36 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       context.lineWidth = 2;
       context.strokeRect(px + 1, py + 1, span - 2, span - 2);
 
-      // La flèche du jeu, pour les blocs qui ont un sens.
-      if (catalogue.blocks[held]?.rotate) {
+      // La flèche du jeu, pour les blocs qui ont un sens. Sur une ligne tracée, elle dit
+      // le sens de chaque segment, coude compris.
+      if (catalogue.blocks[plan.block]?.rotate && camera.scale >= 12) {
         context.fillStyle = verdict.ok ? "#84d98b" : "#ff8b8b";
         context.font = `${Math.max(10, camera.scale * 0.6)}px sans-serif`;
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.fillText(["→", "↑", "←", "↓"][rotation % 4], px + span / 2, py + span / 2);
+        context.fillText(["→", "↑", "←", "↓"][plan.rotation % 4],
+                         px + span / 2, py + span / 2);
       }
-      context.restore();
-      if (!verdict.ok) why = verdict.why;
     }
+    context.restore();
     showWhy(why);
+  }
+
+  /** L'aperçu rouge d'une casse en rectangle, tant que le bouton droit est tenu. */
+  function erased(viewport) {
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    const zone = rectOf(erasing, cursor);
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const { px, py } = camera.rectOf(zone.left, zone.bottom + zone.height - 1, viewport);
+    context.fillStyle = "rgba(255, 139, 139, .2)";
+    context.strokeStyle = "#ff8b8b";
+    context.lineWidth = 2;
+    context.fillRect(px, py, zone.width * camera.scale, zone.height * camera.scale);
+    context.strokeRect(px + 1, py + 1,
+                       zone.width * camera.scale - 2, zone.height * camera.scale - 2);
+    context.restore();
   }
 
   function showWhy(text) {
@@ -197,8 +280,34 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     refusal.textContent = text;
     const viewport = viewportOf();
     const { px, py } = camera.rectOf(cursor.x, cursor.y, viewport);
-    refusal.style.left = `${px}px`;
-    refusal.style.top = `${py}px`;
+
+    /* La bulle bascule de l'autre côté du curseur quand elle sortirait de la vue. Sans ça,
+       le refus le plus utile, celui qu'on déclenche en poussant vers le bord, est aussi le
+       seul qu'on ne peut pas lire. */
+    const width = refusal.offsetWidth || 200;
+    const height = refusal.offsetHeight || 24;
+    const flipX = px + width + 28 > viewport.width;
+    const flipY = py + height + 28 > viewport.height;
+    refusal.style.left = `${flipX ? px - width - 28 : px}px`;
+    refusal.style.top = `${flipY ? py - height - 28 : py}px`;
+  }
+
+  /** La boîte entre deux cases, bornes comprises, quel que soit le sens du glissé. */
+  function rectOf(a, b) {
+    const left = Math.min(a.x, b.x);
+    const bottom = Math.min(a.y, b.y);
+    return {
+      left, bottom,
+      width: Math.abs(a.x - b.x) + 1,
+      height: Math.abs(a.y - b.y) + 1,
+    };
+  }
+
+  /** Tout ce qu'une zone touche, même d'une seule case d'un gros bloc. */
+  function inside(zone) {
+    return board.tiles.filter((tile) => footprint(tile, sizeOf).some(([x, y]) =>
+      x >= zone.left && x < zone.left + zone.width
+      && y >= zone.bottom && y < zone.bottom + zone.height));
   }
 
   const tileUnder = (event) => {
@@ -210,28 +319,30 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
      pose : c'est la répartition du jeu, moins la molette qui zoome ici. */
   canvas.addEventListener("pointerdown", (event) => {
     canvas.setPointerCapture(event.pointerId);
+    cursor = tileUnder(event);
+
+    /* Le clic milieu fait deux choses selon qu'il glisse ou non : appuyé et relâché sur
+       place il reprend le bloc visé, appuyé et tiré il déplace la vue. C'est ce que fait le
+       jeu, et ça évite une touche de plus pour la pipette. */
     if (event.button === 1 || spacing) {
-      panning = { x: event.clientX, y: event.clientY };
+      panning = { x: event.clientX, y: event.clientY, moved: false };
       return;
     }
-    cursor = tileUnder(event);
     if (event.button === 2) {
-      const under = board.at(cursor.x, cursor.y);
-      if (under) board.apply({ remove: [under] });
+      erasing = cursor;
       paint();
       return;
     }
     if (event.button === 0 && held) {
-      const plan = planAt();
-      if (canPlace(board, plan, catalogue).ok) board.apply({ place: [plan] });
+      drawing = cursor;
+      paint();
     }
-    paint();
   });
 
   canvas.addEventListener("pointermove", (event) => {
     if (panning) {
       camera.pan(event.clientX - panning.x, event.clientY - panning.y);
-      panning = { x: event.clientX, y: event.clientY };
+      panning = { x: event.clientX, y: event.clientY, moved: true };
       paint();
       return;
     }
@@ -240,9 +351,39 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (!was || was.x !== cursor.x || was.y !== cursor.y) paint();
   });
 
-  for (const kind of ["pointerup", "pointercancel"]) {
-    canvas.addEventListener(kind, () => { panning = null; });
-  }
+  canvas.addEventListener("pointerup", (event) => {
+    if (panning) {
+      if (!panning.moved) pipette();
+      panning = null;
+      return;
+    }
+    cursor = tileUnder(event);
+
+    if (erasing) {
+      const gone = inside(rectOf(erasing, cursor));
+      erasing = null;
+      if (gone.length) board.apply({ remove: gone });
+      paint();
+      return;
+    }
+    if (drawing) {
+      /* Toute la ligne part en un seul geste, donc en une seule entrée d'historique : un
+         glissé de trente convoyeurs se défait d'un ctrl+Z, pas de trente. */
+      const posable = judge(pending())
+        .filter(({ verdict }) => verdict.ok)
+        .map(({ plan }) => plan);
+      drawing = null;
+      if (posable.length) board.apply({ place: posable });
+      paint();
+    }
+  });
+
+  canvas.addEventListener("pointercancel", () => {
+    panning = null;
+    drawing = null;
+    erasing = null;
+    paint();
+  });
 
   canvas.addEventListener("pointerleave", () => {
     cursor = null;
@@ -266,6 +407,23 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     paint();
   }, { passive: false });
 
+  /**
+   * Reprendre en main un bloc déjà posé, avec sa rotation.
+   *
+   * Le geste qui fait gagner le plus de temps quand on réplique une structure : sans lui il
+   * faut retrouver le bloc dans une palette de 245, puis le retourner dans le bon sens.
+   */
+  function pipette() {
+    if (!cursor) return;
+    const under = board.at(cursor.x, cursor.y);
+    if (!under) return;
+    held = under.block;
+    rotation = under.rotation || 0;
+    rail.setHeld(held, rotation);
+    say();
+    paint();
+  }
+
   const onKey = (event) => {
     const typing = /^(INPUT|TEXTAREA)$/.test(event.target.tagName);
     if (typing) return;
@@ -286,6 +444,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
+    if (event.key.toLowerCase() === "q") { pipette(); return; }
     if (event.key.toLowerCase() === "r" && held) {
       rotation = (rotation + 1) % 4;
       rail.setHeld(held, rotation);
