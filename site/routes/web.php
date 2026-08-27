@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\SchematicController;
+use App\Http\Controllers\SocialCardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,6 +31,12 @@ Route::post('/deconnexion', [AuthController::class, 'logout']);
 
 Route::get('/schematiques', [BrowseController::class, 'index']);
 Route::get('/s/{schematic}', [SchematicController::class, 'show']);
+
+/* La vignette que Discord affiche quand on colle le lien ci-dessus. Une adresse a elle
+   plutot que l'apercu brut : un plan est carre ou tres allonge selon ce qu'on a copie, et
+   un deplieur le rogne sans rien dire. La carte, elle, a toujours le format attendu, et
+   elle porte le nom, les chiffres et la marque. */
+Route::get('/s/{schematic}/carte.jpg', [SocialCardController::class, 'show']);
 
 /* The string itself, so the analyser can pull one in from a shared link. Plain text and
    nothing else: this is a public schematic, and everything else about it is on its page. */
