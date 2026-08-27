@@ -90,6 +90,38 @@ export function beamOf(node, ground, catalogue) {
 }
 
 /**
+ * How much sand is in the cliff a wall crafter is pressed against.
+ *
+ * The same geometry as a beam drill and a shorter reach: only the tile **immediately** in
+ * front of each tile of its width, and what it is worth is the attribute of the solid block
+ * standing there rather than anything it drops. A dune wall is worth twice a rhyolite one,
+ * so the same crusher on the same map runs at two different speeds depending on which cliff
+ * it was turned towards.
+ */
+export function wallSumOf(node, ground, catalogue) {
+  if (node.role !== "wall-crafter" || !ground || !catalogue) return 0;
+
+  const size = node.block.size || 1;
+  const corner = Math.trunc(-(size - 1) / 2);
+  const cornerX = node.x + corner;
+  const cornerY = node.y + corner;
+  const wanted = node.block.attribute;
+
+  let sum = 0;
+  for (let i = 0; i < size; i++) {
+    const at = [
+      [cornerX + size, cornerY + i],
+      [cornerX + i, cornerY + size],
+      [cornerX - 1, cornerY + i],
+      [cornerX + i, cornerY - 1],
+    ][node.rotation % 4];
+    const wall = catalogue.blocks[layersAt(ground, at[0], at[1]).wall];
+    sum += wall?.attributes?.[wanted] || 0;
+  }
+  return sum;
+}
+
+/**
  * What the ground under a block is worth to it.
  *
  * `Block.sumAttribute`: the sum over every tile it covers, not an average, which is why a
@@ -119,7 +151,8 @@ export function attributeOf(node, ground, catalogue) {
  */
 export function yieldOf(node, ground, catalogue) {
   if (!ground || !catalogue) return null;
-  if (node.role !== "drill" && node.role !== "pump") return null;
+  // A burst drill reads the same ore in the same way; only what it does with it differs.
+  if (!["drill", "burst-drill", "pump"].includes(node.role)) return null;
 
   const tiles = footprintOf(node);
 

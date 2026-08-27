@@ -51,7 +51,8 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         "discovery_time", "has_boost", "coolant_worth", "allow_core_unload", "unloadable",
         # Les foreuses d'Erekir, qui mangent le mur en face plutot que le sol.
         "wall", "wall_ore", "drill_time", "optional_boost_intensity",
-        "drill_multipliers", "blocked_items", "boost_liquid")
+        "drill_multipliers", "blocked_items", "boost_liquid", "item_boost",
+        "liquid_boost")
 
 
 def main() -> None:

@@ -23,7 +23,7 @@ const { World } = await import(new URL("../site/public/forge/engine/core.js", im
 const { behaviourOf } = await import(
   new URL("../site/public/forge/engine/carriers.js", import.meta.url));
 const { gridsOf } = await import(new URL("../site/public/forge/engine/power.js", import.meta.url));
-const { attributeOf, beamOf, yieldOf } = await import(
+const { attributeOf, beamOf, wallSumOf, yieldOf } = await import(
   new URL("../site/public/forge/ground.js", import.meta.url));
 
 /**
@@ -36,6 +36,7 @@ const { attributeOf, beamOf, yieldOf } = await import(
 const MACHINE_ROLES = new Set([
   "crafter", "unit-factory", "generator", "drill", "separator",
   "mender", "projector", "shield", "turret-idle", "laser-turret",
+  "beam-drill", "wall-crafter", "burst-drill",
 ]);
 
 export const known = useCatalogue(JSON.parse(
@@ -126,6 +127,7 @@ export async function ported(code, ticks, ground = [], stock = []) {
     node.dug = yieldOf(node, painted, known);
     node.attrsum = attributeOf(node, painted, known);
     node.beam = beamOf(node, painted, known);
+    node.wallsum = wallSumOf(node, painted, known);
   }
 
   const world = new World(graph, behaviourOf).wire(gridsOf);
