@@ -1,0 +1,66 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12,
+      "liquid": "water",
+      "amount": 9999.92
+    },
+    {
+      "block": "laser-drill",
+      "x": 14,
+      "y": 13,
+      "liquid": "water",
+      "amount": 48
+    }
+  ],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 0
+    },
+    {
+      "block": "laser-drill",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 17,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 121
+      }
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 17,
+      "y": 13,
+      "items":{
+        "copper": 121
+      }
+    }
+  ],
+  "per_second":{
+    "copper": 4.0333333
+  }
+}

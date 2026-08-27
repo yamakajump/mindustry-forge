@@ -21,6 +21,25 @@
 import { DIRECTIONS, TICKS } from "./core.js";
 import { heatReaching } from "./machines.js";
 
+/**
+ * Whether two touching blocks share a grid.
+ *
+ * `getPowerConnections`: the link is refused when **both** consume, **neither** outputs,
+ * and neither is conductive. The current does not run through a consumer. Exactly three
+ * blocks in the game are conductive - a shielded wall, a surge conveyor, a surge router -
+ * and they exist for this.
+ *
+ * Joined unconditionally, a row of machines pressed against each other was one grid fed by
+ * the single generator at the end: a combustion generator and two smelters read as two
+ * smelters running, where the game runs one and leaves the other on a dead grid at zero.
+ * Twice the output, on a shape that is everywhere.
+ */
+function conducts(a, b) {
+  const pure = (build) => build.block.consumes_power && !build.block.outputs_power_flag
+    && !build.block.conductive_power;
+  return !(pure(a) && pure(b));
+}
+
 /** Blocks whose class is a wire or a battery: they carry the grid but ask nothing of it. */
 const isNode = (build) => build.role === "power";
 
@@ -68,7 +87,7 @@ export function gridsOf(world) {
   for (const build of onGrid) {
     // Touching, which is how a reactor beside a battery ends up on one grid.
     for (const near of build.proximity) {
-      if (owner.has(near)) join(build, near);
+      if (owner.has(near) && conducts(build, near)) join(build, near);
     }
     // And whatever a node reaches, which is the other half and the one a schematic
     // usually relies on: a node in the middle wiring six things that touch nothing.

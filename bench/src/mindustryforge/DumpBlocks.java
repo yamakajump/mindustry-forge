@@ -161,6 +161,15 @@ public class DumpBlocks {
                wire. `hasLiquids` is the flag the game itself tests. */
             entry.put("has_liquids", block.hasLiquids);
             entry.put("has_power", block.hasPower);
+            /* Les trois drapeaux qui decident si deux blocs voisins partagent une grille.
+               Le jeu refuse la liaison quand les **deux** consomment, qu'**aucun** ne
+               produit, et qu'aucun n'est conducteur : le courant ne traverse pas un
+               consommateur. Trois blocs seulement sont conducteurs, et sans eux une rangee
+               de machines collees les unes aux autres se retrouve entierement alimentee
+               par le seul generateur du bout. */
+            if (block.consumesPower) entry.put("consumes_power", true);
+            if (block.outputsPower) entry.put("outputs_power_flag", true);
+            if (block.conductivePower) entry.put("conductive_power", true);
             entry.put("rotate", block.rotate);
             // Frames between two attempts to hand an output on. It rarely binds - a press
             // makes one graphite every ninety frames and may offload every five - but it
@@ -485,12 +494,7 @@ public class DumpBlocks {
             entry.put("range", bore.range);
             entry.put("tier", bore.tier);
             entry.put("optional_boost_intensity", bore.optionalBoostIntensity);
-            Jval multipliers = Jval.newObject();
-            for (Item item : Vars.content.items()) {
-                float found = bore.drillMultipliers.get(item, 1f);
-                if (found != 1f) multipliers.put(item.name, found);
-            }
-            if (multipliers.asObject().size > 0) entry.put("drill_multipliers", multipliers);
+            entry.put("drill_multipliers", drillMultipliersOf(bore.drillMultipliers));
             if (bore.blockedItems != null) {
                 Jval blocked = Jval.newArray();
                 for (Item item : bore.blockedItems) blocked.asArray().add(Jval.valueOf(item.name));
@@ -638,6 +642,8 @@ public class DumpBlocks {
             return;
         }
         if (block instanceof BurstDrill burst) {
+            entry.put("drill_multipliers", drillMultipliersOf(burst.drillMultipliers));
+            entry.put("blocked_items", blockedItemsOf(burst));
             /* A burst drill, which is a `Drill` with a different clock: its progress does
                not scale with how many ore tiles it covers, only its **batch** does. Nine
                tiles of ore make a burst drill produce nine at a time rather than nine
@@ -654,6 +660,13 @@ public class DumpBlocks {
         }
         if (block instanceof Drill drill) {
             entry.put("role", "drill");
+            entry.put("drill_multipliers", drillMultipliersOf(drill.drillMultipliers));
+            entry.put("blocked_items", blockedItemsOf(drill));
+            /* L'eau qui la fait aller plus vite, et sans laquelle elle marche : le facteur
+               etait dans le catalogue, la quantite non, donc ni le code ni la donnee ne
+               savaient combien il en fallait. Une foreuse laser arrosee sort 2,62 objets a
+               la seconde contre 1,64 a sec, et le portage donnait 1,64 dans les deux cas. */
+            entry.put("boost_liquid", boostLiquidsOf(block));
             entry.put("tier", drill.tier);
             // The game's own formula, kept as its parts rather than as one number: a
             // drill's rate depends on how many ore tiles it covers and how hard they are,
@@ -1381,6 +1394,24 @@ public class DumpBlocks {
             float found = block.attributes.get(attribute);
             if (found != 0f) out.put(attribute.name, found);
         }
+        return out;
+    }
+
+
+    /** Ce qui divise le temps de forage, minerai par minerai. */
+    private static Jval drillMultipliersOf(arc.struct.ObjectFloatMap<Item> table) {
+        Jval out = Jval.newObject();
+        for (Item item : Vars.content.items()) {
+            float found = table.get(item, 1f);
+            if (found != 1f) out.put(item.name, found);
+        }
+        return out;
+    }
+
+    /** Le minerai qu'une foreuse refuse malgre son palier. */
+    private static Jval blockedItemsOf(Drill drill) {
+        Jval out = Jval.newArray();
+        if (drill.blockedItem != null) out.asArray().add(Jval.valueOf(drill.blockedItem.name));
         return out;
     }
 

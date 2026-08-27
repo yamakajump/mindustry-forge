@@ -90,6 +90,23 @@ export function beamOf(node, ground, catalogue) {
 }
 
 /**
+ * `getDrillTime`, which is not one formula but two.
+ *
+ * An ordinary drill takes `(drillTime + hardnessDrillMultiplier * hardness) / multiplier`;
+ * a burst drill takes `drillTime / multiplier` and no hardness term at all, because its
+ * class sets `hardnessDrillMultiplier` to zero.
+ *
+ * The multiplier is the half that was missing on both sides of the repository. Both burst
+ * drills halve their time on beryllium, and Erekir's most produced ore was reported at
+ * exactly half the rate the game gives.
+ */
+export function drillTimeOf(block, item, hardness) {
+  const scale = block.drill_multipliers?.[item] ?? 1;
+  const hard = block.role === "burst-drill" ? 0 : (block.hardness_multiplier || 0);
+  return ((block.drill_time || 0) + hard * hardness) / scale;
+}
+
+/**
  * How many of the tiles under a solid pump it can work on.
  *
  * `canPump` for a solid pump is `!floor.isLiquid`, which reads backwards until you see
@@ -209,18 +226,24 @@ export function yieldOf(node, ground, catalogue) {
     const hardness = catalogue.items?.[item]?.hardness ?? 99;
     // Too hard for this drill: not slow, unable.
     if ((node.block.tier ?? 0) < hardness) continue;
+    /* And strong enough is not the same as allowed. An impact drill names thorium and
+       refuses it, although its tier covers it: reported at 1.33 thorium a second, the game
+       gives none at all. */
+    if ((node.block.blocked_items || []).includes(item)) continue;
     if (!best || covered > best.covered) best = { item, covered, hardness };
   }
   if (!best) return null;
 
-  const time = (node.block.drill_time || 0)
-    + (node.block.hardness_multiplier || 0) * best.hardness;
+  const time = drillTimeOf(node.block, best.item, best.hardness);
   if (time <= 0) return null;
 
   return {
     resource: best.item,
     rate: (60 * best.covered) / time,
     covered: best.covered,
+    // Le temps d'un lot, que la simulation refait sinon a partir du debit et du nombre de
+    // cases, ce qui perd le multiplicateur en route.
+    each: time,
     of: (node.block.size || 1) ** 2,
   };
 }

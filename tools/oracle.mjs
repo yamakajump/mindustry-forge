@@ -1180,6 +1180,65 @@ const SCENARIOS = {
     stock: ["copper*1000@1,0"],
   }),
 
+  /* Le courant ne traverse pas un consommateur.
+
+     Le jeu refuse de relier deux voisins quand les deux consomment, qu'aucun ne produit et
+     qu'aucun n'est conducteur. Ici le premier radar touche le generateur et le second ne
+     touche que le premier : le jeu le laisse seul sur une grille sans producteur, donc le
+     generateur n'alimente qu'un radar et la batterie encaisse le reste. Relies sans
+     condition, les deux radars demandent soixante-douze la ou il en arrive soixante, et la
+     batterie ne monte jamais. */
+  "power-not-conductive": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: 1, y: 0, block: "combustion-generator", rotation: 0 },
+    { x: 1, y: -1, block: "battery", rotation: 0 },
+    { x: 2, y: 0, block: "radar", rotation: 0 },
+    { x: 3, y: 0, block: "radar", rotation: 0 },
+  ],
+
+  /* Et une machine a sec ne demande rien du tout.
+
+     `shouldConsumePower` tombe des qu'un consommateur autre que celui d'energie ne rend
+     rien, et un bloc qui ne consomme pas demande **zero** plutot que de demander et de
+     s'en passer. Un four sans plomb ni sable reclamait quand meme ses trente-six par
+     seconde : la batterie monte de moitie moins vite. */
+  "power-starved-asks-nothing": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: 1, y: 0, block: "combustion-generator", rotation: 0 },
+    { x: 1, y: -1, block: "battery", rotation: 0 },
+    // Covers 2..3 by 0..1, contre le generateur et sans rien pour le nourrir.
+    { x: 2, y: 0, block: "kiln", rotation: 0 },
+  ],
+
+  /* Une foreuse laser arrosee, et la meme a sec.
+
+     `speed = lerp(1, liquidBoostIntensity, optionalEfficiency) * efficiency` : l'eau vaut
+     soixante pour cent de plus. Le facteur etait dans le catalogue et la quantite non,
+     donc ni le code ni la donnee ne savaient combien il en fallait : la foreuse acceptait
+     l'eau, se remplissait, ne la buvait jamais et n'en tirait rien. Une conduite posee sur
+     une ferme de foreuses ne changeait aucun chiffre du rapport. */
+  "drill-wet": () => wetDrill(true),
+  "drill-dry": () => wetDrill(false),
+
+  /* Et une foreuse a percussion sur du beryllium, qu'elle sort deux fois plus vite.
+
+     `drillMultipliers.put(Items.beryllium, 2f)` sur les deux foreuses a percussion, et le
+     champ n'etait dumpe que pour la foreuse a faisceau. Le minerai le plus produit
+     d'Erekir etait rapporte a exactement la moitie de sa vitesse. */
+  "burst-drill-beryllium": () => ({
+    tiles: [
+      // Covers 1..4 by 1..4.
+      { x: 2, y: 2, block: "impact-drill", rotation: 0 },
+      { x: 0, y: 2, block: "power-source", rotation: 0 },
+      { x: 0, y: 3, block: "liquid-source", rotation: 0, raw: liquid("water") },
+      { x: 5, y: 2, block: "duct", rotation: 0 },
+      { x: 6, y: 2, block: "duct", rotation: 0 },
+      { x: 8, y: 2, block: "vault", rotation: 0 },
+    ],
+    ground: [1, 2, 3, 4].flatMap((x) =>
+      [1, 2, 3, 4].map((y) => `ore-beryllium@${x},${y}`)),
+  }),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -1332,6 +1391,21 @@ function idlePower(name) {
     ],
     stock: ["thorium*10@0,0"],
   };
+}
+
+/** A laser drill on nine tiles of copper, with water piped to it or without. */
+function wetDrill(wet) {
+  const tiles = [
+    // Covers 0..2 by 0..2, with its ore under it.
+    { x: 1, y: 1, block: "laser-drill", rotation: 0 },
+    { x: -1, y: 1, block: "power-source", rotation: 0 },
+    // Le coffre colle a la foreuse, pour que tout ce qui sort soit compte.
+    { x: 4, y: 1, block: "vault", rotation: 0 },
+  ];
+  if (wet) tiles.push({ x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") });
+  const ground = [];
+  for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) ground.push(`ore-copper@${x},${y}`);
+  return { tiles, ground };
 }
 
 /** A cliff crusher facing two walls of the same kind. */

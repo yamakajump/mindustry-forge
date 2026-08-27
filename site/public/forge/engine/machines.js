@@ -23,6 +23,17 @@ import { DIRECTIONS, TICKS } from "./core.js";
 export function efficiencyOf(build, step) {
   const block = build.block;
 
+  /* `shouldConsumePower` goes false as soon as any consumer that is **not** the power one
+     reports nothing, and a block that is not consuming power asks the grid for **zero**
+     rather than asking and going without.
+
+     It matters more than it sounds. A smelter with no sand asked for its thirty six a
+     second all the same, so three smelters of which two were dry read as a grid at two
+     thirds coverage and the one that could run ran at two thirds. The game runs it at
+     full. Written here rather than in each machine because every one of them goes through
+     this function. */
+  build.state.wants = 0;
+
   for (const [item, amount] of Object.entries(block.input || {})) {
     if (build.items.get(item) < amount) return 0;
   }
@@ -46,6 +57,9 @@ export function efficiencyOf(build, step) {
     efficiency = Math.min(efficiency, held / wanted);
     if (efficiency <= 0) return 0;
   }
+
+  // Everything but the grid is satisfied, so it does ask for its power.
+  build.state.wants = shouldConsume(build) ? 1 : 0;
 
   // And the grid, which hands every consumer the same fraction. A smelter on a grid at
   // seventy per cent smelts at seventy per cent: it slows down rather than stopping.
@@ -189,6 +203,33 @@ const crafter = {
 };
 
 /**
+ * What a booster liquid is worth this frame, between nothing and one.
+ *
+ * `optionalEfficiency` in the game, and it is **capped by the block's real efficiency**:
+ * a bore full of hydrogen on a grid at half coverage gets half the boost, not all of it.
+ */
+function boostShare(build, step) {
+  let share = 1;
+  let any = false;
+  for (const [liquid, rate] of Object.entries(build.block.boost_liquid || {})) {
+    const wanted = (rate / TICKS) * build.delta(step);
+    if (wanted <= 0) continue;
+    any = true;
+    share = Math.min(share, build.liquids.get(liquid) / wanted);
+  }
+  if (!any) return 0;
+  const grid = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+  return Math.max(0, Math.min(share, grid));
+}
+
+/** And drinking it, at whatever share it got. */
+function drinkBoost(build, step, share) {
+  for (const [liquid, rate] of Object.entries(build.block.boost_liquid || {})) {
+    build.liquids.remove(liquid, (rate / TICKS) * build.delta(step) * share);
+  }
+}
+
+/**
  * `AttributeCrafter.efficiencyMultiplier`: what the ground it stands on is worth.
  *
  * `baseEfficiency + min(maxBoost, boostScale * attrsum)`. Note that `maxBoost` caps the
@@ -286,19 +327,25 @@ const drill = {
       return;
     }
 
-    // `getDrillTime` over the covered tiles, which is what `yieldOf` already worked out:
-    // its rate is `60 * covered / time`, so the delay between two items is the reciprocal.
-    const delay = (60 * dug.covered) / dug.rate;
+    const delay = dug.each;
 
     /* A drill on a grid that cannot keep up drills slower, it does not stop. `speed` in
-       `Drill.updateTile` is the consumption efficiency, and for a laser drill that is
-       whatever fraction the grid is handing out. */
-    const speed = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+       `Drill.updateTile` is `lerp(1, liquidBoostIntensity, optionalEfficiency) * efficiency`:
+       the grid's fraction, times whatever the water is worth.
+
+       The water half was missing entirely. A laser drill accepted it, filled up, never
+       drank it and got nothing for it: a pipe laid over a drill farm changed no number in
+       the report, where the game gives sixty per cent more. */
+    const grid = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+    const wet = boostShare(build, step);
+    const speed = (1 + ((build.block.liquid_boost ?? 1) - 1) * wet) * grid;
+    drinkBoost(build, step, wet);
     if (speed <= 0) {
       build.state.warmup = approach(build.state.warmup, 0, speedUp * delta);
       return;
     }
 
+    build.state.wants = 1;
     build.state.warmup = approach(build.state.warmup, speed, speedUp * delta);
     build.state.progress += delta * dug.covered * speed * build.state.warmup;
 
@@ -632,22 +679,13 @@ const beamDrill = {
     if (efficiency <= 0) return;
 
     // And the optional half, which speeds it up rather than gating it.
-    let boost = 1;
-    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
-      const wanted = (rate / TICKS) * delta;
-      if (wanted <= 0) continue;
-      const held = build.liquids.get(liquid);
-      boost = Math.min(boost, held / wanted);
-    }
-    boost = Math.max(0, Math.min(1, boost));
+    const boost = boostShare(build, step);
     const multiplier = 1 + ((block.optional_boost_intensity ?? 1) - 1) * boost;
 
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
       build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
     }
-    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
-      build.liquids.remove(liquid, (rate / TICKS) * delta * boost);
-    }
+    drinkBoost(build, step, boost);
 
     const each = (block.drill_time || 200)
       / (block.drill_multipliers?.[beam.resource] ?? 1);
@@ -707,13 +745,7 @@ const wallCrafter = {
     efficiency = Math.max(0, Math.min(1, efficiency));
 
     // The two boosters, which the game says outright are not meant to be used together.
-    let wet = 0;
-    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
-      const wanted = (rate / TICKS) * delta;
-      if (wanted <= 0) continue;
-      const held = build.liquids.get(liquid);
-      wet = Math.min(1, held / wanted);
-    }
+    const wet = boostShare(build, step);
     const stocked = Object.keys(block.boost_input || {}).length > 0
       && Object.entries(block.boost_input).every(([item, n]) => build.items.get(item) >= n);
 
@@ -732,9 +764,7 @@ const wallCrafter = {
       }
     }
 
-    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
-      build.liquids.remove(liquid, (rate / TICKS) * delta * wet);
-    }
+    drinkBoost(build, step, wet);
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
       build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
     }
@@ -794,28 +824,22 @@ const burstDrill = {
     efficiency = Math.max(0, Math.min(1, efficiency));
     if (efficiency <= 0) return;
 
-    let wet = 0;
-    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
-      const wanted = (rate / TICKS) * delta;
-      if (wanted <= 0) continue;
-      const held = build.liquids.get(liquid);
-      wet = Math.min(1, held / wanted);
-    }
+    const wet = boostShare(build, step);
     const speed = (1 + ((block.liquid_boost ?? 1) - 1) * wet) * efficiency;
 
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
       build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
     }
-    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
-      build.liquids.remove(liquid, (rate / TICKS) * delta * wet);
-    }
+    drinkBoost(build, step, wet);
 
     // No `dominantItems` here, unlike an ordinary drill: the ore count multiplies the
     // batch and not the clock.
     build.state.progress += delta * speed;
 
-    const each = (block.drill_time || 300)
-      + (block.hardness_multiplier || 0) * (dug.hardness || 0);
+    // `BurstDrill.getDrillTime` is `drillTime / multiplier`, with no hardness term: the
+    // class sets `hardnessDrillMultiplier` to zero and both blocks halve their time on
+    // beryllium. Worked out once by the ground, so both halves of the repository agree.
+    const each = dug.each;
     if (build.state.progress >= each && build.items.total < build.itemCapacity) {
       for (let i = 0; i < batch; i++) build.offload(dug.resource);
       build.state.progress %= each;
