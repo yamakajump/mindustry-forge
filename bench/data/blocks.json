@@ -9019,10 +9019,10 @@
       "power": 18,
       "role": "mender",
       "reload": 200,
-      "range": 40,
+      "range": 5,
       "heal_percent": 4,
       "phase_boost": 4,
-      "phase_range_boost": 20,
+      "phase_range_boost": 2.5,
       "use_time": 400,
       "boost_input":{
         "silicon": 1
@@ -9067,10 +9067,10 @@
       "power": 90,
       "role": "mender",
       "reload": 250,
-      "range": 85,
+      "range": 10.625,
       "heal_percent": 11,
       "phase_boost": 15,
-      "phase_range_boost": 50,
+      "phase_range_boost": 6.25,
       "use_time": 400,
       "boost_input":{
         "phase-fabric": 1
@@ -9223,9 +9223,9 @@
       },
       "power": 240,
       "role": "shield",
-      "radius": 101.7,
+      "radius": 12.7125,
       "shield_health": 750,
-      "phase_radius_boost": 80,
+      "phase_radius_boost": 10,
       "phase_shield_boost": 400,
       "use_time": 350,
       "coolant_consumption": 0.1,
@@ -9337,7 +9337,7 @@
       },
       "power": 180,
       "role": "turret-idle",
-      "range": 200,
+      "range": 25,
       "coolant_multiplier": 5,
       "input_liquid":{
         "nitrogen": 3
@@ -9384,7 +9384,7 @@
       },
       "power": 60,
       "role": "idle-power",
-      "range": 0,
+      "range": 28,
       "planet": "erekir"
     },
     "shockwave-tower":{
@@ -9424,7 +9424,7 @@
       "power": 100,
       "role": "idle-power",
       "reload": 80,
-      "range": 170,
+      "range": 21.25,
       "planet": "erekir"
     },
     "shield-projector":{
@@ -13503,6 +13503,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 20,
       "reload": 20,
       "ammo_per_shot": 1,
       "shots_per_second": 3,
@@ -13562,6 +13563,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 27.5,
       "reload": 18,
       "ammo_per_shot": 1,
       "shots_per_second": 3.3333333,
@@ -13620,6 +13622,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 7.5,
       "reload": 6,
       "ammo_per_shot": 1,
       "shots_per_second": 10,
@@ -13677,6 +13680,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 29.375,
       "reload": 60,
       "ammo_per_shot": 1,
       "shots_per_second": 1,
@@ -13733,14 +13737,14 @@
       },
       "power": 0,
       "role": "turret-idle",
-      "range": 110,
+      "range": 13.75,
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
+        "water": 1,
         "slag": 1,
-        "cryofluid": 1,
         "oil": 1,
-        "water": 1
+        "cryofluid": 1
       },
       "input_liquid":{},
       "planet": "serpulo"
@@ -13783,7 +13787,7 @@
       },
       "power": 360,
       "role": "turret-idle",
-      "range": 165,
+      "range": 20.625,
       "reload": 80,
       "coolant_multiplier": 5,
       "coolant_amount": 0.2,
@@ -13830,7 +13834,7 @@
       },
       "power": 198,
       "role": "turret-idle",
-      "range": 90,
+      "range": 11.25,
       "reload": 35,
       "coolant_multiplier": 5,
       "coolant_amount": 0.1,
@@ -13874,7 +13878,7 @@
       },
       "power": 198,
       "role": "tractor",
-      "range": 300,
+      "range": 37.5,
       "coolant_multiplier": 1,
       "input_liquid":{},
       "planet": "serpulo"
@@ -13923,6 +13927,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 30,
       "reload": 34.285713,
       "ammo_per_shot": 1,
       "shots_per_second": 1.75,
@@ -13985,6 +13990,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 23.75,
       "reload": 29,
       "ammo_per_shot": 1,
       "shots_per_second": 2.0689654,
@@ -14040,7 +14046,7 @@
       },
       "power": 480,
       "role": "turret-idle",
-      "range": 180,
+      "range": 22.5,
       "reload": 8,
       "coolant_multiplier": 2,
       "input_liquid":{},
@@ -14086,14 +14092,14 @@
       },
       "power": 0,
       "role": "turret-idle",
-      "range": 190,
+      "range": 23.75,
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
+        "water": 0.4,
         "slag": 0.4,
-        "cryofluid": 0.4,
         "oil": 0.4,
-        "water": 0.4
+        "cryofluid": 0.4
       },
       "input_liquid":{},
       "planet": "serpulo"
@@ -14140,6 +14146,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 11.25,
       "reload": 35,
       "ammo_per_shot": 1,
       "shots_per_second": 1.7142857,
@@ -14200,6 +14207,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 36.25,
       "reload": 120,
       "ammo_per_shot": 2,
       "shots_per_second": 0.5,
@@ -14265,6 +14273,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 25,
       "reload": 10,
       "ammo_per_shot": 1,
       "shots_per_second": 6,
@@ -14327,6 +14336,7 @@
       "power": 600,
       "role": "turret",
       "carries": "item",
+      "range": 62.5,
       "reload": 200,
       "ammo_per_shot": 5,
       "shots_per_second": 0.3,
@@ -14385,6 +14395,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 32.5,
       "reload": 7,
       "ammo_per_shot": 1,
       "shots_per_second": 8.571428,
@@ -14441,7 +14452,7 @@
       },
       "power": 1020,
       "role": "laser-turret",
-      "range": 195,
+      "range": 24.375,
       "reload": 90,
       "coolant_multiplier": 1,
       "coolant_amount": 0.5,
@@ -14495,6 +14506,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 23.75,
       "reload": 40,
       "ammo_per_shot": 2,
       "shots_per_second": 1.5,
@@ -14555,6 +14567,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 15.625,
       "reload": 30,
       "ammo_per_shot": 3,
       "shots_per_second": 2,
@@ -14610,7 +14623,7 @@
       },
       "power": 0,
       "role": "turret-idle",
-      "range": 130,
+      "range": 16.25,
       "reload": 10,
       "coolant_multiplier": 1,
       "input_liquid":{},
@@ -14659,6 +14672,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 48.75,
       "reload": 138,
       "ammo_per_shot": 4,
       "shots_per_second": 0.4347826,
@@ -14722,6 +14736,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 38.75,
       "reload": 9,
       "ammo_per_shot": 1,
       "shots_per_second": 6.6666665,
@@ -14775,7 +14790,7 @@
       },
       "power": 300,
       "role": "turret-idle",
-      "range": 368,
+      "range": 46,
       "reload": 50,
       "coolant_multiplier": 5,
       "input_liquid":{},
@@ -14818,7 +14833,7 @@
       },
       "power": 200,
       "role": "turret-idle",
-      "range": 250,
+      "range": 31.25,
       "reload": 10,
       "coolant_multiplier": 1,
       "input_liquid":{
@@ -14870,6 +14885,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 168.75,
       "reload": 600,
       "ammo_per_shot": 15,
       "shots_per_second": 0.1,
@@ -14929,6 +14945,7 @@
       "power": 0,
       "role": "turret",
       "carries": "item",
+      "range": 37.5,
       "reload": 100,
       "ammo_per_shot": 2,
       "shots_per_second": 0.6,
@@ -14977,7 +14994,7 @@
       },
       "power": 2400,
       "role": "turret-idle",
-      "range": 410,
+      "range": 51.25,
       "reload": 3.5,
       "coolant_multiplier": 5,
       "input_liquid":{},
@@ -15566,7 +15583,7 @@
       },
       "power": 60,
       "role": "idle-power",
-      "range": 60,
+      "range": 7.5,
       "planet": "serpulo"
     },
     "repair-turret":{
@@ -15606,7 +15623,7 @@
       },
       "power": 300,
       "role": "idle-power",
-      "range": 145,
+      "range": 18.125,
       "planet": "serpulo"
     },
     "tank-fabricator":{
@@ -16298,7 +16315,7 @@
       },
       "power": 60,
       "role": "idle-power",
-      "range": 100,
+      "range": 12.5,
       "planet": "erekir"
     },
     "payload-conveyor":{
@@ -17594,6 +17611,10 @@
         "silicon": 50
       },
       "power": 0,
+      "instructions_per_tick": 2,
+      "max_instruction_scale": 5,
+      "max_instructions_per_tick": 40,
+      "logic_range": 10,
       "planet": "serpulo"
     },
     "logic-processor":{
@@ -17631,6 +17652,10 @@
         "silicon": 80
       },
       "power": 0,
+      "instructions_per_tick": 8,
+      "max_instruction_scale": 5,
+      "max_instructions_per_tick": 40,
+      "logic_range": 22,
       "planet": "serpulo"
     },
     "hyper-processor":{
@@ -17671,6 +17696,10 @@
         "surge-alloy": 50
       },
       "power": 0,
+      "instructions_per_tick": 25,
+      "max_instruction_scale": 5,
+      "max_instructions_per_tick": 40,
+      "logic_range": 42,
       "role": "sink",
       "input_liquid":{
         "cryofluid": 4.7999997
@@ -17995,7 +18024,10 @@
       "build_time": 20,
       "cost":{},
       "power": 0,
-      "no_overdrive": true
+      "no_overdrive": true,
+      "instructions_per_tick": 8,
+      "max_instruction_scale": 5,
+      "max_instructions_per_tick": 1000
     },
     "world-cell":{
       "name": "world-cell",

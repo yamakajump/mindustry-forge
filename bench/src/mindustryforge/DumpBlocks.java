@@ -97,6 +97,7 @@ import mindustry.world.blocks.payloads.PayloadUnloader;
 import mindustry.world.blocks.defense.Door;
 import mindustry.world.blocks.sandbox.PowerVoid;
 import mindustry.world.blocks.power.PowerDiode;
+import mindustry.world.blocks.logic.LogicBlock;
 import mindustry.world.blocks.power.PowerNode;
 import mindustry.world.blocks.heat.HeatConductor;
 import mindustry.world.blocks.heat.HeatProducer;
@@ -104,6 +105,7 @@ import mindustry.world.blocks.production.AttributeCrafter;
 import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.production.Separator;
 import mindustry.world.blocks.production.HeatCrafter;
+import mindustry.entities.bullet.BulletType;
 import mindustry.world.consumers.Consume;
 import mindustry.type.LiquidStack;
 import mindustry.world.consumers.ConsumeItems;
@@ -129,14 +131,37 @@ import java.nio.file.Paths;
  * it, stamped with the version it came from, and the analyser refuses a table whose
  * version does not match the bench it is checked against.
  *
- * <p>Run with {@code java -jar server-release.jar} and the command {@code dump-blocks}.
+ * <p>Run with {@code java -jar server-release.jar} and the command
+ * {@code dump-blocks <path>}. The server writes the file within a few seconds and then
+ * <strong>keeps its console open for ever</strong>: it is a server, and dumping is not a
+ * reason for it to stop. Piping the command in with {@code echo} therefore blocks until
+ * something kills the process, long after the file is complete and correct. Wait for the
+ * file, not for the exit code.
+ *
+ * <p>Two dumps of one unchanged game must be identical byte for byte, because that is the
+ * only thing that lets a diff of this 450 kB file mean anything. Anywhere the game hands
+ * over an {@link arc.struct.ObjectMap}, iterate the content registry instead: its order is
+ * the content id, which is the same in every run, while a map's is the identity hash,
+ * which is not.
  */
 public class DumpBlocks {
 
     /** Ticks per second, which is what turns the game's per-tick figures into per-second. */
     private static final float TPS = 60f;
 
-    /** Pixels to a tile, which is what turns the game's ranges into tiles. */
+    /**
+     * Pixels to a tile, which is what turns the game's ranges into tiles.
+     *
+     * <p><strong>Every distance in this file is written in tiles.</strong> The game is of
+     * two minds about it: {@code ItemBridge.range} is a count of tiles and
+     * {@code BaseTurret.range} is a float of world units, eight times larger, and for a
+     * long time this dump copied each one straight through. The result was a {@code range}
+     * field carrying two units with nothing to tell them apart, since a bridge's 4 and a
+     * mender's 40 are both plausible either way. Every reader then had to guess from the
+     * block's class, and a wrong guess is a wrong number rather than an exception.
+     *
+     * <p>So: divide here, once, and let no distance leave this file in world units.
+     */
     private static final float TILESIZE = 8f;
 
     public static void dump(Path out) {
@@ -439,6 +464,39 @@ public class DumpBlocks {
                `range`, qui reste vide pour eux : sans elle, un glisse de pylones ne sait pas
                a quel espacement les poser pour qu ils se voient encore. */
             if (block instanceof PowerNode node) entry.put("laser_range", node.laserRange);
+
+            /* How fast a processor runs, which is the whole of what separates the three of
+               them: a micro does two instructions a tick, a logic eight, a hyper
+               twenty-five. Nothing else about a processor is a number, so without this the
+               catalogue had nothing to say about them at all.
+
+               `maxInstructionScale` is the second half of the answer and the half that
+               surprises. The processor accumulates `edelta * instructionsPerTick` and
+               spends one per instruction, and that accumulator is capped at
+               `maxInstructionScale * instructionsPerTick`: a processor that falls behind
+               catches up, but only by that many ticks' worth, and past it the work is lost
+               rather than deferred. A program timed on the per-tick figure alone is timed
+               on the best case.
+
+               `maxInstructionsPerTick` is the ceiling a world processor may be configured
+               up to, and applies to no block a player can build. Carried because a field
+               that exists and is not carried is a field somebody re-derives from a wiki.
+
+               Read from the v159.7 bytecode of `LogicBuild.updateTile`, not from memory. */
+            if (block instanceof LogicBlock processor) {
+                entry.put("instructions_per_tick", processor.instructionsPerTick);
+                entry.put("max_instruction_scale", processor.maxInstructionScale);
+                entry.put("max_instructions_per_tick", processor.maxInstructionsPerTick);
+                /* In tiles, like every other distance here: the game holds it in world
+                   units, so a micro's is `8f * 10` and reads as 80.
+
+                   Skipped for a world processor, whose range is `Float.MAX_VALUE` because
+                   it reaches everything. Divided, that is 4.25e37, and a number that large
+                   is a lie rather than a measurement: it would be drawn, compared and
+                   formatted as though it meant something. An absent field says "no limit"
+                   more honestly than any figure could. */
+                if (!block.privileged) entry.put("logic_range", processor.range / TILESIZE);
+            }
 
             describeRole(block, entry);
             describeFloor(block, entry);
@@ -806,9 +864,7 @@ public class DumpBlocks {
                zero objet par seconde. */
             entry.put("role", "mass-driver");
             entry.put("carries", "item");
-            /* En cases, comme celle d un pont : le jeu la tient en pixels et tout
-               le reste du catalogue compte en cases. */
-            entry.put("range", driver.range / 8f);
+            entry.put("range", driver.range / TILESIZE);
             entry.put("rotate_speed", driver.rotateSpeed);
             entry.put("min_distribute", driver.minDistribute);
             entry.put("reload", driver.reload);
@@ -1012,7 +1068,7 @@ public class DumpBlocks {
                par-dessus les trente de rechargement. */
             entry.put("role", "payload-driver");
             entry.put("carries", "payload");
-            entry.put("range", driver.range / 8f);
+            entry.put("range", driver.range / TILESIZE);
             entry.put("rotate_speed", driver.rotateSpeed);
             entry.put("reload", driver.reload);
             entry.put("charge_time", driver.chargeTime);
@@ -1252,6 +1308,13 @@ public class DumpBlocks {
             // cannot know, so the rate here is the rate while firing and is labelled so.
             entry.put("role", "turret");
             entry.put("carries", "item");
+            /* Seventeen of the twenty-eight visible turrets had no range at all, `duo` and
+               `salvo` and `spectre` among them, because this branch answers before the
+               `BaseTurret` one that writes the field and it never wrote it itself. An
+               absent field draws no line rather than a wrong one, which is why nobody had
+               noticed that half the catalogue was silent about the one number a turret is
+               looked up for. */
+            entry.put("range", turret.range / TILESIZE);
             entry.put("reload", turret.reload);
             entry.put("ammo_per_shot", turret.ammoPerShot);
             entry.put("shots_per_second", TPS / Math.max(1f, turret.reload));
@@ -1342,7 +1405,7 @@ public class DumpBlocks {
            seconds whether or not anything near it is damaged. */
         if (block instanceof BaseTurret turret) {
             entry.put("role", block instanceof TractorBeamTurret ? "tractor" : "turret-idle");
-            entry.put("range", turret.range);
+            entry.put("range", turret.range / TILESIZE);
             if (block instanceof ReloadTurret reloader) entry.put("reload", reloader.reload);
             entry.put("coolant_multiplier", turret.coolantMultiplier);
             if (turret.coolant != null) {
@@ -1367,9 +1430,21 @@ public class DumpBlocks {
             }
             if (block instanceof LiquidTurret liquidTurret) {
                 entry.put("role", "turret-idle");
+                /* Walked in content order rather than in the map's own, because
+                   `LiquidTurret.ammoTypes` is a plain `ObjectMap` whose iteration follows
+                   the identity hash and therefore changes from one run to the next. Two
+                   dumps of an untouched game disagreed on `wave` and `tsunami` for exactly
+                   this reason, which is eight lines of noise in the middle of a 450 kB
+                   diff and no way to tell them from a real regression.
+
+                   `ItemTurret.ammoTypes` is an `OrderedMap` and does not have the fault,
+                   which is why only one of the two tables is walked this way. Checked in
+                   the v159.7 bytecode rather than assumed. */
                 Jval ammo = Jval.newObject();
-                liquidTurret.ammoTypes.each((liquid, type) ->
-                    ammo.put(liquid.name, type.ammoMultiplier));
+                for (Liquid liquid : Vars.content.liquids()) {
+                    BulletType type = liquidTurret.ammoTypes.get(liquid);
+                    if (type != null) ammo.put(liquid.name, type.ammoMultiplier);
+                }
                 if (ammo.asObject().size > 0) entry.put("ammo_types", ammo);
             }
             entry.put("input_liquid", liquidInputsOf(block));
@@ -1378,19 +1453,25 @@ public class DumpBlocks {
         if (block instanceof MendProjector mender) {
             entry.put("role", "mender");
             entry.put("reload", mender.reload);
-            entry.put("range", mender.range);
+            entry.put("range", mender.range / TILESIZE);
             entry.put("heal_percent", mender.healPercent);
             entry.put("phase_boost", mender.phaseBoost);
-            entry.put("phase_range_boost", mender.phaseRangeBoost);
+            /* Divided here as well, and it is the more insidious half of the two: the
+               overdrive projector below already wrote its `phase_range_boost` in tiles, so
+               one key carried both units at once and nothing on the far side could tell a
+               mender's boost from a projector's. */
+            entry.put("phase_range_boost", mender.phaseRangeBoost / TILESIZE);
             entry.put("use_time", mender.useTime);
             entry.put("boost_input", optionalInputsOf(block));
             return;
         }
         if (block instanceof ForceProjector shield) {
             entry.put("role", "shield");
-            entry.put("radius", shield.radius);
+            /* A range under another name, and in the same world units the rest of this
+               file has stopped using. */
+            entry.put("radius", shield.radius / TILESIZE);
             entry.put("shield_health", shield.shieldHealth);
-            entry.put("phase_radius_boost", shield.phaseRadiusBoost);
+            entry.put("phase_radius_boost", shield.phaseRadiusBoost / TILESIZE);
             entry.put("phase_shield_boost", shield.phaseShieldBoost);
             entry.put("use_time", shield.phaseUseTime);
             entry.put("coolant_consumption", shield.coolantConsumption);
@@ -1408,8 +1489,15 @@ public class DumpBlocks {
         if (block instanceof RegenProjector || block instanceof RepairTurret
                 || block instanceof RepairTower) {
             entry.put("role", "idle-power");
-            entry.put("range", block instanceof RepairTurret repair ? repair.repairRadius
-                : block instanceof RepairTower tower ? tower.range : 0f);
+            /* `RegenProjector.range` fell through to the zero and was thrown away by the
+               trimmer, so the block reached the browser with no range at all. It is the
+               one distance in the game already counted in tiles - an `int`, where the two
+               repairers hold floats of world units - which is exactly why it needs saying
+               out loud: the line that divides everything else must not divide this one. */
+            entry.put("range", block instanceof RepairTurret repair ? repair.repairRadius / TILESIZE
+                : block instanceof RepairTower tower ? tower.range / TILESIZE
+                : block instanceof RegenProjector regen ? regen.range
+                : 0f);
             return;
         }
         if (block instanceof ShockwaveTower shock) {
@@ -1424,7 +1512,7 @@ public class DumpBlocks {
                three thousandths of a large battery. */
             entry.put("role", "idle-power");
             entry.put("reload", shock.reload);
-            entry.put("range", shock.range);
+            entry.put("range", shock.range / TILESIZE);
             return;
         }
         if (block instanceof Incinerator || block instanceof ItemIncinerator) {
