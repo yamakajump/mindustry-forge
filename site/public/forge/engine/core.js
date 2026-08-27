@@ -459,18 +459,30 @@ export class World {
       }
     }
 
-    // `updateProximity`: every neighbour on the ring, deduplicated, and both ways round.
-    for (const build of this.builds) {
-      const offset = Math.trunc(-(build.size - 1) / 2);
-      const midX = build.x + offset + (build.size - 1) / 2;
-      const midY = build.y + offset + (build.size - 1) / 2;
+    /* `updateProximity`, and both halves of it were wrong.
+    
+       The offsets are relative to the tile a block is **stored** at, which is what
+       `Edges.getEdges` returns and what `world.build(tile.x + point.x, ...)` adds them to.
+       There was a middle and a rounding here instead, and for any block of even size that
+       middle sits on a half tile: the whole ring slid one right and one up. A two by two
+       press asked about the tile two to its right and never about the one touching it, so
+       eighty blocks of the catalogue handed items across a gap.
+    
+       And the **order** is the order things were built, not the order of the ring. A block
+       walks its ring when it is placed, so it sees whatever was there before in ring order;
+       anything placed later simply appends itself to the end of that list. Since `dump` and
+       `offload` walk from a rotating cursor, the order decides which branch is served
+       first. */
+    const placed = new Map(this.builds.map((build, at) => [build, at]));
+    this.builds.forEach((build, at) => {
       for (const [dx, dy] of edgesOf(build.size)) {
-        const other = this.at(Math.round(midX + dx), Math.round(midY + dy));
+        const other = this.at(build.x + dx, build.y + dy);
         if (!other || other === build) continue;
+        if (placed.get(other) > at) continue;
         if (!build.proximity.includes(other)) build.proximity.push(other);
         if (!other.proximity.includes(build)) other.proximity.push(build);
       }
-    }
+    });
 
     this.tick = 0;
     this.grids = [];

@@ -6512,6 +6512,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "instant_transfer": true,
       "health": 40,
       "build_time": 7.2000003,
       "cost":{
@@ -6535,6 +6536,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "instant_transfer": true,
       "health": 40,
       "build_time": 7.2000003,
       "cost":{
@@ -6565,6 +6567,7 @@
       },
       "power": 0,
       "role": "router",
+      "speed": 8,
       "carries": "item"
     },
     "distributor":{
@@ -6588,6 +6591,7 @@
       },
       "power": 0,
       "role": "router",
+      "speed": 8,
       "carries": "item"
     },
     "overflow-gate":{
@@ -6603,6 +6607,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "instant_transfer": true,
       "health": 40,
       "build_time": 10.200001,
       "cost":{
@@ -6629,6 +6634,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "instant_transfer": true,
       "health": 40,
       "build_time": 10.200001,
       "cost":{
@@ -6665,7 +6671,9 @@
       "power": 0,
       "role": "unloader",
       "carries": "item",
-      "items_per_second": 11
+      "items_per_second": 11,
+      "speed": 5.4545455,
+      "allow_core_unload": true
     },
     "mass-driver":{
       "name": "mass-driver",

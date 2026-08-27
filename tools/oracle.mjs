@@ -129,11 +129,22 @@ const SCENARIOS = {
      and the branch wrong, which is exactly what a simulation is for. */
   "overflow-priority": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
-    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    /* Onze objets a la seconde en entree, six et demi en sortie tout droit.
+
+       Le scenario nourrissait les deux branches avec une bande de meme debit et se
+       terminait sur un coffre de mille : la branche droite avalait tout, `canForward`
+       etait vrai a chaque image, et le cote ne recevait pas un objet. Les deux scenarios
+       nommes d'apres la regle de debordement ne l'exercaient pas une fois.
+
+       Ici la branche droite sature a son propre debit et le reste passe sur le cote. Les
+       deux chiffres sont non nuls et differents, et c'est exactement la situation pour
+       laquelle la regle existe. */
+    { x: 1, y: 0, block: "titanium-conveyor", rotation: 0 },
     { x: 2, y: 0, block: "overflow-gate", rotation: 0 },
     { x: 3, y: 0, block: "conveyor", rotation: 0 },
-    { x: 5, y: 0, block: "vault", rotation: 0 },
-    { x: 2, y: 1, block: "conveyor", rotation: 1 },
+    { x: 4, y: 0, block: "conveyor", rotation: 0 },
+    { x: 6, y: 0, block: "vault", rotation: 0 },
+    { x: 2, y: 1, block: "titanium-conveyor", rotation: 1 },
     { x: 2, y: 3, block: "vault", rotation: 0 },
   ],
 
@@ -165,15 +176,23 @@ const SCENARIOS = {
 
   /* A vault that starts empty, filled by a source, emptied by an unloader into another
      vault. Eleven a second is the unloader's own stat line. */
-  "unloader-drains": () => [
-    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
-    { x: 1, y: 0, block: "conveyor", rotation: 0 },
-    { x: 3, y: 0, block: "vault", rotation: 0 },
-    { x: 5, y: 0, block: "unloader", rotation: 0, raw: item("copper") },
-    { x: 6, y: 0, block: "titanium-conveyor", rotation: 0 },
-    { x: 7, y: 0, block: "titanium-conveyor", rotation: 0 },
-    { x: 9, y: 0, block: "vault", rotation: 0 },
-  ],
+  /* Le coffre part plein et rien ne le remplit.
+
+     Il etait alimente par une bande cuivre a six objets et demi la seconde, et le seul
+     chiffre compare etait ce que cette bande avait porte. Un dechargeur a sept, onze ou
+     quarante par seconde aurait donne le meme resultat : sa vitesse n'etait verifiee nulle
+     part. Sur un stock ferme de mille, ce qui reste dit son debit et rien d'autre. */
+  "unloader-drains": () => ({
+    tiles: [
+      // Covers 0..2 by -1..1.
+      { x: 1, y: 0, block: "vault", rotation: 0 },
+      { x: 3, y: 0, block: "unloader", rotation: 0, raw: item("copper") },
+      { x: 4, y: 0, block: "titanium-conveyor", rotation: 0 },
+      { x: 5, y: 0, block: "titanium-conveyor", rotation: 0 },
+      { x: 7, y: 0, block: "vault", rotation: 0 },
+    ],
+    stock: ["copper*1000@1,0"],
+  }),
 
   /* A press. Two coal in, one graphite out, ninety frames a batch, so at most two thirds
      of a graphite a second whatever it is fed. Fed a hundred a second by a sandbox source,
@@ -210,21 +229,35 @@ const SCENARIOS = {
     return tiles;
   },
 
-  /* Two presses off one router, each with its own vault, so the split is visible. */
+  /* Un routeur qui partage du charbon entre deux presses, chacune au bout de sa bande.
+
+     Deux fois refait. La presse nord n'etait pas collee au routeur, donc le jeu la donnait
+     a efficacite zero et le scenario, nomme d'apres un partage entre deux presses, mesurait
+     une presse derriere un routeur. Collee, il mesurait un **bourrage** : une presse rend
+     son graphite a tous ses voisins, routeur compris, et le routeur se bouchait avec.
+
+     Avec une bande entre le routeur et chaque presse, le graphite n'a nulle part ou
+     revenir : la bande qui alimente la presse pointe vers elle et refuse ce qu'elle lui
+     tend. Le routeur alterne, chaque presse recoit trois charbons et quart la seconde pour
+     un et un tiers de besoin, et les deux tournent a plein. */
   "crafter-two-presses": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
     { x: 1, y: 0, block: "conveyor", rotation: 0 },
     { x: 2, y: 0, block: "router", rotation: 0 },
 
-    // East of the router: covers 3..4 by 0..1.
-    { x: 3, y: 0, block: "graphite-press", rotation: 0 },
-    { x: 5, y: 0, block: "conveyor", rotation: 0 },
-    { x: 7, y: 0, block: "vault", rotation: 0 },
+    // Est : deux bandes, puis une presse en 5..6 par 0..1.
+    { x: 3, y: 0, block: "conveyor", rotation: 0 },
+    { x: 4, y: 0, block: "conveyor", rotation: 0 },
+    { x: 5, y: 0, block: "graphite-press", rotation: 0 },
+    { x: 7, y: 0, block: "conveyor", rotation: 0 },
+    { x: 9, y: 0, block: "vault", rotation: 0 },
 
-    // North of the router: covers 2..3 by 2..3, which clears the first press by a tile.
-    { x: 2, y: 2, block: "graphite-press", rotation: 0 },
-    { x: 2, y: 4, block: "conveyor", rotation: 1 },
-    { x: 2, y: 6, block: "vault", rotation: 0 },
+    // Nord : idem, presse en 2..3 par 3..4.
+    { x: 2, y: 1, block: "conveyor", rotation: 1 },
+    { x: 2, y: 2, block: "conveyor", rotation: 1 },
+    { x: 2, y: 3, block: "graphite-press", rotation: 0 },
+    { x: 2, y: 5, block: "conveyor", rotation: 1 },
+    { x: 2, y: 7, block: "vault", rotation: 0 },
   ],
 
   /* A pipe. Liquids do not travel like items: they move by pressure, a fraction at a
@@ -359,12 +392,17 @@ const SCENARIOS = {
   "duct-armored": () => line("armored-duct", 8),
 
   /* An overflow duct: straight on when it can, to the sides when it cannot. */
+  /* Meme maladie que la porte de trop-plein, meme remede : la branche droite doit saturer
+     a son propre debit, sinon le cote ne recoit jamais rien et le scenario ne mesure pas
+     ce que son nom annonce. Un duct porte quinze par seconde et une bande cuivre six et
+     demi, donc la bande sature et le reste passe sur le cote. */
   "duct-overflow": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 1, y: 0, block: "duct", rotation: 0 },
     { x: 2, y: 0, block: "overflow-duct", rotation: 0 },
-    { x: 3, y: 0, block: "duct", rotation: 0 },
-    { x: 5, y: 0, block: "vault", rotation: 0 },
+    { x: 3, y: 0, block: "conveyor", rotation: 0 },
+    { x: 4, y: 0, block: "conveyor", rotation: 0 },
+    { x: 6, y: 0, block: "vault", rotation: 0 },
     { x: 2, y: 1, block: "duct", rotation: 1 },
     { x: 2, y: 3, block: "vault", rotation: 0 },
   ],
@@ -1089,6 +1127,59 @@ const SCENARIOS = {
   "incinerator-hot": () => burner(true),
   "incinerator-cold": () => burner(false),
 
+  /* Une presse deux par deux, nourrie d'un cote et videe de deux autres.
+
+     Le seul scenario qui regarde l'anneau de voisinage d'un bloc de taille **paire**. Le
+     jeu prend les decalages de `Edges.getEdges` relativement a la tuile ou le bloc est
+     range ; le portage passait par un milieu, qui pour une taille paire tombe sur une demi
+     tuile, et l'anneau entier glissait d'une case en diagonale. La presse demandait alors
+     la tuile a deux cases a sa droite et jamais celle qui la touche : quatre-vingts blocs
+     du catalogue tendaient leurs objets par dessus un trou.
+
+     Sans le correctif la presse ne voit meme pas sa source de charbon et ne produit rien. */
+  "press-even-ring": () => [
+    { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
+    // Covers 0..1 by 0..1.
+    { x: 0, y: 0, block: "graphite-press", rotation: 0 },
+    // Deux sorties, sur deux faces differentes, pour que le tourniquet compte aussi.
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+    { x: 4, y: 0, block: "vault", rotation: 0 },
+    { x: 0, y: 2, block: "conveyor", rotation: 1 },
+    { x: 0, y: 4, block: "vault", rotation: 0 },
+  ],
+
+  /* Un dechargeur colle a une presse, et un dechargeur entre deux coffres.
+
+     Les deux regles du bloc, chacune facile a prendre a l'envers. Il tire de **tout** bloc
+     dont le `unloadable` est vrai, ce qui couvre presque tout et inclut une usine et une
+     foreuse : contre une presse a graphite il en sort vraiment le graphite. Et il ne verse
+     **jamais** dans un coffre ni dans un noyau, quels que soient les chiffres.
+
+     Lu comme "hors d'un conteneur, vers ce qui est moins plein", le premier montage ne
+     bougeait rien la ou le jeu sort onze par seconde, et le second en sortait onze par
+     seconde la ou le jeu n'en bouge aucun. */
+  "unloader-from-press": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    // Covers 2..3 by 0..1.
+    { x: 2, y: 0, block: "graphite-press", rotation: 0 },
+    { x: 4, y: 0, block: "unloader", rotation: 0, raw: item("graphite") },
+    { x: 5, y: 0, block: "titanium-conveyor", rotation: 0 },
+    { x: 6, y: 0, block: "titanium-conveyor", rotation: 0 },
+    { x: 8, y: 0, block: "vault", rotation: 0 },
+  ],
+
+  "unloader-between-vaults": () => ({
+    tiles: [
+      // Covers 0..2 by -1..1.
+      { x: 1, y: 0, block: "vault", rotation: 0 },
+      { x: 3, y: 0, block: "unloader", rotation: 0, raw: item("copper") },
+      // Covers 4..6 by -1..1.
+      { x: 5, y: 0, block: "vault", rotation: 0 },
+    ],
+    stock: ["copper*1000@1,0"],
+  }),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -1295,8 +1386,13 @@ function flux(hot) {
   const tiles = [
     // Covers 0..4 by 0..4.
     { x: 2, y: 2, block: "flux-reactor", rotation: 0 },
-    { x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("cyanogen") },
   ];
+  /* Le froid part avec un plein de cyanogene et **aucune source**.
+
+     Avec une source collee, le reacteur etait rempli a ras a chaque image et les deux
+     moities de la paire affichaient trente : la moitie "et ne boit rien" n'etait mesuree
+     par aucun chiffre. Sur un plein ferme, ce qui reste le dit. */
+  if (hot) tiles.push({ x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("cyanogen") });
   // Facing east, into the reactor's left edge. A heat producer that is not pointed at what
   // it is heating delivers nothing at all.
   if (hot) tiles.push({ x: -1, y: 2, block: "heat-source", rotation: 0 });
@@ -1304,7 +1400,7 @@ function flux(hot) {
   for (let i = 0; i < banks; i++) {
     tiles.push({ x: 6 + i * 3, y: 2, block: "battery-large", rotation: 0 });
   }
-  return tiles;
+  return hot ? tiles : { tiles, stock: ["cyanogen~30@2,2"] };
 }
 
 /** A thermal generator on four tiles of whatever the ground is made of. */

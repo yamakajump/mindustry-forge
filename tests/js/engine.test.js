@@ -167,6 +167,9 @@ test("an unloader empties a container at eleven a second", async () => {
 
   const out = simulate(await graphOf(tiles), {
     stock: { 0: { copper: 2000 } }, seconds: 20, warmup: 4,
+    // An unset unloader walks the game's item list in the game's own order, so it needs
+    // the registry rather than only its own neighbours.
+    catalogue: known,
   });
 
   /* Eleven a second offered, and a titanium belt behind it. The belt's own constants give

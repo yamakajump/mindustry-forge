@@ -1,0 +1,75 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 3
+      }
+    },
+    {
+      "block": "graphite-press",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 10
+      }
+    },
+    {
+      "block": "unloader",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "titanium-conveyor",
+      "x": 17,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "titanium-conveyor",
+      "x": 18,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 20,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "graphite": 19
+      }
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 20,
+      "y": 13,
+      "items":{
+        "graphite": 19
+      }
+    }
+  ],
+  "per_second":{
+    "graphite": 0.6333333
+  }
+}

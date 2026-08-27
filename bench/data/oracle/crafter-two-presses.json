@@ -32,8 +32,26 @@
       }
     },
     {
-      "block": "graphite-press",
+      "block": "conveyor",
       "x": 15,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 2
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 2
+      }
+    },
+    {
+      "block": "graphite-press",
+      "x": 17,
       "y": 13,
       "efficiency": 1,
       "holds":{
@@ -42,55 +60,84 @@
     },
     {
       "block": "conveyor",
-      "x": 17,
+      "x": 19,
       "y": 13,
-      "efficiency": 1
+      "efficiency": 1,
+      "holds":{
+        "graphite": 1
+      }
     },
     {
       "block": "vault",
-      "x": 19,
+      "x": 21,
       "y": 13,
       "efficiency": 0,
       "holds":{
-        "graphite": 19
+        "graphite": 18
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 14,
+      "efficiency": 1,
+      "holds":{
+        "coal": 3
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 15,
+      "efficiency": 1,
+      "holds":{
+        "coal": 3
       }
     },
     {
       "block": "graphite-press",
       "x": 14,
-      "y": 15,
-      "efficiency": 0
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "coal": 10
+      }
     },
     {
       "block": "conveyor",
       "x": 14,
-      "y": 17,
+      "y": 18,
       "efficiency": 1
     },
     {
       "block": "vault",
       "x": 14,
-      "y": 19,
-      "efficiency": 0
+      "y": 20,
+      "efficiency": 0,
+      "holds":{
+        "graphite": 18
+      }
     }
   ],
   "containers": [
     {
       "block": "vault",
-      "x": 19,
+      "x": 21,
       "y": 13,
       "items":{
-        "graphite": 19
+        "graphite": 18
       }
     },
     {
       "block": "vault",
       "x": 14,
-      "y": 19,
-      "items":{}
+      "y": 20,
+      "items":{
+        "graphite": 18
+      }
     }
   ],
   "per_second":{
-    "graphite": 0.6333333
+    "graphite": 1.2
   }
 }

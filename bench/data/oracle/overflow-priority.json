@@ -14,7 +14,7 @@
       "efficiency": 1
     },
     {
-      "block": "conveyor",
+      "block": "titanium-conveyor",
       "x": 13,
       "y": 13,
       "efficiency": 1,
@@ -38,44 +38,61 @@
       }
     },
     {
-      "block": "vault",
-      "x": 17,
+      "block": "conveyor",
+      "x": 16,
       "y": 13,
-      "efficiency": 0,
+      "efficiency": 1,
       "holds":{
-        "copper": 196
+        "copper": 2
       }
     },
     {
-      "block": "conveyor",
+      "block": "vault",
+      "x": 18,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 175
+      }
+    },
+    {
+      "block": "titanium-conveyor",
       "x": 14,
       "y": 14,
-      "efficiency": 1
+      "efficiency": 1,
+      "holds":{
+        "copper": 1
+      }
     },
     {
       "block": "vault",
       "x": 14,
       "y": 16,
-      "efficiency": 0
+      "efficiency": 0,
+      "holds":{
+        "copper": 178
+      }
     }
   ],
   "containers": [
     {
       "block": "vault",
-      "x": 17,
+      "x": 18,
       "y": 13,
       "items":{
-        "copper": 196
+        "copper": 175
       }
     },
     {
       "block": "vault",
       "x": 14,
       "y": 16,
-      "items":{}
+      "items":{
+        "copper": 178
+      }
     }
   ],
   "per_second":{
-    "copper": 6.5333333
+    "copper": 11.766666
   }
 }
