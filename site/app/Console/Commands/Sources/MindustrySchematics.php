@@ -110,6 +110,54 @@ class MindustrySchematics extends Catalogue
         ];
     }
 
+    /**
+     * A page in two waves: the details together, then the authors they name.
+     *
+     * Cheaper than the other source, because the listing already carries the `.msch`:
+     * there is never a third wave to go and fetch the schematic itself.
+     */
+    public function fetchMany(array $listed): array
+    {
+        $details = [];
+        foreach ($this->http->all(array_map(
+            fn ($id) => self::BASE."/schematics/{$id}.json",
+            array_combine(array_keys($listed), array_keys($listed))
+        )) as $id => $answer) {
+            $found = $answer?->json();
+            $details[$id] = is_array($found) ? $found : [];
+        }
+
+        $missing = [];
+        foreach ($details as $detail) {
+            $who = $detail['creator_id'] ?? null;
+            if (is_string($who) && $who !== '' && ! array_key_exists($who, $this->names)) {
+                $missing[$who] = self::BASE."/user/{$who}.json";
+            }
+        }
+        foreach ($this->http->all($missing) as $who => $answer) {
+            $user = $answer?->json();
+            $this->names[$who] = is_array($user) ? $this->orNothing($user['username'] ?? null) : null;
+        }
+
+        $rows = [];
+        foreach ($listed as $id => $one) {
+            $detail = $details[$id] ?? [];
+            // The listing already carries the schematic, so an entry whose detail is gone
+            // is still worth taking: the `.msch` is the thing, the rest is what is said
+            // about it.
+            $code = (string) ($detail['text'] ?? $one['text'] ?? '');
+            $rows[$id] = $code === '' ? null : [
+                'name' => (string) ($detail['name'] ?? $one['name'] ?? ''),
+                'description' => $this->orNothing($detail['description'] ?? null),
+                'code' => $code,
+                'author' => $this->names[$detail['creator_id'] ?? ''] ?? null,
+                'meta' => array_diff_key($detail, ['text' => null]),
+            ];
+        }
+
+        return $rows;
+    }
+
     private function nameOf(?string $who): ?string
     {
         if ($who === null || $who === '') {

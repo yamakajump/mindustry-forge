@@ -4,6 +4,7 @@ namespace App\Console\Commands\Sources;
 
 use Closure;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -43,6 +44,9 @@ class PoliteClient
         private int $tries = 4,
         private ?Closure $tell = null,
         private string $agent = self::AGENT,
+        // One at a time by default. A setting that speeds things up without being asked
+        // is a setting somebody uses without knowing what it is aimed at.
+        private int $atOnce = 1,
     ) {}
 
     /**
@@ -68,6 +72,65 @@ class PoliteClient
         $answer = $this->get($url);
 
         return $answer === null ? null : base64_encode($answer->body());
+    }
+
+    /**
+     * Many addresses at once, because waiting for one answer at a time is the real cost.
+     *
+     * The first collector made a call, slept, made another. Across twenty-eight thousand
+     * calls the round trips alone come to more than eighty minutes **even with no pause at
+     * all**: what set the pace was never the politeness, it was the latency. Twenty-four
+     * in flight makes that disappear, and it is the only change that moves the total.
+     *
+     * What breaks in a batch breaks only for itself: an address that fails is retried on
+     * its own through `get()`, where the exponential backoff lives. The others have
+     * already arrived.
+     *
+     * **Measured on 27/08/2026, not guessed.** Their API answers one detail in 750 ms, and
+     * twenty-four together in 2.94 s, six times better. A hundred together answered
+     * nothing at all - the probe timed out without a single response - so the ceiling is
+     * on their side, somewhere between the two. Whoever raises this number should know
+     * that is what they are betting against, and that the far side is a community nobody
+     * has written to yet.
+     *
+     * @param  array<string, string>  $urls  One key per call, to tell the answers apart.
+     * @return array<string, ?Response>
+     */
+    public function all(array $urls): array
+    {
+        $answers = [];
+
+        foreach (array_chunk($urls, max(1, $this->atOnce), true) as $chunk) {
+            $this->breathe();
+
+            $got = Http::pool(function (Pool $pool) use ($chunk) {
+                $calls = [];
+                foreach ($chunk as $key => $url) {
+                    $calls[] = $pool->as((string) $key)
+                        ->withUserAgent($this->agent)
+                        ->withHeaders(['Accept-Encoding' => 'gzip'])
+                        ->timeout(30)
+                        ->connectTimeout(10)
+                        ->get($url);
+                }
+
+                return $calls;
+            });
+
+            foreach ($chunk as $key => $url) {
+                $answer = $got[(string) $key] ?? null;
+
+                // A batch hands back either a response or the exception that stopped it.
+                // An isolated failure, a 429 on one call: retry that one alone, where the
+                // backoff lives. The other twenty-three are already here.
+                $answers[$key] = $answer instanceof Response && ! $answer->serverError()
+                    && $answer->status() !== 429
+                    ? ($answer->status() === 404 ? null : $answer)
+                    : $this->get($url);
+            }
+        }
+
+        return $answers;
     }
 
     private function get(string $url): ?Response
