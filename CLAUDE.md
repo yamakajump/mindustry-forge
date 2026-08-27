@@ -34,16 +34,20 @@ le jeu sur ce que le joueur a collé.
 ## 🚀 Commandes
 
 ```bash
-# L'analyseur (235 tests, c'est le coeur)
+# L'analyseur, le coeur du depot
 npm test
 
-# Le banc, qui fait tourner le vrai jeu
+# Le banc, qui tient les chiffres contre le vrai jeu
+npm run oracle             # rejoue chaque scenario enregistre, ecart attendu 0,00 %
+npm run oracle:measure     # re-mesure dans un vrai serveur, demande le jar
+
+# Les formats de fichier seulement. Ne lance aucun jeu, malgre son nom.
 python -m pytest tests/ -q
 
 # L'application Laravel
 cd site
 vendor/bin/pint            # style (--test pour vérifier sans corriger)
-php artisan test           # 22 tests Pest, base SQLite en mémoire
+php artisan test           # tests Pest, base SQLite en mémoire
 php artisan serve --port=8770
 
 # Déploiement (demander avant, c'est la prod)
