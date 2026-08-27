@@ -52,7 +52,11 @@ KEEP = ("size", "role", "items_per_second", "craft_time", "input", "output",
         # Les foreuses d'Erekir, qui mangent le mur en face plutot que le sol.
         "wall", "wall_ore", "drill_time", "optional_boost_intensity",
         "drill_multipliers", "blocked_items", "boost_liquid", "item_boost",
-        "liquid_boost", "item_use_time")
+        "liquid_boost", "item_use_time",
+        # Les charges utiles : une unite ou un bloc transporte comme cargaison.
+        "move_time", "payload_limit", "payload_speed", "payload_rotate_speed",
+        "outputs_payload", "accepts_payload", "construct_time", "upgrades",
+        "capacities")
 
 
 def main() -> None:

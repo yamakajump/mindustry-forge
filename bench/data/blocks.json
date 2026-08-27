@@ -8552,9 +8552,9 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
+        "oil": 1,
         "slag": 1,
         "water": 1,
-        "oil": 1,
         "cryofluid": 1
       },
       "input_liquid":{}
@@ -8814,9 +8814,9 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
+        "oil": 0.4,
         "slag": 0.4,
         "water": 0.4,
-        "oil": 0.4,
         "cryofluid": 0.4
       },
       "input_liquid":{}
@@ -9511,6 +9511,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 360,
       "cost":{
         "copper": 50,
@@ -9564,6 +9567,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 360,
       "cost":{
         "copper": 60,
@@ -9606,6 +9612,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 360,
       "cost":{
         "copper": 150,
@@ -9653,6 +9662,9 @@
         "silicon"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 360,
       "cost":{
         "copper": 200,
@@ -9660,7 +9672,43 @@
         "silicon": 90
       },
       "power": 180,
-      "role": "sink",
+      "role": "reconstructor",
+      "carries": "payload",
+      "construct_time": 600,
+      "upgrades": [
+        {
+          "from": "nova",
+          "to": "pulsar"
+        },
+        {
+          "from": "dagger",
+          "to": "mace"
+        },
+        {
+          "from": "crawler",
+          "to": "atrax"
+        },
+        {
+          "from": "flare",
+          "to": "horizon"
+        },
+        {
+          "from": "mono",
+          "to": "poly"
+        },
+        {
+          "from": "risso",
+          "to": "minke"
+        },
+        {
+          "from": "retusa",
+          "to": "oxynoe"
+        }
+      ],
+      "capacities":{
+        "graphite": 80,
+        "silicon": 80
+      },
       "input":{
         "silicon": 40,
         "graphite": 40
@@ -9685,6 +9733,9 @@
         "silicon"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 1200,
       "cost":{
         "lead": 650,
@@ -9693,7 +9744,44 @@
         "silicon": 450
       },
       "power": 360,
-      "role": "sink",
+      "role": "reconstructor",
+      "carries": "payload",
+      "construct_time": 1800,
+      "upgrades": [
+        {
+          "from": "horizon",
+          "to": "zenith"
+        },
+        {
+          "from": "mace",
+          "to": "fortress"
+        },
+        {
+          "from": "poly",
+          "to": "mega"
+        },
+        {
+          "from": "minke",
+          "to": "bryde"
+        },
+        {
+          "from": "pulsar",
+          "to": "quasar"
+        },
+        {
+          "from": "atrax",
+          "to": "spiroct"
+        },
+        {
+          "from": "oxynoe",
+          "to": "cyerce"
+        }
+      ],
+      "capacities":{
+        "metaglass": 80,
+        "titanium": 160,
+        "silicon": 260
+      },
       "input":{
         "silicon": 130,
         "titanium": 80,
@@ -9722,6 +9810,9 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 3035,
       "cost":{
         "lead": 2000,
@@ -9732,7 +9823,44 @@
         "phase-fabric": 600
       },
       "power": 780,
-      "role": "sink",
+      "role": "reconstructor",
+      "carries": "payload",
+      "construct_time": 5400,
+      "upgrades": [
+        {
+          "from": "zenith",
+          "to": "antumbra"
+        },
+        {
+          "from": "spiroct",
+          "to": "arkyid"
+        },
+        {
+          "from": "fortress",
+          "to": "scepter"
+        },
+        {
+          "from": "bryde",
+          "to": "sei"
+        },
+        {
+          "from": "mega",
+          "to": "quad"
+        },
+        {
+          "from": "quasar",
+          "to": "vela"
+        },
+        {
+          "from": "cyerce",
+          "to": "aegires"
+        }
+      ],
+      "capacities":{
+        "titanium": 1500,
+        "silicon": 1700,
+        "plastanium": 1300
+      },
       "input":{
         "silicon": 850,
         "titanium": 750,
@@ -9764,6 +9892,9 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 5830,
       "cost":{
         "lead": 4000,
@@ -9774,7 +9905,45 @@
         "surge-alloy": 800
       },
       "power": 1500,
-      "role": "sink",
+      "role": "reconstructor",
+      "carries": "payload",
+      "construct_time": 14400,
+      "upgrades": [
+        {
+          "from": "antumbra",
+          "to": "eclipse"
+        },
+        {
+          "from": "arkyid",
+          "to": "toxopid"
+        },
+        {
+          "from": "scepter",
+          "to": "reign"
+        },
+        {
+          "from": "sei",
+          "to": "omura"
+        },
+        {
+          "from": "quad",
+          "to": "oct"
+        },
+        {
+          "from": "vela",
+          "to": "corvus"
+        },
+        {
+          "from": "aegires",
+          "to": "navanax"
+        }
+      ],
+      "capacities":{
+        "silicon": 2000,
+        "plastanium": 1200,
+        "phase-fabric": 700,
+        "surge-alloy": 1000
+      },
       "input":{
         "silicon": 1000,
         "plastanium": 600,
@@ -9846,6 +10015,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 575,
       "cost":{
         "silicon": 200,
@@ -9879,6 +10051,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 575,
       "cost":{
         "silicon": 250,
@@ -9912,6 +10087,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 860,
       "cost":{
         "silicon": 200,
@@ -9953,6 +10131,9 @@
         "hydrogen"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 860,
       "cost":{
         "silicon": 100,
@@ -9960,7 +10141,19 @@
         "tungsten": 80
       },
       "power": 180,
-      "role": "sink",
+      "role": "reconstructor",
+      "carries": "payload",
+      "construct_time": 1800,
+      "upgrades": [
+        {
+          "from": "stell",
+          "to": "locus"
+        }
+      ],
+      "capacities":{
+        "silicon": 80,
+        "tungsten": 60
+      },
       "input":{
         "silicon": 40,
         "tungsten": 30
@@ -9989,6 +10182,9 @@
         "hydrogen"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 1040,
       "cost":{
         "silicon": 150,
@@ -9997,7 +10193,19 @@
         "oxide": 15
       },
       "power": 150,
-      "role": "sink",
+      "role": "reconstructor",
+      "carries": "payload",
+      "construct_time": 3000,
+      "upgrades": [
+        {
+          "from": "elude",
+          "to": "avert"
+        }
+      ],
+      "capacities":{
+        "silicon": 120,
+        "tungsten": 80
+      },
       "input":{
         "silicon": 60,
         "tungsten": 40
@@ -10026,6 +10234,9 @@
         "hydrogen"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 860,
       "cost":{
         "silicon": 150,
@@ -10033,7 +10244,19 @@
         "tungsten": 175
       },
       "power": 150,
-      "role": "sink",
+      "role": "reconstructor",
+      "carries": "payload",
+      "construct_time": 2700,
+      "upgrades": [
+        {
+          "from": "merui",
+          "to": "cleroi"
+        }
+      ],
+      "capacities":{
+        "silicon": 100,
+        "tungsten": 80
+      },
       "input":{
         "silicon": 50,
         "tungsten": 40
@@ -10062,6 +10285,9 @@
         "nitrogen"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 2500,
       "cost":{
         "thorium": 250,
@@ -10070,7 +10296,27 @@
         "oxide": 200
       },
       "power": 270,
-      "role": "sink",
+      "role": "reconstructor",
+      "carries": "payload",
+      "construct_time": 3600,
+      "upgrades": [
+        {
+          "from": "locus",
+          "to": "precept"
+        },
+        {
+          "from": "cleroi",
+          "to": "anthicus"
+        },
+        {
+          "from": "avert",
+          "to": "obviate"
+        }
+      ],
+      "capacities":{
+        "thorium": 160,
+        "silicon": 200
+      },
       "input":{
         "thorium": 80,
         "silicon": 100
@@ -10095,6 +10341,9 @@
         "cyanogen"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "accepts_payload": true,
       "health": 2800,
       "cost":{
         "thorium": 500,
@@ -10125,6 +10374,9 @@
         "cyanogen"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "accepts_payload": true,
       "health": 3600,
       "cost":{
         "thorium": 400,
@@ -10156,6 +10408,9 @@
         "cyanogen"
       ],
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "accepts_payload": true,
       "health": 3600,
       "cost":{
         "thorium": 600,
@@ -10184,6 +10439,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "accepts_payload": true,
       "health": 3050,
       "cost":{
         "thorium": 500,
@@ -10234,13 +10492,18 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "outputs_payload": true,
       "health": 360,
       "cost":{
         "copper": 10,
         "graphite": 10
       },
       "power": 0,
-      "no_overdrive": true
+      "no_overdrive": true,
+      "role": "payload-conveyor",
+      "carries": "payload",
+      "move_time": 45,
+      "payload_limit": 3
     },
     "payload-router":{
       "name": "payload-router",
@@ -10255,13 +10518,18 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "outputs_payload": true,
       "health": 360,
       "cost":{
         "copper": 10,
         "graphite": 15
       },
       "power": 0,
-      "no_overdrive": true
+      "no_overdrive": true,
+      "role": "payload-router",
+      "carries": "payload",
+      "move_time": 45,
+      "payload_limit": 3
     },
     "reinforced-payload-conveyor":{
       "name": "reinforced-payload-conveyor",
@@ -10276,12 +10544,17 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "outputs_payload": true,
       "health": 800,
       "cost":{
         "tungsten": 10
       },
       "power": 0,
-      "no_overdrive": true
+      "no_overdrive": true,
+      "role": "payload-conveyor",
+      "carries": "payload",
+      "move_time": 35,
+      "payload_limit": 3
     },
     "reinforced-payload-router":{
       "name": "reinforced-payload-router",
@@ -10296,12 +10569,17 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "outputs_payload": true,
       "health": 800,
       "cost":{
         "tungsten": 15
       },
       "power": 0,
-      "no_overdrive": true
+      "no_overdrive": true,
+      "role": "payload-router",
+      "carries": "payload",
+      "move_time": 35,
+      "payload_limit": 3
     },
     "payload-mass-driver":{
       "name": "payload-mass-driver",
@@ -10316,6 +10594,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 645,
       "cost":{
         "graphite": 20,
@@ -10337,6 +10618,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 2550,
       "cost":{
         "graphite": 100,
@@ -10360,6 +10644,9 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 1,
+      "payload_rotate_speed": 5,
+      "accepts_payload": true,
       "health": 755,
       "cost":{
         "graphite": 80,
@@ -10382,6 +10669,9 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 1,
+      "payload_rotate_speed": 5,
+      "accepts_payload": true,
       "health": 3195,
       "cost":{
         "silicon": 250,
@@ -10404,6 +10694,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 860,
       "cost":{
         "silicon": 50,
@@ -10428,6 +10721,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 2500,
       "cost":{
         "thorium": 80,
@@ -10453,6 +10749,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 645,
       "cost":{
         "graphite": 80,
@@ -10477,6 +10776,9 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 645,
       "cost":{
         "graphite": 140,
@@ -10615,9 +10917,14 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 0.7,
+      "payload_rotate_speed": 5,
+      "outputs_payload": true,
       "health": 1000,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "role": "payload-source",
+      "carries": "payload"
     },
     "payload-void":{
       "name": "payload-void",
@@ -10632,9 +10939,14 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "payload_speed": 1.2,
+      "payload_rotate_speed": 5,
+      "accepts_payload": true,
       "health": 1000,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "role": "payload-void",
+      "carries": "payload"
     },
     "heat-source":{
       "name": "heat-source",

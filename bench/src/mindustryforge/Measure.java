@@ -304,6 +304,27 @@ public class Measure implements ApplicationListener {
         }
         root.put("batteries", charges);
 
+        /* What each block is carrying as cargo.
+
+           A payload is neither an item nor a liquid: it never reaches a container and it
+           never shows in a pool, so without this the whole payload family is measurable
+           only by the side effects of what it consumes. Where a unit has got to along a
+           line of payload conveyors is the measurement. */
+        Jval carried = Jval.newArray();
+        for (Tile tile : Vars.world.tiles) {
+            if (tile.build == null || tile.build.tile != tile) continue;
+            mindustry.world.blocks.payloads.Payload held = tile.build.getPayload();
+            if (held == null) continue;
+
+            Jval one = Jval.newObject();
+            one.put("block", tile.block().name);
+            one.put("x", tile.x);
+            one.put("y", tile.y);
+            one.put("payload", held.content().name);
+            carried.asArray().add(one);
+        }
+        root.put("payloads", carried);
+
         /* And the units standing on the map, which is the only way to measure a factory:
            what it makes is not an item and never reaches a container. */
         Jval units = Jval.newObject();

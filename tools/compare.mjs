@@ -36,7 +36,7 @@ const { attributeOf, beamOf, dryTilesOf, wallSumOf, yieldOf } = await import(
 const MACHINE_ROLES = new Set([
   "crafter", "unit-factory", "generator", "drill", "separator",
   "mender", "projector", "shield", "turret-idle", "laser-turret",
-  "beam-drill", "wall-crafter", "burst-drill",
+  "beam-drill", "wall-crafter", "burst-drill", "reconstructor",
 ]);
 
 export const known = useCatalogue(JSON.parse(
@@ -174,6 +174,10 @@ export async function ported(code, ticks, ground = [], stock = []) {
     .filter((build) => build.role === "turret" && (build.state.ammo || 0) > 0)
     .map((build) => ({ x: build.x, y: build.y, ammo: build.state.ammo }));
 
+  const carried = world.builds
+    .filter((build) => build.state.payload)
+    .map((build) => ({ x: build.x, y: build.y, payload: build.state.payload }));
+
   const units = {};
   for (const build of world.builds) {
     const made = build.state.made || 0;
@@ -188,6 +192,7 @@ export async function ported(code, ticks, ground = [], stock = []) {
     batteries: lineUp(batteries, ["charge"]),
     stocks: lineUp(stocks, ["items"]),
     ammo: lineUp(ammo, ["ammo"]),
+    payloads: lineUp(carried, ["payload"]),
     units,
   };
 }
@@ -208,6 +213,7 @@ export function measured(name) {
     ammo: lineUp((raw.running || [])
       .filter((one) => (one.ammo || 0) > 0)
       .map((one) => ({ x: one.x, y: one.y, ammo: one.ammo })), ["ammo"]),
+    payloads: lineUp(raw.payloads || [], ["payload"]),
     units: raw.units || {},
   };
 }
@@ -312,6 +318,18 @@ export function differences(mine, theirs) {
         out.push({ what: `${here.at} retient ${item}`, mine: a, theirs: b,
                    gap: b ? Math.abs(a - b) / b : (a ? 1 : 0) });
       }
+    }
+  }
+
+  if (mine.payloads.length !== theirs.payloads.length) {
+    out.push({ what: "charges portees", mine: mine.payloads.length,
+               theirs: theirs.payloads.length, gap: 1 });
+  } else {
+    for (let i = 0; i < mine.payloads.length; i++) {
+      const a = mine.payloads[i];
+      const b = theirs.payloads[i];
+      out.push({ what: `${a.at} porte`, mine: a.payload, theirs: b.payload,
+                 gap: a.payload === b.payload ? 0 : 1 });
     }
   }
 
