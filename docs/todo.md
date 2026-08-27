@@ -1,8 +1,65 @@
 # Ce qu'il reste à faire
 
-Tenu ici plutôt que dans un gestionnaire de tâches, parce que la session n'en a pas et
-qu'une liste que Corentin ne peut pas lire ne sert à rien. Une ligne par chose, dans
-l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
+## Revue de Corentin du 27/08/2026
+
+Passage complet du site en conditions reelles, captures a l'appui. Douze points, tous
+constates sur la production. Chacun porte la voie qui le tient et son etat.
+
+Ce qui suit est ce qu'il a dit, pas une reformulation adoucie : un defaut requalifie en
+« amelioration » est un defaut qu'on ne repare pas.
+
+### La place de marche
+
+1. **Le creatif se melange au normal.** « Les trucs creatifs faut que ca soit a part, ils
+   ne sont pas utilisables dans un contexte normal, donc ca nique tout. » La premiere page
+   du classement porte `Def Mega Base (sandbox)`, `Sandbox defance base`, `Fps Droper`,
+   `Server lagger`, `useless box`. Dix blocs `sandboxOnly` dans `blocks.json` les
+   designent mecaniquement, sans jamais lire un nom.
+   *Bloque par le point 2.* Voie moteur.
+
+2. **`schematic_blocks` est vide : 0 ligne sur 15 533.** Mesure sur la production. PHP ne
+   decode pas un `.msch`, l'analyse ne sort aucun inventaire par bloc, donc rien ne remplit
+   la table. C'est le prealable de trois chantiers : separer le creatif, afficher le cout de
+   construction, chercher par bloc contenu. Voie moteur.
+
+3. **Les plans sont aplatis.** `bouncy-v2` est en 172x135 et se dessine en portrait etroit :
+   l'echelle est derivee de la hauteur seule au lieu de `min(l/L, h/H)`. Voie apercu.
+
+4. **Certains debordent de leur cadre.** `Micro city`, 1 421 blocs, empiete sur les tuiles
+   voisines et casse la grille. Voie apercu.
+
+5. **Une grande zone vide sous le plan** sur la fiche d'une schematique. Le panneau garde une
+   hauteur pensee pour un plan carre ; `Micro city` est en 66x34. Voie apercu.
+
+6. **Le cout de construction n'est nulle part.** Le site concurrent l'affiche en icones avec
+   les comptes, energie comprise. C'est la premiere question qu'on se pose devant une
+   schematique : est-ce que j'ai de quoi la poser. *Bloque par le point 2.* Voie DA.
+
+### Les outils
+
+7. **Le planificateur n'a aucune icone.** « Il faut rajouter tous les assets lies a ce que tu
+   nommes, ca apporte beaucoup de valeur visuelle. » Pire que du texte nu : `blast-drill`,
+   `pneumatic-drill`, `silicon-smelter` sont des identifiants internes anglais montres a un
+   joueur francophone. Deux defauts par ligne, le nom et l'icone. Voie DA.
+
+8. **Le comparateur se pilote en tapant des identifiants.** « Pas du tout bien pense pour
+   l'utilisateur. » Il faut choisir une schematique, pas recopier `y00htikdfh`. Voie vitrine.
+
+9. **L'editeur de logique n'est pas intuitif.** Trop de boutons, la section des liens ne se
+   comprend pas, et il impose de fabriquer une schematique de processeur alors qu'on veut
+   souvent juste copier du code. Plusieurs affichages a prevoir. Voie logique.
+
+10. **Un editeur a zones de travail**, sur le modele de `mindustry-tool.com` : palette a
+    gauche, toile a noeuds au centre, blocs relies. A evaluer, pas a copier. Voie logique.
+
+### Partout
+
+11. **La barre de navigation change de page en page**, et la favicone change sur le
+    planificateur. Une barre, un gabarit, toutes les pages. Voie DA.
+
+12. **L'accueil n'accueille pas.** Un champ, quatre boutons, et deux mille pixels de vide
+    dessous. Aucun appel a l'action, rien qui montre ce que l'outil sait faire ni qu'un
+    catalogue de quinze mille schematiques existe derriere. Voie accueil.
 
 ## À faire
 
