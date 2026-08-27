@@ -30,8 +30,33 @@
       @endforeach
     </select>
 
+    <label class="lead" for="bloc" style="margin:0">{{ __('vitrine.bloc.label') }}</label>
+    <input name="bloc" id="bloc" list="blocs" value="{{ $holds }}"
+           placeholder="{{ __('vitrine.bloc.exemple') }}" autocomplete="off">
+    {{-- Les noms proposes viennent de ce que le catalogue contient vraiment, pas d'une
+         liste tapee : un joueur choisit un nom qui existe au lieu de deviner comment il
+         s'ecrit. Plafonne a deux cents, ce qui est dit dans le controleur plutot que
+         laisse a decouvrir. --}}
+    <datalist id="blocs">
+      @foreach($blocks as $block)
+        <option value="{{ $block }}"></option>
+      @endforeach
+    </datalist>
+
     <button class="primary" type="submit">Chercher</button>
   </div>
+
+  @if($holds !== '')
+    <p class="hint-line">{{ __('vitrine.bloc.filtrees') }}
+      <strong>{{ $holds }}</strong>.
+      <a href="{{ request()->fullUrlWithQuery(['bloc' => null]) }}">{{
+        __('vitrine.bloc.enlever') }}</a></p>
+  @elseif(request()->query('bloc'))
+    {{-- Un nom qui n'est pas un bloc ne filtre rien, et le dire vaut mieux que rendre la
+         liste entiere comme si de rien n'etait : une faute de frappe renverrait sinon une
+         page plausible et fausse. --}}
+    <p class="hint-line">{{ __('vitrine.bloc.inconnu') }}</p>
+  @endif
 
   {{-- Sans item choisi, il n'y a rien contre quoi mesurer un rendement : classer
        quarante graphite/min devant vingt-cinq silicium/min reviendrait a decreter qu'un

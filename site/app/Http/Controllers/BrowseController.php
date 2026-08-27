@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Schematic;
 use App\Models\SchematicItem;
+use App\Services\BlockCatalogue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -75,9 +76,28 @@ class BrowseController extends Controller
            ranking ahead of every real factory. */
         $creative = $request->query('creatif') === 'oui';
 
+        /* Which block it has to contain. The question a player actually asks - "show me
+           what people build with a thorium reactor" - and the one the site could not answer
+           at all until `schematic_blocks` stopped being empty.
+
+           Matched against the catalogue rather than taken on trust: a name that is not a
+           block returns nothing, and the page says so, where a free-text `LIKE` would have
+           returned a plausible-looking wrong list for a typo. */
+        $holds = (string) $request->query('bloc', '');
+        if ($holds !== '' && ! BlockCatalogue::has($holds)) {
+            $holds = '';
+        }
+
         $query = Schematic::query()->with('user')->listed();
         if (! $creative) {
             $query->ordinary();
+        }
+        if ($holds !== '') {
+            $query->whereExists(fn ($sub) => $sub
+                ->selectRaw('1')
+                ->from('schematic_blocks')
+                ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
+                ->where('schematic_blocks.block', $holds));
         }
 
         if ($makes !== '') {
@@ -139,6 +159,10 @@ class BrowseController extends Controller
             // Offered rather than typed: the analysis already knows what exists, so a
             // player picks from what is actually there instead of guessing a spelling.
             'items' => $this->itemsOnOffer(),
+            'holds' => $holds,
+            // Offered from what is actually in the catalogue, same reason as the items: a
+            // player picks a name that exists instead of guessing how it is spelled.
+            'blocks' => $this->blocksOnOffer(),
             'powerKey' => SchematicItem::POWER,
         ]);
     }
@@ -152,6 +176,27 @@ class BrowseController extends Controller
      * twenty. That was briefly patched with a ten minute cache; indexing what a schematic
      * makes removed the reason for the cache along with the cost.
      */
+    /**
+     * Every block a public schematic is built from, commonest first.
+     *
+     * Capped at two hundred: the list goes into a `datalist` on every render of the page,
+     * and the whole catalogue would be four hundred names of markup nobody scrolls past
+     * the first dozen of. The cap is a display decision and it is stated rather than left
+     * to be discovered - a search for a block outside it still works, it simply is not
+     * suggested.
+     */
+    private function blocksOnOffer(): array
+    {
+        return DB::table('schematic_blocks')
+            ->join('schematics', 'schematics.id', '=', 'schematic_blocks.schematic_id')
+            ->where('schematics.visibility', Schematic::PUBLIC)
+            ->groupBy('schematic_blocks.block')
+            ->orderByRaw('count(*) desc')
+            ->limit(200)
+            ->pluck('schematic_blocks.block')
+            ->all();
+    }
+
     private function itemsOnOffer(): array
     {
         return SchematicItem::query()
