@@ -47,7 +47,7 @@
   <div>
     <h1 class="title">{{ $schematic->name }}</h1>
     <p class="sub">
-      par {{ $schematic->user->name }} &middot;
+      par {{ $schematic->credit() }} &middot;
       {{ $schematic->width }}x{{ $schematic->height }} &middot;
       {{ $schematic->blocks }} blocs &middot;
       {{ $schematic->views }} vues
@@ -56,6 +56,43 @@
         sur un vrai serveur">chiffres non verifies</span>
       @endunless
     </p>
+
+    {{-- Where it came from, said plainly on the page rather than kept in the database.
+         Most of this catalogue was posted somewhere else by somebody else, and a site that
+         hides that is passing off other people's work as its own listing. It also sets
+         expectations honestly: nothing here was checked by hand, the analysis is this
+         engine's reading of a string it was handed, and a schematic can perfectly well be
+         broken, half-finished or out of date at the source. Better said here than
+         discovered in-game. --}}
+    @if($schematic->imported())
+      <div class="card notice">
+        <h2>Schematique importee</h2>
+        <p>
+          Recuperee sur
+          @if($schematic->sourceUrl())
+            <a href="{{ $schematic->sourceUrl() }}" rel="noopener nofollow"
+               target="_blank">{{ $schematic->sourceName() ?? $schematic->source }}</a>,
+          @else
+            {{ $schematic->sourceName() ?? $schematic->source }},
+          @endif
+          ou {{ $schematic->credit() }} l'a publiee. Elle ne vient pas d'ici et
+          personne ne l'a relue&nbsp;: elle peut etre incomplete, cassee, ou faite pour
+          une version du jeu qui n'est plus la notre.
+        </p>
+        <p>
+          Les chiffres ci-dessous sont ce que l'analyse en deduit, pas une promesse de
+          l'auteur.
+          @if($schematic->verified)
+            Celui-la a ete rejoue sur un vrai serveur.
+          @else
+            Ils n'ont pas encore ete rejoues sur un vrai serveur.
+          @endif
+        </p>
+        @if($schematic->fetched_at)
+          <p class="hint-line">Recuperee le {{ $schematic->fetched_at->format('d/m/Y') }}.</p>
+        @endif
+      </div>
+    @endif
 
     @if($schematic->description)
       <p class="desc">{{ $schematic->description }}</p>

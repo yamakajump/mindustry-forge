@@ -56,7 +56,15 @@
           @foreach(array_slice($schematic->produces ?? [], 0, 2, true) as $item => $itemRate)
             {{ number_format($itemRate, 0, ',', ' ') }} {{ $item }}/min &middot;
           @endforeach
-          {{ $schematic->blocks }} blocs &middot; {{ $schematic->user->name }}
+          {{ $schematic->blocks }} blocs &middot; {{ $schematic->credit() }}
+          {{-- Said in the list too, not only on the page. Somebody scrolling a hundred
+               tiles should be able to tell what this site collected from what its members
+               made, without opening anything. --}}
+          @if($schematic->imported())
+            &middot; <span class="from"
+              title="Importee depuis {{ $schematic->sourceName() ?? $schematic->source }},
+              non relue">importee</span>
+          @endif
         </p>
       </article>
     @endforeach
