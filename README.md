@@ -98,3 +98,22 @@ curl -o C:/php/extras/cacert.pem https://curl.se/ca/cacert.pem
 curl.cainfo = "C:\php\extras\cacert.pem"
 openssl.cafile = "C:\php\extras\cacert.pem"
 ```
+
+## Licence
+
+AGPL-3.0. Le texte complet est dans [`LICENSE`](LICENSE).
+
+La GPL aurait suffi pour un logiciel qu'on installe : elle se declenche a la
+distribution d'un binaire. Ici le produit est un service web, et personne ne
+distribue rien. Sous GPL, n'importe qui pourrait donc heberger une version fermee
+de ce moteur, amelioree dans son coin, sans jamais rien rendre. L'AGPL ajoute la
+seule clause qui compte pour ce projet : faire tourner le code sur un serveur
+accessible au public oblige a en publier la source.
+
+Ce qui est mis en commun, c'est le moteur d'analyse et le banc qui le verifie.
+C'est le travail difficile, et c'est celui dont la communaute Mindustry n'a
+aucune autre copie.
+
+Les schematiques ne sont pas couvertes par cette licence. Elles appartiennent a
+leurs auteurs, et celles qui ont ete collectees ailleurs portent leur origine en
+base et sur leur page.

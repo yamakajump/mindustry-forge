@@ -1,10 +1,10 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "codwingz/mindustry-forge",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Le site de Mindustry Forge : garder une schematique, la publier, et chercher par ce qu elle produit.",
     "keywords": ["laravel", "framework"],
-    "license": "MIT",
+    "license": "AGPL-3.0-or-later",
     "require": {
         "php": "^8.3",
         "doctrine/dbal": "^4.4",
