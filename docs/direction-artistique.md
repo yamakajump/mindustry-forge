@@ -181,6 +181,13 @@ et que deux jaunes qui se disputent valent moins qu'un seul.
   nulle part**. `layout.blade.php` et `index.html` sont tenus par une autre voie pendant
   que ce document s'écrit.
 - **Le bloc `:root`** ci-dessus n'est pas appliqué, pour la même raison.
-- **La carte sociale par schématique** : la page pousse aujourd'hui le rendu brut du plan
-  en `og:image`. Ça fonctionne, mais Discord le letterbox et la vignette n'a ni titre ni
-  marque. Une carte composée serait meilleure ; c'est du code serveur, pas un asset.
+**La carte sociale par schématique est faite**, elle n'est plus dans cette liste :
+`app/Services/SocialCard.php` la compose avec GD, `SocialCardController` la sert sur
+`/s/{slug}/carte.jpg` et la garde sur disque. Elle vaut aussi pour les schématiques sans
+aperçu, ce qui sera le cas de tout ce qui viendra des deux catalogues à ingérer.
+
+Deux fichiers en découlent, tous deux générés par `build_brand.py` :
+`resources/brand/mark-96.png` (le signe sur fond transparent, que PHP colle au lieu de
+redessiner ses chemins) et `resources/fonts/forge.ttf` (la même police, sortie de son
+enveloppe WOFF2, parce que FreeType ne lit pas le WOFF2). Aucun des deux n'est une
+deuxième source : ce sont des dérivés, et ils se régénèrent avec le reste.
