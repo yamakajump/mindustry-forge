@@ -1,0 +1,1 @@
+ore-beryllium@1,0 ore-beryllium@1,1 ore-beryllium@1,2 ore-beryllium@1,3 ore-beryllium@2,0 ore-beryllium@2,1 ore-beryllium@2,2 ore-beryllium@2,3 ore-beryllium@3,0 ore-beryllium@3,1 ore-beryllium@3,2 ore-beryllium@3,3 ore-beryllium@4,0 ore-beryllium@4,1 ore-beryllium@4,2 ore-beryllium@4,3
