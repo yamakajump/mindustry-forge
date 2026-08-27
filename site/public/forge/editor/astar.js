@@ -1,25 +1,24 @@
 /**
- * Le tracé qui contourne, transcrit de `Placement.astar` de la v159.7.
+ * The route that goes around, transcribed from `Placement.astar` in v159.7.
  *
- * Quand on tient un convoyeur et qu'on demande le placement diagonal, le jeu ne trace pas
- * une ligne : il cherche un chemin. Une usine au milieu du passage se contourne au lieu de
- * se faire écraser, et c'est ce qui permet de tirer une bande d'un bout à l'autre d'une
- * base sans la démonter.
+ * Holding a conveyor and asking for diagonal placement does not draw a line in the game: it
+ * searches for a path. A factory in the way is walked around instead of being flattened,
+ * and that is what lets a belt be pulled across a base without taking the base apart.
  *
- * Trois heuristiques, et ce sont elles tout le comportement :
+ * Three heuristics, and they are the whole of the behaviour:
  *
- * | Ce qu'on traverse | Coût |
+ * | What is crossed | Cost |
  * |---|---|
- * | une case libre, dans le même sens | 1 |
- * | une case libre, mais qui fait tourner | 8 |
- * | une case occupée ou un liquide profond | 20 |
+ * | a free tile, carrying on the same way | 1 |
+ * | a free tile, but one that turns | 8 |
+ * | an occupied tile or deep liquid | 20 |
  *
- * Le virage à 8 est le détail qui compte : sans lui, l'A\* rend un escalier en marches d'un
- * pas, joli sur le papier et catastrophique en convoyeurs, chaque virage coûtant un objet
- * de débit. Avec lui, le chemin va tout droit aussi longtemps qu'il peut.
+ * The turn costing 8 is the detail that matters: without it the A\* returns a staircase of
+ * single steps, pretty on paper and catastrophic in conveyors, since every turn costs an
+ * item of throughput. With it, the path runs straight for as long as it can.
  *
- * La limite de mille nœuds est celle du jeu, et le repli aussi : sans chemin trouvé, on
- * rend `null` et l'appelant retombe sur la ligne droite.
+ * The thousand-node limit is the game's, and so is the fallback: with no path found it
+ * returns `null` and the caller drops back to the straight line.
  */
 
 const NODE_LIMIT = 1000;
@@ -28,10 +27,10 @@ const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 const key = (x, y) => `${x},${y}`;
 
 /**
- * `tileHeuristic` : ce que coûte d'entrer dans `other` en venant de `from`.
+ * `tileHeuristic`: what it costs to enter `other` coming from `from`.
  *
- * `blocked(x, y)` dit qu'une case refuse le bloc, ce qui recouvre le
- * `!canReplace && !alwaysReplace` du jeu et son `floor().isDeep()`.
+ * `blocked(x, y)` says a tile refuses the block, which covers the game's
+ * `!canReplace && !alwaysReplace` and its `floor().isDeep()`.
  */
 function stepCost(from, other, parents, blocked) {
   if (blocked(other.x, other.y)) return 20;
@@ -47,11 +46,11 @@ function stepCost(from, other, parents, blocked) {
 const distance = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
 /**
- * Le chemin de `from` à `to`, ou `null` si le calcul n'en trouve pas.
+ * The path from `from` to `to`, or `null` when the search finds none.
  *
- * `bounds` borne la recherche. Le jeu n'en a pas besoin, sa carte a des bords ; ici le
- * terrain est infini et une recherche sans borne part explorer le vide jusqu'à sa limite de
- * mille nœuds à chaque mouvement de souris.
+ * `bounds` limits the search. The game does not need it, since its map has edges; here the
+ * ground is endless and an unbounded search sets off into the void until it hits its
+ * thousand-node limit, on every movement of the mouse.
  */
 export function astar(from, to, { blocked, bounds }) {
   if (from.x === to.x && from.y === to.y) return [{ ...from }];
@@ -59,8 +58,8 @@ export function astar(from, to, { blocked, bounds }) {
   const costs = new Map([[key(from.x, from.y), 0]]);
   const parents = new Map();
   const closed = new Set([key(from.x, from.y)]);
-  /* Une file triée à chaque tour plutôt qu'un tas : mille nœuds au maximum, et un tas de
-     mille éléments écrit à la main est plus de code à se tromper que de temps gagné. */
+  /* A queue sorted each round rather than a heap: a thousand nodes at most, and a
+     hand-written heap of a thousand elements is more code to get wrong than time saved. */
   let queue = [{ ...from }];
   let visited = 0;
   let found = false;

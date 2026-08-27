@@ -1,34 +1,33 @@
 /**
- * Ce qu'un glissé pose, transcrit de `InputHandler.iterateLine` et de `Placement` de la
- * v159.7.
+ * What a drag places, transcribed from `InputHandler.iterateLine` and `Placement` in v159.7.
  *
- * La première version de ce fichier inventait un coude en L, sur la foi du souvenir qu'on
- * a de la pose de convoyeurs. **Ce coude n'existe nulle part dans le jeu.** Voici ce qui
- * existe vraiment, dans l'ordre où `iterateLine` en décide :
+ * The first version of this file invented an L-shaped elbow, on the strength of how one
+ * remembers placing conveyors. **That elbow exists nowhere in the game.** Here is what
+ * really exists, in the order `iterateLine` decides it:
  *
- *     diagonal = touche « placement diagonal » enfoncée
- *     si bloc.swapDiagonalPlacement            -> diagonal = !diagonal
+ *     diagonal = "diagonal placement" key held
+ *     if block.swapDiagonalPlacement           -> diagonal = !diagonal
  *
- *     si diagonal et bloc.allowDiagonal
- *         si départ et arrivée sont une chaîne que le bloc peut remplacer
- *                                              -> upgradeLine : suivre la chaîne existante
- *         sinon                                -> pathfindLine : escalier de Bresenham,
- *                                                 ou A* pour les blocs conveyorPlacement
- *     sinon si bloc.allowRectanglePlacement    -> normalizeRectangle, espacé de la taille
- *     sinon                                    -> normalizeLine : ligne DROITE, axe dominant
+ *     if diagonal and block.allowDiagonal
+ *         if start and end are a chain the block can replace
+ *                                              -> upgradeLine: follow the existing chain
+ *         else                                 -> pathfindLine: a Bresenham staircase,
+ *                                                 or A* for conveyorPlacement blocks
+ *     else if block.allowRectanglePlacement    -> normalizeRectangle, spaced by the size
+ *     else                                     -> normalizeLine: a STRAIGHT line, long axis
  *
- *     puis bloc.changePlacementPath(points)    -> les ponts espacent leurs nœuds de leur portée
- *     puis bloc.handlePlacementLine(plans)     -> les ponts se lient au suivant
+ *     then block.changePlacementPath(points)   -> bridges space their nodes by their span
+ *     then block.handlePlacementLine(plans)    -> bridges link to the next one
  *
- * Les deux dernières lignes sont ce qui fait qu'un glissé de ponts, dans le jeu, produit
- * une chaîne de ponts liés et non une file de ponts collés qui ne se parlent pas.
+ * Those last two lines are what makes a drag of bridges produce, in the game, a chain of
+ * linked bridges and not a row of touching bridges that never speak to each other.
  */
 
 import { DIRECTIONS } from "../engine/core.js";
 import { blockerOf, withBridges, withJunctions } from "./smart.js";
 import { astar } from "./astar.js";
 
-/** La rotation du jeu qui va de `a` vers `b`, ou `null` si les deux cases se confondent. */
+/** The game rotation going from `a` to `b`, or `null` when the two tiles are the same. */
 function facing(a, b) {
   const dx = Math.sign(b.x - a.x);
   const dy = Math.sign(b.y - a.y);
@@ -37,10 +36,10 @@ function facing(a, b) {
 }
 
 /**
- * `Placement.normalizeLine` : une ligne droite sur l'axe où le glissé est le plus long.
+ * `Placement.normalizeLine`: a straight line on the axis the drag is longest along.
  *
- * C'est le tracé **par défaut**, celui qu'on obtient sans toucher à aucune touche, et donc
- * de très loin le plus utilisé.
+ * This is the **default** route, the one obtained without touching any key, and therefore by
+ * far the most used.
  */
 export function normalizeLine(from, to) {
   const points = [];
@@ -59,14 +58,14 @@ export function normalizeLine(from, to) {
 }
 
 /**
- * `Placement.normalizeRectangle` : remplir toute la **zone**, pas une ligne.
+ * `Placement.normalizeRectangle`: fill the whole **area**, not a line.
  *
- * C'est le geste qui pose un pan de mur de vingt blocs d'un coup, et il concerne 139 blocs
- * du jeu. Le pas vaut la taille du bloc, sinon chaque bloc posé détruit le précédent et il
- * ne reste qu'une seule case au bout du geste.
+ * This is the gesture that lays a twenty-block stretch of wall in one go, and it covers 139
+ * blocks of the game. The step is the block's size, otherwise every block placed destroys
+ * the previous one and a single tile is left at the end of the gesture.
  *
- * Le nom prête à confusion et j'y suis tombé : « rectangle » ici veut dire une surface
- * remplie, et non le contour d'un rectangle. Lu dans la source plutôt que deviné.
+ * The name misleads, and it misled whoever wrote this first: "rectangle" here means a filled
+ * surface, not the outline of a rectangle. Read in the source rather than guessed.
  */
 export function normalizeRectangle(from, to, size) {
   const points = [];
@@ -83,10 +82,10 @@ export function normalizeRectangle(from, to, size) {
 }
 
 /**
- * `Bresenham2.lineNoDiagonal` : l'escalier qui colle à la vraie diagonale.
+ * `Bresenham2.lineNoDiagonal`: the staircase that hugs the true diagonal.
  *
- * Un pas sur un seul axe à la fois, jamais les deux ensemble, sinon deux convoyeurs se
- * toucheraient par le coin et ne se passeraient rien.
+ * One step on one axis at a time, never both together, otherwise two conveyors would touch
+ * at the corner and hand each other nothing.
  */
 export function bresenham(from, to) {
   const points = [];
@@ -102,8 +101,8 @@ export function bresenham(from, to) {
     points.push({ x, y });
     if (x === to.x && y === to.y) break;
     const twice = 2 * error;
-    /* Le `else if` est tout le sujet : avec deux `if`, les deux axes avancent sur la même
-       itération et la ligne se met à sauter en diagonale. */
+    /* The `else if` is the whole point: with two `if`s, both axes advance on the same
+       iteration and the line starts jumping diagonally. */
     if (twice >= dy) { error += dy; x += sx; }
     else if (twice <= dx) { error += dx; y += sy; }
   }
@@ -111,13 +110,13 @@ export function bresenham(from, to) {
 }
 
 /**
- * `Placement.upgradeLine` : suivre une chaîne déjà posée au lieu de tracer à travers.
+ * `Placement.upgradeLine`: follow a chain already placed instead of drawing across it.
  *
- * C'est le geste qui remplace une ligne de convoyeurs par des convoyeurs titane en un
- * glissé, en épousant ses virages. Tracer droit à la place couperait à travers l'usine.
+ * This is the gesture that replaces a line of conveyors with titanium conveyors in one drag,
+ * hugging its turns. Drawing straight instead would cut through the factory.
  *
- * Le jeu suit `ChainedBuilding.next()`. Ici on n'a pas de bâtiments, on a des tuiles : la
- * chaîne se suit en allant de proche en proche dans le sens de chaque bloc.
+ * The game follows `ChainedBuilding.next()`. There are no buildings here, only tiles: the
+ * chain is followed by stepping from one to the next in the direction each block faces.
  */
 export function upgradeLine(from, to, board) {
   const points = [{ x: from.x, y: from.y }];
@@ -137,11 +136,11 @@ export function upgradeLine(from, to, board) {
 }
 
 /**
- * `Placement.calculateNodes` : ne garder que les nœuds qui se voient encore.
+ * `Placement.calculateNodes`: keep only the nodes that can still see each other.
  *
- * Parcourt les points et, depuis chacun, saute au **plus lointain** qui reste à portée.
- * C'est ce qui fait qu'un glissé de ponts sur douze cases pose deux ponts et non douze, et
- * que la portée d'un conduit de phase, de douze cases, se sent vraiment à l'usage.
+ * Walks the points and, from each, jumps to the **furthest** one still within reach. That is
+ * what makes a drag of bridges over twelve tiles place two bridges and not twelve, and what
+ * makes the twelve-tile span of a phase conduit actually felt in use.
  */
 export function calculateNodes(points, reach) {
   if (points.length < 2) return points;
@@ -167,30 +166,30 @@ export function calculateNodes(points, reach) {
   return result;
 }
 
-/** La portée d'un bloc en tuiles, qu'il la range dans `range` ou dans `laser_range`. */
+/** A block's reach in tiles, whether it files it under `range` or `laser_range`. */
 export function reachOf(block) {
   if (block?.range) return block.range;
   if (block?.laser_range) return Math.floor(block.laser_range);
   return 0;
 }
 
-/** Un bloc qui saute par dessus le terrain : pont, gaine à pont, pylône. */
+/** A block that jumps over the ground: bridge, duct bridge, power node. */
 export function jumps(block) {
   const kind = block?.kind || "";
   return kind.includes("Bridge") || kind === "PowerNode" || kind === "BeamNode";
 }
 
 /**
- * Un pont qui **retient** sa cible, par opposition à un qui la cherche devant lui.
+ * A bridge that **holds** its target, as opposed to one that looks for it ahead.
  *
- * Le jeu a deux familles et elles ne se lient pas pareil. `ItemBridge` et `LiquidBridge`
- * gardent le décalage vers leur cible dans leur configuration, et c'est
- * `handlePlacementLine` qui le pose. `DirectionBridge`, dont sortent la gaine à pont et le
- * conduit renforcé, ne configure rien du tout : son `findLink()` balaie droit devant lui,
- * dans le sens où il est tourné, jusqu'à sa portée.
+ * The game has two families and they do not link the same way. `ItemBridge` and
+ * `LiquidBridge` keep the offset to their target in their configuration, and
+ * `handlePlacementLine` is what writes it. `DirectionBridge`, which the duct bridge and the
+ * reinforced conduit come from, configures nothing at all: its `findLink()` sweeps straight
+ * ahead, in the direction it faces, out to its reach.
  *
- * Leur donner à tous une configuration reviendrait à écrire dans le fichier une liaison que
- * le jeu ignore, et à laisser une gaine tournée n'importe comment se prétendre reliée.
+ * Giving all of them a configuration would write into the file a link the game ignores, and
+ * let a duct pointed any which way claim to be connected.
  */
 export function linksByConfig(block) {
   const kind = block?.kind || "";
@@ -198,28 +197,28 @@ export function linksByConfig(block) {
 }
 
 /**
- * Les blocs qu'un glissé de `from` à `to` pose.
+ * The blocks a drag from `from` to `to` places.
  *
- * `diagonal` est l'état de la touche « placement diagonal ». `board` sert à `upgradeLine`,
- * qui a besoin de savoir ce qui est déjà là ; sans plateau, ce mode est simplement sauté.
+ * `diagonal` is the state of the "diagonal placement" key. `board` is what `upgradeLine`
+ * needs, since it has to know what is already there; with no board, that mode is skipped.
  */
 export function lineOf(from, to, block, catalogue, rotation = 0,
                        { diagonal = false, board = null } = {}) {
   const known = catalogue.blocks[block] || {};
   const size = known.size || 1;
 
-  /* Quelques blocs inversent le basculement pour que leur comportement le plus utile soit
-     celui qu'on obtient sans rien enfoncer. Les pylônes en font partie : on les veut
-     presque toujours en escalier. */
+  /* A few blocks invert the toggle so that their most useful behaviour is the one obtained
+     without holding anything down. Power nodes are among them: they are almost always
+     wanted as a staircase. */
   let wants = diagonal;
   if (known.swap_diagonal_placement) wants = !wants;
 
   let points;
   if (wants && known.allow_diagonal !== false) {
     const chain = board ? upgradeLine(from, to, board) : null;
-    /* `pathfindLine` du jeu : un A* pour les blocs à `conveyorPlacement`, un escalier de
-       Bresenham pour les autres. L'A* contourne ce qui est déjà là, ce qui permet de tirer
-       une bande d'un bout à l'autre d'une base sans la démonter. */
+    /* The game's `pathfindLine`: an A* for `conveyorPlacement` blocks, a Bresenham
+       staircase for the rest. The A* goes around what is already there, which is what lets
+       a belt be pulled across a base without taking the base apart. */
     points = chain
       || (known.conveyor_placement && board ? pathfind(from, to, block, catalogue, board) : null)
       || bresenham(from, to);
@@ -229,22 +228,22 @@ export function lineOf(from, to, block, catalogue, rotation = 0,
     points = normalizeLine(from, to);
   }
 
-  /* `changePlacementPath` : les blocs qui portent loin ne se posent pas case par case, ils
-     se posent aussi loin qu'ils se voient encore. */
+  /* `changePlacementPath`: blocks that reach far are not placed tile by tile, they are
+     placed as far apart as they can still see each other. */
   const reach = reachOf(known);
   if (jumps(known) && reach > 0) {
     points = calculateNodes(points,
       (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) <= reach);
   } else if (size > 1 && !known.allow_rectangle_placement) {
-    /* Un gros bloc posé case par case se détruit lui-même à chaque pas. Le jeu l'évite par
-       `allowRectanglePlacement` là où il l'a réglé ; ailleurs, l'espacer de sa taille est
-       la seule lecture qui ne jette pas la moitié du geste. */
+    /* A large block placed tile by tile destroys itself at every step. The game avoids that
+       through `allowRectanglePlacement` where it has set it; elsewhere, spacing it by its
+       own size is the only reading that does not throw away half the gesture. */
     points = points.filter((_, i) => i % size === 0);
   }
 
-  /* `planRotation` du jeu : un bloc qui ne tourne pas et que `lockRotation` verrouille
-     sort toujours a zero, quoi que la main tienne. Et `ignoreLineRotation` dit qu un bloc
-     ne suit pas le sens du glisse, meme s il tourne. */
+  /* The game's `planRotation`: a block that does not rotate and that `lockRotation` locks
+     always comes out at zero, whatever the hand holds. And `ignoreLineRotation` says a block
+     does not follow the direction of the drag, even when it does rotate. */
   const follows = (known.conveyor_placement || known.rotate) && !known.ignore_line_rotation;
   const settle = (value) => (!known.rotate && known.lock_rotation ? 0 : value);
 
@@ -259,8 +258,8 @@ export function lineOf(from, to, block, catalogue, rotation = 0,
       : rotation),
   }));
 
-  /* Ce que le jeu decide a la place du joueur, et qui demande de savoir ce qui est deja
-     pose : la jonction au croisement, puis les ponts qui franchissent un obstacle. */
+  /* What the game decides on the player's behalf, and which needs to know what is already
+     placed: the junction at a crossing, then the bridges that cross an obstacle. */
   if (board) {
     if (known.junction_replacement) plans = withJunctions(plans, board, catalogue);
     const relay = known.bridge_replacement && catalogue.blocks[known.bridge_replacement];
@@ -270,10 +269,10 @@ export function lineOf(from, to, block, catalogue, rotation = 0,
         reach: reachOf(relay),
         bridge: known.bridge_replacement,
         hasJunction: Boolean(known.junction_replacement),
-        /* Ce qu'une jonction sait traverser. Le jeu passe `b -> b instanceof Conveyor`
-           pour une bande et `b -> b instanceof Duct || b instanceof Conveyor` pour une
-           gaine ; `conveyor_placement` est le drapeau publié qui recouvre les deux
-           familles, et c'est celui qu'on lit plutôt que de tester des noms de classes. */
+        /* What a junction can cross. The game passes `b -> b instanceof Conveyor` for a
+           belt and `b -> b instanceof Duct || b instanceof Conveyor` for a duct;
+           `conveyor_placement` is the published flag covering both families, and it is what
+           is read here rather than testing class names. */
         avoid: (x, y) => {
           const under = board.at(x, y);
           return Boolean(under && catalogue.blocks[under.block]?.conveyor_placement);
@@ -282,17 +281,18 @@ export function lineOf(from, to, block, catalogue, rotation = 0,
     }
   }
 
-  /* `handlePlacementLine` : chaque pont reçoit en configuration le décalage vers le
-     suivant. C'est ce qui fait qu'un glissé de ponts donne une chaîne qui transporte, et
-     non une file de ponts qui s'ignorent. */
+  /* `handlePlacementLine`: every bridge receives, as its configuration, the offset to the
+     next one. That is what makes a drag of bridges give a chain that carries, and not a row
+     of bridges ignoring each other. */
   if (linksByConfig(known) && reach > 0) {
     for (let i = 0; i < plans.length - 1; i++) {
       const here = plans[i];
       const next = plans[i + 1];
       if (Math.max(Math.abs(here.x - next.x), Math.abs(here.y - next.y)) <= reach) {
-        /* Le type 7 du format est un point relatif écrit en deux entiers. C'est la forme
-           que `schematic.js` lit et écrit, et que `analyse.js` suit pour tracer le lien :
-           inventer une autre forme ici aurait donné trois idées différentes du même lien. */
+        /* Type 7 of the format is a relative point written as two integers. It is the shape
+           `schematic.js` reads and writes, and the one `analyse.js` follows to draw the
+           link: inventing another shape here would have given three different ideas of the
+           same link. */
         here.config = { type: 7, dx: next.x - here.x, dy: next.y - here.y };
       }
     }
@@ -301,12 +301,12 @@ export function lineOf(from, to, block, catalogue, rotation = 0,
 }
 
 /**
- * Le chemin qui contourne, borné à ce qui est raisonnable.
+ * The path that goes around, bounded to something reasonable.
  *
- * La borne n'est pas dans le jeu et elle est indispensable ici : sa carte a des bords, notre
- * terrain n'en a pas, et une recherche sans borne part explorer le vide à chaque mouvement
- * de souris. Vingt cases autour de ce que le glissé demande suffisent largement à
- * contourner une usine, et ne laissent pas le calcul divaguer.
+ * The bound is not in the game and is indispensable here: its map has edges, our ground has
+ * none, and an unbounded search sets off into the void on every movement of the mouse.
+ * Twenty tiles around what the drag asks for is ample to get around a factory, and does not
+ * let the search wander.
  */
 function pathfind(from, to, block, catalogue, board) {
   const margin = 20;
@@ -321,7 +321,7 @@ function pathfind(from, to, block, catalogue, board) {
   });
 }
 
-/** Le cap du dernier bloc : celui du segment qui vient de l'amener là. */
+/** The last block's heading: that of the segment which has just brought it there. */
 function lastFacing(points, fallback) {
   if (points.length < 2) return fallback;
   const heading = facing(points[points.length - 2], points[points.length - 1]);

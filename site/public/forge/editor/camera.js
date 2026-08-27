@@ -1,20 +1,20 @@
 /**
- * Où l'on regarde, et quelle case est sous le curseur.
+ * Where the view is looking, and which tile is under the cursor.
  *
- * `x` et `y` sont la tuile au centre de la vue, `scale` le nombre de pixels par tuile.
- * L'écran compte ses pixels vers le bas, la carte compte ses tuiles vers le haut, et cette
- * inversion est la moitié des erreurs d'une case.
+ * `x` and `y` are the tile at the centre of the view, `scale` the number of pixels per tile.
+ * The screen counts its pixels downwards and the map counts its tiles upwards, and that
+ * inversion is half of all one-tile mistakes.
  *
- * L'échelle reste entière. Une échelle fractionnaire fait scintiller un sprite de 32
- * pixels le long de sa propre grille, ce qui se lit comme un défaut de rendu plutôt que
- * comme du pixel art : `render.js` prend la même précaution pour la même raison.
+ * The scale stays whole. A fractional scale makes a 32-pixel sprite shimmer along its own
+ * grid, which reads as a rendering defect rather than as pixel art: `render.js` takes the
+ * same precaution for the same reason.
  */
 
-/** En dessous, une tuile n'est plus lisible ; au dessus, on compte les pixels du sprite. */
+/** Below this a tile stops being readable; above it, you are counting sprite pixels. */
 const MIN_SCALE = 4;
 const MAX_SCALE = 64;
 
-/** La taille réelle d'un sprite de bloc dans l'atlas du jeu. */
+/** The real size of a block sprite in the game's atlas. */
 const NATIVE = 32;
 
 const clamp = (value) => Math.max(MIN_SCALE, Math.min(MAX_SCALE, Math.round(value)));
@@ -22,37 +22,37 @@ const clamp = (value) => Math.max(MIN_SCALE, Math.min(MAX_SCALE, Math.round(valu
 export function createCamera({ scale = 24, x = 0, y = 0 } = {}) {
   const camera = { scale: clamp(scale), x, y };
 
-  /** Le point du monde, en tuiles fractionnaires, sous un pixel de l'écran. */
+  /** The world point, in fractional tiles, under a screen pixel. */
   const worldAt = (px, py, viewport) => ({
     wx: camera.x + (px - viewport.width / 2) / camera.scale,
     wy: camera.y - (py - viewport.height / 2) / camera.scale,
   });
 
   /**
-   * La case sous un pixel.
+   * The tile under a pixel.
    *
-   * Arrondi vers le bas, jamais au plus proche. Avec `Math.round`, la moitié de chaque
-   * tuile déborde sur sa voisine et un clic sur la droite d'une case pose le bloc à côté.
+   * Rounded down, never to nearest. With `Math.round`, half of every tile spills onto its
+   * neighbour and a click on the right of a tile drops the block beside it.
    */
   camera.toTile = (px, py, viewport) => {
     const { wx, wy } = worldAt(px, py, viewport);
     return { x: Math.floor(wx), y: Math.floor(wy) };
   };
 
-  /** Le pixel d'un point de la carte. C'est l'inverse exact de `toTile`. */
+  /** The pixel of a map point. The exact inverse of `toTile`. */
   camera.toScreen = (tx, ty, viewport) => ({
     px: viewport.width / 2 + (tx - camera.x) * camera.scale,
     py: viewport.height / 2 - (ty - camera.y) * camera.scale,
   });
 
   /**
-   * Le rectangle qu'une case occupe à l'écran, coin haut gauche en tête.
+   * The rectangle a tile occupies on screen, top left corner first.
    *
-   * Distinct de `toScreen` et pas par coquetterie : `toScreen` convertit un **point**, et
-   * le point d'une case est son coin bas gauche, alors que dessiner veut le coin **haut**
-   * gauche, puisque l'écran compte à l'envers de la carte. Confondre les deux décale
-   * chaque sprite d'une tuile vers le haut, ce qui se voit à peine sur une grille régulière
-   * et saute aux yeux dès qu'un gros bloc en chevauche un petit.
+   * Separate from `toScreen`, and not out of fussiness: `toScreen` converts a **point**, and
+   * a tile's point is its bottom left corner, while drawing wants the **top** left corner,
+   * since the screen counts the opposite way from the map. Confusing the two shifts every
+   * sprite one tile upwards, which barely shows on a regular grid and is glaring the moment
+   * a large block overlaps a small one.
    */
   camera.rectOf = (tx, ty, viewport) => ({
     ...camera.toScreen(tx, ty + 1, viewport),
@@ -60,11 +60,11 @@ export function createCamera({ scale = 24, x = 0, y = 0 } = {}) {
   });
 
   /**
-   * Zoomer autour d'un point, en gardant sous le curseur ce qui y était.
+   * Zoom around a point, keeping under the cursor whatever was there.
    *
-   * Zoomer autour du centre de la vue est plus simple à écrire et détestable à l'usage :
-   * ce qu'on regarde s'échappe dès qu'on approche, et il faut redéplacer la vue à chaque
-   * cran de molette.
+   * Zooming around the centre of the view is simpler to write and hateful to use: what you
+   * are looking at escapes as soon as you close in, and the view has to be dragged back on
+   * every notch of the wheel.
    */
   camera.zoomAt = (factor, px, py, viewport) => {
     const { wx, wy } = worldAt(px, py, viewport);
@@ -76,7 +76,7 @@ export function createCamera({ scale = 24, x = 0, y = 0 } = {}) {
     return camera;
   };
 
-  /** Tirer l'image de `dx` pixels vers la droite montre la carte d'autant vers la gauche. */
+  /** Dragging the picture `dx` pixels right shows the map that much further left. */
   camera.pan = (dx, dy) => {
     camera.x -= dx / camera.scale;
     camera.y += dy / camera.scale;
@@ -84,14 +84,13 @@ export function createCamera({ scale = 24, x = 0, y = 0 } = {}) {
   };
 
   /**
-   * Cadrer une boîte entière, avec un peu d'air autour.
+   * Frame a whole box, with a little air around it.
    *
-   * L'échelle s'arrête à `NATIVE`, la taille réelle du sprite, alors que le zoom à la main
-   * monte jusqu'à `MAX_SCALE`. Ce n'est pas une incohérence : agrandir au delà de la taille
-   * native ne montre rien de plus, ça montre les mêmes pixels en plus gros. Sans ce
-   * plafond, ouvrir une schématique de cinq convoyeurs dans une vue de 1 160 pixels
-   * calculait une échelle de 165, ramenée à 64, et on arrivait le nez collé au bloc sans
-   * comprendre pourquoi. Mesuré, pas supposé.
+   * The scale stops at `NATIVE`, the sprite's real size, while zooming by hand goes up to
+   * `MAX_SCALE`. That is not an inconsistency: enlarging past the native size shows nothing
+   * more, it shows the same pixels bigger. Without that ceiling, opening a five-conveyor
+   * schematic in a 1160 pixel view worked out a scale of 165, clamped to 64, and you
+   * arrived with your nose against the block with no idea why. Measured, not assumed.
    */
   camera.frame = (box, viewport) => {
     const width = Math.max(1, box.width);

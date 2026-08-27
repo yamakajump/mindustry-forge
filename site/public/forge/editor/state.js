@@ -1,29 +1,28 @@
 /**
- * Ce qui est posé, ce qui est peint, et ce qu'on peut défaire.
+ * What is placed, what is painted, and what can be undone.
  *
- * Un geste est une entrée d'historique, pas un bloc. Une ligne de trente convoyeurs se
- * défait d'un coup, parce que c'est d'un coup qu'elle a été tracée. L'inverse oblige à
- * marteler ctrl+Z trente fois pour réparer un glissé raté, ce qui n'est pas une annulation
- * mais une punition.
+ * A gesture is one history entry, not one block. A line of thirty conveyors comes undone in
+ * one go, because it was drawn in one go. The opposite forces somebody to hammer ctrl+Z
+ * thirty times to repair a bad drag, which is not an undo but a punishment.
  *
- * Une entrée garde **ce qui a changé**, pas une photo du plateau : les blocs retirés, les
- * blocs ajoutés, et le sol d'avant des seules cases repeintes. Une copie complète par
- * geste sur un plateau de quatre mille blocs coûterait un mégaoctet par clic, pour une
- * information dont on n'utilise que la différence.
+ * An entry keeps **what changed**, not a photograph of the board: the blocks removed, the
+ * blocks added, and the previous ground of the repainted tiles only. A full copy per gesture
+ * on a board of four thousand blocks would cost a megabyte a click, for information of which
+ * only the difference is ever used.
  *
- * La limite de 64 est `Vars.maxSchematicSize` de la v159.7. Elle porte sur la boîte
- * englobante, murs des gros blocs compris, et pas sur le nombre de blocs.
+ * The limit of 64 is `Vars.maxSchematicSize` in v159.7. It applies to the bounding box, the
+ * walls of large blocks included, and not to the number of blocks.
  */
 
 export const MAX_SIZE = 64;
 
 /**
- * Toutes les cases qu'un bloc couvre.
+ * Every tile a block covers.
  *
- * Mindustry range un bloc par son centre et décale de `-(taille - 1) / 2`, tronqué. Une
- * foreuse de deux rangée en (5, 5) couvre donc (5, 5) à (6, 6), et non (4, 4) à (5, 5).
- * Mesurer sur la position rangée plutôt que sur l'empreinte est ce qui fait sortir la
- * moitié d'un gros bloc de sa propre boîte.
+ * Mindustry files a block by its centre and offsets by `-(size - 1) / 2`, truncated. A
+ * two-wide drill filed at (5, 5) therefore covers (5, 5) to (6, 6), and not (4, 4) to
+ * (5, 5). Measuring on the filed position rather than on the footprint is what pushes half
+ * of a large block out of its own box.
  */
 export function footprint(tile, sizeOf) {
   const size = sizeOf(tile.block) || 1;
@@ -37,7 +36,7 @@ export function footprint(tile, sizeOf) {
   return cells;
 }
 
-/** La boîte englobante d'une liste de blocs, mesurée sur ce qu'ils couvrent. */
+/** The bounding box of a list of blocks, measured on what they cover. */
 export function boxOf(tiles, sizeOf) {
   if (!tiles.length) return { left: 0, bottom: 0, width: 0, height: 0 };
   let left = Infinity, bottom = Infinity, right = -Infinity, top = -Infinity;
@@ -58,12 +57,12 @@ export function createBoard({ tiles = [], ground = {}, sizeOf }) {
   const board = {
     tiles: tiles.map((tile) => ({ rotation: 0, ...tile })),
     ground: { ...ground },
-    /* Ce qui a été fait, et ce qui a été défait et pourrait être refait. */
+    /* What has been done, and what has been undone and could be redone. */
     done: [],
     undone: [],
   };
 
-  /** Les cases qu'un bloc couvre, en clés de sol. */
+  /** The tiles a block covers, as ground keys. */
   const cellsOf = (tile) => footprint(tile, sizeOf).map(([x, y]) => key(x, y));
 
   board.at = (x, y) => board.tiles.find(
@@ -72,11 +71,11 @@ export function createBoard({ tiles = [], ground = {}, sizeOf }) {
   board.box = () => boxOf(board.tiles, sizeOf);
 
   /**
-   * Est-ce que poser ça garde la boîte dans 64 × 64 ?
+   * Does placing this keep the box within 64 by 64?
    *
-   * Accepte un bloc ou toute une fournée, et la fournée n'est pas la somme des blocs : un
-   * glissé de cent convoyeurs sur un plateau vide voit chacun de ses blocs tenir tout seul,
-   * puisque chacun mesuré seul fait une case de large. C'est ensemble qu'ils débordent.
+   * Takes one block or a whole batch, and the batch is not the sum of the blocks: a drag of
+   * a hundred conveyors on an empty board sees each of its blocks fit on its own, since each
+   * measured alone is one tile wide. It is together that they overflow.
    */
   board.fits = (plans) => {
     const batch = Array.isArray(plans) ? plans : [plans];
@@ -85,23 +84,22 @@ export function createBoard({ tiles = [], ground = {}, sizeOf }) {
   };
 
   /**
-   * Applique un geste et l'empile.
+   * Apply a gesture and push it onto the history.
    *
-   * `change` vaut `{ place, remove, paint }`, chacun facultatif. Un `paint` à `null` sur
-   * une case l'efface, au lieu de la laisser vide : une case vide et une case absente se
-   * dessinent pareil mais ne se lisent pas pareil, et les règles de sol ne s'appliquent
-   * qu'aux cases décrites.
+   * `change` is `{ place, remove, paint }`, each optional. A `paint` of `null` on a tile
+   * erases it rather than leaving it empty: an empty tile and an absent tile draw the same
+   * and do not read the same, and the ground rules only apply to described tiles.
    *
-   * Rend `false` si le geste ne changeait rien, auquel cas rien n'est empilé : un clic qui
-   * n'a rien fait ne doit pas consommer un ctrl+Z.
+   * Returns `false` when the gesture changed nothing, in which case nothing is pushed: a
+   * click that did nothing must not consume a ctrl+Z.
    */
   board.apply = ({ place = [], remove = [], paint = null }) => {
     const plans = place.map((plan) => ({ rotation: 0, ...plan }));
 
-    /* Ce qu'une pose chasse : tout ce que son empreinte touche, et pas seulement le bloc
-       rangé sur la même case. Une foreuse de deux posée sur quatre convoyeurs en retire
-       quatre ; n'en retirer qu'un laissait trois fantômes sous elle, invisibles à l'écran
-       et bien présents dans le fichier exporté. */
+    /* What a placement displaces: everything its footprint touches, and not only the block
+       filed on the same tile. A two-wide drill dropped on four conveyors removes four;
+       removing only one left three ghosts under it, invisible on screen and very much
+       present in the exported file. */
     const covered = new Set(plans.flatMap(cellsOf));
     const chased = board.tiles.filter(
       (tile) => cellsOf(tile).some((cell) => covered.has(cell)));
@@ -147,7 +145,7 @@ export function createBoard({ tiles = [], ground = {}, sizeOf }) {
   return board;
 }
 
-/** Peindre : un minerai va **par dessus** le sol, comme le jeu empile ses couches. */
+/** Painting: an ore goes **over** the ground, the way the game stacks its layers. */
 function applyPaint(ground, paint) {
   for (const [cell, layers] of Object.entries(paint)) {
     if (layers === null) delete ground[cell];
@@ -155,7 +153,7 @@ function applyPaint(ground, paint) {
   }
 }
 
-/** Remettre le sol d'avant, en distinguant « c'était vide » de « c'était autre chose ». */
+/** Put the previous ground back, telling "it was empty" from "it was something else". */
 function restore(ground, before) {
   for (const [cell, layers] of Object.entries(before)) {
     if (layers === undefined) delete ground[cell];

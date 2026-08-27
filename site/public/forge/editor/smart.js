@@ -1,21 +1,20 @@
 /**
- * Ce que le jeu décide à la place du joueur quand il trace une ligne.
+ * What the game decides on the player's behalf when they draw a line.
  *
- * Deux mécaniques, et ce sont celles qui font qu'on trace à travers son usine sans y
- * penser. Toutes deux transcrites de la v159.7.
+ * Two mechanics, and they are the ones that let somebody draw straight through their own
+ * factory without thinking about it. Both transcribed from v159.7.
  *
- * **La jonction au croisement**, `Conveyor.getReplacement`. Une ligne qui coupe une ligne
- * perpendiculaire ne la coupe pas : le croisement devient une jonction, et les deux lignes
- * continuent chacune leur route.
+ * **The junction at a crossing**, `Conveyor.getReplacement`. A line cutting across a
+ * perpendicular line does not cut it: the crossing becomes a junction, and both lines carry
+ * on their way.
  *
- * **Le pont automatique**, `Placement.calculateBridges`. Une ligne qui rencontre un
- * obstacle le franchit toute seule. Ce n'est pas un « si bloqué, alors pont » : c'est une
- * programmation dynamique sur toute la ligne, qui arbitre trois coûts et choisit le chemin
- * le moins cher de bout en bout.
+ * **The automatic bridge**, `Placement.calculateBridges`. A line meeting an obstacle crosses
+ * it on its own. This is not an "if blocked, then bridge": it is dynamic programming over
+ * the whole line, weighing three costs and choosing the cheapest path end to end.
  *
- * Les coûts sont ceux du jeu, et leur rapport est tout le comportement : un pont vaut
- * soixante-six convoyeurs, donc il n'apparaît que là où rien d'autre ne passe, et le
- * malus par case vide enjambée le fait préférer le saut le plus court.
+ * The costs are the game's, and their ratio is the whole of the behaviour: a bridge is worth
+ * sixty-six conveyors, so it only appears where nothing else gets through, and the penalty
+ * per empty tile spanned makes it prefer the shortest jump.
  */
 
 import { footprint } from "./state.js";
@@ -27,11 +26,11 @@ const BRIDGE_OVER_EMPTY = 5;
 const INFINITE = Number.MAX_SAFE_INTEGER / 2;
 
 /**
- * `Placement.isSidePlace` : le premier bloc est-il posé de travers par rapport à la ligne ?
+ * `Placement.isSidePlace`: is the first block set crosswise to the line?
  *
- * Garde-fou du pont automatique. Une ligne dont le premier bloc regarde de côté n'est pas
- * une ligne qu'on prolonge, c'est une entrée qu'on branche, et y insérer des ponts défait
- * exactement ce que le joueur venait de faire.
+ * A guard on the automatic bridge. A line whose first block faces sideways is not a line
+ * being extended, it is an inlet being wired up, and inserting bridges into it undoes
+ * exactly what the player had just done.
  */
 export function isSidePlace(plans) {
   if (plans.length < 2) return false;
@@ -44,12 +43,12 @@ export function isSidePlace(plans) {
 }
 
 /**
- * La jonction au croisement.
+ * The junction at a crossing.
  *
- * Trois conditions ensemble, et c'est leur conjonction qui évite les faux positifs : la
- * ligne continue **des deux côtés** de cette case, la case porte **déjà** un convoyeur, et
- * ce convoyeur est **perpendiculaire** au nôtre. Un convoyeur dans le même sens se remplace
- * normalement ; c'est seulement le croisement qui appelle une jonction.
+ * Three conditions together, and it is their conjunction that avoids false positives: the
+ * line carries on **on both sides** of this tile, the tile **already** holds a conveyor, and
+ * that conveyor is **perpendicular** to ours. A conveyor running the same way is replaced
+ * normally; only the crossing calls for a junction.
  */
 export function withJunctions(plans, board, catalogue) {
   return plans.map((plan) => {
@@ -62,8 +61,8 @@ export function withJunctions(plans, board, catalogue) {
 
     const under = board.at(plan.x, plan.y);
     if (!under || !catalogue.blocks[under.block]?.conveyor_placement) return plan;
-    /* Perpendiculaire, c'est à dire une rotation qui diffère d'un nombre impair de quarts
-       de tour. Un convoyeur à l'envers du nôtre n'est pas un croisement. */
+    /* Perpendicular, which is to say a rotation differing by an odd number of quarter
+       turns. A conveyor running against ours is not a crossing. */
     if (((((under.rotation || 0) - plan.rotation) % 2) + 2) % 2 !== 1) return plan;
 
     return { ...plan, block: junction, rotation: 0, config: undefined };
@@ -78,21 +77,21 @@ const step = (plan, rotation) => {
 const sameCell = (a, b) => a.x === b.x && a.y === b.y;
 
 /**
- * Les ponts automatiques, `Placement.smartCalculateBridges`.
+ * The automatic bridges, `Placement.smartCalculateBridges`.
  *
- * `blocked(x, y)` dit si la case refuse le convoyeur, `reach` est la portée du pont, et
- * `bridge` son nom. Rend une nouvelle liste de plans où les segments infranchissables ont
- * été remplacés par des ponts liés deux à deux.
+ * `blocked(x, y)` says whether a tile refuses the conveyor, `reach` is the bridge's span,
+ * and `bridge` its name. Returns a fresh list of plans in which the impassable stretches
+ * have been replaced by bridges linked in pairs.
  *
- * Le tableau `dp` a deux moitiés : la première est le meilleur coût pour arriver à `i` **au
- * sol**, la seconde pour y arriver **au bout d'un pont**. C'est ce dédoublement qui permet
- * de comparer les deux à chaque case, et de n'ouvrir un pont que là où il paye.
+ * The `dp` array has two halves: the first is the best cost of reaching `i` **on the
+ * ground**, the second of reaching it **at the end of a bridge**. That doubling is what
+ * allows the two to be compared at every tile, and a bridge to be opened only where it pays.
  */
 export function withBridges(plans, { blocked, reach, bridge, hasJunction = false,
                                      avoid = () => false }) {
   if (plans.length < 2 || !bridge || !reach) return plans;
-  /* Ligne orthogonale seulement, et pas une pose de côté : les deux garde-fous du jeu,
-     avant même de calculer quoi que ce soit. */
+  /* Orthogonal lines only, and no side placement: the game's two guards, before anything
+     is worked out at all. */
   const first = plans[0];
   const last = plans[plans.length - 1];
   if (first.x !== last.x && first.y !== last.y) return plans;
@@ -109,13 +108,13 @@ export function withBridges(plans, { blocked, reach, bridge, hasJunction = false
   for (let i = 1; i < n; i++) {
     const here = plans[i];
     const canPlace = free(here);
-    /* `needJunction` du jeu : `hasJunction && avoid.get(cur.tile().block())`. Une jonction
-       ne traverse qu'un **transporteur**, pas n'importe quel obstacle.
+    /* The game's `needJunction`: `hasJunction && avoid.get(cur.tile().block())`. A junction
+       only crosses a **carrier**, not any obstacle at all.
 
-       Aplatir ça en « tout obstacle se traverse en jonction » condamnait le pont à ne
-       jamais gagner : la jonction coûte 30 et le pont 200, donc le calcul faisait passer
-       une jonction imaginaire au travers d'une presse et n'ouvrait aucun pont. Mesuré sur
-       une ligne de dix-sept convoyeurs coupée par une presse : zéro pont posé. */
+       Flattening that into "every obstacle is crossed by a junction" condemned the bridge to
+       never win: a junction costs 30 and a bridge 200, so the calculation ran an imaginary
+       junction straight through a press and opened no bridge. Measured on a line of
+       seventeen conveyors cut by a press: zero bridges placed. */
     const needJunction = hasJunction && avoid(here.x, here.y);
     if (!canPlace && !needJunction) continue;
 
@@ -149,14 +148,14 @@ export function withBridges(plans, { blocked, reach, bridge, hasJunction = false
       parent[i] = parent[n + i];
     }
     if (canPlace && cost[i] >= INFINITE) {
-      // Rien ne relie cette case au début : on repart d'un segment neuf.
+      // Nothing joins this tile to the start: begin a fresh stretch.
       cost[i] = 0;
       cost[n + i] = BRIDGE_COST;
     }
   }
 
-  /* Remonter le chemin retenu. `mode` dit si on est arrivé ici au sol ou par un pont, ce
-     qui n'est pas la même case du tableau et donc pas le même parent. */
+  /* Walk the chosen path back. `mode` says whether this tile was reached on the ground or
+     by a bridge, which is not the same cell of the array and so not the same parent. */
   const out = [];
   let mode = 0;
   for (let i = n - 1; i >= 0; ) {
@@ -181,7 +180,7 @@ export function withBridges(plans, { blocked, reach, bridge, hasJunction = false
   return out;
 }
 
-/** Ce qu'une case refuse : un mur, un liquide profond, ou un bloc qu'on ne remplace pas. */
+/** What a tile refuses: a wall, deep liquid, or a block that is not replaced. */
 export function blockerOf(board, catalogue, block) {
   const known = catalogue.blocks[block] || {};
   const sizeOf = (name) => catalogue.blocks[name]?.size || 1;
@@ -193,8 +192,8 @@ export function blockerOf(board, catalogue, block) {
 
     const under = board.at(x, y);
     if (!under) return false;
-    /* Un bloc du même groupe se remplace, donc il ne bloque pas. Tout le reste bloque, et
-       c'est ce qui déclenche le pont : une presse au milieu d'une ligne de convoyeurs. */
+    /* A block of the same group is replaced, so it does not block. Everything else does,
+       and that is what triggers the bridge: a press in the middle of a conveyor line. */
     const other = catalogue.blocks[under.block] || {};
     if (other.always_replace) return false;
     return !(known.group && known.group !== "none" && other.group === known.group

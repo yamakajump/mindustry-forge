@@ -1,22 +1,22 @@
 /**
- * Une pose est-elle légale, et sinon pourquoi.
+ * Whether a placement is legal, and if not, why.
  *
- * LA RÈGLE QUI COMMANDE TOUTES LES AUTRES : **une case sans sol peint n'a aucune règle.**
- * Tant que rien n'est peint sous un bloc, la pose est légale. Les contraintes de terrain
- * n'existent qu'à mesure que le terrain est décrit. Autrement une toile vierge serait
- * inconstructible, et coller dans un éditeur vide une schématique venue du jeu deviendrait
+ * THE RULE THAT GOVERNS ALL THE OTHERS: **a tile with no painted ground has no rules.**
+ * As long as nothing is painted under a block, the placement is legal. Terrain constraints
+ * only come into being as the terrain is described. Otherwise a blank canvas would be
+ * unbuildable, and pasting a schematic from the game into an empty editor would become
  * impossible.
  *
- * Le corollaire vaut d'être dit : une case **peinte** est une affirmation sur le monde, et
- * elle est opposable. Peindre de la pierre sous une foreuse, c'est déclarer qu'il n'y a
- * pas de minerai là, et la foreuse est refusée. Ne rien peindre, c'est ne rien déclarer.
+ * The corollary is worth saying out loud: a **painted** tile is a claim about the world, and
+ * it can be held against you. Painting stone under a drill is declaring that there is no ore
+ * there, and the drill is refused. Painting nothing is declaring nothing.
  *
- * Le reste vient de `Build.validPlace`, `Block.canReplace`, `Drill.canMine` et
- * `Pump.canPlaceOn` de la v159.7.
+ * The rest comes from `Build.validPlace`, `Block.canReplace`, `Drill.canMine` and
+ * `Pump.canPlaceOn` in v159.7.
  *
- * L'ordre des vérifications n'est pas cosmétique : c'est lui qui décide quelle raison
- * s'affiche quand plusieurs s'appliquent, et la bonne est la plus actionnable. La taille
- * passe donc avant le sol, et le sol avant le remplacement.
+ * The order of the checks is not cosmetic: it decides which reason is shown when several
+ * apply, and the right one is the most actionable. Size therefore comes before ground, and
+ * ground before replacement.
  */
 
 import { footprint } from "./state.js";
@@ -25,11 +25,11 @@ const ok = { ok: true };
 const no = (why) => ({ ok: false, why });
 
 /**
- * `Block.canReplace` de la v159.7, transcrit et non paraphrasé.
+ * `Block.canReplace` from v159.7, transcribed and not paraphrased.
  *
- * C'est cette fonction qui décide qu'un convoyeur titane se pose sur un convoyeur alors
- * qu'une presse ne le peut pas. Elle lit six champs, et n'en connaître que la moitié donne
- * un éditeur qui refuse des gestes que le jeu accepte.
+ * This is the function that decides a titanium conveyor drops onto a conveyor while a press
+ * cannot. It reads six fields, and knowing only half of them gives an editor that refuses
+ * gestures the game accepts.
  */
 export function canReplace(block, other) {
   if (other.always_replace) return true;
@@ -45,11 +45,11 @@ export function canReplace(block, other) {
 }
 
 /**
- * Ce qu'une foreuse tirerait d'une case, si elle sait la creuser.
+ * What a drill would pull from a tile, if it can dig it at all.
  *
- * `Drill.canMine` compare le palier de la foreuse à la dureté de l'objet, et exclut ce que
- * le bloc porte dans `blocked_items`. Une foreuse mécanique sur du titane ne creuse pas
- * lentement, elle ne creuse pas du tout.
+ * `Drill.canMine` compares the drill's tier against the item's hardness, and excludes what
+ * the block carries in `blocked_items`. A mechanical drill on titanium does not dig slowly,
+ * it does not dig.
  */
 function minable(block, layers, catalogue) {
   const ore = layers.overlay && catalogue.blocks[layers.overlay];
@@ -60,32 +60,35 @@ function minable(block, layers, catalogue) {
   return (block.tier ?? 0) >= hardness;
 }
 
-/** Le liquide qu'une pompe tirerait d'une case. */
+/** The liquid a pump would pull from a tile. */
 const liquidOf = (layers, catalogue) =>
   (layers.floor && catalogue.blocks[layers.floor]?.drops_liquid) || null;
 
 /**
- * Peut-on poser `plan` sur `board` ?
+ * Can `plan` be placed on `board`?
  *
- * Rend `{ ok: true }`, ou `{ ok: false, why }` où `why` est une phrase française destinée
- * à être affichée telle quelle sous le curseur. Un refus sans raison lisible est un refus
- * que le joueur vit comme un bug.
+ * Returns `{ ok: true }`, or `{ ok: false, why }` where `why` is a French sentence meant to
+ * be shown as it stands under the cursor. A refusal with no readable reason is a refusal the
+ * player experiences as a bug.
+ *
+ * Those sentences stay French on purpose: a player reads them, and this repository is
+ * English for whoever contributes to it and French for whoever plays with it.
  */
 export function canPlace(board, plan, catalogue, batch = null) {
   const block = catalogue.blocks[plan.block];
   if (!block) return no(`${plan.block} n'existe pas dans le jeu`);
 
-  /* La limite de taille se juge sur la fournée entière quand il y en a une. Un glissé de
-     cent convoyeurs voit chacun de ses blocs tenir tout seul, puisqu'un bloc mesuré seul
-     fait une case de large : sans la fournée, l'éditeur laisserait fabriquer une
-     schématique de cent de long que le jeu refuse d'ouvrir. */
+  /* The size limit is judged on the whole batch when there is one. A drag of a hundred
+     conveyors sees each of its blocks fit on its own, since a block measured alone is one
+     tile wide: without the batch, the editor would let somebody build a schematic a hundred
+     long that the game refuses to open. */
   if (!board.fits(batch || plan)) {
     return no("64 tuiles de côté, le jeu n'en accepte pas plus");
   }
 
   const cells = footprint(plan, (name) => catalogue.blocks[name]?.size || 1);
-  /* Les seules cases dont on sait quelque chose. Le reste du terrain n'est pas « vide »,
-     il est inconnu, et on ne refuse pas une pose sur de l'inconnu. */
+  /* The only tiles anything is known about. The rest of the ground is not "empty", it is
+     unknown, and a placement is not refused over the unknown. */
   const described = cells
     .map(([x, y]) => board.ground[`${x},${y}`])
     .filter(Boolean);
@@ -100,18 +103,18 @@ export function canPlace(board, plan, catalogue, batch = null) {
     if (floor.placeable_on === false) return no("on ne bâtit pas sur ce sol");
   }
 
-  /* On ne refuse que ce que le sol peint **prouve** illégal, et les deux règles qui
-     suivent ne se prouvent pas de la même façon.
+  /* Only what the painted ground **proves** illegal is refused, and the two rules that
+     follow are not proved the same way.
 
-     Une foreuse veut **au moins une** case de minerai : tant qu'une case de son empreinte
-     n'est pas décrite, elle pourrait porter du minerai, et rien n'autorise à refuser. Il
-     faut donc que l'empreinte entière soit peinte pour conclure.
+     A drill wants **at least one** tile of ore: as long as one tile of its footprint is
+     undescribed, that tile could hold ore, and nothing licenses a refusal. The whole
+     footprint therefore has to be painted before anything can be concluded.
 
-     Une pompe veut **toutes** ses cases mouillées : une seule case peinte et sèche est un
-     contre-exemple, et suffit à trancher même si le reste est inconnu.
+     A pump wants **all** of its tiles wet: a single painted, dry tile is a counter-example,
+     and settles it even when the rest is unknown.
 
-     Confondre les deux donnait un éditeur qui refuse une foreuse dès qu'on peint une seule
-     case de pierre à côté, ce qui punit exactement le geste qu'on veut encourager. */
+     Confusing the two gave an editor that refused a drill the moment one tile of stone was
+     painted beside it, which punishes exactly the gesture we want to encourage. */
   if (described.length) {
     const complete = described.length === cells.length;
     if (block.role === "drill" && complete

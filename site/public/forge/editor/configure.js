@@ -1,25 +1,25 @@
 /**
- * Ce qu'un bloc retient, et ce qu'on peut lui faire retenir.
+ * What a block holds, and what it can be made to hold.
  *
- * Un trieur retient l'objet qu'il laisse passer, une source celui qu'elle fabrique, un
- * déchargeur celui qu'il tire. C'est écrit dans le format, `analyse.js` sait le relire, et
- * l'éditeur ne savait pas le poser : une schématique construite ici sortait avec ses
- * trieurs vides, donc avec ses lignes qui ne trient rien.
+ * A sorter holds the item it lets through, a source the one it makes, an unloader the one
+ * it pulls. It is written into the format and `analyse.js` can already read it back; the
+ * editor could not write it, so a schematic built here came out with empty sorters, which
+ * is to say with lines that sort nothing.
  *
- * Le codage vient de `TypeIO.writeObject` de la v159.7 : type 5, un octet de famille de
- * contenu, puis l'identifiant sur deux octets. Les familles sont celles que `analyse.js`
- * lit déjà, et elles sont ici plutôt qu'ailleurs pour qu'il n'y en ait qu'une liste.
+ * The encoding comes from `TypeIO.writeObject` in v159.7: type 5, one byte of content
+ * family, then the id over two bytes. The families are the ones `analyse.js` already reads,
+ * and they live here rather than elsewhere so that there is only one list of them.
  */
 
 export const CONTENT = { item: 0, block: 1, liquid: 4, unit: 6 };
 
 /**
- * De quelle famille de contenu un bloc se configure, ou `null` s'il ne se configure pas
- * comme ça.
+ * Which family of content a block is configured with, or `null` when it is not configured
+ * that way at all.
  *
- * Lu sur la classe du jeu plutôt que sur le nom : `Sorter` couvre le trieur et le trieur
- * inverse, `ItemSource` la source d'objets, et une liste de noms tenue à la main se met à
- * mentir dès que le jeu en ajoute un.
+ * Read off the game's class rather than off the name: `Sorter` covers the sorter and the
+ * inverted sorter, `ItemSource` covers the item source, and a hand-kept list of names
+ * starts lying the moment the game adds one.
  */
 export function contentKind(block) {
   const kind = block?.kind || "";
@@ -29,7 +29,7 @@ export function contentKind(block) {
   return null;
 }
 
-/** Les choix possibles pour ce bloc, dans l'ordre du jeu. */
+/** What can be picked for this block, in the game's own order. */
 export function choicesFor(block, catalogue) {
   const family = contentKind(block);
   if (!family) return [];
@@ -40,12 +40,12 @@ export function choicesFor(block, catalogue) {
     .sort((a, b) => a.id - b.id);
 }
 
-/** La configuration qu'un choix produit, dans la forme que `schematic.js` écrit. */
+/** The configuration a choice produces, in the shape `schematic.js` writes. */
 export function configFor(choice) {
   return { type: 5, content: CONTENT[choice.family], id: choice.id };
 }
 
-/** Ce qu'un bloc est configuré pour manipuler, en clair, ou `null`. */
+/** What a block is configured to handle, in plain words, or `null`. */
 export function readsAs(tile, catalogue) {
   const config = tile?.config;
   if (!config || config.type !== 5) return null;
