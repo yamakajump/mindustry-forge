@@ -114,6 +114,16 @@ export class Held {
  * and the boost on both burst drills, all of which want two liquids at once: an oil
  * extractor drinks water and makes oil, and with one slot it could do neither.
  */
+/**
+ * A single precision float, which is what every number in the game is.
+ *
+ * The port counts in double and the game in float, and most of the time nothing turns on
+ * it. Three places it does: a counter compared against a threshold, an accumulator compared
+ * against one, and a liquid amount, which is not compared against anything but is handed on
+ * as a fraction of itself sixty times a second until the difference is a whole unit.
+ */
+const f32 = Math.fround;
+
 export class Liquids {
   constructor() {
     this.amounts = new Map();
@@ -131,9 +141,13 @@ export class Liquids {
     return sum;
   }
 
+  /* Stored in **float**, because `LiquidModule` is a `float[]`. A tank does not hold a
+     rounder number in double, it holds a slightly different one, and the difference
+     compounds: a pipe hands over a fraction of what it holds sixty times a second, so by
+     the end of a run the two engines are a whole unit apart on a gradient. */
   add(liquid, amount) {
     if (amount <= 0) return 0;
-    this.amounts.set(liquid, this.get(liquid) + amount);
+    this.amounts.set(liquid, Math.fround(this.get(liquid) + amount));
     this.current = liquid;
     return amount;
   }
@@ -142,7 +156,7 @@ export class Liquids {
   remove(liquid, amount) {
     const taken = Math.min(this.get(liquid), amount);
     if (taken <= 0) return 0;
-    this.amounts.set(liquid, this.get(liquid) - taken);
+    this.amounts.set(liquid, Math.fround(this.get(liquid) - taken));
     this.current = liquid;
     return taken;
   }
@@ -183,6 +197,8 @@ export class Build {
 
     /** The rotating cursor `dump` walks `proximity` from. */
     this.cdump = 0;
+    this.sleeping = false;
+    this.sleepTime = 0;
     this.proximity = [];
 
     /** How much of the tick this block gets, which an overdrive projector raises. */
@@ -205,6 +221,37 @@ export class Build {
 
   /** `Building.delta()`: the frame, scaled by anything speeding this block up. */
   delta(step) { return step * this.timeScale; }
+
+  /**
+   * `Building.sleep`: a block with nothing to do drops out of the update list.
+   *
+   * It sounds like an optimisation and it is not, because **waking puts it back at the
+   * end**. A belt that stood empty for a second and then got an item updates after
+   * everything that was placed later, and a machine it feeds therefore reads last frame's
+   * stock rather than this frame's.
+   *
+   * That is worth one frame of a press's ninety, once, and the two engines had sat a coal
+   * apart on `crafter-two-presses` since the scenario was written.
+   *
+   * Two blocks in the game do it: a conveyor with nothing on it, and a conduit with
+   * nothing in it. A second of quiet, not a frame: `timeToSleep` is sixty.
+   */
+  sleep(step) {
+    this.sleepTime += step;
+    if (!this.sleeping && this.sleepTime >= 60) {
+      this.sleeping = true;
+      this.world?.dropAwake(this);
+    }
+  }
+
+  /** `Building.noSleep`, which is what puts it back at the end of the list. */
+  noSleep() {
+    this.sleepTime = 0;
+    if (this.sleeping) {
+      this.sleeping = false;
+      this.world?.wake(this);
+    }
+  }
 
   /** `Building.acceptItem`: does this recipe call for it, and is there room. */
   acceptItem(source, item) {
@@ -303,7 +350,7 @@ export class Build {
    */
   addLiquid(liquid, amount) {
     // The cap is per liquid, as the game's is: `liquidCapacity - liquids.get(liquid)`.
-    const room = Math.max(0, this.liquidCapacity - this.liquids.get(liquid));
+    const room = Math.max(0, f32(this.liquidCapacity - this.liquids.get(liquid)));
     return this.liquids.add(liquid, Math.min(room, amount));
   }
 
@@ -370,12 +417,16 @@ export class Build {
     const held = this.liquids.get(liquid);
     if (held <= 0) return 0;
 
+    /* Every step in **float**, because every step of the game's is. A pipe hands over a
+       fraction of a fraction sixty times a second and the rounding compounds: measured on a
+       meltdown draining a tank, the two engines ended a run a whole unit apart. */
     const theirs = next.liquids.get(liquid);
-    const ofract = theirs / (next.block.liquid_capacity || 10);
-    const fract = held / this.liquidCapacity * (this.block.liquid_pressure ?? 1);
+    const ofract = f32(theirs / (next.block.liquid_capacity || 10));
+    const fract = f32(f32(held / this.liquidCapacity) * (this.block.liquid_pressure ?? 1));
 
-    let flow = Math.min(Math.max(0, Math.min(1, fract - ofract)) * this.liquidCapacity, held);
-    flow = Math.min(flow, (next.block.liquid_capacity || 10) - theirs);
+    let flow = Math.min(
+      f32(Math.max(0, Math.min(1, f32(fract - ofract))) * this.liquidCapacity), held);
+    flow = Math.min(flow, f32((next.block.liquid_capacity || 10) - theirs));
 
     if (flow > 0 && ofract <= fract && next.acceptLiquid(this, liquid)) {
       const taken = next.addLiquid(liquid, flow);
@@ -410,10 +461,11 @@ export class Build {
       other = other.liquidDestination?.(this, liquid);
       if (!other || !other.block.has_liquids || !other.liquids) continue;
       if (!this.canDumpLiquid(other, liquid)) continue;
-      const ofract = other.liquids.get(liquid) / (other.block.liquid_capacity || 10);
-      const fract = this.liquids.get(liquid) / this.liquidCapacity;
+      const ofract = f32(other.liquids.get(liquid) / (other.block.liquid_capacity || 10));
+      const fract = f32(this.liquids.get(liquid) / this.liquidCapacity);
       if (ofract < fract) {
-        this.transferLiquid(other, (fract - ofract) * this.liquidCapacity / scaling, liquid);
+        this.transferLiquid(
+          other, f32(f32(f32(fract - ofract) * this.liquidCapacity) / scaling), liquid);
       }
     }
   }
@@ -425,8 +477,8 @@ export class Build {
   }
 
   transferLiquid(next, amount, liquid) {
-    const flow = Math.min((next.block.liquid_capacity || 10) - next.liquids.get(liquid),
-                          amount);
+    const flow = Math.min(
+      f32((next.block.liquid_capacity || 10) - next.liquids.get(liquid)), amount);
     if (next.acceptLiquid(this, liquid)) {
       next.liquids.add(liquid, flow);
       this.liquids.remove(liquid, flow);
@@ -529,7 +581,7 @@ export class Build {
  * footprint, with the game's own integer halves: a two wide block clamps into nought to
  * one, a three wide into minus one to one.
  */
-function facingEdge(source, target) {
+export function facingEdge(source, target) {
   if ((source.size || 1) <= 1) return [source.x, source.y];
   const low = -Math.trunc((source.size - 1) / 2);
   const high = Math.trunc(source.size / 2);
@@ -719,6 +771,18 @@ export class World {
     this.tick = 0;
     this.grids = [];
 
+    /* `Time.run(delay, ...)`: what the game schedules for later rather than doing now. One
+       thing uses it and it matters: an explosion goes off in waves, two frames apart, so a
+       row of reactors comes down over a second rather than inside one call. */
+    this.pending = [];
+
+    /* Who is actually updated, which is not everybody: a block that fell asleep comes out
+       of this list, and waking pushes it back on the **end**. */
+    this.awake = this.builds.filter((build) => !build.block.no_update);
+    /* Where `step` has got to, because the list moves while it is being walked. Not `at`,
+       which is already the method that looks a tile up: an own property shadows it. */
+    this.walking = 0;
+
     /* Where the bottom left of the schematic sits on the map.
     
        Almost nothing cares. A separator does: its draw is seeded from `tile.pos()`, so the
@@ -747,8 +811,26 @@ export class World {
   at(x, y) { return this.tiles.get(`${x},${y}`) || null; }
 
   /** One frame at sixty a second. `Time.delta` is 1. */
+  /** `Time.run`: do this in `delay` frames. */
+  later(delay, task) {
+    this.pending.push({ left: delay, task });
+  }
+
   step(delta = 1) {
     this.tick++;
+
+    // Whatever came due, before anything else moves.
+    if (this.pending.length) {
+      const due = [];
+      this.pending = this.pending.filter((one) => {
+        one.left -= delta;
+        if (one.left > 0) return true;
+        due.push(one);
+        return false;
+      });
+      for (const one of due) one.task();
+    }
+
     /* The grids settle **first**, which is the order the game's own loop runs in:
        `Groups.powerGraph.update()` at `Logic.java:478`, `Groups.build.update()` at 482.
 
@@ -758,9 +840,39 @@ export class World {
        got one free frame at full power: a pump on a dead grid pumped exactly one frame's
        worth of water, which is nothing and is not zero. */
     for (const grid of this.grids) grid.update(delta);
-    for (const build of this.builds) {
+    /* Walked live and by index, cursor and all, because the list moves under it.
+       `EntityGroup.update` is `for(index = 0; index < array.size; index++)`, and a block
+       that falls asleep mid-walk is taken out of the array while the walk is going on. */
+    for (this.walking = 0; this.walking < this.awake.length; this.walking++) {
+      const build = this.awake[this.walking];
       if (build.behaviour?.update) build.behaviour.update(build, this, delta);
     }
+  }
+
+  /**
+   * `EntityGroup.remove`: a block that fell asleep leaves the update list.
+   *
+   * And the list is **unordered**, which is the whole of it: `array = new Seq<>(false, ...)`,
+   * so removing an entity drops the **last** one into its place rather than shifting
+   * everything down. Two empty belts going to sleep on the same frame therefore reshuffle
+   * the tail of the update order, and a press that was updated after a belt is updated
+   * before it from then on.
+   *
+   * Which is worth exactly one frame of that press's ninety, once. `crafter-two-presses`
+   * had been one coal apart since the day it was written.
+   */
+  dropAwake(build) {
+    const at = this.awake.indexOf(build);
+    if (at < 0) return;
+    this.awake[at] = this.awake[this.awake.length - 1];
+    this.awake.pop();
+    // `if(index >= idx) index--`, so the one swapped into the hole is not stepped over.
+    if (this.walking >= at) this.walking--;
+  }
+
+  /** `add()`, which appends, and is why waking up costs a block its place. */
+  wake(build) {
+    if (!this.awake.includes(build)) this.awake.push(build);
   }
 
   run(seconds) {

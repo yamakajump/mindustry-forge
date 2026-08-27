@@ -1,0 +1,61 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "tank-assembler",
+      "x": 14,
+      "y": 14,
+      "liquid": "cyanogen",
+      "amount": 90
+    }
+  ],
+  "batteries": [],
+  "payloads": [],
+  "units":{
+    "assembly-drone": 2
+  },
+  "running": [
+    {
+      "block": "tank-assembler",
+      "x": 14,
+      "y": 14,
+      "efficiency": 0
+    },
+    {
+      "block": "combustion-generator",
+      "x": 14,
+      "y": 17,
+      "efficiency": 1,
+      "holds":{
+        "coal": 10
+      }
+    },
+    {
+      "block": "item-source",
+      "x": 14,
+      "y": 18,
+      "efficiency": 1
+    }
+  ],
+  "standing": [
+    {
+      "block": "tank-assembler",
+      "x": 14,
+      "y": 14
+    },
+    {
+      "block": "combustion-generator",
+      "x": 14,
+      "y": 17
+    },
+    {
+      "block": "item-source",
+      "x": 14,
+      "y": 18
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

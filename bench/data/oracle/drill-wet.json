@@ -50,6 +50,28 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "laser-drill",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 17,
+      "y": 13
+    }
+  ],
   "containers": [
     {
       "block": "vault",

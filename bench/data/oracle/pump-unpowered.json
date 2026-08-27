@@ -26,6 +26,23 @@
       "efficiency": 1
     }
   ],
+  "standing": [
+    {
+      "block": "rotary-pump",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "liquid-tank",
+      "x": 16,
+      "y": 13
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

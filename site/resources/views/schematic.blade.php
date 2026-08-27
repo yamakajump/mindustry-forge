@@ -111,12 +111,38 @@
       </div>
     @endif
 
-    @if($schematic->needs)
+    {{-- Ce qu'il faut lui amener pour qu'elle tourne.
+         L'electricite y figure au meme titre que le charbon, et c'est nouveau : la page
+         ne parlait d'energie que lorsqu'il y en avait en trop, donc une chaine a silicium
+         qui reclame six cents energie/s n'en disait pas un mot. Un joueur qui la colle
+         dans un coin non alimente la regardait ne rien faire sans savoir pourquoi.
+         Ce n'est pas un defaut de la schematique : une base a du courant, ou on tire un
+         fil. C'est un prerequis, et il se dit. --}}
+    @if($schematic->needs || $schematic->powerNeeded() > 0.5)
       <div class="card"><h2>Il lui faut</h2>
-        @foreach($schematic->needs as $item => $needRate)
+        @if($schematic->powerNeeded() > 0.5)
+          <div class="line"><span>electricite</span>
+            <span class="num warn">{{
+              number_format($schematic->powerNeeded(), 0, ',', ' ') }} / s</span></div>
+        @endif
+        @foreach($schematic->needs ?? [] as $item => $needRate)
           <div class="line"><span>{{ $item }}</span>
             <span class="num">{{ number_format($needRate, 0, ',', ' ') }} / min</span></div>
         @endforeach
+        @if($schematic->powerNeeded() > 0.5)
+          <p class="hint-line">
+            @if($schematic->powerSpare() > 0.5)
+              Elle produit plus de courant qu'elle n'en consomme, donc elle s'alimente
+              seule et il lui en reste
+              {{ number_format($schematic->powerSpare(), 0, ',', ' ') }} / s pour le reste
+              de ta base.
+            @else
+              Elle ne fabrique pas son courant&nbsp;: il faudra la brancher sur ton reseau,
+              sinon elle reste a l'arret. Ce n'est pas compte contre elle dans les
+              classements.
+            @endif
+          </p>
+        @endif
       </div>
     @endif
 

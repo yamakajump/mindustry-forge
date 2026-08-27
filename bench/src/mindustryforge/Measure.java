@@ -51,8 +51,19 @@ public class Measure implements ApplicationListener {
 
     /** One scenario waiting its turn, with the ground it is to be run on. */
     private record Job(String base64, float seconds, Path out, String[] ground,
-                      String[] stock) {
+                      String[] stock, Path trace) {
     }
+
+    /**
+     * Where to write a line per frame, or null.
+     *
+     * <p>Two of the bench's scenarios have sat one item apart for weeks, and a total after
+     * eighteen hundred frames cannot say which frame it was. This can: the same shape comes
+     * out of the port, and the first line where the two differ names the block and the
+     * frame, which is a bug report rather than a discrepancy.
+     */
+    private Path trace;
+    private StringBuilder traced;
 
     /**
      * Scenarios still to run.
@@ -66,7 +77,12 @@ public class Measure implements ApplicationListener {
     /** Take a scenario, and run it when the one before it is done. */
     public void queue(String base64, float seconds, Path path, String[] ground,
                       String[] stock) {
-        waiting.add(new Job(base64, seconds, path, ground, stock));
+        queue(base64, seconds, path, ground, stock, null);
+    }
+
+    public void queue(String base64, float seconds, Path path, String[] ground,
+                      String[] stock, Path traceTo) {
+        waiting.add(new Job(base64, seconds, path, ground, stock, traceTo));
         if (!running) {
             start(waiting.remove(0));
         }
@@ -82,6 +98,8 @@ public class Measure implements ApplicationListener {
     private void start(Job job) {
         ground = job.ground();
         stock = job.stock();
+        trace = job.trace();
+        traced = trace == null ? null : new StringBuilder();
         begin(job.base64(), job.seconds(), job.out());
     }
 
@@ -235,17 +253,152 @@ public class Measure implements ApplicationListener {
             return;
         }
         ticksRun++;
+        if (traced != null) {
+            traced.append(snapshot()).append('\n');
+        }
         if (--ticksLeft > 0) {
             return;
         }
         running = false;
         report();
+        writeTrace();
 
         if (waiting.any()) {
             start(waiting.remove(0));
         } else {
             clock.setSpeed(1);
         }
+    }
+
+    /**
+     * One frame, as one line.
+     *
+     * <p>Every building that is holding anything, in tile order so the two engines write
+     * the same line for the same state. Items as whole numbers, liquids rounded to a
+     * thousandth: below that the two are comparing floating point noise rather than a
+     * disagreement.
+     */
+    private String snapshot() {
+        StringBuilder line = new StringBuilder();
+        line.append(ticksRun);
+        Seq<Building> order = new Seq<>();
+        for (Building one : mindustry.gen.Groups.build) order.add(one);
+        for (Tile tile : Vars.world.tiles) {
+            Building build = tile.build;
+            if (build == null || build.tile != tile) continue;
+
+            StringBuilder held = new StringBuilder();
+            if (build.items != null) {
+                for (Item item : Vars.content.items()) {
+                    int count = build.items.get(item);
+                    if (count > 0) held.append(' ').append(item.name).append(':').append(count);
+                }
+            }
+            if (build.liquids != null) {
+                for (mindustry.type.Liquid liquid : Vars.content.liquids()) {
+                    float amount = build.liquids.get(liquid);
+                    if (amount > 0.0005f) {
+                        held.append(' ').append(liquid.name).append(':')
+                            .append(String.format(java.util.Locale.ROOT, "%.3f", amount));
+                    }
+                }
+            }
+            /* Ce qu'un tapis tient vraiment, qui n'est pas dans son module d'objets : le
+               nombre en vol et la position du plus en retard. Les deux moteurs ont mis
+               neuf images a se rejoindre sur un seul charbon, et un total ne sait pas dire
+               laquelle. */
+            /* Et le compteur d'une source, qui decide si elle verse une fois ou deux
+               dans la meme image : cent objets par seconde pour soixante images. */
+            if (build instanceof mindustry.world.blocks.sandbox.ItemSource
+                    .ItemSourceBuild tap) {
+                held.append(" ~").append(
+                    String.format(java.util.Locale.ROOT, "%.3f", tap.counter));
+            }
+            // Le compteur d'une plateforme de lancement, et son efficacite.
+            if (build instanceof mindustry.world.blocks.campaign.LaunchPad
+                    .LaunchPadBuild pad) {
+                held.append(" ~").append(
+                    String.format(java.util.Locale.ROOT, "%.3f", pad.launchCounter))
+                    .append('/').append(
+                    String.format(java.util.Locale.ROOT, "%.3f", pad.efficiency));
+            }
+            // Et l'avancement d'une machine, qui dit a quelle image tombe la fournee.
+            if (build instanceof mindustry.world.blocks.production.GenericCrafter
+                    .GenericCrafterBuild machine) {
+                held.append(" ~").append(
+                    String.format(java.util.Locale.ROOT, "%.4f", machine.progress))
+                    .append('/').append(
+                    String.format(java.util.Locale.ROOT, "%.3f", machine.efficiency));
+            }
+            if (build instanceof mindustry.world.blocks.distribution.Conveyor
+                    .ConveyorBuild belt) {
+                held.append(" ~").append(belt.len).append(':')
+                    .append(String.format(java.util.Locale.ROOT, "%.3f", belt.minitem));
+            }
+            // Un chargeur de fret : ou est son unite, ce qu'elle porte, et combien.
+            if (build instanceof mindustry.world.blocks.units.UnitCargoLoader
+                    .UnitTransportSourceBuild tether) {
+                held.append(" ^");
+                if (tether.unit == null) {
+                    held.append(String.format(java.util.Locale.ROOT, "-/%.4f",
+                        tether.buildProgress));
+                } else {
+                    // En coordonnees de schema, comme tout le reste de la ligne.
+                    held.append(String.format(java.util.Locale.ROOT, "%.2f,%.2f/%s:%d",
+                        tether.unit.x - MARGIN * 8, tether.unit.y - MARGIN * 8,
+                        tether.unit.stack.amount > 0 ? tether.unit.item().name : "-",
+                        tether.unit.stack.amount));
+                }
+            }
+            // Un assembleur : ses drones, leur avancement, et le courant qu'il recoit.
+            if (build instanceof mindustry.world.blocks.units.UnitAssembler
+                    .UnitAssemblerBuild made) {
+                held.append(" &").append(made.units.size).append('/').append(
+                    String.format(java.util.Locale.ROOT, "%.4f/%.3f",
+                        made.droneProgress, made.power == null ? 1f : made.power.status));
+            }
+            // Le canon d'un mass driver a cargaison : charge, rechargement, glissement.
+            if (build instanceof mindustry.world.blocks.payloads.PayloadMassDriver
+                    .PayloadDriverBuild gun) {
+                held.append(" $").append(
+                    String.format(java.util.Locale.ROOT, "%.2f/%.3f/%.2f/%.1f",
+                        gun.charge, gun.reloadCounter, gun.payLength, gun.turretRotation));
+            }
+            // Et ce qu'il porte, avec ce qu'il y a dedans.
+            mindustry.world.blocks.payloads.Payload cargo = build.getPayload();
+            if (cargo != null) {
+                held.append(" %").append(cargo.content().name);
+                if (cargo instanceof mindustry.world.blocks.payloads.BuildPayload inside
+                        && inside.build.items != null) {
+                    for (Item item : Vars.content.items()) {
+                        int count = inside.build.items.get(item);
+                        if (count > 0) held.append('/').append(item.name).append(':')
+                            .append(count);
+                    }
+                }
+            }
+            /* Et sa place dans la liste de mise a jour, parce qu'un bloc qui s'endort en
+               sort et que se reveiller le remet a la fin. Moins un veut dire qu'il dort. */
+            held.append(" @").append(order.indexOf(build, true));
+            if (held.length() == 0) continue;
+            line.append(" | ").append(tile.x - MARGIN).append(',').append(tile.y - MARGIN)
+                .append(held);
+        }
+        return line.toString();
+    }
+
+    /** The whole run, once, rather than a write a frame. */
+    private void writeTrace() {
+        if (traced == null) return;
+        try {
+            if (trace.getParent() != null) Files.createDirectories(trace.getParent());
+            Files.writeString(trace, traced.toString(), StandardCharsets.UTF_8);
+            Log.info("[forge] traced @ frames to @", ticksRun, trace);
+        } catch (Exception error) {
+            Log.err("[forge] could not write the trace: @", error.toString());
+        }
+        traced = null;
+        trace = null;
     }
 
     /**
@@ -330,6 +483,28 @@ public class Measure implements ApplicationListener {
             one.put("x", tile.x);
             one.put("y", tile.y);
             one.put("payload", held.content().name);
+            /* Et ce qu'il y a **dedans**, parce qu'une charge utile est un batiment entier
+               et que trois blocs ne s'interessent qu'a ca : un chargeur remplit le coffre
+               qu'il porte, un dechargeur le vide. Sans son contenu, la moitie de la famille
+               se mesure a rien du tout. */
+            if (held instanceof mindustry.world.blocks.payloads.BuildPayload inside) {
+                Jval stock = Jval.newObject();
+                if (inside.build.items != null) {
+                    for (Item item : Vars.content.items()) {
+                        int count = inside.build.items.get(item);
+                        if (count > 0) stock.put(item.name, count);
+                    }
+                }
+                one.put("payload_items", stock);
+                Jval wet = Jval.newObject();
+                if (inside.build.liquids != null) {
+                    for (Liquid liquid : Vars.content.liquids()) {
+                        float amount = inside.build.liquids.get(liquid);
+                        if (amount > 0.0005f) wet.put(liquid.name, amount);
+                    }
+                }
+                one.put("payload_liquids", wet);
+            }
             carried.asArray().add(one);
         }
         root.put("payloads", carried);
@@ -355,7 +530,11 @@ public class Measure implements ApplicationListener {
             one.put("block", tile.block().name);
             one.put("x", tile.x);
             one.put("y", tile.y);
-            one.put("efficiency", tile.build.efficiency);
+            /* Zero plutot que `NaN`, qui n'est pas du JSON et faisait planter le lecteur.
+               Un incinerateur a scories a vide en produit un : sa recette demande zero
+               scorie par image, donc son efficacite est zero divise par zero. */
+            one.put("efficiency", Float.isFinite(tile.build.efficiency)
+                ? tile.build.efficiency : 0f);
             if (tile.build instanceof mindustry.world.blocks.units.UnitFactory.UnitFactoryBuild f) {
                 one.put("plan", f.currentPlan);
                 one.put("progress", f.progress);
@@ -378,6 +557,22 @@ public class Measure implements ApplicationListener {
             running.asArray().add(one);
         }
         root.put("running", running);
+
+        /* Ce qui est encore debout, et ce qui ne l'est plus.
+
+           Un reacteur qui surchauffe emporte ses voisins, et sans cette liste le portage
+           declarait sain un schema qui se detruit lui-meme : les compteurs d'un bloc mort
+           sont a zero des deux cotes, ce qui se lit comme un accord. */
+        Jval standing = Jval.newArray();
+        for (Tile tile : Vars.world.tiles) {
+            if (tile.build == null || tile.build.tile != tile) continue;
+            Jval one = Jval.newObject();
+            one.put("block", tile.block().name);
+            one.put("x", tile.x);
+            one.put("y", tile.y);
+            standing.asArray().add(one);
+        }
+        root.put("standing", standing);
 
         Jval stores = Jval.newArray();
         Jval totals = Jval.newObject();

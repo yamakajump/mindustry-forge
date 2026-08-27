@@ -334,3 +334,253 @@ select {
 .slide .num { min-width: 34px; text-align: right; }
 #ores .chip.pick img, #grounds .chip.pick img { image-rendering: pixelated; }
 #ores, #grounds { max-height: 150px; }
+
+/* ------------------------------------------------------------------------------------
+   Le mode édition.
+
+   Plein écran et fixe, parce que le plateau est le produit et que tout le reste doit lui
+   céder la place. L'édition vivait avant dans trois cartes empilées au milieu du rapport
+   d'analyse, entre « Goulot » et « Garder » : on éditait au milieu de ses résultats, avec
+   une palette de 253 pastilles à plat et un pinceau qui peignait sous les blocs sans les
+   voir.
+   ------------------------------------------------------------------------------------ */
+
+/* `hidden` doit gagner, toujours.
+
+   La regle du navigateur, `[hidden] { display: none }`, a la meme specificite qu une classe.
+   Des que l editeur donnait `display: grid` ou `display: flex` a un element, et comme cette
+   feuille passe apres celle du navigateur, c est elle qui l emportait : la palette de blocs
+   restait visible sous l onglet sol, et la barre de selection ne se cachait jamais. Le
+   defaut ne se voyait pas dans les tests, qui lisaient la propriete `hidden` et non ce que
+   l ecran montrait. */
+[hidden] { display: none !important; }
+
+.editor {
+  position: fixed; inset: 0; z-index: 60;
+  display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: 280px 1fr;
+  grid-template-areas: "bar bar" "rail stage" "foot foot";
+  background: var(--bg) url("./plate.png") repeat; background-size: 96px 96px;
+}
+
+.editor-bar {
+  grid-area: bar; display: flex; align-items: center; gap: 14px;
+  padding: 8px 16px; background: var(--panel); border-bottom: 2px solid var(--edge);
+}
+.editor-bar .brand { font-size: 17px; }
+.editor-modes { display: flex; gap: 0; margin-left: 6px; }
+.editor-modes button {
+  min-height: 36px; padding: 0 16px; border-radius: 0; border-right-width: 1px;
+}
+.editor-modes button:first-child { border-radius: 6px 0 0 6px; }
+.editor-modes button:last-child { border-radius: 0 6px 6px 0; border-left-width: 1px; }
+.editor-modes button[aria-pressed="true"] {
+  background: var(--accent); color: #241d0c; border-color: #e0b45f;
+}
+
+/* La jauge de taille. Permanente, parce que la limite de 64 est dure et qu'on ne la
+   découvre pas au moment où elle mord. */
+.editor-size { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.editor-size .num { font-size: 13px; color: var(--dim); }
+.editor-size .bar {
+  width: 90px; height: 8px; border-radius: 4px; background: var(--raised);
+  border: 1px solid var(--edge); overflow: hidden;
+}
+.editor-size .bar i { display: block; height: 100%; background: var(--accent); width: 0; }
+.editor-size.full .num { color: var(--bad); }
+.editor-size.full .bar i { background: var(--bad); }
+
+.editor-undo { display: flex; gap: 6px; }
+.editor-undo button { min-height: 36px; padding: 0 12px; }
+
+.editor-rail {
+  grid-area: rail; background: var(--panel); border-right: 2px solid var(--edge);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.editor-tabs { display: flex; border-bottom: 2px solid var(--edge); }
+.editor-tabs button {
+  flex: 1; min-height: 40px; border: 0; border-radius: 0; background: transparent;
+  color: var(--dim); font-size: 13px; letter-spacing: .6px; justify-content: center;
+}
+.editor-tabs button[aria-pressed="true"] {
+  color: var(--accent); background: var(--raised);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+.editor-rail .search { padding: 10px; border-bottom: 1px solid var(--edge); }
+.editor-rail .search input { width: 100%; }
+.editor-grid {
+  flex: 1; min-height: 0; overflow: auto; padding: 8px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
+  align-content: start;
+}
+.editor-grid button {
+  min-height: 38px; padding: 0; justify-content: center; border-radius: 4px;
+  border-width: 1px;
+}
+.editor-grid button[aria-pressed="true"] { border-color: var(--accent); background: #2f2a1c; }
+.editor-grid img { width: 26px; height: 26px; image-rendering: pixelated; }
+
+/* Ce qui est en main. Le jeu le montre au curseur ; sur une page web il faut aussi le dire
+   en toutes lettres, parce que rien n'apprend les raccourcis à celui qui arrive. */
+.editor-held {
+  border-top: 2px solid var(--edge); padding: 10px 12px; background: var(--raised);
+  min-height: 74px;
+}
+.editor-held .name { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.editor-held img { width: 22px; height: 22px; image-rendering: pixelated; }
+.editor-held .cost { color: var(--dim); font-size: 12.5px; margin-top: 4px; }
+.editor-held .empty { color: var(--dim); font-size: 12.5px; }
+
+.editor-stage { grid-area: stage; position: relative; overflow: hidden; }
+.editor-stage canvas { display: block; image-rendering: pixelated; cursor: crosshair; }
+/* Le plateau prend le focus au clic pour que les raccourcis marchent, mais il n'a pas a
+   porter le liseré d'un champ de formulaire : c'est une surface de dessin, pas une saisie. */
+.editor-stage canvas:focus, .editor-stage canvas:focus-visible { outline: none; }
+
+/* La raison d'un refus, sous le curseur et nulle part ailleurs. Un bandeau en haut de page
+   serait lu une fois puis jamais, et une notification empilée serait un journal d'erreurs
+   pour un geste qui n'en est pas une. */
+.editor-why {
+  position: absolute; pointer-events: none; z-index: 2;
+  background: #2a1c1c; border: 1px solid var(--bad); color: var(--bad);
+  border-radius: 5px; padding: 3px 8px; font-size: 12.5px; white-space: nowrap;
+  transform: translate(14px, 14px);
+}
+
+.editor-foot {
+  grid-area: foot; display: flex; align-items: center; gap: 12px;
+  padding: 7px 16px; background: var(--panel); border-top: 2px solid var(--edge);
+  color: var(--dim); font-size: 12.5px;
+}
+.editor-foot kbd {
+  background: var(--raised); border: 1px solid var(--edge); border-bottom-width: 2px;
+  border-radius: 4px; padding: 1px 6px; font-family: var(--mono); font-size: 11.5px;
+  color: var(--ink);
+}
+.editor-foot .spacer { margin-left: auto; }
+
+@media (max-width: 720px) {
+  .editor { grid-template-columns: 180px 1fr; }
+}
+
+/* Les filtres de la palette : la planète d'abord, la catégorie ensuite.
+   Serpulo et Erekir ne partagent presque aucun bloc, donc c'est le tri qui coupe le plus. */
+.editor-filters {
+  padding: 8px 10px; border-bottom: 1px solid var(--edge);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.editor-filters .chips { gap: 4px; }
+.editor-filters select {
+  flex: 1; min-width: 120px; min-height: 30px; padding: 0 8px; font: inherit;
+  font-size: 12px; color: var(--ink); background: var(--raised);
+  border: 1px solid var(--edge); border-radius: 6px;
+}
+.editor-filters .chip {
+  cursor: pointer; font-size: 11.5px; padding: 3px 8px; color: var(--dim);
+}
+.editor-filters .chip[aria-pressed="true"] {
+  color: #241d0c; background: var(--accent); border-color: #e0b45f;
+}
+.editor-grid .empty { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; padding: 8px; }
+
+/* La barre de la sélection, posée contre elle plutôt que dans le rail.
+   Une barre à l'autre bout de l'écran oblige à quitter des yeux ce sur quoi elle agit. */
+.editor-pick {
+  position: absolute; z-index: 3; display: flex; gap: 4px;
+  background: var(--panel); border: 2px solid var(--accent); border-radius: 6px;
+  padding: 4px;
+}
+.editor-pick button {
+  min-height: 30px; padding: 0 10px; font-size: 12.5px; border-width: 1px;
+}
+
+/* Le panneau des raccourcis. Il dit aussi ce qui diffère du jeu : un panneau d'aide qui
+   cache ses divergences est un panneau qui ment. */
+.editor-help {
+  position: fixed; inset: 0; z-index: 70; display: grid; place-items: center;
+  background: rgba(9, 11, 14, .72); padding: 24px;
+}
+.editor-help .sheet {
+  background: var(--panel); border: 2px solid var(--edge); border-radius: var(--radius);
+  padding: 20px 24px; max-width: 720px; max-height: 88vh; overflow: auto;
+}
+.editor-help h2 { margin: 0 0 4px; font-size: 17px; color: var(--accent); }
+.editor-help h3 {
+  margin: 18px 0 8px; font-size: 12px; letter-spacing: .8px; color: var(--dim);
+  text-transform: uppercase;
+}
+.editor-help .row {
+  display: grid; grid-template-columns: 160px 1fr; gap: 12px; align-items: baseline;
+  margin: 0 0 5px; font-size: 13.5px;
+}
+.editor-help kbd {
+  background: var(--raised); border: 1px solid var(--edge); border-bottom-width: 2px;
+  border-radius: 4px; padding: 2px 7px; font-family: var(--mono); font-size: 11.5px;
+  color: var(--ink); justify-self: start;
+}
+.editor-help .apart { border-top: 1px solid var(--edge); margin-top: 18px; }
+.editor-help .apart b { color: var(--warn); font-weight: 600; }
+.editor-help .sheet > button { margin-top: 18px; }
+.editor-foot button.ghost {
+  min-height: 26px; padding: 0 10px; font-size: 12px; border-width: 1px;
+  background: transparent; color: var(--dim);
+}
+
+/* L'onglet sol. Une barre d'outils ici et pas du côté bâtir : le jeu n'en a pas pour poser
+   un bloc, et son éditeur de carte en a une pour peindre. L'asymétrie vient de lui. */
+.editor-ground { flex: 1; min-height: 0; overflow: auto; padding: 10px; }
+.editor-ground .tools { display: flex; flex-wrap: wrap; gap: 4px; }
+.editor-ground .tools .chip { cursor: pointer; font-size: 12px; padding: 4px 10px; }
+.editor-ground .tools .chip[aria-pressed="true"] {
+  color: #241d0c; background: var(--accent); border-color: #e0b45f;
+}
+.editor-ground label {
+  display: block; margin: 12px 0 0; font-size: 12px; color: var(--dim);
+}
+.editor-ground label input { width: 100%; margin: 4px 0 0; }
+.editor-ground label .num { font-size: 11.5px; }
+.editor-ground h3 {
+  margin: 16px 0 6px; font-size: 11.5px; letter-spacing: .7px; color: var(--dim);
+  text-transform: uppercase;
+}
+.editor-ground h3 .num { color: var(--edge); }
+.editor-ground .chips { gap: 3px; }
+.editor-ground .chip.pick {
+  cursor: pointer; font-size: 11px; padding: 3px 7px; color: var(--dim);
+}
+.editor-ground .chip.pick img { width: 14px; height: 14px; image-rendering: pixelated; }
+.editor-ground .chip.pick[aria-pressed="true"] {
+  color: var(--ink); border-color: var(--accent); background: #2f2a1c;
+}
+.editor-ground .wipe { margin-top: 16px; width: 100%; min-height: 34px; font-size: 12.5px; }
+
+/* Le choisisseur de contenu : ce qu'un trieur laisse passer, ce qu'une source fabrique.
+   Posé contre le bloc, comme la barre de sélection, et pour la même raison. */
+.editor-picker {
+  position: absolute; z-index: 4; max-width: 236px;
+  display: flex; flex-wrap: wrap; gap: 3px;
+  background: var(--panel); border: 2px solid var(--accent); border-radius: 6px; padding: 4px;
+}
+.editor-picker button {
+  min-height: 30px; width: 30px; padding: 0; justify-content: center; border-width: 1px;
+  border-radius: 4px; font-size: 11px;
+}
+.editor-picker button[aria-pressed="true"] { border-color: var(--accent); background: #2f2a1c; }
+.editor-picker img { width: 20px; height: 20px; image-rendering: pixelated; }
+
+/* La reprise d'un brouillon, proposée en bas du plateau. Jamais imposée : ecraser d'office
+   ce que quelqu'un vient de coller serait pire que de perdre le brouillon. */
+.editor-draft {
+  position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 5;
+  display: flex; align-items: center; gap: 12px; max-width: 92%;
+  background: var(--panel); border: 2px solid var(--accent); border-radius: var(--radius);
+  padding: 10px 14px; font-size: 13.5px;
+}
+.editor-draft button { min-height: 34px; padding: 0 14px; font-size: 13px; }
+
+/* Tourner au doigt, faute de molette. Il n'apparaît que quand il sert. */
+.editor-turn {
+  position: absolute; right: 16px; bottom: 16px; z-index: 5;
+  width: 52px; height: 52px; min-height: 52px; padding: 0; justify-content: center;
+  border-radius: 50%; font-size: 22px;
+}
+@media (hover: hover) and (pointer: fine) { .editor-turn { display: none !important; } }

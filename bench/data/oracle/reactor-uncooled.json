@@ -21,6 +21,13 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "battery-large",
+      "x": 16,
+      "y": 13
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

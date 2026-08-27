@@ -19,6 +19,7 @@ import { fromBase64 } from "./schematic.js";
 import { demand, requirements } from "./needs.js";
 import { candidates, feedFrom, markable, marksOf, readMarks } from "./marks.js";
 import { attributeOf, beamOf, dryTilesOf, wallSumOf, yieldOf } from "./ground.js";
+import { logicOf, readProgram } from "./logic.js";
 import { throughput } from "./maxflow.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
@@ -1000,6 +1001,14 @@ export async function analyse(text, supply = {}, chosen = null,
   const parsed = await fromBase64(text);
   const graph = buildGraph(parsed.tiles);
 
+  /* What each processor is set to, decoded once. A processor consumes nothing, so it never
+     enters the flow; what it is worth to a reader is which blocks it drives, and whether it
+     drives them at all. */
+  for (const node of graph.nodes) {
+    if (node.block.kind !== "LogicBlock") continue;
+    node.program = node.config?.type === 14 ? await readProgram(node.config.bytes) : null;
+  }
+
   // What the ground gives each drill and each pump, worked out once. Nothing here is a
   // guess: the game decides what a drill makes from the tiles under it, and until there
   // was a ground to look at, a drill in this graph made nothing at all.
@@ -1123,6 +1132,11 @@ export async function analyse(text, supply = {}, chosen = null,
     // than in rates. Computed rather than asked for: nobody knows offhand that a layout
     // drinks eighteen water a second, and everybody can picture two mechanical pumps.
     needs: requirements(graph, catalogue),
+    /* The processors, declared and not simulated: how many there are, how many of them
+       drive anything rather than merely watch, and which blocks those drive. A layout whose
+       three processors all only `sensor` and `print` changes no number, and saying so is
+       worth more than a rate nobody can check. */
+    logic: logicOf(graph.nodes),
     // What the player marked, with what each tile handles: not "it needs water" but "this
     // pipe has to bring 8,640 water a minute", which is the difference between a fact and
     // an instruction.

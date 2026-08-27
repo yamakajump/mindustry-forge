@@ -2,9 +2,13 @@
 
     python tools/build_catalogue.py
 
-`bench/data/blocks.json` is everything the game knows, 128 kilobytes of it, and most of it
-is blocks that carry nothing. The page loads the trimmed copy, 29 kilobytes, which is small
-enough that nobody waits for it.
+`bench/data/blocks.json` is everything the game knows, 367 kilobytes of it, and most of it
+is blocks that carry nothing. The page loads the trimmed copy, 176 kilobytes, which gzips
+to a fraction of that and is small enough that nobody waits for it.
+
+Those figures are measured rather than remembered. The docstring claimed 128 and 29 for a
+long time after both had stopped being true, which is how a file comes to document a
+program that no longer exists.
 
 Generated rather than edited. A hand-maintained second copy of the block data would drift
 from the first, which is the failure this whole repository is arranged to avoid.
@@ -58,12 +62,45 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
         "outputs_payload", "accepts_payload", "construct_time", "upgrades",
         "capacities", "build_time", "build_speed", "produces", "incinerable", "instant_transfer",
         "consumes_power", "outputs_power_flag", "conductive_power", "power_node", "heat_warmup_rate",
-        "laser_range", "max_nodes", "no_autolink", "no_connected_power",
+        "laser_range", "max_nodes", "no_autolink", "no_connected_power", "no_update",
+        "launch_time", "accept_multiple_items",
+        "load_time", "items_loaded", "liquids_loaded", "max_block_size",
+        "offload_speed", "deconstruct_speed", "dump_rate", "max_payload_size",
+        "charge_time", "length", "knockback", "transfer_time",
+        "area_size", "drones_created", "drone_construct_time", "drone_type",
+        "plans", "tier", "unit_build_time", "unit_type", "stale_time",
+        "base_explosiveness", "explosiveness_scale", "explosion_radius",
+        "explosion_damage", "health",
         "same_block_link", "liquid_output_directions", "no_dump_extra", "ignore_liquid_fullness", "solid",
         # Le mass driver, qui lance ses objets a distance.
         "rotate_speed", "min_distribute", "reload", "bullet_speed",
         "bullet_lifetime", "translation",
+        # Ce qui decide d une pose dans l editeur, lu dans `Build.validPlace` et
+        # `Block.canReplace`. Ranger la palette demande `category` et `planet` ; decider
+        # d un remplacement demande tous les autres, et en connaitre une partie seulement
+        # donne un editeur qui refuse des gestes que le jeu accepte.
+        "category", "group", "group_any_replace", "subclass", "planet",
+        "conveyor_placement", "replaceable", "always_replace", "quick_rotate",
+        "privileged", "placeable_on", "requires_water", "placeable_liquid",
+        # Comment un glisse trace, et jusqu ou un pont ou un pylone porte.
+        "allow_diagonal", "swap_diagonal_placement", "allow_rectangle_placement",
+        "laser_range",
+        # Ce qu un convoyeur devient tout seul quand la ligne le demande, et le reste de ce
+        # que la pose lit : rotations forcees, miroirs inverses, configurabilite, casse.
+        "junction_replacement", "bridge_replacement", "ignore_line_rotation",
+        "lock_rotation", "invert_flip", "save_config", "copy_config", "configurable",
+        "clear_on_double_tap", "placeable_player", "schematic_priority",
+        "build_visibility",
         )
+
+#: Les champs dont `False` est l information, et non l absence d information.
+#:
+#: Le filtre plus bas jette les valeurs vides, et en Python `False == 0` : un champ à
+#: `False` y passait donc à la trappe avec les zéros. Sans importance tant que tout drapeau
+#: valait vrai par défaut, mais `replaceable` et `placeable_on` valent **vrai** par défaut
+#: dans le jeu et ne sont écrits que là où ils sont faux. Les jeter revenait à supprimer la
+#: seule chose qu'ils avaient à dire.
+FALSE_MATTERS = ("replaceable", "placeable_on", "allow_diagonal", "placeable_player")
 
 
 def main() -> None:
@@ -80,7 +117,8 @@ def main() -> None:
                 and not entry.get("floor") and not entry.get("wall")):
             continue
         blocks[name] = {k: v for k, v in entry.items()
-                        if k in KEEP and v not in (0, {}, "", None)}
+                        if k in KEEP
+                        and (k in FALSE_MATTERS or v not in (0, {}, "", None))}
 
     TARGET.parent.mkdir(parents=True, exist_ok=True)
     TARGET.write_text(json.dumps({

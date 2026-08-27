@@ -74,6 +74,33 @@
       "efficiency": 1
     }
   ],
+  "standing": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "reinforced-bridge-conduit",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "reinforced-bridge-conduit",
+      "x": 17,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 18,
+      "y": 13
+    },
+    {
+      "block": "liquid-tank",
+      "x": 20,
+      "y": 13
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

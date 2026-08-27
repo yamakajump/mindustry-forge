@@ -19,6 +19,7 @@
  */
 
 import { DIRECTIONS, edgesOf, TICKS } from "./core.js";
+import { hurt } from "./blast.js";
 import { heatReaching } from "./machines.js";
 
 /**
@@ -72,7 +73,8 @@ const TILE = 8;
 
 export function gridsOf(world) {
   const onGrid = world.builds.filter((build) =>
-    isNode(build) || build.block.power > 0 || output(build.block) > 0);
+    isNode(build) || build.block.power > 0 || output(build.block) > 0
+    || build.role === "power-void");
 
   const owner = new Map(onGrid.map((build) => [build, build]));
   const find = (build) => {
@@ -359,7 +361,8 @@ export class Grid {
     // needs it: a diode reads the two banks on either side of it and moves charge across.
     for (const build of builds) build.grid = this;
     this.producers = builds.filter((build) => output(build.block) > 0);
-    this.consumers = builds.filter((build) => build.block.power > 0);
+    this.consumers = builds.filter(
+      (build) => build.block.power > 0 || build.role === "power-void");
     this.batteries = builds.filter(isBattery);
 
     for (const build of this.batteries) build.state.charge = 0;
@@ -409,7 +412,12 @@ export class Grid {
          It matters more than it sounds. A turret with nothing to shoot at draws no power
          at all once it has finished reloading, and a bank of them counted as consumers
          invents a demand that dims the whole base in the report and not in the game. */
-      needed += build.block.power / 60 * build.delta(step) * (build.state.wants ?? 1);
+      /* `consumePower(Float.MAX_VALUE)`: a power void does not ask for a lot, it asks for
+         everything, and its whole grid reads zero for as long as it stands. A finite number
+         because the arithmetic that follows divides by it. */
+      needed += build.role === "power-void"
+        ? 1e18
+        : build.block.power / 60 * build.delta(step) * (build.state.wants ?? 1);
     }
 
     this.made = made;
@@ -589,11 +597,7 @@ const burner = {
       build.dumpLiquid(liquid);
       if (block.explode_on_full
           && build.liquids.get(liquid) >= build.liquidCapacity - 0.01) {
-        build.state.dead = true;
-        build.state.running = 0;
-        build.state.heat = 0;
-        build.items.clear();
-        build.liquids.clear();
+        hurt(build, build.state.health ?? block.health ?? 1);
         return;
       }
     }
@@ -810,13 +814,10 @@ const nuclear = {
                                 (block.heat_warmup_rate ?? 1) * delta);
 
     if (build.state.overheat >= 0.999) {
-      // `kill()`. The block is gone, and so is everything that was inside it: a reactor
-      // that overheated does not sit there holding twenty five thorium.
-      build.state.dead = true;
-      build.state.running = 0;
-      build.state.heat = 0;
-      build.items.clear();
-      build.liquids.clear();
+      /* `kill()`. The block is gone, and so is everything that was inside it, and so is a
+         good deal of what was standing next to it: a thorium reactor going up is nineteen
+         tiles of five thousand damage against a vault's four hundred and ninety-five. */
+      hurt(build, build.state.health ?? build.block.health ?? 1);
     }
   },
 };

@@ -1,0 +1,129 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "router",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 3
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 17,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 191
+      }
+    },
+    {
+      "block": "landing-pad",
+      "x": 14,
+      "y": 15,
+      "efficiency": 0
+    }
+  ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "router",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 17,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13
+    },
+    {
+      "block": "landing-pad",
+      "x": 14,
+      "y": 15
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "items":{
+        "copper": 191
+      }
+    }
+  ],
+  "per_second":{
+    "copper": 6.366667
+  }
+}

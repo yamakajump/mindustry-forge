@@ -1,0 +1,107 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "liquid": "arkycite",
+      "amount": 10000
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 15,
+      "liquid": "water",
+      "amount": 10000
+    }
+  ],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 18,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 21,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 17,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 19,
+      "efficiency": 1
+    }
+  ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 18,
+      "y": 14
+    },
+    {
+      "block": "conveyor",
+      "x": 21,
+      "y": 14
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 15
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 17
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 19
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

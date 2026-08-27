@@ -116,9 +116,15 @@ function drawBridge(context, node, box, scale) {
   // tiles away and were drawn as bars across the whole picture.
   if (!node.link) return;
 
-  const span = atlas?.sprites?.[`${node.name}-bridge`];
-  const arrow = atlas?.sprites?.[`${node.name}-arrow`];
-  const cap = atlas?.sprites?.[`${node.name}-end`];
+  /* `name` du côté de l'analyse, `block` du côté de l'éditeur : le reste de `draw` accepte
+     déjà les deux et celui-ci ne le faisait pas. La travée cherchait alors le sprite
+     `undefined-bridge`, ne le trouvait pas, et sortait sans rien dire : les ponts posés
+     dans l'éditeur s'affichaient sans aucune travée, donc sans qu'on puisse voir qui était
+     relié à qui. */
+  const name = node.name || node.block;
+  const span = atlas?.sprites?.[`${name}-bridge`];
+  const arrow = atlas?.sprites?.[`${name}-arrow`];
+  const cap = atlas?.sprites?.[`${name}-end`];
   if (!span) return;
 
   const at = (x, y) => [(x - box.left) * scale + scale / 2,
@@ -289,31 +295,71 @@ function blender(tiles, sizeOf, roleOf) {
 }
 
 /**
+ * Which region of the world the drawing covers, in tiles.
+ *
+ * Two callers, two ways of deciding. The report has no camera: it frames the build itself,
+ * plus an apron when a block is waiting to be put down. The editor has one: it frames
+ * whatever the player is looking at, and the build may be half off screen or lost in the
+ * middle of an empty plain.
+ *
+ * Everything downstream is written against this box, so making the editor work is a matter
+ * of handing `draw` a different box rather than a second `draw`. That mattered: this
+ * repository has already paid for a second implementation of one question, deleted
+ * `simulate.js` over it, and said so in `docs/todo.md`.
+ *
+ * The camera box is deliberately fractional. Rounding it to whole tiles would leave the
+ * canvas a few pixels short of its own frame, which reads as a thin dead border that moves
+ * when you pan.
+ */
+export function viewportBox({ tight, apron = 0, camera = null, viewport = null }) {
+  if (camera && viewport) {
+    const width = viewport.width / camera.scale;
+    const height = viewport.height / camera.scale;
+    return {
+      left: camera.x - width / 2,
+      bottom: camera.y - height / 2,
+      width,
+      height,
+    };
+  }
+  if (!apron) return tight;
+  return {
+    left: tight.left - apron, bottom: tight.bottom - apron,
+    width: tight.width + apron * 2, height: tight.height + apron * 2,
+  };
+}
+
+/**
  * Draw the schematic onto a canvas, sized to fit the space it is given.
  *
  * Returns the scale used, so a caller can map a click back to a tile.
+ *
+ * Pass `camera` and `viewport` to draw a view of the world instead of a portrait of the
+ * schematic: the canvas then takes the size of the viewport, the scale comes from the
+ * camera, and the build is drawn wherever it happens to be.
  */
 export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   const context = canvas.getContext("2d");
   const tight = bounds(tiles, sizeOf);
 
   /* An apron of empty tiles around the build, for putting blocks down beyond its edge.
-     
+
      Without it a packed schematic cannot be extended at all: the first one tried had not a
      single free tile inside its own box, so every click landed on something and the
      palette had nowhere to put anything. Only asked for while a block is waiting to be
      placed, because the rest of the time it is empty space around a picture. */
   const apron = Math.max(0, options.margin || 0);
-  const box = apron
-    ? { left: tight.left - apron, bottom: tight.bottom - apron,
-        width: tight.width + apron * 2, height: tight.height + apron * 2 }
-    : tight;
+  const camera = options.camera || null;
+  const viewport = options.viewport || null;
+  const box = viewportBox({ tight, apron, camera, viewport });
   const room = options.width || canvas.clientWidth || 480;
 
   // Whole pixels per tile. A fractional scale makes 32 pixel art shimmer along its own
   // grid lines, which reads as a rendering fault rather than as pixel art.
   const fit = Math.floor(room / Math.max(box.width, box.height));
-  const scale = Math.max(8, Math.min(options.maxScale || 48, fit));
+  const scale = camera
+    ? camera.scale
+    : Math.max(8, Math.min(options.maxScale || 48, fit));
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
   canvas.width = Math.round(box.width * scale * dpr);
@@ -327,8 +373,42 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   // is not exactly one to one.
   context.imageSmoothingEnabled = false;
 
+  /* The grid, under everything else and only for the editor.
+
+     The report draws a portrait of a build and needs no grid: the build is the picture. An
+     editor draws a plain, and a plain without a grid gives a player nothing to aim at. The
+     first version had none and placing a block was guesswork until the ghost appeared.
+
+     Every eighth line is brighter, which is the spacing the game uses for its own chunk
+     lines, so counting eight tiles is a glance rather than an arithmetic. */
+  if (options.grid && scale >= 6) {
+    context.save();
+    context.lineWidth = 1;
+    const from = Math.ceil(box.left);
+    const upto = box.left + box.width;
+    for (let x = from; x <= upto; x++) {
+      context.strokeStyle = x % 8 === 0 ? "rgba(255,255,255,.085)" : "rgba(255,255,255,.035)";
+      const px = Math.round((x - box.left) * scale) + 0.5;
+      context.beginPath();
+      context.moveTo(px, 0);
+      context.lineTo(px, box.height * scale);
+      context.stroke();
+    }
+    const low = Math.ceil(box.bottom);
+    const high = box.bottom + box.height;
+    for (let y = low; y <= high; y++) {
+      context.strokeStyle = y % 8 === 0 ? "rgba(255,255,255,.085)" : "rgba(255,255,255,.035)";
+      const py = Math.round((box.height - (y - box.bottom)) * scale) + 0.5;
+      context.beginPath();
+      context.moveTo(0, py);
+      context.lineTo(box.width * scale, py);
+      context.stroke();
+    }
+    context.restore();
+  }
+
   /* The ground, under everything.
-     
+
      Painted tiles win over the game's hatched schematic background, because a schematic
      standing on a patch of copper ore is standing on copper ore and the hatching is only
      there to say "this tile belongs to the build". An ore is an overlay: it goes over the
@@ -562,6 +642,18 @@ function drawPowerLinks(context, tiles, sizeOf, box, scale) {
     }
   }
   context.restore();
+}
+
+/**
+ * One sprite's place in the atlas, for drawing straight onto a canvas.
+ *
+ * `itemIcon` below answers a neighbouring question and answers it with a data URL, which
+ * is a base64 round trip through a second canvas. Fine once per chip in a palette, absurd
+ * for a ghost that follows the cursor at sixty frames a second.
+ */
+export function spriteOf(name) {
+  const found = atlas?.sprites?.[name];
+  return found && sheet ? { sheet, ...found } : null;
 }
 
 /**

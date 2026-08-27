@@ -122,6 +122,78 @@
       "efficiency": 1
     }
   ],
+  "standing": [
+    {
+      "block": "combustion-generator",
+      "x": 16,
+      "y": 12
+    },
+    {
+      "block": "item-source",
+      "x": 17,
+      "y": 12
+    },
+    {
+      "block": "conveyor",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "ground-factory",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "combustion-generator",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "item-source",
+      "x": 17,
+      "y": 13
+    },
+    {
+      "block": "combustion-generator",
+      "x": 16,
+      "y": 14
+    },
+    {
+      "block": "item-source",
+      "x": 17,
+      "y": 14
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 15
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 15
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 16
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 16
+    },
+    {
+      "block": "item-source",
+      "x": 13,
+      "y": 17
+    },
+    {
+      "block": "item-source",
+      "x": 15,
+      "y": 17
+    }
+  ],
   "containers": [],
   "per_second":{}
 }
