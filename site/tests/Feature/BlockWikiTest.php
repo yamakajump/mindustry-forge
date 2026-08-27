@@ -54,6 +54,12 @@ it('refuse un nom qui ne ressemble pas a un bloc', function () {
 });
 
 it('affiche la recette et le plafond de production', function () {
+    // The locale is pinned here rather than left to the environment. `.env` is not
+    // versioned, so a machine set to `fr` and a CI set to `en` render different pages, and a
+    // test that passes on one and fails on the other is testing the environment instead of
+    // the page. Pinned to `fr` because that is the one language shipped.
+    app()->setLocale('fr');
+
     $page = $this->get('/blocs/silicon-smelter')->assertOk();
 
     // One coal and two sand for one silicon, every forty ticks, which is one and a half a
@@ -61,8 +67,11 @@ it('affiche la recette et le plafond de production', function () {
     $page->assertSee('silicon-smelter')
         ->assertSee('coal')
         ->assertSee('sand')
-        ->assertSee('1,5')
-        ->assertSee('au_mieux', false);
+        ->assertSee('1,5');
+
+    // Never the bare figure. This is a nominal ceiling and the page has to say so, which is
+    // the difference this whole site sells: a measurement is not an estimate.
+    $page->assertSee('au mieux');
 });
 
 it('dit ou trouver ce que le bloc consomme, y compris au sol', function () {

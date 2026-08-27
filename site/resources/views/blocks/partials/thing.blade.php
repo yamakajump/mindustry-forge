@@ -1,7 +1,7 @@
-{{-- Une chose du jeu, avec son icone quand le jeu en dessine une.
+{{-- One thing from the game, with its icon when the game draws one.
 
-     Les liquides n'en ont pas dans l'atlas, donc ils sortent en texte seul plutot qu'avec
-     un trou a la place de l'image : une icone manquante ne doit pas se voir. --}}
+     Liquids have none in the atlas, so they come out as plain text rather than with a hole
+     where the image would be: a missing icon must not be visible. --}}
 @php($icon = \App\Services\Sprites::itemIcon($thing, 18))
 <span class="bloc-thing">
   @if($icon)<span class="sprite" style="{{ $icon }}" aria-hidden="true"></span>@endif

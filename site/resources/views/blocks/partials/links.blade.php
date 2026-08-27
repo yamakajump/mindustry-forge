@@ -1,13 +1,13 @@
-{{-- Une liste de blocs, en une phrase, separes par des virgules.
+{{-- A list of blocks, in one sentence, separated by commas.
 
-     Assemblee en PHP plutot qu'avec un `@foreach` et un `$loop->last` : la virgule doit
-     coller au mot precedent, et Blade insere l'espace de la mise en forme du gabarit entre
-     les deux. Chaque morceau est echappe explicitement, donc le `{!! !!}` final ne rend que
-     ce que cette boucle a construit.
+     Assembled in PHP rather than with a `@foreach` and `$loop->last`: the comma has to sit
+     against the word before it, and Blade puts the template's own layout whitespace between
+     the two. Each piece is escaped explicitly, so the closing `{!! !!}` renders only what
+     this loop built.
 
-     Un sol n'a pas de page : le jeu ne le propose pas a la construction, donc il n'est pas
-     dans les 254. Il reste une reponse valable a « d'ou vient le sable », alors il est
-     nomme en clair plutot que transforme en lien mort. --}}
+     A floor has no page: the game does not offer it in the build menu, so it is not one of
+     the 254. It is still a valid answer to "where does sand come from", so it is named in
+     plain text rather than turned into a dead link. --}}
 @php
   $parts = [];
   foreach ($blocks as $blockName => $one) {

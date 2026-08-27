@@ -34,9 +34,9 @@
   </div>
 </div>
 
-{{-- Un bloc de bac a sable ou de campagne a une page, avec sa condition dite a voix haute :
-     un joueur qui l'a vu quelque part et vient chercher pourquoi il ne le trouve pas en
-     partie merite une reponse, et la reponse est « oui, et seulement la ». --}}
+{{-- A sandbox or campaign block gets a page, with its condition said out loud. A player who
+     saw one somewhere and came looking for why it is missing from their build menu deserves
+     an answer, and the answer is "yes, and only there". --}}
 @if($block->isConditional())
   <div class="card notice">
     <p>{{ __('blocs.page.conditionnel') }} <code>{{ $block->visibility() }}</code></p>
@@ -91,9 +91,9 @@
           <span>{{ $block->maxNodes() }}</span></div>
       @endif
 
-      {{-- Les faits d'une foreuse, et pas un debit invente. Ce qu'elle sort depend du
-           nombre de cases de minerai sous elle, de la durete du minerai et de l'eau qu'on
-           lui donne : c'est le solveur qui le calcule, et l'analyse qui le rapporte. --}}
+      {{-- A drill's facts, and not an invented throughput. What it brings up depends on the
+           ore tiles under it, on how hard that ore is, and on the water it is given: the
+           solver works that out, and the analysis reports it. --}}
       @if($block->drillSeconds())
         <div class="line"><span>{{ __('blocs.page.temps_forage') }}</span>
           <span>{{ $number($block->drillSeconds()) }} {{ __('blocs.unite.secondes') }}</span></div>
@@ -113,9 +113,9 @@
     @if($block->cost() !== [])
       <div class="card bloc-facts">
         <h2>{{ __('blocs.page.cout') }}</h2>
-        {{-- Dans l'ordre du jeu, pas par quantite : un joueur compare cette liste au
-             panneau qu'il a sous les yeux en partie, et trier autrement ferait diverger
-             les deux sans que rien ne le signale. --}}
+        {{-- In the game's order, not by quantity. A player compares this list against the
+             panel in front of them in game, and sorting it any other way would make the two
+             disagree with nothing to say so. --}}
         @foreach(BlockCatalogue::inGameOrder($block->cost()) as $item => $amount)
           <div class="line">
             <span>@include('blocks.partials.thing', ['thing' => $item])</span>
@@ -164,14 +164,13 @@
             {{ $number($block->craftSeconds()) }} {{ __('blocs.unite.secondes') }}</p>
         @endif
 
-        {{-- « au mieux », et jamais le chiffre nu.
+        {{-- "At best", and never the bare figure.
 
-             C'est un plafond nominal : ce que le bloc ferait alimente a fond, seul, sans
-             goulot. Le reste du site affiche des chiffres qui sortent du solveur,
-             alimentation et boost compris, et qui sont presque toujours plus bas. Laisser
-             les deux se ressembler reviendrait a presenter une estimation comme une
-             mesure, ce qui est exactement le probleme repare sur le classement par
-             energie nette le 27/08. --}}
+             This is a nominal ceiling: what the block would do fed perfectly, alone, with
+             nothing in its way. Everything else this site prints comes out of the solver,
+             feed and boost included, and is almost always lower. Letting the two look alike
+             would be presenting an estimate as a measurement, which is exactly the fault
+             repaired on the net-power ranking on 27/08. --}}
         @if($block->outputAtBest() !== [] || $block->outputLiquidAtBest() !== [])
           @foreach($block->outputAtBest() as $item => $rate)
             <div class="line">
@@ -231,8 +230,8 @@
   </div>
 </div>
 
-{{-- Les deux directions, qui sont ce qui separe une page de wiki d'une fiche de stats :
-     d'ou vient ce qu'il mange, et a quoi sert ce qu'il sort. --}}
+{{-- The two directions, which are what separates a wiki page from a stat sheet: where what
+     it eats comes from, and what what it makes is good for. --}}
 <div class="bloc-cols">
   @if($sources !== [])
     <div class="card">
@@ -241,10 +240,10 @@
         @foreach($sources as $thing => $where)
           <li>
             @include('blocks.partials.thing', ['thing' => $thing])
-            {{-- Les deux, quand les deux existent. Le sable se fabrique au pulverisateur
-                 *et* se ramasse au sol, et c'est le sol que fait un joueur sur neuf fois
-                 sur dix : n'en montrer qu'un parce que l'autre est renseigne cacherait la
-                 reponse courante derriere la reponse rare. --}}
+            {{-- Both, when both exist. Sand is made in a pulveriser *and* picked up off the
+                 ground, and the ground is what nine players out of ten do: showing only one
+                 because the other is filled in would hide the common answer behind the rare
+                 one. --}}
             @if($where['made'] !== [])
               <span class="bloc-of">{{ __('blocs.page.se_fabrique_dans') }}</span>
               @include('blocks.partials.links', ['blocks' => $where['made']])
@@ -281,9 +280,9 @@
   @endif
 </div>
 
-{{-- La question qu'aucun autre site Mindustry ne sait traiter, parce qu'aucun ne lit les
-     schematiques qu'il heberge. Vide tant que le collecteur n'a pas tourne, et branchee
-     des maintenant pour que la page se remplisse toute seule ce jour-la. --}}
+{{-- The question no other Mindustry site can answer, because none of them ever reads the
+     schematics it hosts. Empty until the ingestion pass has run, and wired up now so that
+     the page fills itself in on the day it does. --}}
 <div class="card">
   <h2>{{ __('blocs.page.schematiques') }}</h2>
   @if($schematics->isEmpty())

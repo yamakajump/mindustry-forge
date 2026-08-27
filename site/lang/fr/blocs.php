@@ -1,21 +1,21 @@
 <?php
 
 /*
- * Les chaînes du wiki des blocs.
+ * The block wiki's strings.
  *
- * ATTENTION, tant que le socle multilingue n'a pas atterri : `config/app.php` fixe encore
- * la locale à `en` et il n'existe pas de `lang/en/`, donc `__('blocs.page.recette')`
- * affiche la clé en clair au lieu du texte. Ce n'est pas un bug de ces pages, c'est
- * attendu, et ça se répare tout seul quand la voie i18n bascule la locale sur `fr`.
+ * HEADS UP while the multilingual groundwork is not in yet: `config/app.php` still pins the
+ * locale to `en` and there is no `lang/en/`, so `__('blocs.page.recette')` prints the key
+ * instead of the text. That is not a bug in these pages, it is expected, and it fixes itself
+ * the moment the i18n voice switches the locale to `fr`.
  *
- * Nommage : <domaine>.<ecran>.<element>, domaine `blocs`.
+ * Naming: <domain>.<screen>.<element>, domain `blocs`.
  *
- * UNE RÈGLE, ET ELLE A UNE RAISON : aucun chiffre ne passe par un placeholder. Les unités
- * ci-dessous sont des mots nus (`cases`, `s`, `/s`) que la vue accole au nombre, au lieu de
- * chaînes à trous du genre `:n cases`. Quand une clé manque, Laravel rend la clé sans
- * substituer, donc une chaîne à trous ferait purement disparaître la valeur : « 160 points »
- * devenait « blocs.unite.points ». Un chiffre perdu est pire qu'un mot illisible, et ça vaut
- * aussi une fois le socle en place, le jour où un traducteur oublie un `:n`.
+ * ONE RULE, AND IT HAS A REASON: no figure ever goes through a placeholder. The units below
+ * are bare words (`cases`, `s`, `/s`) that the view puts against the number, rather than
+ * strings with a hole in them like `:n cases`. When a key is missing, Laravel returns the key
+ * without substituting, so a string with a hole would make the value disappear outright:
+ * "160 points" became "blocs.unite.points". A lost figure is worse than an unreadable word,
+ * and this still holds once the groundwork lands, on the day a translator drops a `:n`.
  */
 
 return [
@@ -94,13 +94,13 @@ return [
         'exemplaires' => 'exemplaires',
 
         /*
-         * Le mot qui compte le plus de ce fichier.
+         * The most important words in this file.
          *
-         * Ces débits sont des plafonds nominaux : ce que le bloc ferait alimenté à fond,
-         * seul, sans goulot. Le reste du site présente des chiffres qui sortent du solveur,
-         * alimentation et boost compris, et qui sont presque toujours plus bas. Les deux ne
-         * doivent jamais se ressembler sur une page : ce site vend la différence entre une
-         * mesure et une estimation, et c'est la seule chose qu'il vend.
+         * These rates are nominal ceilings: what the block would do fed perfectly, alone,
+         * with nothing in its way. Everything else the site prints comes out of the solver,
+         * feed and boost included, and is almost always lower. The two must never look alike
+         * on a page: this site sells the difference between a measurement and an estimate,
+         * and that is the only thing it sells.
          */
         'au_mieux' => 'au mieux',
         'plafond' => 'Ce sont des plafonds : ce que le bloc ferait alimenté à fond et sans

@@ -12,9 +12,9 @@
 <p class="sub">{{ __('blocs.index.sous_titre') }}
   {{ __('blocs.index.version') }} {{ $gameVersion }}, {{ $total }} {{ __('blocs.index.blocs') }}.</p>
 
-{{-- Le filtre part au serveur plutot que de masquer des tuiles en JavaScript : la page se
-     lit sur un telephone en pleine partie, et charger 254 tuiles pour en cacher 220 fait
-     payer la bande passante de tout le catalogue pour voir une categorie. --}}
+{{-- Filtered on the server rather than by hiding tiles in JavaScript. The site is read on
+     a phone mid-game, and shipping 254 tiles to hide 220 of them makes a player pay for the
+     whole catalogue's bandwidth to look at one category. --}}
 <form method="get" class="bloc-filters">
   <label for="categorie">{{ __('blocs.index.categorie') }}</label>
   <select name="categorie" id="categorie">
