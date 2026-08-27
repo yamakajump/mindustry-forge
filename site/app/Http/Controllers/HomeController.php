@@ -99,8 +99,16 @@ class HomeController extends Controller
                 'blocs' => $s->blocks,
                 'largeur' => $s->width,
                 'hauteur' => $s->height,
-                'produit' => $s->item,
-                'debit' => round((float) $s->rate * 60, 1),
+                /* Le nom du jeu plutot que l'identifiant, et l'unite que la valeur porte
+                   plutot qu'une conversion. `rate` ne mesure pas la meme chose selon la
+                   ligne : par minute pour un objet, par seconde pour l'energie. Multiplier
+                   tout par soixante donnait une eau soixante fois trop rapide et une
+                   energie qui contredisait le reste du site. */
+                'produit' => SchematicItem::nomAffiche($s->item),
+                'debit' => round((float) $s->rate, 1),
+                'unite' => __(SchematicItem::parSeconde($s->item)
+                    ? 'schema.unite.par-seconde'
+                    : 'schema.unite.par-minute'),
             ])
             ->all();
     }
