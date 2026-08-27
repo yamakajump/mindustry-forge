@@ -378,11 +378,31 @@ class Schematic extends Model
     public static function countBlocks(mixed $analysis): array
     {
         $counts = [];
-        foreach ((array) ($analysis['detail'] ?? []) as $tile) {
-            $name = is_array($tile) ? ($tile['name'] ?? null) : null;
-            if (is_string($name) && $name !== '') {
-                $key = substr($name, 0, 40);
-                $counts[$key] = ($counts[$key] ?? 0) + 1;
+
+        /* `held` first, `detail` after, and both on purpose.
+         *
+         * `held` is the compact inventory the analysis now returns, and it is the only one
+         * that survives `tools/ingest.mjs`: its whitelist never carried `detail`, so every
+         * collected schematic stored an analysis without it and `schematic_blocks` was
+         * empty on all 15,533 rows. The browser posts the whole report, `detail` included,
+         * so that path always worked - which is why nothing looked broken.
+         *
+         * The fallback stays for exactly that reason: an analysis stored before this
+         * change, or posted by a page that has not been reloaded, still has to be read.
+         */
+        foreach ((array) ($analysis['held'] ?? []) as $name => $count) {
+            if (is_string($name) && $name !== '' && is_numeric($count) && $count > 0) {
+                $counts[substr($name, 0, 40)] = (int) $count;
+            }
+        }
+
+        if ($counts === []) {
+            foreach ((array) ($analysis['detail'] ?? []) as $tile) {
+                $name = is_array($tile) ? ($tile['name'] ?? null) : null;
+                if (is_string($name) && $name !== '') {
+                    $key = substr($name, 0, 40);
+                    $counts[$key] = ($counts[$key] ?? 0) + 1;
+                }
             }
         }
 
