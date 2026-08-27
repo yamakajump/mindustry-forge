@@ -4,11 +4,15 @@ import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.serialization.Jval;
 import mindustry.Vars;
+import mindustry.content.TechTree;
+import mindustry.content.TechTree.TechNode;
 import mindustry.core.Version;
 import mindustry.type.Item;
+import mindustry.type.Planet;
 import mindustry.type.Liquid;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
+import mindustry.world.meta.BuildVisibility;
 import mindustry.world.blocks.distribution.BufferedItemBridge;
 import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.Duct;
@@ -50,6 +54,10 @@ import mindustry.world.blocks.payloads.Constructor;
 import mindustry.world.blocks.payloads.BlockProducer;
 import mindustry.type.UnitType;
 import mindustry.world.blocks.units.Reconstructor;
+import mindustry.world.blocks.units.UnitAssembler;
+import mindustry.world.blocks.units.UnitCargoLoader;
+import mindustry.world.blocks.units.UnitCargoUnloadPoint;
+import mindustry.world.blocks.units.UnitAssemblerModule;
 import mindustry.world.blocks.payloads.PayloadVoid;
 import mindustry.world.blocks.payloads.PayloadSource;
 import mindustry.world.blocks.payloads.PayloadRouter;
@@ -81,7 +89,13 @@ import mindustry.world.blocks.power.NuclearReactor;
 import mindustry.world.blocks.power.ImpactReactor;
 import mindustry.world.blocks.power.ThermalGenerator;
 import mindustry.world.blocks.power.HeaterGenerator;
+import mindustry.world.blocks.campaign.LaunchPad;
+import mindustry.world.blocks.payloads.PayloadDeconstructor;
+import mindustry.world.blocks.payloads.PayloadMassDriver;
+import mindustry.world.blocks.payloads.PayloadLoader;
+import mindustry.world.blocks.payloads.PayloadUnloader;
 import mindustry.world.blocks.defense.Door;
+import mindustry.world.blocks.sandbox.PowerVoid;
 import mindustry.world.blocks.power.PowerDiode;
 import mindustry.world.blocks.power.PowerNode;
 import mindustry.world.blocks.heat.HeatConductor;
@@ -179,6 +193,84 @@ public class DumpBlocks {
                s arreter dessus et la foreuse derriere seule sur sa grille. */
             if (block instanceof PowerNode) entry.put("power_node", true);
             entry.put("rotate", block.rotate);
+            /* Ou ranger le bloc dans la palette, et avec quoi il est interchangeable.
+
+               `Block.canReplace` lit `group`, `subclass`, `replaceable`, `alwaysReplace`,
+               `privileged` et `quickRotate`. Un editeur qui n en connait qu une partie
+               refuse des gestes que le jeu accepte, et poser un convoyeur titane sur un
+               convoyeur redevient impossible. Deviner depuis `role` ne marche pas : `role`
+               regroupe des blocs que le jeu separe, et separe des blocs qu il regroupe. */
+            entry.put("category", block.category.name());
+            entry.put("group", block.group.name());
+            if (block.group.anyReplace) entry.put("group_any_replace", true);
+            if (block.subclass != null) entry.put("subclass", block.subclass.getSimpleName());
+            /* Le drapeau qui autorise le trace par recherche de chemin plutot que par
+               escalier, quand le placement diagonal est demande. Les bandes, les conduits
+               et les gaines l ont ; un routeur ne l a pas. */
+            if (block.conveyorPlacement) entry.put("conveyor_placement", true);
+            /* Comment un glisse trace, lu dans `InputHandler.iterateLine`. Le defaut est une
+               ligne droite sur l axe dominant ; la touche « placement diagonal » bascule
+               vers un escalier ou un A*, et quelques blocs inversent ce basculement pour que
+               leur comportement le plus utile soit celui qu on obtient sans toucher a rien. */
+            if (!block.allowDiagonal) entry.put("allow_diagonal", false);
+            if (block.swapDiagonalPlacement) entry.put("swap_diagonal_placement", true);
+            if (block.allowRectanglePlacement) entry.put("allow_rectangle_placement", true);
+            /* Les deux blocs qu un convoyeur devient tout seul quand la ligne le demande.
+
+               `junctionReplacement` : tracer a travers une ligne perpendiculaire pose une
+               jonction au croisement, au lieu de couper la ligne d en dessous.
+               `bridgeReplacement` : rencontrer un obstacle le fait sauter par un pont.
+
+               Ce sont les deux mecaniques qui font qu on trace a travers son usine sans y
+               penser, et elles ne se devinent pas : le jeu nomme explicitement le bloc de
+               remplacement, bande par bande. */
+            if (block instanceof Conveyor conveyor) {
+                if (conveyor.junctionReplacement != null) {
+                    entry.put("junction_replacement", conveyor.junctionReplacement.name);
+                }
+                if (conveyor.bridgeReplacement != null) {
+                    entry.put("bridge_replacement", conveyor.bridgeReplacement.name);
+                }
+            }
+            if (block instanceof Duct duct) {
+                if (duct.bridgeReplacement != null) {
+                    entry.put("bridge_replacement", duct.bridgeReplacement.name);
+                }
+            }
+            /* Le reste de ce que la pose lit, et que rien ne remplace. `lockRotation` force
+               la rotation a zero, `ignoreLineRotation` empeche un bloc de suivre le sens du
+               glisse, `invertFlip` inverse le miroir d un schema. */
+            if (block.ignoreLineRotation) entry.put("ignore_line_rotation", true);
+            if (block.lockRotation) entry.put("lock_rotation", true);
+            if (block.invertFlip) entry.put("invert_flip", true);
+            if (block.saveConfig) entry.put("save_config", true);
+            if (block.copyConfig) entry.put("copy_config", true);
+            if (block.configurable) entry.put("configurable", true);
+            if (block.clearOnDoubleTap) entry.put("clear_on_double_tap", true);
+            if (!block.placeablePlayer) entry.put("placeable_player", false);
+            /* `breakable` n est pas dumpe, et c est un choix.
+
+               Le champ est declare sans valeur dans `Block` et n y est assigne nulle part :
+               il vaut donc `false` par defaut, et au moment ou le dump tourne il vaut faux
+               pour absolument tout, convoyeur compris. Le sortir tel quel donnerait un
+               editeur ou plus rien ne se casse. Ce qui est reellement intouchable porte
+               `privileged`, qui lui est fiable, et c est ce que les regles lisent. */
+            if (block.schematicPriority != 0) entry.put("schematic_priority", block.schematicPriority);
+            /* Ce que le menu de construction du jeu montre. Un bloc cache, reserve au bac a
+               sable ou a l editeur n a rien a faire dans une palette de joueur : c est ce
+               tri la qui remplace le « il a un cout de construction » que Forge utilisait,
+               et qui laissait passer des blocs que personne ne peut poser. */
+            entry.put("build_visibility", visibilityName(block.buildVisibility));
+            if (!block.replaceable) entry.put("replaceable", false);
+            if (block.alwaysReplace) entry.put("always_replace", true);
+            if (block.quickRotate) entry.put("quick_rotate", true);
+            if (block.privileged) entry.put("privileged", true);
+            /* Ce que le sol sous un bloc autorise, lu dans `Build.validPlace`. Un liquide
+               profond ne porte que ce qui flotte, une thermogeneratrice exige son eau, et
+               quelques blocs se posent sur du liquide alors que rien d autre ne le peut. */
+            if (!block.placeableOn) entry.put("placeable_on", false);
+            if (block.requiresWater) entry.put("requires_water", true);
+            if (block.placeableLiquid) entry.put("placeable_liquid", true);
             // Frames between two attempts to hand an output on. It rarely binds - a press
             // makes one graphite every ninety frames and may offload every five - but it
             // is the difference between a machine that trickles and one that bursts.
@@ -249,6 +341,19 @@ public class DumpBlocks {
                 entry.put("power_capacity", block.consPower.capacity);
             }
             entry.put("health", block.health);
+            /* De quoi mourir, et emporter les voisins. Un bloc qui saute rend au souffle son
+               explosivite de base plus ce qu'il tenait, et un reacteur au thorium y ajoute
+               un second souffle qui lui est propre. */
+            if (block.baseExplosiveness != 0f) {
+                entry.put("base_explosiveness", block.baseExplosiveness);
+            }
+            if (block.explosivenessScale != 1f) {
+                entry.put("explosiveness_scale", block.explosivenessScale);
+            }
+            if (block instanceof mindustry.world.blocks.power.NuclearReactor pile) {
+                entry.put("explosion_radius", pile.explosionRadius);
+                entry.put("explosion_damage", pile.explosionDamage);
+            }
             /* How long this block takes to build, which is not a field anyone typed: it is
                derived from the requirements in `Block.init` as the sum of amount times item
                cost. A constructor's whole clock is the build time of whatever it was set
@@ -258,6 +363,10 @@ public class DumpBlocks {
             /* Whether a beam stops at it. Only insulation stops one: a titanium wall does
                not, which is contrary to every instinct and is the game's rule. */
             if (block.insulated) entry.put("insulated", true);
+            /* Un bloc qui ne se met jamais a jour n est pas dans la liste du jeu,
+               donc il ne compte pas dans les places : un coffre entre deux tapis
+               decalait tout l ordre du portage d un cran. */
+            if (!block.update) entry.put("no_update", true);
             /* Un noeud pose sans lien enregistre se relie tout seul a ce qui passe a
                portee : `placed()` appelle `getPotentialLinks` des que `power.links`
                est vide. Sans ces trois champs, un schema dont les liens n ont pas ete
@@ -310,9 +419,34 @@ public class DumpBlocks {
                 entry.put("power_production", generator.powerProduction * TPS);
             }
 
+            /* La portee d un pylone, en tuiles. Elle vit dans `laserRange` et non dans
+               `range`, qui reste vide pour eux : sans elle, un glisse de pylones ne sait pas
+               a quel espacement les poser pour qu ils se voient encore. */
+            if (block instanceof PowerNode node) entry.put("laser_range", node.laserRange);
+
             describeRole(block, entry);
             describeFloor(block, entry);
             blocks.put(block.name, entry);
+        }
+
+        /* De quelle planete vient un bloc, pour qu une palette puisse ne montrer qu un des
+           deux jeux de blocs. Serpulo et Erekir ne partagent presque rien, et les melanger
+           dans une meme grille donne les 253 pastilles indifferenciees d aujourd hui.
+
+           Le champ `planet` d un noeud vaut null presque partout, y compris sur les
+           racines : lire `TechTree.all` en retombant sur Serpulo quand il est null met
+           Erekir entier sur Serpulo, ce qui est exactement le contraire du but. Mesure
+           faite, les 241 blocs des deux arbres ressortaient tous serpuliens, `core-bastion`
+           compris.
+
+           L association fiable est dans l autre sens : `Planet.techTree` porte la racine de
+           l arbre de sa planete. On descend donc depuis chaque planete, ce qui donne la
+           reponse sans dependre d un champ que le jeu ne remplit pas.
+
+           Un bloc qui n est dans aucun arbre, comme les sols et les blocs de bac a sable,
+           ne recoit pas de planete du tout. */
+        for (Planet planet : Vars.content.planets()) {
+            if (planet.techTree != null) stampPlanet(planet.techTree, planet.name, blocks);
         }
         root.put("blocks", blocks);
 
@@ -357,6 +491,10 @@ public class DumpBlocks {
             // Whether an incinerator will take it. Water will not burn.
             if (liquid.incinerable) entry.put("incinerable", true);
             entry.put("temperature", liquid.temperature);
+            /* Ce qu'un plein de ce liquide ajoute au souffle quand le bloc qui le tenait
+               saute. Un reservoir d'huile ne fait pas le meme trou qu'un reservoir d'eau. */
+            entry.put("explosiveness", liquid.explosiveness);
+            entry.put("flammability", liquid.flammability);
             liquids.put(liquid.name, entry);
         }
         root.put("liquids", liquids);
@@ -369,6 +507,16 @@ public class DumpBlocks {
             Jval entry = Jval.newObject();
             entry.put("id", unit.id);
             entry.put("health", unit.health);
+            /* Ce qu'il faut pour faire voler un drone jusqu'a sa place autour d'un
+               assembleur : la vitesse, l'acceleration, la trainee et la vitesse de rotation.
+               Un assembleur n'avance que de la fraction de ses drones **en position**, donc
+               son debit est une question de vol avant d'etre une question de recette. */
+            entry.put("speed", unit.speed);
+            entry.put("accel", unit.accel);
+            entry.put("drag", unit.drag);
+            entry.put("rotate_speed", unit.rotateSpeed);
+            entry.put("hit_size", unit.hitSize);
+            entry.put("item_capacity", unit.itemCapacity);
             units.put(unit.name, entry);
         }
         root.put("units", units);
@@ -787,6 +935,123 @@ public class DumpBlocks {
                Erekir base wired entirely with them read as unpowered. */
             entry.put("role", "power");
             entry.put("range", beam.range);
+            return;
+        }
+        if (block instanceof UnitCargoLoader tether) {
+            /* Il construit exactement une unite puis cesse de consommer quoi que ce soit,
+               et cette unite est tout son debit : elle va au chargeur, prend ce qu'elle peut
+               porter, vole jusqu'a un point de dechargement regle sur cet objet, et le lache
+               par bouffees. Le debit est donc un aller-retour. */
+            entry.put("role", "cargo-loader");
+            entry.put("carries", "item");
+            entry.put("unit_build_time", tether.unitBuildTime);
+            entry.put("unit_type", tether.unitType.name);
+            entry.put("input_liquid", liquidInputsOf(block));
+            return;
+        }
+        if (block instanceof UnitCargoUnloadPoint point) {
+            entry.put("role", "cargo-unload");
+            entry.put("carries", "item");
+            entry.put("stale_time", point.staleTimeDuration);
+            return;
+        }
+        if (block instanceof UnitAssemblerModule module) {
+            // Un module colle a un assembleur lui donne acces au plan du dessus.
+            entry.put("role", "assembler-module");
+            entry.put("carries", "payload");
+            entry.put("tier", module.tier);
+            return;
+        }
+        if (block instanceof UnitAssembler assembler) {
+            /* Un assembleur n'avance que de la fraction de ses drones **en position**, donc
+               son debit est une question de vol avant d'etre une question de recette. */
+            entry.put("role", "unit-assembler");
+            entry.put("carries", "payload");
+            entry.put("area_size", assembler.areaSize);
+            entry.put("drones_created", assembler.dronesCreated);
+            entry.put("drone_construct_time", assembler.droneConstructTime);
+            entry.put("drone_type", assembler.droneType.name);
+            Jval plans = Jval.newArray();
+            for (UnitAssembler.AssemblerUnitPlan one : assembler.plans) {
+                Jval made = Jval.newObject();
+                made.put("unit", one.unit.name);
+                made.put("time", one.time);
+                Jval needs = Jval.newObject();
+                if (one.requirements != null) {
+                    for (mindustry.type.PayloadStack stack : one.requirements) {
+                        needs.put(stack.item.name, stack.amount);
+                    }
+                }
+                made.put("payloads", needs);
+                plans.asArray().add(made);
+            }
+            entry.put("plans", plans);
+            entry.put("input_liquid", liquidInputsOf(block));
+            return;
+        }
+        if (block instanceof PayloadMassDriver driver) {
+            /* Le meme principe que le mass driver a objets, pour un bloc porte entier, avec
+               une barriere de plus : la cargaison doit avoir glisse jusqu'au bout du canon
+               avant qu'on puisse tirer, et le tir lui-meme demande cent images de charge
+               par-dessus les trente de rechargement. */
+            entry.put("role", "payload-driver");
+            entry.put("carries", "payload");
+            entry.put("range", driver.range / 8f);
+            entry.put("rotate_speed", driver.rotateSpeed);
+            entry.put("reload", driver.reload);
+            entry.put("charge_time", driver.chargeTime);
+            /* Le temps de vol de l effet de transfert, qui n est pas decoratif : le
+               recepteur ne commence son rechargement qu a la fin. */
+            entry.put("transfer_time", driver.transferEffect.lifetime);
+            entry.put("length", driver.length);
+            entry.put("knockback", driver.knockback);
+            entry.put("max_payload_size", driver.maxPayloadSize);
+            return;
+        }
+        if (block instanceof PayloadDeconstructor taker) {
+            /* Un bloc entre, son propre cout de construction en sort, au fil du temps. */
+            entry.put("role", "payload-deconstructor");
+            entry.put("carries", "payload");
+            entry.put("deconstruct_speed", taker.deconstructSpeed);
+            entry.put("dump_rate", taker.dumpRate);
+            entry.put("max_payload_size", taker.maxPayloadSize);
+            return;
+        }
+        if (block instanceof PayloadLoader loader) {
+            /* Un chargeur remplit le bloc qu'il porte, un dechargeur le vide. Les deux
+               regardent **dedans**, ce qu'aucun autre bloc du jeu ne fait. */
+            entry.put("role", block instanceof PayloadUnloader
+                ? "payload-unloader" : "payload-loader");
+            entry.put("carries", "payload");
+            entry.put("load_time", loader.loadTime);
+            entry.put("items_loaded", loader.itemsLoaded);
+            entry.put("liquids_loaded", loader.liquidsLoaded);
+            entry.put("max_block_size", loader.maxBlockSize);
+            if (block instanceof PayloadUnloader out) {
+                entry.put("offload_speed", out.offloadSpeed);
+            }
+            return;
+        }
+        if (block instanceof LaunchPad pad) {
+            /* Une plateforme de lancement n'est pas un puits : elle se remplit jusqu'a sa
+               capacite, puis tout part d'un coup et le compteur repart. Ce qu'elle avale
+               par seconde est donc sa capacite divisee par son delai, et rien du tout tant
+               qu'elle n'est pas pleine. */
+            entry.put("role", "launch-pad");
+            entry.put("carries", "item");
+            entry.put("launch_time", pad.launchTime);
+            /* Et ce qu'elle boit : la grande plateforme tourne au petrole, et sans lui son
+               efficacite est nulle, donc son compteur ne bouge pas d'une image. */
+            entry.put("input_liquid", liquidInputsOf(block));
+            if (pad.acceptMultipleItems) entry.put("accept_multiple_items", true);
+            entry.put("items_per_second", block.itemCapacity * TPS
+                / Math.max(1f, pad.launchTime));
+            return;
+        }
+        if (block instanceof PowerVoid) {
+            /* Le puits a courant : `consumePower(Float.MAX_VALUE)`. Il ne demande pas
+               beaucoup, il demande tout, et toute sa grille tombe a zero. */
+            entry.put("role", "power-void");
             return;
         }
         if (block instanceof PowerDiode) {
@@ -1282,6 +1547,45 @@ public class DumpBlocks {
      * blocks came back nameless. What is wanted is the first named class above it, which
      * is where `updateTile` actually lives.
      */
+    /**
+     * La planete d un noeud et de tout ce qui pend dessous.
+     *
+     * <p>Un noeud qui ne declare pas sa planete prend celle de son parent, comme le jeu le
+     * fait pour afficher son arbre. Sans cet heritage, les 200 blocs d Erekir sortent
+     * annonces sur Serpulo, et une palette qui filtre par planete montre tout partout.
+     */
+    /**
+     * Le nom d une visibilite de construction.
+     *
+     * <p>`BuildVisibility` ressemble a une enumeration et n en est pas une : c est une
+     * classe dont les valeurs sont des champs statiques, chacun construit avec sa propre
+     * condition. Elle n a donc pas de `name()`, et recopier ici la liste des douze noms
+     * serait une deuxieme copie d une donnee du jeu, exactement ce que ce fichier existe
+     * pour eviter. On la lui demande par reflexion : si le jeu en ajoute une, elle sort
+     * toute seule.
+     */
+    private static String visibilityName(BuildVisibility visibility) {
+        for (java.lang.reflect.Field field : BuildVisibility.class.getFields()) {
+            if (!java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+            try {
+                if (field.get(null) == visibility) return field.getName();
+            } catch (IllegalAccessException ignored) {
+                // Un champ public statique inaccessible n existe pas, mais le compilateur
+                // exige qu on le dise.
+            }
+        }
+        return "unknown";
+    }
+
+    private static void stampPlanet(TechNode node, String planet, Jval blocks) {
+        String here = node.planet == null ? planet : node.planet.name;
+        if (node.content instanceof Block) {
+            Jval entry = blocks.get(node.content.name);
+            if (entry != null) entry.put("planet", here);
+        }
+        for (TechNode child : node.children) stampPlanet(child, here, blocks);
+    }
+
     private static String kindOf(Block block) {
         Class<?> found = block.getClass();
         while (found != null && found.getSimpleName().isEmpty()) {

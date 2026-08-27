@@ -1,0 +1,109 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [
+    {
+      "block": "battery",
+      "x": 12,
+      "y": 15,
+      "charge": 0
+    }
+  ],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "laser-drill",
+      "x": 13,
+      "y": 13,
+      "efficiency": 2.938736e-39
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "efficiency": 0
+    },
+    {
+      "block": "battery",
+      "x": 12,
+      "y": 15,
+      "efficiency": 0
+    },
+    {
+      "block": "combustion-generator",
+      "x": 12,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "coal": 10
+      }
+    },
+    {
+      "block": "power-void",
+      "x": 13,
+      "y": 16,
+      "efficiency": 2.938736e-39
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 17,
+      "efficiency": 1
+    }
+  ],
+  "standing": [
+    {
+      "block": "laser-drill",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13
+    },
+    {
+      "block": "battery",
+      "x": 12,
+      "y": 15
+    },
+    {
+      "block": "combustion-generator",
+      "x": 12,
+      "y": 16
+    },
+    {
+      "block": "power-void",
+      "x": 13,
+      "y": 16
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 17
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "items":{}
+    }
+  ],
+  "per_second":{}
+}

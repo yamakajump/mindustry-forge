@@ -65,6 +65,25 @@ public class BenchPlugin extends Plugin {
                 stock.toArray(String.class));
         });
 
+        /* Le meme scenario, mais une ligne par image plutot qu'un total a la fin.
+           Un total apres mille huit cents images ne sait pas dire laquelle a diverge ; le
+           portage ecrit la meme forme, et la premiere ligne ou les deux different nomme le
+           bloc et l'image. */
+        handler.register("trace", "<schematique> <secondes> <chemin> [peinture...]",
+                "Run a schematic and write one line per frame.", args -> {
+            float seconds = Float.parseFloat(args[1]);
+            Path out = Paths.get(args[2]);
+            String[] rest = args.length > 3 && !args[3].isBlank()
+                ? args[3].trim().split("\s+") : new String[0];
+            Seq<String> ground = new Seq<>();
+            Seq<String> stock = new Seq<>();
+            for (String one : rest) {
+                (one.contains("*") || one.contains("~") ? stock : ground).add(one);
+            }
+            measure.queue(args[0], seconds, Paths.get("bench", "data", "trace-run.json"),
+                ground.toArray(String.class), stock.toArray(String.class), out);
+        });
+
         Log.info("[forge] bench ready");
     }
 }

@@ -12,6 +12,7 @@ import assert from "node:assert/strict";
 import { analyse, buildGraph, solve } from "../../site/public/forge/analyse.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { inAt, loadCatalogue, paste } from "./helpers.js";
+import { drives, logicOf, readProgram } from "../../site/public/forge/logic.js";
 
 const known = loadCatalogue();
 
@@ -536,4 +537,90 @@ test("a mass driver link at exactly its range is refused", () => {
   const edge = buildGraph([driverAt(0, reach), driverAt(reach, null)]);
   assert.deepEqual(edge.edges, [],
                    "`within` is strict, and the game saves the link then refuses it");
+});
+
+/**
+ * The processors, declared rather than simulated.
+ *
+ * A processor consumes nothing at all, so it never enters a flow; what it is worth to a
+ * reader is which blocks it drives and whether it drives them. Built here rather than
+ * pasted from the game, because the format is the point of the test: `LogicBlock.compress`
+ * is a deflate of one version byte, the program as a length-prefixed blob, and the links as
+ * a Java `writeUTF` name and two shorts each.
+ */
+async function processorConfig(code, links = []) {
+  const text = new TextEncoder().encode(code);
+  const parts = [new Uint8Array([1])];
+
+  const size = new Uint8Array(4);
+  new DataView(size.buffer).setInt32(0, text.length);
+  parts.push(size, text);
+
+  const count = new Uint8Array(4);
+  new DataView(count.buffer).setInt32(0, links.length);
+  parts.push(count);
+
+  for (const link of links) {
+    const name = new TextEncoder().encode(link.name);
+    const head = new Uint8Array(2);
+    new DataView(head.buffer).setUint16(0, name.length);
+    const where = new Uint8Array(4);
+    new DataView(where.buffer).setInt16(0, link.dx);
+    new DataView(where.buffer).setInt16(2, link.dy);
+    parts.push(head, name, where);
+  }
+
+  const flat = new Uint8Array(parts.reduce((sum, one) => sum + one.length, 0));
+  let at = 0;
+  for (const one of parts) { flat.set(one, at); at += one.length; }
+
+  const stream = new CompressionStream("deflate");
+  const writer = stream.writable.getWriter();
+  writer.write(flat);
+  writer.close();
+  return new Uint8Array(await new Response(stream.readable).arrayBuffer());
+}
+
+test("a processor's program and links read back out of its configuration", async () => {
+  const bytes = await processorConfig("sensor x vault1 @copper\nprint x\n",
+                                      [{ name: "vault1", dx: 2, dy: 0 }]);
+  const program = await readProgram(bytes);
+  assert.equal(program.code, "sensor x vault1 @copper\nprint x\n");
+  assert.deepEqual(program.links, [{ name: "vault1", dx: 2, dy: 0 }]);
+});
+
+test("a processor that only watches is not a processor that drives", async () => {
+  const watching = await readProgram(await processorConfig(
+    "sensor x vault1 @copper\nprint x\nprintflush message1\n"));
+  assert.equal(drives(watching), false, "sensor and print change nothing");
+
+  const driving = await readProgram(await processorConfig(
+    "sensor x vault1 @copper\njump 4 lessThan x 100\ncontrol enabled conveyor1 0 0 0 0\n"));
+  assert.equal(drives(driving), true, "`control` is the one instruction that reaches out");
+});
+
+test("a schematic says which blocks its processors drive", async () => {
+  const nodes = buildGraph([
+    { x: 0, y: 0, block: "micro-processor", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+    { x: 4, y: 0, block: "vault", rotation: 0 },
+  ]).nodes;
+  nodes[0].program = await readProgram(await processorConfig(
+    "control enabled conveyor1 0 0 0 0\n",
+    [{ name: "conveyor1", dx: 2, dy: 0 }, { name: "vault1", dx: 4, dy: 0 }]));
+
+  assert.deepEqual(logicOf(nodes), {
+    processors: 1, writing: 1, driven: ["conveyor", "vault"],
+  });
+});
+
+test("processors that only watch are named as harmless", async () => {
+  const nodes = buildGraph([
+    { x: 0, y: 0, block: "micro-processor", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+  ]).nodes;
+  nodes[0].program = await readProgram(await processorConfig(
+    "sensor x conveyor1 @enabled\n", [{ name: "conveyor1", dx: 2, dy: 0 }]));
+
+  assert.deepEqual(logicOf(nodes), { processors: 1, writing: 0, driven: [] });
 });

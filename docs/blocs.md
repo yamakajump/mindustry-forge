@@ -34,7 +34,7 @@ second, c'est une intuition qui a l'air d'un portage.
       atmospheric-concentrator, carbide-crucible, cyanogen-synthesizer, phase-synthesizer, surge-crucible
 - [x] `Drill` - 4 blocs - sort du sol ce qu'il y a dessous
       blast-drill, laser-drill, mechanical-drill, pneumatic-drill
-- [ ] `LogicBlock` - 4 blocs - un processeur : execute un programme
+- [x] `LogicBlock` - 4 blocs - declare, pas simule : ses liens sont lus, son programme jamais execute
       hyper-processor, logic-processor, micro-processor, world-processor
 - [x] `PowerTurret` - 4 blocs - une tourelle qui mange de l'energie
       afflict, arc, lancer, malign
@@ -48,7 +48,7 @@ second, c'est une intuition qui a l'air d'un portage.
       heat-redirector, heat-router, small-heat-redirector
 - [x] `PowerNode` - 3 blocs - relie le reseau
       power-node, power-node-large, surge-tower
-- [ ] `UnitAssembler` - 3 blocs - assemble une unite a partir de plans
+- [x] `UnitAssembler` - 3 blocs - son debit est une question de vol avant d'etre une recette
       mech-assembler, ship-assembler, tank-assembler
 - [x] `ArmoredConduit` - 2 blocs
       plated-conduit, reinforced-conduit
@@ -60,7 +60,7 @@ second, c'est une intuition qui a l'air d'un portage.
       beam-node, beam-tower
 - [x] `BurstDrill` - 2 blocs
       eruption-drill, impact-drill
-- [ ] `CanvasBlock` - 2 blocs
+- [x] `CanvasBlock` - 2 blocs - ne prend rien, ne rend rien
       canvas, large-canvas
 - [x] `Conduit` - 2 blocs - un tuyau : directionnel, comme une bande
       conduit, pulse-conduit
@@ -70,7 +70,7 @@ second, c'est une intuition qui a l'air d'un portage.
       conveyor, titanium-conveyor
 - [x] `Duct` - 2 blocs - les bandes d'Erekir, une seule case a la fois
       armored-duct, duct
-- [ ] `LaunchPad` - 2 blocs
+- [x] `LaunchPad` - 2 blocs - se remplit, puis tout part d'un coup
       advanced-launch-pad, launch-pad
 - [x] `LiquidBridge` - 2 blocs - un pont a liquide
       bridge-conduit, phase-conduit
@@ -78,7 +78,7 @@ second, c'est une intuition qui a l'air d'un portage.
       liquid-junction, reinforced-liquid-junction
 - [x] `LiquidTurret` - 2 blocs
       tsunami, wave
-- [ ] `LogicDisplay` - 2 blocs
+- [x] `LogicDisplay` - 2 blocs - un ecran ne touche a aucun chiffre
       large-logic-display, logic-display
 - [x] `MendProjector` - 2 blocs - repare, ne change aucun debit
       mend-projector, mender
@@ -90,9 +90,9 @@ second, c'est une intuition qui a l'air d'un portage.
       overflow-gate, underflow-gate
 - [x] `PayloadConveyor` - 2 blocs
       payload-conveyor, reinforced-payload-conveyor
-- [ ] `PayloadDeconstructor` - 2 blocs
+- [x] `PayloadDeconstructor` - 2 blocs - rend un bloc sous forme de son cout
       deconstructor, small-deconstructor
-- [ ] `PayloadMassDriver` - 2 blocs
+- [x] `PayloadMassDriver` - 2 blocs - il faut que la cargaison ait glisse au bout du canon
       large-payload-mass-driver, payload-mass-driver
 - [x] `PayloadRouter` - 2 blocs
       payload-router, reinforced-payload-router
@@ -108,29 +108,29 @@ second, c'est une intuition qui a l'air d'un portage.
       inverted-sorter, sorter
 - [x] `StackConveyor` - 2 blocs - deplace une pile entiere de case en case
       plastanium-conveyor, surge-conveyor
-- [ ] `SwitchBlock` - 2 blocs
+- [x] `SwitchBlock` - 2 blocs - un interrupteur non plus
       switch, world-switch
 - [x] `ThermalGenerator` - 2 blocs - de l'energie a partir du sol chaud
       thermal-generator, turbine-condenser
 - [x] `WallCrafter` - 2 blocs
       cliff-crusher, large-cliff-crusher
-- [ ] `Accelerator` - 1 bloc
+- [x] `Accelerator` - 1 bloc - vingt-cinq mille places, il ne bouche rien
       interplanetary-accelerator
 - [x] `ArmoredConveyor` - 1 bloc
       armored-conveyor
-- [ ] `AutoDoor` - 1 bloc
+- [x] `AutoDoor` - 1 bloc - fermee par defaut, et solide avec ca
       blast-door
 - [x] `BufferedItemBridge` - 1 bloc
       bridge-conveyor
 - [x] `BuildTurret` - 1 bloc - ne consomme rien tant qu'il n'a rien a reconstruire
       build-tower
-- [ ] `ColoredFloor` - 1 bloc
+- [x] `ColoredFloor` - 1 bloc - le jeu refuse de le poser depuis une schematique
       colored-floor
-- [ ] `ColoredWall` - 1 bloc
+- [x] `ColoredWall` - 1 bloc - idem : il ne peut pas etre dans un schema
       colored-wall
-- [ ] `ContinuousLiquidTurret` - 1 bloc
+- [x] `ContinuousLiquidTurret` - 1 bloc - ses munitions sont un liquide
       sublimate
-- [ ] `ContinuousTurret` - 1 bloc
+- [x] `ContinuousTurret` - 1 bloc - au repos elle garde son azote
       lustre
 - [x] `DirectionLiquidBridge` - 1 bloc
       reinforced-bridge-conduit
@@ -152,7 +152,7 @@ second, c'est une intuition qui a l'air d'un portage.
       incinerator
 - [x] `ItemBridge` - 1 bloc - porte par dessus un trou, vers la case qu'il retient
       phase-conveyor
-- [ ] `ItemIncinerator` - 1 bloc
+- [x] `ItemIncinerator` - 1 bloc - sans scories c'est un mur
       slag-incinerator
 - [x] `ItemSource` - 1 bloc
       item-source
@@ -160,11 +160,11 @@ second, c'est une intuition qui a l'air d'un portage.
       item-void
 - [x] `Junction` - 1 bloc - quatre files, une par cote, chacune ressort en face
       junction
-- [ ] `LandingPad` - 1 bloc
+- [x] `LandingPad` - 1 bloc - hors campagne elle ne fait rien, et son eau reste
       landing-pad
 - [x] `LaserTurret` - 1 bloc
       meltdown
-- [ ] `LegacyCommandCenter` - 1 bloc
+- [x] `LegacyCommandCenter` - 1 bloc - jete par le catalogue : ni role ni cout, il ne peut pas etre dans un schema
       command-center
 - [x] `LiquidSource` - 1 bloc
       liquid-source
@@ -176,11 +176,11 @@ second, c'est une intuition qui a l'air d'un portage.
       mass-driver
 - [x] `NuclearReactor` - 1 bloc - de l'energie, et une explosion si on la neglige
       thorium-reactor
-- [ ] `PayloadLoader` - 1 bloc
+- [x] `PayloadLoader` - 1 bloc - remplit le bloc qu'il porte, et refuse un dechargeur
       payload-loader
 - [x] `PayloadSource` - 1 bloc
       payload-source
-- [ ] `PayloadUnloader` - 1 bloc
+- [x] `PayloadUnloader` - 1 bloc - le vide, et pousse dehors des qu'il est sec
       payload-unloader
 - [x] `PayloadVoid` - 1 bloc
       payload-void
@@ -190,7 +190,7 @@ second, c'est une intuition qui a l'air d'un portage.
       diode
 - [x] `PowerSource` - 1 bloc
       power-source
-- [ ] `PowerVoid` - 1 bloc
+- [x] `PowerVoid` - 1 bloc - il ne demande pas beaucoup, il demande tout
       power-void
 - [x] `Radar` - 1 bloc - tire de l'energie en continu, et rien d'autre
       radar
@@ -198,7 +198,7 @@ second, c'est une intuition qui a l'air d'un portage.
       regen-projector
 - [x] `RepairTower` - 1 bloc
       unit-repair-tower
-- [ ] `Seaweed` - 1 bloc
+- [x] `Seaweed` - 1 bloc - jete par le catalogue : ni role ni cout, il ne peut pas etre dans un schema
       redweed
 - [x] `ShieldWall` - 1 bloc - trois par seconde en permanence, qu'on lui tire dessus ou non
       shielded-wall
@@ -208,17 +208,17 @@ second, c'est une intuition qui a l'air d'un portage.
       water-extractor
 - [x] `StackRouter` - 1 bloc
       surge-router
-- [ ] `Thruster` - 1 bloc
+- [x] `Thruster` - 1 bloc - un morceau de coque
       thruster
-- [ ] `TileableLogicDisplay` - 1 bloc
+- [x] `TileableLogicDisplay` - 1 bloc - un ecran, en plus petit
       tile-logic-display
 - [x] `TractorBeamTurret` - 1 bloc
       parallax
-- [ ] `UnitAssemblerModule` - 1 bloc
+- [x] `UnitAssemblerModule` - 1 bloc - il donne acces au plan du dessus, sans trou de palier
       basic-assembler-module
-- [ ] `UnitCargoLoader` - 1 bloc
+- [ ] `UnitCargoLoader` - 1 bloc - porte, mais sa cadence tient a un tirage au hasard
       unit-cargo-loader
-- [ ] `UnitCargoUnloadPoint` - 1 bloc
+- [ ] `UnitCargoUnloadPoint` - 1 bloc - idem : mesure a moitie, pas cochee
       unit-cargo-unload-point
 - [x] `Unloader` - 1 bloc - tire hors d'un coffre, onze par seconde
       unloader

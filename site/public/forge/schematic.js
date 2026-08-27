@@ -133,7 +133,10 @@ function readConfig(reader) {
     case 11: reader.skip(8); return { type };
     case 12: reader.skip(4); return { type };
     case 13: reader.skip(2); return { type };
-    case 14: { const n = reader.i32(); reader.skip(n); return { type }; }
+    /* A `byte[]`, which is what a processor's whole configuration is: its program and its
+       links, deflated. Skipped blind, a schematic full of processors read as a schematic
+       full of blocks that are set to nothing. */
+    case 14: { const n = reader.i32(); return { type, bytes: reader.bytes(n) }; }
     case 16: { const n = reader.i32(); reader.skip(n); return { type }; }
     case 17: reader.skip(4); return { type };
     case 18: { const n = reader.i16(); reader.skip(8 * n); return { type }; }
@@ -163,6 +166,12 @@ class Reader {
   skip(count) { this.need(count); this.at += count; }
   i16() { this.need(2); const v = this.view.getInt16(this.at); this.at += 2; return v; }
   i32() { this.need(4); const v = this.view.getInt32(this.at); this.at += 4; return v; }
+  bytes(count) {
+    this.need(count);
+    const slice = new Uint8Array(this.view.buffer, this.view.byteOffset + this.at, count);
+    this.at += count;
+    return slice.slice();
+  }
   text() {
     const length = (this.need(2), this.view.getUint16(this.at));
     this.at += 2;
@@ -296,8 +305,62 @@ class Writer {
  * registry the game printed, and a second copy of that table in this file is a second
  * thing to be wrong.
  */
-export async function write(tiles, { tags = {}, sizeOf = () => 1 } = {}) {
+/**
+ * Écrire une configuration, dans le codage de `TypeIO.writeObject` de la v159.7.
+ *
+ * Le lecteur garde les octets bruts de ce qu'il a lu, et l'écrivain les rejoue tels quels :
+ * une schématique collée puis recopiée ressort à l'identique sans que ce fichier ait à
+ * savoir écrire quoi que ce soit. Parfait tant que rien ne **crée** de configuration.
+ *
+ * L'éditeur en crée. Un glissé de ponts pose une chaîne dont chaque maillon vise le
+ * suivant, et sans ces quelques lignes cette chaîne sortait du site en file de ponts qui
+ * s'ignorent : l'image était juste, le fichier était faux, et rien ne le disait.
+ *
+ * Seuls deux types sont écrits, parce que seuls deux sont créés ici : le point relatif d'un
+ * pont ou d'un pylône, et le contenu d'un trieur ou d'une source. Une configuration d'un
+ * autre type venue d'un fichier repart par ses octets bruts, intacte.
+ */
+function writeConfig(writer, tile) {
+  if (tile.raw?.length) return writer.bytes(tile.raw);
+  const config = tile.config;
+  if (!config) return writer.u8(0);
+
+  if (config.type === 7) {
+    return writer.u8(7).i32(config.dx | 0).i32(config.dy | 0);
+  }
+  if (config.type === 5) {
+    return writer.u8(5).u8(config.content).i16(config.id);
+  }
+  /* Les liens d'un pylône : un octet de compte, puis une position empaquetée par lien.
+     `render.js` les dessine déjà en relisant ce type là, et l'éditeur ne savait pas les
+     écrire : un réseau électrique construit ici ressortait en pylônes qui ne se parlent
+     pas, ce qui à l'image ressemble à un réseau et n'alimente rien. */
+  if (config.type === 8) {
+    writer.u8(8).u8(Math.min(255, config.links.length));
+    for (const packed of config.links.slice(0, 255)) writer.i32(packed);
+    return writer;
+  }
+  /* Un type qu'on ne sait pas écrire est écrit comme « rien », et pas au petit bonheur :
+     inventer des octets décale tout ce qui suit et rend le fichier illisible par le jeu. */
+  return writer.u8(0);
+}
+
+export async function write(tiles, { tags = {}, sizeOf = () => 1,
+                                     priorityOf = () => 0 } = {}) {
   if (!tiles.length) throw new Error("une schematique vide ne se copie pas");
+
+  /* L'ordre d'écriture est l'ordre de construction, et le jeu s'en sert.
+     `Block.schematicPriority` va de +10 pour un mur de plastanium à -15 pour une tour de
+     surtension : ce qui protège se bâtit en premier, ce qui relie en dernier, une fois que
+     ce qu'il doit relier existe. Douze blocs du jeu en portent une, et écrire dans l'ordre
+     de pose fait poser un pylône avant les réacteurs qu'il devait alimenter.
+
+     Tri stable : à priorité égale, l'ordre d'origine est conservé, sinon deux exports de la
+     même schématique donneraient deux fichiers différents. */
+  tiles = tiles
+    .map((tile, at) => ({ tile, at }))
+    .sort((a, b) => (priorityOf(b.tile.block) - priorityOf(a.tile.block)) || (a.at - b.at))
+    .map((entry) => entry.tile);
 
   // The box, from what the blocks cover rather than from what they are stored at: a two
   // by two press stored at its centre reaches a tile further right and a tile up.
@@ -331,7 +394,7 @@ export async function write(tiles, { tags = {}, sizeOf = () => 1 } = {}) {
   for (const tile of tiles) {
     body.u8(palette.indexOf(tile.block));
     body.i32(((tile.x - left) << 16) | ((tile.y - bottom) & 0xFFFF));
-    body.bytes(tile.raw?.length ? tile.raw : new Uint8Array([0]));
+    writeConfig(body, tile);
     body.u8(tile.rotation || 0);
   }
 

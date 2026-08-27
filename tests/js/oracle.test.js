@@ -28,28 +28,22 @@ const { differences, KEPT, measured, paintedFor, ported, stockedFor } = await im
 /**
  * What does not match yet, and by how much.
  *
- * Named rather than quietly skipped, and both of the first two entries are gone because of
- * it. The bridge turned out to be a `BufferedItemBridge`, a delay line with a gate rather
- * than a hand-off with a timer. And the laser drill with power to spare was never a drill
- * problem at all: both engines produced forty eight items, and they disagreed on whether
- * the forty eighth had reached the vault or was still a sub-tile position on a belt. The
- * vault now stands against the drill, and the scenario measures the drill.
+ * **Nothing.** Every scenario is exact, and the table is kept empty rather than deleted,
+ * because naming a gap is what got the last two closed.
+ *
+ * The two that lived here longest both turned out to be the same thing wearing two hats:
+ * the game counts in single precision and this counted in double. A source pours a hundred
+ * items a second into sixty frames, so its counter spends six tenths of a frame at a time
+ * and `0.6f` is a hair above six tenths; a machine adds a ninetieth ninety times and lands
+ * a hair under one in double and a hair over it in float; a belt takes on a third item when
+ * the one behind has moved exactly `itemSpace`. Each of them is a comparison that falls on
+ * the wrong side once in a run, and once is enough.
+ *
+ * They were found with `node tools/trace.mjs <scenario>`, which writes a line per frame on
+ * both sides and names the first one that differs. A total after eighteen hundred frames
+ * cannot tell you which frame it was.
  */
-const KNOWN_GAPS = {
-  /* A meltdown winding its reload down through a pipe. Both engines agree it drinks two
-     hundred and twenty five water, to within half a unit, and disagree by two units on
-     sixty about where the last of it sits when the clock stops. That is a settled gradient
-     between three tanks, and where on it thirty seconds lands is the order the three were
-     updated in rather than a fact about the block. The half unit is one frame: the engine
-     runs one more update of the world than the countdown counts. */
-  "turret-meltdown-drain": 0.05,
-  /* Un routeur qui partage entre deux presses. Les deux sortent dix-huit graphite, au
-     chiffre pres, et l'une des deux garde neuf charbons la ou le jeu en garde dix. Le debit
-     est identique et le tampon d'une des deux branches se cale une image plus tot : le
-     curseur du routeur sert l'est avant le nord, et la difference vit dans la case que le
-     tampon vient d'ouvrir. Nomme plutot qu'arrondi, comme les autres. */
-  "crafter-two-presses": 0.11,
-};
+const KNOWN_GAPS = {};
 
 /**
  * Scenarios whose answer is "nothing at all", on purpose.
@@ -69,6 +63,11 @@ const NOTHING_HAPPENS = new Set([
   // Une pompe sans courant ne pompe rien. C'est le resultat, et le scenario existe pour
   // dire qu'il vaut zero et non un frame de plus.
   "pump-unpowered",
+  /* Un incinerateur a scories sans scories est un mur. Sa recette demande zero scorie par
+     image, donc son efficacite est zero divise par zero, et toute comparaison contre `NaN`
+     est fausse : il n'accepte rien du tout. Le vide **est** la mesure, et la paire avec
+     `incinerator-slag` est ce qui lui donne un sens. */
+  "incinerator-dry",
 ]);
 
 const scenarios = readdirSync(KEPT)

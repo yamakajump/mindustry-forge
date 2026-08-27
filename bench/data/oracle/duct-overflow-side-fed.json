@@ -50,6 +50,38 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "vault",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 15
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 15
+    },
+    {
+      "block": "router",
+      "x": 14,
+      "y": 15
+    },
+    {
+      "block": "overflow-duct",
+      "x": 15,
+      "y": 15
+    },
+    {
+      "block": "vault",
+      "x": 16,
+      "y": 17
+    }
+  ],
   "containers": [
     {
       "block": "vault",

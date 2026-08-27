@@ -60,3 +60,87 @@ jobs:
           php artisan key:generate
 
       - run: php artisan test
+
+  # Les tests tournent sur SQLite en memoire, la production sur MySQL. Les
+  # migrations n'etaient donc verifiees sur aucune machine contre le moteur
+  # qui les jouera vraiment, alors que `deploy.sh` les passe en prod a chaque
+  # deploiement. Une migration qui passe sur SQLite et casse sur MySQL, c'est
+  # le site en maintenance le temps de comprendre.
+  migrations:
+    name: Migrations (MySQL, comme en production)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: mforge_ci
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: "3306"
+      DB_DATABASE: mforge_ci
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, pdo_mysql, zip, gd
+          coverage: none
+
+      - name: Cache des dependances Composer
+        uses: actions/cache@v4
+        with:
+          path: site/vendor
+          key: composer-${{ hashFiles('site/composer.lock') }}
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Preparer l'environnement
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # Sans ca, une variable ignoree ferait tourner la suite sur SQLite et le
+      # job passerait au vert en n'ayant rien verifie du tout.
+      - name: Verifier qu'on parle bien a MySQL
+        run: |
+          php artisan tinker --execute='$d = DB::connection()->getDriverName(); if ($d !== "mysql") { fwrite(STDERR, "connexion $d, pas mysql"); exit(1); } echo "connecte a ".DB::selectOne("select version() v")->v;'
+
+      - name: Monter la base, la demonter, la remonter
+        run: |
+          php artisan migrate --force
+          php artisan migrate:reset --force
+          php artisan migrate --force
+
+      # Le schema tient debout ; reste a savoir si les requetes de la vitrine
+      # tiennent aussi. Elles joignent et regroupent, et MySQL applique par
+      # defaut un ONLY_FULL_GROUP_BY que SQLite ignore : un regroupement
+      # accepte ici peut etre refuse la-bas.
+      # Le classement est borne a 24, il n en rend donc jamais plus : exiger
+      # exactement 24 revient a exiger que la graine aleatoire ait produit au
+      # moins 24 schematiques au graphite sur 400, ce qui est un tirage. Mesure
+      # sur le tronc : deux echecs d affilee a 23 sur 400. Ce qu on veut verifier
+      # est que la requete rend bien ce qu elle a trouve, pas qu elle a eu de la
+      # chance.
+      - name: Passer les requetes de la vitrine sur MySQL
+        env:
+          CATALOGUE_SEED_COUNT: "400"
+        run: |
+          php artisan db:seed --class=CatalogueSeeder --force
+          php artisan tinker --execute='$s = \App\Models\Schematic::class; $q = $s::listed()->join("schematic_items", "schematic_items.schematic_id", "=", "schematics.id")->where("schematic_items.item", "graphite")->select("schematics.*"); $n = (clone $q)->count(); $best = $q->orderByDesc("schematic_items.rate_per_block")->orderByDesc("schematics.id")->limit(24)->pluck("id"); $items = \App\Models\SchematicItem::count(); if ($n < 1 || $best->count() !== min(24, $n) || $items < 1) { fwrite(STDERR, "requetes vides: filtre $n, index $items"); exit(1); } echo "filtre: $n, classement: ".$best->count().", lignes d index: $items";'
+
+      - name: La suite complete, sur MySQL
+        run: php artisan test

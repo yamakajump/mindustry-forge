@@ -64,6 +64,30 @@ const links = (offsets) => {
   return out;
 };
 
+/**
+ * Un bloc dont on affirme qu'il ne fait rien, et la forme qui le prouve.
+ *
+ * Un routeur avec un coffre au bout d'une bande d'un cote et le bloc de l'autre. S'il
+ * refuse, tout le cuivre finit dans le coffre ; s'il acceptait quoi que ce soit, la moitie
+ * disparaitrait. Une case cochee qui dit "ne fait rien" ne vaut rien tant que personne n'a
+ * regarde.
+ */
+const refuses = (block) => {
+  const size = known.blocks[block].size || 1;
+  return [
+    { x: -2, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: -1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 0, y: 0, block: "router", rotation: 0 },
+    // Pose de facon a toucher la face nord du routeur, quelle que soit sa taille.
+    { x: 0, y: 1 + Math.trunc((size - 1) / 2), block, rotation: 0 },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+    { x: 3, y: 0, block: "conveyor", rotation: 0 },
+    // Couvre 4..6 par -1..1, hors de portee du plus grand des blocs testes.
+    { x: 5, y: 0, block: "vault", rotation: 0 },
+  ];
+};
+
 /** A scenario may be a bare list of tiles, or tiles and the ground under them. */
 const shape = (built) => (Array.isArray(built) ? { tiles: built, ground: [], stock: [] }
   : { tiles: built.tiles, ground: built.ground || [], stock: built.stock || [] });
@@ -1501,11 +1525,9 @@ const SCENARIOS = {
       { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("phase-fabric") },
       { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("arkycite") },
     ],
-    /* Son eau en reserve plutot qu une source de plus. Ce que la mort du reacteur fait
-       autour de lui, le portage ne le modelise pas : le jeu emporte une partie de ce qui
-       touche un bloc de cinq sur cinq qui saute, donc le scenario ne pose que ce qui a
-       survecu a la mesure. Ce qu il verifie est le reacteur lui-meme : il n est plus la,
-       et il ne reste rien dedans. */
+    /* Son eau en reserve plutot qu'une source de plus. Ce que le scenario verifie est le
+       reacteur lui-meme : il n'est plus la, et il ne reste rien dedans. Son souffle est
+       mesure par son jumeau juste apres. */
     stock: ["water~80@2,2"],
   }),
 
@@ -1647,6 +1669,263 @@ const SCENARIOS = {
     { x: 11, y: 1, block: "vault", rotation: 0 },
     // Couvre 7..9 par 2..4 : ce qu'il pousse sur le cote.
     { x: 8, y: 3, block: "vault", rotation: 0 },
+  ],
+
+  /* Une plateforme de lancement, qui n'est pas un puits : elle se remplit jusqu'a cent,
+     et a vingt secondes tout part d'un coup. Les deux conditions sont separees, donc une
+     plateforme nourrie lentement part des qu'elle est pleine et une plateforme nourrie vite
+     attend son horloge. Le coffre en dessous n'est la que pour montrer qu'elle ne rend
+     rien : ce qui monte est perdu pour le schema. */
+  "launch-pad-eats": () => [
+    { x: -1, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 0, y: 1, block: "conveyor", rotation: 0 },
+    // Couvre 1..3 par 0..2.
+    { x: 2, y: 1, block: "launch-pad", rotation: 0 },
+    { x: 2, y: 4, block: "power-source", rotation: 0 },
+  ],
+
+  /* La meme, mais avancee : elle ne prend **qu'un seul type a la fois**, donc un tapis qui
+     porte deux objets la bloque des que le second arrive. Elle couvre 1..4 par 0..3. */
+  "launch-pad-one-kind": () => [
+    { x: -2, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
+    // Contre le routeur, et pas en diagonale : ecrit en diagonale, le plomb n'atteignait
+    // rien et le scenario mesurait une plateforme nourrie d'un seul type par accident.
+    { x: -1, y: 2, block: "item-source", rotation: 0, raw: item("lead") },
+    { x: -1, y: 1, block: "router", rotation: 0 },
+    { x: 0, y: 1, block: "conveyor", rotation: 0 },
+    // Quatre sur quatre : couvre 1..4 par 1..4.
+    { x: 2, y: 2, block: "advanced-launch-pad", rotation: 0 },
+    { x: 2, y: 5, block: "power-source", rotation: 0 },
+  ],
+
+  /* Un puits a courant, qui ne demande pas beaucoup mais tout : `Float.MAX_VALUE`. Toute sa
+     grille tombe a zero et la foreuse a cote ne sort rien, alors qu'elle a un generateur
+     pour elle. La batterie reste vide. */
+  "power-void-drains": () => ({
+    tiles: [
+      { x: 0, y: 4, block: "item-source", rotation: 0, raw: item("coal") },
+      { x: 0, y: 3, block: "combustion-generator", rotation: 0 },
+      { x: 1, y: 3, block: "power-void", rotation: 0 },
+      { x: 0, y: 2, block: "battery", rotation: 0 },
+      // Couvre 0..2 par -1..1, contre la batterie.
+      { x: 1, y: 0, block: "laser-drill", rotation: 0 },
+      { x: 4, y: 0, block: "conveyor", rotation: 0 },
+      // Couvre 6..8 par -1..1.
+      { x: 7, y: 0, block: "vault", rotation: 0 },
+    ],
+    ground: [0, 1, 2].flatMap((x) => [-1, 0, 1].map((y) => `ore-copper@${x},${y}`)),
+  }),
+
+  /* Un incinerateur a scories, qui n'est pas l'incinerateur de Serpulo : celui-la ne prend
+     rien tant qu'il n'a pas de scories, et avale tout ce qu'on lui donne des qu'il en a.
+     La paire est la mesure : le meme montage sans la source de scories. */
+  "incinerator-slag": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "slag-incinerator", rotation: 0 },
+    { x: 2, y: 1, block: "liquid-source", rotation: 0, raw: liquid("slag") },
+  ],
+
+  "incinerator-dry": () => SCENARIOS["incinerator-slag"]().filter(
+    (tile) => tile.block !== "liquid-source"),
+
+  /* Une tourelle continue avec son azote et rien a viser. Elle garde ses vingt unites pour
+     les trente secondes et n'en boit pas une : le liquide d'une tourelle est un stock et pas
+     un debit, et un portage qui le lit comme une consommation invente une ligne
+     d'alimentation. Couvre 0..3 par 0..3. */
+  "turret-lustre-idle": () => ({
+    tiles: [
+      { x: 1, y: 1, block: "lustre", rotation: 0 },
+      { x: 4, y: 1, block: "power-source", rotation: 0 },
+    ],
+    stock: ["nitrogen~20@1,1"],
+  }),
+
+  /* Et la tourelle a liquide continue, dont les munitions **sont** un liquide. Couvre 0..2
+     par 0..2. */
+  "turret-sublimate-idle": () => ({
+    tiles: [{ x: 1, y: 1, block: "sublimate", rotation: 0 }],
+    stock: ["ozone~50@1,1"],
+  }),
+
+  /* L'accelerateur interplanetaire, qui avale huit mille cuivres sans jamais rien en faire
+     hors campagne. Ce que le scenario verifie est qu'il ne bouche pas le tapis : un puits
+     de vingt-cinq mille places ne sature pas en trente secondes. Couvre -2..3 par -2..3. */
+  "accelerator-swallows": () => [
+    { x: -6, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: -5, y: 0, block: "conveyor", rotation: 0 },
+    { x: -4, y: 0, block: "conveyor", rotation: 0 },
+    // Sept sur sept : couvre -3..3 par -3..3.
+    { x: 0, y: 0, block: "interplanetary-accelerator", rotation: 0 },
+    { x: 0, y: 5, block: "power-source", rotation: 0 },
+  ],
+
+  /* Les blocs dont la reponse est "rien", chacun avec la forme qui le montre. */
+  "refuses-switch": () => refuses("switch"),
+  "refuses-door": () => refuses("door"),
+  "refuses-blast-door": () => refuses("blast-door"),
+  /* Ni le mur colore ni le sol colore : le jeu refuse de les poser depuis une
+     schematique, donc ils ne peuvent pas y apparaitre et il n y a rien a mesurer. */
+  "refuses-canvas": () => refuses("canvas"),
+  "refuses-large-canvas": () => refuses("large-canvas"),
+  /* Un processeur ne consomme rien du tout : ni courant, ni objet, ni liquide. Ce
+     qu il fait passe par une instruction sur un bloc auquel il est relie, et ca ne
+     se simule pas ici. Ce que le banc peut dire, et qui est vrai, est qu il ne prend
+     rien et ne rend rien. */
+  "refuses-micro-processor": () => refuses("micro-processor"),
+  "refuses-hyper-processor": () => refuses("hyper-processor"),
+  "refuses-thruster": () => refuses("thruster"),
+  "refuses-logic-display": () => refuses("logic-display"),
+  "refuses-tile-logic-display": () => refuses("tile-logic-display"),
+  "refuses-landing-pad": () => refuses("landing-pad"),
+
+  /* Un tapis dans une plateforme d'arrivee, qui n'a rien a faire hors campagne, avec de
+     l'eau a cote qu'elle ne boit pas. Quatre sur quatre : couvre 0..3 par 0..3. */
+  "landing-pad-idle": () => ({
+    tiles: [
+      { x: 1, y: 1, block: "landing-pad", rotation: 0 },
+      { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("water") },
+      { x: -1, y: 0, block: "conduit", rotation: 0 },
+    ],
+    stock: ["water~100@1,1"],
+  }),
+
+  /* La chaine complete de la famille des charges utiles : une source fabrique un conteneur,
+     un chargeur le remplit de cuivre, un dechargeur le vide dans un coffre, et le conteneur
+     vide repart au vide.
+
+     C'est la premiere forme du banc ou une charge utile est autre chose qu'un nom : un
+     `BuildPayload` est un batiment entier et il emporte son stock. Ce que le chargeur tient
+     **dedans** est compare, pas seulement ce qu'il tient. */
+  "payload-loader-line": () => [
+    // Cinq sur cinq : couvre -2..2 par -2..2, et atteint trois cases a l'est.
+    { x: 0, y: 0, block: "payload-source", rotation: 0, raw: blockOf("container") },
+    // Trois sur trois : couvre 3..5 par -1..1.
+    { x: 4, y: 0, block: "payload-loader", rotation: 0 },
+    // Trois sources contre sa face nord : un tapis ne remplirait jamais trois cents.
+    { x: 3, y: 2, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 4, y: 2, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 5, y: 2, block: "item-source", rotation: 0, raw: item("copper") },
+    // Couvre 6..8 par -1..1.
+    { x: 7, y: 0, block: "payload-unloader", rotation: 0 },
+    { x: 7, y: 2, block: "power-source", rotation: 0 },
+    // Couvre 6..8 par -4..-2 : ce que le dechargeur vide.
+    { x: 7, y: -3, block: "vault", rotation: 0 },
+    // Couvre 9..13 par -2..2 : le conteneur vide repart la-dedans.
+    { x: 11, y: 0, block: "payload-void", rotation: 0 },
+  ],
+
+  /* Et un deconstructeur, qui rend un bloc sous forme de son propre cout de construction.
+     Un routeur coute trois cuivres et se construit en six images, donc il repart aussi vite
+     qu'il arrive, et ce qui sort finit dans le coffre. */
+  "payload-deconstructor-breaks": () => [
+    { x: 0, y: 0, block: "payload-source", rotation: 0, raw: blockOf("router") },
+    // Cinq sur cinq : couvre 3..7 par -2..2.
+    { x: 5, y: 0, block: "deconstructor", rotation: 0 },
+    { x: 5, y: 3, block: "power-source", rotation: 0 },
+    { x: 8, y: 0, block: "conveyor", rotation: 0 },
+    // Couvre 9..11 par -1..1.
+    { x: 10, y: 0, block: "vault", rotation: 0 },
+  ],
+
+  /* Une paire de mass drivers a cargaison. Le meme accord des deux bouts que la paire a
+     objets, avec une barriere de plus : la cargaison doit avoir glisse jusqu'au bout du
+     canon avant qu'on puisse tirer, et le tir demande quatre-vingt-dix images de charge
+     par-dessus les cent trente de rechargement. Ou en sont les conteneurs a trente secondes
+     est la mesure. */
+  "payload-driver-pair": () => [
+    // Cinq sur cinq : couvre -2..2 par -2..2, atteint trois cases a l'est.
+    { x: 0, y: 0, block: "payload-source", rotation: 0, raw: blockOf("container") },
+    // Trois sur trois : couvre 3..5 par -1..1, vise dix cases plus loin.
+    { x: 4, y: 0, block: "payload-mass-driver", rotation: 0, raw: point(10, 0) },
+    { x: 4, y: 3, block: "power-source", rotation: 0 },
+    // Couvre 13..15 par -1..1.
+    { x: 14, y: 0, block: "payload-mass-driver", rotation: 0 },
+    { x: 14, y: 3, block: "power-source", rotation: 0 },
+    // Couvre 16..20 par -2..2 : ce que le second pousse dehors.
+    { x: 18, y: 0, block: "payload-void", rotation: 0 },
+  ],
+
+  /* Un assembleur a moitie alimente. Il construit ses quatre drones un par un, et chacun
+     coute quatre secondes divisees par la fraction de courant qu'il recoit : avec une seule
+     chambre a combustion pour cent cinquante par seconde, il en sort trois en trente
+     secondes et pas quatre. Les drones sont des unites sur la carte, donc le banc les
+     compte comme les autres.
+
+     Et il ne boit rien : `shouldConsume` demande que tout son plan soit la, et il n'a aucun
+     stell ni aucun mur. Ses quatre-vingt-dix cyanogenes sont intacts a la fin. Cinq sur
+     cinq : couvre 3..7 par -2..2. */
+  "assembler-half-fed": () => ({
+    tiles: [
+      { x: 5, y: 0, block: "tank-assembler", rotation: 0 },
+      { x: 5, y: 3, block: "combustion-generator", rotation: 0 },
+      { x: 5, y: 4, block: "item-source", rotation: 0, raw: item("coal") },
+    ],
+    stock: ["cyanogen~90@5,0"],
+  }),
+
+  /* Un point de dechargement que personne n'a regle, qui est l'erreur celebre de ce bloc :
+     aucune unite n'y va jamais et le chargeur se remplit jusqu'a ses deux cents.
+
+     Son jumeau, la meme chose avec un point regle sur le cuivre, n'est **pas** ici. Le debit
+     d'un fret aerien n'est pas reproductible depuis un schema : `AIController` tire
+     `Mathf.random(40)` au moment ou l'unite nait, et ce tirage decale son premier
+     chargement d'un nombre d'images que rien dans la schematique ne determine. Le portage
+     fait voler l'unite, la charge et la decharge ; la cadence exacte du premier aller
+     dependrait d'un tirage partage avec tout ce qui s'est passe avant sur la carte. */
+  "cargo-unset": () => [
+    { x: -1, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
+    // Couvre 0..2 par 0..2.
+    { x: 1, y: 1, block: "unit-cargo-loader", rotation: 0 },
+    { x: 1, y: 3, block: "liquid-source", rotation: 0, raw: liquid("nitrogen") },
+    { x: 1, y: -1, block: "power-source", rotation: 0 },
+    // Couvre 8..9 par 0..1, regle sur rien.
+    { x: 8, y: 0, block: "unit-cargo-unload-point", rotation: 0 },
+    // Couvre 10..12 par -1..1.
+    { x: 11, y: 0, block: "vault", rotation: 0 },
+  ],
+
+  /* Un reacteur au thorium sans refroidissement, avec de quoi mesurer le souffle.
+
+     Trente thoriums valent six d'explosivite, plus les cinq du bloc, fois trois et demi :
+     trente-huit, en trois vagues de dix-neuf. Un convoyeur a quarante-cinq points de vie et
+     tombe ; un coffre en a quatre cent quatre-vingt-quinze et tient. Ce qui reste debout est
+     la mesure, et sans elle un schema qui se detruit lui-meme se lisait comme un schema qui
+     marche : les compteurs d'un bloc mort sont a zero des deux cotes.
+
+     Le reacteur couvre 1..3 par 1..3. */
+  "reactor-blast": () => ({
+    tiles: [
+      { x: 2, y: 2, block: "thorium-reactor", rotation: 0 },
+      /* Une jonction a trente points de vie, un routeur quarante, un convoyeur
+         quarante-cinq. Le souffle les separe : c'est ca, la mesure. */
+      { x: 4, y: 2, block: "junction", rotation: 0 },
+      { x: 2, y: 4, block: "router", rotation: 0 },
+      { x: 0, y: 4, block: "conveyor", rotation: 0 },
+      { x: 7, y: 2, block: "junction", rotation: 0 },
+      // Couvre 1..3 par -4..-2 : assez solide pour tenir.
+      { x: 2, y: -3, block: "vault", rotation: 0 },
+    ],
+    stock: ["thorium*30@2,2"],
+  }),
+
+  /* Le meme, avec de quoi mesurer le souffle : une source d'eau collee contre lui.
+
+     Un reacteur neoplasique qui se tue emporte ce qui le touche, et c'est la seule chose de
+     tout ce depot qu'on ne peut pas lire dans un compteur : ceux d'un bloc mort sont a zero
+     des deux cotes, ce qui se lit comme un accord. Ce qui reste debout est la mesure. */
+  "reactor-neoplasia-blast": () => [
+    // Couvre 0..4 par 0..4.
+    { x: 2, y: 2, block: "neoplasia-reactor", rotation: 0 },
+    { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("phase-fabric") },
+    { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("arkycite") },
+    { x: -1, y: 3, block: "liquid-source", rotation: 0, raw: liquid("water") },
+    // Des convoyeurs autour, qui n'ont que quarante-cinq points de vie : ceux qui tombent
+    // et ceux qui tiennent sont ce que le souffle dit.
+    { x: 2, y: 5, block: "conveyor", rotation: 0 },
+    { x: 5, y: 2, block: "conveyor", rotation: 0 },
+    { x: 2, y: 7, block: "conveyor", rotation: 0 },
+    { x: 8, y: 2, block: "conveyor", rotation: 0 },
   ],
 
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */

@@ -23,6 +23,18 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "overdrive-projector",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "block": "power-source",
+      "x": 14,
+      "y": 12
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

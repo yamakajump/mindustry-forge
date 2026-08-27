@@ -38,6 +38,9 @@ const MACHINE_ROLES = new Set([
   "mender", "projector", "shield", "turret-idle", "laser-turret",
   "beam-drill", "wall-crafter", "burst-drill", "reconstructor", "constructor",
   "mass-driver",
+  /* Une plateforme de lancement et un accelerateur retiennent, eux : ce qu'ils tiennent a
+     la fin est la mesure, parce que rien de ce qu'ils avalent ne ressort. */
+  "launch-pad", "sink",
 ]);
 
 export const known = useCatalogue(JSON.parse(
@@ -122,7 +125,7 @@ function fill(world, stock) {
 }
 
 /** Run a schematic through the port, and report what settled where. */
-export async function ported(code, ticks, ground = [], stock = []) {
+export async function ported(code, ticks, ground = [], stock = [], each = null) {
   const parsed = await fromBase64(code);
   const graph = buildGraph(parsed.tiles);
   const painted = groundOf(ground);
@@ -141,7 +144,12 @@ export async function ported(code, ticks, ground = [], stock = []) {
   world.origin = [12, 12];
   world.catalogue = known;
   fill(world, stock);
-  for (let i = 0; i < ticks; i++) world.step();
+  for (let i = 0; i < ticks; i++) {
+    world.step();
+    // `tools/trace.mjs` hangs a line-per-frame writer here, so that both engines walk the
+    // same run rather than two runs that happen to share a scenario file.
+    if (each) each(world, i + 1);
+  }
 
   const containers = world.builds
     .filter((build) => build.role === "store" || build.role === "core")
@@ -178,23 +186,52 @@ export async function ported(code, ticks, ground = [], stock = []) {
 
   const carried = world.builds
     .filter((build) => build.state.payload)
-    .map((build) => ({ x: build.x, y: build.y, payload: build.state.payload }));
+    .map((build) => ({
+      x: build.x, y: build.y,
+      payload: build.state.payload.name,
+      // What the cargo is carrying, which is the whole of what a loader and an unloader do.
+      payload_items: Object.fromEntries(
+        [...build.state.payload.items.counts].filter(([, n]) => n > 0)),
+      payload_liquids: Object.fromEntries([...build.state.payload.liquids.held()]
+        .filter(([, n]) => n > 0.0005).map(([l, n]) => [l, Number(n.toFixed(3))])),
+    }));
 
   const units = {};
   for (const build of world.builds) {
     const made = build.state.made || 0;
-    if (!made) continue;
     const name = build.state.plan?.unit;
-    if (name) units[name] = (units[name] || 0) + made;
+    if (made && name) units[name] = (units[name] || 0) + made;
+
+    /* An assembler's drones are units on the map like any other, so the game counts them in
+       `Groups.unit` and so does this. They are the only way to see, from outside, that an
+       assembler under half power builds three of them in thirty seconds and not four. */
+    for (const drone of build.state.drones || []) {
+      const kind = build.block.drone_type;
+      if (kind) units[kind] = (units[kind] || 0) + 1;
+    }
+    // And a cargo loader's one ferry, which is the whole of what that block does.
+    if (build.state.flyer && build.block.unit_type) {
+      units[build.block.unit_type] = (units[build.block.unit_type] || 0) + 1;
+    }
   }
 
+  /* What is still standing, which is what makes an explosion measurable at all: the
+     counters of a dead block are zero on both sides, and that reads as agreement. */
+  const standing = world.builds
+    .filter((build) => !build.state.dead)
+    .map((build) => ({ x: build.x, y: build.y, block: build.name }));
+
   return {
+    standing: lineUp(standing, ["block"]),
+    // How many were laid down, so a scenario can tell "nothing died" from "nothing was
+    // measured": the two look the same from a list of survivors alone.
+    placed: world.builds.length,
     containers: lineUp(containers, ["items"]),
     pools: lineUp(pools, ["liquid", "amount"], "liquid"),
     batteries: lineUp(batteries, ["charge"]),
     stocks: lineUp(stocks, ["items"]),
     ammo: lineUp(ammo, ["ammo"]),
-    payloads: lineUp(carried, ["payload"]),
+    payloads: lineUp(carried, ["payload", "payload_items", "payload_liquids"]),
     units,
   };
 }
@@ -215,7 +252,9 @@ export function measured(name) {
     ammo: lineUp((raw.running || [])
       .filter((one) => (one.ammo || 0) > 0)
       .map((one) => ({ x: one.x, y: one.y, ammo: one.ammo })), ["ammo"]),
-    payloads: lineUp(raw.payloads || [], ["payload"]),
+    payloads: lineUp(raw.payloads || [], ["payload", "payload_items", "payload_liquids"]),
+    standing: lineUp((raw.standing || []).map((one) =>
+      ({ x: one.x, y: one.y, block: one.block })), ["block"]),
     units: raw.units || {},
   };
 }
@@ -323,6 +362,28 @@ export function differences(mine, theirs) {
     }
   }
 
+  /* Ce qui reste debout. Compare avant tout le reste, parce qu'un bloc qui a saute rend
+     toutes les autres lignes muettes. */
+  /* Le compte n'est une mesure que si quelque chose est tombe : sur un schema ou tout tient,
+     la ligne ne dirait rien et masquerait un scenario qui ne mesure rien du tout. */
+  const placed = mine.placed ?? mine.standing.length;
+  if (mine.standing.length !== theirs.standing.length
+      || placed !== theirs.standing.length) {
+    out.push({ what: "blocs encore debout", mine: mine.standing.length,
+               theirs: theirs.standing.length,
+               gap: theirs.standing.length
+                 ? Math.abs(mine.standing.length - theirs.standing.length)
+                   / theirs.standing.length : 1 });
+  }
+  if (mine.standing.length === theirs.standing.length) {
+    for (let i = 0; i < mine.standing.length; i++) {
+      const a = mine.standing[i];
+      const b = theirs.standing[i];
+      if (a.block === b.block && a.at === b.at) continue;
+      out.push({ what: `${a.at} debout`, mine: a.block, theirs: b.block, gap: 1 });
+    }
+  }
+
   if (mine.payloads.length !== theirs.payloads.length) {
     out.push({ what: "charges portees", mine: mine.payloads.length,
                theirs: theirs.payloads.length, gap: 1 });
@@ -332,6 +393,20 @@ export function differences(mine, theirs) {
       const b = theirs.payloads[i];
       out.push({ what: `${a.at} porte`, mine: a.payload, theirs: b.payload,
                  gap: a.payload === b.payload ? 0 : 1 });
+
+      // Et ce que la charge tient elle-meme, qui est tout ce que font un chargeur et un
+      // dechargeur : sans ca, la moitie de la famille se mesure a rien.
+      for (const [what, mineSide, theirsSide] of [
+        ["porte dedans", a.payload_items || {}, b.payload_items || {}],
+        ["porte en liquide", a.payload_liquids || {}, b.payload_liquids || {}],
+      ]) {
+        for (const key of new Set([...Object.keys(mineSide), ...Object.keys(theirsSide)])) {
+          const here = mineSide[key] || 0;
+          const there = theirsSide[key] || 0;
+          out.push({ what: `${a.at} ${what} ${key}`, mine: here, theirs: there,
+                     gap: there ? Math.abs(here - there) / there : (here ? 1 : 0) });
+        }
+      }
     }
   }
 

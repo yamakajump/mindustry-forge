@@ -12,13 +12,15 @@
  * Mindustry v159.7.
  */
 
-import { bridgeAccepts, bridgeDumps, bridgeLink, bridgeTarget, DIRECTIONS, itemOrder,
-  TICKS } from "./core.js";
+import { bridgeAccepts, bridgeDumps, bridgeLink, bridgeTarget, DIRECTIONS, facingEdge,
+  itemOrder, TICKS } from "./core.js";
 import { MACHINES } from "./machines.js";
 import { LIQUIDS } from "./liquids.js";
 import { POWER } from "./power.js";
 import { PAYLOADS } from "./payloads.js";
 import { massDriver } from "./massdriver.js";
+import { ASSEMBLERS } from "./assembler.js";
+import { CARGO } from "./cargo.js";
 
 /** `Conveyor.itemSpace` and `Conveyor.capacity`, both private constants in the game. */
 const ITEM_SPACE = 0.4;
@@ -79,16 +81,32 @@ const conveyor = {
     state.ids.unshift(item);
     state.ys.unshift(start);
     state.len++;
+    build.noSleep();
+    /* And in the item module as well, which the game keeps in step: `ConveyorBuild` pushes
+       into its three arrays **and** calls `items.add`. Nothing in a belt's own logic reads
+       it, which is why this went unnoticed, but everything that looks at a belt from
+       outside does: the game's own trace writes a belt's contents and this one wrote empty
+       belts for eighteen hundred frames. */
+    build.items.add(item);
   },
 
   update(build, world, step) {
     const state = build.state;
     state.minitem = 1;
-    if (!state.len) return;
+    // An empty belt goes to sleep, and waking puts it back at the end of the update list.
+    if (!state.len) {
+      build.sleep(step);
+      return;
+    }
 
     const next = build.facing(world);
     const speed = build.block.speed || 0;
-    const moved = speed * build.delta(step);
+    /* Every number on a belt is a **float**, because the game's are, and a belt is where
+       it matters most: a third item is taken on when the one behind has moved exactly
+       `itemSpace`, and forty-six thousandths added nine times lands a hair under four
+       tenths in double and a hair over in float. The belt behind then refuses an item the
+       game accepts, which is one coal in the wrong place at the end of a run. */
+    const moved = Math.fround(speed * build.delta(step));
 
     /* How far up its own length the front item may go.
     
@@ -102,15 +120,17 @@ const conveyor = {
        the engine, a copper line matched to the item and a titanium line ran 6.6% fast. */
     const aligned = next?.behaviour === conveyor && next.rotation === build.rotation;
     const nextMax = aligned
-      ? 1 - Math.max(ITEM_SPACE - next.state.minitem, 0)
+      ? Math.fround(1 - Math.max(Math.fround(ITEM_SPACE - next.state.minitem), 0))
       : 1;
 
     for (let i = state.len - 1; i >= 0; i--) {
-      const ahead = (i === state.len - 1 ? 100 : state.ys[i + 1]) - ITEM_SPACE;
-      state.ys[i] += clamp(ahead - state.ys[i], 0, moved);
+      const ahead = Math.fround((i === state.len - 1 ? 100 : state.ys[i + 1]) - ITEM_SPACE);
+      state.ys[i] = Math.fround(
+        state.ys[i] + clamp(Math.fround(ahead - state.ys[i]), 0, moved));
       if (state.ys[i] > nextMax) state.ys[i] = nextMax;
 
       if (state.ys[i] >= 1 && pass(build, next, state.ids[i])) {
+        for (const gone of state.ids.slice(i, state.len)) build.items.remove(gone);
         state.ids.splice(i, state.len - i);
         state.ys.splice(i, state.len - i);
         state.len = Math.min(i, state.len);
@@ -118,6 +138,9 @@ const conveyor = {
         state.minitem = state.ys[i];
       }
     }
+    // The last line of `Conveyor.updateTile`: a belt that ran this frame is awake, and its
+    // second of quiet starts over.
+    build.noSleep();
   },
 };
 
@@ -329,42 +352,136 @@ function sorterTarget(build, source, item, flip) {
  * That priority is the whole point of the block, and modelling it as a router lost it:
  * the total throughput came out right and the branch it went down was wrong.
  */
+/**
+ * An overflow gate, which holds nothing and updates never.
+ *
+ * `update = false`: it is not in the game's update list at all, and everything it does
+ * happens inside `acceptItem` and `handleItem`. Written here as a block that buffered one
+ * item and moved it a frame later, it worked, because a belt is always the bottleneck and a
+ * frame of delay never showed. It stopped working the moment the update list became
+ * faithful and it was correctly left out of it.
+ *
+ * The choice is `getTileTarget`: straight on if the far side will have it, otherwise the
+ * two sides, and when both sides will have it a bit **per direction of arrival** decides,
+ * so a gate fed from two sides shares each feed evenly rather than the two fighting over
+ * one cursor. An inverted gate reads the same rule with the branches swapped.
+ */
 const overflow = {
-  begin(build) { build.state.from = null; },
+  begin(build) { build.state.flip = 0; },
 
   acceptItem(build, source, item) {
-    return build.items.total === 0;
+    const to = overflowTargetOf(build, source, item, false);
+    return to !== null && to.acceptItem(build, item);
   },
 
   handleItem(build, source, item) {
-    build.items.add(item);
-    build.state.from = source;
-  },
-
-  update(build, world) {
-    if (!build.items.total) return;
-    const item = build.items.first();
-    const from = build.state.from;
-
-    const ahead = from ? opposite(build, world, from) : null;
-    if (ahead && ahead !== from && ahead.acceptItem(build, item)) {
-      ahead.handleItem(build, item);
-      build.items.remove(item);
-      return;
-    }
-    // Otherwise round the sides, which is `dump` refusing to go back where it came from.
-    build.dump();
-  },
-
-  canDump(build, other, item) {
-    return other !== build.state.from;
+    // Asked twice: once to test without moving the bit, once to hand over and move it.
+    const to = overflowTargetOf(build, source, item, true);
+    if (to) to.handleItem(build, item);
   },
 };
 
-function opposite(build, world, source) {
-  const [dx, dy] = DIRECTIONS[(build.relativeTo(source) + 2) % 4];
-  return world.at(build.x + dx, build.y + dy);
+/** `OverflowGateBuild.getTileTarget`. */
+function overflowTargetOf(build, source, item, flip) {
+  const world = build.world;
+  if (!world || !source) return null;
+
+  const [ex, ey] = facingEdge(source, build);
+  const from = build.sideTowards(ex, ey);
+  if (from === -1) return null;
+
+  const at = (turn) => {
+    const [dx, dy] = DIRECTIONS[((turn % 4) + 4) % 4];
+    return world.at(build.x + dx, build.y + dy);
+  };
+  /* Two blocks that both hand on instantly may not hand to each other, which is what stops
+     a chain of gates and sorters from carrying an item three tiles in one frame. */
+  const instant = source.block.instant_transfer;
+  const open = (other) => Boolean(other)
+    && !(instant && other.block.instant_transfer)
+    && other.acceptItem(build, item);
+
+  const ahead = at(from + 2);
+  const forward = open(ahead);
+  // `invert == enabled`, and nothing here is ever disabled.
+  const inverted = Boolean(build.block.invert);
+
+  if (forward && !inverted) return ahead;
+
+  const left = at(from - 1);
+  const right = at(from + 1);
+  const lc = open(left);
+  const rc = open(right);
+
+  if (!lc && !rc) return inverted && forward ? ahead : null;
+  if (lc && !rc) return left;
+  if (rc && !lc) return right;
+
+  const bit = 1 << from;
+  const side = (build.state.flip & bit) === 0 ? left : right;
+  if (flip) build.state.flip ^= bit;
+  return side;
 }
+
+/**
+ * A launch pad, which is not a sink: it fills, and then everything leaves at once.
+ *
+ * `launchCounter += edelta()` runs whether or not it is full, so the twenty seconds and the
+ * hundred items are two conditions and not one: a pad fed slowly launches the moment it
+ * fills, and a pad fed fast waits for its clock. What goes up is gone as far as a schematic
+ * is concerned, which is exactly what makes it a measurable sink rather than a store.
+ *
+ * The plain pad takes anything; the advanced one takes **one kind at a time**, so a belt
+ * carrying two items jams it the moment the second arrives.
+ */
+const launchPad = {
+  begin(build) {
+    build.state.counter = 0;
+    build.state.launched = 0;
+    build.state.wants = 1;
+  },
+
+  acceptItem(build, source, item) {
+    return build.items.total < build.itemCapacity
+      && (build.block.accept_multiple_items
+          || build.items.total === 0
+          || build.items.first() === item);
+  },
+
+  acceptLiquid(build, source, liquid) {
+    return Boolean(build.block.drinks?.includes(liquid))
+      && build.liquids.get(liquid) < build.liquidCapacity;
+  },
+
+  update(build, world, step) {
+    /* `edelta()`, so the clock runs on **everything** the pad consumes and not only on its
+       power. The big one runs on oil, and without it its efficiency is zero and its counter
+       does not move a single frame: it fills to a hundred and sits there. Read as a
+       power-only block, the port launched at exactly thirty seconds and the game never
+       launched at all. */
+    const delta = build.delta(step);
+    let efficiency = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+    for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
+      const wanted = (rate / TICKS) * delta;
+      if (wanted <= 0) continue;
+      efficiency = Math.min(efficiency, build.liquids.get(liquid) / wanted);
+    }
+    efficiency = Math.max(0, Math.min(1, efficiency));
+    build.state.wants = efficiency > 0 ? 1 : 0;
+    for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
+      build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
+    }
+
+    build.state.counter = Math.fround(build.state.counter + delta * efficiency);
+
+    if (build.state.counter < (build.block.launch_time || 1)) return;
+    if (build.items.total < build.itemCapacity) return;
+
+    build.state.launched += build.items.total;
+    build.items.clear();
+    build.state.counter = 0;
+  },
+};
 
 /**
  * A container or a vault.
@@ -902,13 +1019,22 @@ const source = {
   update(build, world, step) {
     const item = build.node.configured;
     if (!item) return;
-    const limit = TICKS / (build.block.output_per_second || 100);
-    build.state.counter += build.delta(step);
+
+    /* In **float**, deliberately, because the game is and the boundary is reachable.
+       A hundred items a second is six tenths of a frame, `0.6f` rounds up to
+       0.60000002384, and the counter drifts down by a hundred millionth every time it
+       spends one. In double the counter comes back to exactly 0.6 on the third frame and
+       spends it again: one item every third frame that the game does not make, from the
+       block that feeds nearly every scenario in the bench.
+       It only shows when whatever it is feeding can take two in one frame, which is why
+       `crafter-two-presses` sat one coal apart for weeks. */
+    const limit = Math.fround(TICKS / (build.block.output_per_second || 100));
+    build.state.counter = Math.fround(build.state.counter + build.delta(step));
     while (build.state.counter >= limit) {
       build.items.add(item);
       build.dump(item);
       build.items.remove(item, build.items.get(item));
-      build.state.counter -= limit;
+      build.state.counter = Math.fround(build.state.counter - limit);
     }
   },
 };
@@ -1309,10 +1435,14 @@ const laserTurret = {
     const block = build.block;
     if (build.state.reload <= 0) return;
 
+    /* In float, like the rest of the game: the counter this is racing is a float and the
+       last drink before it stops is decided by a comparison against it. Half a unit of
+       water, once, over a thirty second run. */
     const held = build.liquids.currentAmount;
-    const used = Math.min(held, block.coolant_amount || 0) * build.delta(step);
+    const used = Math.fround(Math.min(held, block.coolant_amount || 0) * build.delta(step));
     if (used <= 0) return;
-    build.state.reload -= used * (block.coolant_worth?.[build.liquids.current] || 0);
+    build.state.reload = Math.fround(build.state.reload
+      - Math.fround(used * (block.coolant_worth?.[build.liquids.current] || 0)));
     build.liquids.remove(build.liquids.current, used);
   },
 };
@@ -1477,6 +1607,13 @@ const incinerator = {
   handleItem(build) { build.state.burned = (build.state.burned || 0) + 1; },
 
   acceptLiquid(build, source, liquid) {
+    /* Its own recipe first. Two classes share this behaviour and they are not the same
+       block: Serpulo's incinerator takes a liquid **to destroy it**, and Erekir's takes
+       slag because it runs on slag. Read as an incineration, the slag one refused the very
+       thing it needs and stood there as a wall. */
+    if (build.block.drinks?.includes(liquid)) {
+      return build.liquids.get(liquid) < build.liquidCapacity;
+    }
     const known = build.world?.catalogue?.liquids?.[liquid];
     if (!known?.incinerable) return false;
     return build.block.power > 0 ? build.state.heat > 0.5 : build.state.efficiency > 0;
@@ -1486,7 +1623,17 @@ const incinerator = {
     let efficiency = build.block.power > 0 ? (build.state.power ?? 1) : 1;
     for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
       const wanted = (rate / TICKS) * build.delta(step);
-      if (wanted <= 0) continue;
+      /* A recipe that asks for **nothing per frame**, which one block in the game does: a
+         slag incinerator names slag at a rate of zero. `ConsumeLiquid.efficiency` is
+         `held / (amount * edelta)`, so with slag it divides by zero and gets infinity,
+         which clamps to one; without slag it divides zero by zero and gets `NaN`, and every
+         comparison against `NaN` is false, so the block does nothing at all.
+         Skipped as "no rate, no condition", the port swallowed items on a dry incinerator
+         that the game leaves standing as a wall. */
+      if (wanted <= 0) {
+        efficiency = Math.min(efficiency, build.liquids.get(liquid) > 0 ? 1 : 0);
+        continue;
+      }
       efficiency = Math.min(efficiency, build.liquids.get(liquid) / wanted);
       build.liquids.remove(liquid, wanted * efficiency);
     }
@@ -1587,6 +1734,7 @@ const BY_ROLE = {
   sorter,
   bridge,
   "mass-driver": massDriver,
+  "launch-pad": launchPad,
   store,
   unloader,
   sink,
@@ -1629,11 +1777,19 @@ export function behaviourOf(node) {
      they are the same shape, and to a simulation they are nothing alike. */
   if (node.block.carries === "liquid") return LIQUIDS[node.role] || null;
   // Cargo is a third network, and it moves like neither of the other two.
+  /* `Object.hasOwn`, and not a plain lookup: one of the roles in this engine is literally
+     called `constructor`, and `{}["constructor"]` is `Object`, which is truthy. A block
+     producer read as an assembler and stopped making anything. */
+  if (Object.hasOwn(ASSEMBLERS, node.role)) return ASSEMBLERS[node.role];
+  if (Object.hasOwn(CARGO, node.role)) return CARGO[node.role];
   if (node.block.carries === "payload") return PAYLOADS[node.role] || null;
   if (node.role === "pump") return LIQUIDS.pump;
   // The sandbox power tap is filed under the grid rather than under generators, because
   // that is what it is: a wire that never runs out.
   if (node.role === "diode") return POWER.diode;
+  // A power void is a consumer and nothing else: `Grid` reads the role and asks for all of
+  // it, so it needs no behaviour of its own.
+  if (node.role === "power-void") return null;
   if (node.role === "power" && node.block.power_out > 0) return POWER.freeGenerator;
   if (node.role === "generator") {
     /* Six classes share the word "generator" and no behaviour whatsoever, so this goes by

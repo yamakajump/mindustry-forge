@@ -139,6 +139,58 @@
       "efficiency": 1
     }
   ],
+  "standing": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 17,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 18,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 19,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 20,
+      "y": 13
+    },
+    {
+      "block": "liquid-tank",
+      "x": 22,
+      "y": 13
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

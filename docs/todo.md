@@ -36,26 +36,60 @@ Deux corrections restent invérifiables et il faut le dire plutôt que le laisse
   et invérifiable : un réacteur refroidi voit sa chaleur ramenée à zéro à chaque image, donc
   il n'en transmet aucune, et un réacteur qui en transmet vraiment est en train d'exploser.
 
-### 2. Les deux écarts qui restent au banc
+### 2. Le banc n'a plus d'écart
 
-- **`crafter-two-presses`**, une presse retient neuf charbons au lieu de dix. Mesuré : le
-  portage est **exactement une image en retard** sur cette branche-là, il atteint dix au
-  tick 1801. L'autre branche du même routeur est exacte. Trouver l'image manquante demande
-  de tracer les deux moteurs image par image, ce que le banc ne sait pas encore faire.
-- **`turret-meltdown-drain`**, 17,4 eau contre 18,0 sur une case de conduite. Un gradient de
-  pression, pas un compte.
+Les deux qui traînaient sont tombés le 27/08/2026, et tous les deux étaient la même chose
+sous deux visages : **le jeu compte en simple précision et le portage comptait en double**.
 
-Les deux demandent la même chose : une commande `trace` dans le banc qui écrive l'état d'un
-bâtiment à chaque image. C'est le prochain outil à écrire, et il servira à tout le reste.
+- Une source verse cent objets par seconde dans soixante images, donc son compteur dépense
+  six dixièmes d'image à la fois, et `0.6f` vaut un cheveu de plus que six dixièmes. En
+  double le compteur revient exactement à 0,6 la troisième image et le dépense une fois de
+  trop : un objet toutes les trois images, depuis le bloc qui alimente presque tous les
+  scénarios du banc.
+- Une machine ajoute un quatre-vingt-dixième quatre-vingt-dix fois, ce qui tombe juste sous
+  un en double et juste au-dessus en float.
+- Un tapis prend un troisième objet quand celui de derrière a bougé d'exactement
+  `itemSpace`.
+- Et un liquide passe d'un bloc à l'autre comme une fraction de lui-même soixante fois par
+  seconde, donc l'arrondi s'accumule jusqu'à une unité entière au bout d'une course.
+
+Deux autres choses sont sorties de la même enquête, et elles n'ont rien à voir avec les
+flottants : **un tapis vide s'endort au bout d'une seconde**, et la liste de mise à jour du
+jeu est **non ordonnée**, donc en sortir un bloc y ramène le dernier à sa place. Deux tapis
+qui s'endorment sur la même image remontent une presse de trois rangs, et cette presse lit
+désormais le stock de l'image d'avant.
+
+L'outil qui a trouvé tout ça est `node tools/trace.mjs <scenario>` avec la commande `trace`
+du banc en face : une ligne par image des deux côtés, et la première qui diffère. Un total
+après mille huit cents images ne sait pas dire laquelle a divergé. Il sert pour la suite.
 
 ### 3. Ce que le moteur ne modélise pas du tout
 
-- **Le souffle d'une explosion.** `kill()` vide le bloc et le ferme, et un bloc mort
-  n'accepte plus rien, mais le jeu emporte aussi une partie de ce qui le touchait.
-  `reactor-neoplasia-full` est construit autour de ce trou.
-- **Le vol des unités.** Une unité posée au sol reste posée ; dans le jeu elle marche, et le
-  jeu refuse une dépose tant qu'une autre unité chevauche encore la case. C'est le risque
-  dominant sur tout scénario d'usine dépassant deux unités.
+- ~~**Le souffle d'une explosion.**~~ Fait. Un bloc a des points de vie, il meurt à zéro, et
+  sa mort part en vagues qui rayonnent depuis son centre. `Damage.tileDamage` n'est pas un
+  rayon : chaque rayon **se dépense** sur ce qu'il traverse, donc un mur devant un réacteur
+  encaisse à sa place et ce qui est derrière tient. C'est la raison pour laquelle on
+  construit un banc de réacteurs avec des murs entre eux, et c'est un fait sur un plan
+  qu'aucun débit ne dit.
+
+  Deux surprises mesurées : le souffle propre d'un réacteur au thorium, dix-neuf cases de
+  cinq mille dégâts, **épargne ta propre équipe** (`Damage.damage` prend en argument
+  l'équipe à ne pas toucher), donc dans une schématique il ne touche rien. Ce qui blesse
+  vraiment est le souffle générique, fait de ce que le bloc **tenait** : trente thoriums
+  valent trente-huit d'explosivité en trois vagues de dix-neuf, ce qui tue une jonction
+  collée à lui et laisse un convoyeur deux cases plus loin.
+
+  Le banc compare désormais **ce qui reste debout**, ce qui manquait : les compteurs d'un
+  bloc mort sont à zéro des deux côtés, et ça se lit comme un accord.
+- **Le fret aérien, à moitié.** `cargo.js` fait voler l'unité, la charge et la décharge, et
+  `units.js` porte la physique de vol du jeu. Ce qui manque n'est pas du code : au moment où
+  l'unité naît, `AIController` tire `Mathf.random(40)` pour décaler son premier ciblage, et
+  ce tirage vient du générateur partagé de la partie. Rien dans une schématique ne le
+  détermine, donc la cadence d'un aller-retour ne peut pas être tenue contre le moteur image
+  par image. `cargo-unset` mesure ce qui est certain : un point de déchargement que personne
+  n'a réglé ne reçoit jamais rien. Les deux classes restent décochées pour cette raison.
+- **Les unités au sol.** Une unité posée par une usine reste posée ici ; dans le jeu elle
+  marche, et le jeu refuse une dépose tant qu'une autre unité chevauche encore la case.
 
 ### 4. Relancer l'audit une troisieme fois
 
@@ -95,21 +129,22 @@ images **et** que les drones soient en position, ce qui dépend de leur vol. Il 
 soit un modèle de vol minimal, soit un scénario plus long, et le banc accepte déjà une
 durée par scénario.
 
-### 7. Les processeurs : déclarer, pas simuler
+### 7. Les processeurs : déclarés, pas simulés
 
-Un processeur ne consomme rien du tout, ni énergie ni objets. Son seul effet sur un débit
-passe par une instruction, `control`, sur les blocs qu'il pilote. Simuler tout
-l'interpréteur pour savoir si un `control` part est le mauvais rapport effort/résultat, et
-son mode de panne est silencieux : une propriété que Forge ne modélise pas renvoie null,
-le programme branche ailleurs, et rien ne le dit.
+**Fait.** Un processeur ne consomme rien du tout, ni énergie ni objets, et le banc le
+mesure : `refuses-micro-processor` et `refuses-hyper-processor` montrent qu'un routeur qui
+en touche un envoie tout son cuivre dans le coffre.
 
-Ce qu'il faut faire à la place, en deux temps :
+`site/public/forge/logic.js` décode la configuration : le programme, en clair, et la liste
+des liens. Le rapport dit alors « trois processeurs, dont un qui pilote, et ce qu'il
+pilote », parce que la seule instruction qui sorte d'un processeur est `control`. Un
+processeur qui ne fait que `sensor` et `print` ne change aucun chiffre, et c'est la majorité
+de ceux qu'on croise.
 
-1. Décoder la configuration et sortir la liste des liens. Forge dit alors « trois
-   processeurs, sept blocs pilotés, ce qu'ils font n'est pas simulé ».
-2. Lire le programme, qui est du texte en clair, assez pour séparer les liens **lus** des
-   liens **écrits**. Un processeur qui ne fait que `sensor` et `print` ne change aucun
-   débit, et c'est la majorité de ceux qu'on croise.
+L'interpréteur n'est **pas** écrit et ne le sera pas. Le simuler pour savoir si un `control`
+part est le mauvais rapport effort sur résultat, et son mode de panne est silencieux : une
+propriété que le moteur ne modélise pas renverrait null, le programme brancherait ailleurs,
+et rien ne le dirait.
 
 ### 8. La longue traîne des blocs
 
@@ -161,8 +196,18 @@ Ce qui reste se range en trois tas, et le tri compte plus que la liste :
 - [x] **Une foreuse produisait zéro.** Le registre ne donne aucune sortie à une foreuse,
       parce que ce qu'elle fait dépend des cases sous elle : sans sol, une schématique de
       foreuses et de bandes s'analysait en silence.
-- [x] **L'éditeur.** `schematic.js` sait écrire le format du jeu, pas seulement le lire.
-      Tourner, retirer, poser, avec un pourtour qui s'ouvre pour poser au delà du bord.
+- [x] **Le mode édition.** Un écran à lui, plein cadre, avec les mécaniques de pose du jeu
+      relevées dans sa source et non de mémoire : ligne droite par défaut, escalier ou A\* en
+      placement diagonal, remplissage de zone pour les murs, suivi de chaîne pour améliorer
+      une ligne existante. Les ponts s'espacent de leur portée et se lient au suivant, un
+      croisement pose une jonction, un obstacle se franchit en ponts automatiques par la
+      programmation dynamique du jeu. Sélection avec déplacement, rotations, miroirs,
+      presse-papiers dans les deux sens. Raccourcis relevés dans `Binding`. Limite de 64×64
+      tenue à la pose. `docs/audit-pose.md` recense les 37 mécaniques et leur état.
+
+- [x] **L'onglet sol.** Crayon, rectangle, pot de peinture, gomme, trois couches, et la
+      transparence qui bascule toute seule pour qu'on ne peigne plus à l'aveugle. Le sol est
+      gardé avec la schématique : sans ça, la rouvrir rendait ses foreuses muettes.
 - [x] **Marquer n'importe quel bloc**, pas seulement un transporteur : une bande venue de
       dehors finit sur une presse aussi bien que sur une autre bande.
 

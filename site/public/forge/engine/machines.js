@@ -11,7 +11,7 @@
  */
 
 import { DIRECTIONS, TICKS } from "./core.js";
-import { moveOutPayload } from "./payloads.js";
+import { Cargo, moveOutPayload } from "./payloads.js";
 
 /**
  * How much of a frame this machine gets.
@@ -192,7 +192,13 @@ const crafter = {
         * (block.scale_liquid_consumption ? groundScale(build) : 1);
       const delta = build.delta(step) * efficiency * heatScale(build) * groundScale(build)
         * liquidRoomScale(build, efficiency, step);
-      build.state.progress += delta / (block.craft_time || 1);
+      /* In **float**, because the game is and the comparison against one is a boundary a
+         machine crosses every batch. Ninety additions of a ninetieth land just under one in
+         double and just over it in float, so a press that the game fires on frame a
+         hundred and seventy-one fired on a hundred and seventy-two here: one batch in
+         twenty, once, and enough to leave a coal in the wrong place at the end of a run. */
+      build.state.progress = Math.fround(
+        build.state.progress + Math.fround(delta / (block.craft_time || 1)));
 
       // A liquid comes out continuously rather than in a batch: half a craft's worth of
       // progress is half a craft's worth of liquid, already in the tank.
@@ -492,7 +498,7 @@ const unitFactory = {
       for (const [item, amount] of Object.entries(plan.requirements)) {
         build.items.remove(item, amount);
       }
-      build.state.payload = plan.unit;
+      build.state.payload = new Cargo(plan.unit);
       build.state.payVector = [0, 0];
       build.state.payRotation = build.rotation * 90;
       build.state.wants = 0;

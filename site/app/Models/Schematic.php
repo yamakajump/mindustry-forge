@@ -6,6 +6,7 @@ use App\Services\EngineVersion;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
@@ -61,7 +62,7 @@ class Schematic extends Model
 
     protected $fillable = [
         'user_id', 'slug', 'name', 'description', 'code', 'visibility',
-        'analysis', 'width', 'height', 'blocks', 'power_made', 'power_used',
+        'analysis', 'ground', 'width', 'height', 'blocks', 'power_made', 'power_used',
         'produces', 'needs',
         'source', 'source_id', 'author', 'fetched_at', 'source_meta',
         'analysed_at', 'engine_version',
@@ -82,6 +83,7 @@ class Schematic extends Model
     protected $casts = [
         'verified' => 'boolean',
         'analysis' => 'array',
+        'ground' => 'array',
         'produces' => 'array',
         'needs' => 'array',
         'source_meta' => 'array',
@@ -126,6 +128,86 @@ class Schematic extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Keep the searchable index of what it produces in step with the schematic itself.
+     *
+     * Rebuilt on the way out, whatever wrote the row: the upload route, a moderator fixing
+     * a name, the ingestion pass, a factory in a test. Doing it only where the analysis
+     * arrives would leave every other write path with a schematic listed under something
+     * it no longer makes.
+     */
+    protected static function booted(): void
+    {
+        static::saved(fn (self $schematic) => $schematic->indexWhatItMakes());
+    }
+
+    /**
+     * Write out one row per thing this schematic produces.
+     *
+     * Wholesale rather than a diff: a corrected schematic that stopped making silicon has
+     * to stop turning up under silicon, and reconciling two lists is how one of them ends
+     * up with a leftover nobody notices until a player opens a page that promised silicon.
+     *
+     * Power sits in here alongside the items, because a reactor produces energy the way a
+     * press produces graphite. What it *consumes* is deliberately absent: electricity is
+     * something a base already has, so it is a prerequisite the page states, never a debt
+     * that pushes a working factory down a ranking.
+     */
+    public function indexWhatItMakes(): void
+    {
+        $blocks = max(1, (int) $this->blocks);
+
+        $rows = [];
+        foreach ((array) $this->produces as $item => $rate) {
+            if (is_string($item) && is_numeric($rate) && $rate > 0) {
+                $rows[substr($item, 0, 40)] = (float) $rate;
+            }
+        }
+        // Energy is indexed on what is left over, not on what the generators put out. A
+        // plant that makes six thousand and burns thirteen hundred of it on its own pumps
+        // hands the base four thousand seven hundred, and that is the number somebody
+        // comparing two reactors is comparing. Note this is not the consumption rule in
+        // reverse: a factory's power draw never touches its ranking on graphite. It is
+        // that when energy is the product, the product is the surplus.
+        if ($this->powerSpare() > 0) {
+            $rows[SchematicItem::POWER] = $this->powerSpare();
+        }
+
+        $this->items()->whereNotIn('item', array_keys($rows) ?: [''])->delete();
+
+        foreach ($rows as $item => $rate) {
+            $this->items()->updateOrCreate(
+                ['item' => $item],
+                ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
+            );
+        }
+    }
+
+    /** Everything it makes, one row each, indexed so the listing can search and rank on it. */
+    public function items(): HasMany
+    {
+        return $this->hasMany(SchematicItem::class);
+    }
+
+    /**
+     * What has to be plugged into it before it does anything, in energy per second.
+     *
+     * Nobody builds a factory expecting it to bring its own reactor, so this is not held
+     * against it anywhere. It is said on the page, because a player who pastes a silicon
+     * line into an unpowered corner of their base and watches it sit there deserved to be
+     * told, and until now the page mentioned power only when there was a surplus.
+     */
+    public function powerNeeded(): float
+    {
+        return max(0.0, (float) $this->power_used);
+    }
+
+    /** Whether it hands back more energy than it takes, which makes it a power plant. */
+    public function powerSpare(): float
+    {
+        return (float) $this->power_made - (float) $this->power_used;
     }
 
     /** Whether it was collected from somewhere else rather than posted here. */
@@ -239,6 +321,9 @@ class Schematic extends Model
         }
 
         $power = (array) ($analysis['potential'] ?? []);
+        $made = max(0, (float) ($power['made'] ?? 0));
+        $used = max(0, (float) ($power['spent'] ?? 0));
+        $blocks = min(65535, max(0, (int) ($analysis['blocks'] ?? 0)));
 
         // Stamped here rather than by each caller. Every route that takes an analysis in
         // goes through this method, so this is the one place that cannot be forgotten, and
@@ -249,9 +334,11 @@ class Schematic extends Model
             'engine_version' => EngineVersion::current(),
             'width' => min(4096, max(0, (int) ($analysis['width'] ?? 0))),
             'height' => min(4096, max(0, (int) ($analysis['height'] ?? 0))),
-            'blocks' => min(65535, max(0, (int) ($analysis['blocks'] ?? 0))),
-            'power_made' => max(0, (float) ($power['made'] ?? 0)),
-            'power_used' => max(0, (float) ($power['spent'] ?? 0)),
+            'blocks' => $blocks,
+            'power_made' => $made,
+            'power_used' => $used,
+            // What it makes is indexed into `schematic_items` on save rather than here, so
+            // that every write path gets it and not just this one.
             'produces' => $produces,
             'needs' => $needs,
         ];

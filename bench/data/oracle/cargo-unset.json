@@ -1,0 +1,108 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "unit-cargo-loader",
+      "x": 14,
+      "y": 14,
+      "liquid": "nitrogen",
+      "amount": 100
+    },
+    {
+      "block": "liquid-source",
+      "x": 14,
+      "y": 16,
+      "liquid": "nitrogen",
+      "amount": 10000
+    }
+  ],
+  "batteries": [],
+  "payloads": [],
+  "units":{
+    "manifold": 1
+  },
+  "running": [
+    {
+      "block": "power-source",
+      "x": 14,
+      "y": 12,
+      "efficiency": 0
+    },
+    {
+      "block": "unit-cargo-unload-point",
+      "x": 21,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 24,
+      "y": 13,
+      "efficiency": 0
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "unit-cargo-loader",
+      "x": 14,
+      "y": 14,
+      "efficiency": 0,
+      "holds":{
+        "copper": 200
+      }
+    },
+    {
+      "block": "liquid-source",
+      "x": 14,
+      "y": 16,
+      "efficiency": 1
+    }
+  ],
+  "standing": [
+    {
+      "block": "power-source",
+      "x": 14,
+      "y": 12
+    },
+    {
+      "block": "unit-cargo-unload-point",
+      "x": 21,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 24,
+      "y": 13
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 14
+    },
+    {
+      "block": "unit-cargo-loader",
+      "x": 14,
+      "y": 14
+    },
+    {
+      "block": "liquid-source",
+      "x": 14,
+      "y": 16
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 24,
+      "y": 13,
+      "items":{}
+    }
+  ],
+  "per_second":{}
+}

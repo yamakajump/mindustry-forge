@@ -12,7 +12,10 @@
     <select name="produit" id="produit">
       <option value="">n'importe quoi</option>
       @foreach($items as $item)
-        <option value="{{ $item }}" @selected($makes === $item)>{{ $item }}</option>
+        {{-- L'energie est une production comme une autre : chercher une schematique qui
+             produit de l'energie, c'est chercher une centrale. --}}
+        <option value="{{ $item }}" @selected($makes === $item)>{{
+          $item === $powerKey ? 'energie' : $item }}</option>
       @endforeach
     </select>
 
@@ -25,6 +28,21 @@
 
     <button class="primary" type="submit">Chercher</button>
   </div>
+
+  {{-- Sans item choisi, il n'y a rien contre quoi mesurer un rendement : classer
+       quarante graphite/min devant vingt-cinq silicium/min reviendrait a decreter qu'un
+       graphite vaut un silicium. Alors on ne le fait pas, on le dit, et on propose le
+       seul geste qui rend le classement possible. --}}
+  @if($makes === '')
+    <p class="hint-line">Classees par date, faute de mieux. Choisis ce que tu cherches
+      ci-dessus et le classement devient un vrai rendement&nbsp;: combien la schematique
+      en sort, pour la place qu'elle prend.</p>
+  @else
+    <p class="hint-line">Classees sur ce qu'elles sortent en
+      <strong>{{ $makes === $powerKey ? 'energie' : $makes }}</strong>, rapporte a leur
+      taille. L'electricite qu'une schematique consomme ne la penalise pas&nbsp;: c'est un
+      prerequis, indique sur sa page.</p>
+  @endif
 </form>
 
 @if($schematics->isEmpty())
