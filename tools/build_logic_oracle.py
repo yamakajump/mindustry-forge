@@ -34,7 +34,7 @@ CORPUS = Path("bench/data/logique")
 TARGET = Path("bench/data/logique-oracle.json")
 ORACLE = Path("tools/LogicOracle.java")
 
-#: Où les autres scripts du dépôt vont chercher le jeu, depuis le dossier parent.
+#: Where the other scripts in this repository look for the game, from the parent folder.
 DEFAULT_CLASSES = Path("../mindustry-ai/mindustry-env/server-release.jar")
 
 

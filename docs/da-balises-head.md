@@ -1,137 +1,65 @@
-# Les balises `<head>`, prêtes à coller
+# The `<head>` of the two pages, and what the server still owes it
 
-Écrit pour la voie `feat/i18n-nav`, qui possède `layout.blade.php` et le `<header>` de
-`index.html` pendant que ce document est écrit. Rien ici n'a été posé dans ces deux
-fichiers : les blocs sont à intégrer par la voie qui les tient, ou par la voie
-`feat/direction-artistique` dans une petite PR de branchement une fois la refonte de la nav
-fusionnée.
+The tags are in place, in `layout.blade.php` and in `index.html`. This page records what
+they are for and what has not been done yet, so nobody has to work it out again from the
+markup.
 
-**Tous les fichiers pointés existent** sur `feat/direction-artistique`. Poser ces balises
-avant que cette branche soit fusionnée donne des 404 sur le favicon et une vignette vide
-dans Discord.
+It started as a handover: `layout.blade.php` and `index.html` were being rewritten by
+another lane when the assets landed, so the blocks were written here and posted later. That
+part is done and has been removed.
 
-## Ce que ça répare
+## What it repaired
 
-Le site a aujourd'hui **trois états d'icône différents et un lien mort** :
+The site had **three different icon states and one dead link**:
 
-| Où | Aujourd'hui |
+| Where | Before |
 |---|---|
-| `site/public/favicon.ico` | 0 octet, référencé nulle part |
-| `layout.blade.php:7` | `<link rel="icon" href="/favicon.svg">`, fichier **absent** → 404 à chaque chargement |
-| `site/public/index.html:7` | une **autre** icône, en data-URI, dessin différent |
+| `site/public/favicon.ico` | 0 bytes, referenced nowhere |
+| `layout.blade.php` | pointed at `/favicon.svg`, a file that **did not exist**, so a 404 on every Laravel page |
+| `site/public/index.html` | a **different** icon, inline as a data URI |
 
-Donc les pages Laravel et la page statique n'ont pas la même icône, et l'une des deux
-n'en a aucune.
+So the Laravel pages and the static page did not share an icon, and one of the two had none.
 
-## Bloc pour `site/resources/views/layout.blade.php`
+## Why each tag is there
 
-Remplace la ligne `<link rel="icon" href="/favicon.svg">`. À poser après `<title>` et
-**avant** `@stack('head')`, pour qu'une page puisse écraser `og:title` et compagnie.
+Three icon formats, because three families of client ask for one differently: the `.ico` for
+whatever hits `/favicon.ico` without reading the head, the SVG for any current browser, the
+square PNG for the iOS home screen. Then the manifest and `theme-color`.
 
-```blade
-{{-- L'icone, en trois formats parce que trois familles de clients la demandent
-     differemment : le .ico pour ce qui tape /favicon.ico sans lire le head, le SVG pour
-     tout navigateur a jour, le PNG carre pour l'ecran d'accueil iOS. --}}
-<link rel="icon" href="/favicon.ico" sizes="32x32">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#1b2027">
+The Open Graph block in `layout.blade.php` holds **defaults**. A page with something better
+to say overrides them from its own `@push('head')`, and the last tag wins, which is how a
+schematic page substitutes its own title, description and card.
 
-{{-- La vignette d'un lien partage. Valeurs par defaut : une page qui a mieux a dire les
-     ecrase depuis son propre @push('head'), et la derniere balise gagne. --}}
-<meta property="og:site_name" content="Mindustry Forge">
-<meta property="og:locale" content="fr_FR">
-<meta property="og:type" content="website">
-<meta property="og:title" content="@yield('title', 'Mindustry Forge')">
-<meta property="og:description" content="Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.">
-<meta property="og:url" content="{{ url()->current() }}">
-<meta property="og:image" content="{{ asset('og.jpg') }}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Mindustry Forge - colle une schematique, sache ou elle coince">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="description" content="Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.">
-```
+**`asset('og.jpg')` only produces an absolute address when `APP_URL` is right.** A relative
+`og:image` is resolved by nobody: the thumbnail is simply missing, with no error anywhere to
+say so. Production wants `APP_URL=https://mindustryforge.com`.
 
-**`asset('og.jpg')` ne rend une adresse absolue que si `APP_URL` est juste.** Un
-`og:image` relatif n'est pas resolu par Discord ni par Twitter : la vignette est
-simplement absente, sans erreur nulle part. Verifier `APP_URL=https://mindustryforge.com`
-en production.
+**The description is written out rather than pulled from `site/lang/`.** The convention
+there is `<domain>.<screen>.<element>` with a fixed list of domains, and a description that
+holds for the whole site belongs to no screen; dropping it into another lane's domain file is
+what that directory's README asks nobody to do. One language ships, so this costs nothing
+today and moves the day a second one does.
 
-## Bloc pour `site/public/index.html`
+### One trap left in on purpose
 
-Remplace la ligne `<link rel="icon" href="data:image/svg+xml,...">`. Cette page est
-statique : pas de Blade, donc les adresses sont ecrites en dur et **absolues**.
+`index.html` is served at **two** addresses, `/` and `/editer`, and it is static, so its
+`og:url` says `/` even when `/editer` is the link being shared. An editor link pasted into
+Discord unfurls with the analyser's thumbnail. One line to fix the day the editor deserves a
+thumbnail of its own, and worth knowing before discovering it.
 
-```html
-<link rel="icon" href="/favicon.ico" sizes="32x32">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#1b2027">
+## What the vhost still owes these files
 
-<meta name="description" content="Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.">
-<meta property="og:site_name" content="Mindustry Forge">
-<meta property="og:locale" content="fr_FR">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Forge - analyser une schematique Mindustry">
-<meta property="og:description" content="Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.">
-<meta property="og:url" content="https://mindustryforge.com/">
-<meta property="og:image" content="https://mindustryforge.com/og.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Mindustry Forge - colle une schematique, sache ou elle coince">
-<meta name="twitter:card" content="summary_large_image">
-```
+`deployment/nginx/` belongs to the pilot lane and nothing there has been touched. What
+follows was found by reading the file.
 
-**Un piege connu, laisse tel quel volontairement** : `index.html` est servie a deux
-adresses, `/` et `/editer`. Son `og:url` annonce donc `/` meme quand on partage
-`/editer`. Un lien vers l'editeur partage dans Discord affichera la vignette de
-l'analyseur. Ce n'est pas grave et c'est reparable d'une ligne le jour ou l'editeur
-merite sa propre vignette, mais c'est a savoir avant de le decouvrir.
-
-## Deux corrections a faire pendant qu'on y est
-
-**`schematic.blade.php` ligne 30** porte `<meta name="theme-color" content="#ffd37f">`.
-Le chrome du navigateur mobile passe donc en ambre vif sur les pages de schematique, et
-sur celles-la seulement. Avec le texte blanc que le systeme y pose, c'est illisible, et
-c'est incoherent avec le reste du site. À remplacer par `#1b2027`, ou a supprimer
-puisque le layout le porte deja.
-
-**`schematic.blade.php` n'a pas de repli d'image.** Quand `apercus/{slug}.png` n'existe
-pas, la page ne pousse aucun `og:image` et le lien partage n'affiche aucune vignette. Le
-bloc du layout ci-dessus fournit `og.jpg` par defaut, donc ce trou se bouche tout seul
-une fois le layout a jour, a condition de laisser le `@push` de la page **apres** le
-bloc du layout dans l'ordre de rendu, ce qui est deja le cas.
-
-## Ce qui n'est pas dans ces blocs, et pourquoi
-
-Pas de `<meta name="msapplication-*">`, pas de `browserconfig.xml`, pas de
-`mstile-*.png` : les tuiles Windows sont mortes avec Internet Explorer et les vignettes
-epinglees de l'ancien Edge.
-
-Pas de `<link rel="mask-icon">` non plus : c'etait pour l'onglet epingle de Safari, que
-Safari 15 a remplace par le SVG normal.
-
-Pas de `apple-touch-icon-precomposed`, pas de declinaison par taille : iOS choisit le
-`apple-touch-icon` unique et le redimensionne, et il n'y a plus d'appareil qui reclame
-les 76, 120 ou 152 pixels separement depuis iOS 8.
-
-## Côté serveur : deux ajouts au vhost
-
-`deployment/nginx/` appartient au pilote, rien n'y a été touché. Voici ce qui manque,
-constaté en lisant le fichier.
-
-**Les assets de marque ne portent aucune durée de cache.** Le vhost donne `expires 1h` à
-`/forge/` et rien d'autre. Donc `og.jpg`, les six icônes, le manifest et tout
-`/brand/` sont revalidés à chaque visite. Ce sont des fichiers qui ne changent
-qu'au déploiement.
+**The brand assets carry no cache lifetime.** The vhost gives `expires 1h` to `/forge/` and
+to nothing else, so `og.jpg`, the six icons, the manifest and everything under `/brand/` are
+revalidated on every visit, when they only change at deploy time.
 
 ```nginx
-# L'identite visuelle : des fichiers qui ne bougent qu'au deploiement, et que chaque
-# service qui deplie un lien retelecharge. Le vhost ne leur donnait aucune duree de vie,
-# donc le navigateur les revalidait a chaque visite.
+# The visual identity: files that only move at deploy time, and that every service which
+# unfurls a link downloads again. The vhost gave them no lifetime, so a browser revalidated
+# them on every visit.
 location ~* ^/(favicon\.(ico|svg)|apple-touch-icon\.png|icon-\d+\.png|icon-maskable-\d+\.png|og(-[a-z]+)?\.jpg|site\.webmanifest)$ {
     expires 7d;
     add_header Cache-Control "public";
@@ -145,33 +73,45 @@ location ^~ /brand/ {
 }
 ```
 
-Sept jours et pas plus pour les icônes : elles sont référencées par une adresse sans
-empreinte, donc une durée longue rendrait un changement de logo invisible pendant des
-semaines chez ceux qui ont déjà visité le site. `/brand/` peut aller plus loin, personne
-ne le charge dans une page.
+Seven days and no more for the icons: they are referenced by an address with no fingerprint,
+so a long lifetime would make a logo change invisible for weeks to anyone who has already
+visited. `/brand/` can go further, nothing loads it inside a page.
 
-**Le type MIME de `.webmanifest` n'est pas garanti.** À vérifier sur le serveur plutôt
-qu'à supposer :
+**The MIME type of `.webmanifest` is not guaranteed.** Worth checking on the server rather
+than assuming:
 
 ```bash
 grep -r "webmanifest" /etc/nginx/mime.types
 ```
 
-Si la ligne est absente, nginx sert le fichier en `application/octet-stream`. Les
-navigateurs sont tolérants là-dessus aujourd'hui, mais ça se corrige d'un bloc :
+If the line is missing, nginx serves the file as `application/octet-stream`. Browsers are
+tolerant about that today, but it is one block to close:
 
 ```nginx
 types { application/manifest+json webmanifest; }
 ```
 
-## Un piège à ajouter à la liste des pièges déjà payés
+## What is deliberately not in these blocks
 
-**`php artisan serve` ne voit pas un fichier statique créé après son démarrage.** Un
-`favicon.svg` posé dans `site/public/` pendant que le serveur tourne répond 404, avec
-un `X-Powered-By: PHP` et un `Cache-Control: no-cache, private` dans la réponse, c'est-à-dire
-que la requête est partie dans Laravel au lieu d'être servie comme un fichier. Le fichier
-est pourtant bien là. Redémarrer le serveur suffit.
+No `<meta name="msapplication-*">`, no `browserconfig.xml`, no `mstile-*.png`: the Windows
+tiles died with Internet Explorer and old Edge's pinned thumbnails.
 
-Coûté une demi-heure de fausse piste ici : on cherche une erreur de configuration nginx,
-un `.htaccess`, un problème de droits, alors que le serveur de développement a simplement
-une vue périmée de son propre dossier public.
+No `<link rel="mask-icon">` either: that was Safari's pinned-tab icon, which Safari 15
+replaced with the ordinary SVG.
+
+No `apple-touch-icon-precomposed`, and no per-size variants: iOS picks the single
+`apple-touch-icon` and resizes it, and nothing has asked for 76, 120 or 152 separately since
+iOS 8.
+
+## Two traps that cost time here
+
+Both are written up in full in `docs/fonctionnalites.md`, under the traps already paid for.
+They are only named here because this is the work that hit them.
+
+**A dev server can be serving someone else's tree.** `php artisan serve` says "Server
+running" even when the port is already taken, and four lanes had one on the same port. The
+test that settles it: ask for a resource that only exists in your own tree.
+
+**A screenshot of an error page looks exactly like a screenshot.** A before-and-after
+comparison reported "identical" while photographing the Laravel exception page twice. Any
+measurement of a rendered page has to assert the page title first.

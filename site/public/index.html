@@ -4,7 +4,31 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Forge - analyser une schematique Mindustry</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314161c'/%3E%3Cpath d='M8 22V10h10M8 16h8' stroke='%23ffd37f' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+<!-- Three icon formats, because three families of client ask for one differently: the
+     .ico for whatever hits /favicon.ico without reading the head, the SVG for any current
+     browser, the square PNG for the iOS home screen. -->
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#1b2027">
+
+<!-- This page is static, so the addresses are written out and absolute. It is served at
+     both / and /editer, so og:url says / even when /editer is the link being shared: an
+     editor link unfurls with the analyser's thumbnail. One line to fix the day the editor
+     deserves a thumbnail of its own, and worth knowing before discovering it. -->
+<meta name="description" content="Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.">
+<meta property="og:site_name" content="Mindustry Forge">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Forge - analyser une schematique Mindustry">
+<meta property="og:description" content="Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.">
+<meta property="og:url" content="https://mindustryforge.com/">
+<meta property="og:image" content="https://mindustryforge.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Mindustry Forge">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="./forge/forge.css">
 <script src="./forge/nav.js" type="module" defer></script>
 </head>
@@ -40,6 +64,7 @@
       <summary data-i18n="nav.barre.outils">Outils</summary>
       <div class="menu-list">
         <a href="/outils/logique" data-i18n="nav.menu.logique">Logique</a>
+        <a href="/outils/planificateur" data-i18n="nav.menu.planificateur">Planificateur</a>
       </div>
     </details>
     <a href="/blocs" data-i18n="nav.barre.blocs">Blocs</a>
@@ -180,7 +205,7 @@ function render(report) {
   const markLine = (port, colour) => {
     const label = port.resource
       ? `${withIcon(port.resource)}${escape(port.resource)}`
-      : `<span style="color:var(--dim)">a preciser</span>`;
+      : `<span style="color:var(--dim)">${escape(t("analyse.ports.a-preciser"))}</span>`;
     return `<div class="line"><span><span class="pin ${colour}"></span>
       ${escape(port.name)} en (${port.x}, ${port.y})</span>
       <span class="num">${label}${port.rate > 0.001
@@ -189,24 +214,21 @@ function render(report) {
 
   if (!answered || inputs.length || outlets.length) {
     right.push(`<div class="card ${answered ? "" : "ask"}">
-      <h2>Entrees et sorties</h2>${
+      <h2>${escape(t("analyse.ports.titre"))}</h2>${
       inputs.length || outlets.length
         ? inputs.map((p) => markLine(p, "in")).join("")
           + outlets.map((p) => markLine(p, "out")).join("")
-        : `<p class="hint-line" style="margin-top:0">Rien de marque pour l'instant.</p>`
+        : `<p class="hint-line" style="margin-top:0">${escape(t("analyse.ports.rien-marque"))}</p>`
     }<div class="row" style="margin-top:12px">
       <button type="button" class="${answered ? "" : "primary"}" id="ports-mark">${
-        inputs.length || outlets.length ? "Marquer autre chose" : "Marquer sur l'image"}</button>
-      <button type="button" id="ports-sealed">Rien n'entre ni ne sort</button>
+        escape(t(inputs.length || outlets.length
+          ? "analyse.ports.marquer-autre" : "analyse.ports.marquer"))}</button>
+      <button type="button" id="ports-sealed">${escape(t("analyse.ports.scelle"))}</button>
       ${inputs.length || outlets.length
-        ? `<button type="button" id="ports-clear">Tout effacer</button>` : ""}
+        ? `<button type="button" id="ports-clear">${escape(t("analyse.ports.effacer"))}</button>` : ""}
     </div>
-    <p class="hint-line">${answered
-      ? "Clique une bande ou un tuyau sur l'image pour en ajouter ou en corriger un."
-      : "Clique une bande ou un tuyau sur l'image, dis si c'est une entree ou une sortie, "
-        + "et ce qui y passe. Forge ne devine pas : sur une conception un peu grosse, "
-        + "deviner l'arrivee est un coup de de, et un coup de de rate donne une page de "
-        + "chiffres qui ont l'air calcules."}</p>
+    <p class="hint-line">${escape(t(answered
+      ? "analyse.ports.aide-marquee" : "analyse.ports.aide-vierge"))}</p>
     </div>`);
   }
 
@@ -225,28 +247,33 @@ function render(report) {
 
   const needs = report.needs || [];
   if (needs.length) {
-    right.push(`<div class="card"><h2>Il lui faut</h2>${needs.map((need) => {
+    right.push(`<div class="card"><h2>${escape(t("analyse.besoins.titre"))}</h2>${needs.map((need) => {
       const best = need.options.slice(0, 3);
       const label = need.resource.startsWith("*")
-        ? "un combustible quelconque"
+        ? escape(t("analyse.besoins.combustible"))
         : `${withIcon(need.resource)}${escape(need.resource)}`;
       const where = sockets[need.resource] || [];
       return `<div class="line"><span>${label}</span>
         <span class="num">${rate(need.perMinute)} / min</span></div>` + (best.length
         ? `<div class="chips" style="margin:6px 0 8px">${best.map((o) =>
             `<span class="chip"><span class="num">${o.count}</span> ${escape(o.block)}</span>`)
-            .join(`<span style="color:var(--dim);align-self:center">ou</span>`)}</div>`
+            .join(`<span style="color:var(--dim);align-self:center">${
+              escape(t("analyse.besoins.ou"))}</span>`)}</div>`
         : "") + (where.length
         ? `<p class="hint-line" style="margin:0 0 10px">${where.length > 1
-             ? `Reparti sur les <strong>${where.length}</strong>
-                ${where[0].carries === "liquid" ? "tuyaux" : "bandes"} marques, soit
-                ${rate(need.perMinute / where.length)} / min chacun.`
-             : `Sur le ${where[0].carries === "liquid" ? "tuyau" : "bande"} marque en
+             ? `${escape(t("analyse.besoins.sur-les"))} <strong>${where.length}</strong>
+                ${escape(t(where[0].carries === "liquid"
+                  ? "analyse.besoins.tuyaux" : "analyse.besoins.bandes"))} ${
+                escape(t("analyse.besoins.marques-soit"))}
+                ${rate(need.perMinute / where.length)} ${
+                escape(t("analyse.unite.par-minute"))} ${escape(t("analyse.besoins.chacun"))}`
+             : `${escape(t("analyse.besoins.sur-le"))} ${escape(t(where[0].carries === "liquid"
+                  ? "analyse.besoins.tuyau" : "analyse.besoins.bande"))} ${
+                escape(t("analyse.besoins.marque-en"))}
                 (${where[0].x}, ${where[0].y}).`}</p>`
-        : `<p class="hint-line" style="margin:0 0 10px">Marque la bande ou le tuyau par
-           ou ca doit arriver, sur l'image.</p>`);
-    }).join("")}<p class="hint-line">Debit maximal, foreuse posee sur une tache pleine.
-      Sur une tache a moitie couverte il en faut deux fois plus.</p></div>`);
+        : `<p class="hint-line" style="margin:0 0 10px">${
+           escape(t("analyse.besoins.ou-marquer"))}</p>`);
+    }).join("")}<p class="hint-line">${escape(t("analyse.besoins.tache-pleine"))}</p></div>`);
   }
 
   /* And what it gives back once it has all that, which is what a player is shopping for.
@@ -258,29 +285,35 @@ function render(report) {
   const full = report.potential || { made: 0, spent: 0 };
   const ceiling = Object.entries(report.potentialPerMinute || {}).sort((a, b) => b[1] - a[1]);
   if (full.made > 0.01 || full.spent > 0.01 || ceiling.length) {
-    right.push(`<div class="card"><h2>Une fois nourrie a fond</h2>
-      ${ceiling.map(([item, n]) => `<div class="line"><span>Au mieux ${withIcon(item)}
+    right.push(`<div class="card"><h2>${escape(t("analyse.plafond.titre"))}</h2>
+      ${ceiling.map(([item, n]) => `<div class="line"><span>${
+           escape(t("analyse.plafond.au-mieux"))} ${withIcon(item)}
            ${escape(item)}</span>
-         <span class="num good">${rate(n)} / min</span></div>`).join("")}
+         <span class="num good">${rate(n)} ${
+           escape(t("analyse.unite.par-minute"))}</span></div>`).join("")}
       ${ceiling.length && needs.length
-        ? `<p class="hint-line" style="margin:6px 0 10px">Plafond, pas mesure : ce que ses
-             machines sortiraient a plein regime si on lui amenait
+        ? `<p class="hint-line" style="margin:6px 0 10px">${
+             escape(t("analyse.plafond.avertissement"))}
              ${needs.filter((n) => !n.resource.startsWith("*"))
-                .map((n) => escape(n.resource)).join(", ") || "ce qui lui manque"}.
-             ${answered
-               ? "Ce qu'elle fait branchee comme elle est se lit plus bas."
-               : "Marque ses entrees pour savoir ce qu'elle fait vraiment."}</p>`
+                .map((n) => escape(n.resource)).join(", ")
+                || escape(t("analyse.plafond.ce-qui-manque"))}.
+             ${escape(t(answered
+               ? "analyse.plafond.plus-bas"
+               : "analyse.plafond.marque-tes-entrees"))}</p>`
         : ""}
       ${full.made > 0.01
-        ? `<div class="line"><span>Produit</span>
-             <span class="num good">${rate(full.made)} energie / s</span></div>` : ""}
+        ? `<div class="line"><span>${escape(t("analyse.plafond.produit"))}</span>
+             <span class="num good">${rate(full.made)} ${
+               escape(t("analyse.unite.energie-par-seconde"))}</span></div>` : ""}
       ${full.spent > 0.01
-        ? `<div class="line"><span>Consomme</span>
-             <span class="num warn">${rate(full.spent)} energie / s</span></div>` : ""}
+        ? `<div class="line"><span>${escape(t("analyse.plafond.consomme"))}</span>
+             <span class="num warn">${rate(full.spent)} ${
+               escape(t("analyse.unite.energie-par-seconde"))}</span></div>` : ""}
       ${full.made > 0.01
-        ? `<div class="line"><span><strong>Net</strong></span>
+        ? `<div class="line"><span><strong>${escape(t("analyse.plafond.net"))}</strong></span>
              <span class="num ${full.made - full.spent >= 0 ? "good" : "bad"}">
-             ${rate(full.made - full.spent)} energie / s</span></div>` : ""}
+             ${rate(full.made - full.spent)} ${
+               escape(t("analyse.unite.energie-par-seconde"))}</span></div>` : ""}
     </div>`);
   }
 
