@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\GameNames;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -19,6 +20,42 @@ class SchematicItem extends Model
 {
     /** Energy, which is produced and searched for exactly like anything else. */
     public const POWER = 'power';
+
+    /**
+     * Ce qu'une valeur de `rate` mesure, qui n'est pas la meme chose selon la ligne.
+     *
+     * Pour un objet, `rate` vient de `produces`, deja par minute. Pour l'energie, il vient
+     * du budget mesure de l'analyse, en energie par seconde. La colonne est la meme et
+     * l'unite ne l'est pas.
+     *
+     * D'ou cette methode plutot qu'une conversion : l'accueil multipliait tout par soixante
+     * et ecrivait « / min ». Sur l'energie c'etait arithmetiquement juste et contredisait le
+     * reste du site, qui dit energie/s partout ; sur l'eau c'etait faux, la valeur etant
+     * deja par minute. La meme schematique portait deux chiffres selon la page qui la
+     * montrait, sur un site dont l'argument est que ses chiffres se prouvent.
+     */
+    public static function parSeconde(string $item): bool
+    {
+        return $item === self::POWER;
+    }
+
+    /**
+     * Le nom que le jeu donne, ou le mot que le site emploie pour l'energie.
+     *
+     * `power` n'est pas un objet du jeu et n'a donc pas de nom dans ses bundles. Les autres
+     * sont cherches dans les deux familles ou ils peuvent vivre, un objet ou un liquide,
+     * avant de retomber sur l'identifiant, ce que le jeu lui-meme n'a pas de mieux a offrir.
+     */
+    public static function nomAffiche(string $item): string
+    {
+        if (self::parSeconde($item)) {
+            return __('schema.unite.energie');
+        }
+
+        return GameNames::of('item', $item)
+            ?? GameNames::of('liquid', $item)
+            ?? $item;
+    }
 
     /**
      * Which way the thing travels.

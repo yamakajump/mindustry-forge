@@ -138,3 +138,45 @@ it('sert encore l analyseur quand la base ne repond pas', function () {
     expect(ilot($reponse->getContent()))->toBe(['total' => 0, 'schematiques' => []]);
     Log::shouldHaveReceived('warning');
 });
+
+it('annonce le meme chiffre que la place de marche, pour la meme schematique', function () {
+    /* Ni le test de l'accueil ni celui de la vitrine ne pouvait voir ce defaut : chacun
+       verifiait sa page, et c'est l'ecart entre les deux qui etait faux. Un visiteur qui
+       clique depuis l'accueil arrive sur la fiche, et lisait deux nombres differents pour
+       la meme schematique -- sur un site dont l'argument est que ses chiffres se prouvent. */
+    $s = Schematic::factory()->create([
+        'visibility' => 'public', 'name' => 'Turbine', 'produces' => ['water' => 39700],
+    ]);
+    $s->items()->delete();
+    $s->items()->create([
+        'item' => 'water', 'sens' => SchematicItem::PRODUIT,
+        'kind' => SchematicItem::MESURE, 'rate' => 39700, 'rate_per_block' => 500,
+    ]);
+
+    $accueil = collect(ilot($this->get('/')->getContent())['schematiques'])
+        ->firstWhere('nom', 'Turbine');
+    $vitrine = $this->get('/schematiques')->getContent();
+
+    /* Deja par minute : rien a convertir. */
+    expect((float) $accueil['debit'])->toBe(39700.0);
+    expect($accueil['unite'])->toBe('/ min');
+    expect($vitrine)->toContain('39 700');
+});
+
+it('dit l energie par seconde, comme partout ailleurs sur le site', function () {
+    /* `rate` porte des energies par seconde et des objets par minute dans la meme colonne.
+       Multiplier les deux par soixante donnait une energie qui contredisait toutes les
+       autres pages, et une eau soixante fois trop rapide. */
+    $s = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Centrale']);
+    $s->items()->delete();
+    $s->items()->create([
+        'item' => SchematicItem::POWER, 'sens' => SchematicItem::PRODUIT,
+        'kind' => SchematicItem::MESURE, 'rate' => 56562, 'rate_per_block' => 900,
+    ]);
+
+    $mis = collect(ilot($this->get('/')->getContent())['schematiques'])->firstWhere('nom', 'Centrale');
+
+    expect((float) $mis['debit'])->toBe(56562.0);
+    expect($mis['unite'])->toBe('/ s');
+    expect($mis['produit'])->toBe('energie');
+});

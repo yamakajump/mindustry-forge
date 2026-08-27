@@ -157,7 +157,6 @@
   "vitrine.accueil.blocs": "blocs",
   "vitrine.accueil.compte": "{total} schematiques du catalogue sont passees par la meme analyse. En voici quelques-unes.",
   "vitrine.accueil.deja-analysees": "Deja analysees",
-  "vitrine.accueil.par-minute": "/ min",
   "vitrine.accueil.parcourir": "Parcourir les schematiques deja analysees",
   "vitrine.accueil.parcourir-comptees": "Parcourir les {total} schematiques analysees",
   "vitrine.accueil.preuve": "Un banc fait tourner le vrai jeu sur un monde fige, y pose la schematique, et compte ce qui sort. L'analyse est confrontee a cette mesure a chaque changement du code.",
