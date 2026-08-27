@@ -150,6 +150,25 @@ def run_bounds(font: TTFont, text: str, size: float) -> tuple[float, float, floa
     return first_ink or 0.0, last_ink, lowest
 
 
+def build_truetype() -> None:
+    """La meme police, en TrueType, pour la bibliotheque d'images de PHP.
+
+    GD dessine du texte avec FreeType, qui lit du TrueType et de l'OpenType et pas du
+    WOFF2. Le fichier n'est donc pas une deuxieme police : c'est le meme sous-ensemble,
+    sorti de son enveloppe web, et il se regenere ici pour qu'il ne puisse pas diverger de
+    celui que le navigateur charge.
+
+    Il vit dans resources/ et pas dans public/ : personne ne doit le telecharger, il ne
+    sert qu'au serveur qui compose les cartes de partage.
+    """
+    face = TTFont(FONT)
+    face.flavor = None
+    out = ROOT / "site/resources/fonts/forge.ttf"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    face.save(out)
+    print("  ", out.relative_to(ROOT), "%.0f ko" % (out.stat().st_size / 1024))
+
+
 def build_logos(font: TTFont) -> None:
     """Le lock-up horizontal, en deux teintes puis en une seule.
 
@@ -315,6 +334,14 @@ def build_icons() -> None:
     rasterise(plate(512, 0.46, 0.0, relief=False, plate_fill=BG),
               PUBLIC / "icon-maskable-512.png", 512, 512)
 
+    #: Le signe seul, sur fond transparent, pour le serveur qui compose les cartes de
+    #: partage. PHP le colle tel quel plutot que de redessiner ses quatre chemins : une
+    #: deuxieme geometrie ecrite dans un autre langage est une deuxieme geometrie a avoir
+    #: tort, et celle-la aurait diverge sans que personne ne regarde.
+    transparent = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+                   f"{mark_group(ACCENT)}</svg>")
+    rasterise(transparent, ROOT / "site/resources/brand/mark-96.png", 96, 96)
+
     #: L'icone de serveur Discord, affichee en rond et souvent en 32 pixels dans une liste.
     rasterise(plate(512, 0.62, 0.5, relief=False, plate_fill=BG),
               BRAND / "discord-icon.png", 512, 512)
@@ -358,7 +385,6 @@ def tritone(image: "Image.Image") -> "Image.Image":
              (0.55, (0x39, 0x42, 0x50)), (0.78, (0xc2, 0x92, 0x4e)),
              (1.00, (0xff, 0xd3, 0x7f)))
     grey = image.convert("L")
-
     low, high = _plage(grey, 0.02, 0.998)
     span = max(high - low, 1)
 
@@ -373,9 +399,12 @@ def tritone(image: "Image.Image") -> "Image.Image":
         else:
             ramp.append(stops[-1][1])
 
-    out = Image.new("RGB", image.size)
-    out.putdata([ramp[v] for v in grey.getdata()])
-    return out
+    #: La rampe est posee comme une palette plutot que pixel par pixel : une image d'un
+    #: million de points traversee en Python coute une seconde et une deprecation Pillow,
+    #: alors qu'une palette est exactement ce qu'une table de correspondance est.
+    out = Image.frombytes("P", grey.size, grey.tobytes())
+    out.putpalette([canal for couleur in ramp for canal in couleur])
+    return out.convert("RGB")
 
 
 def _plage(grey: "Image.Image", bas: float, haut: float) -> tuple[int, int]:
@@ -545,6 +574,8 @@ if __name__ == "__main__":
     font = TTFont(FONT)
     print("logotypes")
     build_logos(font)
+    print("police pour le serveur")
+    build_truetype()
     print("icones")
     build_icons()
     flush_raster()

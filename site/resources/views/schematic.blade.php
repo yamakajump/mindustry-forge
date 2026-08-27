@@ -27,11 +27,16 @@
   <meta property="og:description" content="{{ $summary }}">
   <meta property="og:type" content="article">
   <meta property="og:url" content="{{ url()->current() }}">
-  <meta name="theme-color" content="#ffd37f">
-  @if($preview)
-    <meta property="og:image" content="{{ $preview }}">
-    <meta name="twitter:card" content="summary_large_image">
-  @endif
+  {{-- La carte composee plutot que le rendu brut du plan. Un plan est carre ou tres
+       allonge selon ce qu'on a copie, donc un deplieur le rogne ou le pose sur des bandes
+       noires, et il n'y a dessus ni titre, ni chiffre, ni marque. La carte a toujours le
+       format attendu, et elle existe meme quand la schematique n'a pas d'apercu, ce qui
+       est le cas de tout ce qui vient d'un autre catalogue. --}}
+  <meta property="og:image" content="{{ url("/s/{$schematic->slug}/carte.jpg") }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{{ $schematic->name }} - {{ $summary }}">
+  <meta name="twitter:card" content="summary_large_image">
 @endpush
 
 @section('body')
