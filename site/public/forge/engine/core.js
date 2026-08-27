@@ -240,7 +240,12 @@ export class Build {
     if (!this.items.total || !this.proximity.length) return false;
     if (todump && !this.items.has(todump)) return false;
 
-    const items = todump ? [todump] : [...this.items.counts.keys()];
+    /* Asked for nothing in particular, the game walks `content.items()` **by id**: copper
+       first, then lead, then metaglass, and so on down the list. Walking a Map in the order
+       things happened to arrive, a separator buffering four metals handed on whichever it
+       had received first where the game hands on the copper. It only shows when the way out
+       is saturated, which is exactly when a reader is looking. */
+    const items = todump ? [todump] : byItemId(this, [...this.items.counts.keys()]);
 
     // The cursor is read once and then walked, which is `int dump = this.cdump` in the
     // game with `incrementDump` moving the field. Reading the field inside the loop
@@ -453,6 +458,13 @@ export class Build {
     if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 0 : 2;
     return dy > 0 ? 1 : 3;
   }
+}
+
+/** `content.items()` order, which is what `dump(null)` walks. */
+export function byItemId(build, held) {
+  const known = build.world?.catalogue?.items;
+  if (!known) return held;
+  return held.sort((a, b) => (known[a]?.id ?? 0) - (known[b]?.id ?? 0));
 }
 
 /**

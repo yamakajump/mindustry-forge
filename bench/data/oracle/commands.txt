@@ -28,6 +28,8 @@ measure bXNjaAF4nB2I0QqAIBDAZudB0Lf4UWL3EKRCeX1/KIMNhiKB2HI19tPLSL2ZcFzDanq7P8WI
 measure bXNjaAF4nB2I0QqAIBDApp4R9C1+lJgPQSbUWb8fJ4MNxkJwyJVbZd1H0aRfD2yH1paePu5SEfvEN49TAQFwcXqCw1s8YvkB6PsNZw== 30 ../bench/data/oracle/duct-two.json
 measure bXNjaAF4nC3KUQqAIBRE0atmRbkVFyXlR5AFpq0/9MXAHBgGh1EMV0gRt9et+JDTneNuWI8Sk3/umreI+2ffPtg31LMAC4CyvXtQaMEIg2CFUZiEuaFZGh9aMxJZ 30 ../bench/data/oracle/duct-armored.json
 measure bXNjaAF4nDXJAQqEIBBG4aeNISwdxUOFO8FCJZgae/tFYxmYj5+HZzbIuR7K8q6xhNQ0b3u6Ha9P0SNcqeaoSI8s/xrG9DGdTb8p49pa9wJ4AOPGH4fFdiamB+kIc8c8VbAI/ABn8hiQ 30 ../bench/data/oracle/duct-overflow.json
+measure bXNjaAF4nD2KSwqAIBQAx8xVtO0WHkrMPpAJ+rTrhy1iYGYzGLRivF0MLGv1YlMLebvSY4tkd+6HaKZTQrQl1ewD8z/0HdNcvQTQAMp8/mBA97xhMxbF 30 ../bench/data/oracle/duct-overflow-straight.json
+measure bXNjaAF4nD2MSwrDMBQDx/GnhdJtb+FDBfsFAkkeOLZLb9+4iyLQbDQicDO4Y96FV26pRu1Slk3f8VyzxEWy57FW2eOprSThnvTo8tFCKNqqFJ5/ZRzg+9y2CgQA60cbDBYmpgH7i3FMGHA4rtEXFNccsQ== 30 ../bench/data/oracle/duct-overflow-side-fed.json
 measure bXNjaAF4nBXGWwqAIBQA0blqENRWXFTYDQQf4CNo9+H8nMEhgitXVs4xW9Phn5hStxxxaPa9zhaUPdTy6lcb9p4VcKw2sAiyXjALg138rigP/g== 30 ../bench/data/oracle/turret-fills.json
 measure bXNjaAF4nB2JSQrAIBDAMi5QaL/io0TmUKgKbtDfF5tLAsFjBFdiVq4xW9MRenxWtZz30Bx6nS0pR6pl6Vsb/t+AY+PBIshuwWwZ7NYH8YcQ6g== 30 ../bench/data/oracle/turret-salvo.json
 measure bXNjaAF4nD2LUQrCMBQEJ3mJVqugB/FQaXxgoW0kthVvL4nUn11m2MVxNLgpjMr5oWG+xbzEvht0xyWG3PV3/SvaunilJUfl9ExvzRu1/azjBk1M06qflPFrWIYZaMHgSwgeaxEcCHDwcC1Ag5TaI4Ktvozsz9viXf2Lx2DgC0/SIWU= 30 ../bench/data/oracle/heat-crucible.json
@@ -37,6 +39,7 @@ measure bXNjaAF4nB2KUQqAIBTAZlpE0VE8VNiDhFR4VuDtIxlsP2PCGlzek7CFouIPueIr2ixrvCX5
 measure bXNjaAF4nEWLSwoCMRQEKyYZBtGFB5lDhZhFIM4bXz7i7SWICE1X9aJZsQa3h0fiFntpeYQmutVDNFXPteRnz/etSteYuBzySvpb5/+BNco+0lsUP0IvDVgAjHezgdOMmWqxX7gJxzLxAVfbHV4= 30 ../bench/data/oracle/cultivator-spores.json spore-moss@1,1 spore-moss@2,1 spore-moss@1,2 spore-moss@2,2
 measure bXNjaAF4nEWKUQrCMBQEJyYppSiepIeKMR+B2KfPJNLblyAiLDuzsMxYg9vCI3GNrdTcQxVdb0GT51Lyq+X7+pamMXF+yifpby3/O3OUraddFN9DKxWYAIx3o4HTiBlqsV+4Acc0cADYRRxa 30 ../bench/data/oracle/cultivator-bare.json
 measure bXNjaAF4nD2KUQqDMBBEX5pEFPQoHirY/Qioa1dj29tLWloYePOYocU7wpoWYdhlS5YOtXHJr8gw50fJ93HXYpPQb/oU+1n3P9NOup7yViOeqcwH0AC4GHA44FbzqR7/RZ0INBUXPQ8bFA== 30 ../bench/data/oracle/separator-mix.json
+measure bXNjaAF4nD3KUQqDMBCE4T8a2xQq9CIeKug+WBpX11rp7UsadGH4ZmAJVA4/xSQ8Vpmjxbda94wpyeBpX+OyjUO36ma9cJ91FzvW7fwn9Dp95KsGBPI1HoeDnOpfqKkLvtAULoVr5gcS2BoR 30 ../bench/data/oracle/separator-jammed.json
 measure bXNjaAF4nE2KzQrCMBgEJ39asV59iz5UbL9DIGlqklZ8e8mhICwMs7vccAq7+iQ8q2y++JbLtITqa5X0ilIujP/KI4b3Hpap5r3Mwrjlj5TT7qFJOmWY83rINxfc4ffYgAE0ih6Usyg0vcKgsa4fLBqDsfQVi+twXDt+wjYkpA== 30 ../bench/data/oracle/separator-disassembler.json
 measure bXNjaAF4nBXGQQ6AIAwF0Q9ojDHuvAaHAtIQFrSmlIW3N8zmDQKcw8apE85KHMcrSgFXM+pxyNRCeIr0PIc14ViJSZOJ4sjJjPQDELDagRsObr2HX/y45BUn 30 ../bench/data/oracle/gen-spore.json
 measure bXNjaAF4nBXGMQ6AIAxG4b+gcdDExWtwqGIawgCYUgZub3jL9+BBhK1yEVxJavimsmUTjzOblNDb0FfwvK3E0S23GpJUUbamOCKbiU4AHqsduEGg9Q5u8QMqWhZ1 30 ../bench/data/oracle/gen-pyratite.json
@@ -62,6 +65,7 @@ measure bXNjaAF4nDWJSwqAMBQDp7+VLvQgPVRp36JgLfTj+aWCJEwYgsMo7B2KcKYZhw+t1CbJ95zE
 measure bXNjaAF4nE2IQQ6AIBADB1lOetCH8CiCezARSRB8v1lPpk0nUwLikCsVZdtH7jG1Upvu0URY/op8G540zs58dC3xrqNlBQKAs1qY8AYP+ACriZ0vSnMVyQ== 30 ../bench/data/oracle/duct-armored-duct.json
 measure bXNjaAF4nDWJQQqAIBAAR1u71CHoHT7KcqEgC0x7fxh0mYEZejqDnCEpc6xr8SGnK2v0i277GYXxD+0iH90T6lEY9qLJ31fNqwICBtNgmyzS1AHGwcQL+7AWfw== 30 ../bench/data/oracle/duct-armored-behind.json
 measure bXNjaAF4nD3LWwrCMBQA0ekjPqgUkW4ji0rbixSSXEnSgruXKMh8nK9homvoowvCOIsLNuoqNr9cPDFsRYLNuqdFmBYN857LptE+JUpyRRPX/8PgXZZk17R5z2XReMhbE+Zwuy/AGaAxYGi+0dL+uFU6xkrPvWJ4VD6vAiHJ 30 ../bench/data/oracle/beam-node-span.json ore-copper@13,0 ore-copper@13,1 ore-copper@13,2 ore-copper@14,0 ore-copper@14,1 ore-copper@14,2 ore-copper@15,0 ore-copper@15,1 ore-copper@15,2
+measure bXNjaAF4nD3LUQrDIBCE4THRpkH6VnoLD2XMkkjVhY0GcvtiKWUevnn58cCooIvPhNdCPrvCK7m6C7dtdymW9wQbK2V3cJNAeAbOSztq5OI2KiS+smD+t7/bS9jkDxK3SkwJ98DlpIsF5vQtVQATACgDGKjvMGDojNAdjaljMHdusJ0P+W4oVQ== 30 ../bench/data/oracle/beam-node-through-link.json ore-copper@6,0 ore-copper@6,1 ore-copper@6,2 ore-copper@7,0 ore-copper@7,1 ore-copper@7,2 ore-copper@8,0 ore-copper@8,1 ore-copper@8,2
 measure bXNjaAF4nGNgYmBiZGDJS8xNZRAoKS0qSi3RLU8sS9XNTMlJZWRgAbEZGBgYGSAAAAMUCcU= 30 ../bench/data/oracle/turret-wave-idle.json water~10@0,0
 measure bXNjaAF4nDXIQQqAIBBG4X9USmjdMTyUNC6GdCQZ6frhos2D7yEiEILmVnDaHKNYaqUa91cTjyzqEf+B/erKUwxHlWcKJ8t6A/AAgVYCCM5hW/oAmUYVNg== 30 ../bench/data/oracle/turret-meltdown-drain.json water~60@1,1 water~1800@6,1
 measure bXNjaAF4nCXJSwqAMAxF0VfrZ9SR68iiooROapRHOnD3UoQLZ3CxISfMrpdhj05aSFM/jcLu/ckojCrV3KhxE+t/UQ6NML7SlNUAZABIo2kwYRl8DRIWjw== 30 ../bench/data/oracle/turret-lancer-runup.json thorium*10@0,1
