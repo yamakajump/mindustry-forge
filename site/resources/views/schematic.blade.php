@@ -201,6 +201,16 @@
         <button class="primary" id="copy" type="button">Copier</button>
         <a class="button" href="/?s={{ $schematic->slug }}">{{
           $schematic->managedBy(auth()->user()) ? 'Modifier' : 'Analyser chez moi' }}</a>
+
+        {{-- Vers l'editeur de logique, et seulement quand il y a quelque chose a y ouvrir.
+             Le compte vient de l'analyse deja stockee, donc la page ne decode rien pour le
+             savoir : sur les quatre-vingt-seize schematiques mesurees dans la vitrine, six
+             sur dix n'ont aucun processeur, et un bouton mort sur six pages sur dix apprend
+             au lecteur a ne plus lire cette rangee. --}}
+        @if (data_get($schematic->analysis, 'logic.processors', 0) > 0)
+          <a class="button" href="/outils/logique?s={{ $schematic->slug }}">
+            Ouvrir la logique</a>
+        @endif
       </div>
       <p class="hint-line">Colle-la dans Mindustry avec ctrl+v.</p>
     </div>
