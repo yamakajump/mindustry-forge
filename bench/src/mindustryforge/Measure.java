@@ -335,6 +335,21 @@ public class Measure implements ApplicationListener {
                 held.append(" ~").append(belt.len).append(':')
                     .append(String.format(java.util.Locale.ROOT, "%.3f", belt.minitem));
             }
+            // Un chargeur de fret : ou est son unite, ce qu'elle porte, et combien.
+            if (build instanceof mindustry.world.blocks.units.UnitCargoLoader
+                    .UnitTransportSourceBuild tether) {
+                held.append(" ^");
+                if (tether.unit == null) {
+                    held.append(String.format(java.util.Locale.ROOT, "-/%.4f",
+                        tether.buildProgress));
+                } else {
+                    // En coordonnees de schema, comme tout le reste de la ligne.
+                    held.append(String.format(java.util.Locale.ROOT, "%.2f,%.2f/%s:%d",
+                        tether.unit.x - MARGIN * 8, tether.unit.y - MARGIN * 8,
+                        tether.unit.stack.amount > 0 ? tether.unit.item().name : "-",
+                        tether.unit.stack.amount));
+                }
+            }
             // Un assembleur : ses drones, leur avancement, et le courant qu'il recoit.
             if (build instanceof mindustry.world.blocks.units.UnitAssembler
                     .UnitAssemblerBuild made) {

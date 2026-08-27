@@ -7621,8 +7621,10 @@
         "oxide": 20
       },
       "power": 8,
-      "role": "sink",
-      "input":{},
+      "role": "cargo-loader",
+      "carries": "item",
+      "unit_build_time": 480,
+      "unit_type": "manifold",
       "input_liquid":{
         "nitrogen": 10
       }
@@ -7650,9 +7652,9 @@
         "tungsten": 60
       },
       "power": 0,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "cargo-unload",
+      "carries": "item",
+      "stale_time": 360
     },
     "mechanical-pump":{
       "name": "mechanical-pump",

@@ -1,0 +1,116 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "payloads": [
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 16,
+      "payload": "container",
+      "payload_items":{},
+      "payload_liquids":{}
+    },
+    {
+      "block": "payload-loader",
+      "x": 18,
+      "y": 16,
+      "payload": "container",
+      "payload_items":{
+        "copper": 300
+      },
+      "payload_liquids":{}
+    },
+    {
+      "block": "payload-unloader",
+      "x": 21,
+      "y": 16,
+      "payload": "container",
+      "payload_items":{
+        "copper": 100
+      },
+      "payload_liquids":{}
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "vault",
+      "x": 21,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 1000
+      }
+    },
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 16,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-loader",
+      "x": 18,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "copper": 100
+      }
+    },
+    {
+      "block": "payload-unloader",
+      "x": 21,
+      "y": 16,
+      "efficiency": 1,
+      "holds":{
+        "copper": 100
+      }
+    },
+    {
+      "block": "payload-void",
+      "x": 25,
+      "y": 16,
+      "efficiency": 1
+    },
+    {
+      "block": "item-source",
+      "x": 17,
+      "y": 18,
+      "efficiency": 1
+    },
+    {
+      "block": "item-source",
+      "x": 18,
+      "y": 18,
+      "efficiency": 1
+    },
+    {
+      "block": "item-source",
+      "x": 19,
+      "y": 18,
+      "efficiency": 1
+    },
+    {
+      "block": "power-source",
+      "x": 21,
+      "y": 18,
+      "efficiency": 0
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 21,
+      "y": 13,
+      "items":{
+        "copper": 1000
+      }
+    }
+  ],
+  "per_second":{
+    "copper": 33.333332
+  }
+}

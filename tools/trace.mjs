@@ -76,6 +76,14 @@ function snapshot(world, tick) {
     if (build.state.ids) {
       held += ` ~${build.state.len}:${(build.state.minitem ?? 1).toFixed(3)}`;
     }
+    // A cargo ferry: where it is, what it is carrying, and how much of it.
+    if (build.state.flyer !== undefined) {
+      const one = build.state.flyer;
+      held += one
+        ? ` ^${one.x.toFixed(2)},${one.y.toFixed(2)}`
+          + `/${build.state.carrying || "-"}:${build.state.amount}`
+        : ` ^-/${build.state.progress.toFixed(4)}`;
+    }
     // An assembler: its drones, how far the next one is, and the power it is getting.
     if (build.state.drones) {
       held += ` &${build.state.drones.length}`

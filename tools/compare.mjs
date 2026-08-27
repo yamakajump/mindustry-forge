@@ -209,6 +209,10 @@ export async function ported(code, ticks, ground = [], stock = [], each = null) 
       const kind = build.block.drone_type;
       if (kind) units[kind] = (units[kind] || 0) + 1;
     }
+    // And a cargo loader's one ferry, which is the whole of what that block does.
+    if (build.state.flyer && build.block.unit_type) {
+      units[build.block.unit_type] = (units[build.block.unit_type] || 0) + 1;
+    }
   }
 
   return {

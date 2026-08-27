@@ -1866,6 +1866,27 @@ const SCENARIOS = {
     stock: ["cyanogen~90@5,0"],
   }),
 
+  /* Un point de dechargement que personne n'a regle, qui est l'erreur celebre de ce bloc :
+     aucune unite n'y va jamais et le chargeur se remplit jusqu'a ses deux cents.
+
+     Son jumeau, la meme chose avec un point regle sur le cuivre, n'est **pas** ici. Le debit
+     d'un fret aerien n'est pas reproductible depuis un schema : `AIController` tire
+     `Mathf.random(40)` au moment ou l'unite nait, et ce tirage decale son premier
+     chargement d'un nombre d'images que rien dans la schematique ne determine. Le portage
+     fait voler l'unite, la charge et la decharge ; la cadence exacte du premier aller
+     dependrait d'un tirage partage avec tout ce qui s'est passe avant sur la carte. */
+  "cargo-unset": () => [
+    { x: -1, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
+    // Couvre 0..2 par 0..2.
+    { x: 1, y: 1, block: "unit-cargo-loader", rotation: 0 },
+    { x: 1, y: 3, block: "liquid-source", rotation: 0, raw: liquid("nitrogen") },
+    { x: 1, y: -1, block: "power-source", rotation: 0 },
+    // Couvre 8..9 par 0..1, regle sur rien.
+    { x: 8, y: 0, block: "unit-cargo-unload-point", rotation: 0 },
+    // Couvre 10..12 par -1..1.
+    { x: 11, y: 0, block: "vault", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
