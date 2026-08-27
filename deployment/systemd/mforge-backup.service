@@ -1,0 +1,7 @@
+[Unit]
+Description=Sauvegarde quotidienne de mindustry-forge
+After=mariadb.service
+
+[Service]
+Type=oneshot
+ExecStart=/var/www/mindustry-forge/deployment/backup.sh
