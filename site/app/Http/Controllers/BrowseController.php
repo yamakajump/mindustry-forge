@@ -89,9 +89,6 @@ class BrowseController extends Controller
         }
 
         $query = Schematic::query()->with('user')->listed();
-        if (! $creative) {
-            $query->ordinary();
-        }
         if ($holds !== '') {
             $query->whereExists(fn ($sub) => $sub
                 ->selectRaw('1')
@@ -112,6 +109,32 @@ class BrowseController extends Controller
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
                 ->where('schematic_items.kind', SchematicItem::MESURE)
                 ->select('schematics.*');
+        }
+
+        /* Counted on the list the reader is looking at, filters and all, and not on the
+           catalogue.
+
+           It said 4,475 on every page, which is the right count of the whole catalogue and
+           the wrong answer to "how many did this page set aside". On
+           `?produit=power&tri=output` the true answer was zero: those schematics were
+           already gone, dropped by the measured-versus-ceiling rule because their measured
+           energy is nought, so this filter had nothing left to remove. A page that sets
+           nothing aside announced four and a half thousand.
+
+           Counted before the exclusion is applied rather than as the difference of two
+           totals, and forwards through the block index, for the reason written where that
+           first count was: a difference means two passes over the whole filtered set. */
+        $setAside = $creative ? 0 : (clone $query)
+            ->whereExists(fn ($sub) => $sub
+                ->selectRaw('1')
+                ->from('schematic_blocks')
+                ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
+                ->whereIn('schematic_blocks.block', Schematic::sandboxBlocks()))
+            ->distinct()
+            ->count('schematics.id');
+
+        if (! $creative) {
+            $query->ordinary();
         }
 
         $query = match ($order) {
@@ -141,20 +164,9 @@ class BrowseController extends Controller
             'makes' => $makes,
             'order' => $order,
             'creative' => $creative,
-            /* Counted rather than guessed: a page that says how many it is holding back is
-               a page a reader can disagree with.
-
-               Counted forwards rather than as a difference of two totals. Subtracting one
-               count from another means two passes over the whole listed catalogue, each
-               with an anti-join; asking `schematic_blocks` directly is an index range over
-               ten block names and a join back. The figure is the same and the first shape
-               would have been a query nobody measured on fifteen thousand rows. */
-            'setAside' => $creative ? 0 : DB::table('schematic_blocks')
-                ->join('schematics', 'schematics.id', '=', 'schematic_blocks.schematic_id')
-                ->where('schematics.visibility', Schematic::PUBLIC)
-                ->whereIn('schematic_blocks.block', Schematic::sandboxBlocks())
-                ->distinct()
-                ->count('schematic_blocks.schematic_id'),
+            // A page that says how many it is holding back is a page a reader can
+            // disagree with - as long as the figure is this page's and not the catalogue's.
+            'setAside' => $setAside,
             'orders' => self::ORDERS,
             // Offered rather than typed: the analysis already knows what exists, so a
             // player picks from what is actually there instead of guessing a spelling.

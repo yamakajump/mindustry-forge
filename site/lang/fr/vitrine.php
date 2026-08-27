@@ -30,6 +30,8 @@ return [
     ],
 
     'creatif' => [
+        'mise-a-part' => 'schematique de bac a sable est mise a part, parce qu elle ne
+            se pose pas en partie normale.',
         'mises-a-part' => 'schematiques de bac a sable sont mises a part, parce qu elles ne
             se posent pas en partie normale.',
         'montrer' => 'Les afficher quand meme',
