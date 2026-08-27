@@ -36,17 +36,32 @@ Deux corrections restent invérifiables et il faut le dire plutôt que le laisse
   et invérifiable : un réacteur refroidi voit sa chaleur ramenée à zéro à chaque image, donc
   il n'en transmet aucune, et un réacteur qui en transmet vraiment est en train d'exploser.
 
-### 2. Les deux écarts qui restent au banc
+### 2. Le banc n'a plus d'écart
 
-- **`crafter-two-presses`**, une presse retient neuf charbons au lieu de dix. Mesuré : le
-  portage est **exactement une image en retard** sur cette branche-là, il atteint dix au
-  tick 1801. L'autre branche du même routeur est exacte. Trouver l'image manquante demande
-  de tracer les deux moteurs image par image, ce que le banc ne sait pas encore faire.
-- **`turret-meltdown-drain`**, 17,4 eau contre 18,0 sur une case de conduite. Un gradient de
-  pression, pas un compte.
+Les deux qui traînaient sont tombés le 27/08/2026, et tous les deux étaient la même chose
+sous deux visages : **le jeu compte en simple précision et le portage comptait en double**.
 
-Les deux demandent la même chose : une commande `trace` dans le banc qui écrive l'état d'un
-bâtiment à chaque image. C'est le prochain outil à écrire, et il servira à tout le reste.
+- Une source verse cent objets par seconde dans soixante images, donc son compteur dépense
+  six dixièmes d'image à la fois, et `0.6f` vaut un cheveu de plus que six dixièmes. En
+  double le compteur revient exactement à 0,6 la troisième image et le dépense une fois de
+  trop : un objet toutes les trois images, depuis le bloc qui alimente presque tous les
+  scénarios du banc.
+- Une machine ajoute un quatre-vingt-dixième quatre-vingt-dix fois, ce qui tombe juste sous
+  un en double et juste au-dessus en float.
+- Un tapis prend un troisième objet quand celui de derrière a bougé d'exactement
+  `itemSpace`.
+- Et un liquide passe d'un bloc à l'autre comme une fraction de lui-même soixante fois par
+  seconde, donc l'arrondi s'accumule jusqu'à une unité entière au bout d'une course.
+
+Deux autres choses sont sorties de la même enquête, et elles n'ont rien à voir avec les
+flottants : **un tapis vide s'endort au bout d'une seconde**, et la liste de mise à jour du
+jeu est **non ordonnée**, donc en sortir un bloc y ramène le dernier à sa place. Deux tapis
+qui s'endorment sur la même image remontent une presse de trois rangs, et cette presse lit
+désormais le stock de l'image d'avant.
+
+L'outil qui a trouvé tout ça est `node tools/trace.mjs <scenario>` avec la commande `trace`
+du banc en face : une ligne par image des deux côtés, et la première qui diffère. Un total
+après mille huit cents images ne sait pas dire laquelle a divergé. Il sert pour la suite.
 
 ### 3. Ce que le moteur ne modélise pas du tout
 
