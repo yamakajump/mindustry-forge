@@ -469,6 +469,38 @@ class Schematic extends Model
     }
 
     /**
+     * What it costs to put down, item by item, in the order the game lists them.
+     *
+     * Read from the analysis rather than recomputed from `schematic_blocks` times the
+     * catalogue. The analysis already worked it out from `Block.requirements`, which is the
+     * same arithmetic, and a second implementation would be a second thing to have wrong -
+     * on the figure a player checks against their own core before pasting.
+     *
+     * Sorted by the game's own item id, so copper comes before lead and titanium before
+     * thorium, which is the order a player reads on every panel in the game. Alphabetical
+     * would put beryllium first on a Serpulo build.
+     */
+    public function cost(): array
+    {
+        $cost = [];
+        // Parenthesised, because a cast binds tighter than `??` and the same slip cost a
+        // round trip an hour ago on `analysis['power']`.
+        $analysis = (array) $this->analysis;
+        foreach ((array) ($analysis['cost'] ?? []) as $item => $amount) {
+            /* An empty name passes `is_string`, which is exactly the shape a hand-made
+               payload takes. A name the catalogue has never heard of is kept, though: a
+               mod item dropped in silence would understate what the layout costs, which is
+               the same fault as dropping a mod block from the inventory. Its icon will
+               404 and its figure will be right, which is the better half to keep. */
+            if (is_string($item) && $item !== '' && is_numeric($amount) && $amount > 0) {
+                $cost[substr($item, 0, 40)] = (int) $amount;
+            }
+        }
+
+        return BlockCatalogue::inGameOrder($cost);
+    }
+
+    /**
      * Every block the game only hands out in a sandbox, named by the game and not by us.
      *
      * Ten of them: the four sources, the four voids, the heat source and the thruster. A

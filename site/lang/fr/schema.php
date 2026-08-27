@@ -20,6 +20,9 @@ return [
     'page' => [
         'bac-a-sable' => 'Alimentee par une source de bac a sable',
         'bac-a-sable-court' => 'source de bac a sable',
+        'cout' => 'Ce qu elle coute',
+        'cout-aide' => "Ce que le jeu retire de ton noyau quand tu la poses, a l'unite
+            pres : c'est `Block.requirements` additionne bloc par bloc, pas une estimation.",
         /*
          * Le courant affiche vient de `analysis['potential']`, donc du plafond, et le
          * dire est la moitie de la correction : l'autre moitie est de ne plus le ranger
