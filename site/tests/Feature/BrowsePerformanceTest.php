@@ -24,9 +24,23 @@ uses(RefreshDatabase::class);
  */
 function ligne(string $name, array $makes, float $powerUsed = 0, float $powerMade = 0, int $blocks = 40): Schematic
 {
+    /*
+     * `analysis['power']` alongside the columns, and not merely to keep these tests green.
+     *
+     * The two are different figures: the columns are filled from `analysis['potential']`,
+     * the ceiling, while `analysis['power']` is what the layout was measured doing. Only
+     * the second may be indexed as a measurement. A fixture that set the columns alone
+     * described a schematic whose ceiling was known and whose measurement was missing,
+     * which is precisely the 195 rows this rule exists for.
+     *
+     * Set to the same figures here on purpose: these are plants that are fed, so the two
+     * agree, and every assertion below is about the net-versus-gross rule rather than
+     * about which of the two figures is being read.
+     */
     return Schematic::factory()->create([
         'visibility' => 'public', 'name' => $name, 'produces' => $makes,
         'power_used' => $powerUsed, 'power_made' => $powerMade, 'blocks' => $blocks,
+        'analysis' => ['power' => ['made' => $powerMade, 'spent' => $powerUsed]],
     ]);
 }
 
@@ -140,8 +154,16 @@ it('tient l index de ce qu elle produit a jour a chaque ecriture', function () {
     expect($schematic->items()->pluck('rate_per_block', 'item')->all())
         ->toBe(['graphite' => 2.0, SchematicItem::POWER => 15.0]);
 
-    // Corrected to make something else: it has to stop turning up under graphite.
-    $schematic->update(['produces' => ['silicon' => 10.0], 'power_made' => 0]);
+    /* Corrected to make something else: it has to stop turning up under graphite.
+     *
+     * The analysis is rewritten alongside the column, because that is where the measured
+     * budget lives now. Clearing `power_made` alone would leave the schematic indexed as a
+     * power plant while its own analysis said it made none - which is the same crossing of
+     * the measured/ceiling line this rule closes, arriving from the other direction. */
+    $schematic->update([
+        'produces' => ['silicon' => 10.0], 'power_made' => 0,
+        'analysis' => ['power' => ['made' => 0, 'spent' => 0]],
+    ]);
 
     expect($schematic->items()->pluck('item')->all())->toBe(['silicon']);
 });
