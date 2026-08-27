@@ -133,7 +133,10 @@ function readConfig(reader) {
     case 11: reader.skip(8); return { type };
     case 12: reader.skip(4); return { type };
     case 13: reader.skip(2); return { type };
-    case 14: { const n = reader.i32(); reader.skip(n); return { type }; }
+    /* A `byte[]`, which is what a processor's whole configuration is: its program and its
+       links, deflated. Skipped blind, a schematic full of processors read as a schematic
+       full of blocks that are set to nothing. */
+    case 14: { const n = reader.i32(); return { type, bytes: reader.bytes(n) }; }
     case 16: { const n = reader.i32(); reader.skip(n); return { type }; }
     case 17: reader.skip(4); return { type };
     case 18: { const n = reader.i16(); reader.skip(8 * n); return { type }; }
@@ -163,6 +166,12 @@ class Reader {
   skip(count) { this.need(count); this.at += count; }
   i16() { this.need(2); const v = this.view.getInt16(this.at); this.at += 2; return v; }
   i32() { this.need(4); const v = this.view.getInt32(this.at); this.at += 4; return v; }
+  bytes(count) {
+    this.need(count);
+    const slice = new Uint8Array(this.view.buffer, this.view.byteOffset + this.at, count);
+    this.at += count;
+    return slice.slice();
+  }
   text() {
     const length = (this.need(2), this.view.getUint16(this.at));
     this.at += 2;

@@ -34,7 +34,7 @@ second, c'est une intuition qui a l'air d'un portage.
       atmospheric-concentrator, carbide-crucible, cyanogen-synthesizer, phase-synthesizer, surge-crucible
 - [x] `Drill` - 4 blocs - sort du sol ce qu'il y a dessous
       blast-drill, laser-drill, mechanical-drill, pneumatic-drill
-- [ ] `LogicBlock` - 4 blocs - un processeur : execute un programme
+- [x] `LogicBlock` - 4 blocs - declare, pas simule : ses liens sont lus, son programme jamais execute
       hyper-processor, logic-processor, micro-processor, world-processor
 - [x] `PowerTurret` - 4 blocs - une tourelle qui mange de l'energie
       afflict, arc, lancer, malign

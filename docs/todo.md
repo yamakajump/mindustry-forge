@@ -110,21 +110,22 @@ images **et** que les drones soient en position, ce qui dépend de leur vol. Il 
 soit un modèle de vol minimal, soit un scénario plus long, et le banc accepte déjà une
 durée par scénario.
 
-### 7. Les processeurs : déclarer, pas simuler
+### 7. Les processeurs : déclarés, pas simulés
 
-Un processeur ne consomme rien du tout, ni énergie ni objets. Son seul effet sur un débit
-passe par une instruction, `control`, sur les blocs qu'il pilote. Simuler tout
-l'interpréteur pour savoir si un `control` part est le mauvais rapport effort/résultat, et
-son mode de panne est silencieux : une propriété que Forge ne modélise pas renvoie null,
-le programme branche ailleurs, et rien ne le dit.
+**Fait.** Un processeur ne consomme rien du tout, ni énergie ni objets, et le banc le
+mesure : `refuses-micro-processor` et `refuses-hyper-processor` montrent qu'un routeur qui
+en touche un envoie tout son cuivre dans le coffre.
 
-Ce qu'il faut faire à la place, en deux temps :
+`site/public/forge/logic.js` décode la configuration : le programme, en clair, et la liste
+des liens. Le rapport dit alors « trois processeurs, dont un qui pilote, et ce qu'il
+pilote », parce que la seule instruction qui sorte d'un processeur est `control`. Un
+processeur qui ne fait que `sensor` et `print` ne change aucun chiffre, et c'est la majorité
+de ceux qu'on croise.
 
-1. Décoder la configuration et sortir la liste des liens. Forge dit alors « trois
-   processeurs, sept blocs pilotés, ce qu'ils font n'est pas simulé ».
-2. Lire le programme, qui est du texte en clair, assez pour séparer les liens **lus** des
-   liens **écrits**. Un processeur qui ne fait que `sensor` et `print` ne change aucun
-   débit, et c'est la majorité de ceux qu'on croise.
+L'interpréteur n'est **pas** écrit et ne le sera pas. Le simuler pour savoir si un `control`
+part est le mauvais rapport effort sur résultat, et son mode de panne est silencieux : une
+propriété que le moteur ne modélise pas renverrait null, le programme brancherait ailleurs,
+et rien ne le dirait.
 
 ### 8. La longue traîne des blocs
 
