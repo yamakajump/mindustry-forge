@@ -325,6 +325,20 @@ select {
   border-radius: 6px; padding: 0 8px;
 }
 #palette-search:focus { border-color: var(--accent); outline: none; }
+/* The controls under the picture, for watching a schematic run.
+
+   On one line with the picture rather than in the panel beside it: the button changes what
+   the picture does, and a control that changes a picture belongs next to the picture. */
+.run-row { margin-top: 10px; align-items: center; }
+.run-row button { min-height: 38px; font-size: 13px; padding: 0 14px; }
+.run-speed {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--dim); font-size: 13px;
+}
+.run-speed input[type=range] { width: 110px; }
+#run-rate { min-width: 26px; font-variant-numeric: tabular-nums; }
+#run-clock { font-variant-numeric: tabular-nums; }
+
 .row.edit { margin-top: 10px; }
 .row.edit button { min-height: 38px; font-size: 13px; padding: 0 14px; }
 

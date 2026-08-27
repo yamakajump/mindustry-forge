@@ -38,6 +38,7 @@ class EngineVersion
         'marks.js',
         'ground.js',
         'maxflow.js',
+        'logic.js',
         'blocks.json',
         'engine/core.js',
         'engine/carriers.js',
@@ -47,7 +48,18 @@ class EngineVersion
         'engine/payloads.js',
         'engine/power.js',
         'engine/run.js',
+        'engine/assembler.js',
+        'engine/blast.js',
+        'engine/cargo.js',
+        'engine/units.js',
     ];
+
+    /* The list has to be walked against the directory when a file is added, and it was not:
+       `assembler.js`, `blast.js`, `cargo.js` and `units.js` sat outside it for four commits.
+       A missing file is the silent failure this class exists to prevent - the version stays
+       the same while the answers change, so every stored figure reads as current and none of
+       them is. `EngineVersionTest` now fails if a source appears in `public/forge/engine`
+       without appearing here. */
 
     /** How wide the stored stamp is. Matches the column. */
     public const WIDTH = 12;

@@ -41,6 +41,13 @@ const conveyor = {
   begin(build) {
     build.state.ids = [];
     build.state.ys = [];
+    /* How far off the middle of the belt an item sits, from -1 to 1, and which index a
+       side feed lands at. Neither changes a throughput and both are the difference between
+       a picture that moves like the game and one that does not: an item handed in from the
+       left slides across the belt as it travels, and an item handed in from a side goes
+       **into the middle of the queue** rather than at its back. */
+    build.state.xs = [];
+    build.state.mid = 0;
     build.state.len = 0;
     build.state.minitem = 1;
   },
@@ -74,12 +81,18 @@ const conveyor = {
   handleItem(build, source, item) {
     const state = build.state;
     if (state.len >= BELT_CAPACITY) return;
-    const direction = Math.abs(arrivesFrom(build, source) - build.rotation) % 4;
-    // Handed in from behind it starts at the back; handed in from a side it starts in the
-    // middle, which is what makes a side feed cost a belt less than a head-on one.
-    const start = direction === 0 ? 0 : 0.5;
-    state.ids.unshift(item);
-    state.ys.unshift(start);
+    const turn = arrivesFrom(build, source) - build.rotation;
+    // Which side of the belt it lands on, before it slides back to the middle.
+    const across = (turn === -1 || turn === 3) ? 1 : (turn === 1 || turn === -3) ? -1 : 0;
+    /* Handed in from behind it starts at the back of the queue; handed in from a side it
+       starts **half way along**, and at the index the belt worked out last frame rather
+       than at the back. Put at the back it would sit behind items already past it, and the
+       queue is read front to back by everything else here. */
+    const at = turn % 4 === 0 ? 0 : Math.min(state.mid, state.len);
+    const start = turn % 4 === 0 ? 0 : 0.5;
+    state.ids.splice(at, 0, item);
+    state.ys.splice(at, 0, start);
+    state.xs.splice(at, 0, across);
     state.len++;
     build.noSleep();
     /* And in the item module as well, which the game keeps in step: `ConveyorBuild` pushes
@@ -93,6 +106,7 @@ const conveyor = {
   update(build, world, step) {
     const state = build.state;
     state.minitem = 1;
+    state.mid = 0;
     // An empty belt goes to sleep, and waking puts it back at the end of the update list.
     if (!state.len) {
       build.sleep(step);
@@ -128,11 +142,20 @@ const conveyor = {
       state.ys[i] = Math.fround(
         state.ys[i] + clamp(Math.fround(ahead - state.ys[i]), 0, moved));
       if (state.ys[i] > nextMax) state.ys[i] = nextMax;
+      if (state.ys[i] > 0.5 && i > 0) state.mid = i - 1;
+      // Twice the belt's speed back towards the middle, so a side feed is straight again
+      // within half a tile.
+      state.xs[i] = approachTo(state.xs[i], 0, Math.fround(moved * 2));
 
       if (state.ys[i] >= 1 && pass(build, next, state.ids[i])) {
+        /* `lastInserted` is declared and never assigned in `ConveyorBuild`, so the game
+           hands the offset to slot zero of the next belt whatever slot the item landed in.
+           Kept, quirk and all: it is what a line of belts looks like. */
+        if (aligned && next.state.xs.length) next.state.xs[0] = state.xs[i];
         for (const gone of state.ids.slice(i, state.len)) build.items.remove(gone);
         state.ids.splice(i, state.len - i);
         state.ys.splice(i, state.len - i);
+        state.xs.splice(i, state.len - i);
         state.len = Math.min(i, state.len);
       } else if (state.ys[i] < state.minitem) {
         state.minitem = state.ys[i];
@@ -822,6 +845,10 @@ const duct = {
   begin(build) {
     build.state.progress = 0;
     build.state.current = null;
+    /* `recDir`: which side the item came in by. It changes nothing about a rate and it is
+       the whole of what a duct looks like, because the item is drawn sliding from that
+       edge to the one the duct points at rather than straight down its length. */
+    build.state.from = 0;
   },
 
   acceptItem(build, source, item) {
@@ -851,6 +878,7 @@ const duct = {
      update, one frame later, and that frame is most of the difference between a line of
      ducts carrying fifteen a second and thirty. */
   handleItem(build, source, item) {
+    build.state.from = arrivesFrom(build, source);
     build.items.add(item);
   },
 
