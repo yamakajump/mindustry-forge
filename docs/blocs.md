@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **105 classes à reproduire**, pour 228 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 74 sur 105
+## Fait : 75 sur 105
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -148,7 +148,7 @@ second, c'est une intuition qui a l'air d'un portage.
       neoplasia-reactor
 - [x] `ImpactReactor` - 1 bloc - consomme et produit, avec une chauffe
       impact-reactor
-- [ ] `Incinerator` - 1 bloc
+- [x] `Incinerator` - 1 bloc
       incinerator
 - [x] `ItemBridge` - 1 bloc - porte par dessus un trou, vers la case qu'il retient
       phase-conveyor

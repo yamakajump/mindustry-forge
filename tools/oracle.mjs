@@ -1079,6 +1079,16 @@ const SCENARIOS = {
     { x: 2, y: 3, block: "vault", rotation: 0 },
   ],
 
+  /* Un incinerateur, qui n'est un puits que s'il a du courant.
+
+     `acceptItem` est `heat > 0.5`, et la chaleur monte vers l'efficacite a 0,04 par image :
+     treize images de courant avant qu'il accepte quoi que ce soit, et jamais rien si le
+     reseau est coupe. Une bande qui y entre bouchonne, ce qui est l'exact contraire de ce
+     que fait un puits. La paire le dit : alimente il prend sa moitie, froid il ne prend
+     rien et le coffre recoit tout. */
+  "incinerator-hot": () => burner(true),
+  "incinerator-cold": () => burner(false),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -1198,6 +1208,20 @@ function extractor(sandy) {
     ],
     ground,
   };
+}
+
+/** A router splitting between an incinerator and a vault, with power or without. */
+function burner(powered) {
+  const tiles = [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "router", rotation: 0 },
+    { x: 3, y: 0, block: "incinerator", rotation: 0 },
+    { x: 2, y: 1, block: "conveyor", rotation: 1 },
+    { x: 2, y: 3, block: "vault", rotation: 0 },
+  ];
+  if (powered) tiles.push({ x: 3, y: -1, block: "power-source", rotation: 0 });
+  return tiles;
 }
 
 /**

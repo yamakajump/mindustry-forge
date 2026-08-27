@@ -4655,7 +4655,8 @@
         "graphite": 5
       },
       "power": 30,
-      "role": "sink",
+      "role": "incinerator",
+      "carries": "item",
       "input_liquid":{}
     },
     "silicon-arc-furnace":{
@@ -5013,7 +5014,8 @@
         "tungsten": 15
       },
       "power": 0,
-      "role": "sink",
+      "role": "incinerator",
+      "carries": "item",
       "input_liquid":{
         "slag": 0
       }
@@ -12718,24 +12720,28 @@
       "id": 0,
       "color": "#596ab8",
       "heat_capacity": 0.4,
+      "incinerable": true,
       "temperature": 0.5
     },
     "slag":{
       "id": 1,
       "color": "#ffa166",
       "heat_capacity": 0.5,
+      "incinerable": true,
       "temperature": 1
     },
     "oil":{
       "id": 2,
       "color": "#313131",
       "heat_capacity": 0.7,
+      "incinerable": true,
       "temperature": 0.5
     },
     "cryofluid":{
       "id": 3,
       "color": "#6ecdec",
       "heat_capacity": 0.9,
+      "incinerable": true,
       "temperature": 0.25
     },
     "neoplasm":{
@@ -12748,36 +12754,42 @@
       "id": 5,
       "color": "#84a94b",
       "heat_capacity": 0.5,
+      "incinerable": true,
       "temperature": 0.5
     },
     "gallium":{
       "id": 6,
       "color": "#9a9dbf",
       "heat_capacity": 0.5,
+      "incinerable": true,
       "temperature": 0.5
     },
     "ozone":{
       "id": 7,
       "color": "#fc81dd",
       "heat_capacity": 0.5,
+      "incinerable": true,
       "temperature": 0.5
     },
     "hydrogen":{
       "id": 8,
       "color": "#9eabf7",
       "heat_capacity": 0.5,
+      "incinerable": true,
       "temperature": 0.5
     },
     "nitrogen":{
       "id": 9,
       "color": "#efe3ff",
       "heat_capacity": 0.5,
+      "incinerable": true,
       "temperature": 0.5
     },
     "cyanogen":{
       "id": 10,
       "color": "#89e8b6",
       "heat_capacity": 0.5,
+      "incinerable": true,
       "temperature": 0.5
     }
   },
