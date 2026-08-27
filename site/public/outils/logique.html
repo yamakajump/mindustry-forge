@@ -29,6 +29,7 @@
   <div class="atelier">
     <div>
       <div id="editeur"></div>
+      <p class="lecture" id="lecture" aria-live="polite"></p>
       <!-- Le geste courant d'abord, seul sur sa rangee. Dans le jeu on colle du code dans
            un processeur : c'est ce que fait ce bouton, et c'est le seul qui n'oblige a
            fabriquer une schematique autour de rien. -->
@@ -117,6 +118,7 @@ import { loadCatalogue, catalogueOf } from "../forge/logic/catalogue.js";
 import { LogicEditor } from "../forge/logic/editor.js";
 import { toSchematic, toSchematicBytes, fromSchematic } from "../forge/logic/program.js";
 import { timingOf, ticksAsText, secondsAsText } from "../forge/logic/timing.js";
+import { readingOf } from "../forge/logic/reading.js";
 import { t, ready, translate } from "../forge/i18n.js";
 
 const $ = (id) => document.getElementById(id);
@@ -157,6 +159,18 @@ translate(document);
 let liens = LIENS_EXEMPLE.map((lien) => ({ ...lien }));
 
 const editeur = new LogicEditor($("editeur"), { onChange: rendre });
+
+/* La ligne du curseur, dite en clair. La forme que le jeu stocke place l'operateur avant
+   ses operandes, et personne ne la lit d'un coup d'oeil ; la lecture met le signe entre
+   les deux. Elle suit le curseur autant que la frappe, sinon elle parlerait de la ligne
+   precedente des qu'on monte d'un cran. */
+const direLaLigne = () => {
+  $("lecture").textContent = readingOf(editeur.statementAtCaret()) ?? "";
+};
+
+for (const quand of ["keyup", "click", "input"]) {
+  editeur.input.addEventListener(quand, direLaLigne);
+}
 
 for (const bloc of catalogue.processors) {
   if (bloc.world) continue;

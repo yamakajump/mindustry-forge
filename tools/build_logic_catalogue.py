@@ -204,6 +204,42 @@ def aliases(classes: Path) -> dict[str, str]:
     return table
 
 
+#: One enum constant as the class initialiser builds it: its own name, then its ordinal,
+#: then the symbol it prints as, then the constructor whose signature states the arity.
+ENUM_ENTRY = re.compile(
+    r"ldc(?:_w)?\s+#\d+\s+// String (\S+)\n"
+    r"(?:.*\n)?"
+    r"\s*\d+: ldc(?:_w)?\s+#\d+\s+// String (\S+)\n"
+    r"(?:.*\n){0,3}?"
+    r'\s*\d+: invokespecial\s+#\d+\s+// Method "<init>":\(([^)]*)\)V')
+
+
+def operators(classes: Path, klass: str) -> dict[str, dict]:
+    """How an operator is written when a human writes it, and how many sides it has.
+
+    `op add result a b` is the game's storage form and nobody reads it at a glance;
+    `result = a + b` is the same line and everybody does. The game already knows both,
+    because `LogicOp` carries the symbol next to the name and picks a one or two argument
+    lambda: that is the arity, stated by the constructor it calls rather than guessed from
+    whether a symbol looks infix.
+
+    Read from the bytecode for the usual reason. A table of forty operators typed here
+    would be right until the version that adds the forty-first.
+    """
+    dump = javap(classes, klass, "-c", "-p")
+    clinit = dump.split("static {};", 1)[-1]
+
+    out = {}
+    for name, symbol, signature in ENUM_ENTRY.findall(clinit):
+        out[name] = {
+            "symbol": symbol,
+            # `OpLambda1` takes one side, `OpLambda2` takes two. Nothing else distinguishes
+            # `abs` from `add` at this level, and the difference is the whole reading.
+            "unary": "Lambda1" in signature or "OpLambda2" not in signature,
+        }
+    return out
+
+
 MARKUP = re.compile(r"\[[a-zA-Z#][^\[\]]*\]|\[\]")
 
 
@@ -321,7 +357,10 @@ def build(classes: Path, assets: Path) -> dict:
         values = enum_values(classes, klass)
         if not values:
             continue
+        written = operators(classes, klass)
         enums[name] = [{"name": value,
+                        **({"symbol": written[value]["symbol"],
+                            "unary": written[value]["unary"]} if value in written else {}),
                         "help": helps(words, f"lenum.{value.lower()}")
                              or helps(words, f"laccess.{value.lower()}")}
                        for value in values]

@@ -338,3 +338,18 @@
 
 .par-schematique > summary:hover { color: var(--ink); }
 .par-schematique[open] > summary { color: var(--ink); margin-bottom: 4px; }
+
+/*
+ * The reading of the line under the caret.
+ *
+ * A fixed height, so the page does not shift under the hand every time the caret crosses a
+ * line that has nothing to say. Coloured like a value and set in the same monospace as the
+ * code: it is a translation of the line above, not a second line of code, and it must not
+ * be mistaken for one.
+ */
+.lecture {
+  margin: 6px 2px 0;
+  min-height: 1.5em;
+  font: 13px/1.5 var(--mono);
+  color: var(--k-valeur, #d7b3ff);
+}
