@@ -1,0 +1,51 @@
+/*
+ * Le planificateur d'usine, et lui seul.
+ *
+ * Sa propre feuille plutot qu'une section de plus dans `forge.css` : plusieurs voies
+ * editent ce fichier en meme temps, et une page d'outil n'a aucune raison d'etre sur le
+ * chemin critique de la page d'analyse. Les couleurs viennent des variables de `forge.css`,
+ * donc un changement de palette traverse cette page sans qu'on y touche.
+ *
+ * Le cadre `.outil` est repris de `logic/logique.css` plutot qu'importe : les deux pages
+ * partagent une forme, pas un fichier, et une feuille d'outil qui en charge une autre fait
+ * dependre le planificateur d'un chantier qui n'est pas le sien.
+ */
+
+.outil {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.outil > header.titre {
+  border: 0;
+  background: none;
+  padding: 0 0 18px;
+  display: block;
+}
+
+.outil h1 { margin: 0 0 6px; font-size: 24px; font-weight: 600; }
+
+.outil .lede { margin: 0; color: var(--dim); font-size: 14px; }
+
+/* La demande tient sur une ligne, et se plie sur telephone : le site se lit en jouant. */
+.demande .row { gap: 8px; }
+.demande input[type="number"] {
+  width: 110px; min-height: 44px; padding: 0 12px;
+  border-radius: 6px; border: 2px solid var(--edge);
+  background: var(--raised); color: var(--ink);
+  font: 400 15px var(--mono); font-variant-numeric: tabular-nums;
+}
+.demande input[type="number"]:focus { border-color: var(--accent); outline: none; }
+
+/* Les chiffres alignes a droite en chasse fixe : une colonne de comptes se lit de haut en
+   bas, et une chasse proportionnelle fait danser les unites. */
+#sortie .line span:last-child {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Les hypotheses portent la couleur d'un avertissement sans en avoir le ton : ce ne sont
+   pas des erreurs, ce sont les conditions sous lesquelles le chiffre au-dessus est vrai. */
+#sortie .card:first-child .notes { color: var(--warn); }

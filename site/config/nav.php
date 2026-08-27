@@ -32,7 +32,7 @@ return [
         ['key' => 'nav.menu.affichage', 'href' => '/outils/affichage', 'ready' => false],
         ['key' => 'nav.menu.toile', 'href' => '/outils/toile', 'ready' => false],
         ['key' => 'nav.menu.trieurs', 'href' => '/outils/trieurs', 'ready' => false],
-        ['key' => 'nav.menu.planificateur', 'href' => '/outils/planificateur', 'ready' => false],
+        ['key' => 'nav.menu.planificateur', 'href' => '/outils/planificateur', 'ready' => true],
         ['key' => 'nav.menu.carte', 'href' => '/outils/carte', 'ready' => false],
     ]],
 
