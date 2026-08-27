@@ -468,6 +468,57 @@ class Schematic extends Model
         return $this->sandboxTaps() !== [];
     }
 
+    /**
+     * Every block the game only hands out in a sandbox, named by the game and not by us.
+     *
+     * Ten of them: the four sources, the four voids, the heat source and the thruster. A
+     * schematic holding one cannot be built in an ordinary game, which is a fact rather
+     * than a matter of taste - and the reason the test is on blocks and never on a name.
+     * `Def Mega Base (sandbox)` gives itself away; `useless box` and `Server lagger` do
+     * not, and they are the same lot.
+     *
+     * Cached statically because it is a property of the catalogue, not of a row.
+     */
+    public static function sandboxBlocks(): array
+    {
+        static $names = null;
+        if ($names !== null) {
+            return $names;
+        }
+
+        $names = [];
+        foreach (BlockCatalogue::all() as $name => $block) {
+            if ($block->visibility() === 'sandboxOnly') {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * Whether it is a creative build rather than something to put in a base.
+     *
+     * Read off the inventory, so it costs no analysis: `schematic_blocks` is the table the
+     * whole of this hangs on, and it was empty until the analysis started returning one.
+     */
+    public function creative(): bool
+    {
+        return $this->blocksHeld()
+            ->whereIn('block', self::sandboxBlocks())
+            ->exists();
+    }
+
+    /** The listing's half of the same question, answered in SQL rather than row by row. */
+    public function scopeOrdinary($query)
+    {
+        return $query->whereNotExists(fn ($sub) => $sub
+            ->selectRaw('1')
+            ->from('schematic_blocks')
+            ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
+            ->whereIn('schematic_blocks.block', self::sandboxBlocks()));
+    }
+
     /** Which blocks it is built from, one row per kind, indexed so the wiki can search it. */
     public function blocksHeld(): HasMany
     {
