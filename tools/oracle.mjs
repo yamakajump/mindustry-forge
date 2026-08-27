@@ -135,6 +135,40 @@ function shifted(tiles, ground) {
  * what it stands on. The same patch is painted in both engines, from the same list.
  */
 const SCENARIOS = {
+  /* What a burner will and will not swallow, which is a rule this repository got wrong
+     twice in two different files.
+
+     A generator that burns "anything" names no ingredient, so something has to decide what
+     covers its hunger. `needs.js` counted everything the layout made, which told a silicon
+     line its silicon would feed its generators; `marks.js` used a flammability threshold,
+     which cannot express an RTG eating thorium at flammability zero. Both are now read
+     from the block's own `accepts`, dumped from the game.
+
+     These two scenarios are what makes that claim checkable rather than argued. Silicon
+     goes in: if the generator refuses it, every last one ends up in the vault, and a
+     schematic making silicon really does still need coal delivered. Coal goes in: the
+     generator takes it, and the vault is short by exactly what was burnt. Same shape, one
+     item changed, so the difference between the two runs is the rule itself.
+
+     Not yet measured: it takes `npm run oracle:measure`, which needs a provisioned server,
+     and there is no jar on the machine this was written on. Until somebody runs it these
+     two sit outside the test, which only walks the scenarios that have a recorded answer. */
+  "burner-refuses-silicon": () => [
+    { x: -2, y: 0, block: "item-source", rotation: 0, raw: item("silicon") },
+    { x: -1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 0, y: 0, block: "router", rotation: 0 },
+    { x: 0, y: 1, block: "combustion-generator", rotation: 0 },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+    { x: 3, y: 0, block: "conveyor", rotation: 0 },
+    { x: 5, y: 0, block: "vault", rotation: 0 },
+  ],
+
+  /* The same thing with the one item the block does accept, so the pair says what the
+     first one alone could not: that the vault filling up is the refusal and not the belt. */
+  "burner-takes-coal": () => SCENARIOS["burner-refuses-silicon"]().map((tile) =>
+    tile.block === "item-source" ? { ...tile, raw: item("coal") } : tile),
+
   /* A source, a line, a vault. The plainest question there is: how fast does a belt go. */
   "belt-copper": () => line("conveyor", 8),
   "belt-titanium": () => line("titanium-conveyor", 8),
