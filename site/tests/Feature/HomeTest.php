@@ -112,8 +112,16 @@ it('sert encore l analyseur quand la base ne repond pas', function () {
        La panne passe par une connexion jetable et par `database.default`, pas par un
        `DB::purge` de la connexion en cours. Purger detruit la base `:memory:` que
        `RefreshDatabase` tient pour toute la suite : la premiere version de ce test passait
-       seule et faisait echouer quatre-vingt-douze tests en groupe. */
+       seule et faisait echouer quatre-vingt-douze tests en groupe.
+
+       Et la connexion rendue est celle qu'on a prise, relevee et pas nommee. La deuxieme
+       version remettait `sqlite` en dur : verte en local ou la suite tourne sur SQLite, et
+       rouge sur le job MySQL, qui existe precisement pour attraper un test qui choisit sa
+       base au lieu d'utiliser celle de la suite. Un tel test ne prouve rien sur la
+       production. */
     Log::spy();
+    $connexion = config('database.default');
+
     config([
         'database.connections.casse' => ['driver' => 'sqlite', 'database' => '/inexistant/aucune.sqlite'],
         'database.default' => 'casse',
@@ -122,7 +130,7 @@ it('sert encore l analyseur quand la base ne repond pas', function () {
     try {
         $reponse = $this->get('/');
     } finally {
-        config(['database.default' => 'sqlite']);
+        config(['database.default' => $connexion]);
     }
 
     $reponse->assertOk();
