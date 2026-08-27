@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Mindustry Forge">
+  <title>Mindustry Forge</title>
+  <!-- Le meme signe sans sa plaque, et en currentColor : pose en ligne dans le <header>,
+       il prend la couleur du texte autour de lui et suit sa taille en em. C'est ce qui
+       evite qu'une barre d'editeur reglee a 17px se retrouve avec un logo de 19px. -->
+  <g fill="currentColor">
+    <path d="M6 6h4v20H6z"/>
+    <path d="M10 6h12v4H10z"/>
+    <path d="M22 4l5 4-5 4z"/>
+    <path d="M10 14h10v4H10z"/>
+  </g>
+</svg>
