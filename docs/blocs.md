@@ -60,7 +60,7 @@ second, c'est une intuition qui a l'air d'un portage.
       beam-node, beam-tower
 - [x] `BurstDrill` - 2 blocs
       eruption-drill, impact-drill
-- [ ] `CanvasBlock` - 2 blocs
+- [x] `CanvasBlock` - 2 blocs - ne prend rien, ne rend rien
       canvas, large-canvas
 - [x] `Conduit` - 2 blocs - un tuyau : directionnel, comme une bande
       conduit, pulse-conduit
@@ -78,7 +78,7 @@ second, c'est une intuition qui a l'air d'un portage.
       liquid-junction, reinforced-liquid-junction
 - [x] `LiquidTurret` - 2 blocs
       tsunami, wave
-- [ ] `LogicDisplay` - 2 blocs
+- [x] `LogicDisplay` - 2 blocs - un ecran ne touche a aucun chiffre
       large-logic-display, logic-display
 - [x] `MendProjector` - 2 blocs - repare, ne change aucun debit
       mend-projector, mender
@@ -108,7 +108,7 @@ second, c'est une intuition qui a l'air d'un portage.
       inverted-sorter, sorter
 - [x] `StackConveyor` - 2 blocs - deplace une pile entiere de case en case
       plastanium-conveyor, surge-conveyor
-- [ ] `SwitchBlock` - 2 blocs
+- [x] `SwitchBlock` - 2 blocs - un interrupteur non plus
       switch, world-switch
 - [x] `ThermalGenerator` - 2 blocs - de l'energie a partir du sol chaud
       thermal-generator, turbine-condenser
@@ -118,15 +118,15 @@ second, c'est une intuition qui a l'air d'un portage.
       interplanetary-accelerator
 - [x] `ArmoredConveyor` - 1 bloc
       armored-conveyor
-- [ ] `AutoDoor` - 1 bloc
+- [x] `AutoDoor` - 1 bloc - fermee par defaut, et solide avec ca
       blast-door
 - [x] `BufferedItemBridge` - 1 bloc
       bridge-conveyor
 - [x] `BuildTurret` - 1 bloc - ne consomme rien tant qu'il n'a rien a reconstruire
       build-tower
-- [ ] `ColoredFloor` - 1 bloc
+- [x] `ColoredFloor` - 1 bloc - de la peinture
       colored-floor
-- [ ] `ColoredWall` - 1 bloc
+- [x] `ColoredWall` - 1 bloc - de la peinture
       colored-wall
 - [x] `ContinuousLiquidTurret` - 1 bloc - ses munitions sont un liquide
       sublimate
@@ -160,11 +160,11 @@ second, c'est une intuition qui a l'air d'un portage.
       item-void
 - [x] `Junction` - 1 bloc - quatre files, une par cote, chacune ressort en face
       junction
-- [ ] `LandingPad` - 1 bloc
+- [x] `LandingPad` - 1 bloc - hors campagne elle ne fait rien, et son eau reste
       landing-pad
 - [x] `LaserTurret` - 1 bloc
       meltdown
-- [ ] `LegacyCommandCenter` - 1 bloc
+- [x] `LegacyCommandCenter` - 1 bloc - jete par le catalogue : ni role ni cout, il ne peut pas etre dans un schema
       command-center
 - [x] `LiquidSource` - 1 bloc
       liquid-source
@@ -198,7 +198,7 @@ second, c'est une intuition qui a l'air d'un portage.
       regen-projector
 - [x] `RepairTower` - 1 bloc
       unit-repair-tower
-- [ ] `Seaweed` - 1 bloc
+- [x] `Seaweed` - 1 bloc - jete par le catalogue : ni role ni cout, il ne peut pas etre dans un schema
       redweed
 - [x] `ShieldWall` - 1 bloc - trois par seconde en permanence, qu'on lui tire dessus ou non
       shielded-wall
@@ -208,9 +208,9 @@ second, c'est une intuition qui a l'air d'un portage.
       water-extractor
 - [x] `StackRouter` - 1 bloc
       surge-router
-- [ ] `Thruster` - 1 bloc
+- [x] `Thruster` - 1 bloc - un morceau de coque
       thruster
-- [ ] `TileableLogicDisplay` - 1 bloc
+- [x] `TileableLogicDisplay` - 1 bloc - un ecran, en plus petit
       tile-logic-display
 - [x] `TractorBeamTurret` - 1 bloc
       parallax

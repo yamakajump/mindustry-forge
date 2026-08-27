@@ -1,0 +1,27 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "sublimate",
+      "x": 13,
+      "y": 13,
+      "liquid": "ozone",
+      "amount": 50
+    }
+  ],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "sublimate",
+      "x": 13,
+      "y": 13,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

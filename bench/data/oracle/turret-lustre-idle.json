@@ -1,0 +1,33 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "lustre",
+      "x": 13,
+      "y": 13,
+      "liquid": "nitrogen",
+      "amount": 20
+    }
+  ],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "lustre",
+      "x": 13,
+      "y": 13,
+      "efficiency": 0
+    },
+    {
+      "block": "power-source",
+      "x": 16,
+      "y": 13,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

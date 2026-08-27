@@ -64,6 +64,30 @@ const links = (offsets) => {
   return out;
 };
 
+/**
+ * Un bloc dont on affirme qu'il ne fait rien, et la forme qui le prouve.
+ *
+ * Un routeur avec un coffre au bout d'une bande d'un cote et le bloc de l'autre. S'il
+ * refuse, tout le cuivre finit dans le coffre ; s'il acceptait quoi que ce soit, la moitie
+ * disparaitrait. Une case cochee qui dit "ne fait rien" ne vaut rien tant que personne n'a
+ * regarde.
+ */
+const refuses = (block) => {
+  const size = known.blocks[block].size || 1;
+  return [
+    { x: -2, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: -1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 0, y: 0, block: "router", rotation: 0 },
+    // Pose de facon a toucher la face nord du routeur, quelle que soit sa taille.
+    { x: 0, y: 1 + Math.trunc((size - 1) / 2), block, rotation: 0 },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+    { x: 3, y: 0, block: "conveyor", rotation: 0 },
+    // Couvre 4..6 par -1..1, hors de portee du plus grand des blocs testes.
+    { x: 5, y: 0, block: "vault", rotation: 0 },
+  ];
+};
+
 /** A scenario may be a bare list of tiles, or tiles and the ground under them. */
 const shape = (built) => (Array.isArray(built) ? { tiles: built, ground: [], stock: [] }
   : { tiles: built.tiles, ground: built.ground || [], stock: built.stock || [] });
@@ -1737,6 +1761,30 @@ const SCENARIOS = {
     { x: 0, y: 0, block: "interplanetary-accelerator", rotation: 0 },
     { x: 0, y: 5, block: "power-source", rotation: 0 },
   ],
+
+  /* Les blocs dont la reponse est "rien", chacun avec la forme qui le montre. */
+  "refuses-switch": () => refuses("switch"),
+  "refuses-door": () => refuses("door"),
+  "refuses-blast-door": () => refuses("blast-door"),
+  "refuses-canvas": () => refuses("canvas"),
+  "refuses-large-canvas": () => refuses("large-canvas"),
+  "refuses-colored-wall": () => refuses("colored-wall"),
+  "refuses-colored-floor": () => refuses("colored-floor"),
+  "refuses-thruster": () => refuses("thruster"),
+  "refuses-logic-display": () => refuses("logic-display"),
+  "refuses-tile-logic-display": () => refuses("tile-logic-display"),
+  "refuses-landing-pad": () => refuses("landing-pad"),
+
+  /* Un tapis dans une plateforme d'arrivee, qui n'a rien a faire hors campagne, avec de
+     l'eau a cote qu'elle ne boit pas. Quatre sur quatre : couvre 0..3 par 0..3. */
+  "landing-pad-idle": () => ({
+    tiles: [
+      { x: 1, y: 1, block: "landing-pad", rotation: 0 },
+      { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("water") },
+      { x: -1, y: 0, block: "conduit", rotation: 0 },
+    ],
+    stock: ["water~100@1,1"],
+  }),
 
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [

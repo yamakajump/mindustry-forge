@@ -1,0 +1,52 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 15,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 15,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "interplanetary-accelerator",
+      "x": 18,
+      "y": 15,
+      "efficiency": 0,
+      "holds":{
+        "copper": 196
+      }
+    },
+    {
+      "block": "power-source",
+      "x": 18,
+      "y": 20,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

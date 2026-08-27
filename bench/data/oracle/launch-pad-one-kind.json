@@ -1,0 +1,58 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "router",
+      "x": 13,
+      "y": 12,
+      "efficiency": 1,
+      "holds":{
+        "copper": 1
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 12,
+      "efficiency": 1,
+      "holds":{
+        "copper": 3
+      }
+    },
+    {
+      "block": "item-source",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "advanced-launch-pad",
+      "x": 16,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 100
+      }
+    },
+    {
+      "block": "power-source",
+      "x": 16,
+      "y": 16,
+      "efficiency": 0
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}
