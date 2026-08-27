@@ -31,10 +31,16 @@ function keyPattern(): string
     return "~(?<![a-z0-9._-])(?:{$domains})(?:[.][a-z0-9-]+){2,}(?![a-z0-9-])~";
 }
 
-/** Everything a server-rendered string could be written in. */
+/**
+ * Everything a server-rendered string could be named in.
+ *
+ * `config` is in there for `config/nav.php`, which names every header entry including the
+ * ones no page renders yet. Without it the entries waiting on another branch would read as
+ * keys nobody asks for, and the next person would tidy them away.
+ */
 function translatableSources(): array
 {
-    return collect(['resources/views', 'app', 'routes'])
+    return collect(['resources/views', 'app', 'routes', 'config'])
         ->flatMap(fn ($dir) => File::allFiles(base_path($dir)))
         ->filter(fn ($file) => in_array($file->getExtension(), ['php'], true))
         ->map(fn ($file) => $file->getPathname())
@@ -58,7 +64,9 @@ function definedKeys(): array
     };
 
     foreach (File::files(lang_path('fr')) as $file) {
-        $walk(require $file->getPathname(), $file->getFilenameWithoutExtension());
+        if ($file->getExtension() === 'php') {
+            $walk(require $file->getPathname(), $file->getFilenameWithoutExtension());
+        }
     }
 
     return $flat;
@@ -76,6 +84,64 @@ function askedKeys(): array
     }
 
     return $asked;
+}
+
+/** The holes in a line, the way Laravel writes them. */
+function placeholdersIn(string $line): array
+{
+    preg_match_all('~:[a-z][a-zA-Z0-9_]*~', $line, $found);
+    sort($found[0]);
+
+    return array_values(array_unique($found[0]));
+}
+
+/**
+ * What a translated dictionary is missing next to the one the site is written in.
+ *
+ * Two failures, and the second is the one nobody expects. A key a translation does not
+ * define falls back to the key itself. A key it does define but whose holes it dropped is
+ * worse: Laravel substitutes nothing, and the number that was going into the hole is gone
+ * from the page without a trace.
+ */
+function localeGaps(array $reference, array $other): array
+{
+    $gaps = [];
+    foreach ($reference as $key => $line) {
+        if (! array_key_exists($key, $other)) {
+            $gaps[] = "{$key} : absente";
+
+            continue;
+        }
+        if (placeholdersIn($line) !== placeholdersIn($other[$key])) {
+            $gaps[] = "{$key} : trous differents, ".implode(' ', placeholdersIn($line))
+                .' contre '.implode(' ', placeholdersIn($other[$key]));
+        }
+    }
+    foreach (array_diff_key($other, $reference) as $key => $line) {
+        $gaps[] = "{$key} : en trop";
+    }
+
+    return $gaps;
+}
+
+/** Every key a locale defines, flattened, whichever locale it is. */
+function keysOf(string $locale): array
+{
+    $flat = [];
+    $walk = function (array $node, string $prefix) use (&$walk, &$flat) {
+        foreach ($node as $key => $value) {
+            $path = "{$prefix}.{$key}";
+            is_array($value) ? $walk($value, $path) : $flat[$path] = $value;
+        }
+    };
+
+    foreach (File::files(lang_path($locale)) as $file) {
+        if ($file->getExtension() === 'php') {
+            $walk(require $file->getPathname(), $file->getFilenameWithoutExtension());
+        }
+    }
+
+    return $flat;
 }
 
 it('a une cle pour chaque chaine que les vues demandent', function () {
@@ -150,3 +216,52 @@ it('tourne en francais meme sans fichier .env', function () {
     expect(config('app.locale'))->toBe('fr');
     expect(config('app.fallback_locale'))->toBe('fr');
 });
+
+it('garde les unites en mots nus, pour qu un chiffre ne disparaisse jamais', function () {
+    /* Une cle manquante rend la cle, sans rien substituer. Une unite ecrite `:n cases`
+       ferait donc disparaitre le 160, pas le mot : la page dirait `blocs.unite.cases` et
+       le lecteur aurait perdu la seule chose qu il etait venu chercher. Ecrites en mots
+       nus et accolees au nombre par la vue, la page degradee dit `160 blocs.unite.cases`,
+       ce qui est illisible mais pas faux.
+
+       La regle vaut pour les quantites, pas pour toute interpolation : `{{ $n }} {{ __() }}`
+       fige l ordre nombre-puis-mot, ce qui est faux dans beaucoup de langues. Ce sont les
+       unites qui sont des suffixes, et elles vivent sous l ecran `unite`. */
+    $wrong = [];
+    foreach (definedKeys() as $key => $line) {
+        if (str_contains($key, '.unite.') && placeholdersIn($line) !== []) {
+            $wrong[] = $key;
+        }
+    }
+
+    expect($wrong)->toBe([], 'une unite est un mot nu que la vue accole au nombre');
+});
+
+it('sait reconnaitre une traduction trouee, sur un exemple fabrique', function () {
+    /* Le test ci-dessous ne peut rien prouver tant qu une seule langue est livree. Celui-ci
+       montre que la comparaison mord, pour que le jour ou une deuxieme arrive on sache
+       qu elle est surveillee par autre chose qu une boucle vide. */
+    $reference = ['blocs.page.debit' => ':n par seconde', 'blocs.page.cout' => 'Cout'];
+
+    expect(localeGaps($reference, $reference))->toBe([]);
+    expect(localeGaps($reference, ['blocs.page.cout' => 'Cost']))
+        ->toBe(['blocs.page.debit : absente']);
+    expect(localeGaps($reference, ['blocs.page.debit' => 'per second', 'blocs.page.cout' => 'Cost']))
+        ->toBe(['blocs.page.debit : trous differents, :n contre ']);
+    expect(localeGaps($reference, $reference + ['blocs.page.orpheline' => 'x']))
+        ->toBe(['blocs.page.orpheline : en trop']);
+});
+
+it('livre chaque langue avec les memes cles et les memes trous que le francais', function () {
+    $reference = keysOf('fr');
+    expect($reference)->not->toBeEmpty();
+
+    $others = collect(File::directories(lang_path()))
+        ->map(fn ($path) => basename($path))
+        ->reject(fn ($locale) => $locale === 'fr');
+
+    foreach ($others as $locale) {
+        expect(localeGaps($reference, keysOf($locale)))->toBe([], "la langue {$locale} a derive");
+    }
+})->skip(fn () => count(File::directories(lang_path())) < 2,
+    'une seule langue livree, il n y a rien a comparer');

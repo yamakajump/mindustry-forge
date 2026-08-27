@@ -151,3 +151,71 @@ test("le dictionnaire est range, pour que deux voies le modifient sans se croise
   assert.deepEqual(keys, [...keys].sort(),
     "des cles triees, c'est un conflit de fusion par ligne au lieu d'un par fichier");
 });
+
+/** The holes in a line. */
+function holesIn(line) {
+  return [...line.matchAll(/\{(\w+)\}/g)].map(([, name]) => name).sort();
+}
+
+/**
+ * What a translated dictionary is missing next to the one the site is written in.
+ *
+ * Two failures, and the second is the one nobody expects. A key a translation does not
+ * define falls back to the key itself. A key it does define but whose holes it dropped is
+ * worse: nothing is substituted, and the number that was going into the hole is gone from
+ * the page without a trace.
+ */
+function localeGaps(reference, other) {
+  const gaps = [];
+  for (const [key, line] of Object.entries(reference)) {
+    if (!(key in other)) { gaps.push(`${key} : absente`); continue; }
+    const [mine, theirs] = [holesIn(line), holesIn(other[key])];
+    if (String(mine) !== String(theirs)) {
+      gaps.push(`${key} : trous differents, ${mine} contre ${theirs}`);
+    }
+  }
+  for (const key of Object.keys(other)) {
+    if (!(key in reference)) gaps.push(`${key} : en trop`);
+  }
+  return gaps;
+}
+
+test("garde les unites en mots nus, pour qu'un chiffre ne disparaisse jamais", () => {
+  /* Une cle absente rend la cle, sans rien substituer. Une unite ecrite `{n} cases` ferait
+     donc disparaitre le 160 et pas le mot. Ecrite en mot nu et accolee au nombre par la
+     vue, la page degradee dit `160 blocs.unite.cases` : illisible, mais pas faux.
+
+     La regle s'arrete aux quantites. Interpoler un nom dans une phrase reste libre, parce
+     que son absence se voit. */
+  const wrong = Object.entries(DICTIONARY)
+    .filter(([key, line]) => key.includes(".unite.") && holesIn(line).length)
+    .map(([key]) => key);
+
+  assert.deepEqual(wrong, [], "une unite est un mot nu que la vue accole au nombre");
+});
+
+test("sait reconnaitre une traduction trouee, sur un exemple fabrique", () => {
+  /* Le test suivant ne peut rien prouver tant qu'une seule langue est livree. Celui-ci
+     montre que la comparaison mord, pour qu'on sache que la deuxieme sera surveillee par
+     autre chose qu'une boucle vide. */
+  const reference = { "blocs.page.debit": "{n} par seconde", "blocs.page.cout": "Cout" };
+
+  assert.deepEqual(localeGaps(reference, reference), []);
+  assert.deepEqual(localeGaps(reference, { "blocs.page.cout": "Cost" }),
+    ["blocs.page.debit : absente"]);
+  assert.deepEqual(
+    localeGaps(reference, { "blocs.page.debit": "per second", "blocs.page.cout": "Cost" }),
+    ["blocs.page.debit : trous differents, n contre "]);
+  assert.deepEqual(localeGaps(reference, { ...reference, "blocs.page.orpheline": "x" }),
+    ["blocs.page.orpheline : en trop"]);
+});
+
+test("livre chaque langue avec les memes cles et les memes trous que le francais", () => {
+  const others = readdirSync(at("public/forge/lang"))
+    .filter((name) => name.endsWith(".json") && name !== `${DEFAULT_LOCALE}.json`);
+
+  for (const name of others) {
+    assert.deepEqual(localeGaps(DICTIONARY, JSON.parse(read(`public/forge/lang/${name}`))), [],
+      `la langue ${name} a derive`);
+  }
+});

@@ -1,4 +1,11 @@
 {
+  "compte.barre.connexion": "Se connecter avec Discord",
+  "nav.barre.analyser": "Analyser",
+  "nav.barre.deplier": "Ouvrir le menu",
+  "nav.barre.editer": "Editer",
+  "nav.barre.schematiques": "Schematiques",
+  "nav.menu.les-miennes": "Les miennes",
+  "nav.menu.parcourir": "Parcourir",
   "schema.gestion.confirmer-suppression": "Supprimer \"{nom}\" ? C'est definitif.",
   "schema.gestion.copie": "Copie",
   "schema.gestion.copier": "Copier",
