@@ -1,0 +1,55 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "slag-incinerator",
+      "x": 14,
+      "y": 12,
+      "liquid": "slag",
+      "amount": 10
+    },
+    {
+      "block": "liquid-source",
+      "x": 14,
+      "y": 13,
+      "liquid": "slag",
+      "amount": 10000
+    }
+  ],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 12,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "slag-incinerator",
+      "x": 14,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "liquid-source",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}
