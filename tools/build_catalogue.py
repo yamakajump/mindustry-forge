@@ -85,6 +85,12 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
         # Comment un glisse trace, et jusqu ou un pont ou un pylone porte.
         "allow_diagonal", "swap_diagonal_placement", "allow_rectangle_placement",
         "laser_range",
+        # Ce qu un convoyeur devient tout seul quand la ligne le demande, et le reste de ce
+        # que la pose lit : rotations forcees, miroirs inverses, configurabilite, casse.
+        "junction_replacement", "bridge_replacement", "ignore_line_rotation",
+        "lock_rotation", "invert_flip", "save_config", "copy_config", "configurable",
+        "clear_on_double_tap", "placeable_player", "schematic_priority",
+        "build_visibility",
         )
 
 #: Les champs dont `False` est l information, et non l absence d information.
@@ -94,7 +100,7 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
 #: valait vrai par défaut, mais `replaceable` et `placeable_on` valent **vrai** par défaut
 #: dans le jeu et ne sont écrits que là où ils sont faux. Les jeter revenait à supprimer la
 #: seule chose qu'ils avaient à dire.
-FALSE_MATTERS = ("replaceable", "placeable_on", "allow_diagonal")
+FALSE_MATTERS = ("replaceable", "placeable_on", "allow_diagonal", "placeable_player")
 
 
 def main() -> None:

@@ -25,6 +25,7 @@
  */
 
 import { DIRECTIONS } from "../engine/core.js";
+import { blockerOf, withBridges, withJunctions } from "./smart.js";
 
 /** La rotation du jeu qui va de `a` vers `b`, ou `null` si les deux cases se confondent. */
 function facing(a, b) {
@@ -235,16 +236,45 @@ export function lineOf(from, to, block, catalogue, rotation = 0,
     points = points.filter((_, i) => i % size === 0);
   }
 
-  const plans = points.map((point, i) => ({
+  /* `planRotation` du jeu : un bloc qui ne tourne pas et que `lockRotation` verrouille
+     sort toujours a zero, quoi que la main tienne. Et `ignoreLineRotation` dit qu un bloc
+     ne suit pas le sens du glisse, meme s il tourne. */
+  const follows = (known.conveyor_placement || known.rotate) && !known.ignore_line_rotation;
+  const settle = (value) => (!known.rotate && known.lock_rotation ? 0 : value);
+
+  let plans = points.map((point, i) => ({
     x: point.x,
     y: point.y,
     block,
-    rotation: known.conveyor_placement || known.rotate
+    rotation: settle(follows
       ? (i + 1 < points.length
           ? (facing(point, points[i + 1]) ?? rotation)
           : lastFacing(points, rotation))
-      : rotation,
+      : rotation),
   }));
+
+  /* Ce que le jeu decide a la place du joueur, et qui demande de savoir ce qui est deja
+     pose : la jonction au croisement, puis les ponts qui franchissent un obstacle. */
+  if (board) {
+    if (known.junction_replacement) plans = withJunctions(plans, board, catalogue);
+    const relay = known.bridge_replacement && catalogue.blocks[known.bridge_replacement];
+    if (relay) {
+      plans = withBridges(plans, {
+        blocked: blockerOf(board, catalogue, block),
+        reach: reachOf(relay),
+        bridge: known.bridge_replacement,
+        hasJunction: Boolean(known.junction_replacement),
+        /* Ce qu'une jonction sait traverser. Le jeu passe `b -> b instanceof Conveyor`
+           pour une bande et `b -> b instanceof Duct || b instanceof Conveyor` pour une
+           gaine ; `conveyor_placement` est le drapeau publié qui recouvre les deux
+           familles, et c'est celui qu'on lit plutôt que de tester des noms de classes. */
+        avoid: (x, y) => {
+          const under = board.at(x, y);
+          return Boolean(under && catalogue.blocks[under.block]?.conveyor_placement);
+        },
+      });
+    }
+  }
 
   /* `handlePlacementLine` : chaque pont reçoit en configuration le décalage vers le
      suivant. C'est ce qui fait qu'un glissé de ponts donne une chaîne qui transporte, et

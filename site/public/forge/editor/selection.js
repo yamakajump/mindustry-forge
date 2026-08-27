@@ -83,7 +83,23 @@ export function flip(tiles, axis, catalogue) {
   if (!tiles.length) return [];
   const sizeOf = (name) => catalogue.blocks[name]?.size || 1;
   const box = boxOf(tiles, sizeOf);
-  const mirror = axis === "x" ? [2, 1, 0, 3] : [0, 3, 2, 1];
+
+  /**
+   * `Block.flipRotation` de la v159.7, transcrit plutôt que tabulé.
+   *
+   *     if((x == (rotation % 2 == 0)) != invertFlip) rotation = planRotation(rotation + 2)
+   *
+   * Une table à quatre entrées donnait le même résultat pour tous les blocs sauf ceux qui
+   * portent `invertFlip`, et le jeu en a un : un miroir le retournait dans le mauvais sens
+   * sans que rien ne le dise, ce qui est exactement le genre d'erreur qu'on ne voit qu'à
+   * l'usage, une fois la schématique collée dans le jeu.
+   */
+  const flipped = (rotation, block) => {
+    const onX = axis === "x";
+    const turn = (onX === (rotation % 2 === 0)) !== Boolean(block?.invert_flip);
+    const out = turn ? (rotation + 2) % 4 : rotation;
+    return !block?.rotate && block?.lock_rotation ? 0 : out;
+  };
 
   return tiles.map((tile) => {
     const { cx, cy, size, offset } = corner(tile, sizeOf);
@@ -95,8 +111,7 @@ export function flip(tiles, axis, catalogue) {
       ...tile,
       x: box.left + nx - offset,
       y: box.bottom + ny - offset,
-      rotation: catalogue.blocks[tile.block]?.rotate
-        ? mirror[(tile.rotation || 0) % 4] : (tile.rotation || 0),
+      rotation: flipped((tile.rotation || 0) % 4, catalogue.blocks[tile.block]),
     };
   });
 }

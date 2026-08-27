@@ -54,3 +54,17 @@ test("filtrer par planete separe vraiment les deux jeux de blocs", () => {
   assert.equal(serpulo.some(({ name }) => name === "duct"), false);
   assert.equal(erekir.some(({ name }) => name === "conveyor"), false);
 });
+
+test("la palette montre ce que le menu du jeu montre, pas ce qui a un cout", () => {
+  /* `buildVisibility` et `placeablePlayer` sont le tri du jeu. Trier sur « il a un cout de
+     construction » laissait passer dix blocs que personne ne peut poser en partie : les
+     rampes de lancement, le radar, l illuminateur, l accelerateur interplanetaire, et le
+     coeur, qui n existe que dans sa zone. */
+  for (const absent of ["launch-pad", "advanced-launch-pad", "core-shard", "radar",
+                        "illuminator", "interplanetary-accelerator"]) {
+    assert.ok(!names.includes(absent), `${absent} n a rien a faire dans la palette`);
+  }
+  for (const present of ["conveyor", "graphite-press", "duo", "power-node"]) {
+    assert.ok(names.includes(present), `${present} devrait etre proposable`);
+  }
+});

@@ -110,3 +110,19 @@ test("une selection vide ne casse rien", () => {
   assert.deepEqual(flip([], "x", known), []);
   assert.deepEqual(translate([], 3, 3), []);
 });
+
+test("le seul bloc a miroir inverse du jeu se retourne dans l autre sens", () => {
+  /* `Block.invertFlip` : « schematic flips with this block are inverted ». Un seul bloc du
+     jeu le porte, l electrolyseur, et une table de rotations a quatre entrees le retournait
+     dans le mauvais sens sans que rien ne le dise. La formule du jeu, elle, le gere :
+
+         if((x == (rotation % 2 == 0)) != invertFlip) rotation += 2
+  */
+  assert.equal(known.blocks["electrolyzer"].invert_flip, true);
+  const normal = { x: 0, y: 0, block: "thermal-generator", rotation: 0 };
+  const inverse = { x: 0, y: 0, block: "electrolyzer", rotation: 0 };
+
+  // Sur l axe X, une rotation paire bascule... sauf pour celui qui inverse.
+  assert.notEqual(flip([inverse], "x", known)[0].rotation,
+                  flip([{ ...normal, block: "conveyor" }], "x", known)[0].rotation);
+});

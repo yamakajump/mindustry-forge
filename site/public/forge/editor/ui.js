@@ -43,7 +43,12 @@ function costOf(block) {
  */
 export function buildables(catalogue) {
   return Object.entries(catalogue.blocks)
-    .filter(([, block]) => block.cost && !block.floor && !block.wall)
+    /* Le tri du jeu, et non celui qu'on avait inventé. `buildVisibility` dit ce que le menu
+       de construction montre, et `placeablePlayer` si un joueur peut le poser du tout.
+       Trier sur « il a un coût de construction » laissait passer des blocs cachés, réservés
+       au bac à sable ou à l'éditeur de carte, que personne ne peut poser dans une partie. */
+    .filter(([, block]) => block.build_visibility === "shown"
+      && block.placeable_player !== false && block.cost)
     .map(([name, block]) => ({ name, block }))
     .sort((a, b) => (a.block.id || 0) - (b.block.id || 0));
 }

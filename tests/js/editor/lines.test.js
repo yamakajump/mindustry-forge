@@ -205,9 +205,27 @@ test("un glisse d une seule case pose un seul bloc", () => {
   assert.equal(posee[0].rotation, 3, "rien n indique une direction, la main decide");
 });
 
-test("un bloc qui ne tourne pas garde la rotation qu il avait en main", () => {
-  const posee = line(at(0, 0), at(4, 0), "graphite-press", 3);
-  assert.deepEqual(posee.map((t) => t.rotation), [3, 3, 3]);
+test("un bloc qui ne tourne pas sort a zero, quoi que la main tienne", () => {
+  /* `Block.planRotation` : `!rotate && lockRotation ? 0 : rot`. Une presse ne tourne pas et
+     `lockRotation` vaut vrai pour tous les blocs du jeu, donc elle sort toujours a zero.
+
+     Ce test attendait l inverse et c est le code qui avait raison : garder la rotation de
+     la main sur un bloc qui ne tourne pas ecrit dans le fichier une valeur que le jeu
+     remettrait a zero, donc une schematique qui ne se recopie pas a l identique. */
+  assert.deepEqual(line(at(0, 0), at(4, 0), "graphite-press", 3).map((t) => t.rotation),
+                   [0, 0, 0]);
+});
+
+test("un bloc qui ignore le sens du glisse garde la rotation de la main", () => {
+  /* `ignoreLineRotation`, que trente blocs portent : une foreuse a faisceau ou une tourelle
+     tourne, mais ne doit pas se retourner parce qu on a tire vers la droite. Sans ce
+     drapeau, poser une rangee de foreuses a faisceau les fait toutes viser le voisin au
+     lieu de viser le mur qu on avait choisi. */
+  assert.equal(known.blocks["plasma-bore"].ignore_line_rotation, true);
+  assert.deepEqual(line(at(0, 0), at(6, 0), "plasma-bore", 3).map((t) => t.rotation),
+                   [3, 3, 3, 3]);
+  // Une bande, elle, suit bien le glisse.
+  assert.deepEqual(line(at(0, 0), at(2, 0), "conveyor", 3).map((t) => t.rotation), [0, 0, 0]);
 });
 
 test("un gros bloc s espace de sa taille au lieu de se detruire lui-meme", () => {
