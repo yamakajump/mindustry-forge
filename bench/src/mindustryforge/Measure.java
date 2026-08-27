@@ -335,6 +335,13 @@ public class Measure implements ApplicationListener {
                 held.append(" ~").append(belt.len).append(':')
                     .append(String.format(java.util.Locale.ROOT, "%.3f", belt.minitem));
             }
+            // Le canon d'un mass driver a cargaison : charge, rechargement, glissement.
+            if (build instanceof mindustry.world.blocks.payloads.PayloadMassDriver
+                    .PayloadDriverBuild gun) {
+                held.append(" $").append(
+                    String.format(java.util.Locale.ROOT, "%.2f/%.3f/%.2f/%.1f",
+                        gun.charge, gun.reloadCounter, gun.payLength, gun.turretRotation));
+            }
             // Et ce qu'il porte, avec ce qu'il y a dedans.
             mindustry.world.blocks.payloads.Payload cargo = build.getPayload();
             if (cargo != null) {

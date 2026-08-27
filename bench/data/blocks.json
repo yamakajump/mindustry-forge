@@ -12366,7 +12366,17 @@
         "silicon": 50,
         "tungsten": 40
       },
-      "power": 30
+      "power": 30,
+      "role": "payload-driver",
+      "carries": "payload",
+      "range": 87.5,
+      "rotate_speed": 5,
+      "reload": 130,
+      "charge_time": 90,
+      "transfer_time": 11,
+      "length": 11.125,
+      "knockback": 5,
+      "max_payload_size": 2.5
     },
     "large-payload-mass-driver":{
       "name": "large-payload-mass-driver",
@@ -12396,7 +12406,17 @@
         "tungsten": 200,
         "oxide": 30
       },
-      "power": 180
+      "power": 180,
+      "role": "payload-driver",
+      "carries": "payload",
+      "range": 262.5,
+      "rotate_speed": 5,
+      "reload": 130,
+      "charge_time": 100,
+      "transfer_time": 11,
+      "length": 11.125,
+      "knockback": 5,
+      "max_payload_size": 4
     },
     "small-deconstructor":{
       "name": "small-deconstructor",

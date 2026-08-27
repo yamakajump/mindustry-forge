@@ -83,6 +83,7 @@ import mindustry.world.blocks.power.ThermalGenerator;
 import mindustry.world.blocks.power.HeaterGenerator;
 import mindustry.world.blocks.campaign.LaunchPad;
 import mindustry.world.blocks.payloads.PayloadDeconstructor;
+import mindustry.world.blocks.payloads.PayloadMassDriver;
 import mindustry.world.blocks.payloads.PayloadLoader;
 import mindustry.world.blocks.payloads.PayloadUnloader;
 import mindustry.world.blocks.defense.Door;
@@ -796,6 +797,25 @@ public class DumpBlocks {
                Erekir base wired entirely with them read as unpowered. */
             entry.put("role", "power");
             entry.put("range", beam.range);
+            return;
+        }
+        if (block instanceof PayloadMassDriver driver) {
+            /* Le meme principe que le mass driver a objets, pour un bloc porte entier, avec
+               une barriere de plus : la cargaison doit avoir glisse jusqu'au bout du canon
+               avant qu'on puisse tirer, et le tir lui-meme demande cent images de charge
+               par-dessus les trente de rechargement. */
+            entry.put("role", "payload-driver");
+            entry.put("carries", "payload");
+            entry.put("range", driver.range / 8f);
+            entry.put("rotate_speed", driver.rotateSpeed);
+            entry.put("reload", driver.reload);
+            entry.put("charge_time", driver.chargeTime);
+            /* Le temps de vol de l effet de transfert, qui n est pas decoratif : le
+               recepteur ne commence son rechargement qu a la fin. */
+            entry.put("transfer_time", driver.transferEffect.lifetime);
+            entry.put("length", driver.length);
+            entry.put("knockback", driver.knockback);
+            entry.put("max_payload_size", driver.maxPayloadSize);
             return;
         }
         if (block instanceof PayloadDeconstructor taker) {

@@ -1824,6 +1824,24 @@ const SCENARIOS = {
     { x: 10, y: 0, block: "vault", rotation: 0 },
   ],
 
+  /* Une paire de mass drivers a cargaison. Le meme accord des deux bouts que la paire a
+     objets, avec une barriere de plus : la cargaison doit avoir glisse jusqu'au bout du
+     canon avant qu'on puisse tirer, et le tir demande quatre-vingt-dix images de charge
+     par-dessus les cent trente de rechargement. Ou en sont les conteneurs a trente secondes
+     est la mesure. */
+  "payload-driver-pair": () => [
+    // Cinq sur cinq : couvre -2..2 par -2..2, atteint trois cases a l'est.
+    { x: 0, y: 0, block: "payload-source", rotation: 0, raw: blockOf("container") },
+    // Trois sur trois : couvre 3..5 par -1..1, vise dix cases plus loin.
+    { x: 4, y: 0, block: "payload-mass-driver", rotation: 0, raw: point(10, 0) },
+    { x: 4, y: 3, block: "power-source", rotation: 0 },
+    // Couvre 13..15 par -1..1.
+    { x: 14, y: 0, block: "payload-mass-driver", rotation: 0 },
+    { x: 14, y: 3, block: "power-source", rotation: 0 },
+    // Couvre 16..20 par -2..2 : ce que le second pousse dehors.
+    { x: 18, y: 0, block: "payload-void", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
