@@ -1,10 +1,17 @@
 @extends('layout')
 @section('title', $block->title().' - Mindustry Forge')
 
+{{-- The block's own thumbnail, rather than the site's generic one. Two hundred and fifty
+     four pages unfurled into the same picture, so every block link looked like every other
+     one. --}}
+@section('og-type', 'article')
+@section('og-title', $block->title())
+@section('og-description', $block->title().' : '.__('blocs.page.cout').', '.__('blocs.page.recette').', '.__('blocs.page.energie').'. Mindustry '.$gameVersion)
+@section('og-alt', $block->title())
+@section('og-image', url("/blocs/{$block->name}/carte.jpg"))
+
 @push('head')
 <link rel="stylesheet" href="/forge/blocs.css">
-<meta name="description" content="{{ $block->title() }} : {{ __('blocs.page.cout') }},
-  {{ __('blocs.page.recette') }}, {{ __('blocs.page.energie') }}. Mindustry {{ $gameVersion }}.">
 @endpush
 
 @php

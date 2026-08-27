@@ -1,6 +1,7 @@
 @extends('layout')
 @section('title', $schematic->name.' - Mindustry Forge')
 
+
 @php
   $preview = \Illuminate\Support\Facades\Storage::disk('public')
       ->exists("apercus/{$schematic->slug}.png")
@@ -15,28 +16,19 @@
       "{$schematic->blocks} blocs",
   ])->filter()->implode(' - '));
 @endphp
+{{-- Declared rather than appended, so the head holds one of each. The picture and the
+     figure together are the whole point: a link that shows what a schematic does gets
+     clicked, a link that shows a domain name does not. --}}
+@section('og-type', 'article')
+@section('og-title', $schematic->name)
+@section('og-description', $summary)
+@section('og-alt', $schematic->name.' - '.$summary)
+@section('og-image', url("/s/{$schematic->slug}/carte.jpg"))
 
 @push('head')
   @if($schematic->managedBy(auth()->user()))
     <script src="/forge/manage.js" type="module" defer></script>
   @endif
-  {{-- What a Discord message unfurls into. The picture and the figure together are the
-       whole point: a link that shows what a schematic does gets clicked, a link that shows
-       a domain name does not. --}}
-  <meta property="og:title" content="{{ $schematic->name }}">
-  <meta property="og:description" content="{{ $summary }}">
-  <meta property="og:type" content="article">
-  <meta property="og:url" content="{{ url()->current() }}">
-  {{-- The composed card rather than the raw plan. A plan is square or very long depending
-       on what was copied, so an unfurler crops it or sits it on black bars, and it carries
-       no title, no figure and no mark. The card is always the shape they expect, and it
-       exists even when a schematic has no preview, which is every schematic that came from
-       another catalogue. --}}
-  <meta property="og:image" content="{{ url("/s/{$schematic->slug}/carte.jpg") }}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="{{ $schematic->name }} - {{ $summary }}">
-  <meta name="twitter:card" content="summary_large_image">
 @endpush
 
 @section('body')

@@ -1,9 +1,21 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
 <head>
+@php
+  /* The one sentence the site leads with, held in a variable rather than written inside the
+     @yield calls that need it twice. An apostrophe escaped inside a Blade directive stops
+     the compiler mid-file: the whole layout then renders as literal text, @stack and
+     @include included, and the page still returns 200 while showing its own source. */
+  $baseline = "Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.";
+@endphp
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>@yield('title', 'Mindustry Forge')</title>
+{{-- Written out rather than pulled from site/lang/. The key convention there is
+     <domain>.<screen>.<element> with a fixed list of domains, and a description that holds
+     for the whole site belongs to no screen; dropping it into another lane's domain file is
+     what that directory's README asks nobody to do. --}}
+<meta name="description" content="@yield('og-description', $baseline)">
 {{-- Three icon formats, because three families of client ask for one differently: the
      .ico for whatever hits /favicon.ico without reading the head, the SVG for any current
      browser, the square PNG for the iOS home screen. --}}
@@ -13,27 +25,26 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#1b2027">
 
-{{-- What a shared link unfurls into. These are defaults: a page with something better to
-     say overrides them from its own @push('head'), and the last tag wins. --}}
-{{-- Written out rather than pulled from site/lang/. The key convention there is
-     <domain>.<screen>.<element> with a fixed list of domains, and a site-wide description
-     belongs to no screen; dropping it into somebody else's domain file is what that
-     directory's README asks nobody to do. One language ships, so this costs nothing today
-     and moves the day a second one does. --}}
-<meta name="description" content="Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.">
+{{-- What a shared link unfurls into.
+
+     Every tag below is emitted exactly once, from here, with a value a page replaces
+     through @section. It used to be defaults here plus a @push on the page, and that put
+     two og:image tags in the same head: repeated og:image is an array, consumers take the
+     first, so the generic card beat the specific one and both per-page cards were wasted
+     work. A page cannot override an array by appending to it. --}}
 <meta property="og:site_name" content="Mindustry Forge">
 <meta property="og:locale" content="fr_FR">
-<meta property="og:type" content="website">
-<meta property="og:title" content="@yield('title', 'Mindustry Forge')">
-<meta property="og:description" content="Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.">
+<meta property="og:type" content="@yield('og-type', 'website')">
+<meta property="og:title" content="@yield('og-title', 'Mindustry Forge')">
+<meta property="og:description" content="@yield('og-description', $baseline)">
 <meta property="og:url" content="{{ url()->current() }}">
 {{-- An absolute address, which asset() only produces when APP_URL is right. A relative
      og:image is resolved by nobody: the thumbnail is simply missing, with no error
      anywhere to say so. --}}
-<meta property="og:image" content="{{ asset('og.jpg') }}">
+<meta property="og:image" content="@yield('og-image', asset('og.jpg'))">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Mindustry Forge">
+<meta property="og:image:alt" content="@yield('og-alt', 'Mindustry Forge')">
 <meta name="twitter:card" content="summary_large_image">
 @stack('head')
 <link rel="stylesheet" href="/forge/forge.css">

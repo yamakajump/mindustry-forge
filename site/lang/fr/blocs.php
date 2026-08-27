@@ -106,6 +106,10 @@ return [
          * and that is the only thing it sells.
          */
         'au-mieux' => 'au mieux',
+
+        /* Le nom de ce qu'un convoyeur deplace, pour la carte de partage : elle affiche un
+           debit et un debit sans nom ne dit rien. La page, elle, a le libelle en entier. */
+        'objets' => 'objets',
         'plafond' => 'Ce sont des plafonds : ce que le bloc ferait alimenté à fond et sans
             rien en travers. Ce qu\'il fait vraiment dans une schématique est mesuré par
             l\'analyse, et c\'est presque toujours moins.',

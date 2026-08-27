@@ -90,3 +90,14 @@ it('refait la carte quand la schematique a change', function () {
 
     expect(Storage::disk('public')->get("cartes/{$schematic->slug}.jpg"))->not->toBe($premiere);
 });
+
+it('puts exactly one og:image in the head, and it is the schematic one', function () {
+    Storage::fake('public');
+    $schematic = schematique();
+
+    $html = $this->get("/s/{$schematic->slug}")->assertOk()->getContent();
+
+    expect(substr_count($html, 'property="og:image"'))->toBe(1);
+    expect($html)->toContain("/s/{$schematic->slug}/carte.jpg");
+    expect($html)->not->toContain('@yield');
+});
