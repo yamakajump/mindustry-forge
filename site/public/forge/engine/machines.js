@@ -276,9 +276,15 @@ const drill = {
     const delta = build.delta(step);
     const speedUp = build.block.warmup_speed ?? 0.015;
 
+    /* The dump comes **first** in `Drill.updateTile`, before anything is drilled. It reads
+       like housekeeping and it is not: a full drill dumps and then has room again in the
+       same frame, where a drill that dumps last is full for one frame longer every cycle.
+       On a drill with power to spare that is one item in forty seven over thirty seconds,
+       which is exactly the gap `power-plenty` had been carrying. */
+    dumpDrill(build, step);
+
     if (!dug || build.items.total >= build.itemCapacity) {
       build.state.warmup = approach(build.state.warmup, 0, speedUp * delta);
-      dumpDrill(build, step);
       return;
     }
 
@@ -292,21 +298,22 @@ const drill = {
     const speed = build.block.power > 0 ? (build.state.power ?? 1) : 1;
     if (speed <= 0) {
       build.state.warmup = approach(build.state.warmup, 0, speedUp * delta);
-      dumpDrill(build, step);
       return;
     }
 
     build.state.warmup = approach(build.state.warmup, speed, speedUp * delta);
     build.state.progress += delta * dug.covered * speed * build.state.warmup;
 
-    if (build.state.progress >= delay) {
+    /* The cap is checked **once**, before the batch, and not per item. A drill with one
+       slot left and three items owed offloads all three and ends the frame over its own
+       capacity: the game says `items.total() < itemCapacity` on the way in and then loops
+       without looking again. Checked per item instead, a saturated drill loses one item
+       every few cycles, which is the whole of the gap `power-plenty` was carrying. */
+    if (build.state.progress >= delay && build.items.total < build.itemCapacity) {
       const batch = Math.floor(build.state.progress / delay);
-      for (let i = 0; i < batch && build.items.total < build.itemCapacity; i++) {
-        build.offload(dug.resource);
-      }
+      for (let i = 0; i < batch; i++) build.offload(dug.resource);
       build.state.progress %= delay;
     }
-    dumpDrill(build, step);
   },
 };
 
