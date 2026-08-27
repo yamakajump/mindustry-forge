@@ -46,13 +46,13 @@ test("un commentaire et une etiquette ne sont pas des instructions", () => {
 });
 
 test("un saut hors du programme est signale, un saut dedans non", () => {
-  assert.deepEqual(keys("end\njump 9 always\n"), ["saut-hors-programme"]);
+  assert.deepEqual(keys("end\njump 9 always\n"), ["outils.logique.probleme.saut-hors-programme"]);
   assert.deepEqual(keys("end\njump 0 always\n"), []);
 });
 
 test("une instruction du monde est signalee, meme si elle existe", () => {
   const problems = parse("setrate 10\n").problems;
-  assert.deepEqual(problems.map((p) => p.key), ["instruction-monde"]);
+  assert.deepEqual(problems.map((p) => p.key), ["outils.logique.probleme.instruction-monde"]);
   assert.equal(problems[0].params.nom, "setrate");
 });
 
@@ -63,7 +63,7 @@ test("les anciennes orthographes du jeu passent sans un mot", () => {
 });
 
 test("un nom qui ressemble a un lien absent est signale", () => {
-  assert.deepEqual(keys("print cell1\n"), ["lien-inconnu"]);
+  assert.deepEqual(keys("print cell1\n"), ["outils.logique.probleme.lien-inconnu"]);
   assert.deepEqual(keys("print cell1\n", { links: [{ name: "cell1", dx: 0, dy: 1 }] }), []);
 });
 
@@ -81,20 +81,20 @@ test("le resultat d'un op est sa deuxieme operande, pas la premiere", () => {
 
 test("les operandes en trop sont comptees", () => {
   const problems = parse("set x 1 2 3\n").problems;
-  assert.deepEqual(problems.map((p) => p.key), ["operandes-en-trop"]);
+  assert.deepEqual(problems.map((p) => p.key), ["outils.logique.probleme.operandes-en-trop"]);
   assert.equal(problems[0].params.compte, 2);
 });
 
 test("un programme plus gros que ce que le jeu accepte est refuse ici aussi", () => {
   const long = `print "${"a".repeat(200)}"\n`.repeat(600);
   assert.ok(long.length > catalogue.limits.code_bytes);
-  assert.ok(keys(long).includes("programme-trop-long"));
+  assert.ok(keys(long).includes("outils.logique.probleme.programme-trop-long"));
 });
 
 test("trop de liens est signale sans qu'il faille les taper", () => {
   const links = Array.from({ length: catalogue.limits.links + 1 },
     (whole, index) => ({ name: `cell${index}`, dx: 0, dy: 0 }));
-  assert.ok(keys("end\n", { links }).includes("liens-trop"));
+  assert.ok(keys("end\n", { links }).includes("outils.logique.probleme.liens-trop"));
 });
 
 test("un guillemet ouvert refuse le programme sans effacer le reste", () => {
