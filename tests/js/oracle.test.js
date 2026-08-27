@@ -66,6 +66,9 @@ const NOTHING_HAPPENS = new Set([
   // Same rule on the other carrier: an armoured belt takes from a belt or from directly
   // behind, and a source standing beside it is not either.
   "conveyor-armored-side",
+  // Une pompe sans courant ne pompe rien. C'est le resultat, et le scenario existe pour
+  // dire qu'il vaut zero et non un frame de plus.
+  "pump-unpowered",
 ]);
 
 const scenarios = readdirSync(KEPT)

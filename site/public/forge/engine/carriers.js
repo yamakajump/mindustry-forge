@@ -259,18 +259,22 @@ const junction = {
  * behind it.
  */
 const sorter = {
+  begin(build) { build.state.flip = 0; },
+
   acceptItem(build, source, item) {
-    const target = sorterTarget(build, source, item);
+    const target = sorterTarget(build, source, item, false);
     return target !== null && target.acceptItem(build, item);
   },
 
   handleItem(build, source, item) {
-    const target = sorterTarget(build, source, item);
+    // Asked twice: once without flipping to test, once with to move the bit. The game does
+    // exactly this, and the bit only turns over on the pass that actually hands the item.
+    const target = sorterTarget(build, source, item, true);
     if (target) target.handleItem(build, item);
   },
 };
 
-function sorterTarget(build, source, item) {
+function sorterTarget(build, source, item, flip) {
   const world = build.world;
   if (!world) return null;
   const wanted = build.node.configured;
@@ -279,17 +283,41 @@ function sorterTarget(build, source, item) {
   const matches = wanted ? (item === wanted) !== inverted : inverted;
 
   const from = build.relativeTo(source);
-  if (matches) {
-    const [dx, dy] = DIRECTIONS[(from + 2) % 4];
+  const dir = (from + 2) % 4;
+  const at = (turn) => {
+    const [dx, dy] = DIRECTIONS[turn % 4];
     return world.at(build.x + dx, build.y + dy);
+  };
+
+  if (matches) {
+    /* Straight through, unless this would make a chain of three instant blocks: a sorter
+       handing to a sorter that hands to a sorter would move an item three tiles in one
+       frame, and the game refuses the middle link rather than allow it. */
+    const ahead = at(dir);
+    if (source?.block.instant_transfer && ahead?.block.instant_transfer) return null;
+    return ahead;
   }
-  // Not a match: out of the sides, alternating.
-  for (const turn of [1, 3]) {
-    const [dx, dy] = DIRECTIONS[(from + turn) % 4];
-    const side = world.at(build.x + dx, build.y + dy);
-    if (side && side.acceptItem(build, item)) return side;
-  }
-  return null;
+
+  const a = at((dir + 3) % 4);
+  const b = at((dir + 1) % 4);
+  const open = (side) => side
+    && !(side.block.instant_transfer && source?.block.instant_transfer)
+    && side.acceptItem(build, item);
+  const left = open(a);
+  const right = open(b);
+
+  if (left && !right) return a;
+  if (right && !left) return b;
+  if (!right) return null;
+
+  /* Both sides will have it, so it alternates, and it keeps **one bit per direction of
+     arrival**: a sorter fed from two sides shares each feed evenly rather than the two of
+     them fighting over one cursor. Taking the first side that accepts, as this did, sends
+     everything one way and reads as a design that works. */
+  const bit = 1 << dir;
+  const side = (build.state.flip & bit) === 0 ? a : b;
+  if (flip) build.state.flip ^= bit;
+  return side;
 }
 
 /**
@@ -534,7 +562,12 @@ const bridge = {
        hand-off, a bridge that had nothing to send for a moment then sent one immediately
        and ran fast. */
     const wait = build.block.transport_time || TICKS / (build.block.items_per_second || 11);
-    build.state.timer += build.delta(step);
+    /* And on `edelta()`, so a phase conveyor with no power carries nothing: it
+       draws 0.3 a frame, and on `delta()` alone an unpowered bridge moved thirty
+       items a second and a half covered grid moved thirty too. */
+    build.state.wants = 1;
+    build.state.timer += build.delta(step)
+      * (build.block.power > 0 ? (build.state.power ?? 1) : 1);
     if (build.state.timer < wait) return;
     build.state.timer %= wait;
 

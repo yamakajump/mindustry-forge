@@ -148,14 +148,48 @@ const liquidSource = {
  * `pumpAmount` per tile of liquid it covers, summed. It fills its own tank and pushes.
  */
 const pump = {
+  begin(build) { build.state.wants = 0; },
+
   update(build, world, step) {
     const dug = build.node.dug;
     if (!dug) return;
-    build.addLiquid(dug.resource, (dug.rate / TICKS) * build.delta(step));
+    const delta = build.delta(step);
+
+    /* `edelta()`, and it was `delta()`.
+
+       A rotary pump with no current pumped forty eight a second here and none at all in
+       the game; a reinforced pump with no hydrogen pumped eighty and none, and the
+       hydrogen upstream never moved either. A pump is a consumer like any other and it
+       reads the same `efficiency` as a smelter does. */
+    let efficiency = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+    for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
+      const wanted = (rate / TICKS) * delta;
+      if (wanted <= 0) continue;
+      efficiency = Math.min(efficiency, build.liquids.get(liquid) / wanted);
+    }
+    for (const [item, amount] of Object.entries(build.block.input || {})) {
+      if (build.items.get(item) < amount) efficiency = 0;
+    }
+    efficiency = Math.max(0, Math.min(1, efficiency));
+    build.state.wants = efficiency > 0 ? 1 : 0;
+
+    if (efficiency > 0) {
+      for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
+        build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
+      }
+      const room = build.liquidCapacity - build.liquids.get(dug.resource);
+      build.addLiquid(dug.resource,
+                      Math.min(room, (dug.rate / TICKS) * delta * efficiency));
+    }
     build.dumpLiquid(dug.resource);
   },
 
-  acceptLiquid() { return false; },
+  /* And it takes what its own recipe names, which is `Building.acceptLiquid` and not the
+     blanket refusal that was here: a reinforced pump could never receive its hydrogen, so
+     the pipe feeding it filled and blocked everything upstream. */
+  acceptItem(build, source, item) {
+    return build.wants(item) && build.items.get(item) < build.itemCapacity;
+  },
 };
 
 /**

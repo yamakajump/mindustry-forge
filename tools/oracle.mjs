@@ -1239,6 +1239,30 @@ const SCENARIOS = {
       [1, 2, 3, 4].map((y) => `ore-beryllium@${x},${y}`)),
   }),
 
+  /* Une pompe rotative sur de l'eau, alimentee et non alimentee.
+
+     `edelta()`, et le portage lisait `delta()` : une pompe sans courant pompait
+     quarante-huit par seconde ici et rien du tout dans le jeu. Une pompe est un
+     consommateur comme un autre et lit la meme efficacite qu'un four. */
+  "pump-powered": () => rotary(true),
+  "pump-unpowered": () => rotary(false),
+
+  /* Un trieur qui doit alterner entre ses deux cotes.
+
+     Quand l'objet ne correspond pas et que les **deux** cotes le prennent, le jeu alterne,
+     avec un bit par direction d'arrivee. Le portage prenait le premier cote qui acceptait,
+     donc tout partait du meme cote et la disposition se lisait comme si elle marchait. */
+  "sorter-both-sides": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    // Regle sur du plomb, donc le cuivre ne correspond pas et sort par les cotes.
+    { x: 2, y: 0, block: "sorter", rotation: 0, raw: item("lead") },
+    { x: 2, y: 1, block: "conveyor", rotation: 1 },
+    { x: 2, y: 3, block: "vault", rotation: 0 },
+    { x: 2, y: -1, block: "conveyor", rotation: 3 },
+    { x: 2, y: -3, block: "vault", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -1390,6 +1414,22 @@ function idlePower(name) {
       { x: 3 + wide, y: 0, block: "battery-large", rotation: 0 },
     ],
     stock: ["thorium*10@0,0"],
+  };
+}
+
+/** A rotary pump on four tiles of water, with a grid behind it or without. */
+function rotary(powered) {
+  const tiles = [
+    // Covers 0..1 by 0..1.
+    { x: 0, y: 0, block: "rotary-pump", rotation: 0 },
+    { x: 2, y: 0, block: "conduit", rotation: 0 },
+    // Covers 3..5 by -1..1.
+    { x: 4, y: 0, block: "liquid-tank", rotation: 0 },
+  ];
+  if (powered) tiles.push({ x: -1, y: 0, block: "power-source", rotation: 0 });
+  return {
+    tiles,
+    ground: [[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => `shallow-water@${x},${y}`),
   };
 }
 
