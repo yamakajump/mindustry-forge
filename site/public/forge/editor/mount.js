@@ -29,7 +29,7 @@ import { ageOf, dropDraft, keepDraft, readDraft } from "./draft.js";
 
 const SHELL = `
   <div class="editor-bar">
-    <span class="brand">Mindustry <span>Forge</span></span>
+    <span class="brand"><svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>Mindustry <span>Forge</span></span>
     <span class="editor-modes">
       <button type="button" data-mode="analyse" aria-pressed="false">Analyser</button>
       <button type="button" data-mode="edit" aria-pressed="true">Éditer</button>

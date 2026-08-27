@@ -185,3 +185,47 @@ it('dit la meme chose que le navigateur sur les libelles de l entete', function 
         expect(__($key))->toBe($value, "{$key} differe entre les deux dictionnaires");
     }
 });
+
+it('dessine le signe de marque comme sa source, aux trois endroits', function () {
+    /* La geometrie est recopiee en ligne dans les deux entetes, et `docs/direction-artistique.md`
+       interdit de la recopier ailleurs : un deuxieme dessin finit par differer du premier sans
+       que rien ne le dise. Elle est recopiee quand meme, pour deux raisons qui tiennent -- un
+       `<img>` ne laisse pas passer `currentColor`, donc le signe ne suivrait ni la couleur ni la
+       taille de son voisin, et la barre de l editeur retombe a 17px ; et une geometrie posee en
+       ligne ne peut pas manquer a l affichage.
+
+       Ce test est ce qui rend la copie sure. Il remplace l interdiction par une verification,
+       ce qui est la meme reponse que pour les deux navs. */
+    $source = File::get(public_path('brand/mark-plain.svg'));
+    preg_match_all('~<path d="([^"]+)"~', $source, $attendu);
+    expect($attendu[1])->not->toBeEmpty('brand/mark-plain.svg ne contient plus de chemin');
+
+    $copies = [
+        'resources/views/layout.blade.php',
+        'public/index.html',
+        /* La barre de l editeur ecrit sa propre marque, en JavaScript. C est la troisieme
+           copie, et c est celle pour laquelle la taille en `em` a ete pensee : elle retombe
+           a 17px, et un signe en pixels y serait au mauvais rapport sans que rien ne le
+           dise avant qu on ouvre l editeur. */
+        'public/forge/editor/mount.js',
+    ];
+
+    foreach ($copies as $chemin) {
+        $texte = File::get(base_path($chemin));
+        preg_match('~<svg class="signe".*?</svg>~s', $texte, $bloc);
+        expect($bloc)->not->toBeEmpty("aucun signe dans {$chemin}");
+
+        preg_match_all('~<path d="([^"]+)"~', $bloc[0], $trouve);
+        expect($trouve[1])->toBe($attendu[1], "le signe de {$chemin} a derive de sa source");
+    }
+});
+
+it('ne peint que « Forge » en ambre, pas toute la marque', function () {
+    /* `.brand span` porte l accent. Envelopper « Mindustry » dans un span, ce qui est tentant
+       pour pouvoir le masquer sur un petit ecran, le peindrait en ambre aussi. */
+    foreach (['resources/views/layout.blade.php', 'public/index.html'] as $chemin) {
+        preg_match('~<a class="brand".*?</a>~s', File::get(base_path($chemin)), $bloc);
+        expect(substr_count($bloc[0], '<span'))->toBe(1, "trop de span dans la marque de {$chemin}");
+        expect($bloc[0])->toContain('<span>Forge</span>');
+    }
+});
