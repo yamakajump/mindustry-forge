@@ -47,6 +47,22 @@
       taille. L'electricite qu'une schematique consomme ne la penalise pas&nbsp;: c'est un
       prerequis, indique sur sa page.</p>
   @endif
+
+  {{-- Ce qui est mis a part, dit avec son compte et un lien pour le voir.
+
+       Un catalogue qui annonce quinze mille schematiques et en sert quatorze mille sans un
+       mot mentirait sur sa propre taille, ce qui est exactement la faute que ce depot a
+       passe la journee a fermer. Le compte est donc affiche, et le lien defait le filtre :
+       un lecteur peut etre en desaccord avec la regle et la contourner en un clic. --}}
+  @if($creative)
+    <p class="hint-line">{{ __('vitrine.creatif.affichees') }}
+      <a href="{{ request()->fullUrlWithQuery(['creatif' => null]) }}">{{
+        __('vitrine.creatif.remettre') }}</a></p>
+  @elseif($setAside > 0)
+    <p class="hint-line">{{ $setAside }} {{ __('vitrine.creatif.mises-a-part') }}
+      <a href="{{ request()->fullUrlWithQuery(['creatif' => 'oui']) }}">{{
+        __('vitrine.creatif.montrer') }}</a></p>
+  @endif
 </form>
 
 @if($schematics->isEmpty())
@@ -91,6 +107,9 @@
           {{-- Un robinet de bac a sable se dit ici aussi. Une vignette qui annonce
                999 971 energie/s est la meme phrase fausse que la page, en plus court et
                vue par plus de monde. --}}
+          @if($schematic->creative())
+            <span class="warn">{{ __('vitrine.creatif.etiquette') }}</span> &middot;
+          @endif
           @if($schematic->fedBySandbox())
             <span class="warn">{{ __('schema.page.bac-a-sable-court') }}</span> &middot;
           @else
