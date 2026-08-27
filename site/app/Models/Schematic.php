@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\BlockCatalogue;
 use App\Services\EngineVersion;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -169,6 +170,24 @@ class Schematic extends Model
     {
         $blocks = max(1, (int) $this->blocks);
 
+        /* Nothing at all is indexed for a schematic fed by a sandbox tap, and that is the
+           narrow claim: it is not that such a layout is uninteresting, it is that whatever
+           it hands out came from a tap rather than from the blocks in it. Ranked among the
+           producers it takes the top of every list it appears in - 1,246 of them did, and
+           an energy ranking led by 479 million tells a reader nothing except that the
+           ranking is not to be trusted.
+
+           It stays visible, searchable and analysable. It is simply not a measurement of
+           production, so it is not filed as one. */
+        if ($this->fedBySandbox()) {
+            $this->items()
+                ->where('sens', SchematicItem::PRODUIT)
+                ->where('kind', SchematicItem::MESURE)
+                ->delete();
+
+            return;
+        }
+
         $rows = [];
         foreach ((array) $this->produces as $item => $rate) {
             if (is_string($item) && is_numeric($rate) && $rate > 0) {
@@ -230,6 +249,16 @@ class Schematic extends Model
         }
 
         $blocks = max(1, (int) $this->blocks);
+
+        // The ceiling is a tap's ceiling too, and just as meaningless. Same rule as above.
+        if ($this->fedBySandbox()) {
+            $this->items()
+                ->where('sens', SchematicItem::PRODUIT)
+                ->where('kind', SchematicItem::PLAFOND)
+                ->delete();
+
+            return;
+        }
 
         $rows = [];
         foreach ((array) ($analysis['potentialPerMinute'] ?? []) as $item => $rate) {
@@ -321,6 +350,65 @@ class Schematic extends Model
         }
 
         return array_map(fn ($count) => min(65535, $count), $counts);
+    }
+
+    /**
+     * The sandbox taps it holds, if any, named rather than counted.
+     *
+     * A `power-source` hands out 999,999.94 energy a second, which is the game's way of
+     * writing "as much as you like". Subtracted from what the schematic burns it came out
+     * as 479,999,971, and the page printed that in green as the surplus left over for the
+     * rest of your base. The arithmetic was right. The sentence was a lie, on a site whose
+     * whole argument is that its figures can be checked instead of believed.
+     *
+     * A `liquid-source` is worse and quieter: 600,000 a second reads like a number.
+     *
+     * Recognised by `build_visibility`, which the game itself writes, rather than by a list
+     * of names typed here. A list would be right until the next release adds a block to the
+     * sandbox category, and wrong silently after that.
+     */
+    public function sandboxTaps(): array
+    {
+        if ($this->sandboxTaps !== null) {
+            return $this->sandboxTaps;
+        }
+
+        $found = [];
+        foreach (array_keys(self::countBlocks($this->analysis)) as $name) {
+            $block = BlockCatalogue::find($name);
+            if ($block?->visibility() !== 'sandboxOnly') {
+                continue;
+            }
+
+            /* Sources only, and told apart by what they hand out rather than by their name.
+               `power-source` has the role `power` and `heat-source` the role `crafter`, so
+               a rule written on the word "source" catches neither: the first version of
+               this method looked right and matched nothing at all.
+
+               A `power-void` or an `item-void` is a sandbox block too and it swallows
+               rather than pours. It inflates what a schematic appears to *need*, which is a
+               different sentence on a different card, and it never puts one at the top of a
+               producers' ranking. A `thruster` hands out nothing whatsoever. */
+            $gives = (float) $block->get('power_out', 0) > 0
+                || (float) $block->get('output_per_second', 0) > 0
+                || (float) $block->get('heat_output', 0) > 0
+                || $block->get('role') === 'payload-source';
+            if ($gives) {
+                $found[] = $name;
+            }
+        }
+        sort($found);
+
+        return $this->sandboxTaps = $found;
+    }
+
+    /** Worked out once per row: the listing asks twenty-four times on one page. */
+    private ?array $sandboxTaps = null;
+
+    /** Whether anything it claims to produce comes out of one of those taps. */
+    public function fedBySandbox(): bool
+    {
+        return $this->sandboxTaps() !== [];
     }
 
     /** Which blocks it is built from, one row per kind, indexed so the wiki can search it. */

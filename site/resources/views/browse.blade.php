@@ -68,12 +68,19 @@
           <h3>{{ $schematic->name }}</h3>
         </a>
         <p class="meta">
-          @if($power > 0.5)
-            <span class="good">{{ number_format($power, 0, ',', ' ') }} energie/s</span> &middot;
+          {{-- Un robinet de bac a sable se dit ici aussi. Une vignette qui annonce
+               999 971 energie/s est la meme phrase fausse que la page, en plus court et
+               vue par plus de monde. --}}
+          @if($schematic->fedBySandbox())
+            <span class="warn">{{ __('schema.page.bac-a-sable-court') }}</span> &middot;
+          @else
+            @if($power > 0.5)
+              <span class="good">{{ number_format($power, 0, ',', ' ') }} energie/s</span> &middot;
+            @endif
+            @foreach(array_slice($schematic->produces ?? [], 0, 2, true) as $item => $itemRate)
+              {{ number_format($itemRate, 0, ',', ' ') }} {{ $item }}/min &middot;
+            @endforeach
           @endif
-          @foreach(array_slice($schematic->produces ?? [], 0, 2, true) as $item => $itemRate)
-            {{ number_format($itemRate, 0, ',', ' ') }} {{ $item }}/min &middot;
-          @endforeach
           {{ $schematic->blocks }} blocs &middot; {{ $schematic->credit() }}
           {{-- Said in the list too, not only on the page. Somebody scrolling a hundred
                tiles should be able to tell what this site collected from what its members

@@ -10,9 +10,14 @@
       ->map(fn ($rate, $item) => number_format($rate, 0, ',', ' ')." {$item}/min")
       ->values();
   $power = $schematic->power_made - $schematic->power_used;
+  /* Le resume part dans la balise `description`, dans l'`og:title` et sur la carte
+     sociale : c'est la forme du chiffre qui voyage le plus loin, et la seule qu'un lecteur
+     voit sans avoir ouvert la page. */
+  $tap = $schematic->fedBySandbox();
   $summary = trim(collect([
-      $power > 0.5 ? number_format($power, 0, ',', ' ').' energie/s' : null,
-      $made->take(2)->implode(', ') ?: null,
+      $tap ? __('schema.page.bac-a-sable-court') : null,
+      ! $tap && $power > 0.5 ? number_format($power, 0, ',', ' ').' energie/s' : null,
+      $tap ? null : ($made->take(2)->implode(', ') ?: null),
       "{$schematic->blocks} blocs",
   ])->filter()->implode(' - '));
 @endphp
@@ -95,7 +100,23 @@
       <p class="desc">{{ $schematic->description }}</p>
     @endif
 
-    @if($power > 0.5 || $made->isNotEmpty())
+    {{-- Un robinet de bac a sable est dit, jamais chiffre.
+
+         `power-source` rend 999 999,94 energie par seconde, ce qui est la facon dont le jeu
+         ecrit « autant que tu veux ». Une fois la consommation soustraite, la page a affiche
+         479 999 971 en vert, presente comme ce qu'il restait pour le reste de la base. Le
+         calcul etait juste et la phrase etait fausse, sur un site dont l'argument est qu'on
+         peut verifier ses chiffres au lieu de les croire.
+
+         Ce qu'elle produit reste lisible dans l'analyse. C'est la presentation qui change :
+         un infini n'est pas un dimensionnement, et il ne doit pas en avoir l'air. --}}
+    @if($schematic->fedBySandbox())
+      <div class="card"><h2>Sortie</h2>
+        <div class="line"><span class="warn">{{ __('schema.page.bac-a-sable') }}</span>
+          <span>{{ implode(', ', $schematic->sandboxTaps()) }}</span></div>
+        <p class="hint-line">{{ __('schema.page.bac-a-sable-aide') }}</p>
+      </div>
+    @elseif($power > 0.5 || $made->isNotEmpty())
       <div class="card"><h2>Sortie</h2>
         @if($power > 0.5)
           <div class="line"><span>Energie nette</span>
@@ -128,7 +149,9 @@
         @endforeach
         @if($schematic->powerNeeded() > 0.5)
           <p class="hint-line">
-            @if($schematic->powerSpare() > 0.5)
+            @if($schematic->fedBySandbox())
+              {{ __('schema.page.bac-a-sable-courant') }}
+            @elseif($schematic->powerSpare() > 0.5)
               Elle produit plus de courant qu'elle n'en consomme, donc elle s'alimente
               seule et il lui en reste
               {{ number_format($schematic->powerSpare(), 0, ',', ' ') }} / s pour le reste
