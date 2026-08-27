@@ -50,3 +50,26 @@
   .cmp-ligne .cmp-ecart { grid-column: 2 / -1; text-align: right; }
   .cmp-entete { display: none; }
 }
+
+/*
+ * Les cibles tactiles de cette page.
+ *
+ * Mesure en 390 px : les deux noms de schematique faisaient 17 px de haut et la liste de
+ * choix 15. Ce sont les seuls liens de la page, et ils sont toute sa navigation.
+ *
+ * La regle porte sur ces selecteurs et pas sur `a` : un lien pose dans une phrase doit
+ * rester dans la phrase, et une hauteur minimale sur tous les liens defoncerait l'interligne
+ * des notes explicatives, dont ce site est plein. C'est le role qui decide, pas l'apparence.
+ */
+.cmp-nom a,
+.cmp-liste a {
+  display: inline-flex; align-items: center;
+  min-height: 44px; touch-action: manipulation;
+}
+
+.cmp-liste { list-style: none; margin: 0; padding: 0; }
+.cmp-liste li {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  padding: 2px 0;
+}
+.cmp-liste li + li { border-top: 1px solid var(--edge); }
