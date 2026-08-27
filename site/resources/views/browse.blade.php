@@ -82,7 +82,7 @@
               <div class="noimg">apercu trop lourd pour la liste</div>
             @endif
           @endif
-          <h3>{{ $schematic->name }}</h3>
+          <h3>{{ $schematic->displayName() }}</h3>
         </a>
         <p class="meta">
           {{-- Un robinet de bac a sable se dit ici aussi. Une vignette qui annonce

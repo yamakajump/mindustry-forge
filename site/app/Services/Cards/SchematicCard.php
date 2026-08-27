@@ -34,7 +34,7 @@ class SchematicCard extends Card
             $this->drawColumn(
                 $canvas,
                 $panel + self::PAD * ($panel > 0 ? 1 : 2),
-                $schematic->name,
+                $schematic->displayName(),
                 $schematic->width.'x'.$schematic->height.'  -  '.$schematic->blocks.' blocs',
                 $this->figures($schematic),
             );

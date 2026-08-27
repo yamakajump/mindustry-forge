@@ -1,5 +1,5 @@
 @extends('layout')
-@section('title', $schematic->name.' - Mindustry Forge')
+@section('title', $schematic->displayName().' - Mindustry Forge')
 
 
 @php
@@ -25,9 +25,9 @@
      figure together are the whole point: a link that shows what a schematic does gets
      clicked, a link that shows a domain name does not. --}}
 @section('og-type', 'article')
-@section('og-title', $schematic->name)
+@section('og-title', $schematic->displayName())
 @section('og-description', $summary)
-@section('og-alt', $schematic->name.' - '.$summary)
+@section('og-alt', $schematic->displayName().' - '.$summary)
 @section('og-image', url("/s/{$schematic->slug}/carte.jpg"))
 
 @push('head')
@@ -49,14 +49,14 @@
   <div class="stage"
        @unless($preview) data-code="{{ $schematic->code }}" @endunless>
     @if($preview)
-      <img src="{{ $preview }}" alt="Apercu de {{ $schematic->name }}">
+      <img src="{{ $preview }}" alt="Apercu de {{ $schematic->displayName() }}">
     @else
       <p class="empty">Dessin du plan...</p>
     @endif
   </div>
 
   <div>
-    <h1 class="title">{{ $schematic->name }}</h1>
+    <h1 class="title">{{ $schematic->displayName() }}</h1>
     <p class="sub">
       par {{ $schematic->credit() }} &middot;
       {{ $schematic->width }}x{{ $schematic->height }} &middot;

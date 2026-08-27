@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\BlockCatalogue;
 use App\Services\EngineVersion;
+use App\Services\GameMarkup;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -288,6 +289,25 @@ class Schematic extends Model
                 ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
             );
         }
+    }
+
+    /**
+     * The name as a reader should see it, with the game's colour markup taken out.
+     *
+     * `name` stays exactly as the source wrote it, and this is the only thing any surface
+     * should print. Not stripped on the way in: a stripper we get wrong once would already
+     * have eaten the original by the time we notice, and correcting it would mean
+     * re-collecting fifteen thousand entries. Not stripped surface by surface either -
+     * that is the arrangement that produced the defect, where the listing and the page
+     * remembered and the share card did not.
+     *
+     * The edit form is the one place that deliberately shows the raw name: somebody
+     * renaming their own schematic must see what they wrote, or saving would quietly
+     * destroy the colours they chose.
+     */
+    public function displayName(): string
+    {
+        return GameMarkup::strip((string) $this->name);
     }
 
     /** Everything it makes, one row each, indexed so the listing can search and rank on it. */
