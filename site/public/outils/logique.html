@@ -94,7 +94,7 @@
 import { loadCatalogue, catalogueOf } from "../forge/logic/catalogue.js";
 import { LogicEditor } from "../forge/logic/editor.js";
 import { toSchematic, toSchematicBytes, fromSchematic } from "../forge/logic/program.js";
-import { t } from "../forge/logic/i18n.js";
+import { t, ready, translate } from "../forge/i18n.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -111,8 +111,16 @@ jump 0 always
 
 const LIENS_EXEMPLE = [{ name: "vault1", dx: 2, dy: 0 }, { name: "conveyor1", dx: -1, dy: 0 }];
 
-await loadCatalogue();
+/* Le dictionnaire et le catalogue en meme temps, et les deux avant le premier mot affiche :
+   tout ce que cette page dit est construit par ce script, donc rien n'est deja ecrit dans
+   la page pour tenir pendant que le dictionnaire arrive. */
+await Promise.all([ready, loadCatalogue()]);
 const catalogue = catalogueOf();
+
+/* Ce qui est ecrit en clair dans la page, lui, est deja la. `translate` ne fait rien tant
+   que le site est dans la langue ou il est ecrit, et c'est le but de l'avoir ecrit en
+   clair : pas de traduction a faire, donc pas de clignotement a eviter. */
+translate(document);
 
 /* L'etat de la page, en un seul endroit. Les liens vivent ici plutot que dans l'editeur :
    ils appartiennent au processeur, pas au texte, et l'export en a autant besoin que la
@@ -171,7 +179,7 @@ function rendre(rapport) {
       probleme.line == null ? "" : t("outils.logique.ligne", { ligne: probleme.line + 1 })
     }</span><span></span>`;
     bouton.lastChild.textContent =
-      t(`outils.logique.probleme.${probleme.key}`, probleme.params);
+      t(probleme.key, probleme.params);
 
     /* Cliquer sur un probleme pose le curseur dessus. Une liste d'erreurs qu'il faut aller
        retrouver a la main dans le texte est une liste qu'on lit une fois. */
@@ -194,11 +202,11 @@ function problemesDesLiens() {
   const out = [];
   for (const lien of liens) {
     if (!lien.name.trim()) {
-      out.push({ key: "lien-sans-nom", severity: "avertissement", line: null, params: {} });
+      out.push({ key: "outils.logique.probleme.lien-sans-nom", severity: "avertissement", line: null, params: {} });
       continue;
     }
     if (vus.has(lien.name)) {
-      out.push({ key: "lien-double", severity: "avertissement", line: null,
+      out.push({ key: "outils.logique.probleme.lien-double", severity: "avertissement", line: null,
                  params: { nom: lien.name } });
     }
     vus.add(lien.name);

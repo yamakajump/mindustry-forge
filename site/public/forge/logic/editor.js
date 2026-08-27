@@ -15,7 +15,7 @@
  * Nothing here runs the program. `docs/todo.md` §7.
  */
 
-import { t } from "./i18n.js";
+import { t } from "../i18n.js";
 import { catalogueOf, instruction, valuesOf, suggestsFor, resolved } from "./catalogue.js";
 import { parse } from "./syntax.js";
 
@@ -26,14 +26,25 @@ const escaped = (text) => text
 const SUGGESTIONS = 12;
 
 /**
- * The families a suggestion can belong to, and so the labels the list can carry.
+ * The families a suggestion can belong to, and the whole key that labels each one.
  *
- * Named here rather than left implicit in the calls that build the list, because the label
- * for each one is a translated string and a family added without one shows a raw key to a
- * player. `tests/js/logic/i18n.test.js` reads this.
+ * A table rather than a key assembled from the family name at the last moment. The keys are
+ * literal here, so `tests/js/i18n.test.js` can see them, hold them against the dictionary
+ * and refuse an orphan. A key that first exists while the page runs is a key that test
+ * cannot check and a line no translator can find.
+ *
+ * `monde` shares the instruction label: a world processor instruction is still an
+ * instruction, and the list says which one it is separately.
  */
-export const KINDS = ["instruction", "monde", "valeur", "variable", "etiquette",
-                      "contenu", "lien"];
+export const KINDS = {
+  instruction: "outils.logique.completion-instruction",
+  monde: "outils.logique.completion-instruction",
+  valeur: "outils.logique.completion-valeur",
+  variable: "outils.logique.completion-variable",
+  etiquette: "outils.logique.completion-etiquette",
+  contenu: "outils.logique.completion-contenu",
+  lien: "outils.logique.completion-lien",
+};
 
 export class LogicEditor {
   /**
@@ -257,16 +268,16 @@ export class LogicEditor {
       <li role="option" data-at="${index}" class="${index === this.chosen ? "on" : ""}"
           aria-selected="${index === this.chosen}">
         <span class="mlog-suggest-text k-${entry.kind}">${escaped(entry.text)}</span>
-        <span class="mlog-suggest-kind">${escaped(t(`outils.logique.completion-${
-          entry.kind === "monde" ? "instruction" : entry.kind}`))}${
+        <span class="mlog-suggest-kind">${escaped(t(KINDS[entry.kind]))}${
           entry.kind === "monde" ? ` · ${escaped(t("outils.logique.monde"))}` : ""}</span>
         ${entry.help ? `<span class="mlog-suggest-help">${escaped(entry.help)}</span>` : ""}
       </li>`).join("");
 
     /* Placed from the caret's row and column rather than from a measured caret rectangle:
        the sheet is monospaced, so a column is a width, and the alternative is a mirror
-       element that has to be kept identical to the textarea forever. */
-    /* Placed from where the sheet sits inside the whole editor, gutter included: the list
+       element that has to be kept identical to the textarea forever.
+
+       Placed from where the sheet sits inside the whole editor, gutter included: the list
        is a child of the editor, not of the sheet, because a sheet that clips its own
        overflow would clip the list off the bottom of the program. */
     const cell = this.metrics();
