@@ -79,8 +79,12 @@ test("a drill on ore feeds the layout instead of being asked to be fed", async (
   const nine = [];
   for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) nine.push([x, y]);
   const ground = patch("ore-coal", ...nine);
+  /* The sandbox tap is not decoration. A laser drill runs on current, and since the solve
+     started throttling on the grid a drill with nothing wired to it turns at nothing - as
+     it does in the game. Without the tap this reads as a test about ore that is really a
+     test about an unpowered drill. */
   const tiles = [[1, 1, "laser-drill", 0], [3, 1, "conveyor", 0],
-                 [4, 1, "graphite-press", 0]];
+                 [4, 1, "graphite-press", 0], [0, 3, "power-source", 0]];
 
   const bare = await analyse(paste(tiles));
   assert.ok(bare.needs.some((n) => n.resource === "coal"),

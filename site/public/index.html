@@ -336,6 +336,23 @@ function render(report) {
     </div>`);
   }
 
+  /* A grid that does not cover what the plan asks of it, said before the throughput below
+     is read rather than after.
+
+     Shown whatever else is on the page, and on purpose: for a long while the report could
+     say "-30 power" on one card and "nothing wrong, everything flat out" on the next, and
+     both came from the same analysis. The throughput now falls with the current, so the
+     figures no longer contradict each other - but a figure that has been throttled and one
+     that has not look exactly alike, and the difference is the whole reason the player is
+     reading the page. */
+  if (report.power && report.power.coverage < 0.999) {
+    right.push(`<div class="card"><h2>${escape(t("analyse.energie.titre"))}</h2>
+      <div class="line"><span>${escape(t("analyse.energie.couverture"))}</span>
+        <span class="num bad">${Math.round(report.power.coverage * 100)}&nbsp;%</span></div>
+      <p class="hint-line">${escape(t("analyse.energie.aide"))}</p>
+    </div>`);
+  }
+
   // "Connected to nothing" holds whatever the intake turns out to be; "arrives without
   // being drunk" does not, so the first is shown at once and the second waits.
   const surplus = answered ? Object.entries(report.surplus || {}) : [];
