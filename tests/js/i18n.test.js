@@ -60,6 +60,12 @@ function sources() {
   };
   walk("public/forge");
   found.push("public/index.html");
+  /* Les pages d'outils, qui portent leur script dans la page comme l'analyseur porte le
+     sien. Parcourues plutot que nommees une a une : il en arrive une par chantier de
+     parite, et une page oubliee ici est une page dont personne ne verifie les cles. */
+  for (const name of readdirSync(at("public/outils"))) {
+    if (name.endsWith(".html")) found.push(`public/outils/${name}`);
+  }
   return found;
 }
 
