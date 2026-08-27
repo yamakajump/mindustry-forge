@@ -335,6 +335,19 @@ public class Measure implements ApplicationListener {
                 held.append(" ~").append(belt.len).append(':')
                     .append(String.format(java.util.Locale.ROOT, "%.3f", belt.minitem));
             }
+            // Et ce qu'il porte, avec ce qu'il y a dedans.
+            mindustry.world.blocks.payloads.Payload cargo = build.getPayload();
+            if (cargo != null) {
+                held.append(" %").append(cargo.content().name);
+                if (cargo instanceof mindustry.world.blocks.payloads.BuildPayload inside
+                        && inside.build.items != null) {
+                    for (Item item : Vars.content.items()) {
+                        int count = inside.build.items.get(item);
+                        if (count > 0) held.append('/').append(item.name).append(':')
+                            .append(count);
+                    }
+                }
+            }
             /* Et sa place dans la liste de mise a jour, parce qu'un bloc qui s'endort en
                sort et que se reveiller le remet a la fin. Moins un veut dire qu'il dort. */
             held.append(" @").append(order.indexOf(build, true));
@@ -441,6 +454,28 @@ public class Measure implements ApplicationListener {
             one.put("x", tile.x);
             one.put("y", tile.y);
             one.put("payload", held.content().name);
+            /* Et ce qu'il y a **dedans**, parce qu'une charge utile est un batiment entier
+               et que trois blocs ne s'interessent qu'a ca : un chargeur remplit le coffre
+               qu'il porte, un dechargeur le vide. Sans son contenu, la moitie de la famille
+               se mesure a rien du tout. */
+            if (held instanceof mindustry.world.blocks.payloads.BuildPayload inside) {
+                Jval stock = Jval.newObject();
+                if (inside.build.items != null) {
+                    for (Item item : Vars.content.items()) {
+                        int count = inside.build.items.get(item);
+                        if (count > 0) stock.put(item.name, count);
+                    }
+                }
+                one.put("payload_items", stock);
+                Jval wet = Jval.newObject();
+                if (inside.build.liquids != null) {
+                    for (Liquid liquid : Vars.content.liquids()) {
+                        float amount = inside.build.liquids.get(liquid);
+                        if (amount > 0.0005f) wet.put(liquid.name, amount);
+                    }
+                }
+                one.put("payload_liquids", wet);
+            }
             carried.asArray().add(one);
         }
         root.put("payloads", carried);

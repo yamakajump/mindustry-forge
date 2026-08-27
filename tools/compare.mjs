@@ -186,7 +186,15 @@ export async function ported(code, ticks, ground = [], stock = [], each = null) 
 
   const carried = world.builds
     .filter((build) => build.state.payload)
-    .map((build) => ({ x: build.x, y: build.y, payload: build.state.payload }));
+    .map((build) => ({
+      x: build.x, y: build.y,
+      payload: build.state.payload.name,
+      // What the cargo is carrying, which is the whole of what a loader and an unloader do.
+      payload_items: Object.fromEntries(
+        [...build.state.payload.items.counts].filter(([, n]) => n > 0)),
+      payload_liquids: Object.fromEntries([...build.state.payload.liquids.held()]
+        .filter(([, n]) => n > 0.0005).map(([l, n]) => [l, Number(n.toFixed(3))])),
+    }));
 
   const units = {};
   for (const build of world.builds) {
@@ -202,7 +210,7 @@ export async function ported(code, ticks, ground = [], stock = [], each = null) 
     batteries: lineUp(batteries, ["charge"]),
     stocks: lineUp(stocks, ["items"]),
     ammo: lineUp(ammo, ["ammo"]),
-    payloads: lineUp(carried, ["payload"]),
+    payloads: lineUp(carried, ["payload", "payload_items", "payload_liquids"]),
     units,
   };
 }
@@ -223,7 +231,7 @@ export function measured(name) {
     ammo: lineUp((raw.running || [])
       .filter((one) => (one.ammo || 0) > 0)
       .map((one) => ({ x: one.x, y: one.y, ammo: one.ammo })), ["ammo"]),
-    payloads: lineUp(raw.payloads || [], ["payload"]),
+    payloads: lineUp(raw.payloads || [], ["payload", "payload_items", "payload_liquids"]),
     units: raw.units || {},
   };
 }
@@ -340,6 +348,20 @@ export function differences(mine, theirs) {
       const b = theirs.payloads[i];
       out.push({ what: `${a.at} porte`, mine: a.payload, theirs: b.payload,
                  gap: a.payload === b.payload ? 0 : 1 });
+
+      // Et ce que la charge tient elle-meme, qui est tout ce que font un chargeur et un
+      // dechargeur : sans ca, la moitie de la famille se mesure a rien.
+      for (const [what, mineSide, theirsSide] of [
+        ["porte dedans", a.payload_items || {}, b.payload_items || {}],
+        ["porte en liquide", a.payload_liquids || {}, b.payload_liquids || {}],
+      ]) {
+        for (const key of new Set([...Object.keys(mineSide), ...Object.keys(theirsSide)])) {
+          const here = mineSide[key] || 0;
+          const there = theirsSide[key] || 0;
+          out.push({ what: `${a.at} ${what} ${key}`, mine: here, theirs: there,
+                     gap: there ? Math.abs(here - there) / there : (here ? 1 : 0) });
+        }
+      }
     }
   }
 

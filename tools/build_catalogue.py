@@ -60,6 +60,8 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
         "consumes_power", "outputs_power_flag", "conductive_power", "power_node", "heat_warmup_rate",
         "laser_range", "max_nodes", "no_autolink", "no_connected_power", "no_update",
         "launch_time", "accept_multiple_items",
+        "load_time", "items_loaded", "liquids_loaded", "max_block_size",
+        "offload_speed", "deconstruct_speed", "dump_rate", "max_payload_size",
         "same_block_link", "liquid_output_directions", "no_dump_extra", "ignore_liquid_fullness", "solid",
         # Le mass driver, qui lance ses objets a distance.
         "rotate_speed", "min_distribute", "reload", "bullet_speed",

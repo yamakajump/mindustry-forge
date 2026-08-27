@@ -90,7 +90,7 @@ second, c'est une intuition qui a l'air d'un portage.
       overflow-gate, underflow-gate
 - [x] `PayloadConveyor` - 2 blocs
       payload-conveyor, reinforced-payload-conveyor
-- [ ] `PayloadDeconstructor` - 2 blocs
+- [x] `PayloadDeconstructor` - 2 blocs - rend un bloc sous forme de son cout
       deconstructor, small-deconstructor
 - [ ] `PayloadMassDriver` - 2 blocs
       large-payload-mass-driver, payload-mass-driver
@@ -176,11 +176,11 @@ second, c'est une intuition qui a l'air d'un portage.
       mass-driver
 - [x] `NuclearReactor` - 1 bloc - de l'energie, et une explosion si on la neglige
       thorium-reactor
-- [ ] `PayloadLoader` - 1 bloc
+- [x] `PayloadLoader` - 1 bloc - remplit le bloc qu'il porte, et refuse un dechargeur
       payload-loader
 - [x] `PayloadSource` - 1 bloc
       payload-source
-- [ ] `PayloadUnloader` - 1 bloc
+- [x] `PayloadUnloader` - 1 bloc - le vide, et pousse dehors des qu'il est sec
       payload-unloader
 - [x] `PayloadVoid` - 1 bloc
       payload-void

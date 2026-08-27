@@ -12425,7 +12425,12 @@
         "beryllium": 100,
         "oxide": 40
       },
-      "power": 60
+      "power": 60,
+      "role": "payload-deconstructor",
+      "carries": "payload",
+      "deconstruct_speed": 3,
+      "dump_rate": 4,
+      "max_payload_size": 4
     },
     "deconstructor":{
       "name": "deconstructor",
@@ -12454,7 +12459,12 @@
         "oxide": 100,
         "carbide": 50
       },
-      "power": 180
+      "power": 180,
+      "role": "payload-deconstructor",
+      "carries": "payload",
+      "deconstruct_speed": 6,
+      "dump_rate": 4,
+      "max_payload_size": 4
     },
     "constructor":{
       "name": "constructor",
@@ -12555,8 +12565,12 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "role": "sink",
-      "input_liquid":{}
+      "role": "payload-loader",
+      "carries": "payload",
+      "load_time": 2,
+      "items_loaded": 8,
+      "liquids_loaded": 40,
+      "max_block_size": 3
     },
     "payload-unloader":{
       "name": "payload-unloader",
@@ -12586,8 +12600,13 @@
       },
       "power": 120,
       "no_overdrive": true,
-      "role": "sink",
-      "input_liquid":{}
+      "role": "payload-unloader",
+      "carries": "payload",
+      "load_time": 2,
+      "items_loaded": 8,
+      "liquids_loaded": 40,
+      "max_block_size": 3,
+      "offload_speed": 4
     },
     "power-source":{
       "name": "power-source",
