@@ -6,55 +6,83 @@ l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 
 ## À faire
 
-### 1. Le vrai moteur, avec le sol peint
+### 1. Relancer l'audit sur ce qui vient d'être écrit
 
-Le plan complet est dans `docs/plan-sol.md`. La moitié navigateur est faite : on peint le
-terrain, on voit à travers la schématique, et les foreuses et les pompes disent ce
-qu'elles sortent vraiment. Reste la moitié qui compte : porter le pont de `mindustry-ai`
-dans `bench/`, construire un monde depuis le sol peint, poser la schématique, et regarder
-le vrai moteur la faire tourner.
+Un audit multi-agent a relu le moteur classe par classe contre la source du jeu, avec
+trois sceptiques par trouvaille. Il a tourné **avant** les charges utiles, le module
+liquide à plusieurs cases, le concasseur de falaise, les foreuses d'Erekir et les pompes
+solides. Tout ce code n'a donc jamais été relu par personne d'autre que celui qui l'a
+écrit, et c'est exactement le genre de moment où le dépôt s'est déjà trompé.
 
-### 2. Faire tourner le banc
+À relancer sur les tranches `payloads.js`, `liquids.js` et la moitié `machines.js` qui a
+bougé, plus le harnais, dont deux réglages ont changé depuis : le stock de départ
+(objets et liquides) et l'appel à `placed()`.
 
-C'est le seul point qui reste sur la justesse des chiffres, et c'est le vrai.
+### 2. Le reste de la famille des charges utiles
 
-Le banc existe : `bench/` pose une schématique dans un serveur Mindustry v159.7 réel, avec
-le vrai moteur. Il ne sert à rien pour l'instant. Une schématique posée, mesurée quelques
-secondes, comparée au calcul : c'est ce qui distingue ce site de tous les autres, et
-`verified` reste faux tant que ça ne tourne pas.
+Le socle est là et mesuré : la cargaison glisse, les convoyeurs battent sur l'horloge de
+la carte, le reconstructeur consomme, le constructeur fabrique. Ce qui manque demande une
+chose que le moteur n'a pas encore : **une charge utile qui est elle-même un bâtiment
+avec son contenu**.
 
-C'est aussi ce qui remplace le simulateur, supprimé plutôt que réparé. Écrire une copie du
-moteur de Mindustry en JavaScript à côté d'une copie qui marche du moteur de Mindustry,
-c'était la mauvaise moitié du travail.
+- `PayloadLoader` et `PayloadUnloader` remplissent et vident le bloc transporté.
+- `PayloadDeconstructor` le rend à ses matériaux.
+- `PayloadMassDriver` le lance à distance.
 
-### 3. Mécanismes du jeu encore absents
+Un `BuildPayload` porte aujourd'hui un nom ; il lui faudra porter des objets et des
+liquides.
 
-- **Chaleur** (Erekir) : pas modélisée du tout. Toute la moitié Erekir du jeu en dépend, et
-  `reinforced-bridge-conduit` est classé « consommateur », ce qui est le symptôme.
-- **Débit réel d'un tuyau.** Plafonné à la contenance du bloc par tick, qui est le plafond
-  du jeu (`moveLiquid`) mais jamais atteint : en régime établi le gradient se resserre. Ça
-  ne mord sur aucune disposition réelle, ça ne sert qu'à empêcher une source de bac à sable
-  d'inonder le modèle. Le vrai débit demanderait de simuler la pression.
-- **Portes de trop-plein** : laissées en routeurs, et c'est un choix. Le jeu envoie tout
-  droit si ça passe et sur les côtés sinon ; avec un flot maximal ce choix ne change pas le
-  débit total, seulement quelle branche le porte.
-- **Matière de phase dans les accélérateurs** : le bonus n'est pas compté. Savoir si un
-  accélérateur est alimenté dépend du calcul, qui dépend de la vitesse, qui dépend du
-  bonus. Le chiffre nu est annoncé et le bonus est nommé à côté.
+### 3. `UnitAssembler`
 
-### 4. Place de marché
+Transcrit à moitié et non coché, pour une raison précise. Ses quatre drones et son
+énergie se mesurent en trente secondes ; l'unité qu'il assemble demande trois mille
+images **et** que les drones soient en position, ce qui dépend de leur vol. Il faudrait
+soit un modèle de vol minimal, soit un scénario plus long, et le banc accepte déjà une
+durée par scénario.
+
+### 4. Les processeurs : déclarer, pas simuler
+
+Un processeur ne consomme rien du tout, ni énergie ni objets. Son seul effet sur un débit
+passe par une instruction, `control`, sur les blocs qu'il pilote. Simuler tout
+l'interpréteur pour savoir si un `control` part est le mauvais rapport effort/résultat, et
+son mode de panne est silencieux : une propriété que Forge ne modélise pas renvoie null,
+le programme branche ailleurs, et rien ne le dit.
+
+Ce qu'il faut faire à la place, en deux temps :
+
+1. Décoder la configuration et sortir la liste des liens. Forge dit alors « trois
+   processeurs, sept blocs pilotés, ce qu'ils font n'est pas simulé ».
+2. Lire le programme, qui est du texte en clair, assez pour séparer les liens **lus** des
+   liens **écrits**. Un processeur qui ne fait que `sensor` et `print` ne change aucun
+   débit, et c'est la majorité de ceux qu'on croise.
+
+### 5. La longue traîne des blocs
+
+`docs/blocs.md` tient le compte, généré depuis la liste de classes du jeu. Une case
+cochée veut dire transcrite **et** mesurée dans un vrai serveur.
+
+### 6. Place de marché
 
 - Comparer deux schématiques côte à côte.
 - Filtrer sur ce dont elle a besoin : « j'ai du charbon, montre ce que je peux faire
   tourner ».
 - Classement par cuivre investi et pas seulement par bloc.
 
-### 5. Reste
+### 7. Reste
 
 - Diagnostic explicite : « trois bandes reliées à rien », en tête plutôt qu'en bas.
 - Marquer plusieurs blocs d'un coup (glisser sur une rangée de tuyaux).
 
 ## Corrigé
+
+- [x] **Le vrai moteur, avec le banc.** 95 scénarios posés dans un serveur Mindustry
+      v159.7 réel, 94 exacts à l'objet près, et la comparaison fait partie de `npm test`
+      pour qu'une régression casse la construction. 67 classes sur 105 transcrites et
+      mesurées. Le reste tient dans `docs/blocs.md`.
+- [x] **La chaleur**, troisième réseau d'Erekir : de face à face, un producteur doit viser
+      sa cible et un répartiteur doit viser ailleurs.
+- [x] **Les charges utiles**, quatrième réseau : une unité ou un bloc transporté entier,
+      qui glisse et met du temps à arriver.
 
 - [x] **Le sol.** 107 sols et minerais sortis du jeu avec ce qui compte : `itemDrop`,
       `liquidDrop`, `liquidMultiplier`. Un pinceau à taille réglable, un curseur de
