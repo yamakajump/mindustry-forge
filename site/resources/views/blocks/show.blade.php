@@ -308,7 +308,7 @@
       @foreach($schematics as $schematic)
         <article class="tile">
           <a href="/s/{{ $schematic->slug }}">
-            <h3>{{ $schematic->name }}</h3>
+            <h3>{{ $schematic->displayName() }}</h3>
           </a>
           <p class="meta">
             {{ $schematic->held }} {{ __('blocs.page.exemplaires') }}

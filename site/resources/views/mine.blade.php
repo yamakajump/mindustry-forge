@@ -27,7 +27,7 @@
           @else
             <div class="noimg">pas d'apercu</div>
           @endif
-          <h3>{{ $schematic->name }}</h3>
+          <h3>{{ $schematic->displayName() }}</h3>
         </a>
         <p class="meta">
           {{ $schematic->blocks }} blocs

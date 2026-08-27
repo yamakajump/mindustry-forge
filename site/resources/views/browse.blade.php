@@ -85,7 +85,7 @@
               <div class="noimg" data-slug="{{ $schematic->slug }}">pas d'apercu</div>
             @endif
           @endif
-          <h3>{{ $schematic->name }}</h3>
+          <h3>{{ $schematic->displayName() }}</h3>
         </a>
         <p class="meta">
           {{-- Un robinet de bac a sable se dit ici aussi. Une vignette qui annonce
