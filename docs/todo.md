@@ -406,3 +406,28 @@ Ce qui reste : les deux fichiers morts donnent l'illusion qu'il existe un chemin
 re-mesure automatisé en Python. Quelqu'un finira par ajouter un scénario en croyant qu'il
 sera mesuré. Soit on les ranime, soit on les supprime, mais les laisser cassés est le pire
 des trois.
+
+## Le projecteur de surcharge accélère un bloc que le jeu laisserait tranquille
+
+`analyse.js:428`, dans `speedUp` :
+
+```js
+if (Math.hypot(x - px, y - py) <= reach + half) {
+```
+
+Le jeu utilise `Mathf.within`, qui est **strict**. Un bloc posé pile à la limite est donc
+accéléré ici et pas en jeu. Cas cheveu, effet réel : le bloc sort avec un débit majoré qui
+ne se produira jamais.
+
+Ce qui rend le signalement intéressant, c'est que c'est **la même forme** que la règle des
+liens de processeur prouvée le 27/08 dans le bytecode de `LogicBlock.validLink` : rayon
+plus demi-taille de la cible, entre centres. La même formule est écrite deux fois dans le
+dépôt, une fois stricte et une fois non, et une seule des deux a été recoupée contre le
+jeu. L'autre attend.
+
+Vérifier `Mathf.within` sur `OverdriveProjector` avant de corriger, et écrire le scénario
+du bloc posé pile à la limite : c'est un cas que seul un test au bord attrape, et il ne
+coûte rien une fois qu'on sait où regarder.
+
+Signalé par la voie du dumpeur en écrivant les liens de processeur, sans y toucher parce
+que ce n'était pas son fichier.
