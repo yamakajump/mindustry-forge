@@ -3,15 +3,26 @@
 Colle une schematique Mindustry, sache ce qu'elle produit vraiment et où elle
 coince. Site public : **https://mindustryforge.com**
 
-## ⚠️ La branche de travail n'est pas `main`
+## Le tronc est `main`, et il n'y en a qu'un
 
-Tout le site vit sur **`restart/place-de-marche`**. `main` ne contient que
-l'ancienne structure d'avant le restart : `site/` n'y existe pas. C'est cette
-branche qui est déployée en production, et c'est sur elle qu'on travaille.
+Tout vit sur **`main`** : c'est la branche par défaut du dépôt public, celle que
+`deploy.sh` met en production, et celle que la CI surveille.
 
-Conséquence : les workflows `tests.yml` et `verify-catalogue.yml` datent
-d'avant le restart et référencent des chemins disparus (`forge/server_setup.py`,
-`gradlew`). Ne pas s'y fier. La CI qui compte est `site.yml`.
+Ça n'a pas toujours été vrai. Le travail a vécu des semaines sur
+`restart/place-de-marche` pendant que `main` montrait le projet d'avant le restart, et le
+27/08/2026 quelqu'un ouvrant la page GitHub voyait 161 commits de retard, des dossiers
+disparus et aucune licence. Les deux branches ont été réunies et l'ancienne supprimée.
+
+**La leçon vaut plus que le fait**, parce qu'elle a coûté une affirmation fausse dans la
+même journée : pendant les vingt minutes où les deux branches ont coexisté, une correction
+de CI a atterri sur l'une et des images sur l'autre, et les deux ont été annoncées comme
+faites. Personne n'avait menti, chacun avait regardé sa branche. **Aucun test ne tourne sur
+la différence entre deux branches.** S'il faut un jour en refaire une longue, elle se
+réunit tôt et souvent, pas à la fin.
+
+Les workflows `tests.yml` et `verify-catalogue.yml` datent d'avant le restart et
+référencent des chemins disparus (`forge/server_setup.py`, `gradlew`). Ne pas s'y fier. La
+CI qui compte est `site.yml`, et elle lance désormais l'oracle.
 
 ## 🧭 Les deux règles du dépôt
 

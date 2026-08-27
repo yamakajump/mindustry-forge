@@ -1,0 +1,39 @@
+name: Wrong measurement
+description: The bench and the analysis disagree, or a figure cannot be reproduced.
+labels: ["measurement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This one is for the core claim of the project: that the numbers are measured
+        against a real game rather than asserted. A disagreement here is the most serious
+        kind of bug this repository can have, and it is treated as such.
+
+  - type: input
+    id: scenario
+    attributes:
+      label: The scenario
+      description: >
+        The name under `bench/data/oracle/`, if there is one. Otherwise the schematic
+        string, and we will make a scenario out of it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: numbers
+    attributes:
+      label: The two numbers
+      description: >
+        What the game counted and what the site says, with the unit and the duration.
+        Paste the output of `npm run oracle` or `node tools/gap.mjs` if you have it.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: reading
+    attributes:
+      label: What you think it comes from
+      description: >
+        Optional, and valuable. A pointer to the game's own source or bytecode is worth
+        more than a guess, and this project prefers "I do not know" to a plausible story.
