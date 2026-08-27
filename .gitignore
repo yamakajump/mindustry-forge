@@ -25,3 +25,6 @@ site/public/storage
 site/public/build/
 site/database/*.sqlite
 site/bootstrap/cache/*
+
+# Fiches projet : contexte de travail, pas du code.
+.claude/projet/
