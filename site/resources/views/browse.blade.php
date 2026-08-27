@@ -84,7 +84,11 @@
       <a href="{{ request()->fullUrlWithQuery(['creatif' => null]) }}">{{
         __('vitrine.creatif.remettre') }}</a></p>
   @elseif($setAside > 0)
-    <p class="hint-line">{{ $setAside }} {{ __('vitrine.creatif.mises-a-part') }}
+    {{-- Le singulier a sa propre cle plutot qu'un « (s) ». Le compte reste hors de la
+         chaine traduite : une cle manquante rendrait la cle sans substituer, et le nombre
+         disparaitrait de la seule phrase qui existe pour le donner. --}}
+    <p class="hint-line">{{ $setAside }} {{ __($setAside === 1
+      ? 'vitrine.creatif.mise-a-part' : 'vitrine.creatif.mises-a-part') }}
       <a href="{{ request()->fullUrlWithQuery(['creatif' => 'oui']) }}">{{
         __('vitrine.creatif.montrer') }}</a></p>
   @endif

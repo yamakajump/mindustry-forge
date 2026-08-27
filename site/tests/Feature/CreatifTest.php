@@ -72,6 +72,30 @@ it('les affiche quand on le demande, etiquetees', function () {
     $page->assertSee('bac a sable');
 });
 
+it('compte ce que cette page met a part, pas ce que le catalogue met a part', function () {
+    /* La septieme face du meme defaut, et sur la phrase qui explique une mise a part.
+     *
+     * En production la phrase annoncait 4 475 sur **toutes** les pages, ce qui est le bon
+     * compte du catalogue et la mauvaise reponse a « combien cette page en a-t-elle mis a
+     * part ». Sur le classement par energie la vraie reponse etait zero : ces schematiques
+     * en etaient deja absentes, retirees par la separation mesure/plafond puisque leur
+     * energie mesuree vaut zero, donc ce filtre n'avait plus rien a retirer.
+     *
+     * Une page qui ne met rien a part annoncait quatre mille cinq cents. */
+    creation('Bac a sable a graphite', ['power-source' => 1, 'graphite-press' => 2]);
+    creation('Usine a silicium', ['silicon-smelter' => 4]);
+    creation('Presse a graphite', ['graphite-press' => 2]);
+
+    // Filtree sur un bloc que le bac a sable ne contient pas : rien a mettre a part ici.
+    $ciblee = $this->get('/schematiques?bloc=silicon-smelter')->assertOk();
+    $ciblee->assertSee('Usine a silicium');
+    $ciblee->assertDontSee('mise a part');
+
+    // Sans filtre, la seule creative du lot est comptee, et au singulier.
+    $toutes = $this->get('/schematiques')->assertOk();
+    $toutes->assertSee('1 schematique de bac a sable est mise a part', escape: false);
+});
+
 it('ne compte pas les privees dans ce qui est mis a part', function () {
     /* Le compte annonce doit etre celui de la liste que le lecteur regarde. Compter une
        schematique privee lui promettrait quelque chose que le lien ne lui montrera pas. */
