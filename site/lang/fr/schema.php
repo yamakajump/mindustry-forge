@@ -37,6 +37,14 @@ return [
          */
         'energie-plafond' => 'Energie nette, au mieux',
         'au-mieux' => 'au mieux',
+        /*
+         * Le contraire du precedent, et il se dit a voix haute. La vitrine classe sur
+         * les plafonds ; le jour ou une schematique n'en porte pas, sa tuile montre sa
+         * mesure plutot que rien, et une mesure sans etiquette se lirait comme le
+         * plafond de la tuile d'a cote. Un filet silencieux ne vaut pas mieux que pas
+         * de filet.
+         */
+        'mesuree' => 'mesuré',
         'bac-a-sable-aide' => "Un robinet de bac a sable donne autant qu'on lui demande, donc
             ce que cette schematique sort n'est pas une mesure de ce que ses blocs font :
             c'est ce qu'un robinet permet. Elle reste lisible et analysable, elle n'est
