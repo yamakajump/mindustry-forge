@@ -95,6 +95,34 @@ test("the distance runs between centres, half tiles and all", async () => {
                    "half a tile nearer and it holds");
 });
 
+test("a block out of reach is not named among the blocks the schematic drives", async () => {
+  /* `control` aimed past the range does nothing at all, so listing its target among the
+     driven blocks would be a false statement in the one place a reader looks to find out
+     what the processors touch.
+
+     A block linked twice, once in reach and once not, still appears: the near link drives
+     it, and that is true. Two containers with the same name are exactly the case that made
+     this worth separating - the card would otherwise say "drives container" and "container
+     out of reach" about two different blocks, in the same breath. */
+  const out = logicOf(await linked("container", 23));
+  assert.equal(out.writing, 1, "the program does hold a `control`");
+  assert.deepEqual(out.driven, [], "and it reaches nothing with it");
+
+  const nodes = buildGraph([
+    { x: 0, y: 0, block: "logic-processor", rotation: 0 },
+    { x: 10, y: 0, block: "container", rotation: 0 },
+    { x: 23, y: 0, block: "container", rotation: 0 },
+  ]).nodes;
+  nodes[0].program = await readProgram(await writeProgram({
+    code: "control enabled loin1 0 0 0 0\ncontrol enabled pres1 0 0 0 0\n",
+    links: [{ name: "loin1", dx: 23, dy: 0 }, { name: "pres1", dx: 10, dy: 0 }],
+  }));
+  const both = logicOf(nodes);
+  assert.deepEqual(both.driven, ["container"], "the near one is driven");
+  assert.equal(both.unreachable.length, 1, "the far one is not");
+  assert.deepEqual(both.unreachable[0].target, [23, 0]);
+});
+
 test("a link to a block the schematic does not contain is not called unreachable", async () => {
   /* Copying a layout out of a base keeps the links of processors whose targets were left
      behind, exactly as it keeps the links of bridges. Those are not broken schematics, and
