@@ -51,8 +51,19 @@ public class Measure implements ApplicationListener {
 
     /** One scenario waiting its turn, with the ground it is to be run on. */
     private record Job(String base64, float seconds, Path out, String[] ground,
-                      String[] stock) {
+                      String[] stock, Path trace) {
     }
+
+    /**
+     * Where to write a line per frame, or null.
+     *
+     * <p>Two of the bench's scenarios have sat one item apart for weeks, and a total after
+     * eighteen hundred frames cannot say which frame it was. This can: the same shape comes
+     * out of the port, and the first line where the two differ names the block and the
+     * frame, which is a bug report rather than a discrepancy.
+     */
+    private Path trace;
+    private StringBuilder traced;
 
     /**
      * Scenarios still to run.
@@ -66,7 +77,12 @@ public class Measure implements ApplicationListener {
     /** Take a scenario, and run it when the one before it is done. */
     public void queue(String base64, float seconds, Path path, String[] ground,
                       String[] stock) {
-        waiting.add(new Job(base64, seconds, path, ground, stock));
+        queue(base64, seconds, path, ground, stock, null);
+    }
+
+    public void queue(String base64, float seconds, Path path, String[] ground,
+                      String[] stock, Path traceTo) {
+        waiting.add(new Job(base64, seconds, path, ground, stock, traceTo));
         if (!running) {
             start(waiting.remove(0));
         }
@@ -82,6 +98,8 @@ public class Measure implements ApplicationListener {
     private void start(Job job) {
         ground = job.ground();
         stock = job.stock();
+        trace = job.trace();
+        traced = trace == null ? null : new StringBuilder();
         begin(job.base64(), job.seconds(), job.out());
     }
 
@@ -235,17 +253,102 @@ public class Measure implements ApplicationListener {
             return;
         }
         ticksRun++;
+        if (traced != null) {
+            traced.append(snapshot()).append('\n');
+        }
         if (--ticksLeft > 0) {
             return;
         }
         running = false;
         report();
+        writeTrace();
 
         if (waiting.any()) {
             start(waiting.remove(0));
         } else {
             clock.setSpeed(1);
         }
+    }
+
+    /**
+     * One frame, as one line.
+     *
+     * <p>Every building that is holding anything, in tile order so the two engines write
+     * the same line for the same state. Items as whole numbers, liquids rounded to a
+     * thousandth: below that the two are comparing floating point noise rather than a
+     * disagreement.
+     */
+    private String snapshot() {
+        StringBuilder line = new StringBuilder();
+        line.append(ticksRun);
+        Seq<Building> order = new Seq<>();
+        for (Building one : mindustry.gen.Groups.build) order.add(one);
+        for (Tile tile : Vars.world.tiles) {
+            Building build = tile.build;
+            if (build == null || build.tile != tile) continue;
+
+            StringBuilder held = new StringBuilder();
+            if (build.items != null) {
+                for (Item item : Vars.content.items()) {
+                    int count = build.items.get(item);
+                    if (count > 0) held.append(' ').append(item.name).append(':').append(count);
+                }
+            }
+            if (build.liquids != null) {
+                for (mindustry.type.Liquid liquid : Vars.content.liquids()) {
+                    float amount = build.liquids.get(liquid);
+                    if (amount > 0.0005f) {
+                        held.append(' ').append(liquid.name).append(':')
+                            .append(String.format(java.util.Locale.ROOT, "%.3f", amount));
+                    }
+                }
+            }
+            /* Ce qu'un tapis tient vraiment, qui n'est pas dans son module d'objets : le
+               nombre en vol et la position du plus en retard. Les deux moteurs ont mis
+               neuf images a se rejoindre sur un seul charbon, et un total ne sait pas dire
+               laquelle. */
+            /* Et le compteur d'une source, qui decide si elle verse une fois ou deux
+               dans la meme image : cent objets par seconde pour soixante images. */
+            if (build instanceof mindustry.world.blocks.sandbox.ItemSource
+                    .ItemSourceBuild tap) {
+                held.append(" ~").append(
+                    String.format(java.util.Locale.ROOT, "%.3f", tap.counter));
+            }
+            // Et l'avancement d'une machine, qui dit a quelle image tombe la fournee.
+            if (build instanceof mindustry.world.blocks.production.GenericCrafter
+                    .GenericCrafterBuild machine) {
+                held.append(" ~").append(
+                    String.format(java.util.Locale.ROOT, "%.4f", machine.progress))
+                    .append('/').append(
+                    String.format(java.util.Locale.ROOT, "%.3f", machine.efficiency));
+            }
+            if (build instanceof mindustry.world.blocks.distribution.Conveyor
+                    .ConveyorBuild belt) {
+                held.append(" ~").append(belt.len).append(':')
+                    .append(String.format(java.util.Locale.ROOT, "%.3f", belt.minitem));
+            }
+            /* Et sa place dans la liste de mise a jour, parce qu'un bloc qui s'endort en
+               sort et que se reveiller le remet a la fin. Moins un veut dire qu'il dort. */
+            held.append(" @").append(order.indexOf(build, true));
+            if (held.length() == 0) continue;
+            line.append(" | ").append(tile.x - MARGIN).append(',').append(tile.y - MARGIN)
+                .append(held);
+        }
+        return line.toString();
+    }
+
+    /** The whole run, once, rather than a write a frame. */
+    private void writeTrace() {
+        if (traced == null) return;
+        try {
+            if (trace.getParent() != null) Files.createDirectories(trace.getParent());
+            Files.writeString(trace, traced.toString(), StandardCharsets.UTF_8);
+            Log.info("[forge] traced @ frames to @", ticksRun, trace);
+        } catch (Exception error) {
+            Log.err("[forge] could not write the trace: @", error.toString());
+        }
+        traced = null;
+        trace = null;
     }
 
     /**

@@ -4,6 +4,11 @@ __pycache__/
 *.egg-info/
 node_modules/
 
+# Les traces image par image : un mega-octet par scenario, regenerable des deux cotes,
+# et lu une fois pendant qu'on cherche l'image ou les deux moteurs se separent.
+bench/data/trace/
+bench/data/trace-run.json
+
 # Le serveur de test et ce qu il ecrit. Le jar du jeu ne se versionne pas.
 _run/
 bench/build/

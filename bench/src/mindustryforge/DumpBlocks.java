@@ -258,6 +258,10 @@ public class DumpBlocks {
             /* Whether a beam stops at it. Only insulation stops one: a titanium wall does
                not, which is contrary to every instinct and is the game's rule. */
             if (block.insulated) entry.put("insulated", true);
+            /* Un bloc qui ne se met jamais a jour n est pas dans la liste du jeu,
+               donc il ne compte pas dans les places : un coffre entre deux tapis
+               decalait tout l ordre du portage d un cran. */
+            if (!block.update) entry.put("no_update", true);
             /* Un noeud pose sans lien enregistre se relie tout seul a ce qui passe a
                portee : `placed()` appelle `getPotentialLinks` des que `power.links`
                est vide. Sans ces trois champs, un schema dont les liens n ont pas ete

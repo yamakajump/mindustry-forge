@@ -12,8 +12,8 @@
  * Mindustry v159.7.
  */
 
-import { bridgeAccepts, bridgeDumps, bridgeLink, bridgeTarget, DIRECTIONS, itemOrder,
-  TICKS } from "./core.js";
+import { bridgeAccepts, bridgeDumps, bridgeLink, bridgeTarget, DIRECTIONS, facingEdge,
+  itemOrder, TICKS } from "./core.js";
 import { MACHINES } from "./machines.js";
 import { LIQUIDS } from "./liquids.js";
 import { POWER } from "./power.js";
@@ -79,16 +79,32 @@ const conveyor = {
     state.ids.unshift(item);
     state.ys.unshift(start);
     state.len++;
+    build.noSleep();
+    /* And in the item module as well, which the game keeps in step: `ConveyorBuild` pushes
+       into its three arrays **and** calls `items.add`. Nothing in a belt's own logic reads
+       it, which is why this went unnoticed, but everything that looks at a belt from
+       outside does: the game's own trace writes a belt's contents and this one wrote empty
+       belts for eighteen hundred frames. */
+    build.items.add(item);
   },
 
   update(build, world, step) {
     const state = build.state;
     state.minitem = 1;
-    if (!state.len) return;
+    // An empty belt goes to sleep, and waking puts it back at the end of the update list.
+    if (!state.len) {
+      build.sleep(step);
+      return;
+    }
 
     const next = build.facing(world);
     const speed = build.block.speed || 0;
-    const moved = speed * build.delta(step);
+    /* Every number on a belt is a **float**, because the game's are, and a belt is where
+       it matters most: a third item is taken on when the one behind has moved exactly
+       `itemSpace`, and forty-six thousandths added nine times lands a hair under four
+       tenths in double and a hair over in float. The belt behind then refuses an item the
+       game accepts, which is one coal in the wrong place at the end of a run. */
+    const moved = Math.fround(speed * build.delta(step));
 
     /* How far up its own length the front item may go.
     
@@ -102,15 +118,17 @@ const conveyor = {
        the engine, a copper line matched to the item and a titanium line ran 6.6% fast. */
     const aligned = next?.behaviour === conveyor && next.rotation === build.rotation;
     const nextMax = aligned
-      ? 1 - Math.max(ITEM_SPACE - next.state.minitem, 0)
+      ? Math.fround(1 - Math.max(Math.fround(ITEM_SPACE - next.state.minitem), 0))
       : 1;
 
     for (let i = state.len - 1; i >= 0; i--) {
-      const ahead = (i === state.len - 1 ? 100 : state.ys[i + 1]) - ITEM_SPACE;
-      state.ys[i] += clamp(ahead - state.ys[i], 0, moved);
+      const ahead = Math.fround((i === state.len - 1 ? 100 : state.ys[i + 1]) - ITEM_SPACE);
+      state.ys[i] = Math.fround(
+        state.ys[i] + clamp(Math.fround(ahead - state.ys[i]), 0, moved));
       if (state.ys[i] > nextMax) state.ys[i] = nextMax;
 
       if (state.ys[i] >= 1 && pass(build, next, state.ids[i])) {
+        for (const gone of state.ids.slice(i, state.len)) build.items.remove(gone);
         state.ids.splice(i, state.len - i);
         state.ys.splice(i, state.len - i);
         state.len = Math.min(i, state.len);
@@ -118,6 +136,9 @@ const conveyor = {
         state.minitem = state.ys[i];
       }
     }
+    // The last line of `Conveyor.updateTile`: a belt that ran this frame is awake, and its
+    // second of quiet starts over.
+    build.noSleep();
   },
 };
 
@@ -329,41 +350,75 @@ function sorterTarget(build, source, item, flip) {
  * That priority is the whole point of the block, and modelling it as a router lost it:
  * the total throughput came out right and the branch it went down was wrong.
  */
+/**
+ * An overflow gate, which holds nothing and updates never.
+ *
+ * `update = false`: it is not in the game's update list at all, and everything it does
+ * happens inside `acceptItem` and `handleItem`. Written here as a block that buffered one
+ * item and moved it a frame later, it worked, because a belt is always the bottleneck and a
+ * frame of delay never showed. It stopped working the moment the update list became
+ * faithful and it was correctly left out of it.
+ *
+ * The choice is `getTileTarget`: straight on if the far side will have it, otherwise the
+ * two sides, and when both sides will have it a bit **per direction of arrival** decides,
+ * so a gate fed from two sides shares each feed evenly rather than the two fighting over
+ * one cursor. An inverted gate reads the same rule with the branches swapped.
+ */
 const overflow = {
-  begin(build) { build.state.from = null; },
+  begin(build) { build.state.flip = 0; },
 
   acceptItem(build, source, item) {
-    return build.items.total === 0;
+    const to = overflowTargetOf(build, source, item, false);
+    return to !== null && to.acceptItem(build, item);
   },
 
   handleItem(build, source, item) {
-    build.items.add(item);
-    build.state.from = source;
-  },
-
-  update(build, world) {
-    if (!build.items.total) return;
-    const item = build.items.first();
-    const from = build.state.from;
-
-    const ahead = from ? opposite(build, world, from) : null;
-    if (ahead && ahead !== from && ahead.acceptItem(build, item)) {
-      ahead.handleItem(build, item);
-      build.items.remove(item);
-      return;
-    }
-    // Otherwise round the sides, which is `dump` refusing to go back where it came from.
-    build.dump();
-  },
-
-  canDump(build, other, item) {
-    return other !== build.state.from;
+    // Asked twice: once to test without moving the bit, once to hand over and move it.
+    const to = overflowTargetOf(build, source, item, true);
+    if (to) to.handleItem(build, item);
   },
 };
 
-function opposite(build, world, source) {
-  const [dx, dy] = DIRECTIONS[(build.relativeTo(source) + 2) % 4];
-  return world.at(build.x + dx, build.y + dy);
+/** `OverflowGateBuild.getTileTarget`. */
+function overflowTargetOf(build, source, item, flip) {
+  const world = build.world;
+  if (!world || !source) return null;
+
+  const [ex, ey] = facingEdge(source, build);
+  const from = build.sideTowards(ex, ey);
+  if (from === -1) return null;
+
+  const at = (turn) => {
+    const [dx, dy] = DIRECTIONS[((turn % 4) + 4) % 4];
+    return world.at(build.x + dx, build.y + dy);
+  };
+  /* Two blocks that both hand on instantly may not hand to each other, which is what stops
+     a chain of gates and sorters from carrying an item three tiles in one frame. */
+  const instant = source.block.instant_transfer;
+  const open = (other) => Boolean(other)
+    && !(instant && other.block.instant_transfer)
+    && other.acceptItem(build, item);
+
+  const ahead = at(from + 2);
+  const forward = open(ahead);
+  // `invert == enabled`, and nothing here is ever disabled.
+  const inverted = Boolean(build.block.invert);
+
+  if (forward && !inverted) return ahead;
+
+  const left = at(from - 1);
+  const right = at(from + 1);
+  const lc = open(left);
+  const rc = open(right);
+
+  if (!lc && !rc) return inverted && forward ? ahead : null;
+  if (lc && !rc) return left;
+  if (rc && !lc) return right;
+
+  const bit = 1 << from;
+  const side = (build.state.flip & bit) === 0 ? left : right;
+  if (flip) build.state.flip ^= bit;
+  return side;
 }
 
 /**
@@ -902,13 +957,22 @@ const source = {
   update(build, world, step) {
     const item = build.node.configured;
     if (!item) return;
-    const limit = TICKS / (build.block.output_per_second || 100);
-    build.state.counter += build.delta(step);
+
+    /* In **float**, deliberately, because the game is and the boundary is reachable.
+       A hundred items a second is six tenths of a frame, `0.6f` rounds up to
+       0.60000002384, and the counter drifts down by a hundred millionth every time it
+       spends one. In double the counter comes back to exactly 0.6 on the third frame and
+       spends it again: one item every third frame that the game does not make, from the
+       block that feeds nearly every scenario in the bench.
+       It only shows when whatever it is feeding can take two in one frame, which is why
+       `crafter-two-presses` sat one coal apart for weeks. */
+    const limit = Math.fround(TICKS / (build.block.output_per_second || 100));
+    build.state.counter = Math.fround(build.state.counter + build.delta(step));
     while (build.state.counter >= limit) {
       build.items.add(item);
       build.dump(item);
       build.items.remove(item, build.items.get(item));
-      build.state.counter -= limit;
+      build.state.counter = Math.fround(build.state.counter - limit);
     }
   },
 };
