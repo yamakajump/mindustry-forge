@@ -27,14 +27,11 @@
 .bloc-tile .bloc-name { display: block; font-size: 13px; margin-top: 7px; line-height: 1.3; }
 .bloc-tile .bloc-id { display: block; color: var(--dim); font-size: 11px; font-family: var(--mono); }
 
-/* The window onto `atlas.png`. Pixelated on purpose: these are 32-pixel sprites and the
-   game draws them hard-edged, so smoothing them would make the wiki disagree with the
-   screen the player is looking at. */
-.sprite {
-  display: inline-block; image-rendering: pixelated;
-  background-repeat: no-repeat; vertical-align: middle; flex: none;
-}
-.sprite-tile { margin: 0 auto; }
+/* Les vignettes et le portrait viennent de `/icone/{famille}/{nom}.png`, une image par
+   bloc, et portent la classe `.icone` partagee de `forge.css`. Il n'y a plus de fenetre
+   sur la feuille : elle pesait 1 311 ko sur une page qui en telecharge 58. */
+.bloc-tile-image { display: block; margin: 0 auto; }
+.bloc-portrait { flex: none; }
 
 .bloc-head { display: flex; gap: 16px; align-items: flex-start; margin: 0 0 6px; }
 .bloc-head h1 { margin: 0 0 2px; font-size: 23px; font-weight: 400; letter-spacing: .3px; }

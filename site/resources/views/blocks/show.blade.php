@@ -24,10 +24,11 @@
 <p class="sub bloc-retour"><a href="/blocs">{{ __('blocs.page.retour') }}</a></p>
 
 <div class="bloc-head">
-  @php($sprite = \App\Services\Sprites::block($block->name, 96))
-  @if($sprite)
-    <span class="sprite" style="{{ $sprite }}" aria-hidden="true"></span>
-  @endif
+  {{-- `t=64` ici et pas 32 : le sprite d'un bloc de deux cases fait 64 pixels dans le jeu,
+       donc a 96 a l'ecran, la source de 64 porte du detail que celle de 32 n'a pas. Sur les
+       vignettes de l'index, affichees en 48, 32 suffit et pese moitie moins. --}}
+  <img class="icone bloc-portrait" src="/icone/bloc/{{ $block->name }}.png?t=64"
+       width="96" height="96" decoding="async" alt="">
   <div>
     <h1>{{ $block->title() }}</h1>
     <p class="bloc-id">{{ $block->name }}</p>
