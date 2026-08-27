@@ -50,6 +50,8 @@ import mindustry.world.blocks.payloads.Constructor;
 import mindustry.world.blocks.payloads.BlockProducer;
 import mindustry.type.UnitType;
 import mindustry.world.blocks.units.Reconstructor;
+import mindustry.world.blocks.units.UnitAssembler;
+import mindustry.world.blocks.units.UnitAssemblerModule;
 import mindustry.world.blocks.payloads.PayloadVoid;
 import mindustry.world.blocks.payloads.PayloadSource;
 import mindustry.world.blocks.payloads.PayloadRouter;
@@ -379,6 +381,16 @@ public class DumpBlocks {
             Jval entry = Jval.newObject();
             entry.put("id", unit.id);
             entry.put("health", unit.health);
+            /* Ce qu'il faut pour faire voler un drone jusqu'a sa place autour d'un
+               assembleur : la vitesse, l'acceleration, la trainee et la vitesse de rotation.
+               Un assembleur n'avance que de la fraction de ses drones **en position**, donc
+               son debit est une question de vol avant d'etre une question de recette. */
+            entry.put("speed", unit.speed);
+            entry.put("accel", unit.accel);
+            entry.put("drag", unit.drag);
+            entry.put("rotate_speed", unit.rotateSpeed);
+            entry.put("hit_size", unit.hitSize);
+            entry.put("item_capacity", unit.itemCapacity);
             units.put(unit.name, entry);
         }
         root.put("units", units);
@@ -797,6 +809,40 @@ public class DumpBlocks {
                Erekir base wired entirely with them read as unpowered. */
             entry.put("role", "power");
             entry.put("range", beam.range);
+            return;
+        }
+        if (block instanceof UnitAssemblerModule module) {
+            // Un module colle a un assembleur lui donne acces au plan du dessus.
+            entry.put("role", "assembler-module");
+            entry.put("carries", "payload");
+            entry.put("tier", module.tier);
+            return;
+        }
+        if (block instanceof UnitAssembler assembler) {
+            /* Un assembleur n'avance que de la fraction de ses drones **en position**, donc
+               son debit est une question de vol avant d'etre une question de recette. */
+            entry.put("role", "unit-assembler");
+            entry.put("carries", "payload");
+            entry.put("area_size", assembler.areaSize);
+            entry.put("drones_created", assembler.dronesCreated);
+            entry.put("drone_construct_time", assembler.droneConstructTime);
+            entry.put("drone_type", assembler.droneType.name);
+            Jval plans = Jval.newArray();
+            for (UnitAssembler.AssemblerUnitPlan one : assembler.plans) {
+                Jval made = Jval.newObject();
+                made.put("unit", one.unit.name);
+                made.put("time", one.time);
+                Jval needs = Jval.newObject();
+                if (one.requirements != null) {
+                    for (mindustry.type.PayloadStack stack : one.requirements) {
+                        needs.put(stack.item.name, stack.amount);
+                    }
+                }
+                made.put("payloads", needs);
+                plans.asArray().add(made);
+            }
+            entry.put("plans", plans);
+            entry.put("input_liquid", liquidInputsOf(block));
             return;
         }
         if (block instanceof PayloadMassDriver driver) {

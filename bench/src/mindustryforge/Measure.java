@@ -335,6 +335,13 @@ public class Measure implements ApplicationListener {
                 held.append(" ~").append(belt.len).append(':')
                     .append(String.format(java.util.Locale.ROOT, "%.3f", belt.minitem));
             }
+            // Un assembleur : ses drones, leur avancement, et le courant qu'il recoit.
+            if (build instanceof mindustry.world.blocks.units.UnitAssembler
+                    .UnitAssemblerBuild made) {
+                held.append(" &").append(made.units.size).append('/').append(
+                    String.format(java.util.Locale.ROOT, "%.4f/%.3f",
+                        made.droneProgress, made.power == null ? 1f : made.power.status));
+            }
             // Le canon d'un mass driver a cargaison : charge, rechargement, glissement.
             if (build instanceof mindustry.world.blocks.payloads.PayloadMassDriver
                     .PayloadDriverBuild gun) {

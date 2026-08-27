@@ -48,7 +48,7 @@ second, c'est une intuition qui a l'air d'un portage.
       heat-redirector, heat-router, small-heat-redirector
 - [x] `PowerNode` - 3 blocs - relie le reseau
       power-node, power-node-large, surge-tower
-- [ ] `UnitAssembler` - 3 blocs - assemble une unite a partir de plans
+- [x] `UnitAssembler` - 3 blocs - son debit est une question de vol avant d'etre une recette
       mech-assembler, ship-assembler, tank-assembler
 - [x] `ArmoredConduit` - 2 blocs
       plated-conduit, reinforced-conduit
@@ -214,7 +214,7 @@ second, c'est une intuition qui a l'air d'un portage.
       tile-logic-display
 - [x] `TractorBeamTurret` - 1 bloc
       parallax
-- [ ] `UnitAssemblerModule` - 1 bloc
+- [x] `UnitAssemblerModule` - 1 bloc - il donne acces au plan du dessus, sans trou de palier
       basic-assembler-module
 - [ ] `UnitCargoLoader` - 1 bloc
       unit-cargo-loader

@@ -199,9 +199,16 @@ export async function ported(code, ticks, ground = [], stock = [], each = null) 
   const units = {};
   for (const build of world.builds) {
     const made = build.state.made || 0;
-    if (!made) continue;
     const name = build.state.plan?.unit;
-    if (name) units[name] = (units[name] || 0) + made;
+    if (made && name) units[name] = (units[name] || 0) + made;
+
+    /* An assembler's drones are units on the map like any other, so the game counts them in
+       `Groups.unit` and so does this. They are the only way to see, from outside, that an
+       assembler under half power builds three of them in thirty seconds and not four. */
+    for (const drone of build.state.drones || []) {
+      const kind = build.block.drone_type;
+      if (kind) units[kind] = (units[kind] || 0) + 1;
+    }
   }
 
   return {

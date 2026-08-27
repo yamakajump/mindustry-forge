@@ -76,6 +76,11 @@ function snapshot(world, tick) {
     if (build.state.ids) {
       held += ` ~${build.state.len}:${(build.state.minitem ?? 1).toFixed(3)}`;
     }
+    // An assembler: its drones, how far the next one is, and the power it is getting.
+    if (build.state.drones) {
+      held += ` &${build.state.drones.length}`
+        + `/${build.state.droneProgress.toFixed(4)}/${(build.state.power ?? 1).toFixed(3)}`;
+    }
     // A payload driver's barrel: charge, reload, how far the cargo has slid, and its aim.
     if (build.state.charge !== undefined && build.state.length !== undefined) {
       held += ` $${build.state.charge.toFixed(2)}/${build.state.reload.toFixed(3)}`
