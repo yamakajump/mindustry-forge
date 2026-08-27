@@ -77,6 +77,27 @@ header {
    image non plus, `currentColor` ne traverse pas un `<img>`. La geometrie est celle de
    `brand/mark-plain.svg`, qui reste la source : un test compare les deux copies a elle. */
 .brand .signe { height: .95em; width: auto; color: var(--accent); flex: none; }
+
+/* Une cible que le doigt trouve, sans deplacer quoi que ce soit.
+
+   La marque de l'entete est un lien, et c'etait le seul controle du site sous 36 px de
+   haut : 30 a 390, 27 a 320, la ou ses voisins `a.discord` et `.deplier` portent deja
+   leurs 44. Elle etait l'exception dans sa propre section.
+
+   Un `min-height` aurait suffi, et il aurait coute : mesure, l'entete est deja sur deux
+   lignes a 800 px, et lui donner 44 px de haut le faisait passer de 118 a 132. Grandir un
+   entete deja replie pour reparer une cible, c'est echanger un defaut contre un autre.
+
+   La zone sensible est donc etendue par un pseudo-element, qui recoit les clics sans
+   participer a la mise en page. La marque garde ses 30 px, le doigt en trouve 44.
+
+   Pose sur `header .brand` et pas sur `.brand` : la barre de l'editeur ecrit la sienne
+   dans un `<span>` hors de tout `<header>`. Ce n'est pas un lien, ca ne se vise pas. */
+header .brand { position: relative; }
+header .brand::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  height: 44px; transform: translateY(-50%);
+}
 header nav { margin-left: auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 header nav a { color: var(--dim); }
 header nav a:hover { color: var(--ink); }
