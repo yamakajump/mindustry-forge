@@ -128,6 +128,11 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
 
   <!-- Tout ce qui suit disparait des qu'un rapport s'affiche : c'est l'accueil d'une page
        vide, pas un pied de page. `montrerAccueil` s'en charge. -->
+  <!-- Le trou dans le fichier. `HomeController` y pose une balise `application/json` avec
+       le compte reel et quelques schematiques ; servi en statique, le marqueur reste un
+       commentaire inerte et la page se passe simplement de vitrine. -->
+  <!--VITRINE-->
+
   <section class="accueil" id="accueil">
     <!-- Une capture reelle du site en train d'analyser, pas une illustration : les chiffres
          dessus sont ceux que l'analyse calcule. Produite par tools/build_brand.py. -->
@@ -145,6 +150,14 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
       <p class="hint-line" data-i18n="vitrine.accueil.sans-compte">Tout se passe dans ton
         navigateur. Rien n'est envoye, rien n'est garde, et il n'y a pas de compte a creer
         pour analyser.</p>
+
+      <!-- Rempli par `peuplerVitrine` si le serveur a pose son ilot. Vide sinon, et la
+           page se lit quand meme : c'est la moitie qui depend d'une base. -->
+      <div class="deja" id="deja" hidden>
+        <h3 data-i18n="vitrine.accueil.deja-analysees">Deja analysees</h3>
+        <p class="hint-line" id="deja-compte"></p>
+        <ul class="deja-liste" id="deja-liste"></ul>
+      </div>
 
       <p class="porte">
         <span class="dim" data-i18n="vitrine.accueil.rien-a-coller">Rien a coller ?</span>
@@ -745,6 +758,45 @@ async function edit(change) {
   } catch (error) {
     if (note) note.textContent = `Modification impossible : ${error.message}`;
   }
+}
+
+/**
+ * Les quelques schematiques mises en avant, si le serveur en a pose.
+ *
+ * Lues dans une balise `application/json` plutot que demandees par une seconde requete :
+ * la page passe deja par Laravel, donc la donnee arrive avec elle. Rien a faire quand
+ * l'ilot est absent, ce qui est le cas d'un service de fichiers statique.
+ */
+async function peuplerVitrine() {
+  const ilot = document.getElementById("vitrine");
+  if (!ilot) return;
+
+  let data;
+  try { data = JSON.parse(ilot.textContent); } catch { return; }
+  if (!data?.schematiques?.length) return;
+
+  await dictionary;
+  const bloc = $("deja");
+  $("deja-compte").textContent = t("vitrine.accueil.compte", { total: data.total });
+  $("deja-liste").innerHTML = data.schematiques.map((s) => `
+    <li><a href="/s/${encodeURIComponent(s.slug)}">
+      <span class="deja-nom">${escape(s.nom)}</span>
+      <span class="deja-chiffres">
+        <span class="num">${escape(String(s.debit))}</span> ${escape(s.produit)}
+        ${escape(t("vitrine.accueil.par-minute"))}
+        &middot; <span class="num">${escape(String(s.blocs))}</span>
+        ${escape(t("vitrine.accueil.blocs"))}
+      </span></a></li>`).join("");
+
+  /* La porte porte le compte, au lieu d'un second lien vers le meme endroit a cent pixels
+     du premier. Un chiffre reel dit mieux que « parcourir » ce qu'il y a derriere. */
+  const porte = document.querySelector(".porte .button");
+  if (porte && data.total) {
+    porte.textContent = t("vitrine.accueil.parcourir-comptees", { total: data.total });
+    porte.removeAttribute("data-i18n");
+  }
+
+  bloc.hidden = false;
 }
 
 /**
@@ -1375,6 +1427,7 @@ function wireKeep(report) {
    rather than a beat later. */
 loadSprites().catch(() => {});
 whoAmI();
+peuplerVitrine();
 
 /* `/editer` sert cette meme page, et la page lit son propre chemin. Une adresse plutot
    qu un fragment : un fragment ne part pas au serveur, donc il ne se partage pas dans un
