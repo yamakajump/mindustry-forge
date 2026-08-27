@@ -371,6 +371,13 @@ qu'aucun message ne l'en avertisse, et débogue un écran qui n'est pas le sien.
 port à soi, et le vérifier avec une ressource qui n'existe que chez soi plutôt qu'avec la
 page d'accueil.
 
+**Le dump du catalogue n'est pas reproductible octet pour octet.** Deux lancements sans
+toucher au code donnent huit lignes de diff sur `wave` et `tsunami` : l'ordre de leurs
+`ammo_types` liquides vient de l'iteration d'une `ObjectMap` d'arc, qui depend du hachage
+et donc du lancement. Le contenu est identique apres parsing. Mais dans un diff de 457 ko,
+personne ne distingue un reordonnancement d'un vrai changement, et c'est comme ca qu'une
+regeneration cache une regression. Les sorties concernees sont triees a la source.
+
 **`consumes_power` peut valoir vrai sans aucune consommation.** La presse à graphite est
 mécanique dans le jeu. Se fier à la présence de `power` et `power_out`, jamais au booléen.
 
