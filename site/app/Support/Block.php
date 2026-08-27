@@ -266,20 +266,54 @@ class Block
     }
 
     /**
-     * How long a drill takes to bring up one item, per tile of ore it stands on.
+     * How long this drill takes to bring up one item, per tile of ore it stands on.
      *
-     * Not a throughput, and deliberately not turned into one. A drill's output depends on
-     * how many ore tiles are under it, how hard that ore is, and whether it is being fed
-     * water, all of which are properties of where it was placed rather than of the block:
-     * the solver works them out in `engine/machines.js` and the analysis reports the
-     * result. Printing an invented "items per second" here would be a second answer to a
-     * question this repository already answers properly, and a worse one.
+     * This is `drillTimeOf` in `engine/ground.js`, which is `Drill.getDrillTime` in the
+     * game, and it is not one formula but two. An ordinary drill pays a hardness term; a
+     * burst drill does not, because its class sets `hardnessDrillMultiplier` to zero. A few
+     * drills also halve their time on one particular ore, which is the `drill_multipliers`
+     * divisor.
+     *
+     * Repeated in PHP for the same reason as `craftsPerSecond`, and guarded the same way:
+     * `BlockRatesTest` runs the engine's own function over every drill and every ore and
+     * fails if the two disagree. Before this existed the page printed the bare `drill_time`
+     * and called it the answer, which quietly understated every ore harder than sand: a
+     * mechanical drill on titanium takes 750 ticks, not 600.
+     *
+     * Still not a throughput. What a drill actually produces depends on how many ore tiles
+     * are under it and on the water it is fed, which are properties of where it was placed:
+     * the solver works those out and the analysis reports them.
      */
-    public function drillSeconds(): ?float
+    public function drillTicksFor(string $item, int $hardness): float
     {
-        $ticks = (float) $this->get('drill_time', 0);
+        $scale = (float) ($this->get('drill_multipliers')[$item] ?? 1);
+        $hard = $this->get('role') === 'burst-drill' ? 0.0 : (float) $this->get('hardness_multiplier', 0);
 
-        return $ticks > 0 ? $ticks / self::TICKS : null;
+        return ((float) $this->get('drill_time', 0) + $hard * $hardness) / ($scale ?: 1);
+    }
+
+    public function drillSecondsFor(string $item, int $hardness): float
+    {
+        return $this->drillTicksFor($item, $hardness) / self::TICKS;
+    }
+
+    /** Whether it is a drill at all, which is what decides if the ore table is worth drawing. */
+    public function isDrill(): bool
+    {
+        return (float) $this->get('drill_time', 0) > 0 && $this->drillTier() !== null;
+    }
+
+    /** The ores it refuses regardless of hardness. The impact drill will not touch thorium. */
+    public function blockedItems(): array
+    {
+        return array_values(array_filter((array) $this->get('blocked_items', []), 'is_string'));
+    }
+
+    /** Whether this drill can reach a given ore at all, by hardness and by refusal. */
+    public function canDrill(string $item, int $hardness): bool
+    {
+        return $hardness <= (int) $this->get('tier', 0)
+            && ! in_array($item, $this->blockedItems(), true);
     }
 
     /** The hardest ore it will touch. A mechanical drill stops at titanium. */

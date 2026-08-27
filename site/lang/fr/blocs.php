@@ -66,7 +66,10 @@ return [
         'portee' => 'Portée',
         'liens' => 'Liens simultanés',
         'debit_transport' => 'Débit de transport',
-        'temps_forage' => 'Forage, par case de minerai',
+        'forage' => 'Forage, par case de minerai',
+        'forage_note' => 'Le temps pour un objet, avec une seule case de minerai sous la
+            foreuse. Deux fois plus de cases, deux fois plus vite. Ce qui sort vraiment dans
+            une schématique est mesuré par l\'analyse.',
         'durete_max' => 'Dureté maximale forée',
         'boost_liquide' => 'Accélération au liquide',
 

@@ -91,14 +91,6 @@
           <span>{{ $block->maxNodes() }}</span></div>
       @endif
 
-      {{-- A drill's facts, and not an invented throughput. What it brings up depends on the
-           ore tiles under it, on how hard that ore is, and on the water it is given: the
-           solver works that out, and the analysis reports it. --}}
-      @if($block->drillSeconds())
-        <div class="line"><span>{{ __('blocs.page.temps_forage') }}</span>
-          <span>{{ $number($block->drillSeconds()) }} {{ __('blocs.unite.secondes') }}</span></div>
-      @endif
-
       @if($block->drillTier())
         <div class="line"><span>{{ __('blocs.page.durete_max') }}</span>
           <span>{{ $block->drillTier() }}</span></div>
@@ -109,6 +101,24 @@
           <span>&times;{{ $number($block->liquidBoost()) }}</span></div>
       @endif
     </div>
+
+    {{-- What a drill can pull up, ore by ore, and never one figure for all of them. The
+         hardness term is the difference between six hundred ticks and twelve hundred and
+         fifty, so a single number would be right for sand and wrong for everything else.
+         Still not a throughput: how many tiles of ore lie under it is a property of where
+         it was placed, which is the analysis's answer and not this page's. --}}
+    @if($ores !== [])
+      <div class="card bloc-facts">
+        <h2>{{ __('blocs.page.forage') }}</h2>
+        @foreach($ores as $ore => $seconds)
+          <div class="line">
+            <span>@include('blocks.partials.thing', ['thing' => $ore])</span>
+            <span>{{ $number($seconds) }} {{ __('blocs.unite.secondes') }}</span>
+          </div>
+        @endforeach
+        <p class="hint-line">{{ __('blocs.page.forage_note') }}</p>
+      </div>
+    @endif
 
     @if($block->cost() !== [])
       <div class="card bloc-facts">

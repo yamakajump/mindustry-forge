@@ -144,6 +144,34 @@ class BlockCatalogue
     }
 
     /**
+     * Everything that can actually come out of the ground, with how hard it is.
+     *
+     * Taken from the floors rather than from the item list: plenty of items exist that no
+     * drill will ever produce, and offering silicon on a drill's page would be describing a
+     * game nobody is playing. Read over the whole catalogue because floors are hidden.
+     *
+     * @return array<string, int> item name to hardness
+     */
+    public static function minableItems(): array
+    {
+        $items = self::items();
+
+        $ores = [];
+        foreach ((array) (self::raw()['blocks'] ?? []) as $data) {
+            $drop = is_array($data) ? ($data['drops'] ?? null) : null;
+            if (is_string($drop) && isset($items[$drop])) {
+                $ores[$drop] = (int) ($items[$drop]['hardness'] ?? 0);
+            }
+        }
+
+        // Softest first, which is the order a drill meets them: a tier two drill reads its
+        // own list top down and stops where the game stops it.
+        asort($ores);
+
+        return $ores;
+    }
+
+    /**
      * Sort a handful of item names into the order the game's own panel lists them.
      *
      * A build cost read off the block card in game is copper first, then lead, then the

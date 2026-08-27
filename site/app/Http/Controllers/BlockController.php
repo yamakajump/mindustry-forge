@@ -94,8 +94,35 @@ class BlockController extends Controller
             'destinations' => $this->destinations($block),
             'schematics' => $this->schematicsUsing($name),
             'schematicCount' => $this->countSchematicsUsing($name),
+            'ores' => $this->oresWithinReach($block),
             'gameVersion' => BlockCatalogue::gameVersion(),
         ]);
+    }
+
+    /**
+     * What this drill can pull up, and how long each one takes per tile of ore.
+     *
+     * Empty for anything that is not a drill. The hardness term is the whole reason this
+     * exists: a mechanical drill on sand and the same drill on titanium are six hundred
+     * ticks apart, and a page printing one figure for both was wrong on every ore but the
+     * softest.
+     *
+     * @return array<string, float> item name to seconds per item per ore tile
+     */
+    private function oresWithinReach(Block $block): array
+    {
+        if (! $block->isDrill()) {
+            return [];
+        }
+
+        $reachable = [];
+        foreach (BlockCatalogue::minableItems() as $item => $hardness) {
+            if ($block->canDrill($item, $hardness)) {
+                $reachable[$item] = $block->drillSecondsFor($item, $hardness);
+            }
+        }
+
+        return $reachable;
     }
 
     /**

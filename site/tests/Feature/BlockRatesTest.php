@@ -19,45 +19,89 @@ use App\Support\Block;
  * The whole catalogue, never a sample: a sample is what lets through the one block whose
  * shape is unusual, which is the only block this test would ever have caught.
  */
-it('donne exactement les memes debits que le moteur', function () {
-    $script = base_path('tests/Fixtures/craft-rates.mjs');
-    $engine = public_path('forge/analyse.js');
-    $catalogue = public_path('forge/blocks.json');
-
+it('donne exactement les memes chiffres que le moteur', function () {
     $command = sprintf(
-        'node %s %s %s',
-        escapeshellarg($script),
-        escapeshellarg($engine),
-        escapeshellarg($catalogue),
+        'node %s %s %s %s',
+        escapeshellarg(base_path('tests/Fixtures/engine-figures.mjs')),
+        escapeshellarg(public_path('forge/analyse.js')),
+        escapeshellarg(public_path('forge/blocks.json')),
+        escapeshellarg(public_path('forge/ground.js')),
     );
 
     $output = [];
     $status = 0;
     exec($command.' 2>&1', $output, $status);
-    $printed = implode("\n", $output);
+    $printed = implode('
+', $output);
 
     // Not skipped when node is missing. A guard that quietly stops running is worse than no
     // guard, because the reason it exists is that nobody would otherwise notice.
-    expect($status)->toBe(0, "le moteur n'a pas pu etre execute :\n".$printed);
+    expect($status)->toBe(0, "le moteur n'a pas pu etre execute :
+".$printed);
 
-    $fromEngine = json_decode($printed, true);
-    expect($fromEngine)->toBeArray()->not->toBeEmpty();
+    $engine = json_decode($printed, true);
+    expect($engine)->toBeArray()
+        ->and($engine['rates'] ?? null)->toBeArray()->not->toBeEmpty()
+        ->and($engine['drills'] ?? null)->toBeArray()->not->toBeEmpty();
 
+    $items = BlockCatalogue::items();
     $disagreements = [];
-    foreach ((array) (BlockCatalogue::raw()['blocks'] ?? []) as $name => $data) {
-        $php = (new Block($name, $data))->craftsPerSecond();
-        $js = (float) ($fromEngine[$name] ?? 0);
 
-        // Floats, so compared on a tolerance rather than on identity. A millionth is far
+    foreach ((array) (BlockCatalogue::raw()['blocks'] ?? []) as $name => $data) {
+        $block = new Block($name, $data);
+
+        // Floats, so compared on a tolerance rather than on identity. A billionth is far
         // below anything a page rounds to and far above the noise of two languages parsing
         // the same decimal.
+        $php = $block->craftsPerSecond();
+        $js = (float) ($engine['rates'][$name] ?? 0);
         if (abs($php - $js) > 1e-9) {
-            $disagreements[$name] = ['php' => $php, 'js' => $js];
+            $disagreements["{$name} craftsPerSecond"] = ['php' => $php, 'js' => $js];
+        }
+
+        foreach ((array) ($engine['drills'][$name] ?? []) as $item => $jsTicks) {
+            $phpTicks = $block->drillTicksFor($item, (int) ($items[$item]['hardness'] ?? 0));
+            if (abs($phpTicks - (float) $jsTicks) > 1e-9) {
+                $disagreements["{$name} drill {$item}"] = ['php' => $phpTicks, 'js' => $jsTicks];
+            }
         }
     }
 
-    expect($disagreements)->toBe([], 'Block::craftsPerSecond a diverge de analyse.js');
+    expect($disagreements)->toBe([], 'Block a diverge du moteur');
 })->group('engine');
+
+/**
+ * The hardness term is the whole point of asking the engine rather than reading a field.
+ *
+ * A mechanical drill takes 600 ticks on sand and 750 on titanium, because hardness costs it
+ * fifty ticks a point. The page printed the bare `drill_time` before this, so it was right
+ * on sand and understated every other ore on every drill in the game.
+ *
+ * Burst drills are the counter-case that makes it worth a test of its own: their class sets
+ * `hardnessDrillMultiplier` to zero, so hardness costs them nothing, and they halve their
+ * time on beryllium. A single formula would be wrong for one family or the other.
+ */
+it('compte la durete du minerai, sauf la ou le jeu ne la compte pas', function () {
+    $mechanical = BlockCatalogue::find('mechanical-drill');
+
+    expect($mechanical->drillTicksFor('sand', 0))->toBe(600.0)
+        ->and($mechanical->drillTicksFor('copper', 1))->toBe(650.0)
+        ->and($mechanical->drillTicksFor('titanium', 3))->toBe(750.0);
+
+    // Too hard for a tier two drill, whatever the arithmetic says it would cost.
+    expect($mechanical->canDrill('titanium', 3))->toBeFalse()
+        ->and($mechanical->canDrill('copper', 1))->toBeTrue();
+
+    $impact = BlockCatalogue::find('impact-drill');
+
+    // No hardness term, and half the time on beryllium.
+    expect($impact->drillTicksFor('tungsten', 5))->toBe(720.0)
+        ->and($impact->drillTicksFor('beryllium', 3))->toBe(360.0);
+
+    // Refused outright, even though thorium is within its tier.
+    expect($impact->blockedItems())->toContain('thorium')
+        ->and($impact->canDrill('thorium', 4))->toBeFalse();
+});
 
 /**
  * The units of `range` have to stay classified, block by block.
