@@ -117,3 +117,61 @@ Safari 15 a remplace par le SVG normal.
 Pas de `apple-touch-icon-precomposed`, pas de declinaison par taille : iOS choisit le
 `apple-touch-icon` unique et le redimensionne, et il n'y a plus d'appareil qui reclame
 les 76, 120 ou 152 pixels separement depuis iOS 8.
+
+## Côté serveur : deux ajouts au vhost
+
+`deployment/nginx/` appartient au pilote, rien n'y a été touché. Voici ce qui manque,
+constaté en lisant le fichier.
+
+**Les assets de marque ne portent aucune durée de cache.** Le vhost donne `expires 1h` à
+`/forge/` et rien d'autre. Donc `og.jpg`, les six icônes, le manifest et tout
+`/brand/` sont revalidés à chaque visite. Ce sont des fichiers qui ne changent
+qu'au déploiement.
+
+```nginx
+# L'identite visuelle : des fichiers qui ne bougent qu'au deploiement, et que chaque
+# service qui deplie un lien retelecharge. Le vhost ne leur donnait aucune duree de vie,
+# donc le navigateur les revalidait a chaque visite.
+location ~* ^/(favicon\.(ico|svg)|apple-touch-icon\.png|icon-\d+\.png|icon-maskable-\d+\.png|og(-[a-z]+)?\.jpg|site\.webmanifest)$ {
+    expires 7d;
+    add_header Cache-Control "public";
+    try_files $uri =404;
+}
+
+location ^~ /brand/ {
+    expires 30d;
+    add_header Cache-Control "public";
+    try_files $uri =404;
+}
+```
+
+Sept jours et pas plus pour les icônes : elles sont référencées par une adresse sans
+empreinte, donc une durée longue rendrait un changement de logo invisible pendant des
+semaines chez ceux qui ont déjà visité le site. `/brand/` peut aller plus loin, personne
+ne le charge dans une page.
+
+**Le type MIME de `.webmanifest` n'est pas garanti.** À vérifier sur le serveur plutôt
+qu'à supposer :
+
+```bash
+grep -r "webmanifest" /etc/nginx/mime.types
+```
+
+Si la ligne est absente, nginx sert le fichier en `application/octet-stream`. Les
+navigateurs sont tolérants là-dessus aujourd'hui, mais ça se corrige d'un bloc :
+
+```nginx
+types { application/manifest+json webmanifest; }
+```
+
+## Un piège à ajouter à la liste des pièges déjà payés
+
+**`php artisan serve` ne voit pas un fichier statique créé après son démarrage.** Un
+`favicon.svg` posé dans `site/public/` pendant que le serveur tourne répond 404, avec
+un `X-Powered-By: PHP` et un `Cache-Control: no-cache, private` dans la réponse, c'est-à-dire
+que la requête est partie dans Laravel au lieu d'être servie comme un fichier. Le fichier
+est pourtant bien là. Redémarrer le serveur suffit.
+
+Coûté une demi-heure de fausse piste ici : on cherche une erreur de configuration nginx,
+un `.htaccess`, un problème de droits, alors que le serveur de développement a simplement
+une vue périmée de son propre dossier public.
