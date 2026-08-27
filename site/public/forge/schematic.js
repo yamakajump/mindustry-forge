@@ -23,6 +23,30 @@
 const HEADER = "msch";
 const VERSION = 1;
 
+/**
+ * The most a paste is allowed to decompress to, derived rather than picked.
+ *
+ * Deflate has no bound of its own: a kilobyte of it expands to a megabyte, and a megabyte
+ * to a gigabyte, at the reader's expense. That was tolerable while the only string this
+ * site read was one its visitor had just copied out of their own game. It stopped being
+ * tolerable the day the marketplace started serving fifteen thousand schematics fetched
+ * from two other sites, because the same reader now runs on bytes nobody here chose, in a
+ * visitor's browser when they open a page and under Node when the collector measures.
+ *
+ * The ceiling is what Mindustry itself can write, so nothing a player could legitimately
+ * make is refused:
+ *
+ *   * 64 by 64 tiles, from `Vars.maxSchematicSize` with `Schematics.limitSchematicSize`;
+ *   * per tile, a palette index, a packed position, a rotation, and at worst a processor's
+ *     whole configuration, which `LogicBlock.maxCompressedLen` caps at 16 000 bytes;
+ *   * plus the header, the tags and a 255 entry palette, generously rounded.
+ *
+ * Mindustry v8 build 159.7.
+ */
+const MAX_TILES = 64 * 64;
+const MAX_TILE_BYTES = 1 + 4 + 1 + 4 + 16000 + 1;
+const MAX_BODY = MAX_TILES * MAX_TILE_BYTES + 64 * 1024;
+
 /** Bytes from what the clipboard carries, tolerating a paste wrapped by a chat client. */
 export function bytesFromBase64(text) {
   const clean = String(text).replace(/\s+/g, "");
@@ -72,16 +96,35 @@ async function pump(data, format) {
   const chunks = [];
   let length = 0;
   let complete = false;
+  let overflowed = false;
   try {
     for (;;) {
       const { value, done } = await reader.read();
       if (done) { complete = true; break; }
       chunks.push(value);
       length += value.length;
+
+      /* Stopped while it is happening rather than after, because after the fact the memory
+         has already been taken. The stream is cancelled so the decompressor stops working
+         on something nobody is going to read.
+
+         Flagged rather than thrown: the catch below exists to keep what decoded before a
+         checksum failure, and it would swallow a throw here just as happily. Overflowing is
+         not a damaged paste, it is a refusal, and it has to leave this function as one. */
+      if (length > MAX_BODY) {
+        overflowed = true;
+        await reader.cancel().catch(() => {});
+        break;
+      }
     }
   } catch {
     // Kept on purpose. What decoded before the error is the schematic; what failed is the
     // checksum after it.
+  }
+
+  if (overflowed) {
+    chunks.length = 0;
+    throw new Error(`la schematique se dilate au-dela de ${MAX_BODY} octets`);
   }
 
   const out = new Uint8Array(length);
@@ -196,7 +239,11 @@ export async function read(bytes) {
   let body, altered;
   try {
     ({ body, altered } = await inflate(bytes.slice(5)));
-  } catch {
+  } catch (error) {
+    /* One reason is worth passing through rather than flattening: a paste that expands past
+       what the game could ever have written is refused on purpose, and a reader told only
+       that "decompression failed" would go looking for a damaged copy that does not exist. */
+    if (error.message.includes("se dilate")) throw error;
     throw new Error("schematique illisible : la decompression a echoue");
   }
 
