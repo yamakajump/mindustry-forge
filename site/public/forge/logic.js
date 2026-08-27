@@ -30,14 +30,11 @@ export async function readProgram(bytes) {
 
   let body;
   try {
-    const stream = new DecompressionStream("deflate");
-    const writer = stream.writable.getWriter();
-    writer.write(bytes);
-    writer.close();
-    body = new Uint8Array(await new Response(stream.readable).arrayBuffer());
+    body = await expand(bytes);
   } catch {
-    // A processor whose configuration did not survive the paste. Better a schematic with
-    // one unread block than no schematic at all.
+    // A processor whose configuration did not survive the paste, or one that expands past
+    // anything the game could have written. Better a schematic with one unread block than
+    // no schematic at all; `fromSchematic` reports it as unreadable rather than as empty.
     return null;
   }
 
@@ -215,6 +212,60 @@ export async function writeProgram({ code = "", links = [] } = {}) {
   }
 
   return deflate(body);
+}
+
+/**
+ * The most a processor's configuration is allowed to expand to, derived rather than picked.
+ *
+ * The same trap as the schematic body, one layer down and worse: a configuration is a
+ * deflated blob inside a schematic, so a bounded schematic can still carry a blob that
+ * expands without end. Measured before this ceiling existed, eight hundred kilobytes of
+ * configuration took two and a half gigabytes of memory to read, and the fifteen thousand
+ * schematics the collector brought back come from two sites nobody here controls.
+ *
+ * The ceiling is what `LogicBlock.compress` can write, so no real processor is refused:
+ *
+ *   * a version byte and two counts;
+ *   * the code, which `maxByteLen` caps at 102 400 bytes;
+ *   * the links, `maxLinks` of them at `maxNameLength` plus a length and two shorts each.
+ *
+ * Mindustry v8 build 159.7.
+ */
+const MAX_CODE_BYTES = 102400;
+const MAX_LINKS = 6000;
+const MAX_LINK_BYTES = 2 + 32 + 2 + 2;
+const MAX_PROGRAM = 1 + 4 + MAX_CODE_BYTES + 4 + MAX_LINKS * MAX_LINK_BYTES;
+
+/**
+ * Inflate, and stop rather than follow a stream that has stopped being plausible.
+ *
+ * Read chunk by chunk instead of through `new Response(stream).arrayBuffer()`, which is
+ * shorter and has no way to say "enough": by the time it resolves, the memory is taken.
+ */
+async function expand(bytes) {
+  const stream = new DecompressionStream("deflate");
+  const writer = stream.writable.getWriter();
+  writer.write(bytes).catch(() => {});
+  writer.close().catch(() => {});
+
+  const reader = stream.readable.getReader();
+  const chunks = [];
+  let length = 0;
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    length += value.length;
+    if (length > MAX_PROGRAM) {
+      await reader.cancel().catch(() => {});
+      throw new Error(`configuration dilatee au-dela de ${MAX_PROGRAM} octets`);
+    }
+  }
+
+  const out = new Uint8Array(length);
+  let at = 0;
+  for (const chunk of chunks) { out.set(chunk, at); at += chunk.length; }
+  return out;
 }
 
 /** Zlib-wrapped deflate, which is what Java's `DeflaterOutputStream` writes. */
