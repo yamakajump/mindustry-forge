@@ -32,7 +32,7 @@
         <p class="meta">
           {{ $schematic->blocks }} blocs
           @if($schematic->power_made > 0.5)
-            &middot; {{ number_format($schematic->power_made - $schematic->power_used, 0, ',', ' ') }} energie/s
+            &middot; @if($schematic->fedBySandbox()){{ __('schema.page.bac-a-sable-court') }}@else{{ number_format($schematic->power_made - $schematic->power_used, 0, ',', ' ') }} energie/s @endif
           @endif
         </p>
         @include('partials.manage', ['compact' => true])

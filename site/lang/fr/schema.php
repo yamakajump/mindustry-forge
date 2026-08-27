@@ -10,6 +10,25 @@
 
 return [
     /*
+     * A sandbox tap, said rather than quoted.
+     *
+     * No figure goes through these, for the reason written at the top of this file and for
+     * a sharper one: the figure is the whole defect. 1,246 pages printed 479,999,971 energy
+     * a second in green because `power-source` hands out 999,999.94 and the arithmetic was
+     * done correctly on it.
+     */
+    'page' => [
+        'bac-a-sable' => 'Alimentee par une source de bac a sable',
+        'bac-a-sable-court' => 'source de bac a sable',
+        'bac-a-sable-aide' => "Un robinet de bac a sable donne autant qu'on lui demande, donc
+            ce que cette schematique sort n'est pas une mesure de ce que ses blocs font :
+            c'est ce qu'un robinet permet. Elle reste lisible et analysable, elle n'est
+            simplement pas classee parmi les productrices.",
+        'bac-a-sable-courant' => "Son courant vient d'une source de bac a sable, pas de ses
+            generateurs : il n'y a rien a en conclure sur ce qu'elle rendrait a ta base.",
+    ],
+
+    /*
      * The comparison page.
      *
      * No figure goes through a placeholder: when a key is missing Laravel returns the key
