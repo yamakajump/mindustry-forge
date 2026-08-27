@@ -78,9 +78,14 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    /*
+     * French, in the file rather than only in the environment. `.env` is not versioned, so
+     * a default of `en` here means the tests and the CI run in a language the site has no
+     * dictionary for, and everyone reads raw keys in integration without understanding why.
+     */
+    'locale' => env('APP_LOCALE', 'fr'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'fr'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
