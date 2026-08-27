@@ -6,41 +6,32 @@ l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 
 ## À faire
 
-### 1. Finir l'audit
+### 1. L'audit est vidé
 
 Le rapport complet est dans `docs/audit-2026-08.md` : 39 défauts survivants sur 50
-proposés, chacun passé par trois sceptiques. Douze sont corrigés et mesurés, dans l'ordre
-que le rapport recommandait lui-même.
+proposés, chacun passé par trois sceptiques. **Tous sont corrigés**, dans l'ordre que le
+rapport recommandait lui-même, et le banc est passé de 91 à 128 scénarios.
 
-Corrigés : l'anneau de voisinage des blocs de taille paire et son ordre ; le courant qui
-ne traverse pas un consommateur ; une machine à sec qui ne demande rien ; la temporisation
-et le curseur du routeur ; les deux règles du déchargeur ; le bonus à l'eau des foreuses
-et le ×2 des foreuses à percussion sur le béryllium ; l'efficacité de la pompe ;
-l'alternance du trieur ; le débit d'une jonction ; le convoyeur de phase sans courant ;
-l'ordre grilles-avant-blocs. Plus les cinq scénarios morts.
+Deux d'entre eux sont corrigés sans être mesurés, et il faut le dire plutôt que le laisser
+croire :
 
-Reste, par ordre de rendement décroissant :
+- **L'ordre de `dump(null)`.** Le jeu balaie `content.items()` par identifiant, le portage
+  balayait une `Map` dans l'ordre d'arrivée. Transcrit parce que c'est ce que fait le jeu,
+  mais aucune forme que le banc sait construire ne les distingue : un séparateur fabrique
+  un objet toutes les trente-cinq images et en propose un toutes les cinq, donc il n'en
+  retient jamais deux à la fois tant que sa sortie bouge, et dès qu'elle se ferme plus rien
+  ne part du tout. `separator-jammed` mesure sa réserve bloquée, ce qui est déjà une chose
+  de plus, mais pas l'ordre.
+- **La chaleur transmise d'un réacteur au thorium.** `heatProgress` vaut `heat × 15` et
+  c'est lui que lisent les voisins, pas le `heat` interne dans zéro-un. La correction est
+  juste et invérifiable : un réacteur refroidi voit sa chaleur ramenée à zéro à chaque
+  image, donc il n'en transmet aucune, et un réacteur qui en transmet vraiment est un
+  réacteur en train d'exploser. Il faudrait modéliser le souffle pour mesurer ça.
 
-- **Un conduit qui pointe dans le vide ne fuit pas** (1.12). Le drapeau `leaks` est dans le
-  catalogue et lu nulle part. Une conduite ouverte bloque la ligne ici et se vidange en
-  continu dans le jeu.
-- **L'électrolyseur cale dès qu'un seul de ses deux gaz est plein** (1.15). Avec
-  `dumpExtraLiquid`, le jeu continue et perd le surplus.
-- **Une usine d'unités face à un bloc non solide est bloquée à vie** (1.13). Le jeu dépose
-  l'unité au sol dès que la case devant n'est pas solide.
-- **Le mass driver refuse tout objet** (1.16), et son lien n'est pas relu.
-- **`dumpLiquid` rejoue `moveLiquid`** au lieu de sa propre formule, et le pont à liquide
-  passe le mauvais `scaling`. À corriger **dans le même commit** : aujourd'hui la première
-  erreur masque la seconde.
-- Le reste de la section 2 du rapport : ordre de `dump(null)`, `checkAccept` des ponts,
-  warmup du pont à liquide, faces de l'overflow duct, `beamsOf` qui compare des chaînes, le
-  compteur de combustible qui se fige, la chaleur interne d'un réacteur au thorium,
-  `explodeOnFull`, `liquidOutputDirections`, et la consommation à réservoir plein d'une
-  pompe solide.
-
-Neuf blocs ne sont touchés par aucun scénario et portent chacun un défaut confirmé :
-électrolyseur, réacteur néoplasique, convoyeur et conduit de phase, pont à conduit, pompes
-renforcée, rotative et à impulsion, mass driver. Le banc ne couvre pas ce qu'il ne pose pas.
+Ce souffle est la seule chose que la mort d'un bloc laisse de côté ici : `kill()` vide le
+bloc et le ferme, et un bloc mort n'accepte plus rien, mais le jeu emporte aussi une partie
+de ce qui le touchait. `reactor-neoplasia-full` est construit autour de ce trou, avec juste
+ce qui survit à la mesure.
 
 ### 2. Relancer l'audit sur ce qu'il n'a pas vu
 
@@ -53,6 +44,10 @@ solides. Tout ce code n'a donc jamais été relu par personne d'autre que celui 
 À relancer sur les tranches `payloads.js`, `liquids.js` et la moitié `machines.js` qui a
 bougé, plus le harnais, dont deux réglages ont changé depuis : le stock de départ
 (objets et liquides) et l'appel à `placed()`.
+
+Et sur tout ce que la correction de l'audit a écrit depuis, qui n'a été relu par personne
+non plus : `massdriver.js` en entier, `checkAccept` et `checkDump` des ponts dans `core.js`,
+l'overflow duct, l'usine d'unités passée par `moveOutPayload`, et les deux réacteurs.
 
 ### 3. Le reste de la famille des charges utiles
 
