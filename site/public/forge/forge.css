@@ -224,6 +224,34 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 .accueil-mots h2 { margin: 0 0 10px; font-size: 19px; }
 .accueil-mots p { margin: 0 0 12px; color: var(--dim); }
 
+/* Ce que le catalogue a deja mange. Choisi sur une production mesuree, ce qui ecarte le
+   bac a sable sans regle a maintenir : une schematique nommee `Fps Droper` ne produit
+   rien, donc elle ne peut pas remonter. */
+.deja { margin-top: 22px; }
+.deja h3 { margin: 0 0 6px; font-size: 16px; }
+.deja .hint-line { margin: 0 0 10px; }
+
+.deja-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.deja-liste a {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  min-height: 44px; padding: 6px 10px; border-radius: 6px; color: var(--ink);
+}
+.deja-liste a:hover { background: var(--raised); text-decoration: none; }
+.deja-nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.deja-chiffres { color: var(--dim); font-size: 13px; white-space: nowrap; }
+
+/* Sous 520 px la ligne ne tient plus : le nom tronque, mais les chiffres ne peuvent pas
+   se couper sans perdre leur sens, alors ils poussaient la rangee a 455 px dans une
+   fenetre de 390. Mesure avant correction, et c'est un debordement lateral, donc une
+   page qui glisse sous le pouce et pas un defaut d'alignement. Ils passent dessous. */
+@media (max-width: 520px) {
+  .deja-liste a {
+    flex-direction: column; align-items: flex-start; gap: 2px;
+    padding-top: 8px; padding-bottom: 8px;
+  }
+  .deja-nom { max-width: 100%; }
+}
+
 .porte { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .porte .dim { color: var(--dim); }
 .porte .button { text-decoration: none; }

@@ -5,6 +5,7 @@ use App\Http\Controllers\BlockCardController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CompareController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IconController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SocialCardController;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Route;
  * planning work on the home page believed it, and weighed a cost that did not exist.
  * A comment that states an intention in the present tense will be read as a measurement.
  */
-Route::get('/', fn () => response()->file(public_path('index.html')));
+Route::get('/', [HomeController::class, 'show']);
 
 /*
  * The editor, which is the same page.
