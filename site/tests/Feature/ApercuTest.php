@@ -78,7 +78,7 @@ it('hands the list its codes so the grid stops being grey rectangles', function 
     expect($html)->toContain('/forge/apercu.js');
 });
 
-it('refuses to carry a code big enough to bloat the list', function () {
+it('asks for a big code instead of carrying it, and still draws the tile', function () {
     Storage::fake('public');
     $gros = schema(['name' => 'Enorme', 'code' => str_repeat('A', 16385)]);
 
@@ -86,7 +86,22 @@ it('refuses to carry a code big enough to bloat the list', function () {
 
     /* Measured on the live catalogue, a page of 24 carries 44 kB of codes, median 1 kB and
        largest 8.7 kB. The cap guards the shape the column allows, not the shapes it holds:
-       one 512 kB schematic would otherwise land in a list nobody asked it from. */
+       one 512 kB schematic would otherwise land in a list nobody asked it from.
+
+       Keeping the bound is not the same as leaving a hole in the grid. Past the cap the
+       tile carries its slug and fetches its own code, once it comes into view. */
     expect($html)->not->toContain($gros->code);
-    expect($html)->toContain('apercu trop lourd');
+    expect($html)->toContain('data-slug="'.$gros->slug.'"');
+});
+
+it('serves a code to a tile that asks for one', function () {
+    Storage::fake('public');
+    $gros = schema(['name' => 'Enorme', 'code' => str_repeat('A', 16385)]);
+
+    /* The endpoint the tile calls. It already existed for the analyser, which is why the
+       cap costs nothing to keep: no new route, no new permission, and a private schematic
+       stays as unreachable here as it is everywhere else. */
+    $this->get("/api/schematiques/{$gros->slug}/code")
+        ->assertOk()
+        ->assertSee($gros->code);
 });
