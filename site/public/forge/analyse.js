@@ -16,7 +16,7 @@
  */
 
 import { fromBase64 } from "./schematic.js";
-import { demand, requirements } from "./needs.js";
+import { demand, fuels, requirements } from "./needs.js";
 import { candidates, feedFrom, markable, marksOf, readMarks } from "./marks.js";
 import { attributeOf, beamOf, dryTilesOf, wallSumOf, yieldOf } from "./ground.js";
 import { centre, footprint } from "./geometry.js";
@@ -1244,30 +1244,31 @@ export async function analyse(text, supply = {}, chosen = null,
    */
   const potentialPerMinute = {};
   for (const [item, rate] of Object.entries(atFullSpeed)) {
-    // `*combustible` est un besoin qui n'a pas de nom, pas une matiere qui sort.
+    // `*combustible` is a hole in a shopping list, not something that comes out.
     if (item.startsWith("*")) continue;
     const spare = (rate - (wanted[item] || 0)) * 60;
     if (spare >= 0.1) potentialPerMinute[item] = spare;
   }
 
-  /* Un generateur qui brule n'importe quoi ne reclame aucune matiere nommee : `demand()`
-     compte sa faim sous `*combustible`, et rien ne l'a donc retiree de la boucle ci-dessus.
-     Sans cette deduction, une centrifugeuse qui alimente ses propres bruleurs figure au
-     plafond avec tout le charbon qu'ils avalent - mesure sur une centrifugeuse et deux
-     generateurs a combustion : 120 charbon/min annonces, 60 reellement disponibles.
+  /* A generator that burns anything names no material, so `demand()` counts its hunger
+     under `*combustible` and nothing above took it out of the subtraction. Without this
+     deduction a centrifuge feeding its own burners shows up with all the coal they eat -
+     measured on one centrifuge and two combustion generators: 120 coal/min announced where
+     there are 60.
 
-     Preleve sur ce qui brule vraiment, d'apres la flammabilite que le jeu declare, et pas
-     sur tout ce qui sort : personne ne chauffe une chaudiere au silicium. Reparti au
-     prorata parce que le carburant est fongible, ce qui est deja la convention de
-     `demand()` : elle ne demande pas du charbon, elle demande de quoi bruler. */
+     Taken off what those burners actually accept, which is the game's own per-block list
+     and the same rule `demand()` now uses. It used to be a flammability threshold typed
+     here, and a threshold cannot express an RTG generator, which eats thorium, phase
+     fabric and fissile matter - all three with a flammability of zero. Split pro rata,
+     because fuel is fungible to a burner that states a duration and no recipe. */
   const fuel = (wanted["*combustible"] || 0) * 60;
-  const burnable = Object.keys(potentialPerMinute)
-    .filter((item) => (catalogue.items?.[item]?.flammability || 0) > 0.1);
+  const accepted = fuels(graph);
+  const burnable = Object.keys(potentialPerMinute).filter((item) => accepted.has(item));
   const spareFuel = burnable.reduce((sum, item) => sum + potentialPerMinute[item], 0);
 
   if (fuel > 0 && spareFuel > 0) {
-    // Ce qui manque au-dela de ce que la schematique brule elle-meme reste un besoin, et
-    // `needs` le porte deja. Ici on ne descend pas en dessous de zero.
+    // What is short beyond what the layout burns itself stays a need, and `needs` already
+    // carries it. Nothing goes below zero here.
     const share = Math.min(spareFuel, fuel) / spareFuel;
     for (const item of burnable) {
       const left = potentialPerMinute[item] * (1 - share);
