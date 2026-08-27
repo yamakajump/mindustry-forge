@@ -163,7 +163,9 @@ def main() -> None:
         # `block-<name>-full` is base, rotator and top flattened into one image with the
         # rotator at rest. Turning a copy of the rotator over that leaves the baked one
         # showing through underneath, so a drill that spins needs its plate on its own.
-        if (block + "-rotator" in sprites or block + "-spinner" in sprites)                 and block in sprites:
+        turning = any(one["kind"] == "rotator"
+                      for one in catalogue["blocks"][block].get("drawers", []))
+        if (turning or block + "-rotator" in sprites or block + "-spinner" in sprites)                 and block in sprites:
             wanted.append((f"{block}#base", sprites[block]))
 
     # The ground. One sprite each, no edge variants for now: a painted patch of copper ore
