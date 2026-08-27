@@ -161,8 +161,14 @@ def build_truetype() -> None:
     Il vit dans resources/ et pas dans public/ : personne ne doit le telecharger, il ne
     sert qu'au serveur qui compose les cartes de partage.
     """
-    face = TTFont(FONT)
+    #: `recalcTimestamp=False` matters more than it looks. fontTools rewrites `head.modified`
+    #: **on save**, not on load, so without it the same input produced a different file on
+    #: every run: a build that changed nothing left the working tree dirty, with a diff
+    #: reading "Bin 28268 -> 28268 bytes" that says nothing about what moved. Setting the
+    #: field by hand after loading does not help, which is the trap: the save overwrites it.
+    face = TTFont(FONT, recalcTimestamp=False)
     face.flavor = None
+
     out = ROOT / "site/resources/fonts/forge.ttf"
     out.parent.mkdir(parents=True, exist_ok=True)
     face.save(out)
@@ -454,7 +460,7 @@ def font_uri() -> str:
     return "data:font/woff2;base64," + base64.b64encode(FONT.read_bytes()).decode()
 
 
-def social_html(width, height, *, lines, kicker, scale, darken):
+def social_html(width, height, *, lines, kicker, scale, darken, safe=0, foot=None):
     """La carte sociale, en HTML plutot qu'en SVG.
 
     Le SVG aurait demande de convertir chaque ligne en contours. Le HTML rend le texte avec
@@ -462,6 +468,7 @@ def social_html(width, height, *, lines, kicker, scale, darken):
     donc exactement le moteur qui affiche deja le site.
     """
     logo = (BRAND / "logo.svg").read_text(encoding="utf-8")
+    foot = "mindustryforge.com" if foot is None else foot
     body = "".join("<span>%s</span>" % line for line in lines)
     px = lambda v: round(v * scale)
     return """<!doctype html><html><head><meta charset="utf-8"><style>
@@ -478,7 +485,7 @@ body { width: %(w)dpx; height: %(h)dpx; overflow: hidden;
   background: linear-gradient(100deg, %(bg)sfa 0%%, %(bg)sf0 40%%, %(bg)s99 62%%,
     %(bg)s3d 82%%, %(bg)s1a 100%%); }
 .bord { position: absolute; inset: 0; border: %(edgew)dpx solid %(edge)s; }
-.dedans { position: absolute; inset: 0; padding: %(pad)dpx; display: flex;
+.dedans { position: absolute; inset: 0; padding: %(padsafe)dpx; display: flex;
   flex-direction: column; justify-content: center; gap: %(gap)dpx; }
 .logo img { height: %(logoh)dpx; display: block; }
 h1 { font-size: %(h1)dpx; line-height: 1.18; font-weight: 400;
@@ -491,7 +498,7 @@ h1 em { font-style: normal; color: %(accent)s; }
 .regle { width: %(rulew)dpx; height: %(ruleh)dpx; background: %(accent)s; }
 .kicker { color: %(dim)s; font-size: %(kick)dpx; letter-spacing: %(track).2fpx;
   text-transform: uppercase; }
-.pied { position: absolute; right: %(pad)dpx; bottom: %(footb)dpx; color: %(dim)s;
+.pied { position: absolute; right: %(footx)dpx; bottom: %(footb)dpx; color: %(dim)s;
   font-size: %(foot)dpx; }
 </style></head><body><div class="carte">
 <img class="fond" src="%(backdrop)s" alt="">
@@ -502,14 +509,16 @@ h1 em { font-style: normal; color: %(accent)s; }
   <div class="regle"></div>
   <div class="kicker">%(kicker)s</div>
 </div>
-<div class="pied">mindustryforge.com</div>
+<div class="pied">%(footlabel)s</div>
 </div></body></html>""" % {
         "font": font_uri(), "w": width, "h": height, "ink": INK, "bg": BG, "edge": EDGE,
         "accent": ACCENT, "dim": DIM, "backdrop": backdrop_uri(width, height, darken),
         "logo": logo, "body": body, "kicker": kicker,
         "edgew": px(6), "pad": px(62), "gap": px(26), "logoh": px(46), "h1": px(58),
         "maxw": px(780), "rulew": px(72), "ruleh": px(4), "kick": px(21),
-        "track": 2.4 * scale, "foot": px(22), "footb": px(50),
+        "track": 2.4 * scale, "foot": px(22), "footb": px(50) + safe,
+        "safe": safe, "padsafe": px(62) + safe, "footx": px(62) + safe,
+        "footlabel": foot,
     }
 
 
@@ -570,6 +579,58 @@ def build_social() -> None:
         browser.close()
 
 
+
+# ------------------------------------------------------------------- les visuels du depot
+
+def build_repo() -> None:
+    """What GitHub shows before anyone has read a line.
+
+    Composed from the same source as everything else, and not generated. There is a mark, a
+    palette taken from the game, a typeface and one script that produces all of it; an
+    illustration made alongside would be a second identity, which is what this repository's
+    own art direction forbids and what the test on the three copies of the mark prevents.
+
+    The wording leads with the argument rather than the name. Repeating "Mindustry Forge"
+    next to a logo that already says it teaches a reader nothing, and what separates this
+    project from the four calculators it competes with fits in one sentence.
+
+    In English, where the site is in French: the repository is read by contributors, the
+    rule for everything they read is English, and a Mindustry audience is international.
+    """
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+
+        #: The social preview, at the size GitHub asks for. It is cropped differently by
+        #: GitHub, by Discord and by Twitter, so nothing is allowed near the edge: `safe`
+        #: pushes the whole block inwards and the corner that one of them eats stays empty.
+        page = browser.new_page(viewport={"width": 1280, "height": 640})
+        page.set_content(social_html(
+            1280, 640, scale=1.0, darken=0.22, safe=34,
+            lines=["The numbers are measured", "<em>by running the game.</em>"],
+            kicker="Mindustry schematic analysis",
+            foot="mindustryforge.com  \u00b7  AGPL-3.0"))
+        page.wait_for_timeout(350)
+        _jpeg(page, BRAND / "depot-apercu.jpg", 1280, 640)
+        page.close()
+
+        #: The README header. Shorter, because GitHub renders a README about nine hundred
+        #: pixels wide and a banner as tall as the social preview would push the first
+        #: sentence below the fold.
+        page = browser.new_page(viewport={"width": 1280, "height": 360})
+        page.set_content(social_html(
+            1280, 360, scale=0.72, darken=0.24,
+            lines=["Paste a schematic.", "<em>Find out what it actually does.</em>"],
+            kicker="Measured against the game, not claimed",
+            foot="mindustryforge.com"))
+        page.wait_for_timeout(350)
+        _jpeg(page, BRAND / "depot-entete.jpg", 1280, 360)
+        page.close()
+
+        browser.close()
+
+
 if __name__ == "__main__":
     font = TTFont(FONT)
     print("logotypes")
@@ -582,3 +643,5 @@ if __name__ == "__main__":
     build_ico()
     print("images partagees")
     build_social()
+    print("visuels du depot")
+    build_repo()
