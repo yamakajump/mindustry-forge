@@ -166,12 +166,72 @@ types { application/manifest+json webmanifest; }
 
 ## Un piège à ajouter à la liste des pièges déjà payés
 
-**`php artisan serve` ne voit pas un fichier statique créé après son démarrage.** Un
-`favicon.svg` posé dans `site/public/` pendant que le serveur tourne répond 404, avec
-un `X-Powered-By: PHP` et un `Cache-Control: no-cache, private` dans la réponse, c'est-à-dire
-que la requête est partie dans Laravel au lieu d'être servie comme un fichier. Le fichier
-est pourtant bien là. Redémarrer le serveur suffit.
+**`php artisan serve` annonce « Server running » même quand le port est déjà pris**, et
+plusieurs sessions de ce dépôt tombent sur les mêmes ports par défaut.
 
-Coûté une demi-heure de fausse piste ici : on cherche une erreur de configuration nginx,
-un `.htaccess`, un problème de droits, alors que le serveur de développement a simplement
-une vue périmée de son propre dossier public.
+Mesuré, pas supposé. Relevé des serveurs PHP du poste un après-midi ordinaire :
+
+```
+127.0.0.1:8791  mindustry-forge-potentiel
+127.0.0.1:8791  mindustry-forge-i18n-nav
+127.0.0.1:8791  mindustry-forge-dumpeur     <- le seul qui tient l'ecoute
+127.0.0.1:8791  mindustry-forge-art
+127.0.0.1:8771  mindustry-forge-art
+127.0.0.1:8772  mindustry-forge-logique
+127.0.0.1:8799  mindustry-forge
+```
+
+**Quatre voies avaient lancé un serveur sur 8791.** Une seule répondait, et c'était celle
+d'un arbre antérieur. On interroge alors le `public/` de quelqu'un d'autre, sur une autre
+branche, sans qu'aucune erreur ne le signale : la racine répond 200, la page est jolie,
+et seuls les fichiers qui n'existent que chez soi répondent 404.
+
+**Le test qui tranche, avant de chercher quoi que ce soit d'autre** : demander une
+ressource qui n'existe que chez soi. Si elle répond 404 pendant qu'une ressource commune
+répond 200, le port n'est pas le bon. Un contrôle plus fin encore, quand un fichier existe
+des deux côtés mais a changé : comparer sa taille.
+
+```bash
+curl -s -o /dev/null -w '%{http_code}
+' http://127.0.0.1:$PORT/og.jpg
+curl -s http://127.0.0.1:$PORT/favicon.ico | wc -c     # 2795 attendus, 0 = un vieil arbre
+```
+
+**Et le même réflexe dans l'autre sens, avant de redémarrer.** Une ligne de commande qui
+contient un numéro de port ne dit pas à qui appartient le serveur. Vérifier qu'il est à soi
+avant de le tuer, exactement comme avant de le mesurer :
+
+```powershell
+Get-NetTCPConnection -LocalPort $P -State Listen |
+  ForEach-Object { (Get-CimInstance Win32_Process -Filter "ProcessId=$($_.OwningProcess)").CommandLine }
+```
+
+Le plus simple reste de **choisir un port improbable et de vérifier qu'il est libre avant
+de lancer**, plutôt que de démêler après coup.
+
+### Ce que ce piège a coûté, et pourquoi c'est écrit comme ça
+
+Trois diagnostics successifs, dont deux faux et écrits comme s'ils étaient établis.
+
+D'abord « `php artisan serve` ne voit pas un fichier créé après son démarrage » : faux, un
+redémarrage n'y change rien. Ensuite « le port appartient peut-être à une autre session » :
+juste sur le mécanisme, mais posé comme une hypothèse parmi deux au lieu d'être testé, et
+donc inutile à qui lit. Il a fallu lister les processus à l'écoute pour que ça devienne un
+fait.
+
+**Une cause supposée qui explique les faits est indistinguable d'une cause vraie**, jusqu'au
+jour où elle coûte une demi-journée à quelqu'un d'autre. D'où la commande, dans ce document,
+plutôt que la conclusion seule.
+
+## Une deuxième page d'erreur qui ressemble à une page
+
+Même famille, découverte le même après-midi. Une comparaison avant/après de captures a
+rendu « identique » sur `/schematiques` alors qu'elle photographiait **deux fois la page
+d'exception de Laravel** : la base de développement de la voie n'avait pas les migrations
+arrivées entre-temps.
+
+Un test qui compare une erreur à la même erreur passe toujours. Toute mesure sur une page
+rendue doit donc commencer par une assertion sur le titre, ou sur la présence d'un élément
+qui n'existe que dans la bonne page.
+
+Si `/schematiques` rend 500 dans une worktree : `php artisan migrate`.
