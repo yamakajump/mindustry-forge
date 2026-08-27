@@ -16,22 +16,72 @@
 <h1 class="title">{{ __('schema.comparer.titre') }}</h1>
 <p class="sub">{{ __('schema.comparer.sous-titre') }}</p>
 
+{{-- Un nom, ou une adresse. Le champ ne demandait qu'un identifiant : dix caracteres lus
+     dans la liste juste en dessous, retenus, recopies, deux fois. C'etait demander au
+     lecteur le travail de la machine, et la liste prouvait que le site savait deja de
+     quelles schematiques il parlait. La valeur reste ce qui a ete tape, pas le slug
+     trouve, sinon corriger sa recherche demande de la retaper entiere. --}}
 <form method="get" class="card cmp-choix">
   <div class="row" style="margin:0">
     <label class="lead" for="a">{{ __('schema.comparer.gauche') }}</label>
-    <input id="a" name="a" value="{{ $left?->slug }}" maxlength="16" spellcheck="false"
+    <input id="a" name="a" value="{{ $asked['a'] }}" maxlength="120" spellcheck="false"
            placeholder="{{ __('schema.comparer.identifiant') }}">
     <label class="lead" for="b">{{ __('schema.comparer.droite') }}</label>
-    <input id="b" name="b" value="{{ $right?->slug }}" maxlength="16" spellcheck="false"
+    <input id="b" name="b" value="{{ $asked['b'] }}" maxlength="120" spellcheck="false"
            placeholder="{{ __('schema.comparer.identifiant') }}">
     <button class="primary" type="submit">{{ __('schema.comparer.comparer') }}</button>
   </div>
   <p class="hint-line">{{ __('schema.comparer.aide') }}</p>
+
+  {{-- Ce qu'un nom a trouve. Repondre a une recherche par un formulaire vide se lit comme
+       « cette schematique n'existe pas », alors que ce qui s'est passe est qu'on ne l'a
+       jamais cherchee. --}}
+  @foreach(['a' => $asked['a'], 'b' => $asked['b']] as $side => $term)
+    @if($matches[$side] !== null)
+      <div class="cmp-trouve">
+        <h3>{{ __('schema.comparer.trouvees') }} &mdash;
+          {{ $side === 'a' ? __('schema.comparer.gauche') : __('schema.comparer.droite') }}</h3>
+        @if($matches[$side]->isEmpty())
+          <p class="empty">{{ __('schema.comparer.rien-trouve') }}</p>
+        @else
+          <ul class="cmp-liste">
+            @foreach($matches[$side] as $one)
+              <li>
+                <a href="?a={{ $side === 'a' ? $one->slug : ($left?->slug ?? $asked['a']) }}&b={{ $side === 'b' ? $one->slug : ($right?->slug ?? $asked['b']) }}">{{ $one->displayName() }}</a>
+                {{-- Huit resultats appelles « Silicon » sont huit lignes identiques : ce
+                     qui les distingue est leur taille et leur auteur, et sans ca le
+                     choix se fait au hasard. --}}
+                {{-- La taille seulement quand elle est connue : une schematique de zero
+                     bloc n'existe pas, et l'ecrire serait affirmer a la place de se taire
+                     sur une ligne que l'analyse n'a pas encore reprise. --}}
+                <span class="cmp-de">@if($one->blocks > 0){{ $one->blocks }}
+                  {{ __('schema.comparer.blocs') }}, @endif
+                  {{ __('schema.comparer.par') }} {{ $one->credit() }}</span>
+              </li>
+            @endforeach
+          </ul>
+        @endif
+      </div>
+    @endif
+  @endforeach
 </form>
 
+@php
+  // Ne pas proposer huit schematiques au hasard sous huit resultats de recherche. Qui a
+  // tape un nom a deja choisi ce qu'il cherche ; la liste generique n'est alors qu'une
+  // deuxieme liste a lire. Elle reste quand la recherche n'a rien rendu, parce que la
+  // page a encore quelque chose d'utile a offrir.
+  $trouve = collect($matches)->filter()->contains(fn ($found) => $found->isNotEmpty());
+@endphp
+
+{{-- Deux questions distinctes, et les melanger a casse la page une fois : la liste
+     generique depend de la recherche, la comparaison ne depend que d'avoir les deux
+     schematiques. Une seule condition pour les deux envoyait le @else afficher une
+     comparaison dont les deux cotes etaient nuls. --}}
 @if(! $comparison)
+@if(! $trouve)
   {{-- Arriver par le menu sans rien choisi est le cas courant, et une page vide serait une
-       impasse. Douze recentes plutot que le catalogue entier : quinze mille options dans
+       impasse. Huit recentes plutot que le catalogue entier : quinze mille options dans
        une liste deroulante ne sont pas un choix, ce sont des kilometres. --}}
   <div class="card">
     <h2>{{ __('schema.comparer.a-choisir') }}</h2>
@@ -41,14 +91,24 @@
       {{-- Sa propre classe et pas celle du wiki des blocs : deux pages qui partagent une
            forme ne partagent pas un selecteur, sinon un reglage fait pour l'une deplace
            l'autre sans que personne le voie. --}}
+      {{-- Chaque ligne remplit un cote au lieu de quitter la page. Elle menait a `/s/`,
+           donc cliquer une proposition dans le selecteur emmenait ailleurs et il fallait
+           revenir avec l'identifiant en tete. --}}
       <ul class="cmp-liste">
         @foreach($recent as $one)
-          <li><a href="/s/{{ $one->slug }}">{{ $one->displayName() }}</a>
-            <span class="cmp-de">{{ $one->slug }}</span></li>
+          <li>
+            <a href="/s/{{ $one->slug }}">{{ $one->displayName() }}</a>
+            <span class="cmp-de">
+              <a href="?a={{ $one->slug }}&b={{ $right?->slug ?? $asked['b'] }}">{{ __('schema.comparer.mettre-a-gauche') }}</a>
+              &middot;
+              <a href="?a={{ $left?->slug ?? $asked['a'] }}&b={{ $one->slug }}">{{ __('schema.comparer.mettre-a-droite') }}</a>
+            </span>
+          </li>
         @endforeach
       </ul>
     @endif
   </div>
+@endif
 @else
   <div class="cmp-tetes">
     <div class="card">
