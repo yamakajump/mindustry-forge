@@ -10124,9 +10124,9 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
+        "oil": 1,
         "slag": 1,
         "water": 1,
-        "oil": 1,
         "cryofluid": 1
       },
       "input_liquid":{}
@@ -10414,9 +10414,9 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
+        "oil": 0.4,
         "slag": 0.4,
         "water": 0.4,
-        "oil": 0.4,
         "cryofluid": 0.4
       },
       "input_liquid":{}
@@ -12637,7 +12637,8 @@
       "build_time": 20,
       "cost":{},
       "power": 0,
-      "power_void": true
+      "power_void": true,
+      "role": "power-void"
     },
     "item-source":{
       "name": "item-source",
@@ -12970,7 +12971,13 @@
         "titanium": 150,
         "silicon": 140
       },
-      "power": 240
+      "power": 240,
+      "role": "launch-pad",
+      "carries": "item",
+      "launch_time": 1200,
+      "input_liquid":{},
+      "accept_multiple_items": true,
+      "items_per_second": 5
     },
     "advanced-launch-pad":{
       "name": "advanced-launch-pad",
@@ -13000,10 +13007,13 @@
         "silicon": 250
       },
       "power": 480,
-      "role": "sink",
+      "role": "launch-pad",
+      "carries": "item",
+      "launch_time": 1800,
       "input_liquid":{
         "oil": 9
-      }
+      },
+      "items_per_second": 3.3333333
     },
     "landing-pad":{
       "name": "landing-pad",

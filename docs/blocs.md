@@ -70,7 +70,7 @@ second, c'est une intuition qui a l'air d'un portage.
       conveyor, titanium-conveyor
 - [x] `Duct` - 2 blocs - les bandes d'Erekir, une seule case a la fois
       armored-duct, duct
-- [ ] `LaunchPad` - 2 blocs
+- [x] `LaunchPad` - 2 blocs - se remplit, puis tout part d'un coup
       advanced-launch-pad, launch-pad
 - [x] `LiquidBridge` - 2 blocs - un pont a liquide
       bridge-conduit, phase-conduit
@@ -114,7 +114,7 @@ second, c'est une intuition qui a l'air d'un portage.
       thermal-generator, turbine-condenser
 - [x] `WallCrafter` - 2 blocs
       cliff-crusher, large-cliff-crusher
-- [ ] `Accelerator` - 1 bloc
+- [x] `Accelerator` - 1 bloc - vingt-cinq mille places, il ne bouche rien
       interplanetary-accelerator
 - [x] `ArmoredConveyor` - 1 bloc
       armored-conveyor
@@ -128,9 +128,9 @@ second, c'est une intuition qui a l'air d'un portage.
       colored-floor
 - [ ] `ColoredWall` - 1 bloc
       colored-wall
-- [ ] `ContinuousLiquidTurret` - 1 bloc
+- [x] `ContinuousLiquidTurret` - 1 bloc - ses munitions sont un liquide
       sublimate
-- [ ] `ContinuousTurret` - 1 bloc
+- [x] `ContinuousTurret` - 1 bloc - au repos elle garde son azote
       lustre
 - [x] `DirectionLiquidBridge` - 1 bloc
       reinforced-bridge-conduit
@@ -152,7 +152,7 @@ second, c'est une intuition qui a l'air d'un portage.
       incinerator
 - [x] `ItemBridge` - 1 bloc - porte par dessus un trou, vers la case qu'il retient
       phase-conveyor
-- [ ] `ItemIncinerator` - 1 bloc
+- [x] `ItemIncinerator` - 1 bloc - sans scories c'est un mur
       slag-incinerator
 - [x] `ItemSource` - 1 bloc
       item-source
@@ -190,7 +190,7 @@ second, c'est une intuition qui a l'air d'un portage.
       diode
 - [x] `PowerSource` - 1 bloc
       power-source
-- [ ] `PowerVoid` - 1 bloc
+- [x] `PowerVoid` - 1 bloc - il ne demande pas beaucoup, il demande tout
       power-void
 - [x] `Radar` - 1 bloc - tire de l'energie en continu, et rien d'autre
       radar
