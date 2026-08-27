@@ -261,16 +261,22 @@ function render(report) {
               escape(t("analyse.besoins.ou"))}</span>`)}</div>`
         : "") + (where.length
         ? `<p class="hint-line" style="margin:0 0 10px">${where.length > 1
-             ? `${escape(t("analyse.besoins.sur-les"))} <strong>${where.length}</strong>
-                ${escape(t(where[0].carries === "liquid"
-                  ? "analyse.besoins.tuyaux" : "analyse.besoins.bandes"))} ${
-                escape(t("analyse.besoins.marques-soit"))}
-                ${rate(need.perMinute / where.length)} ${
-                escape(t("analyse.unite.par-minute"))} ${escape(t("analyse.besoins.chacun"))}`
-             : `${escape(t("analyse.besoins.sur-le"))} ${escape(t(where[0].carries === "liquid"
-                  ? "analyse.besoins.tuyau" : "analyse.besoins.bande"))} ${
-                escape(t("analyse.besoins.marque-en"))}
-                (${where[0].x}, ${where[0].y}).`}</p>`
+             /* Pose sans `escape` : la phrase et ses morceaux viennent du dictionnaire et
+                d ici, pas d un lecteur, et le compte est enveloppe dans un `<strong>` que la
+                traduction doit pouvoir deplacer. Le nom de la ressource, lui, est escape a
+                l endroit ou il entre. */
+             ? t("analyse.besoins.reparti", {
+                 compte: `<strong>${where.length}</strong>`,
+                 support: escape(t(where[0].carries === "liquid"
+                   ? "analyse.besoins.tuyaux" : "analyse.besoins.bandes")),
+                 debit: `${rate(need.perMinute / where.length)} ${
+                   escape(t("analyse.unite.par-minute"))}`,
+               })
+             : t("analyse.besoins.sur-un-seul", {
+                 support: escape(t(where[0].carries === "liquid"
+                   ? "analyse.besoins.tuyau" : "analyse.besoins.bande")),
+                 x: where[0].x, y: where[0].y,
+               })}</p>`
         : `<p class="hint-line" style="margin:0 0 10px">${
            escape(t("analyse.besoins.ou-marquer"))}</p>`);
     }).join("")}<p class="hint-line">${escape(t("analyse.besoins.tache-pleine"))}</p></div>`);
