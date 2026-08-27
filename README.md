@@ -27,9 +27,24 @@ The analysis is JavaScript and happens in your browser. Nothing is uploaded, so 
 have not published stays yours, and the page costs nothing to host however many people use
 it. There is no server to pay for and no server to go down.
 
-That also settles a question this repository keeps asking of itself: there is exactly one
-implementation of the analysis, `site/public/forge/analyse.js`. A second one, in another
-language, for the command line or for a backend, would be a second thing to be wrong.
+That also settles half a question this repository keeps asking of itself: there is exactly
+one implementation *in one language*. A second one, in another language, for the command
+line or for a backend, would be a second thing to be wrong, and there is none.
+
+The other half is not settled, and it is written here rather than left for a reader to
+find. There are **two models in JavaScript**, and they do not agree on the same physics:
+
+- `site/public/forge/engine/**` steps the game tick by tick. It throttles a machine by the
+  power it actually receives, in five places. It is what `npm run oracle` measures against
+  a real server, and what the animated view runs.
+- `site/public/forge/analyse.js` solves a steady state by maximum flow. Power never enters
+  the solve at all, so the bottleneck it reports is blind to it.
+
+**The one shown to the player is the second, and the one proven against the game is the
+first.** A layout short of thirty energy a second can therefore be told that everything
+runs flat out. Bringing the report onto the engine is the honest fix and it changes every
+number on the site at once, so it is a stated piece of work rather than a silent one:
+`docs/todo.md` carries it.
 
 ## What is here
 

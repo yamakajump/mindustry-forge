@@ -431,3 +431,55 @@ coûte rien une fois qu'on sait où regarder.
 
 Signalé par la voie du dumpeur en écrivant les liens de processeur, sans y toucher parce
 que ce n'était pas son fichier.
+
+## Deux modèles dans le dépôt, et ce n'est pas le prouvé qu'on montre
+
+Trouvé le 27/08 au soir, en cherchant pourquoi l'écran affiche « Net −30 énergie/s » et
+« tout tourne à plein régime » en même temps. La contradiction n'était pas un défaut
+d'affichage, c'était le symptôme.
+
+```
+engine/**      pas à pas, image par image. Bride une machine sur le courant
+               qu'elle reçoit vraiment, à cinq endroits. Mesuré contre un vrai
+               serveur par `npm run oracle`, et c'est lui qui fait tourner
+               l'image animée.
+
+analyse.js     état stationnaire par flot maximum. `solveFlow` ne mentionne
+               l'énergie nulle part, donc `bottleneckOf`, qui lit son `fed`,
+               en est structurellement aveugle. C'est lui qui écrit le rapport.
+```
+
+**Celui qu'on montre au joueur est le second, celui qu'on prouve contre le jeu est le
+premier.** Le README le disait autrement et il est corrigé.
+
+Ce n'est pas une négligence : le solveur répond à une question que le moteur ne sait pas
+poser, « quel débit à l'équilibre », et le moteur répond à une que le solveur ne sait pas,
+« que se passe-t-il image par image ». Les deux servent. Ce qui ne va pas est qu'un seul
+soit vérifié et que ce soit l'autre qui parle.
+
+**Ce qui est fait en attendant** : une couverture d'énergie par grille, calculée du budget
+en moyenne temporelle et réinjectée dans `fed` jusqu'au point fixe, en réutilisant
+`gridsOf` d'`engine/power.js` plutôt qu'en réécrivant une identification de grille. Ça
+ferme la contradiction sans changer tous les chiffres du site d'un coup.
+
+Au passage : `powerBudget` somme aujourd'hui toute la schématique, donc **un plan à deux
+grilles disjointes est déjà faux**, avant même la question du bridage.
+
+**Ce qui reste** : amener le rapport sur le moteur. C'est ce que la première règle du dépôt
+appelle. Ça change tous les chiffres du site en une fois, donc ça se fait comme un chantier
+annoncé, avec le banc en face, pas dans une correction de passage.
+
+## Le chiffre mis en avant par le site n'est vérifié par rien qui ait tourné
+
+Corollaire du précédent, trouvé en corrigeant la portée du projecteur de surcharge.
+
+Le bonus de surcharge n'existe **que** dans `analyse.js`. Le moteur à tics ne le modélise
+pas du tout : aucune recherche par rayon dans `engine/`. Donc `npm run oracle` ne peut pas
+le voir, et aucun scénario de banc ne peut couvrir la ligne qui l'applique.
+
+Or c'est le chiffre que le site met en avant comme son avantage sur le panneau du jeu :
+55 350 contre 36 900 sur une ferme de réacteurs. Il est tenu par des tests unitaires et par
+rien qui ait jamais tourné dans un serveur.
+
+Porter le bonus dans le moteur le rendrait mesurable. Tant que ce n'est pas fait, ne pas
+présenter ce chiffre comme mesuré.
