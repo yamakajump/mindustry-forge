@@ -12,13 +12,13 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **105 classes à reproduire**, pour 228 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 61 sur 105
+## Fait : 66 sur 105
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
 - [x] `ItemTurret` - 17 blocs - mange ses munitions au rythme de son tir
       breach, cyclone, diffuse, disperse, duo, foreshadow, et 11 autres
-- [ ] `Reconstructor` - 8 blocs - ameliore une unite en une meilleure
+- [x] `Reconstructor` - 8 blocs - ameliore une unite en une meilleure
       additive-reconstructor, exponential-reconstructor, mech-refabricator, multiplicative-reconstructor, prime-refabricator, ship-refabricator, et 2 autres
 - [x] `ConsumeGenerator` - 6 blocs - brule quelque chose et fait de l'energie
       chemical-combustion-chamber, combustion-generator, differential-generator, pyrolysis-generator, rtg-generator, steam-generator
@@ -88,13 +88,13 @@ second, c'est une intuition qui a l'air d'un portage.
       overflow-duct, underflow-duct
 - [x] `OverflowGate` - 2 blocs - tout droit d'abord, de cote seulement si ca bouchonne
       overflow-gate, underflow-gate
-- [ ] `PayloadConveyor` - 2 blocs
+- [x] `PayloadConveyor` - 2 blocs
       payload-conveyor, reinforced-payload-conveyor
 - [ ] `PayloadDeconstructor` - 2 blocs
       deconstructor, small-deconstructor
 - [ ] `PayloadMassDriver` - 2 blocs
       large-payload-mass-driver, payload-mass-driver
-- [ ] `PayloadRouter` - 2 blocs
+- [x] `PayloadRouter` - 2 blocs
       payload-router, reinforced-payload-router
 - [ ] `RepairTurret` - 2 blocs
       repair-point, repair-turret
@@ -178,11 +178,11 @@ second, c'est une intuition qui a l'air d'un portage.
       thorium-reactor
 - [ ] `PayloadLoader` - 1 bloc
       payload-loader
-- [ ] `PayloadSource` - 1 bloc
+- [x] `PayloadSource` - 1 bloc
       payload-source
 - [ ] `PayloadUnloader` - 1 bloc
       payload-unloader
-- [ ] `PayloadVoid` - 1 bloc
+- [x] `PayloadVoid` - 1 bloc
       payload-void
 - [ ] `PointDefenseTurret` - 1 bloc
       segment

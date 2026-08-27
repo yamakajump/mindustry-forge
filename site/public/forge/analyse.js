@@ -218,9 +218,17 @@ function tintOf(resource) {
   return found?.color || null;
 }
 
-/** Mindustry's own content numbering. Items are 0 and liquids are 4; never rearranged. */
+/**
+ * Mindustry's own content numbering, which is never rearranged.
+ *
+ * Items and liquids were enough while the only configured blocks were sorters and sources.
+ * A payload source is configured with a **unit** or a **block**, and read as neither it
+ * came back as unset: the source made nothing and the whole line downstream measured empty.
+ */
 const CONTENT_ITEM = 0;
+const CONTENT_BLOCK = 1;
 const CONTENT_LIQUID = 4;
+const CONTENT_UNIT = 6;
 
 /**
  * What a block was configured to handle: the item a sorter passes, the liquid a source
@@ -230,7 +238,9 @@ const CONTENT_LIQUID = 4;
 function configuredContent(config) {
   if (!config || config.type !== 5) return null;
   const registry = config.content === CONTENT_LIQUID ? catalogue.liquids
-    : config.content === CONTENT_ITEM ? catalogue.items : null;
+    : config.content === CONTENT_ITEM ? catalogue.items
+    : config.content === CONTENT_UNIT ? catalogue.units
+    : config.content === CONTENT_BLOCK ? catalogue.blocks : null;
   if (!registry) return null;
   for (const [name, entry] of Object.entries(registry)) {
     if (entry.id === config.id) return name;

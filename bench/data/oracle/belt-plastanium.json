@@ -4,6 +4,7 @@
   "seconds": 30,
   "pools": [],
   "batteries": [],
+  "payloads": [],
   "units":{},
   "running": [
     {

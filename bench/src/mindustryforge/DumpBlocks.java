@@ -37,6 +37,13 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.type.UnitType;
+import mindustry.world.blocks.units.Reconstructor;
+import mindustry.world.blocks.payloads.PayloadVoid;
+import mindustry.world.blocks.payloads.PayloadSource;
+import mindustry.world.blocks.payloads.PayloadRouter;
+import mindustry.world.blocks.payloads.PayloadConveyor;
+import mindustry.world.blocks.payloads.PayloadBlock;
 import mindustry.world.blocks.production.Fracker;
 import mindustry.world.blocks.production.SolidPump;
 import mindustry.world.meta.Attribute;
@@ -175,6 +182,16 @@ public class DumpBlocks {
             // fraction it holds, times this, against the fraction the other holds, so a
             // settled line has a gradient along it rather than a flat rate.
             entry.put("liquid_pressure", block.liquidPressure);
+            /* How fast cargo slides into place and turns. Both are on `PayloadBlock` and
+               neither is ever redefined: 0.7 pixels and 5 degrees a frame. A payload spends
+               real time arriving, and a reconstructor does not start on the frame the
+               conveyor hands it over. */
+            if (block instanceof PayloadBlock payload) {
+                entry.put("payload_speed", payload.payloadSpeed);
+                entry.put("payload_rotate_speed", payload.payloadRotateSpeed);
+            }
+            if (block.outputsPayload) entry.put("outputs_payload", true);
+            if (block.acceptsPayload) entry.put("accepts_payload", true);
             /* Whether a pipe pointed at nothing spills. The class sets it one way and the
                block the other: `ArmoredConduit` declares `leaks = false` and
                `reinforced-conduit` turns it back on, so reading the class gets it wrong
@@ -360,6 +377,59 @@ public class DumpBlocks {
            router is not a `Router`, a duct bridge is not an `ItemBridge`, and a surge
            router is a duct router with a stack. An Erekir schematic built on any of them
            read as a line that produced nothing. */
+        /* The payload family, all of it filed as sinks or as nothing at all.
+
+           A payload is a unit or a block being carried around as cargo, and none of it was
+           reproduced: a reconstructor read as a hole that swallowed whatever a conveyor
+           handed it, and its silicon and its power were counted as consumed by nobody. */
+        if (block instanceof PayloadConveyor carrier) {
+            entry.put("role", block instanceof PayloadRouter ? "payload-router"
+                                                             : "payload-conveyor");
+            entry.put("carries", "payload");
+            /* Frames per step, and the step is on the **global** clock rather than on a
+               counter per block: `curStep = (int)(Time.time / moveTime)`. Every payload
+               conveyor on a map moves on the same frame. */
+            entry.put("move_time", carrier.moveTime);
+            entry.put("payload_limit", carrier.payloadLimit);
+            return;
+        }
+        if (block instanceof PayloadSource) {
+            entry.put("role", "payload-source");
+            entry.put("carries", "payload");
+            return;
+        }
+        if (block instanceof PayloadVoid) {
+            entry.put("role", "payload-void");
+            entry.put("carries", "payload");
+            return;
+        }
+        if (block instanceof Reconstructor rebuilder) {
+            entry.put("role", "reconstructor");
+            entry.put("carries", "payload");
+            entry.put("construct_time", rebuilder.constructTime);
+            /* Which unit becomes which, in order: `upgrade()` takes the first match. */
+            Jval upgrades = Jval.newArray();
+            for (UnitType[] pair : rebuilder.upgrades) {
+                Jval one = Jval.newObject();
+                one.put("from", pair[0].name);
+                one.put("to", pair[1].name);
+                upgrades.asArray().add(one);
+            }
+            entry.put("upgrades", upgrades);
+            /* The cap is **per item** and not the block's own `itemCapacity`: an
+               exponential reconstructor takes 1700 silicon, 1500 titanium and 1300
+               plastanium, and `itemCapacity` is the largest of the three. Reading one
+               number for all of them overfills two ingredients out of three. */
+            Jval capacities = Jval.newObject();
+            for (Item item : Vars.content.items()) {
+                int found = rebuilder.capacities[item.id];
+                if (found > 0) capacities.put(item.name, found);
+            }
+            entry.put("capacities", capacities);
+            entry.put("input", inputsOf(block));
+            entry.put("input_liquid", liquidInputsOf(block));
+            return;
+        }
         if (block instanceof BeamDrill bore) {
             /* Erekir's drill, which does not stand on its ore: it points at a cliff and
                eats sideways into it, one item per tile of its own width that has a wall

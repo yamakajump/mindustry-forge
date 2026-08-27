@@ -16,6 +16,7 @@ import { bridgeLink, DIRECTIONS, TICKS } from "./core.js";
 import { MACHINES } from "./machines.js";
 import { LIQUIDS } from "./liquids.js";
 import { POWER } from "./power.js";
+import { PAYLOADS } from "./payloads.js";
 
 /** `Conveyor.itemSpace` and `Conveyor.capacity`, both private constants in the game. */
 const ITEM_SPACE = 0.4;
@@ -1287,6 +1288,8 @@ export function behaviourOf(node) {
      an item router share the role "router" in the catalogue, because to a maximum flow
      they are the same shape, and to a simulation they are nothing alike. */
   if (node.block.carries === "liquid") return LIQUIDS[node.role] || null;
+  // Cargo is a third network, and it moves like neither of the other two.
+  if (node.block.carries === "payload") return PAYLOADS[node.role] || null;
   if (node.role === "pump") return LIQUIDS.pump;
   // The sandbox power tap is filed under the grid rather than under generators, because
   // that is what it is: a wire that never runs out.

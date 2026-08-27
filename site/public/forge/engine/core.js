@@ -213,6 +213,17 @@ export class Build {
     return false;
   }
 
+  /* Cargo. Nothing takes it unless it says so: `Building.acceptPayload` is false by
+     default, and a block that is not part of the payload family simply is not asked. */
+  acceptPayload(source, payload) {
+    return this.behaviour?.acceptPayload
+      ? this.behaviour.acceptPayload(this, source, payload) : false;
+  }
+
+  handlePayload(source, payload) {
+    this.behaviour?.handlePayload?.(this, source, payload);
+  }
+
   /** `Building.canDump`, which an overflow gate overrides to refuse going backwards. */
   canDump(other, item) {
     return this.behaviour?.canDump ? this.behaviour.canDump(this, other, item) : true;
@@ -346,10 +357,23 @@ export class Build {
     const start = this.cdump;
     for (let i = 0; i < this.proximity.length; i++) {
       this.cdump = (this.cdump + 1) % this.proximity.length;
-      const other = this.proximity[(i + start) % this.proximity.length];
-      if (!other.acceptLiquid?.(this, liquid)) continue;
-      this.moveLiquid(other, liquid);
-      if (this.liquids.get(liquid) <= 0.0001) return;
+      let other = this.proximity[(i + start) % this.proximity.length];
+      other = other.liquidDestination?.(this, liquid);
+      if (!other || !other.block.has_liquids || !other.liquids) continue;
+      const ofract = other.liquids.get(liquid) / (other.block.liquid_capacity || 10);
+      const fract = this.liquids.get(liquid) / this.liquidCapacity;
+      if (ofract < fract) {
+        this.transferLiquid(other, (fract - ofract) * this.liquidCapacity / scaling, liquid);
+      }
+    }
+  }
+
+  transferLiquid(next, amount, liquid) {
+    const flow = Math.min((next.block.liquid_capacity || 10) - next.liquids.get(liquid),
+                          amount);
+    if (next.acceptLiquid(this, liquid)) {
+      next.liquids.add(liquid, flow);
+      this.liquids.remove(liquid, flow);
     }
   }
 

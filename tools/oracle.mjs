@@ -967,6 +967,56 @@ const SCENARIOS = {
   "extractor-oil": () => extractor(true),
   "extractor-oil-bare": () => extractor(false),
 
+  /* Une charge utile qui traverse une ligne de convoyeurs.
+
+     A payload is a third network: a unit carried whole, on a clock that belongs to the map
+     rather than to the block. Every payload conveyor steps on the same frame, and a
+     payload spends exactly `moveTime` on each one. Where the daggers have got to at thirty
+     seconds is the measurement, and nothing else in the scenario moves at all. */
+  "payload-line": () => [
+    // Source is five wide, centred at 0: covers -2..2, and reaches three tiles east.
+    { x: 0, y: 0, block: "payload-source", rotation: 0, raw: unit("dagger") },
+    // Three wide, three apart, each covering the tile the one behind reaches.
+    { x: 4, y: 0, block: "payload-conveyor", rotation: 0 },
+    { x: 7, y: 0, block: "payload-conveyor", rotation: 0 },
+    { x: 10, y: 0, block: "payload-conveyor", rotation: 0 },
+    // And five wide again, covering 12..16.
+    { x: 14, y: 0, block: "payload-void", rotation: 0 },
+  ],
+
+  /* Un routeur a charge utile, qui envoie la cargaison d'un cote puis de l'autre.
+
+     Same clock as a conveyor, one extra rule: the way out is chosen by a rotating cursor
+     rather than always forward. Two voids, one in front and one to the side, and the
+     daggers have to end up split between the two branches. */
+  "payload-router": () => [
+    { x: 0, y: 0, block: "payload-source", rotation: 0, raw: unit("dagger") },
+    { x: 4, y: 0, block: "payload-conveyor", rotation: 0 },
+    // Three wide, covering 6..8 by -1..1, reaching two tiles each way.
+    { x: 7, y: 0, block: "payload-router", rotation: 0 },
+    { x: 10, y: 0, block: "payload-conveyor", rotation: 0 },
+    { x: 14, y: 0, block: "payload-void", rotation: 0 },
+    { x: 7, y: 3, block: "payload-conveyor", rotation: 1 },
+    { x: 7, y: 7, block: "payload-void", rotation: 0 },
+  ],
+
+  /* An additive reconstructor turning daggers into maces, fed by a payload source and
+     emptied into a void. The stock is the measurement: forty silicon and forty graphite a
+     unit, six hundred frames a unit, and the ration says how many got made. */
+  "reconstructor-daggers": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "payload-source", rotation: 0, raw: unit("dagger") },
+      { x: 4, y: 0, block: "payload-conveyor", rotation: 0 },
+      // Three wide, covering 6..8.
+      { x: 7, y: 0, block: "additive-reconstructor", rotation: 0 },
+      // Against the reconstructor's top edge: it covers 6..8 by -1..1.
+      { x: 7, y: 2, block: "power-source", rotation: 0 },
+      { x: 10, y: 0, block: "payload-conveyor", rotation: 0 },
+      { x: 14, y: 0, block: "payload-void", rotation: 0 },
+    ],
+    stock: ["silicon*200@7,0", "graphite*200@7,0"],
+  }),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },

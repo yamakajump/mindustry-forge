@@ -1,0 +1,80 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "payloads": [
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 14,
+      "payload": "dagger"
+    },
+    {
+      "block": "payload-router",
+      "x": 21,
+      "y": 14,
+      "payload": "dagger"
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 24,
+      "y": 14,
+      "payload": "dagger"
+    },
+    {
+      "block": "payload-void",
+      "x": 21,
+      "y": 21,
+      "payload": "dagger"
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 18,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-router",
+      "x": 21,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 24,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-void",
+      "x": 28,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 21,
+      "y": 17,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-void",
+      "x": 21,
+      "y": 21,
+      "efficiency": 1
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}
