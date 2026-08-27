@@ -1,0 +1,62 @@
+# CI du site : l'analyseur JavaScript et l'application Laravel.
+#
+# Les deux autres workflows de ce depot (tests.yml, verify-catalogue.yml)
+# datent de la structure d'avant le restart et ne couvrent pas site/.
+# Celui-ci se declenche aussi sur la branche de travail, pas seulement
+# sur main : c'est elle qui part en production.
+name: site
+
+on:
+  push:
+    branches: [main, "restart/**"]
+  pull_request:
+
+jobs:
+  analyseur:
+    name: Analyseur (JavaScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # L'analyse tourne dans le navigateur du visiteur : ces tests sont
+      # la seule chose qui garantit qu'une schematique lue chez lui donne
+      # le meme resultat qu'ici.
+      - run: npm test
+
+  application:
+    name: Application (Laravel)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          # sqlite : les tests tournent sur une base en memoire, pas sur MySQL.
+          extensions: mbstring, sqlite3, pdo_sqlite, zip, gd
+          coverage: none
+
+      - run: composer validate --no-check-publish --no-check-lock
+
+      - name: Cache des dependances Composer
+        uses: actions/cache@v4
+        with:
+          path: site/vendor
+          key: composer-${{ hashFiles('site/composer.lock') }}
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Style du code
+        run: vendor/bin/pint --test
+
+      - name: Preparer l'environnement de test
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - run: php artisan test

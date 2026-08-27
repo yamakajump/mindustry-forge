@@ -1,0 +1,12 @@
+[Unit]
+Description=Declenche la sauvegarde de mindustry-forge
+
+[Timer]
+# 03h15 : apres celle du panel (03h00) et avant celle de delicieux (03h32),
+# pour que les trois dumps ne se marchent pas dessus sur le meme disque.
+OnCalendar=*-*-* 03:15:00
+RandomizedDelaySec=300
+Persistent=true
+
+[Install]
+WantedBy=timers.target
