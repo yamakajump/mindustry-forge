@@ -29,28 +29,53 @@
   <div class="atelier">
     <div>
       <div id="editeur"></div>
+      <!-- Le geste courant d'abord, seul sur sa rangee. Dans le jeu on colle du code dans
+           un processeur : c'est ce que fait ce bouton, et c'est le seul qui n'oblige a
+           fabriquer une schematique autour de rien. -->
       <div class="row">
-        <button class="primary" id="copier" type="button">
+        <button class="primary" id="copier-code" type="button">
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/></svg>
-          <span data-i18n="outils.logique.copier">Copier la schematique</span>
+          <span data-i18n="outils.logique.copier-code">Copier le code</span>
         </button>
-        <button id="telecharger" type="button">
-          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 19h16"/></svg>
-          <span data-i18n="outils.logique.telecharger">Telecharger le .msch</span>
-        </button>
-        <button id="coller" type="button">
+        <button id="coller-code" type="button">
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3M4 12h16M8 16h8"/></svg>
-          <span data-i18n="outils.logique.coller">Coller une schematique</span>
+          <span data-i18n="outils.logique.coller-code">Coller du code</span>
         </button>
-        <label class="file">
-          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></svg>
-          <span data-i18n="outils.logique.importer">Ouvrir une schematique</span>
-          <input type="file" id="fichier" name="fichier" accept=".msch" aria-label="Ouvrir une schematique">
-        </label>
         <button id="exemple" type="button" data-i18n="outils.logique.exemple">
           Charger un exemple
         </button>
       </div>
+
+      <!-- La schematique ensuite, repliee. Elle sert a poser le processeur deja programme
+           dans une base ; c'est un besoin reel et ce n'est pas le premier. -->
+      <details class="par-schematique">
+        <summary data-i18n="outils.logique.par-schematique">
+          Passer par une schematique de processeur
+        </summary>
+        <p class="hint-line" data-i18n="outils.logique.par-schematique-aide">
+          Utile pour poser le processeur deja programme, avec ses liens, plutot que de
+          recopier le code dans un processeur que tu as deja construit.
+        </p>
+        <div class="row">
+          <button id="copier" type="button">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/></svg>
+            <span data-i18n="outils.logique.copier">Copier la schematique</span>
+          </button>
+          <button id="telecharger" type="button">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 19h16"/></svg>
+            <span data-i18n="outils.logique.telecharger">Telecharger le .msch</span>
+          </button>
+          <button id="coller" type="button">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3M4 12h16M8 16h8"/></svg>
+            <span data-i18n="outils.logique.coller">Coller une schematique</span>
+          </button>
+          <label class="file">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></svg>
+            <span data-i18n="outils.logique.importer">Ouvrir une schematique</span>
+            <input type="file" id="fichier" name="fichier" accept=".msch" aria-label="Ouvrir une schematique">
+          </label>
+        </div>
+      </details>
       <p class="etat" id="etat" aria-live="polite"></p>
     </div>
 
@@ -65,15 +90,11 @@
       <section class="card">
         <h2 data-i18n="outils.logique.liens">Liens</h2>
         <p class="hint-line" data-i18n="outils.logique.liens-aide">
-          Le nom est celui que le programme emploie, et les deux nombres disent ou se
-          trouve le bloc par rapport au processeur, en cases.
+          Dans le jeu, tu cliques le bloc a relier. Ici, tu cliques sa case : le processeur
+          est au centre, et le nom est celui que le programme emploie.
         </p>
-        <div class="entetes" aria-hidden="true">
-          <span data-i18n="outils.logique.lien-nom">Nom</span>
-          <span data-i18n="outils.logique.lien-dx">Vers la droite</span>
-          <span data-i18n="outils.logique.lien-dy">Vers le haut</span>
-          <span></span>
-        </div>
+        <div class="plan" id="plan" role="application"
+             aria-label="Ou se trouve le bloc, par rapport au processeur"></div>
         <ul class="liens" id="liens"></ul>
         <div class="row">
           <button id="ajouter-lien" type="button" data-i18n="outils.logique.lien-ajouter">
@@ -110,6 +131,12 @@ plein:
 control enabled conveyor1 0 0 0 0
 jump 0 always
 `;
+
+/* Jusqu'ou le plan des liens montre, en cases autour du processeur. Neuf sur neuf couvre
+   tout ce qu'un micro processeur peut atteindre, et un lien plus lointain se tape encore a
+   la main a cote. Declaree ici et pas au bord de son usage : le premier dessin arrive avant,
+   et une constante lue avant sa ligne ne fait pas une valeur vide, elle jette. */
+const PORTEE = 4;
 
 const LIENS_EXEMPLE = [{ name: "vault1", dx: 2, dy: 0 }, { name: "conveyor1", dx: -1, dy: 0 }];
 
@@ -233,7 +260,64 @@ function problemesDesLiens() {
 
 /* The links ------------------------------------------------------------------------------ */
 
+/**
+ * Le plan, et la liste qui le suit.
+ *
+ * Dans le jeu, relier un bloc a un processeur se fait en le cliquant. Ici on demandait deux
+ * entiers signes, « vers la droite » et « vers le haut », c'est-a-dire le calcul que la
+ * machine aurait du faire. Le plan le fait faire au doigt : le processeur est au centre, on
+ * clique la case, les deux nombres suivent.
+ *
+ * Ils restent modifiables a cote, parce qu'un lien peut viser plus loin que ce qu'un plan
+ * de neuf cases sur neuf montre, et parce qu'une valeur tapee est parfois plus rapide qu'un
+ * clic vise.
+ */
+function dessinerPlan() {
+  const plan = $("plan");
+  plan.innerHTML = "";
+  plan.style.setProperty("--cases", 2 * PORTEE + 1);
+
+  const occupees = new Map();
+  liens.forEach((lien, index) => occupees.set(`${lien.dx},${lien.dy}`, { lien, index }));
+
+  for (let dy = PORTEE; dy >= -PORTEE; dy--) {
+    for (let dx = -PORTEE; dx <= PORTEE; dx++) {
+      const centre = dx === 0 && dy === 0;
+      const pose = occupees.get(`${dx},${dy}`);
+
+      const case_ = document.createElement("button");
+      case_.type = "button";
+      case_.className = `case${centre ? " processeur" : ""}${pose ? " prise" : ""}`;
+      case_.textContent = centre ? "" : (pose ? pose.lien.name.slice(0, 2) || "?" : "");
+      case_.setAttribute("aria-label", centre
+        ? t("outils.logique.plan-processeur")
+        : t("outils.logique.plan-case", { dx, dy }));
+
+      /* Le centre est le processeur lui-meme : rien a relier, et un lien sur sa propre case
+         est ce que le jeu refuse. Il reste dessine, parce que c'est lui qui donne son sens
+         a tout le reste du plan. */
+      if (centre) case_.disabled = true;
+      else case_.onclick = () => poserOuRetirer(dx, dy);
+
+      plan.append(case_);
+    }
+  }
+}
+
+/** Un clic pose un lien sur une case libre, et retire celui qui l'occupait sinon. */
+function poserOuRetirer(dx, dy) {
+  const at = liens.findIndex((lien) => lien.dx === dx && lien.dy === dy);
+  if (at >= 0) liens.splice(at, 1);
+  else liens.push({ name: "", dx, dy });
+
+  dessinerLiens();
+  majLiens();
+  if (at < 0) $("liens").querySelector("li:last-child input")?.focus();
+}
+
 function dessinerLiens() {
+  dessinerPlan();
+
   const liste = $("liens");
   liste.innerHTML = "";
 
@@ -249,13 +333,14 @@ function dessinerLiens() {
     item.className = "lien";
 
     const nom = champ("text", lien.name, t("outils.logique.lien-nom"), "", `lien-${index}-nom`);
-    nom.oninput = () => { lien.name = nom.value.trim(); majLiens(); };
+    nom.placeholder = t("outils.logique.lien-nom");
+    nom.oninput = () => { lien.name = nom.value.trim(); dessinerPlan(); majLiens(); };
 
     const dx = champ("text", lien.dx, t("outils.logique.lien-dx"), "pos", `lien-${index}-dx`);
-    dx.oninput = () => { lien.dx = entier(dx.value); majLiens(); };
+    dx.oninput = () => { lien.dx = entier(dx.value); dessinerPlan(); majLiens(); };
 
     const dy = champ("text", lien.dy, t("outils.logique.lien-dy"), "pos", `lien-${index}-dy`);
-    dy.oninput = () => { lien.dy = entier(dy.value); majLiens(); };
+    dy.oninput = () => { lien.dy = entier(dy.value); dessinerPlan(); majLiens(); };
 
     const retirer = document.createElement("button");
     retirer.type = "button";
@@ -304,6 +389,29 @@ const sortie = () => toSchematic({
   block: $("bloc").value,
   name: "programme",
 });
+
+/* Le geste que le jeu demande vraiment : dans Mindustry on ouvre un processeur et on
+   colle du code dedans. Aucun bouton ne le faisait, et les quatre qui existaient obligeaient
+   tous a fabriquer une schematique autour d'un seul bloc. */
+$("copier-code").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(editeur.value);
+    dire(t("outils.logique.code-copie"), "bien");
+  } catch (erreur) {
+    dire(erreur.message, "mal");
+  }
+};
+
+$("coller-code").onclick = async () => {
+  try {
+    const texte = await navigator.clipboard.readText();
+    if (!texte.trim()) return dire(t("outils.logique.presse-papiers-vide"), "mal");
+    editeur.value = texte;
+    dire(t("outils.logique.code-colle", { compte: editeur.report.statements.length }), "bien");
+  } catch (erreur) {
+    dire(erreur.message, "mal");
+  }
+};
 
 $("copier").onclick = async () => {
   try {
