@@ -8,8 +8,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { analyse } from "../../site/public/forge/analyse.js";
-import { demand, producers } from "../../site/public/forge/needs.js";
+import { analyse, buildGraph } from "../../site/public/forge/analyse.js";
+import { fromBase64 } from "../../site/public/forge/schematic.js";
+import { demand, fuels, producers } from "../../site/public/forge/needs.js";
 import { loadCatalogue, paste } from "./helpers.js";
 
 const known = loadCatalogue();
@@ -172,4 +173,60 @@ test("a schematic's own blocks say which world its shopping list is for", async 
   const serpulo = await analyse(paste([[0, 0, "graphite-press", 0]]));
   assert.equal(planetOf(serpulo.graph), "serpulo");
   assert.ok(buildGraph, "le graphe est bien celui de l'analyse");
+});
+
+test("a silicon line that burns coal is told it needs coal", async () => {
+  /*
+   * The failure this file exists to prevent, and it was silent. What covers the hunger of
+   * a generator that burns "anything" used to be everything the layout made, so a chain
+   * producing silicon was told its silicon would feed its combustion generators. Coal
+   * never appeared on the shopping list. The player builds it, it stops, and the page had
+   * said it would run.
+   */
+  const out = await analyse(paste([
+    [0, 0, "silicon-smelter", 0],
+    [5, 0, "combustion-generator", 0],
+  ]));
+
+  const fuel = out.needs.find((need) => need.resource === "*combustible");
+  assert.ok(fuel, "il faut lui amener de quoi bruler");
+  close(fuel.perMinute, 30, "un generateur a combustion, une fournee par 120 images");
+});
+
+test("coal it makes itself does cover its burners", async () => {
+  // The other half, and the reason the loose rule existed at all: a centrifuge feeding its
+  // own generators genuinely needs no coal delivered, and saying otherwise would send
+  // somebody to build a drill they do not need.
+  const out = await analyse(paste([
+    [0, 0, "coal-centrifuge", 0],
+    [5, 0, "combustion-generator", 0],
+  ]));
+
+  assert.ok(!out.needs.some((need) => need.resource === "*combustible"),
+    "son propre charbon suffit");
+});
+
+test("what covers a burner is the game's list, not a flammability threshold", async () => {
+  /*
+   * An RTG generator eats thorium, phase fabric and fissile matter, and all three have a
+   * flammability of zero. A threshold cannot express that, which is why the rule is read
+   * from the block's own `accepts` - dumped from the game - and not typed here.
+   */
+  const known = loadCatalogue();
+  assert.deepEqual(known.blocks["rtg-generator"].accepts,
+    ["thorium", "phase-fabric", "fissile-matter"]);
+  for (const item of known.blocks["rtg-generator"].accepts) {
+    assert.equal(known.items[item].flammability, 0, `${item} ne brule pas, et le RTG le mange`);
+  }
+
+  const graph = buildGraph((await fromBase64(paste([[0, 0, "rtg-generator", 0]]))).tiles);
+  assert.deepEqual([...fuels(graph)], ["thorium", "phase-fabric", "fissile-matter"]);
+});
+
+test("a reactor that names its ingredients is not a fuel burner", async () => {
+  // A thorium reactor states a recipe, so its demand is already counted under those names.
+  // Counting it here as well would have it covered twice.
+  const graph = buildGraph((await fromBase64(paste([[0, 0, "thorium-reactor", 0]]))).tiles);
+
+  assert.equal(fuels(graph).size, 0);
 });

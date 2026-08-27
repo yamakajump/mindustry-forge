@@ -63,14 +63,17 @@ export function demand(graph) {
     }
   }
 
+  const burnable = fuels(graph);
+
   const outside = {};
   for (const [name, rate] of Object.entries(wanted)) {
-    // A generator that burns anything is covered by anything the layout burns. Counted
-    // against its own name, it stayed on the shopping list of a schematic whose own
-    // centrifuges already made exactly the coal its generators ate.
+    // A generator that burns anything is covered by what this layout makes **and it can
+    // actually burn**. Counted against its own name it stayed on the shopping list of a
+    // schematic whose own centrifuges already made exactly the coal its generators ate;
+    // counted against everything, a silicon line was told its silicon would feed them.
     const covered = name === "*combustible"
       ? Object.entries(made).reduce((sum, [item, r]) =>
-          item.startsWith("*") ? sum : sum + r, 0)
+          burnable.has(item) ? sum + r : sum, 0)
       : (made[name] || 0);
     const short = rate - covered;
     if (short > 1e-4) outside[name] = short;
@@ -142,6 +145,39 @@ export function planetOf(graph) {
     if (node.block?.planet) seen.add(node.block.planet);
   }
   return seen.size === 1 ? [...seen][0] : null;
+}
+
+/**
+ * What this layout's fuel burners will actually take, straight from the game's own list.
+ *
+ * A generator that burns "anything" states a duration and no recipe, so its hunger has no
+ * item name and is counted under `*combustible`. Deciding what covers that hunger used to
+ * be done twice in this repository, and both answers were wrong.
+ *
+ * `needs.js` counted everything the layout made. A chain producing silicon and burning
+ * coal was therefore told its silicon fed its generators, so coal never appeared on the
+ * shopping list. The player builds it, it stops, and the page had said it would run.
+ *
+ * `marks.js` filtered on `flammability > 0.1`, which is closer but still invented here: an
+ * RTG generator eats thorium, phase fabric and fissile matter, and all three have a
+ * flammability of zero. A threshold cannot express that, because it is not what the game
+ * checks.
+ *
+ * What the game checks is a list per block, and the bench already dumps it as `accepts`.
+ * So there is no threshold and no list typed in this file: the rule is read from the same
+ * catalogue the rest of the analysis is read from, and it changes when the game changes.
+ */
+export function fuels(graph) {
+  const burnable = new Set();
+  for (const node of graph.nodes) {
+    const block = node.block;
+    if (node.role !== "generator" || !block.craft_time) continue;
+    // Only the ones with no recipe. A thorium reactor names its ingredients, so its demand
+    // is already counted under those names and has nothing to do with this.
+    if (Object.keys(block.input || {}).length) continue;
+    for (const item of block.accepts || []) burnable.add(item);
+  }
+  return burnable;
 }
 
 /**
