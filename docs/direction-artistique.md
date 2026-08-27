@@ -223,6 +223,8 @@ of CSS, since the mark itself does not move.
 | `brand/discord-icon.png` | 512 | the server icon |
 | `brand/discord-banniere.jpg` | 960 × 540 | the server banner |
 | `brand/apercu-produit.png` | 2144 × 1420 | the product shot, for a landing page or an article |
+| `brand/depot-apercu.jpg` | 1280 × 640 | GitHub's social preview, uploaded in the repository settings |
+| `brand/depot-entete.jpg` | 1280 × 360 | the README header |
 
 Three different framings of one mark, because the systems do not crop alike:
 
@@ -259,6 +261,34 @@ Two derived files come out of `build_brand.py` for it: `resources/brand/mark-96.
 mark on transparency, which PHP pastes instead of redrawing its paths) and
 `resources/fonts/forge.ttf` (the same face out of its WOFF2 wrapper, because FreeType does
 not read WOFF2). Neither is a second source.
+
+## The repository's own visuals
+
+GitHub showed a generic thumbnail with the owner's name, which is the same defect as the one
+the schematic pages had, one level up: the project is judged before a line of it is read.
+
+**Composed from what already exists, not generated.** There is a mark, a palette taken from
+the game, a typeface and one script that produces all of it. An illustration made alongside
+would be a second identity, which is what this page forbids and what the test on the three
+copies of the mark prevents. That is a deliberate departure from what was asked for, and the
+reason is written here so nobody has to guess it later.
+
+**In English, where the site is in French.** These two are read by contributors, the rule for
+everything they read is English, and a Mindustry audience is international.
+
+**They lead with the argument, not the name.** Repeating "Mindustry Forge" beside a logo that
+already says it teaches a reader nothing; what separates this project from the four
+calculators it competes with fits in one sentence, and that sentence is what goes on the
+picture.
+
+**Nothing goes near the edge.** GitHub, Twitter and Discord each crop a 2:1 image
+differently, so the block is pushed inwards by a safe margin. Checked rather than assumed:
+simulated at 2:1, 1.91:1 and 16:9, every line survives all three. It only breaks at 4:3,
+which no unfurler applies to a social preview.
+
+**The social preview is not served from the repository.** GitHub only reads it from the
+repository settings, where it has to be uploaded by hand. The file lives here so that it can
+be regenerated and so that the next person knows where it came from.
 
 ## Regenerating
 
