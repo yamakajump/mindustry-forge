@@ -10,6 +10,43 @@
 <p class="sub">Chaque chiffre vient de l'analyse de la schematique elle-meme, pas d'une
   etiquette tapee a la main.</p>
 
+{{-- Les objets les plus produits, en images.
+
+     Corentin : « dans les deroulements c'est pas intuitif, il n'y a pas les icones ». Il a
+     raison, et un `<select>` natif ne porte pas d'image dans ses `<option>` : c'est une
+     limite du controle, pas un oubli.
+
+     Le remplacer par une liste dessinee aurait coute la navigation au clavier, la recherche
+     par frappe, la fermeture par Echap, l'annonce au lecteur d'ecran et le selecteur natif du
+     telephone, le tout sur le controle de recherche principal du site. Le compte ne tombait
+     pas juste.
+
+     Cette rangee donne les images sans rien retirer. Ce sont des liens : clavier et lecteur
+     d'ecran gratuits, chaque filtre a une adresse qui se partage et s'indexe, et la page
+     marche sans JavaScript. Le deroulant reste dessous pour tout ce qui n'est pas dans les
+     plus produits. --}}
+@if($items !== [])
+  <nav class="vitrine-pastilles" aria-label="Qui produit">
+    <a href="{{ request()->fullUrlWithQuery(['produit' => null, 'page' => null]) }}"
+       class="vitrine-pastille @if($makes === '') on @endif"
+       @if($makes === '') aria-current="page" @endif>n'importe quoi</a>
+
+    @foreach($items as $item)
+      <a href="{{ request()->fullUrlWithQuery(['produit' => $item, 'page' => null]) }}"
+         class="vitrine-pastille @if($makes === $item) on @endif"
+         @if($makes === $item) aria-current="page" @endif>
+        @if($item !== $powerKey)
+          {{-- L'energie n'est ni un objet ni un liquide : elle n'a pas de sprite, et lui en
+               inventer un serait dessiner quelque chose que le jeu ne dessine pas. --}}
+          <img class="icone" src="/icone/{{ \App\Support\Thing::family($item) }}/{{ $item }}.png?t=32"
+               width="18" height="18" loading="lazy" decoding="async" alt="">
+        @endif
+        {{ $item === $powerKey ? 'energie' : \App\Support\Thing::name($item) }}
+      </a>
+    @endforeach
+  </nav>
+@endif
+
 <form method="get" class="card">
   <div class="row" style="margin:0">
     <label class="lead" for="produit" style="margin:0">Qui produit</label>
@@ -17,9 +54,12 @@
       <option value="">n'importe quoi</option>
       @foreach($items as $item)
         {{-- L'energie est une production comme une autre : chercher une schematique qui
-             produit de l'energie, c'est chercher une centrale. --}}
+             produit de l'energie, c'est chercher une centrale.
+
+             Le nom vient du jeu et non de l'identifiant : ce deroulant affichait
+             `blast-compound` et `phase-fabric` a un joueur francophone. --}}
         <option value="{{ $item }}" @selected($makes === $item)>{{
-          $item === $powerKey ? 'energie' : $item }}</option>
+          $item === $powerKey ? 'energie' : \App\Support\Thing::name($item) }}</option>
       @endforeach
     </select>
 
