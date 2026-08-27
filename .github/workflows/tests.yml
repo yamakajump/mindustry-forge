@@ -2,7 +2,7 @@ name: tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, "restart/**"]
   pull_request:
 
 jobs:
@@ -28,11 +28,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: mindustry-forge
-          key: mindustry-server-${{ hashFiles('forge/server_setup.py') }}
+          key: mindustry-server-${{ hashFiles('bench/server_setup.py') }}
 
       - run: pip install -e ".[dev]"
 
       - name: Fetch the pinned server
-        run: python -m forge.server_setup mindustry-forge
+        run: python -m bench.server_setup mindustry-forge
 
       - run: python -m pytest tests/ -q

@@ -1,0 +1,22 @@
+name: release-please
+
+# Ne tourne que sur la branche par defaut. Tant que le site vit sur
+# restart/place-de-marche, c'est elle qu'il faut viser : release-please
+# refuse de travailler sur une branche qui n'est pas celle configuree ici.
+on:
+  push:
+    branches: ["restart/place-de-marche"]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          target-branch: restart/place-de-marche
