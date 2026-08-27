@@ -352,6 +352,46 @@ function render(report) {
     right.push(`<div class="card"><h2>Gaspille</h2>${rows.join("")}</div>`);
   }
 
+  /* What the processors amount to, which until now was computed on every analysis and
+     thrown away: `report.logic` had no reader anywhere on the site.
+
+     The reassuring line comes first on purpose. A report that mentions processors only to
+     scold them is a report a reader learns to skim, and "three processors, none of which
+     drives anything" is what gives the warning below it its weight when it does appear.
+
+     A link whose target was not copied with the schematic is not in `unreachable` and is
+     not shown: that is most real schematics, and flagging it would teach the reader to
+     ignore the card. */
+  const logic = report.logic;
+  if (logic) {
+    const lines = [`<div class="line"><span>${escape(t("analyse.logique.processeurs"))}</span>
+      <span class="num">${logic.processors}</span></div>`];
+
+    lines.push(logic.driven.length
+      ? `<div class="line"><span>${escape(t("analyse.logique.pilote"))}</span>
+          <span>${escape(logic.driven.join(", "))}</span></div>`
+      : `<div class="line"><span class="good">${
+          escape(t("analyse.logique.aucun-pilote"))}</span></div>`);
+
+    /* The two figures stay out of the sentence and the unit stays in the hint below.
+       `t()` returns the key itself when the dictionary lacks it, so a number written into
+       a placeholder is a number that disappears the day a translation is missing, and the
+       reader is left with a warning that names no distance at all. */
+    for (const link of logic.unreachable) {
+      lines.push(`<div class="line">
+        <span>${escape(link.from)} → ${escape(link.to)} (${link.target[0]}, ${
+          link.target[1]}), ${escape(t("analyse.logique.hors-portee"))}</span>
+        <span class="num bad">${rate(link.distance)}&nbsp;/&nbsp;${
+          rate(link.reach)}</span></div>`);
+    }
+
+    right.push(`<div class="card"><h2>${escape(t("analyse.logique.titre"))}</h2>
+      ${lines.join("")}
+      ${logic.unreachable.length
+        ? `<p class="hint-line">${escape(t("analyse.logique.hors-portee-aide"))}</p>` : ""}
+    </div>`);
+  }
+
   /* The panel the game itself shows, reproduced from its own formulas, and the places
      Forge parts with it named rather than hidden. Two reasons for it to be on the page:
      a player can hold it against what they see in game and decide whether to trust the
