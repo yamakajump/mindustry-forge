@@ -1,0 +1,66 @@
+name: Bug report
+description: Something behaves differently from the game, or from what the page says.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. One thing before you start, because it decides whether
+        this can be fixed at all: **if the bug is about a number, paste the schematic**.
+        A throughput report without the schematic string cannot be reproduced, and a report
+        that cannot be reproduced cannot be fixed.
+
+  - type: textarea
+    id: schematic
+    attributes:
+      label: The schematic
+      description: >
+        The string you copied in the game with ctrl+c, or a link to the page on the site.
+        Starts with `bXNjaAF4`. Leave empty if the bug has nothing to do with a schematic.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the game does
+      description: >
+        The number, the behaviour, or the screenshot from Mindustry itself. This is the
+        reference: if the site and the game disagree, the site is wrong.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What the site says
+    validations:
+      required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: Where
+      description: The address, or the part of the page. For example `/blocs/silicon-smelter`.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: On what
+      options:
+        - Desktop browser
+        - Phone browser
+        - Local clone
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: >
+        Console errors, the Mindustry version if it is not v159.7, whatever you noticed on
+        the way. If you already know which file it comes from, say so.
