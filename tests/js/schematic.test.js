@@ -11,7 +11,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { fromBase64, toBase64 } from "../../site/public/forge/schematic.js";
+import { fromBase64, read, toBase64, write } from "../../site/public/forge/schematic.js";
 import { analyse } from "../../site/public/forge/analyse.js";
 import { loadCatalogue, paste } from "./helpers.js";
 
@@ -86,4 +86,61 @@ test("the writer and the reader agree with a writer that shares nothing with the
 
 test("an empty schematic is refused rather than written", async () => {
   await assert.rejects(() => toBase64([], { sizeOf }), /vide/);
+});
+
+test("une configuration creee par l editeur survit a l ecriture", async () => {
+  /* Le lecteur garde les octets bruts et l ecrivain les rejoue : parfait tant que rien ne
+     CREE de configuration. L editeur en cree, puisqu un glisse de ponts lie chaque maillon
+     au suivant. Sans ecriture des configurations, cette chaine sortait du site en file de
+     ponts qui s ignorent : l image etait juste, le fichier etait faux, et rien ne le
+     disait. */
+  const tiles = [
+    { x: 0, y: 0, block: "bridge-conveyor", rotation: 0,
+      config: { type: 7, dx: 4, dy: 0 } },
+    { x: 4, y: 0, block: "bridge-conveyor", rotation: 0 },
+    { x: 2, y: 2, block: "sorter", rotation: 0,
+      config: { type: 5, content: 0, id: 1 } },
+  ];
+  const relu = await read(await write(tiles, { tags: { name: "ponts" }, sizeOf: () => 1 }));
+
+  const pont = relu.tiles.find((t) => t.x === 0 && t.y === 0);
+  assert.deepEqual({ type: pont.config.type, dx: pont.config.dx, dy: pont.config.dy },
+                   { type: 7, dx: 4, dy: 0 });
+
+  const bout = relu.tiles.find((t) => t.block === "bridge-conveyor" && t.x === 4);
+  assert.equal(bout.config, null, "le dernier pont ne vise personne");
+
+  const trieur = relu.tiles.find((t) => t.block === "sorter");
+  assert.deepEqual({ type: trieur.config.type, content: trieur.config.content, id: trieur.config.id },
+                   { type: 5, content: 0, id: 1 });
+});
+
+test("l ordre d ecriture est l ordre de construction du jeu", async () => {
+  /* `Block.schematicPriority` va de +10 pour un mur de plastanium a -15 pour une tour de
+     surtension : ce qui protege se batit en premier, ce qui relie en dernier, une fois que
+     ce qu il doit relier existe. Ecrire dans l ordre de pose fait poser un pylone avant les
+     reacteurs qu il devait alimenter. */
+  const priorites = { "power-node": -10, "plastanium-wall": 10, conveyor: 0 };
+  const tiles = [
+    { x: 0, y: 0, block: "power-node", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+    { x: 4, y: 0, block: "plastanium-wall", rotation: 0 },
+  ];
+  const relu = await read(await write(tiles, {
+    sizeOf: () => 1,
+    priorityOf: (name) => priorites[name] ?? 0,
+  }));
+  assert.deepEqual(relu.tiles.map((t) => t.block),
+                   ["plastanium-wall", "conveyor", "power-node"]);
+});
+
+test("a priorite egale, l ordre d origine tient", async () => {
+  // Sinon deux exports de la meme schematique donneraient deux fichiers differents.
+  const tiles = [
+    { x: 0, y: 0, block: "conveyor", rotation: 0 },
+    { x: 1, y: 0, block: "router", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+  ];
+  const relu = await read(await write(tiles, { sizeOf: () => 1 }));
+  assert.deepEqual(relu.tiles.map((t) => t.x), [0, 1, 2]);
 });

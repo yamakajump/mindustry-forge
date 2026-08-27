@@ -62,7 +62,7 @@ class Schematic extends Model
 
     protected $fillable = [
         'user_id', 'slug', 'name', 'description', 'code', 'visibility',
-        'analysis', 'width', 'height', 'blocks', 'power_made', 'power_used',
+        'analysis', 'ground', 'width', 'height', 'blocks', 'power_made', 'power_used',
         'produces', 'needs',
         'source', 'source_id', 'author', 'fetched_at', 'source_meta',
         'analysed_at', 'engine_version',
@@ -83,6 +83,7 @@ class Schematic extends Model
     protected $casts = [
         'verified' => 'boolean',
         'analysis' => 'array',
+        'ground' => 'array',
         'produces' => 'array',
         'needs' => 'array',
         'source_meta' => 'array',

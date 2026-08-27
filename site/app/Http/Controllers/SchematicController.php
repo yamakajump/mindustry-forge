@@ -22,6 +22,14 @@ class SchematicController extends Controller
 {
     private const MAX_CODE = 512 * 1024;
 
+    /**
+     * Le sol ne peut pas être plus grand que la schématique qu'il porte.
+     *
+     * 64 × 64 est la limite du jeu, donc 4 096 cases, et une de plus est soit un bug soit
+     * quelqu'un qui essaie de remplir la base de données par la porte de derrière.
+     */
+    private const MAX_GROUND = 4096;
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -30,6 +38,7 @@ class SchematicController extends Controller
             'code' => ['required', 'string', 'max:'.self::MAX_CODE],
             'visibility' => ['sometimes', 'in:private,unlisted,public'],
             'analysis' => ['required', 'array'],
+            'ground' => ['nullable', 'array', 'max:'.self::MAX_GROUND],
             // Rendered by the same code that drew it on screen, so the picture in a Discord
             // unfurl cannot disagree with the picture on the page.
             'thumbnail' => ['nullable', 'string', 'max:4194304'],
@@ -44,6 +53,7 @@ class SchematicController extends Controller
             'code' => preg_replace('/\s+/', '', $data['code']),
             'visibility' => $data['visibility'] ?? Schematic::PRIVATE,
             'analysis' => $data['analysis'],
+            'ground' => $data['ground'] ?? null,
         ])->save();
 
         $this->keepThumbnail($schematic, $data['thumbnail'] ?? null);
@@ -73,6 +83,9 @@ class SchematicController extends Controller
             'visibility' => $schematic->visibility,
             'mine' => $schematic->managedBy($request->user()),
             'marked' => (array) ($schematic->analysis['marked'] ?? []),
+            // Le terrain sur lequel elle a été conçue. Sans lui, rouvrir une schématique
+            // rendait ses foreuses muettes : « au mieux, sur une tache pleine ».
+            'ground' => (array) ($schematic->ground ?? []),
             'kept' => $schematic->created_at?->format('d/m/Y'),
         ]);
     }
@@ -90,6 +103,7 @@ class SchematicController extends Controller
             // was permanent: the only way out was to delete it and start again.
             'code' => ['sometimes', 'string', 'max:'.self::MAX_CODE],
             'analysis' => ['sometimes', 'array'],
+            'ground' => ['nullable', 'array', 'max:'.self::MAX_GROUND],
             'thumbnail' => ['nullable', 'string', 'max:4194304'],
         ]);
 
@@ -99,6 +113,9 @@ class SchematicController extends Controller
         }
         if (isset($data['code'])) {
             $schematic->code = preg_replace('/\s+/', '', $data['code']);
+        }
+        if (array_key_exists('ground', $data)) {
+            $schematic->ground = $data['ground'];
         }
         foreach (['name', 'description', 'visibility'] as $field) {
             if (array_key_exists($field, $data)) {

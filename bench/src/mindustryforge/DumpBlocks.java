@@ -4,11 +4,15 @@ import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.serialization.Jval;
 import mindustry.Vars;
+import mindustry.content.TechTree;
+import mindustry.content.TechTree.TechNode;
 import mindustry.core.Version;
 import mindustry.type.Item;
+import mindustry.type.Planet;
 import mindustry.type.Liquid;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
+import mindustry.world.meta.BuildVisibility;
 import mindustry.world.blocks.distribution.BufferedItemBridge;
 import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.Duct;
@@ -189,6 +193,84 @@ public class DumpBlocks {
                s arreter dessus et la foreuse derriere seule sur sa grille. */
             if (block instanceof PowerNode) entry.put("power_node", true);
             entry.put("rotate", block.rotate);
+            /* Ou ranger le bloc dans la palette, et avec quoi il est interchangeable.
+
+               `Block.canReplace` lit `group`, `subclass`, `replaceable`, `alwaysReplace`,
+               `privileged` et `quickRotate`. Un editeur qui n en connait qu une partie
+               refuse des gestes que le jeu accepte, et poser un convoyeur titane sur un
+               convoyeur redevient impossible. Deviner depuis `role` ne marche pas : `role`
+               regroupe des blocs que le jeu separe, et separe des blocs qu il regroupe. */
+            entry.put("category", block.category.name());
+            entry.put("group", block.group.name());
+            if (block.group.anyReplace) entry.put("group_any_replace", true);
+            if (block.subclass != null) entry.put("subclass", block.subclass.getSimpleName());
+            /* Le drapeau qui autorise le trace par recherche de chemin plutot que par
+               escalier, quand le placement diagonal est demande. Les bandes, les conduits
+               et les gaines l ont ; un routeur ne l a pas. */
+            if (block.conveyorPlacement) entry.put("conveyor_placement", true);
+            /* Comment un glisse trace, lu dans `InputHandler.iterateLine`. Le defaut est une
+               ligne droite sur l axe dominant ; la touche « placement diagonal » bascule
+               vers un escalier ou un A*, et quelques blocs inversent ce basculement pour que
+               leur comportement le plus utile soit celui qu on obtient sans toucher a rien. */
+            if (!block.allowDiagonal) entry.put("allow_diagonal", false);
+            if (block.swapDiagonalPlacement) entry.put("swap_diagonal_placement", true);
+            if (block.allowRectanglePlacement) entry.put("allow_rectangle_placement", true);
+            /* Les deux blocs qu un convoyeur devient tout seul quand la ligne le demande.
+
+               `junctionReplacement` : tracer a travers une ligne perpendiculaire pose une
+               jonction au croisement, au lieu de couper la ligne d en dessous.
+               `bridgeReplacement` : rencontrer un obstacle le fait sauter par un pont.
+
+               Ce sont les deux mecaniques qui font qu on trace a travers son usine sans y
+               penser, et elles ne se devinent pas : le jeu nomme explicitement le bloc de
+               remplacement, bande par bande. */
+            if (block instanceof Conveyor conveyor) {
+                if (conveyor.junctionReplacement != null) {
+                    entry.put("junction_replacement", conveyor.junctionReplacement.name);
+                }
+                if (conveyor.bridgeReplacement != null) {
+                    entry.put("bridge_replacement", conveyor.bridgeReplacement.name);
+                }
+            }
+            if (block instanceof Duct duct) {
+                if (duct.bridgeReplacement != null) {
+                    entry.put("bridge_replacement", duct.bridgeReplacement.name);
+                }
+            }
+            /* Le reste de ce que la pose lit, et que rien ne remplace. `lockRotation` force
+               la rotation a zero, `ignoreLineRotation` empeche un bloc de suivre le sens du
+               glisse, `invertFlip` inverse le miroir d un schema. */
+            if (block.ignoreLineRotation) entry.put("ignore_line_rotation", true);
+            if (block.lockRotation) entry.put("lock_rotation", true);
+            if (block.invertFlip) entry.put("invert_flip", true);
+            if (block.saveConfig) entry.put("save_config", true);
+            if (block.copyConfig) entry.put("copy_config", true);
+            if (block.configurable) entry.put("configurable", true);
+            if (block.clearOnDoubleTap) entry.put("clear_on_double_tap", true);
+            if (!block.placeablePlayer) entry.put("placeable_player", false);
+            /* `breakable` n est pas dumpe, et c est un choix.
+
+               Le champ est declare sans valeur dans `Block` et n y est assigne nulle part :
+               il vaut donc `false` par defaut, et au moment ou le dump tourne il vaut faux
+               pour absolument tout, convoyeur compris. Le sortir tel quel donnerait un
+               editeur ou plus rien ne se casse. Ce qui est reellement intouchable porte
+               `privileged`, qui lui est fiable, et c est ce que les regles lisent. */
+            if (block.schematicPriority != 0) entry.put("schematic_priority", block.schematicPriority);
+            /* Ce que le menu de construction du jeu montre. Un bloc cache, reserve au bac a
+               sable ou a l editeur n a rien a faire dans une palette de joueur : c est ce
+               tri la qui remplace le « il a un cout de construction » que Forge utilisait,
+               et qui laissait passer des blocs que personne ne peut poser. */
+            entry.put("build_visibility", visibilityName(block.buildVisibility));
+            if (!block.replaceable) entry.put("replaceable", false);
+            if (block.alwaysReplace) entry.put("always_replace", true);
+            if (block.quickRotate) entry.put("quick_rotate", true);
+            if (block.privileged) entry.put("privileged", true);
+            /* Ce que le sol sous un bloc autorise, lu dans `Build.validPlace`. Un liquide
+               profond ne porte que ce qui flotte, une thermogeneratrice exige son eau, et
+               quelques blocs se posent sur du liquide alors que rien d autre ne le peut. */
+            if (!block.placeableOn) entry.put("placeable_on", false);
+            if (block.requiresWater) entry.put("requires_water", true);
+            if (block.placeableLiquid) entry.put("placeable_liquid", true);
             // Frames between two attempts to hand an output on. It rarely binds - a press
             // makes one graphite every ninety frames and may offload every five - but it
             // is the difference between a machine that trickles and one that bursts.
@@ -337,9 +419,34 @@ public class DumpBlocks {
                 entry.put("power_production", generator.powerProduction * TPS);
             }
 
+            /* La portee d un pylone, en tuiles. Elle vit dans `laserRange` et non dans
+               `range`, qui reste vide pour eux : sans elle, un glisse de pylones ne sait pas
+               a quel espacement les poser pour qu ils se voient encore. */
+            if (block instanceof PowerNode node) entry.put("laser_range", node.laserRange);
+
             describeRole(block, entry);
             describeFloor(block, entry);
             blocks.put(block.name, entry);
+        }
+
+        /* De quelle planete vient un bloc, pour qu une palette puisse ne montrer qu un des
+           deux jeux de blocs. Serpulo et Erekir ne partagent presque rien, et les melanger
+           dans une meme grille donne les 253 pastilles indifferenciees d aujourd hui.
+
+           Le champ `planet` d un noeud vaut null presque partout, y compris sur les
+           racines : lire `TechTree.all` en retombant sur Serpulo quand il est null met
+           Erekir entier sur Serpulo, ce qui est exactement le contraire du but. Mesure
+           faite, les 241 blocs des deux arbres ressortaient tous serpuliens, `core-bastion`
+           compris.
+
+           L association fiable est dans l autre sens : `Planet.techTree` porte la racine de
+           l arbre de sa planete. On descend donc depuis chaque planete, ce qui donne la
+           reponse sans dependre d un champ que le jeu ne remplit pas.
+
+           Un bloc qui n est dans aucun arbre, comme les sols et les blocs de bac a sable,
+           ne recoit pas de planete du tout. */
+        for (Planet planet : Vars.content.planets()) {
+            if (planet.techTree != null) stampPlanet(planet.techTree, planet.name, blocks);
         }
         root.put("blocks", blocks);
 
@@ -1440,6 +1547,45 @@ public class DumpBlocks {
      * blocks came back nameless. What is wanted is the first named class above it, which
      * is where `updateTile` actually lives.
      */
+    /**
+     * La planete d un noeud et de tout ce qui pend dessous.
+     *
+     * <p>Un noeud qui ne declare pas sa planete prend celle de son parent, comme le jeu le
+     * fait pour afficher son arbre. Sans cet heritage, les 200 blocs d Erekir sortent
+     * annonces sur Serpulo, et une palette qui filtre par planete montre tout partout.
+     */
+    /**
+     * Le nom d une visibilite de construction.
+     *
+     * <p>`BuildVisibility` ressemble a une enumeration et n en est pas une : c est une
+     * classe dont les valeurs sont des champs statiques, chacun construit avec sa propre
+     * condition. Elle n a donc pas de `name()`, et recopier ici la liste des douze noms
+     * serait une deuxieme copie d une donnee du jeu, exactement ce que ce fichier existe
+     * pour eviter. On la lui demande par reflexion : si le jeu en ajoute une, elle sort
+     * toute seule.
+     */
+    private static String visibilityName(BuildVisibility visibility) {
+        for (java.lang.reflect.Field field : BuildVisibility.class.getFields()) {
+            if (!java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+            try {
+                if (field.get(null) == visibility) return field.getName();
+            } catch (IllegalAccessException ignored) {
+                // Un champ public statique inaccessible n existe pas, mais le compilateur
+                // exige qu on le dise.
+            }
+        }
+        return "unknown";
+    }
+
+    private static void stampPlanet(TechNode node, String planet, Jval blocks) {
+        String here = node.planet == null ? planet : node.planet.name;
+        if (node.content instanceof Block) {
+            Jval entry = blocks.get(node.content.name);
+            if (entry != null) entry.put("planet", here);
+        }
+        for (TechNode child : node.children) stampPlanet(child, here, blocks);
+    }
+
     private static String kindOf(Block block) {
         Class<?> found = block.getClass();
         while (found != null && found.getSimpleName().isEmpty()) {

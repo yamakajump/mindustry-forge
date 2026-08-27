@@ -235,8 +235,18 @@ Ce qui **n'est pas** dessiné, et pourquoi :
 - [x] **Une foreuse produisait zéro.** Le registre ne donne aucune sortie à une foreuse,
       parce que ce qu'elle fait dépend des cases sous elle : sans sol, une schématique de
       foreuses et de bandes s'analysait en silence.
-- [x] **L'éditeur.** `schematic.js` sait écrire le format du jeu, pas seulement le lire.
-      Tourner, retirer, poser, avec un pourtour qui s'ouvre pour poser au delà du bord.
+- [x] **Le mode édition.** Un écran à lui, plein cadre, avec les mécaniques de pose du jeu
+      relevées dans sa source et non de mémoire : ligne droite par défaut, escalier ou A\* en
+      placement diagonal, remplissage de zone pour les murs, suivi de chaîne pour améliorer
+      une ligne existante. Les ponts s'espacent de leur portée et se lient au suivant, un
+      croisement pose une jonction, un obstacle se franchit en ponts automatiques par la
+      programmation dynamique du jeu. Sélection avec déplacement, rotations, miroirs,
+      presse-papiers dans les deux sens. Raccourcis relevés dans `Binding`. Limite de 64×64
+      tenue à la pose. `docs/audit-pose.md` recense les 37 mécaniques et leur état.
+
+- [x] **L'onglet sol.** Crayon, rectangle, pot de peinture, gomme, trois couches, et la
+      transparence qui bascule toute seule pour qu'on ne peigne plus à l'aveugle. Le sol est
+      gardé avec la schématique : sans ça, la rouvrir rendait ses foreuses muettes.
 - [x] **Marquer n'importe quel bloc**, pas seulement un transporteur : une bande venue de
       dehors finit sur une presse aussi bien que sur une autre bande.
 

@@ -129,12 +129,18 @@ jobs:
       # tiennent aussi. Elles joignent et regroupent, et MySQL applique par
       # defaut un ONLY_FULL_GROUP_BY que SQLite ignore : un regroupement
       # accepte ici peut etre refuse la-bas.
+      # Le classement est borne a 24, il n en rend donc jamais plus : exiger
+      # exactement 24 revient a exiger que la graine aleatoire ait produit au
+      # moins 24 schematiques au graphite sur 400, ce qui est un tirage. Mesure
+      # sur le tronc : deux echecs d affilee a 23 sur 400. Ce qu on veut verifier
+      # est que la requete rend bien ce qu elle a trouve, pas qu elle a eu de la
+      # chance.
       - name: Passer les requetes de la vitrine sur MySQL
         env:
           CATALOGUE_SEED_COUNT: "400"
         run: |
           php artisan db:seed --class=CatalogueSeeder --force
-          php artisan tinker --execute='$s = \App\Models\Schematic::class; $q = $s::listed()->join("schematic_items", "schematic_items.schematic_id", "=", "schematics.id")->where("schematic_items.item", "graphite")->select("schematics.*"); $n = (clone $q)->count(); $best = $q->orderByDesc("schematic_items.rate_per_block")->orderByDesc("schematics.id")->limit(24)->pluck("id"); $items = \App\Models\SchematicItem::count(); if ($n < 1 || $best->count() !== 24 || $items < 1) { fwrite(STDERR, "requetes vides: filtre $n, index $items"); exit(1); } echo "filtre: $n, classement: ".$best->count().", lignes d index: $items";'
+          php artisan tinker --execute='$s = \App\Models\Schematic::class; $q = $s::listed()->join("schematic_items", "schematic_items.schematic_id", "=", "schematics.id")->where("schematic_items.item", "graphite")->select("schematics.*"); $n = (clone $q)->count(); $best = $q->orderByDesc("schematic_items.rate_per_block")->orderByDesc("schematics.id")->limit(24)->pluck("id"); $items = \App\Models\SchematicItem::count(); if ($n < 1 || $best->count() !== min(24, $n) || $items < 1) { fwrite(STDERR, "requetes vides: filtre $n, index $items"); exit(1); } echo "filtre: $n, classement: ".$best->count().", lignes d index: $items";'
 
       - name: La suite complete, sur MySQL
         run: php artisan test
