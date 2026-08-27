@@ -4,7 +4,13 @@
  * One listener for the page rather than one per control, and each block of controls
  * carries its own slug. There is no framework here and no reason for one: two verbs
  * against an api that already existed and was never called from anywhere.
+ *
+ * Every word this file puts on screen appears after a click, so none of it is written in
+ * the page and all of it comes from the dictionary. That is why the listener waits on
+ * `ready` before it says anything.
  */
+import { ready, t } from "./i18n.js";
+
 const token = () => decodeURIComponent(
   (document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || "");
 
@@ -26,16 +32,20 @@ async function send(slug, method, body) {
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (!answer.ok) throw new Error(`refuse (${answer.status})`);
+  if (!answer.ok) throw new Error(t("schema.gestion.refuse", { code: answer.status }));
 }
 
 const SAID = {
-  public: "Publiee : elle est dans la vitrine et classee avec les autres.",
-  unlisted: "Par lien : elle marche pour qui l'a, et reste hors de la vitrine.",
-  private: "Privee : toi seul la vois.",
+  public: "schema.gestion.note-publique",
+  unlisted: "schema.gestion.note-par-lien",
+  private: "schema.gestion.note-privee",
 };
 
 document.addEventListener("click", async (event) => {
+  /* Before the first word, not before the first click: the dictionary is on its way from
+     the moment the page loaded, so by the time anyone has aimed at a button it is here. */
+  await ready;
+
   const choice = event.target.closest(".manage .seg button");
   if (choice) {
     const box = choice.closest(".manage");
@@ -54,7 +64,7 @@ document.addEventListener("click", async (event) => {
 
     try {
       await send(box.dataset.slug, "PATCH", { visibility: wanted });
-      say(box, SAID[wanted]);
+      say(box, t(SAID[wanted]));
     } catch (error) {
       for (const button of box.querySelectorAll(".seg button")) {
         const on = button === before;
@@ -62,7 +72,7 @@ document.addEventListener("click", async (event) => {
         button.setAttribute("aria-pressed", on ? "true" : "false");
       }
       box.querySelector(".share").hidden = before?.dataset.visibility === "private";
-      say(box, `Pas enregistre : ${error.message}`, true);
+      say(box, t("schema.gestion.pas-enregistre", { raison: error.message }), true);
     }
     return;
   }
@@ -71,8 +81,8 @@ document.addEventListener("click", async (event) => {
   if (copy) {
     const box = copy.closest(".manage");
     await navigator.clipboard.writeText(box.dataset.url);
-    copy.textContent = "Copie";
-    setTimeout(() => { copy.textContent = "Copier"; }, 1600);
+    copy.textContent = t("schema.gestion.copie");
+    setTimeout(() => { copy.textContent = t("schema.gestion.copier"); }, 1600);
     return;
   }
 
@@ -80,7 +90,7 @@ document.addEventListener("click", async (event) => {
   if (!button) return;
   const box = button.closest(".manage");
   // Asked once, because it cannot be undone: the string is the only copy the site has.
-  if (!confirm(`Supprimer "${button.dataset.name}" ? C'est definitif.`)) return;
+  if (!confirm(t("schema.gestion.confirmer-suppression", { nom: button.dataset.name }))) return;
 
   button.disabled = true;
   try {
@@ -90,6 +100,6 @@ document.addEventListener("click", async (event) => {
     else (box.closest(".tile") || box).remove();
   } catch (error) {
     button.disabled = false;
-    say(box, `Pas supprimee : ${error.message}`, true);
+    say(box, t("schema.gestion.pas-supprimee", { raison: error.message }), true);
   }
 });
