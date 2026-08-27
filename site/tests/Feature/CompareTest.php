@@ -172,3 +172,109 @@ it('ne se laisse pas donner n importe quoi comme identifiant', function () {
     $this->get('/comparer?a='.str_repeat('a', 200))->assertOk();
     $this->get('/comparer?a[]=1')->assertOk();
 });
+
+/*
+ * Choosing a schematic rather than copying its key.
+ *
+ * The page used to take an identifier and nothing else: ten characters read off the list
+ * printed right underneath, held in the head, typed into a box, twice. Corentin's words
+ * were "nul pour rentrer des identifiants, pas du tout bien pense pour l'utilisateur", and
+ * the list below the form was the proof: the site already knew which schematics it was
+ * talking about and made the reader spell them out anyway.
+ */
+
+it('finds a schematic by its name, not only by its address', function () {
+    $wanted = Schematic::factory()->create([
+        'visibility' => Schematic::PUBLIC, 'name' => 'Ligne a graphite',
+    ]);
+    Schematic::factory()->create(['visibility' => Schematic::PUBLIC, 'name' => 'Reacteur']);
+
+    // And nothing else: a search that found something does not go on offering eight
+    // unrelated schematics underneath, which would be a second list to read.
+    $this->get('/comparer?a=graphite')
+        ->assertOk()
+        ->assertSee('Ligne a graphite')
+        ->assertDontSee('Reacteur');
+
+    // And what was typed stays in the field, so correcting a search is not retyping it.
+    $this->get('/comparer?a=graphite')->assertSee('value="graphite"', escape: false);
+});
+
+it('keeps the other side when one is picked from the results', function () {
+    // Picking a candidate used to be impossible: the list linked to `/s/`, so clicking a
+    // suggestion left the comparator and you came back with the identifier in your head.
+    $left = Schematic::factory()->create(['visibility' => Schematic::PUBLIC, 'name' => 'Gauche']);
+    $right = Schematic::factory()->create(['visibility' => Schematic::PUBLIC, 'name' => 'Droite']);
+
+    $this->get("/comparer?a=Gauche&b={$right->slug}")
+        ->assertOk()
+        // The link that picks the left one carries the right one along.
+        ->assertSee("?a={$left->slug}&b={$right->slug}", escape: false);
+});
+
+it('still answers an address, because links get pasted into threads', function () {
+    $left = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
+    $right = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
+
+    $this->get("/comparer?a={$left->slug}&b={$right->slug}")
+        ->assertOk()
+        ->assertSee($left->displayName())
+        ->assertSee($right->displayName());
+});
+
+it('reads what was typed as text, not as a pattern', function () {
+    /*
+     * `%` and `_` are wildcards to a `like`, and somebody searching for "100%" is not
+     * writing a query. Without escaping, "%" alone would match the whole catalogue and
+     * look like a search that found everything.
+     */
+    Schematic::factory()->create(['visibility' => Schematic::PUBLIC, 'name' => 'Rendement 100%']);
+    Schematic::factory()->create(['visibility' => Schematic::PUBLIC, 'name' => 'Autre chose']);
+
+    /*
+     * A lone `%` finds the one name that literally contains a percent sign, and not the
+     * other. Both halves matter: as a wildcard it would have returned everything, and
+     * over-escaped it would have returned nothing. This is the assertion that tells those
+     * three outcomes apart.
+     *
+     * It also needs an explicit `escape` in the SQL. SQLite has no default escape
+     * character, so `\%` written without one is matched as two literal characters and
+     * finds nothing, while MySQL takes `\` by default and finds it. Left implicit this
+     * passes here and behaves differently in production, which is the failure this
+     * repository keeps meeting in other clothes.
+     */
+    $this->get('/comparer?a=%25')
+        ->assertOk()
+        ->assertSee('Rendement 100%')
+        ->assertDontSee('Autre chose');
+});
+
+it('says nothing was found rather than showing an empty form', function () {
+    // An empty form after a search reads as "there is no such schematic", when what
+    // happened is that it was never looked for.
+    Schematic::factory()->create(['visibility' => Schematic::PUBLIC, 'name' => 'Reacteur']);
+
+    $this->get('/comparer?a=introuvable')
+        ->assertOk()
+        ->assertSee(__('schema.comparer.rien-trouve'));
+});
+
+it('offers the comparison from the schematic page, with one side already filled', function () {
+    /*
+     * Where the gesture actually starts. Nobody arrives at the comparator with two
+     * identifiers in mind: they are on a schematic and wondering how it stands.
+     */
+    $kept = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
+
+    $this->get("/s/{$kept->slug}")
+        ->assertOk()
+        ->assertSee("/comparer?a={$kept->slug}", escape: false);
+});
+
+it('does not offer to compare something nobody else can see', function () {
+    // A comparison is a public page. Offering it from an unlisted schematic would be
+    // offering a link that answers nothing.
+    $mine = Schematic::factory()->create(['visibility' => Schematic::UNLISTED]);
+
+    $this->get("/s/{$mine->slug}")->assertOk()->assertDontSee('/comparer?a=');
+});
