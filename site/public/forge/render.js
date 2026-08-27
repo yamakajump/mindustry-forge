@@ -12,7 +12,7 @@
  */
 
 import {
-  beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawRunning, drawWreck,
+  beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
 } from "./live.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
@@ -566,8 +566,8 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
       if (variant) { art = variant; flip = chosen.flip; }
     }
 
-    // A block with a turning part draws itself out of its own layers instead, because the
-    // composite has the rotor baked into it at rest.
+    // A drill draws itself out of its own layers instead, because the flattened sprite has
+    // its rotor baked into it standing still.
     if (build && drawRunning(context, gear, build, tile, size, box, scale, stepped)) return;
 
     if (spins || flip !== 1) {
@@ -583,6 +583,9 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
       context.drawImage(sheet, art.x, art.y, art.w, art.h,
                         px, py, size * scale, size * scale);
     }
+
+    // And what glows, heats or burns on top of it, once the plate is down.
+    if (build) drawLayers(context, gear, build, tile, size, box, scale, stepped);
   };
 
   for (const part of drawn) if (CARRIER_ROLES.has(part.role)) one(part);
