@@ -37,6 +37,12 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.sandbox.LiquidVoid;
+import mindustry.world.blocks.sandbox.ItemVoid;
+import mindustry.world.blocks.defense.ShockwaveTower;
+import mindustry.world.blocks.units.RepairTower;
+import mindustry.world.blocks.units.RepairTurret;
+import mindustry.world.blocks.defense.RegenProjector;
 import mindustry.world.blocks.payloads.Constructor;
 import mindustry.world.blocks.payloads.BlockProducer;
 import mindustry.type.UnitType;
@@ -991,6 +997,43 @@ public class DumpBlocks {
             entry.put("use_time", shield.phaseUseTime);
             entry.put("coolant_consumption", shield.coolantConsumption);
             entry.put("boost_input", optionalInputsOf(block));
+            return;
+        }
+        /* Blocks that draw power only when they have something to work on, and so draw
+           **nothing** in a still schematic.
+
+           `shouldConsume` is `anyTargets` for a regen projector, `target != null` for a
+           repair turret, `targets.size > 0` for a repair tower. Nothing is damaged in a
+           schematic and no units are standing in it, so all three are free. Counted as
+           permanent consumers they invented four hundred and twenty power a second between
+           them, which dims a whole base in the report and in nothing else. */
+        if (block instanceof RegenProjector || block instanceof RepairTurret
+                || block instanceof RepairTower) {
+            entry.put("role", "idle-power");
+            entry.put("range", block instanceof RepairTurret repair ? repair.repairRadius
+                : block instanceof RepairTower tower ? tower.range : 0f);
+            return;
+        }
+        if (block instanceof ShockwaveTower shock) {
+            /* Same family, by a stranger route. `shouldConsume` is `reloadCounter < reload`
+               and it looks like a run up, but the counter **starts at a random value**
+               between zero and the reload, and only returns to zero when the tower actually
+               fires. With no bullets to knock down it reaches a full reload once and is
+               silent for ever after.
+
+               So the steady state is the same zero as a repair turret's, and the transient
+               is a random couple of seconds nobody can reproduce and nobody would notice:
+               three thousandths of a large battery. */
+            entry.put("role", "idle-power");
+            entry.put("reload", shock.reload);
+            entry.put("range", shock.range);
+            return;
+        }
+        if (block instanceof ItemVoid || block instanceof LiquidVoid) {
+            /* The sandbox drains. A liquid void was filed under items, so it refused every
+               drop and the pipe into it backed up instead of emptying. */
+            entry.put("role", "void");
+            entry.put("carries", block instanceof LiquidVoid ? "liquid" : "item");
             return;
         }
         if (block instanceof Radar radar) {

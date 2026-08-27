@@ -1,0 +1,45 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12,
+      "liquid": "water",
+      "amount": 9980
+    }
+  ],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "conduit",
+      "x": 13,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "conduit",
+      "x": 14,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "liquid-void",
+      "x": 15,
+      "y": 12,
+      "efficiency": 1
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

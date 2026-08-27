@@ -1180,6 +1180,35 @@ const forceProjector = {
   },
 };
 
+/**
+ * A block that draws power only when it has something to work on.
+ *
+ * A regen projector, a repair turret, a repair tower: `shouldConsume` is "are there any
+ * targets", and a schematic has no damaged blocks and no units standing in it. So all
+ * three are **free**, and counted as permanent consumers they invented four hundred and
+ * twenty power a second between them. That dims a whole base in the report and in nothing
+ * else, which is the worst kind of wrong: it looks like a finding.
+ */
+const idlePower = {
+  begin(build) { build.state.wants = 0; },
+  acceptItem() { return false; },
+  acceptLiquid() { return false; },
+};
+
+/**
+ * A sandbox drain: whatever is handed to it is gone.
+ *
+ * Filed under items, a liquid void refused every drop and the pipe into it backed up
+ * instead of emptying, which is the opposite of the one thing the block is for.
+ */
+const drain = {
+  begin(build) { build.state.voided = 0; },
+  acceptItem() { return true; },
+  handleItem(build) { build.state.voided++; },
+  acceptLiquid() { return true; },
+  handleLiquid(build) { build.state.voided++; },
+};
+
 /** A radar: power, for ever, and nothing else. It takes no items and no liquids. */
 const radar = {
   begin(build) { build.state.wants = 1; },
@@ -1264,6 +1293,8 @@ const BY_ROLE = {
   "turret-idle": turretIdle,
   tractor: turretIdle,
   "laser-turret": laserTurret,
+  "idle-power": idlePower,
+  void: drain,
   mender: mendProjector,
   projector: overdriveProjector,
   shield: forceProjector,

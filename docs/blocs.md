@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **105 classes à reproduire**, pour 228 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 67 sur 105
+## Fait : 74 sur 105
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -96,7 +96,7 @@ second, c'est une intuition qui a l'air d'un portage.
       large-payload-mass-driver, payload-mass-driver
 - [x] `PayloadRouter` - 2 blocs
       payload-router, reinforced-payload-router
-- [ ] `RepairTurret` - 2 blocs
+- [x] `RepairTurret` - 2 blocs
       repair-point, repair-turret
 - [x] `Router` - 2 blocs - repartit au tourniquet
       distributor, router
@@ -156,7 +156,7 @@ second, c'est une intuition qui a l'air d'un portage.
       slag-incinerator
 - [x] `ItemSource` - 1 bloc
       item-source
-- [ ] `ItemVoid` - 1 bloc
+- [x] `ItemVoid` - 1 bloc
       item-void
 - [x] `Junction` - 1 bloc - quatre files, une par cote, chacune ressort en face
       junction
@@ -168,7 +168,7 @@ second, c'est une intuition qui a l'air d'un portage.
       command-center
 - [x] `LiquidSource` - 1 bloc
       liquid-source
-- [ ] `LiquidVoid` - 1 bloc
+- [x] `LiquidVoid` - 1 bloc
       liquid-void
 - [ ] `LongPowerNode` - 1 bloc
       beam-link
@@ -184,7 +184,7 @@ second, c'est une intuition qui a l'air d'un portage.
       payload-unloader
 - [x] `PayloadVoid` - 1 bloc
       payload-void
-- [ ] `PointDefenseTurret` - 1 bloc
+- [x] `PointDefenseTurret` - 1 bloc
       segment
 - [ ] `PowerDiode` - 1 bloc
       diode
@@ -194,15 +194,15 @@ second, c'est une intuition qui a l'air d'un portage.
       power-void
 - [x] `Radar` - 1 bloc - tire de l'energie en continu, et rien d'autre
       radar
-- [ ] `RegenProjector` - 1 bloc
+- [x] `RegenProjector` - 1 bloc
       regen-projector
-- [ ] `RepairTower` - 1 bloc
+- [x] `RepairTower` - 1 bloc
       unit-repair-tower
 - [ ] `Seaweed` - 1 bloc
       redweed
 - [ ] `ShieldWall` - 1 bloc
       shielded-wall
-- [ ] `ShockwaveTower` - 1 bloc
+- [x] `ShockwaveTower` - 1 bloc
       shockwave-tower
 - [x] `SolidPump` - 1 bloc
       water-extractor

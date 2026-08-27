@@ -1042,6 +1042,43 @@ const SCENARIOS = {
     stock: ["silicon*200@7,0", "graphite*200@7,0"],
   }),
 
+  /* Trois blocs qui ne tirent d'energie que quand ils ont quelque chose a soigner.
+
+     `shouldConsume` est "y a-t-il une cible" : rien n'est abime dans une schematique et
+     aucune unite n'y stationne, donc les trois sont **gratuits**. Comptes comme des
+     consommateurs permanents ils inventaient quatre cent vingt d'energie par seconde a
+     eux trois. La batterie doit lire exactement ce que le RTG a fait, au chiffre pres. */
+  "idle-regen": () => idlePower("regen-projector"),
+  "idle-repair": () => idlePower("repair-turret"),
+  "idle-tower": () => idlePower("unit-repair-tower"),
+
+  /* Et une tour a onde de choc, qui tire jusqu'a etre chargee puis se tait : quatre-vingts
+     images de course, et plus rien pendant les vingt-huit secondes suivantes. */
+  "idle-shockwave": () => idlePower("shockwave-tower"),
+
+  /* Les vidanges du bac a sable. Celle a liquide etait classee cote objets, donc elle
+     refusait chaque goutte et le tuyau devant elle bouchonnait au lieu de se vider, ce qui
+     est l'exact contraire de ce a quoi le bloc sert. */
+  "void-liquid": () => [
+    { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
+    { x: 1, y: 0, block: "conduit", rotation: 0 },
+    { x: 2, y: 0, block: "conduit", rotation: 0 },
+    { x: 3, y: 0, block: "liquid-void", rotation: 0 },
+  ],
+
+  /* Celle a objets est mesuree par ce qu'elle **prend a l'autre branche** : un routeur
+     partage entre un coffre et la vidange, donc le coffre en recoit la moitie. Une vidange
+     qui refuse laisserait tout au coffre, et un scenario qui la nourrit toute seule ne
+     mesure rien du tout puisque le propre du bloc est de ne rien laisser derriere. */
+  "void-item": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "router", rotation: 0 },
+    { x: 3, y: 0, block: "item-void", rotation: 0 },
+    { x: 2, y: 1, block: "conveyor", rotation: 1 },
+    { x: 2, y: 3, block: "vault", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -1160,6 +1197,25 @@ function extractor(sandy) {
       { x: 5, y: 1, block: "liquid-tank", rotation: 0 },
     ],
     ground,
+  };
+}
+
+/**
+ * One block on a grid with an RTG and a battery, and nothing else.
+ *
+ * The measurement is the battery: whatever it reads has to be exactly what the same RTG
+ * and battery read on their own, in `gen-rtg-thorium`. A block that draws a single unit
+ * shows up as a different number.
+ */
+function idlePower(name) {
+  const wide = sizeOf(name);
+  return {
+    tiles: [
+      { x: 0, y: 0, block: "rtg-generator", rotation: 0 },
+      { x: 2 + Math.trunc((wide - 1) / 2), y: 0, block: name, rotation: 0 },
+      { x: 3 + wide, y: 0, block: "battery-large", rotation: 0 },
+    ],
+    stock: ["thorium*10@0,0"],
   };
 }
 

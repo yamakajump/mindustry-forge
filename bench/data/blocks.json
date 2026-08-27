@@ -6239,11 +6239,8 @@
         "oxide": 40
       },
       "power": 60,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{
-        "hydrogen": 1
-      }
+      "role": "idle-power",
+      "range": 0
     },
     "shockwave-tower":{
       "name": "shockwave-tower",
@@ -6271,10 +6268,9 @@
         "oxide": 30
       },
       "power": 100,
-      "role": "sink",
-      "input_liquid":{
-        "cyanogen": 1.5
-      }
+      "role": "idle-power",
+      "reload": 80,
+      "range": 170
     },
     "shield-projector":{
       "name": "shield-projector",
@@ -10743,7 +10739,9 @@
         "lead": 30,
         "silicon": 20
       },
-      "power": 60
+      "power": 60,
+      "role": "idle-power",
+      "range": 60
     },
     "repair-turret":{
       "name": "repair-turret",
@@ -10771,8 +10769,8 @@
         "plastanium": 60
       },
       "power": 300,
-      "role": "sink",
-      "input_liquid":{}
+      "role": "idle-power",
+      "range": 145
     },
     "tank-fabricator":{
       "name": "tank-fabricator",
@@ -11270,10 +11268,8 @@
         "tungsten": 80
       },
       "power": 60,
-      "role": "sink",
-      "input_liquid":{
-        "ozone": 3
-      }
+      "role": "idle-power",
+      "range": 100
     },
     "payload-conveyor":{
       "name": "payload-conveyor",
@@ -11700,7 +11696,9 @@
       "health": 40,
       "build_time": 20,
       "cost":{},
-      "power": 0
+      "power": 0,
+      "role": "void",
+      "carries": "item"
     },
     "liquid-source":{
       "name": "liquid-source",
@@ -11742,8 +11740,8 @@
       "build_time": 20,
       "cost":{},
       "power": 0,
-      "role": "sink",
-      "input_liquid":{}
+      "role": "void",
+      "carries": "liquid"
     },
     "payload-source":{
       "name": "payload-source",

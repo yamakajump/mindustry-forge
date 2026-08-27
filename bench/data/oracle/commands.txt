@@ -92,4 +92,10 @@ measure bXNjaAF4nEXLQQqAIBQA0ckyCCSCztGhJF0I5g8joduHhLR6zGJY0R1DsofHnPaJYt0WQ/I9
 measure bXNjaAF4nE2KWwrCMBQFJzHthyio+8g6XEdIghRib7npg+5eIv3o12FmDnd6gxvDN/OKMtZZlziL+qRDKdXxLEE/2Z8St0m2rL7KojHzmMJeJKR2WfP+74dZZUiAA4vtjHljsHQNeyxcuLb5AVLIITs= 30 ../bench/data/oracle/constructor-drills.json copper*1000@2,2 graphite*1000@2,2 titanium*1000@2,2 silicon*1000@2,2
 measure bXNjaAF4nF3LWwqAIBRF0a29ECSCxtGgpPwIqhtWgrMPiQj62qwDhx6rKDe3etrdpUXcNAS5Th/KbzjkCqOnez3KFn2S8L9gX0eZJ6ABja5qQFGjM02OwuYUdI8MFarAYOAGyNAe8g== 30 ../bench/data/oracle/payload-router.json
 measure bXNjaAF4nFWMQQrDIBREJ1aFgJRAaW/hoUQ/QWj94WssuX1x4aKrxxt4gwfMAl3Ch/AUilxqkzM2Fp/CvpNUg/sRrjeH5CufEgnb9Mil08WCV0gpt9zJ/13AHfwlmZ2bXeecAFhAQRkLYIGFGroO3LBCj9EN09gGfmOOKig= 30 ../bench/data/oracle/reconstructor-daggers.json silicon*200@9,2 graphite*200@9,2
+measure bXNjaAF4nB3IUQqAMAwE0a0VEaF4kh4q6hKU2kroj7eXCAMPBjNiwFjlJpbzKMxGZY1I1jUrK016M6z/zo+1i7uPtEnvtDcXMSWACADBi86AyfkA6usWYA== 30 ../bench/data/oracle/idle-regen.json thorium*10@0,1
+measure bXNjaAF4nCXIUQqAIBRE0TGLPsKluKgXDSKYxfD6aPchwYUDFytiwNztJLZ6NGbxtqqIJC+5sFPml5D+n/2R6Ei7uVNvbqZCABEAwmgaTFgGH9FFFg4= 30 ../bench/data/oracle/idle-repair.json thorium*10@0,1
+measure bXNjaAF4nCXKUQqAIBBF0acWQeBHC3FREw0imMZjItp9SHDh/FwsCA5Tk1OxlqNqsv4oAyItp6xNKdaJ7W7FEvWSwn9B3MVM+aYqzAogAIAb+YHHPPgANI8XNw== 30 ../bench/data/oracle/idle-tower.json thorium*10@0,1
+measure bXNjaAF4nD3JQQqAMAwF0V8j4qZ6kh4qaqhibSEGi7eXboSBtxiMIIc+8yWYji1JuPeynpUfIXi1GKJkUbaimP8VrFRR+IXNRN+QWKMAIABwLWp0GBofiesYMQ== 30 ../bench/data/oracle/idle-shockwave.json thorium*10@0,1
+measure bXNjaAF4nC3KSw6AIBCD4X8E44J4FA5lgMUkCvGB5zejdvM1TfGI4OuyFcLdNMdV967ZMX8lnq0fqTClVnPXi/DvdgY8ltEQhJfBGHDGA54KEvo= 30 ../bench/data/oracle/void-liquid.json
+measure bXNjaAF4nCWKWwqAIBBFj6aRtBYXFTUfQTVgKrT7mLof93AfBKIjXMsppK77lvcqZ2Q25FtbWYVp1avLo4WxaKtSSN9sf2Jf2lGBEVM0cziDxxsGhr/0NgS85Rft8BXV 30 ../bench/data/oracle/void-item.json
 measure bXNjaAF4nD2KWwqAIBQFR82K+mglLcrsEkFp2APafRgRB2ZgODQYRRHcKrRDmsdJ+n1zoaCdD1n7PZ7JC7WP4ZI7Jrrv9Ad7uXM5gBJA2Zfv0GhUBZgc0dhcFWWWoc56AM60Fo0= 30 ../bench/data/oracle/bridge-span.json
