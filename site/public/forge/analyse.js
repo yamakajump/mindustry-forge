@@ -104,11 +104,6 @@ function outputsOf(node) {
     // is pushed.
     return DIRECTIONS.map(([dx, dy]) => [node.x + dx, node.y + dy]);
   }
-  if (node.role === "mass-driver") {
-    // Linked, everything it holds goes down the barrel and nowhere else.
-    if (node.link) return [node.link];
-    return DIRECTIONS.map(([dx, dy]) => [node.x + dx, node.y + dy]);
-  }
   if (node.role === "bridge") {
     // A bridge carries over a gap to the tile it remembers, and that memory is the whole
     // point of it: without reading the link, a line that jumps a wall reads as two
@@ -133,6 +128,17 @@ function outputsOf(node) {
     return [];
   }
 
+  /* A mass driver hands on **both** ways and this had it as one or the other. Down the
+     barrel when it is set to something, and out of every side it touches whenever it is
+     idle or receiving, which is `dumpAccumulate` at `MassDriver.java:164`. Written as "the
+     barrel and nowhere else", a relay with a vault against its middle driver read as
+     delivering nothing there where the game puts a hundred and eight items in it; and the
+     four neighbours of a three wide block centre tile are inside its own footprint, so an
+     unlinked driver had no way out at all.
+
+     Falls through to the ring below, with the link added in front of it. */
+  const barrel = node.role === "mass-driver" && node.link ? [node.link] : [];
+
   // Routers, drills, crafters and anything else that offloads: every tile touching the
   // footprint, minus the footprint itself.
   const covered = new Set(node.footprint.map(([x, y]) => `${x},${y}`));
@@ -146,7 +152,7 @@ function outputsOf(node) {
       around.push([cx + dx, cy + dy]);
     }
   }
-  return around;
+  return [...barrel, ...around];
 }
 
 /**
@@ -157,7 +163,7 @@ function outputsOf(node) {
  * left, and nothing moves. Built without this, a graph reports a working loop between two
  * belts pointing at each other.
  */
-function accepts(node, fromTile) {
+function accepts(node, fromTile, from = null) {
   if (node.role === "unknown" || node.role === "power") return false;
   // A belt and a pipe both refuse what is pushed against their own direction of travel.
   // `Conduit.acceptLiquid` ends in a check that the source is not the tile it points at,
@@ -170,6 +176,20 @@ function accepts(node, fromTile) {
   if (node.role === "junction" || node.role === "router"
       || node.role === "bridge" || node.role === "sorter") {
     return true;
+  }
+  /* `acceptItem` is `items.total() < itemCapacity && linkValid()`: a mass driver set to
+     nothing takes nothing at all, which is what jams the belt feeding a half built line.
+     With no branch here it fell through to the last line, which asks for a recipe it does
+     not have, so no driver accepted anything and a linked pair carried zero.
+
+     A salvo is the exception, and it has to be: it lands through `handlePayload` and never
+     asks. The far end of a pair is exactly the driver that has no link of its own. */
+  if (node.role === "mass-driver") {
+    if (from?.role === "mass-driver"
+        && from.link?.[0] === node.x && from.link?.[1] === node.y) {
+      return true;
+    }
+    return Boolean(node.link);
   }
   // A drill makes its own ore and takes nothing. Feeding one is a wasted belt.
   if (node.role === "drill") return false;
@@ -274,7 +294,12 @@ function bridgeLink(tile, block) {
      rules: it shoots across open ground in any direction at all, and its reach is a
      radius rather than a count of tiles. */
   if (block.role === "mass-driver") {
-    return Math.hypot(dx, dy) <= (block.range || 0) ? [tile.x + dx, tile.y + dy] : null;
+    /* `within` is `dst2 < dst * dst`, strictly. The game lets a player set the link at
+       exactly the range and saves it, then refuses it for ever: at fifty-five tiles the
+       driver never fires and, having no valid link, stops accepting from the belt as well.
+       Read as inclusive, the port carried a full thirty-six a second down a barrel that
+       does not work. */
+    return dx * dx + dy * dy < (block.range || 0) ** 2 ? [tile.x + dx, tile.y + dy] : null;
   }
 
   if (dx !== 0 && dy !== 0) return null;
@@ -318,7 +343,7 @@ export function buildGraph(tiles) {
       const leaving = node.footprint.reduce((best, cell) =>
         Math.abs(cell[0] - tile[0]) + Math.abs(cell[1] - tile[1]) <
         Math.abs(best[0] - tile[0]) + Math.abs(best[1] - tile[1]) ? cell : best);
-      if (!accepts(nodes[target], leaving)) continue;
+      if (!accepts(nodes[target], leaving, node)) continue;
       const key = `${index}>${target}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -711,6 +736,12 @@ function capacityFor(node, resource, liquid) {
   // flooding the model with numbers no pipe could carry.
   if (node.role === "conduit") {
     return (node.block.liquid_capacity || 10) * TICKS;
+  }
+  /* A salvo of `itemCapacity` every `reload` frames, which is the figure on the block own
+     card: thirty-six a second. Read as infinite, a driver fed by five titanium belts
+     passed fifty-five a second. */
+  if (node.role === "mass-driver") {
+    return (node.block.items_per_second || Infinity) * speed;
   }
   // A container holds and hands back whatever is pulled out of it.
   if (node.role === "store") return Infinity;

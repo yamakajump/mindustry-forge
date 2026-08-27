@@ -119,8 +119,12 @@ function linkedDriver(build) {
   if (!link || !build.world) return null;
   const other = build.world.at(link[0], link[1]);
   if (!other || other === build || other.name !== build.name) return null;
-  // `range` is in tiles in the catalogue, as a bridge's is; the game holds it in pixels.
-  return distanceBetween(build, other) <= (build.block.range || 0) * TILE ? other : null;
+  /* `within(other, range)` is `dst2 < range * range`, **strictly**, and `range` is in
+     tiles in the catalogue where the game holds it in pixels. The boundary is reachable: a
+     mass driver reaches four hundred and forty pixels, which is fifty-five tiles exactly,
+     and the game lets a player save a link there and then refuses it for ever. */
+  const reach = (build.block.range || 0) * TILE;
+  return distanceBetween(build, other) ** 2 < reach * reach ? other : null;
 }
 
 /** `shooterValid`: still powered, still pointed here, still in range. */
@@ -175,12 +179,28 @@ function fire(build, target) {
     build.items.remove(item, take);
   }
 
+  /* Two clocks, and this used to be one.
+
+     The **items** land when the bolt gets within seven pixels of the far end, having left
+     seven pixels out of this one: `MassDriverBolt.update`. The **queue** is cleared on a
+     plain `Time.run(dst / bulletSpeed)`, with no seven pixels either side, at
+     `MassDriver.java:210`. Two and a half frames apart, which a two hundred frame reload
+     hides completely in vanilla and would not hide in a mod.
+
+     And a bolt that runs out of lifetime before it arrives does not deliver: it despawns
+     and scatters what it carried. Unreachable at four hundred and forty pixels against two
+     hundred frames of life, and written down because the catalogue is the only thing
+     keeping it unreachable. */
+  const gap = distanceBetween(build, target);
+  const speed = build.block.bullet_speed ?? 5.5;
+  const life = build.block.bullet_lifetime ?? 200;
   const reach = build.block.translation ?? 7;
-  const flight = Math.min(
-    build.block.bullet_lifetime ?? 200,
-    Math.max(0, (distanceBetween(build, target) - reach * 2)
-      / (build.block.bullet_speed ?? 5.5)));
-  target.state.incoming.push({ items: packet, from: build, left: flight });
+
+  const flight = Math.max(0, (gap - reach * 2) / speed);
+  const freed = Math.min(life, gap / speed);
+  target.state.incoming.push({
+    items: flight <= life ? packet : new Map(), from: build, left: flight, freed,
+  });
 }
 
 /** `handlePayload`: a salvo lands, and a receiver may hold twice its capacity. */
@@ -189,23 +209,29 @@ function arrive(build, delta) {
   if (!incoming?.length) return;
 
   for (let i = incoming.length - 1; i >= 0; i--) {
-    incoming[i].left -= delta;
-    if (incoming[i].left > 0) continue;
+    const salvo = incoming[i];
+    salvo.left -= delta;
+    salvo.freed -= delta;
 
-    const salvo = incoming.splice(i, 1)[0];
-    let total = build.items.total;
-    for (const [item, amount] of salvo.items) {
-      const spare = build.itemCapacity * 2 - total;
-      if (spare <= 0) break;
-      const taken = Math.min(amount, spare);
-      build.items.add(item, taken);
-      total += taken;
+    if (salvo.left <= 0 && !salvo.landed) {
+      salvo.landed = true;
+      let total = build.items.total;
+      for (const [item, amount] of salvo.items) {
+        const spare = build.itemCapacity * 2 - total;
+        if (spare <= 0) break;
+        const taken = Math.min(amount, spare);
+        build.items.add(item, taken);
+        total += taken;
+      }
+      if (salvo.items.size) build.state.reload = 1;
     }
-    build.state.reload = 1;
 
-    // `Time.run(timeToArrive, ...)`: the shooter leaves the queue when its salvo lands.
-    const at = build.state.waiting.indexOf(salvo.from);
-    if (at >= 0) build.state.waiting.splice(at, 1);
-    build.state.driver = "idle";
+    // `Time.run(dst / bulletSpeed, ...)`, which is not the same instant as the landing.
+    if (salvo.freed <= 0) {
+      const at = build.state.waiting.indexOf(salvo.from);
+      if (at >= 0) build.state.waiting.splice(at, 1);
+      build.state.driver = "idle";
+      incoming.splice(i, 1);
+    }
   }
 }

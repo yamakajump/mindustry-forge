@@ -482,3 +482,58 @@ test("sealed means nothing arrives from outside", async () => {
   close(press(shut).fed, 0, "scellee, rien n'arrive et rien ne tourne");
   assert.equal(shut.awaiting, false, "scellee est une reponse, pas une absence de reponse");
 });
+
+/**
+ * The mass driver, on the analytic side.
+ *
+ * Written because the simulator and the page disagreed in silence: every oracle scenario
+ * read exact while `analyse` said a linked pair carried nothing at all. `tools/compare.mjs`
+ * only ever runs the simulation, so nothing in the bench could see it.
+ */
+const driverAt = (x, link) => ({
+  x, y: 0, block: "mass-driver", rotation: 0,
+  config: link ? { type: 7, dx: link, dy: 0 } : null,
+});
+
+test("a mass driver carries down its barrel", () => {
+  const graph = buildGraph([
+    { x: 0, y: 0, block: "conveyor", rotation: 0 },
+    driverAt(2, 10),
+    driverAt(12, null),
+    { x: 15, y: 0, block: "vault", rotation: 0 },
+  ]);
+  assert.ok(graph.out[0].includes(1), "a belt hands into a linked driver");
+  assert.ok(graph.out[1].includes(2), "and it goes down the barrel");
+  assert.ok(graph.out[2].includes(3), "and the far end empties into what touches it");
+
+  const out = solve(graph, { 0: { copper: 40 } });
+  close(out.delivered.copper, 6.5, "a belt is the ceiling, not the driver");
+});
+
+test("a mass driver set to nothing takes nothing", () => {
+  const graph = buildGraph([
+    { x: 0, y: 0, block: "conveyor", rotation: 0 },
+    driverAt(2, null),
+    { x: 5, y: 0, block: "vault", rotation: 0 },
+  ]);
+  assert.ok(!graph.out[0].includes(1),
+            "`acceptItem` is `linkValid()`, so an unset driver jams the belt behind it");
+});
+
+test("a mass driver caps a salvo at what it can reload", () => {
+  const graph = buildGraph([driverAt(0, 10), driverAt(10, null),
+                            { x: 13, y: 0, block: "vault", rotation: 0 }]);
+  // Poured straight into the barrel, so the only ceiling left is the driver's own.
+  const out = solve(graph, { 0: { copper: 500 } });
+  close(out.delivered.copper, 36, "one hundred and twenty items every two hundred frames");
+});
+
+test("a mass driver link at exactly its range is refused", () => {
+  const reach = known.blocks["mass-driver"].range;
+  const near = buildGraph([driverAt(0, reach - 1), driverAt(reach - 1, null)]);
+  assert.deepEqual(near.edges, [[0, 1]], "one tile inside, the barrel works");
+
+  const edge = buildGraph([driverAt(0, reach), driverAt(reach, null)]);
+  assert.deepEqual(edge.edges, [],
+                   "`within` is strict, and the game saves the link then refuses it");
+});

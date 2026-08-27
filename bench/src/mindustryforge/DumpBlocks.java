@@ -81,6 +81,7 @@ import mindustry.world.blocks.power.NuclearReactor;
 import mindustry.world.blocks.power.ImpactReactor;
 import mindustry.world.blocks.power.ThermalGenerator;
 import mindustry.world.blocks.power.HeaterGenerator;
+import mindustry.world.blocks.defense.Door;
 import mindustry.world.blocks.power.PowerDiode;
 import mindustry.world.blocks.power.PowerNode;
 import mindustry.world.blocks.heat.HeatConductor;
@@ -227,17 +228,16 @@ public class DumpBlocks {
             if (block.outputsPayload) entry.put("outputs_payload", true);
             if (block.acceptsPayload) entry.put("accepts_payload", true);
             /* Si on peut poser une cargaison sur la case : `canDump` vaut
-               `front == null || !front.tile.solid()`. Un convoyeur, un duct, une conduite
-               ou un routeur ne sont pas solides, donc une usine pointee vers un tapis pose
-               son unite au sol et repart. Le portage prenait la seule presence d'un
-               batiment pour un mur et s'arretait apres une unite. */
-            if (block.solid) entry.put("solid", true);
-            /* Si on peut poser une cargaison sur la case : `canDump` vaut
-               `front == null || !front.tile.solid()`. Un convoyeur, un duct, une conduite
-               ou un routeur ne sont pas solides, donc une usine pointee vers un tapis pose
-               son unite au sol et repart. Le portage prenait la seule presence d'un
-               batiment pour un mur et s'arretait apres une unite. */
-            if (block.solid) entry.put("solid", true);
+               `front == null || !front.tile.solid()`, et `Tile.solid()` est
+               `block.solid || floor.solid || build.checkSolid()`. Un convoyeur, un duct,
+               une conduite ou un routeur ne sont pas solides, donc une usine pointee vers
+               un tapis pose son unite au sol et repart. Le portage prenait la seule
+               presence d'un batiment pour un mur et s'arretait apres une unite.
+
+               Une porte confie tout a `checkSolid()` et laisse `block.solid` a faux : lue
+               sur le seul champ, une porte **fermee**, qui est son etat par defaut, ne
+               bloquait rien du tout. */
+            if (block.solid || block instanceof Door) entry.put("solid", true);
             /* Whether a pipe pointed at nothing spills. The class sets it one way and the
                block the other: `ArmoredConduit` declares `leaks = false` and
                `reinforced-conduit` turns it back on, so reading the class gets it wrong

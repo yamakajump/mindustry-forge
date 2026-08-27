@@ -452,16 +452,25 @@ const unitFactory = {
   update(build, world, step) {
     const plan = build.state.plan;
 
-    /* `shouldConsume` is `payload == null`: a factory still holding a finished unit asks
-       the grid for nothing at all. */
-    build.state.wants = build.state.payload ? 0 : 1;
-
     /* Everything the plan asks for and the grid's share of the power are one `efficiency`
        between them, and `progress += edelta()` is that efficiency times the frame. */
     let efficiency = plan ? (build.block.power > 0 ? (build.state.power ?? 1) : 1) : 0;
+    let fed = Boolean(plan);
     for (const [item, amount] of Object.entries(plan?.requirements || {})) {
-      if (build.items.get(item) < amount) efficiency = 0;
+      if (build.items.get(item) < amount) { efficiency = 0; fed = false; }
     }
+
+    /* What it asks the grid for, and there are two ways to ask for nothing.
+       `shouldConsume` is `payload == null`, so a factory still holding a finished unit is
+       skipped; and `shouldConsumePower` goes false the moment a consumer that is **not**
+       the power one reports zero, so a factory waiting for its silicon is skipped too.
+
+       Asking anyway, a stalled factory dimmed everything sharing its grid: a drill beside
+       one read a coverage of 0.87 instead of 1, and a drill's output is quadratic in its
+       coverage because its warmup chases its speed. Thirty-seven copper against
+       forty-nine. */
+    build.state.wants = build.state.payload || !fed ? 0 : 1;
+
     if (efficiency > 0) build.state.progress += build.delta(step) * efficiency;
 
     /* The cargo slides out **before** the next unit is considered, and it is a real wait:
@@ -864,7 +873,12 @@ const burstDrill = {
     efficiency = Math.max(0, Math.min(1, efficiency));
     if (efficiency <= 0) return;
 
-    const wet = boostShare(build, step);
+    /* Plafonne par ce que la moitie obligatoire vaut deja, et pas seulement par le reseau.
+       Une foreuse a impact tourne sur de l eau **obligatoire** et de l ozone en bonus : a
+       sept dixiemes de son eau, le jeu lui donne sept dixiemes de son bonus, et le portage
+       lui donnait le bonus entier. Une rafale de plus toutes les trente secondes, et
+       quarante-trois pour cent d ozone bu qui n existe pas. */
+    const wet = boostShare(build, step, efficiency);
     const speed = (1 + ((block.liquid_boost ?? 1) - 1) * wet) * efficiency;
 
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {

@@ -12,8 +12,8 @@
  * Mindustry v159.7.
  */
 
-import { bridgeAccepts, bridgeDumps, bridgeLink, DIRECTIONS, TICKS }
-  from "./core.js";
+import { bridgeAccepts, bridgeDumps, bridgeLink, bridgeTarget, DIRECTIONS, itemOrder,
+  TICKS } from "./core.js";
 import { MACHINES } from "./machines.js";
 import { LIQUIDS } from "./liquids.js";
 import { POWER } from "./power.js";
@@ -123,7 +123,7 @@ const conveyor = {
 
 /** Which way an item is travelling as it lands here. `facing.relativeTo(tile)`. */
 function arrivesFrom(build, source) {
-  return (build.relativeTo(source) + 2) % 4;
+  return build.arrivedFrom(source);
 }
 
 /** `ConveyorBuild.pass`: hand it on if the thing in front will have it. */
@@ -550,12 +550,19 @@ const bridge = {
   },
 
   update(build, world, step) {
-    const link = build.node.link;
-    const target = link ? world.at(link[0], link[1]) : null;
+    // `linkValid`, and not just "is there something at the far end": the tile has to carry
+    // the same bridge, and it must not be pointed back here.
+    const target = bridgeTarget(build);
 
-    // Unlinked, it is an ordinary block and hands round whatever it holds.
+    /* Unlinked, it is an ordinary block and hands round whatever it holds, through
+       `dumpAccumulate`: a **while**, so a bridge sped up by an overdrive dome hands on two
+       or three times in one frame rather than once. */
     if (!target) {
-      if (build.items.total) build.dump();
+      build.state.dumpAccum = (build.state.dumpAccum || 0) + build.delta(step);
+      while (build.state.dumpAccum >= 1) {
+        if (build.items.total) build.dump();
+        build.state.dumpAccum -= 1;
+      }
       return;
     }
 
@@ -575,14 +582,26 @@ const bridge = {
     build.state.wants = 1;
     build.state.timer += build.delta(step)
       * (build.block.power > 0 ? (build.state.power ?? 1) : 1);
-    if (build.state.timer < wait) return;
-    build.state.timer %= wait;
 
-    if (!build.items.total) return;
-    const item = build.items.first();
-    if (target.acceptItem(build, item)) {
-      target.handleItem(build, item);
-      build.items.remove(item);
+    /* A **while**, and this was a modulo. The two agree while a frame is worth less than
+       `transportTime`, which is every ordinary case; a phase conveyor under an overdrive
+       dome runs at two and a half frames a frame against a transport time of two, and the
+       modulo threw the surplus away. Seventy-five items a second in the game against sixty
+       here. */
+    while (build.state.timer >= wait) {
+      build.state.timer -= wait;
+      if (!build.items.total) continue;
+      // `items.take()`, which both removes it and moves the cursor on.
+      const item = build.items.take(itemOrder(build));
+      if (item && target.acceptItem(build, item)) {
+        target.handleItem(build, item);
+      } else if (item) {
+        /* Refused: the game never took it, so neither the stock nor the cursor moved.
+           `take()` here has already moved both, so both go back. */
+        build.items.add(item);
+        build.items.taking = (build.items.taking + itemOrder(build).length - 1)
+          % itemOrder(build).length;
+      }
     }
   },
 };
@@ -909,9 +928,8 @@ function buffered(build, target, step) {
   build.state.age = (build.state.age || 0) + build.delta(step);
 
   if (build.state.queue.length < room && build.items.total) {
-    const item = build.items.first();
-    build.items.remove(item);
-    build.state.queue.push({ item, at: build.state.age });
+    const item = build.items.take(itemOrder(build));
+    if (item) build.state.queue.push({ item, at: build.state.age });
   }
 
   /* The gate is checked first and spends itself when it fires, whether or not anything

@@ -14,7 +14,7 @@
  * Source: `mindustry.world.blocks.liquid.*`, Mindustry v159.7.
  */
 
-import { bridgeAccepts, bridgeDumps, bridgeLink, DIRECTIONS, TICKS }
+import { bridgeAccepts, bridgeDumps, bridgeLink, bridgeTarget, DIRECTIONS, TICKS }
   from "./core.js";
 
 /**
@@ -136,8 +136,8 @@ const liquidBridge = {
   },
 
   update(build, world, step) {
-    const link = build.node.link;
-    const target = link ? world.at(link[0], link[1]) : null;
+    // `linkValid`: the same bridge at the far end, and not one pointed back here.
+    const target = bridgeTarget(build);
 
     /* Warmup, which was missing entirely: it creeps towards `efficiency` at a thirtieth a
        frame and the beam carries nothing below a quarter. A phase conduit with no power
