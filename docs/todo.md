@@ -380,3 +380,29 @@ tournerait.
 La règle de `marks.js` est la bonne, c'est celle du jeu. À corriger dans sa propre
 correction, avec un scénario de banc qui montre la différence : une schématique qui produit
 quelque chose d'ininflammable **et** brûle autre chose.
+
+## Deux fichiers de banc qui n'importent plus, et une commande qui ne prouve rien
+
+Trouvé le 27/08 par la voie du dumpeur, vérifié plutôt que cru.
+
+`bench/test_bench.py` et `bench/test_schematic_in_the_game.py` importent `forge.layout` et
+`forge.bench`, le paquet supprimé au restart. Ils n'arrivent même pas à la collecte :
+
+```
+ModuleNotFoundError: No module named 'forge'
+```
+
+Et la commande que le `CLAUDE.md` présentait comme « le banc, qui fait tourner le vrai
+jeu », `python -m pytest tests/ -q`, ramasse **huit tests de format de fichier et aucun test
+qui lance quoi que ce soit**. Elle passe au vert en quatre centièmes de seconde, ce qui est
+précisément ce qui la rendait trompeuse : elle avait l'air de tenir la deuxième règle du
+dépôt.
+
+**La règle est tenue, mais ailleurs** : par `npm run oracle` et ses scénarios enregistrés,
+chacun mesuré trente secondes dans un vrai serveur v159.7 et comparé en objets comptés. Le
+`CLAUDE.md` est corrigé et désigne maintenant la bonne commande.
+
+Ce qui reste : les deux fichiers morts donnent l'illusion qu'il existe un chemin de
+re-mesure automatisé en Python. Quelqu'un finira par ajouter un scénario en croyant qu'il
+sera mesuré. Soit on les ranime, soit on les supprime, mais les laisser cassés est le pire
+des trois.

@@ -1,0 +1,3739 @@
+{
+ "_": "Genere par tools/build_logic_catalogue.py. Ne pas editer a la main.",
+ "build": "v8 build 159.7",
+ "limits": {
+  "code_bytes": 102400,
+  "config_bytes": 16000,
+  "links": 6000,
+  "link_name": 32
+ },
+ "categories": {
+  "block": {
+   "fr": "Contrôle des Blocs",
+   "en": "Block Control"
+  },
+  "control": {
+   "fr": "Contrôle des Flux",
+   "en": "Flow Control"
+  },
+  "io": {
+   "fr": "Entrée & Sortie",
+   "en": "Input & Output"
+  },
+  "operation": {
+   "fr": "Opérations",
+   "en": "Operations"
+  },
+  "unit": {
+   "fr": "Contrôle des Unités",
+   "en": "Unit Control"
+  },
+  "unknown": {
+   "fr": "Inconnu",
+   "en": "Unknown"
+  },
+  "world": {
+   "fr": "Contrôle du Monde",
+   "en": "World"
+  }
+ },
+ "processors": [
+  {
+   "name": "hyper-processor",
+   "size": 3,
+   "label": "Hyper Processeur",
+   "world": false
+  },
+  {
+   "name": "logic-processor",
+   "size": 2,
+   "label": "Processeur",
+   "world": false
+  },
+  {
+   "name": "micro-processor",
+   "size": 1,
+   "label": "Micro Processeur",
+   "world": false
+  },
+  {
+   "name": "world-processor",
+   "size": 1,
+   "label": "Processeur Global",
+   "world": true
+  }
+ ],
+ "instructions": [
+  {
+   "name": "noop",
+   "operands": [],
+   "category": "unknown",
+   "privileged": false,
+   "hidden": false,
+   "help": {}
+  },
+  {
+   "name": "read",
+   "operands": [
+    {
+     "name": "output",
+     "type": "value"
+    },
+    {
+     "name": "target",
+     "type": "value"
+    },
+    {
+     "name": "address",
+     "type": "value"
+    }
+   ],
+   "category": "io",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Lit un nombre depuis un bloc de mémoire relié au processeur.",
+    "en": "Read a number from a linked memory cell.\nCan also read from variables in other processors."
+   }
+  },
+  {
+   "name": "write",
+   "operands": [
+    {
+     "name": "input",
+     "type": "value"
+    },
+    {
+     "name": "target",
+     "type": "value"
+    },
+    {
+     "name": "address",
+     "type": "value"
+    }
+   ],
+   "category": "io",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Écrit un nombre dans un bloc de mémoire relié au processeur.",
+    "en": "Write a number to a linked memory cell.\nCan also write to variables in other processors."
+   }
+  },
+  {
+   "name": "draw",
+   "operands": [
+    {
+     "name": "type",
+     "type": "enum",
+     "enum": "GraphicsType"
+    },
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    },
+    {
+     "name": "p1",
+     "type": "value"
+    },
+    {
+     "name": "p2",
+     "type": "value"
+    },
+    {
+     "name": "p3",
+     "type": "value"
+    },
+    {
+     "name": "p4",
+     "type": "value"
+    }
+   ],
+   "category": "io",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Ajoute une opération dans la mémoire tampon de dessin.\nNe montrera aucune image tant que Draw Flush ne sera pas utilisé.",
+    "en": "Add an operation to the drawing buffer.\nDoes not display anything until Draw Flush is used."
+   }
+  },
+  {
+   "name": "print",
+   "operands": [
+    {
+     "name": "value",
+     "type": "value"
+    }
+   ],
+   "category": "io",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Ajoute du texte dans la mémoire tampon de l'imprimante.\nNe montrera aucun texte tant que Print Flush ne sera pas utilisé.",
+    "en": "Add text to the print buffer.\nDoes not display anything until Print Flush is used."
+   }
+  },
+  {
+   "name": "printchar",
+   "operands": [
+    {
+     "name": "value",
+     "type": "value"
+    }
+   ],
+   "category": "io",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Ajoute un caractère UTF-16 ou une icône à la mémoire tampon d'impression.\nN'affiche rien tant que Print Flush n'est utilisé.",
+    "en": "Add a UTF-16 character or content icon to the print buffer.\nDoes not display anything until Print Flush is used."
+   }
+  },
+  {
+   "name": "format",
+   "operands": [
+    {
+     "name": "value",
+     "type": "value"
+    }
+   ],
+   "category": "io",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Remplace l'espace réservé suivant dans la mémoire tampon de texte par une valeur.\nNe fait rien si l'espace réservé est invalide.\nModèle d'espace réservé: \"{number 0-9}\"\nExemple:\nprint \"test {0}\"\nformat \"exemple\"",
+    "en": "Replace next placeholder in text buffer with a value.\nDoes not do anything if placeholder pattern is invalid.\nPlaceholder pattern: \"{number 0-9}\"\nExample:\nprint \"test {0}\"\nformat \"example\""
+   }
+  },
+  {
+   "name": "drawflush",
+   "operands": [
+    {
+     "name": "target",
+     "type": "value"
+    }
+   ],
+   "category": "block",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Affiche les opérations Draw en file d'attente vers un écran.",
+    "en": "Flush queued Draw operations to a display."
+   }
+  },
+  {
+   "name": "printflush",
+   "operands": [
+    {
+     "name": "target",
+     "type": "value"
+    }
+   ],
+   "category": "block",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Affiche les opérations Print en file d'attente vers un bloc de message.",
+    "en": "Flush queued Print operations to a message block."
+   }
+  },
+  {
+   "name": "getlink",
+   "operands": [
+    {
+     "name": "output",
+     "type": "value"
+    },
+    {
+     "name": "address",
+     "type": "value"
+    }
+   ],
+   "category": "block",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Obtient un lien de processeur par index. Commence à 0.",
+    "en": "Get a processor link by index. Starts at 0."
+   }
+  },
+  {
+   "name": "control",
+   "operands": [
+    {
+     "name": "type",
+     "type": "enum",
+     "enum": "LAccess"
+    },
+    {
+     "name": "target",
+     "type": "value"
+    },
+    {
+     "name": "p1",
+     "type": "value"
+    },
+    {
+     "name": "p2",
+     "type": "value"
+    },
+    {
+     "name": "p3",
+     "type": "value"
+    },
+    {
+     "name": "p4",
+     "type": "value"
+    }
+   ],
+   "category": "block",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Contrôle un bâtiment.",
+    "en": "Control a building."
+   }
+  },
+  {
+   "name": "radar",
+   "operands": [
+    {
+     "name": "target1",
+     "type": "enum",
+     "enum": "RadarTarget"
+    },
+    {
+     "name": "target2",
+     "type": "enum",
+     "enum": "RadarTarget"
+    },
+    {
+     "name": "target3",
+     "type": "enum",
+     "enum": "RadarTarget"
+    },
+    {
+     "name": "sort",
+     "type": "enum",
+     "enum": "RadarSort"
+    },
+    {
+     "name": "radar",
+     "type": "value"
+    },
+    {
+     "name": "sortOrder",
+     "type": "value"
+    },
+    {
+     "name": "output",
+     "type": "value"
+    }
+   ],
+   "category": "block",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Localise des unités dans la portée d'un bâtiment.",
+    "en": "Locate units around a building with range."
+   }
+  },
+  {
+   "name": "sensor",
+   "operands": [
+    {
+     "name": "to",
+     "type": "value"
+    },
+    {
+     "name": "from",
+     "type": "value"
+    },
+    {
+     "name": "type",
+     "type": "value"
+    }
+   ],
+   "category": "block",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Récupère des données depuis un bâtiment ou une unité.",
+    "en": "Get data from a building or unit."
+   }
+  },
+  {
+   "name": "set",
+   "operands": [
+    {
+     "name": "to",
+     "type": "value"
+    },
+    {
+     "name": "from",
+     "type": "value"
+    }
+   ],
+   "category": "operation",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Définit une variable.",
+    "en": "Set a variable."
+   }
+  },
+  {
+   "name": "op",
+   "operands": [
+    {
+     "name": "op",
+     "type": "enum",
+     "enum": "LogicOp"
+    },
+    {
+     "name": "dest",
+     "type": "value"
+    },
+    {
+     "name": "a",
+     "type": "value"
+    },
+    {
+     "name": "b",
+     "type": "value"
+    }
+   ],
+   "category": "operation",
+   "privileged": false,
+   "hidden": false,
+   "help": {}
+  },
+  {
+   "name": "select",
+   "operands": [
+    {
+     "name": "result",
+     "type": "value"
+    },
+    {
+     "name": "op",
+     "type": "enum",
+     "enum": "ConditionOp"
+    },
+    {
+     "name": "comp0",
+     "type": "value"
+    },
+    {
+     "name": "comp1",
+     "type": "value"
+    },
+    {
+     "name": "a",
+     "type": "value"
+    },
+    {
+     "name": "b",
+     "type": "value"
+    }
+   ],
+   "category": "operation",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Conditionally set a variable to one of two values."
+   }
+  },
+  {
+   "name": "wait",
+   "operands": [
+    {
+     "name": "value",
+     "type": "value"
+    }
+   ],
+   "category": "control",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Attendre un certain nombre de secondes.",
+    "en": "Wait a certain number of seconds."
+   }
+  },
+  {
+   "name": "stop",
+   "operands": [],
+   "category": "control",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Stoppe l'exéction du processeur.",
+    "en": "Halt execution of this processor."
+   }
+  },
+  {
+   "name": "lookup",
+   "operands": [
+    {
+     "name": "type",
+     "type": "enum",
+     "enum": "ContentType"
+    },
+    {
+     "name": "result",
+     "type": "value"
+    },
+    {
+     "name": "id",
+     "type": "value"
+    }
+   ],
+   "category": "operation",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Recherche d'un type d'objet/liquide/unité/bloc par ID.\nLe nombre total de chaque type peut être consulté avec:\n@unitCount / @itemCount / @liquidCount / @blockCount",
+    "en": "Look up an item/liquid/unit/block type by ID.\nTotal counts of each type can be accessed with:\n@unitCount / @itemCount / @liquidCount / @blockCount\nFor the inverse operation, sense @id of the object."
+   }
+  },
+  {
+   "name": "packcolor",
+   "operands": [
+    {
+     "name": "result",
+     "type": "value"
+    },
+    {
+     "name": "r",
+     "type": "value"
+    },
+    {
+     "name": "g",
+     "type": "value"
+    },
+    {
+     "name": "b",
+     "type": "value"
+    },
+    {
+     "name": "a",
+     "type": "value"
+    }
+   ],
+   "category": "operation",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Compresse les composants RGBA [0, 1] en un seul nombre pour les opérations de dessins ou les changements de règles.",
+    "en": "Pack [0, 1] RGBA components into a single number for drawing or rule-setting."
+   }
+  },
+  {
+   "name": "unpackcolor",
+   "operands": [
+    {
+     "name": "r",
+     "type": "value"
+    },
+    {
+     "name": "g",
+     "type": "value"
+    },
+    {
+     "name": "b",
+     "type": "value"
+    },
+    {
+     "name": "a",
+     "type": "value"
+    },
+    {
+     "name": "value",
+     "type": "value"
+    }
+   ],
+   "category": "operation",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Extrait les composantes RGBA d'une couleur empaquetée avec Pack Color.",
+    "en": "Unpack RGBA components from a color that was packed using Pack Color."
+   }
+  },
+  {
+   "name": "end",
+   "operands": [],
+   "category": "control",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Saute au sommet de la série d’instructions.",
+    "en": "Jump to the top of the instruction stack."
+   }
+  },
+  {
+   "name": "jump",
+   "operands": [
+    {
+     "name": "destIndex",
+     "type": "int"
+    },
+    {
+     "name": "op",
+     "type": "enum",
+     "enum": "ConditionOp"
+    },
+    {
+     "name": "value",
+     "type": "value"
+    },
+    {
+     "name": "compare",
+     "type": "value"
+    }
+   ],
+   "category": "control",
+   "privileged": false,
+   "hidden": false,
+   "help": {
+    "fr": "Saute conditionnellement vers une autre instruction.",
+    "en": "Conditionally jump to another statement."
+   }
+  },
+  {
+   "name": "ubind",
+   "operands": [
+    {
+     "name": "type",
+     "type": "value"
+    }
+   ],
+   "category": "unit",
+   "privileged": false,
+   "hidden": false,
+   "help": {}
+  },
+  {
+   "name": "ucontrol",
+   "operands": [
+    {
+     "name": "type",
+     "type": "enum",
+     "enum": "LUnitControl"
+    },
+    {
+     "name": "p1",
+     "type": "value"
+    },
+    {
+     "name": "p2",
+     "type": "value"
+    },
+    {
+     "name": "p3",
+     "type": "value"
+    },
+    {
+     "name": "p4",
+     "type": "value"
+    },
+    {
+     "name": "p5",
+     "type": "value"
+    }
+   ],
+   "category": "unit",
+   "privileged": false,
+   "hidden": false,
+   "help": {}
+  },
+  {
+   "name": "uradar",
+   "operands": [
+    {
+     "name": "target1",
+     "type": "enum",
+     "enum": "RadarTarget"
+    },
+    {
+     "name": "target2",
+     "type": "enum",
+     "enum": "RadarTarget"
+    },
+    {
+     "name": "target3",
+     "type": "enum",
+     "enum": "RadarTarget"
+    },
+    {
+     "name": "sort",
+     "type": "enum",
+     "enum": "RadarSort"
+    },
+    {
+     "name": "radar",
+     "type": "value"
+    },
+    {
+     "name": "sortOrder",
+     "type": "value"
+    },
+    {
+     "name": "output",
+     "type": "value"
+    }
+   ],
+   "category": "unit",
+   "privileged": false,
+   "hidden": false,
+   "help": {}
+  },
+  {
+   "name": "ulocate",
+   "operands": [
+    {
+     "name": "locate",
+     "type": "enum",
+     "enum": "LLocate"
+    },
+    {
+     "name": "flag",
+     "type": "enum",
+     "enum": "BlockFlag"
+    },
+    {
+     "name": "enemy",
+     "type": "value"
+    },
+    {
+     "name": "ore",
+     "type": "value"
+    },
+    {
+     "name": "outX",
+     "type": "value"
+    },
+    {
+     "name": "outY",
+     "type": "value"
+    },
+    {
+     "name": "outFound",
+     "type": "value"
+    },
+    {
+     "name": "outBuild",
+     "type": "value"
+    }
+   ],
+   "category": "unit",
+   "privileged": false,
+   "hidden": false,
+   "help": {}
+  },
+  {
+   "name": "query",
+   "operands": [
+    {
+     "name": "shape",
+     "type": "enum",
+     "enum": "QueryShape"
+    },
+    {
+     "name": "type",
+     "type": "enum",
+     "enum": "QueryType"
+    },
+    {
+     "name": "team",
+     "type": "value"
+    },
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    },
+    {
+     "name": "w",
+     "type": "value"
+    },
+    {
+     "name": "h",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Queries units/buildings in a specified area.\nResults are outputted into @queries.\nResults can be read from @queries using the Read instruction and an index.\nLength of @queries can be sensed using @size as a parameter."
+   }
+  },
+  {
+   "name": "getblock",
+   "operands": [
+    {
+     "name": "layer",
+     "type": "enum",
+     "enum": "TileLayer"
+    },
+    {
+     "name": "result",
+     "type": "value"
+    },
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Obtient les données d'une tuile à n'importe quel emplacement.",
+    "en": "Get tile data at any location."
+   }
+  },
+  {
+   "name": "setblock",
+   "operands": [
+    {
+     "name": "layer",
+     "type": "enum",
+     "enum": "TileLayer"
+    },
+    {
+     "name": "block",
+     "type": "value"
+    },
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    },
+    {
+     "name": "team",
+     "type": "value"
+    },
+    {
+     "name": "rotation",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Définit les données d'une tuile à n'importe quel emplacement.",
+    "en": "Set tile data at any location."
+   }
+  },
+  {
+   "name": "spawn",
+   "operands": [
+    {
+     "name": "type",
+     "type": "value"
+    },
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    },
+    {
+     "name": "rotation",
+     "type": "value"
+    },
+    {
+     "name": "team",
+     "type": "value"
+    },
+    {
+     "name": "result",
+     "type": "value"
+    },
+    {
+     "name": "effect",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {}
+  },
+  {
+   "name": "bullet",
+   "operands": [
+    {
+     "name": "result",
+     "type": "value"
+    },
+    {
+     "name": "from",
+     "type": "value"
+    },
+    {
+     "name": "index",
+     "type": "value"
+    },
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    },
+    {
+     "name": "rotation",
+     "type": "value"
+    },
+    {
+     "name": "team",
+     "type": "value"
+    },
+    {
+     "name": "owner",
+     "type": "value"
+    },
+    {
+     "name": "damage",
+     "type": "value"
+    },
+    {
+     "name": "velocityScl",
+     "type": "value"
+    },
+    {
+     "name": "lifeScl",
+     "type": "value"
+    },
+    {
+     "name": "aimX",
+     "type": "value"
+    },
+    {
+     "name": "aimY",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {}
+  },
+  {
+   "name": "status",
+   "operands": [
+    {
+     "name": "clear",
+     "type": "bool"
+    },
+    {
+     "name": "effect",
+     "type": "value"
+    },
+    {
+     "name": "unit",
+     "type": "value"
+    },
+    {
+     "name": "duration",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {}
+  },
+  {
+   "name": "weathersense",
+   "operands": [
+    {
+     "name": "to",
+     "type": "value"
+    },
+    {
+     "name": "weather",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Vérifie si un type de météo est actif.",
+    "en": "Check if a type of weather is active."
+   }
+  },
+  {
+   "name": "weatherset",
+   "operands": [
+    {
+     "name": "weather",
+     "type": "value"
+    },
+    {
+     "name": "state",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Définit l'état actuel de la météo.",
+    "en": "Set the current state of a type of weather."
+   }
+  },
+  {
+   "name": "spawnwave",
+   "operands": [
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    },
+    {
+     "name": "natural",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Simule un déclenchement de vague à n'importe quel emplacement.\nCela n'incrémente pas le compteur de vagues.",
+    "en": "Spawn a wave."
+   }
+  },
+  {
+   "name": "setrule",
+   "operands": [
+    {
+     "name": "rule",
+     "type": "enum",
+     "enum": "LogicRule"
+    },
+    {
+     "name": "value",
+     "type": "value"
+    },
+    {
+     "name": "p1",
+     "type": "value"
+    },
+    {
+     "name": "p2",
+     "type": "value"
+    },
+    {
+     "name": "p3",
+     "type": "value"
+    },
+    {
+     "name": "p4",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Change une règle du jeu.",
+    "en": "Set a game rule."
+   }
+  },
+  {
+   "name": "message",
+   "operands": [
+    {
+     "name": "type",
+     "type": "enum",
+     "enum": "MessageType"
+    },
+    {
+     "name": "duration",
+     "type": "value"
+    },
+    {
+     "name": "outSuccess",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {}
+  },
+  {
+   "name": "cutscene",
+   "operands": [
+    {
+     "name": "action",
+     "type": "enum",
+     "enum": "CutsceneAction"
+    },
+    {
+     "name": "p1",
+     "type": "value"
+    },
+    {
+     "name": "p2",
+     "type": "value"
+    },
+    {
+     "name": "p3",
+     "type": "value"
+    },
+    {
+     "name": "p4",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Manipule la caméra du joueur.",
+    "en": "Manipulate the player camera."
+   }
+  },
+  {
+   "name": "effect",
+   "operands": [
+    {
+     "name": "type",
+     "type": "value"
+    },
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    },
+    {
+     "name": "sizerot",
+     "type": "value"
+    },
+    {
+     "name": "color",
+     "type": "value"
+    },
+    {
+     "name": "data",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Crée un effet de particules.",
+    "en": "Create a particle effect."
+   }
+  },
+  {
+   "name": "explosion",
+   "operands": [
+    {
+     "name": "team",
+     "type": "value"
+    },
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    },
+    {
+     "name": "radius",
+     "type": "value"
+    },
+    {
+     "name": "damage",
+     "type": "value"
+    },
+    {
+     "name": "air",
+     "type": "value"
+    },
+    {
+     "name": "ground",
+     "type": "value"
+    },
+    {
+     "name": "pierce",
+     "type": "value"
+    },
+    {
+     "name": "effect",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Crée une explosion à un emplacement.",
+    "en": "Create an explosion at a location."
+   }
+  },
+  {
+   "name": "setrate",
+   "operands": [
+    {
+     "name": "amount",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Définit la vitesse d'exécution d'un processeur en instructions/tick.",
+    "en": "Set processor execution speed in instructions/tick."
+   }
+  },
+  {
+   "name": "fetch",
+   "operands": [
+    {
+     "name": "type",
+     "type": "enum",
+     "enum": "FetchType"
+    },
+    {
+     "name": "result",
+     "type": "value"
+    },
+    {
+     "name": "team",
+     "type": "value"
+    },
+    {
+     "name": "index",
+     "type": "value"
+    },
+    {
+     "name": "extra",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Cherche les unités, noyaux, joueurs ou constructions par index. Commence à 0 et termine par le nombre retourné.",
+    "en": "Lookup units, cores, players or buildings by index.\nIndices start at 0 and end at their returned count."
+   }
+  },
+  {
+   "name": "sync",
+   "operands": [
+    {
+     "name": "variable",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Synchronise une variable dans le réseau.\nLimité à 20 fois par seconde et par variable.",
+    "en": "Sync a variable across the network.\nLimited to 20 times a second per variable."
+   }
+  },
+  {
+   "name": "clientdata",
+   "operands": [
+    {
+     "name": "channel",
+     "type": "value"
+    },
+    {
+     "name": "value",
+     "type": "value"
+    },
+    {
+     "name": "reliable",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": true,
+   "help": {}
+  },
+  {
+   "name": "getflag",
+   "operands": [
+    {
+     "name": "result",
+     "type": "value"
+    },
+    {
+     "name": "flag",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Vérifie si une variable globale est présente.",
+    "en": "Check if a global flag is set."
+   }
+  },
+  {
+   "name": "setflag",
+   "operands": [
+    {
+     "name": "flag",
+     "type": "value"
+    },
+    {
+     "name": "value",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Définit une variable globale qui peut être lue par tous les processeurs.",
+    "en": "Set a global flag that can be read by all processors."
+   }
+  },
+  {
+   "name": "setprop",
+   "operands": [
+    {
+     "name": "type",
+     "type": "value"
+    },
+    {
+     "name": "of",
+     "type": "value"
+    },
+    {
+     "name": "value",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Change une propriété d'une unité ou d'un bâtiment.",
+    "en": "Sets a property of a unit or building."
+   }
+  },
+  {
+   "name": "playsound",
+   "operands": [
+    {
+     "name": "positional",
+     "type": "bool"
+    },
+    {
+     "name": "id",
+     "type": "value"
+    },
+    {
+     "name": "volume",
+     "type": "value"
+    },
+    {
+     "name": "pitch",
+     "type": "value"
+    },
+    {
+     "name": "pan",
+     "type": "value"
+    },
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    },
+    {
+     "name": "limit",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Joue un son.\nLe volume et le pan peuvent être une valeur globale, ou calculés selon la position.",
+    "en": "Plays a sound.\nVolume and pan can be a global value, or calculated based on position."
+   }
+  },
+  {
+   "name": "playmusic",
+   "operands": [
+    {
+     "name": "name",
+     "type": "value"
+    },
+    {
+     "name": "interrupt",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Plays a music track by name, e.g. \"game1\".\nIf interrupt is true, the previously playing music will be stopped.\nPlaying with null music and interrupt set to true will stop the current track.\nNote that music from data patches must be prefixed with dp-.",
+    "en": "Plays a music track by name, e.g. \\\"game1\\\".\nIf interrupt is true, the previously playing music will be stopped.\nPlaying with null music and interrupt set to true will stop the current track.\nNote that music from data patches must be prefixed with dp-."
+   }
+  },
+  {
+   "name": "setmarker",
+   "operands": [
+    {
+     "name": "type",
+     "type": "enum",
+     "enum": "LMarkerControl"
+    },
+    {
+     "name": "id",
+     "type": "value"
+    },
+    {
+     "name": "p1",
+     "type": "value"
+    },
+    {
+     "name": "p2",
+     "type": "value"
+    },
+    {
+     "name": "p3",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Change une propriété d'un marqueur.\nL'ID utilisé doit être le même que celui de l'instruction \"Make Marker\".",
+    "en": "Set a property for a marker.\nThe ID used must be the same as in the Make Marker instruction.\nnull values are ignored."
+   }
+  },
+  {
+   "name": "makemarker",
+   "operands": [
+    {
+     "name": "type",
+     "type": "value"
+    },
+    {
+     "name": "id",
+     "type": "value"
+    },
+    {
+     "name": "x",
+     "type": "value"
+    },
+    {
+     "name": "y",
+     "type": "value"
+    },
+    {
+     "name": "replace",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Crée un marqueur dans le monde.\nUn ID pour identifier le marqueur doit être donné.\nLes marqueurs sont limités à 20,000 par monde.",
+    "en": "Create a new logic marker in the world.\nAn ID to identify this marker must be provided.\nMarkers currently limited to 20,000 per world."
+   }
+  },
+  {
+   "name": "localeprint",
+   "operands": [
+    {
+     "name": "value",
+     "type": "value"
+    }
+   ],
+   "category": "world",
+   "privileged": true,
+   "hidden": false,
+   "help": {
+    "fr": "Ajoute la valeur d'une propriété de traduction à la mémoire tampon de texte.\nPour définir des traductions dans l'éditeur de carte, consultez Infos de carte > Traductions.\nSi le client est un appareil mobile, essaie d'abord d'imprimer une propriété se terminant par \".mobile\".",
+    "en": "Add map locale property value to the text buffer.\nTo set map locale bundles in map editor, check Map Info > Locale Bundles.\nIf client is a mobile device, tries to print a property ending in \".mobile\" first."
+   }
+  }
+ ],
+ "enums": {
+  "BlockFlag": [
+   {
+    "name": "core",
+    "help": {
+     "fr": "N'importe quel noyau.",
+     "en": "Any core."
+    }
+   },
+   {
+    "name": "storage",
+    "help": {
+     "fr": "Bâtiments de stockage, un coffre-fort par exemple.",
+     "en": "Storage building, e.g. Vault."
+    }
+   },
+   {
+    "name": "generator",
+    "help": {
+     "fr": "Bâtiments générant de l'énergie.",
+     "en": "Buildings that generate power."
+    }
+   },
+   {
+    "name": "turret",
+    "help": {
+     "fr": "N'importe quelle tourelle.",
+     "en": "Any turret."
+    }
+   },
+   {
+    "name": "factory",
+    "help": {
+     "fr": "Bâtiments traitant des ressources.",
+     "en": "Buildings that transform resources."
+    }
+   },
+   {
+    "name": "repair",
+    "help": {
+     "fr": "Points de réparation.",
+     "en": "Repair points."
+    }
+   },
+   {
+    "name": "battery",
+    "help": {
+     "fr": "N'importe quelle batterie.",
+     "en": "Any battery."
+    }
+   },
+   {
+    "name": "reactor",
+    "help": {
+     "fr": "Réacteur à Impact/Thorium.",
+     "en": "Impact/Thorium reactor."
+    }
+   },
+   {
+    "name": "extinguisher",
+    "help": {}
+   },
+   {
+    "name": "drill",
+    "help": {}
+   },
+   {
+    "name": "shield",
+    "help": {}
+   },
+   {
+    "name": "launchPad",
+    "help": {}
+   },
+   {
+    "name": "unitCargoUnloadPoint",
+    "help": {}
+   },
+   {
+    "name": "unitAssembler",
+    "help": {}
+   },
+   {
+    "name": "hasFogRadius",
+    "help": {}
+   },
+   {
+    "name": "steamVent",
+    "help": {}
+   },
+   {
+    "name": "blockRepair",
+    "help": {}
+   },
+   {
+    "name": "synced",
+    "help": {}
+   }
+  ],
+  "ConditionOp": [
+   {
+    "name": "equal",
+    "help": {
+     "fr": "Égalité. Conversion des types.\nLes objets non-nuls comparés avec des nombres deviennent 1, sinon 0.",
+     "en": "Equal. Coerces types.\nNon-null objects compared with numbers become 1, otherwise 0."
+    }
+   },
+   {
+    "name": "notEqual",
+    "help": {
+     "fr": "Inégalité. Conversion des types.",
+     "en": "Not equal. Coerces types."
+    }
+   },
+   {
+    "name": "lessThan",
+    "help": {}
+   },
+   {
+    "name": "lessThanEq",
+    "help": {}
+   },
+   {
+    "name": "greaterThan",
+    "help": {}
+   },
+   {
+    "name": "greaterThanEq",
+    "help": {}
+   },
+   {
+    "name": "strictEqual",
+    "help": {
+     "fr": "Égalité stricte. Ne convertit pas les types.\nPeut être utilisé pour vérifier les valeurs null.",
+     "en": "Strict equality. Does not coerce types.\nCan be used to check for null."
+    }
+   },
+   {
+    "name": "always",
+    "help": {
+     "fr": "Toujours true.",
+     "en": "Always true."
+    }
+   }
+  ],
+  "ContentType": [
+   {
+    "name": "item",
+    "help": {}
+   },
+   {
+    "name": "block",
+    "help": {}
+   },
+   {
+    "name": "mech_UNUSED",
+    "help": {}
+   },
+   {
+    "name": "bullet",
+    "help": {}
+   },
+   {
+    "name": "liquid",
+    "help": {}
+   },
+   {
+    "name": "status",
+    "help": {}
+   },
+   {
+    "name": "unit",
+    "help": {}
+   },
+   {
+    "name": "weather",
+    "help": {}
+   },
+   {
+    "name": "effect_UNUSED",
+    "help": {}
+   },
+   {
+    "name": "sector",
+    "help": {}
+   },
+   {
+    "name": "loadout_UNUSED",
+    "help": {}
+   },
+   {
+    "name": "typeid_UNUSED",
+    "help": {}
+   },
+   {
+    "name": "error",
+    "help": {}
+   },
+   {
+    "name": "planet",
+    "help": {}
+   },
+   {
+    "name": "ammo_UNUSED",
+    "help": {}
+   },
+   {
+    "name": "team",
+    "help": {}
+   },
+   {
+    "name": "unitCommand",
+    "help": {}
+   },
+   {
+    "name": "unitStance",
+    "help": {}
+   }
+  ],
+  "CutsceneAction": [
+   {
+    "name": "pan",
+    "help": {}
+   },
+   {
+    "name": "zoom",
+    "help": {}
+   },
+   {
+    "name": "stop",
+    "help": {
+     "fr": "Empêche l'unité de bouger/miner/construire.",
+     "en": "Stop moving/mining/building."
+    }
+   }
+  ],
+  "FetchType": [
+   {
+    "name": "unit",
+    "help": {}
+   },
+   {
+    "name": "unitCount",
+    "help": {}
+   },
+   {
+    "name": "player",
+    "help": {
+     "fr": "Unité contrôlée par un joueur.",
+     "en": "Unit controlled by a player."
+    }
+   },
+   {
+    "name": "playerCount",
+    "help": {}
+   },
+   {
+    "name": "core",
+    "help": {
+     "fr": "N'importe quel noyau.",
+     "en": "Any core."
+    }
+   },
+   {
+    "name": "coreCount",
+    "help": {}
+   },
+   {
+    "name": "build",
+    "help": {
+     "fr": "Construit une structure.",
+     "en": "Build a structure."
+    }
+   },
+   {
+    "name": "buildCount",
+    "help": {}
+   }
+  ],
+  "GraphicsType": [
+   {
+    "name": "clear",
+    "help": {}
+   },
+   {
+    "name": "color",
+    "help": {
+     "fr": "La couleur d'un illuminateur.",
+     "en": "Illuminator color."
+    }
+   },
+   {
+    "name": "col",
+    "help": {}
+   },
+   {
+    "name": "stroke",
+    "help": {}
+   },
+   {
+    "name": "line",
+    "help": {}
+   },
+   {
+    "name": "rect",
+    "help": {}
+   },
+   {
+    "name": "lineRect",
+    "help": {}
+   },
+   {
+    "name": "poly",
+    "help": {}
+   },
+   {
+    "name": "linePoly",
+    "help": {}
+   },
+   {
+    "name": "triangle",
+    "help": {}
+   },
+   {
+    "name": "image",
+    "help": {}
+   },
+   {
+    "name": "print",
+    "help": {}
+   },
+   {
+    "name": "translate",
+    "help": {}
+   },
+   {
+    "name": "scale",
+    "help": {}
+   },
+   {
+    "name": "rotate",
+    "help": {}
+   },
+   {
+    "name": "reset",
+    "help": {}
+   }
+  ],
+  "LAccess": [
+   {
+    "name": "totalItems",
+    "help": {}
+   },
+   {
+    "name": "firstItem",
+    "help": {}
+   },
+   {
+    "name": "totalLiquids",
+    "help": {}
+   },
+   {
+    "name": "totalPower",
+    "help": {}
+   },
+   {
+    "name": "itemCapacity",
+    "help": {}
+   },
+   {
+    "name": "liquidCapacity",
+    "help": {}
+   },
+   {
+    "name": "powerCapacity",
+    "help": {}
+   },
+   {
+    "name": "powerNetStored",
+    "help": {}
+   },
+   {
+    "name": "powerNetCapacity",
+    "help": {}
+   },
+   {
+    "name": "powerNetIn",
+    "help": {}
+   },
+   {
+    "name": "powerNetOut",
+    "help": {}
+   },
+   {
+    "name": "ammo",
+    "help": {}
+   },
+   {
+    "name": "ammoCapacity",
+    "help": {}
+   },
+   {
+    "name": "currentAmmoType",
+    "help": {
+     "fr": "Munition actuelle (objet ou liquide) d'une tourelle.",
+     "en": "Current ammo item/liquid of a turret."
+    }
+   },
+   {
+    "name": "memoryCapacity",
+    "help": {
+     "fr": "Nombre de cellules dans un bloc mémoire.",
+     "en": "Number of cells in a memory block."
+    }
+   },
+   {
+    "name": "health",
+    "help": {}
+   },
+   {
+    "name": "maxHealth",
+    "help": {}
+   },
+   {
+    "name": "heat",
+    "help": {}
+   },
+   {
+    "name": "shield",
+    "help": {}
+   },
+   {
+    "name": "armor",
+    "help": {}
+   },
+   {
+    "name": "efficiency",
+    "help": {}
+   },
+   {
+    "name": "progress",
+    "help": {
+     "fr": "Progression de l'action, 0 à 1.\nRenvoie la progression de la production, du rechargement de la tourelle ou de la construction.",
+     "en": "Action progress, 0 to 1.\nReturns production, turret reload or construction progress."
+    }
+   },
+   {
+    "name": "timescale",
+    "help": {}
+   },
+   {
+    "name": "rotation",
+    "help": {}
+   },
+   {
+    "name": "x",
+    "help": {}
+   },
+   {
+    "name": "y",
+    "help": {}
+   },
+   {
+    "name": "velocityX",
+    "help": {}
+   },
+   {
+    "name": "velocityY",
+    "help": {}
+   },
+   {
+    "name": "shootX",
+    "help": {}
+   },
+   {
+    "name": "shootY",
+    "help": {}
+   },
+   {
+    "name": "cameraX",
+    "help": {}
+   },
+   {
+    "name": "cameraY",
+    "help": {}
+   },
+   {
+    "name": "cameraWidth",
+    "help": {}
+   },
+   {
+    "name": "cameraHeight",
+    "help": {}
+   },
+   {
+    "name": "displayWidth",
+    "help": {
+     "fr": "Largeur d'un bloc d'affichage en pixels.",
+     "en": "Width of a display block in pixels."
+    }
+   },
+   {
+    "name": "displayHeight",
+    "help": {
+     "fr": "Hauteur d'un bloc d'affichage en pixels.",
+     "en": "Height of a display block in pixels."
+    }
+   },
+   {
+    "name": "bufferSize",
+    "help": {
+     "fr": "Pour les messages : longueur du texte.\nPour les affichages : nombre de commandes graphiques en attente.",
+     "en": "For messages: Length of the contents.\nFor displays: Number of unprocessed graphics commands."
+    }
+   },
+   {
+    "name": "operations",
+    "help": {
+     "fr": "Nombre d'opérations effectuées sur le bloc.\nPour les affichages, renvoie le nombre d'opérations drawflush.",
+     "en": "Number of operations performed on the block.\nFor displays, returns the number of drawflush operations."
+    }
+   },
+   {
+    "name": "size",
+    "help": {
+     "fr": "Taille d'une unité/d'un bâtiment ou longueur d'un texte.",
+     "en": "Size of a unit/building or the length of a string."
+    }
+   },
+   {
+    "name": "solid",
+    "help": {}
+   },
+   {
+    "name": "dead",
+    "help": {
+     "fr": "Retourne si l'Unité/Bâtiment est morte/détruit ou plus valide.",
+     "en": "Whether a unit/building is dead or no longer valid."
+    }
+   },
+   {
+    "name": "range",
+    "help": {}
+   },
+   {
+    "name": "shooting",
+    "help": {}
+   },
+   {
+    "name": "boosting",
+    "help": {}
+   },
+   {
+    "name": "mineX",
+    "help": {}
+   },
+   {
+    "name": "mineY",
+    "help": {}
+   },
+   {
+    "name": "mining",
+    "help": {}
+   },
+   {
+    "name": "buildX",
+    "help": {}
+   },
+   {
+    "name": "buildY",
+    "help": {}
+   },
+   {
+    "name": "pingX",
+    "help": {}
+   },
+   {
+    "name": "pingY",
+    "help": {}
+   },
+   {
+    "name": "pingText",
+    "help": {}
+   },
+   {
+    "name": "building",
+    "help": {
+     "fr": "Bâtiment dans un groupe spécifique.",
+     "en": "Building in a specific group."
+    }
+   },
+   {
+    "name": "breaking",
+    "help": {}
+   },
+   {
+    "name": "speed",
+    "help": {
+     "fr": "La vitesse maximale d'une unité, en blocs/sec.",
+     "en": "Top speed of a unit, in tiles/sec."
+    }
+   },
+   {
+    "name": "team",
+    "help": {}
+   },
+   {
+    "name": "type",
+    "help": {
+     "fr": "Type de bâtiment/unité.\nPar exemple, pour tout routeur, cela retournera @router.",
+     "en": "Type of building/unit.\ne.g. for any router, this will return @router.\nNot a string."
+    }
+   },
+   {
+    "name": "flag",
+    "help": {
+     "fr": "Drapeau numérique d'une unité.",
+     "en": "Numeric unit flag."
+    }
+   },
+   {
+    "name": "flying",
+    "help": {
+     "fr": "Unité volante.",
+     "en": "Flying unit."
+    }
+   },
+   {
+    "name": "controlled",
+    "help": {
+     "fr": "Retourne:\n@ctrlProcessor si le contrôleur de l'Unité est un processeur\n@ctrlPlayer si l'Unité/Bâtiment est contrôlé par un joueur\n@ctrlFormation si l'Unité est en formation\nSinon, retourne 0.",
+     "en": "Returns:\n@ctrlProcessor if unit controller is processor\n@ctrlPlayer if unit/building controller is player\n@ctrlCommand if unit controller is a player command\nOtherwise, 0."
+    }
+   },
+   {
+    "name": "controller",
+    "help": {
+     "fr": "Le contrôleur de l'Unité.\nSi l'Unité est contrôlée par un processeur, cela retournera le processeur en question.\nSi l'Unité est en formation, cela retournera le leader de la formation.\nSinon, renvoie l’unité elle-même.",
+     "en": "Unit controller. If processor controlled, returns processor.\nOtherwise, returns the unit itself."
+    }
+   },
+   {
+    "name": "name",
+    "help": {}
+   },
+   {
+    "name": "payloadCount",
+    "help": {}
+   },
+   {
+    "name": "payloadType",
+    "help": {}
+   },
+   {
+    "name": "totalPayload",
+    "help": {}
+   },
+   {
+    "name": "payloadCapacity",
+    "help": {}
+   },
+   {
+    "name": "maxUnits",
+    "help": {
+     "fr": "Nombre maximal d'unités qu'une équipe peut avoir.\nPeut uniquement être détecté depuis les noyaux.",
+     "en": "Maximum units that a team can have.\nCan only be sensed from cores."
+    }
+   },
+   {
+    "name": "id",
+    "help": {
+     "fr": "L'ID d'une unité/bloc/ressource/liquide.\nCeci est l'inverse de l'instruction de recherche.",
+     "en": "ID of a unit/block/item/liquid.\nThis is the inverse of the lookup operation."
+    }
+   },
+   {
+    "name": "selectedBlock",
+    "help": {}
+   },
+   {
+    "name": "selectedRotation",
+    "help": {}
+   },
+   {
+    "name": "bulletLifetime",
+    "help": {}
+   },
+   {
+    "name": "bulletTime",
+    "help": {}
+   },
+   {
+    "name": "enabled",
+    "help": {
+     "fr": "Retourne si le bloc est activé ou pas.",
+     "en": "Whether the block is enabled."
+    }
+   },
+   {
+    "name": "shoot",
+    "help": {
+     "fr": "Tire à une position donnée.",
+     "en": "Shoot at a position."
+    }
+   },
+   {
+    "name": "shootp",
+    "help": {
+     "fr": "Tire à une unité/bâtiment avec la prédiction de mouvement.",
+     "en": "Shoot at a unit/building with velocity prediction."
+    }
+   },
+   {
+    "name": "config",
+    "help": {
+     "fr": "La configuration d'un bâtiment. Par exemple, l'objet sélectionné dans un trieur.",
+     "en": "Building configuration, e.g. sorter item."
+    }
+   },
+   {
+    "name": "color",
+    "help": {
+     "fr": "La couleur d'un illuminateur.",
+     "en": "Illuminator color."
+    }
+   }
+  ],
+  "LLocate": [
+   {
+    "name": "ore",
+    "help": {
+     "fr": "Gisement de minerai.",
+     "en": "Ore deposit."
+    }
+   },
+   {
+    "name": "building",
+    "help": {
+     "fr": "Bâtiment dans un groupe spécifique.",
+     "en": "Building in a specific group."
+    }
+   },
+   {
+    "name": "spawn",
+    "help": {
+     "fr": "Point d'apparition ennemi.\nPeut être un noyau ou une position.",
+     "en": "Enemy spawn point.\nMay be a core or a position."
+    }
+   },
+   {
+    "name": "damaged",
+    "help": {
+     "fr": "Bâtiments alliés endommagés.",
+     "en": "Damaged ally building."
+    }
+   }
+  ],
+  "LMarkerControl": [
+   {
+    "name": "remove",
+    "help": {}
+   },
+   {
+    "name": "world",
+    "help": {}
+   },
+   {
+    "name": "minimap",
+    "help": {}
+   },
+   {
+    "name": "autoscale",
+    "help": {
+     "fr": "Indique s'il faut mettre le marqueur à l'échelle selon le niveau de zoom du joueur.",
+     "en": "Whether to scale marker corresponding to player's zoom level."
+    }
+   },
+   {
+    "name": "pos",
+    "help": {}
+   },
+   {
+    "name": "endPos",
+    "help": {}
+   },
+   {
+    "name": "drawLayer",
+    "help": {}
+   },
+   {
+    "name": "color",
+    "help": {
+     "fr": "La couleur d'un illuminateur.",
+     "en": "Illuminator color."
+    }
+   },
+   {
+    "name": "radius",
+    "help": {}
+   },
+   {
+    "name": "stroke",
+    "help": {}
+   },
+   {
+    "name": "outline",
+    "help": {}
+   },
+   {
+    "name": "rotation",
+    "help": {}
+   },
+   {
+    "name": "shape",
+    "help": {}
+   },
+   {
+    "name": "arc",
+    "help": {}
+   },
+   {
+    "name": "flushText",
+    "help": {
+     "fr": "Envoie le contenu du tampon d'impression vers le marqueur, si possible.\nSi fetch est défini sur true, essaie de récupérer les propriétés depuis les traductions de la carte ou les traductions du jeu.",
+     "en": "Flush print buffer's content to marker, if applicable.\nIf fetch is set to true, tries to fetch properties from map locale bundle or game's bundle."
+    }
+   },
+   {
+    "name": "fontSize",
+    "help": {}
+   },
+   {
+    "name": "textHeight",
+    "help": {}
+   },
+   {
+    "name": "textAlign",
+    "help": {}
+   },
+   {
+    "name": "lineAlign",
+    "help": {}
+   },
+   {
+    "name": "labelFlags",
+    "help": {}
+   },
+   {
+    "name": "texture",
+    "help": {
+     "fr": "Nom de texture directement issu de l'atlas de textures du jeu (en utilisant le style de nommage kebab-case).\nSi printFlush est défini sur true, consomme le contenu du tampon de texte comme argument texte.",
+     "en": "Texture name straight from game's texture atlas (using kebab-case naming style).\nIf printFlush is set to true, consumes text buffer content as text argument."
+    }
+   },
+   {
+    "name": "textureSize",
+    "help": {
+     "fr": "Taille de la texture en blocs. La valeur zéro met à l'échelle la largeur du marqueur à la taille originale de la texture.",
+     "en": "Size of texture in tiles. Zero value scales marker width to original texture's size."
+    }
+   },
+   {
+    "name": "posi",
+    "help": {
+     "fr": "Position indexée, utilisée pour les marqueurs de ligne et de quad, l'index zéro étant la première position.",
+     "en": "Indexed position, used for line and quad markers with index zero being the first position."
+    }
+   },
+   {
+    "name": "uvi",
+    "help": {
+     "fr": "Position de la texture allant de zéro à un, utilisée pour les marqueurs de quad.",
+     "en": "Texture's position ranging from zero to one, used for quad markers."
+    }
+   },
+   {
+    "name": "colori",
+    "help": {
+     "fr": "Couleur indexée, utilisée pour les marqueurs de ligne et de quad, l'index zéro étant la première couleur.",
+     "en": "Indexed color, used for line and quad markers with index zero being the first color."
+    }
+   }
+  ],
+  "LUnitControl": [
+   {
+    "name": "idle",
+    "help": {
+     "fr": "L'Unité ne bouge plus, mais elle continue de construire/miner.\nL'état par défaut.",
+     "en": "Don't move, but keep building/mining.\nThe default state."
+    }
+   },
+   {
+    "name": "stop",
+    "help": {
+     "fr": "Empêche l'unité de bouger/miner/construire.",
+     "en": "Stop moving/mining/building."
+    }
+   },
+   {
+    "name": "move",
+    "help": {
+     "fr": "Bouge vers la position exacte.",
+     "en": "Move to exact position."
+    }
+   },
+   {
+    "name": "approach",
+    "help": {
+     "fr": "Approche une position avec un rayon.",
+     "en": "Approach a position with a radius."
+    }
+   },
+   {
+    "name": "pathfind",
+    "help": {
+     "fr": "Détermine un itinéraire et bouge vers le point d'apparition ennemi.",
+     "en": "Pathfind to the specified position."
+    }
+   },
+   {
+    "name": "autoPathfind",
+    "help": {
+     "fr": "Recherche automatiquement le chemin vers le noyau ennemi ou la zone d'apparition ennemie le plus proche.\nCeci est le même que la détection de chemin de la vague ennemie.",
+     "en": "Automatically pathfinds to the nearest enemy core or drop point.\nThis is the same as standard wave enemy pathfinding."
+    }
+   },
+   {
+    "name": "boost",
+    "help": {
+     "fr": "Active/Désactive le boost.",
+     "en": "Start/stop boosting."
+    }
+   },
+   {
+    "name": "target",
+    "help": {
+     "fr": "Tire vers la position donnée.",
+     "en": "Shoot a position."
+    }
+   },
+   {
+    "name": "targetp",
+    "help": {
+     "fr": "Tire sur une cible avec la prédiction de mouvement.",
+     "en": "Shoot a target with velocity prediction."
+    }
+   },
+   {
+    "name": "itemDrop",
+    "help": {
+     "fr": "Lâche un objet.",
+     "en": "Drop an item."
+    }
+   },
+   {
+    "name": "itemTake",
+    "help": {
+     "fr": "Prend un objet depuis un bâtiment.",
+     "en": "Take an item from a building."
+    }
+   },
+   {
+    "name": "payDrop",
+    "help": {
+     "fr": "Lâche le chargement actuel.",
+     "en": "Drop current payload."
+    }
+   },
+   {
+    "name": "payTake",
+    "help": {
+     "fr": "Prend un chargement à la position actuelle.",
+     "en": "Pick up payload at current location."
+    }
+   },
+   {
+    "name": "payEnter",
+    "help": {
+     "fr": "Entrez/atterrissez sur le bloc de charge utile sur lequel se trouve l'unité.",
+     "en": "Enter/land on the payload block the unit is on."
+    }
+   },
+   {
+    "name": "mine",
+    "help": {
+     "fr": "Mine à une position donnée.",
+     "en": "Mine at a position."
+    }
+   },
+   {
+    "name": "flag",
+    "help": {
+     "fr": "Drapeau numérique d'une unité.",
+     "en": "Numeric unit flag."
+    }
+   },
+   {
+    "name": "build",
+    "help": {
+     "fr": "Construit une structure.",
+     "en": "Build a structure."
+    }
+   },
+   {
+    "name": "deconstruct",
+    "help": {}
+   },
+   {
+    "name": "getBlock",
+    "help": {
+     "fr": "Récupère le bâtiment, le sol et le type de bloc aux coordonnées indiquées.\nL'unité doit se trouver dans la portée de la position, sinon null est renvoyé.",
+     "en": "Fetch building, floor and block type at coordinates.\nUnit must be in range of the position, otherwise null is returned."
+    }
+   },
+   {
+    "name": "within",
+    "help": {
+     "fr": "Vérifie si l'unité est près de la position.",
+     "en": "Check if unit is near a position."
+    }
+   },
+   {
+    "name": "unbind",
+    "help": {
+     "fr": "Désactive complètement le contrôle par processeur.\nL'unité reprend son comportement standard.",
+     "en": "Completely disable logic control.\nResume standard AI."
+    }
+   }
+  ],
+  "LogicOp": [
+   {
+    "name": "add",
+    "help": {}
+   },
+   {
+    "name": "sub",
+    "help": {}
+   },
+   {
+    "name": "mul",
+    "help": {}
+   },
+   {
+    "name": "div",
+    "help": {
+     "fr": "Division.\nRetourne null lors d'une division par zéro.",
+     "en": "Division.\nReturns null on divide-by-zero."
+    }
+   },
+   {
+    "name": "idiv",
+    "help": {
+     "fr": "Division entière.",
+     "en": "Integer division."
+    }
+   },
+   {
+    "name": "mod",
+    "help": {
+     "fr": "Modulo."
+    }
+   },
+   {
+    "name": "emod",
+    "help": {
+     "fr": "Vrai modulo, le signe du résultat vient du diviseur.",
+     "en": "True modulo, result sign comes from the divisor."
+    }
+   },
+   {
+    "name": "pow",
+    "help": {}
+   },
+   {
+    "name": "equal",
+    "help": {
+     "fr": "Égalité. Conversion des types.\nLes objets non-nuls comparés avec des nombres deviennent 1, sinon 0.",
+     "en": "Equal. Coerces types.\nNon-null objects compared with numbers become 1, otherwise 0."
+    }
+   },
+   {
+    "name": "notEqual",
+    "help": {
+     "fr": "Inégalité. Conversion des types.",
+     "en": "Not equal. Coerces types."
+    }
+   },
+   {
+    "name": "land",
+    "help": {
+     "fr": "Opération logique AND.",
+     "en": "Logical AND."
+    }
+   },
+   {
+    "name": "lessThan",
+    "help": {}
+   },
+   {
+    "name": "lessThanEq",
+    "help": {}
+   },
+   {
+    "name": "greaterThan",
+    "help": {}
+   },
+   {
+    "name": "greaterThanEq",
+    "help": {}
+   },
+   {
+    "name": "strictEqual",
+    "help": {
+     "fr": "Égalité stricte. Ne convertit pas les types.\nPeut être utilisé pour vérifier les valeurs null.",
+     "en": "Strict equality. Does not coerce types.\nCan be used to check for null."
+    }
+   },
+   {
+    "name": "shl",
+    "help": {
+     "fr": "Décalage de bits vers la gauche.",
+     "en": "Bit-shift left."
+    }
+   },
+   {
+    "name": "shr",
+    "help": {
+     "fr": "Décalage de bits vers la droite.",
+     "en": "Bit-shift right."
+    }
+   },
+   {
+    "name": "ushr",
+    "help": {
+     "fr": "Décalage de bits vers la droite, non signé.",
+     "en": "Unsigned bit-shift right."
+    }
+   },
+   {
+    "name": "or",
+    "help": {
+     "fr": "Opération binaire OR.",
+     "en": "Bitwise OR."
+    }
+   },
+   {
+    "name": "and",
+    "help": {
+     "fr": "Opération binaire AND.",
+     "en": "Bitwise AND."
+    }
+   },
+   {
+    "name": "xor",
+    "help": {
+     "fr": "Opération binaire XOR.",
+     "en": "Bitwise XOR."
+    }
+   },
+   {
+    "name": "not",
+    "help": {
+     "fr": "Opération binaire flip.",
+     "en": "Bitwise flip."
+    }
+   },
+   {
+    "name": "max",
+    "help": {
+     "fr": "Le maximum des 2 nombres.",
+     "en": "Maximum of two numbers."
+    }
+   },
+   {
+    "name": "min",
+    "help": {
+     "fr": "Le minimum des 2 nombres.",
+     "en": "Minimum of two numbers."
+    }
+   },
+   {
+    "name": "angle",
+    "help": {
+     "fr": "Angle d'un vecteur en degrés.",
+     "en": "Angle of vector in degrees."
+    }
+   },
+   {
+    "name": "angleDiff",
+    "help": {
+     "fr": "Distance absolue entre 2 angles en degrés.",
+     "en": "Absolute distance between two angles in degrees."
+    }
+   },
+   {
+    "name": "len",
+    "help": {
+     "fr": "Longueur d'un vecteur.",
+     "en": "Length of vector."
+    }
+   },
+   {
+    "name": "noise",
+    "help": {
+     "fr": "Bruit simplex 2D.",
+     "en": "2D simplex noise."
+    }
+   },
+   {
+    "name": "abs",
+    "help": {
+     "fr": "Valeur absolue.",
+     "en": "Absolute value."
+    }
+   },
+   {
+    "name": "sign",
+    "help": {}
+   },
+   {
+    "name": "log",
+    "help": {
+     "fr": "Logarithme naturel (ln).",
+     "en": "Natural logarithm (ln)."
+    }
+   },
+   {
+    "name": "logn",
+    "help": {}
+   },
+   {
+    "name": "log10",
+    "help": {
+     "fr": "Logarithme de base 10.",
+     "en": "Base 10 logarithm."
+    }
+   },
+   {
+    "name": "floor",
+    "help": {}
+   },
+   {
+    "name": "ceil",
+    "help": {}
+   },
+   {
+    "name": "round",
+    "help": {}
+   },
+   {
+    "name": "sqrt",
+    "help": {
+     "fr": "Racine carrée.",
+     "en": "Square root."
+    }
+   },
+   {
+    "name": "rand",
+    "help": {
+     "fr": "Nombre aléatoire dans la plage [0, valeur).",
+     "en": "Random decimal in range [0, value)."
+    }
+   },
+   {
+    "name": "sin",
+    "help": {
+     "fr": "Calcule le Sinus, en degrés.",
+     "en": "Sine, in degrees."
+    }
+   },
+   {
+    "name": "cos",
+    "help": {
+     "fr": "Calcule le Cosinus, en degrés.",
+     "en": "Cosine, in degrees."
+    }
+   },
+   {
+    "name": "tan",
+    "help": {
+     "fr": "Calcule la Tangente, en degrés.",
+     "en": "Tangent, in degrees."
+    }
+   },
+   {
+    "name": "asin",
+    "help": {
+     "fr": "Arc sinus, en degrés.",
+     "en": "Arc sine, in degrees."
+    }
+   },
+   {
+    "name": "acos",
+    "help": {
+     "fr": "Arc cosinus, en degrés.",
+     "en": "Arc cosine, in degrees."
+    }
+   },
+   {
+    "name": "atan",
+    "help": {
+     "fr": "Tangente de l'arc, en degrés.",
+     "en": "Arc tangent, in degrees."
+    }
+   }
+  ],
+  "LogicRule": [
+   {
+    "name": "currentWaveTime",
+    "help": {
+     "fr": "Compte à rebours des vagues en ticks.",
+     "en": "Wave countdown in ticks."
+    }
+   },
+   {
+    "name": "waveTimer",
+    "help": {
+     "fr": "Indique si les vagues arrivent automatiquement sur un minuteur. Sinon, elles arrivent quand le bouton de passage est pressé.",
+     "en": "Whether the waves come automatically on a timer. If not, waves come when the play button is pressed."
+    }
+   },
+   {
+    "name": "waves",
+    "help": {
+     "fr": "Indique si les vagues peuvent être générées.",
+     "en": "Whether waves are spawnable at all."
+    }
+   },
+   {
+    "name": "wave",
+    "help": {
+     "fr": "Numéro de vague actuel. Peut être n'importe quoi dans les modes sans vagues.",
+     "en": "Current wave number. Can be anything in non-wave modes."
+    }
+   },
+   {
+    "name": "waveSpacing",
+    "help": {
+     "fr": "Temps entre les vagues en ticks.",
+     "en": "Time between waves in ticks."
+    }
+   },
+   {
+    "name": "waveSending",
+    "help": {
+     "fr": "Indique si les vagues peuvent être invoquées manuellement avec le bouton de passage.",
+     "en": "Whether the waves can be manually summoned with the play button."
+    }
+   },
+   {
+    "name": "attackMode",
+    "help": {
+     "fr": "Détermine si le mode de jeu est le mode attaque.",
+     "en": "Determines if gamemode is attack mode."
+    }
+   },
+   {
+    "name": "enemyCoreBuildRadius",
+    "help": {
+     "fr": "Rayon de zone interdite à la construction autour du noyau ennemi.",
+     "en": "No-build zone around enemy core radius."
+    }
+   },
+   {
+    "name": "dropZoneRadius",
+    "help": {
+     "fr": "Rayon autour des zones de largage ennemies.",
+     "en": "Radius around enemy wave drop zones."
+    }
+   },
+   {
+    "name": "unitCap",
+    "help": {
+     "fr": "Limite d'unités de base. Peut encore être augmentée par des blocs.",
+     "en": "Base unit cap. Can still be increased by blocks."
+    }
+   },
+   {
+    "name": "mapArea",
+    "help": {
+     "fr": "Zone de carte jouable. Tout ce qui est en dehors de cette zone ne sera pas interactif.",
+     "en": "Playable map area. Anything outside the area will not be interactable."
+    }
+   },
+   {
+    "name": "lighting",
+    "help": {
+     "fr": "Indique si l'éclairage ambiant est activé.",
+     "en": "Whether ambient lighting is enabled."
+    }
+   },
+   {
+    "name": "canGameOver",
+    "help": {}
+   },
+   {
+    "name": "ambientLight",
+    "help": {
+     "fr": "Couleur de l'éclairage ambiant. Utilisée lorsque l'éclairage est activé.",
+     "en": "Ambient light color. Used when lighting is enabled."
+    }
+   },
+   {
+    "name": "solarMultiplier",
+    "help": {
+     "fr": "Multiplie la production d'énergie des panneaux solaires.",
+     "en": "Multiplies power output of solar panels."
+    }
+   },
+   {
+    "name": "dragMultiplier",
+    "help": {
+     "fr": "Multiplicateur de traînée environnementale.",
+     "en": "Environment drag multiplier."
+    }
+   },
+   {
+    "name": "ban",
+    "help": {
+     "fr": "Blocs ou unités qui ne peuvent pas être placés ou construits.",
+     "en": "Blocks or units that cannot be placed or built."
+    }
+   },
+   {
+    "name": "unban",
+    "help": {
+     "fr": "Lève l'interdiction d'une unité ou d'un bloc.",
+     "en": "Unban a unit or block."
+    }
+   },
+   {
+    "name": "pauseDisabled",
+    "help": {}
+   },
+   {
+    "name": "musicVolume",
+    "help": {
+     "fr": "Global music volume multiplier.\nClamped to [0, 1]."
+    }
+   },
+   {
+    "name": "buildSpeed",
+    "help": {
+     "fr": "Multiplicateur de vitesse de construction.",
+     "en": "Multiplier for building speed."
+    }
+   },
+   {
+    "name": "unitHealth",
+    "help": {
+     "fr": "Santé de départ des unités.",
+     "en": "How much health units start with."
+    }
+   },
+   {
+    "name": "unitBuildSpeed",
+    "help": {
+     "fr": "Vitesse à laquelle les usines à unités construisent les unités.",
+     "en": "How fast unit factories build units."
+    }
+   },
+   {
+    "name": "unitMineSpeed",
+    "help": {}
+   },
+   {
+    "name": "unitCost",
+    "help": {
+     "fr": "Multiplicateur des ressources nécessaires à la construction des unités.",
+     "en": "Multiplier of resources that units take to build."
+    }
+   },
+   {
+    "name": "unitDamage",
+    "help": {
+     "fr": "Dégâts infligés par les unités.",
+     "en": "How much damage units deal."
+    }
+   },
+   {
+    "name": "blockHealth",
+    "help": {
+     "fr": "Santé de départ des blocs.",
+     "en": "How much health blocks start with."
+    }
+   },
+   {
+    "name": "blockDamage",
+    "help": {
+     "fr": "Dégâts infligés par les blocs (tourelles).",
+     "en": "How much damage blocks (turrets) deal."
+    }
+   },
+   {
+    "name": "rtsMinWeight",
+    "help": {
+     "fr": "Poids minimal \"d'avantage\" requis pour qu'une escouade attaque. Plus la valeur est élevée, plus l'escouade est prudente.",
+     "en": "Minimum \"advantage\" needed for a squad to attack. Higher -> more cautious."
+    }
+   },
+   {
+    "name": "rtsMinSquad",
+    "help": {
+     "fr": "Taille minimale des escouades d'attaque.",
+     "en": "Minimum size of attack squads."
+    }
+   }
+  ],
+  "MessageType": [
+   {
+    "name": "notify",
+    "help": {}
+   },
+   {
+    "name": "announce",
+    "help": {}
+   },
+   {
+    "name": "toast",
+    "help": {}
+   },
+   {
+    "name": "mission",
+    "help": {}
+   }
+  ],
+  "QueryShape": [
+   {
+    "name": "circle",
+    "help": {}
+   },
+   {
+    "name": "rect",
+    "help": {}
+   }
+  ],
+  "QueryType": [
+   {
+    "name": "unit",
+    "help": {}
+   },
+   {
+    "name": "building",
+    "help": {
+     "fr": "Bâtiment dans un groupe spécifique.",
+     "en": "Building in a specific group."
+    }
+   },
+   {
+    "name": "bullet",
+    "help": {}
+   }
+  ],
+  "RadarSort": [
+   {
+    "name": "distance",
+    "help": {}
+   },
+   {
+    "name": "health",
+    "help": {}
+   },
+   {
+    "name": "shield",
+    "help": {}
+   },
+   {
+    "name": "armor",
+    "help": {}
+   },
+   {
+    "name": "maxHealth",
+    "help": {}
+   }
+  ],
+  "RadarTarget": [
+   {
+    "name": "any",
+    "help": {
+     "fr": "N'importe quelle unité.",
+     "en": "Any unit."
+    }
+   },
+   {
+    "name": "enemy",
+    "help": {
+     "fr": "Unité ennemie.",
+     "en": "Enemy unit."
+    }
+   },
+   {
+    "name": "ally",
+    "help": {
+     "fr": "Unité alliée.",
+     "en": "Ally unit."
+    }
+   },
+   {
+    "name": "player",
+    "help": {
+     "fr": "Unité contrôlée par un joueur.",
+     "en": "Unit controlled by a player."
+    }
+   },
+   {
+    "name": "attacker",
+    "help": {
+     "fr": "Unité avec des armes.",
+     "en": "Unit with a weapon."
+    }
+   },
+   {
+    "name": "flying",
+    "help": {
+     "fr": "Unité volante.",
+     "en": "Flying unit."
+    }
+   },
+   {
+    "name": "boss",
+    "help": {
+     "fr": "Gardien.",
+     "en": "Guardian unit."
+    }
+   },
+   {
+    "name": "ground",
+    "help": {
+     "fr": "Unité terrestre.",
+     "en": "Ground unit."
+    }
+   }
+  ],
+  "TileLayer": [
+   {
+    "name": "floor",
+    "help": {}
+   },
+   {
+    "name": "ore",
+    "help": {
+     "fr": "Gisement de minerai.",
+     "en": "Ore deposit."
+    }
+   },
+   {
+    "name": "block",
+    "help": {}
+   },
+   {
+    "name": "building",
+    "help": {
+     "fr": "Bâtiment dans un groupe spécifique.",
+     "en": "Building in a specific group."
+    }
+   }
+  ]
+ },
+ "globals": [
+  "@client",
+  "@clientCurrentMusic",
+  "@clientLocale",
+  "@clientMobile",
+  "@clientMusicPlaying",
+  "@clientName",
+  "@clientTeam",
+  "@clientUnit",
+  "@counter",
+  "@ctrlCommand",
+  "@ctrlPlayer",
+  "@ctrlProcessor",
+  "@degToRad",
+  "@e",
+  "@ipt",
+  "@links",
+  "@maph",
+  "@mapw",
+  "@minute",
+  "@pi",
+  "@queries",
+  "@radToDeg",
+  "@second",
+  "@server",
+  "@this",
+  "@thisx",
+  "@thisy",
+  "@tick",
+  "@time",
+  "@unit",
+  "@wait",
+  "@waveNumber",
+  "@waveTime"
+ ],
+ "aliases": {
+  "atan2": "angle",
+  "dst": "len",
+  "configure": "config",
+  "@configure": "@config"
+ },
+ "content": {
+  "block": [
+   "additive-reconstructor",
+   "advanced-launch-pad",
+   "afflict",
+   "air-factory",
+   "arc",
+   "arkycite-floor",
+   "arkyic-boulder",
+   "arkyic-stone",
+   "arkyic-vent",
+   "arkyic-wall",
+   "armored-conveyor",
+   "armored-duct",
+   "atmospheric-concentrator",
+   "basalt",
+   "basalt-boulder",
+   "basalt-vent",
+   "basic-assembler-module",
+   "battery",
+   "battery-large",
+   "beam-link",
+   "beam-node",
+   "beam-tower",
+   "beryllic-boulder",
+   "beryllic-stone",
+   "beryllic-stone-wall",
+   "beryllium-wall",
+   "beryllium-wall-large",
+   "blast-door",
+   "blast-drill",
+   "blast-mixer",
+   "bluemat",
+   "boulder",
+   "breach",
+   "bridge-conduit",
+   "bridge-conveyor",
+   "build-tower",
+   "canvas",
+   "carbide-crucible",
+   "carbide-wall",
+   "carbide-wall-large",
+   "carbon-boulder",
+   "carbon-stone",
+   "carbon-vent",
+   "carbon-wall",
+   "char",
+   "character-overlay",
+   "character-overlay-white",
+   "chemical-combustion-chamber",
+   "cliff",
+   "cliff-crusher",
+   "coal-centrifuge",
+   "colored-floor",
+   "colored-wall",
+   "combustion-generator",
+   "conduit",
+   "constructor",
+   "container",
+   "conveyor",
+   "copper-wall",
+   "copper-wall-large",
+   "core-acropolis",
+   "core-bastion",
+   "core-citadel",
+   "core-foundation",
+   "core-nucleus",
+   "core-shard",
+   "core-zone",
+   "crater-stone",
+   "cryofluid-mixer",
+   "crystal-blocks",
+   "crystal-cluster",
+   "crystal-floor",
+   "crystal-orbs",
+   "crystalline-boulder",
+   "crystalline-stone",
+   "crystalline-stone-wall",
+   "crystalline-vent",
+   "cultivator",
+   "cyanogen-synthesizer",
+   "cyclone",
+   "dacite",
+   "dacite-boulder",
+   "dacite-wall",
+   "dark-metal",
+   "dark-panel-1",
+   "dark-panel-2",
+   "dark-panel-3",
+   "dark-panel-4",
+   "dark-panel-5",
+   "dark-panel-6",
+   "darksand",
+   "darksand-tainted-water",
+   "darksand-water",
+   "deconstructor",
+   "deep-tainted-water",
+   "deep-water",
+   "dense-red-stone",
+   "differential-generator",
+   "diffuse",
+   "diode",
+   "dirt",
+   "dirt-wall",
+   "disassembler",
+   "disperse",
+   "distributor",
+   "door",
+   "door-large",
+   "duct",
+   "duct-bridge",
+   "duct-router",
+   "duct-unloader",
+   "dune-wall",
+   "duo",
+   "electric-heater",
+   "electrolyzer",
+   "empty",
+   "eruption-drill",
+   "exponential-reconstructor",
+   "ferric-boulder",
+   "ferric-craters",
+   "ferric-stone",
+   "ferric-stone-wall",
+   "flux-reactor",
+   "force-projector",
+   "foreshadow",
+   "fuse",
+   "graphite-press",
+   "graphitic-wall",
+   "grass",
+   "ground-factory",
+   "hail",
+   "heat-reactor",
+   "heat-redirector",
+   "heat-router",
+   "heat-source",
+   "hotrock",
+   "hyper-processor",
+   "ice",
+   "ice-snow",
+   "ice-wall",
+   "illuminator",
+   "impact-drill",
+   "impact-reactor",
+   "impulse-pump",
+   "incinerator",
+   "interplanetary-accelerator",
+   "inverted-sorter",
+   "item-source",
+   "item-void",
+   "junction",
+   "kiln",
+   "lancer",
+   "landing-pad",
+   "large-canvas",
+   "large-cliff-crusher",
+   "large-constructor",
+   "large-logic-display",
+   "large-payload-mass-driver",
+   "large-plasma-bore",
+   "large-shield-projector",
+   "laser-drill",
+   "launch-pad",
+   "liquid-container",
+   "liquid-junction",
+   "liquid-router",
+   "liquid-source",
+   "liquid-tank",
+   "liquid-void",
+   "logic-display",
+   "logic-processor",
+   "lustre",
+   "magmarock",
+   "malign",
+   "mass-driver",
+   "mech-assembler",
+   "mech-fabricator",
+   "mech-refabricator",
+   "mechanical-drill",
+   "mechanical-pump",
+   "meltdown",
+   "melter",
+   "memory-bank",
+   "memory-cell",
+   "mend-projector",
+   "mender",
+   "message",
+   "metal-floor",
+   "metal-floor-2",
+   "metal-floor-3",
+   "metal-floor-4",
+   "metal-floor-5",
+   "metal-floor-damaged",
+   "metal-tiles-1",
+   "metal-tiles-10",
+   "metal-tiles-11",
+   "metal-tiles-12",
+   "metal-tiles-13",
+   "metal-tiles-2",
+   "metal-tiles-3",
+   "metal-tiles-4",
+   "metal-tiles-5",
+   "metal-tiles-6",
+   "metal-tiles-7",
+   "metal-tiles-8",
+   "metal-tiles-9",
+   "metal-wall-1",
+   "metal-wall-2",
+   "metal-wall-3",
+   "micro-processor",
+   "molten-slag",
+   "moss",
+   "mud",
+   "multi-press",
+   "multiplicative-reconstructor",
+   "naval-factory",
+   "neoplasia-reactor",
+   "oil-extractor",
+   "overdrive-dome",
+   "overdrive-projector",
+   "overflow-duct",
+   "overflow-gate",
+   "oxidation-chamber",
+   "parallax",
+   "payload-conveyor",
+   "payload-loader",
+   "payload-mass-driver",
+   "payload-router",
+   "payload-source",
+   "payload-unloader",
+   "payload-void",
+   "pebbles",
+   "phase-conduit",
+   "phase-conveyor",
+   "phase-heater",
+   "phase-synthesizer",
+   "phase-wall",
+   "phase-wall-large",
+   "phase-weaver",
+   "pine",
+   "plasma-bore",
+   "plastanium-compressor",
+   "plastanium-conveyor",
+   "plastanium-wall",
+   "plastanium-wall-large",
+   "plated-conduit",
+   "pneumatic-drill",
+   "pooled-cryofluid",
+   "power-node",
+   "power-node-large",
+   "power-source",
+   "power-void",
+   "prime-refabricator",
+   "pulse-conduit",
+   "pulverizer",
+   "pur-bush",
+   "pyratite-mixer",
+   "pyrolysis-generator",
+   "radar",
+   "red-diamond-wall",
+   "red-ice",
+   "red-ice-boulder",
+   "red-ice-wall",
+   "red-stone",
+   "red-stone-boulder",
+   "red-stone-vent",
+   "red-stone-wall",
+   "redmat",
+   "redweed",
+   "regen-projector",
+   "regolith",
+   "regolith-wall",
+   "reinforced-bridge-conduit",
+   "reinforced-conduit",
+   "reinforced-container",
+   "reinforced-liquid-container",
+   "reinforced-liquid-junction",
+   "reinforced-liquid-router",
+   "reinforced-liquid-tank",
+   "reinforced-message",
+   "reinforced-payload-conveyor",
+   "reinforced-payload-router",
+   "reinforced-pump",
+   "reinforced-surge-wall",
+   "reinforced-surge-wall-large",
+   "reinforced-vault",
+   "remove-ore",
+   "remove-wall",
+   "repair-point",
+   "repair-turret",
+   "rhyolite",
+   "rhyolite-boulder",
+   "rhyolite-crater",
+   "rhyolite-vent",
+   "rhyolite-wall",
+   "ripple",
+   "rotary-pump",
+   "rough-rhyolite",
+   "router",
+   "rtg-generator",
+   "rune-overlay",
+   "rune-overlay-crux",
+   "salt",
+   "salt-wall",
+   "salvo",
+   "sand-boulder",
+   "sand-floor",
+   "sand-wall",
+   "sand-water",
+   "scathe",
+   "scatter",
+   "scorch",
+   "scrap-wall",
+   "scrap-wall-gigantic",
+   "scrap-wall-huge",
+   "scrap-wall-large",
+   "segment",
+   "separator",
+   "shale",
+   "shale-boulder",
+   "shale-wall",
+   "shallow-water",
+   "shield-projector",
+   "shielded-wall",
+   "ship-assembler",
+   "ship-fabricator",
+   "ship-refabricator",
+   "shock-mine",
+   "shockwave-tower",
+   "shrubs",
+   "silicon-arc-furnace",
+   "silicon-crucible",
+   "silicon-smelter",
+   "slag-centrifuge",
+   "slag-heater",
+   "slag-incinerator",
+   "small-deconstructor",
+   "small-heat-redirector",
+   "smite",
+   "snow",
+   "snow-boulder",
+   "snow-pine",
+   "snow-wall",
+   "solar-panel",
+   "solar-panel-large",
+   "sorter",
+   "space",
+   "spawn",
+   "spectre",
+   "spore-cluster",
+   "spore-moss",
+   "spore-pine",
+   "spore-press",
+   "spore-wall",
+   "steam-generator",
+   "stone",
+   "stone-vent",
+   "stone-wall",
+   "sublimate",
+   "surge-conveyor",
+   "surge-crucible",
+   "surge-router",
+   "surge-smelter",
+   "surge-tower",
+   "surge-wall",
+   "surge-wall-large",
+   "swarmer",
+   "switch",
+   "tainted-water",
+   "tank-assembler",
+   "tank-fabricator",
+   "tank-refabricator",
+   "tar",
+   "tendrils",
+   "tetrative-reconstructor",
+   "thermal-generator",
+   "thorium-reactor",
+   "thorium-wall",
+   "thorium-wall-large",
+   "thruster",
+   "tile-logic-display",
+   "titan",
+   "titanium-conveyor",
+   "titanium-wall",
+   "titanium-wall-large",
+   "tsunami",
+   "tungsten-wall",
+   "tungsten-wall-large",
+   "turbine-condenser",
+   "underflow-duct",
+   "underflow-gate",
+   "unit-cargo-loader",
+   "unit-cargo-unload-point",
+   "unit-repair-tower",
+   "unloader",
+   "vault",
+   "vent-condenser",
+   "vibrant-crystal-cluster",
+   "water-extractor",
+   "wave",
+   "white-tree",
+   "white-tree-dead",
+   "world-cell",
+   "world-message",
+   "world-processor",
+   "world-switch",
+   "yellow-stone",
+   "yellow-stone-boulder",
+   "yellow-stone-plates",
+   "yellow-stone-vent",
+   "yellow-stone-wall",
+   "yellowcoral"
+  ],
+  "item": [
+   "beryllium",
+   "blast-compound",
+   "carbide",
+   "coal",
+   "copper",
+   "dormant-cyst",
+   "fissile-matter",
+   "graphite",
+   "lead",
+   "metaglass",
+   "oxide",
+   "phase-fabric",
+   "plastanium",
+   "pyratite",
+   "sand",
+   "scrap",
+   "silicon",
+   "spore-pod",
+   "surge-alloy",
+   "thorium",
+   "titanium",
+   "tungsten"
+  ],
+  "liquid": [
+   "arkycite",
+   "cryofluid",
+   "cyanogen",
+   "gallium",
+   "hydrogen",
+   "neoplasm",
+   "nitrogen",
+   "oil",
+   "ozone",
+   "slag",
+   "water"
+  ],
+  "status": [
+   "blasted",
+   "boss",
+   "burning",
+   "corroded",
+   "disarmed",
+   "electrified",
+   "fast",
+   "freezing",
+   "melting",
+   "muddy",
+   "overclock",
+   "overdrive",
+   "sapped",
+   "shielded",
+   "shocked",
+   "slow",
+   "spore-slowed",
+   "tarred",
+   "unmoving",
+   "wet"
+  ],
+  "unit": [
+   "aegires",
+   "alpha",
+   "anthicus",
+   "antumbra",
+   "arkyid",
+   "assembly-drone",
+   "atrax",
+   "avert",
+   "beta",
+   "bryde",
+   "cleroi",
+   "collaris",
+   "conquer",
+   "corvus",
+   "crawler",
+   "cyerce",
+   "dagger",
+   "disrupt",
+   "eclipse",
+   "elude",
+   "emanate",
+   "evoke",
+   "flare",
+   "fortress",
+   "gamma",
+   "horizon",
+   "incite",
+   "latum",
+   "locus",
+   "mace",
+   "manifold",
+   "mega",
+   "merui",
+   "minke",
+   "mono",
+   "navanax",
+   "nova",
+   "obviate",
+   "oct",
+   "omura",
+   "oxynoe",
+   "poly",
+   "precept",
+   "pulsar",
+   "quad",
+   "quasar",
+   "quell",
+   "reign",
+   "renale",
+   "retusa",
+   "risso",
+   "scepter",
+   "sei",
+   "spiroct",
+   "stell",
+   "tecta",
+   "toxopid",
+   "vanquish",
+   "vela",
+   "zenith"
+  ]
+ }
+}

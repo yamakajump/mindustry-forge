@@ -119,6 +119,48 @@ class BlockCatalogue
         'defense', 'turret', 'units', 'effect', 'logic',
     ];
 
+    /**
+     * The translation key for each category and each world, written out one by one.
+     *
+     * Assembled keys are forbidden across this repository, and rightly: a key glued together
+     * from a category name at render time is a key no checker can see, so the day the game
+     * adds a category the page prints the raw key at a reader and nothing says it went wrong.
+     * Spelled out here, every key is a literal that `TranslationKeysTest` can find, and a
+     * missing one fails a test instead of reaching a screen.
+     *
+     * Written without an example on purpose: that checker reads comments too, so a made-up
+     * key in this paragraph would be reported as a key nobody defined. Found the hard way.
+     */
+    public const CATEGORY_KEYS = [
+        'distribution' => 'blocs.categorie.distribution',
+        'liquid' => 'blocs.categorie.liquid',
+        'power' => 'blocs.categorie.power',
+        'production' => 'blocs.categorie.production',
+        'crafting' => 'blocs.categorie.crafting',
+        'defense' => 'blocs.categorie.defense',
+        'turret' => 'blocs.categorie.turret',
+        'units' => 'blocs.categorie.units',
+        'effect' => 'blocs.categorie.effect',
+        'logic' => 'blocs.categorie.logic',
+    ];
+
+    public const PLANET_KEYS = [
+        'serpulo' => 'blocs.planete.serpulo',
+        'erekir' => 'blocs.planete.erekir',
+    ];
+
+    /** The key naming a category, or the catch-all when the catalogue grows one we missed. */
+    public static function categoryKey(string $category): string
+    {
+        return self::CATEGORY_KEYS[$category] ?? 'blocs.categorie.effect';
+    }
+
+    /** The key naming a world. A block on neither belongs to both, and says so. */
+    public static function planetKey(?string $planet): string
+    {
+        return self::PLANET_KEYS[$planet] ?? 'blocs.planete.les-deux';
+    }
+
     /** @return array<string, array<string, Block>> */
     public static function byCategory(): array
     {

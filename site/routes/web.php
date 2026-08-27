@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\SchematicController;
+use App\Http\Controllers\SocialCardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,12 +26,27 @@ Route::get('/', fn () => response()->file(public_path('index.html')));
  */
 Route::get('/editer', fn () => response()->file(public_path('index.html')));
 
+/*
+ * The logic editor, a static page of its own rather than a mode of the analyser.
+ *
+ * A route rather than the file served as it lies: nginx looks for `index.html` in no
+ * directory at all, so `/outils/logique/` would answer nothing, and `/outils/logique.html`
+ * is an address nobody wants to still be honouring in ten years.
+ */
+Route::get('/outils/logique', fn () => response()->file(public_path('outils/logique.html')));
+
 Route::get('/auth/discord', [AuthController::class, 'start'])->name('login');
 Route::get('/auth/discord/callback', [AuthController::class, 'callback']);
 Route::post('/deconnexion', [AuthController::class, 'logout']);
 
 Route::get('/schematiques', [BrowseController::class, 'index']);
 Route::get('/s/{schematic}', [SchematicController::class, 'show']);
+
+/* What Discord shows when the link above is pasted. An address of its own rather than the
+   raw preview: a plan is square or very long depending on what was copied, and an unfurler
+   crops it without saying so. The card is always the shape they expect, and it carries the
+   name, the figures and the mark. */
+Route::get('/s/{schematic}/carte.jpg', [SocialCardController::class, 'show']);
 
 /*
  * The block wiki, one page per block, rendered from the catalogue the bench dumped.

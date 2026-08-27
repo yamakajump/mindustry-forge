@@ -3,13 +3,13 @@
 
 @push('head')
 <link rel="stylesheet" href="/forge/blocs.css">
-<meta name="description" content="{{ __('blocs.index.sous_titre') }}
+<meta name="description" content="{{ __('blocs.index.sous-titre') }}
   {{ $total }} {{ __('blocs.index.blocs') }}, Mindustry {{ $gameVersion }}.">
 @endpush
 
 @section('body')
 <h1 class="title">{{ __('blocs.index.titre') }}</h1>
-<p class="sub">{{ __('blocs.index.sous_titre') }}
+<p class="sub">{{ __('blocs.index.sous-titre') }}
   {{ __('blocs.index.version') }} {{ $gameVersion }}, {{ $total }} {{ __('blocs.index.blocs') }}.</p>
 
 {{-- Filtered on the server rather than by hiding tiles in JavaScript. The site is read on
@@ -20,7 +20,8 @@
   <select name="categorie" id="categorie">
     <option value="">{{ __('blocs.index.toutes') }}</option>
     @foreach($allCategories as $key)
-      <option value="{{ $key }}" @selected($chosen === $key)>{{ __('blocs.categorie.'.$key) }}</option>
+      <option value="{{ $key }}" @selected($chosen === $key)>{{
+        __(\App\Services\BlockCatalogue::categoryKey($key)) }}</option>
     @endforeach
   </select>
 
@@ -39,7 +40,7 @@
 @endif
 
 @foreach($categories as $category => $blocks)
-  <h2 class="bloc-cat">{{ __('blocs.categorie.'.$category) }} &middot;
+  <h2 class="bloc-cat">{{ __(\App\Services\BlockCatalogue::categoryKey($category)) }} &middot;
     {{ count($blocks) }} {{ __('blocs.index.blocs') }}</h2>
 
   <div class="bloc-grid">

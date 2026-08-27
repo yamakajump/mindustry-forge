@@ -27,11 +27,16 @@
   <meta property="og:description" content="{{ $summary }}">
   <meta property="og:type" content="article">
   <meta property="og:url" content="{{ url()->current() }}">
-  <meta name="theme-color" content="#ffd37f">
-  @if($preview)
-    <meta property="og:image" content="{{ $preview }}">
-    <meta name="twitter:card" content="summary_large_image">
-  @endif
+  {{-- The composed card rather than the raw plan. A plan is square or very long depending
+       on what was copied, so an unfurler crops it or sits it on black bars, and it carries
+       no title, no figure and no mark. The card is always the shape they expect, and it
+       exists even when a schematic has no preview, which is every schematic that came from
+       another catalogue. --}}
+  <meta property="og:image" content="{{ url("/s/{$schematic->slug}/carte.jpg") }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{{ $schematic->name }} - {{ $summary }}">
+  <meta name="twitter:card" content="summary_large_image">
 @endpush
 
 @section('body')

@@ -25,10 +25,8 @@
     <h1>{{ $block->title() }}</h1>
     <p class="bloc-id">{{ $block->name }}</p>
     <p class="chips">
-      <span class="chip">{{ __('blocs.categorie.'.$block->category()) }}</span>
-      <span class="chip">{{ $block->planet()
-        ? __('blocs.planete.'.$block->planet())
-        : __('blocs.planete.les_deux') }}</span>
+      <span class="chip">{{ __(BlockCatalogue::categoryKey($block->category())) }}</span>
+      <span class="chip">{{ __(BlockCatalogue::planetKey($block->planet())) }}</span>
       <span class="chip">{{ $block->kind() }}</span>
     </p>
   </div>
@@ -67,13 +65,13 @@
       @endif
 
       @if($block->liquidCapacity())
-        <div class="line"><span>{{ __('blocs.page.capacite_liquide') }}</span>
+        <div class="line"><span>{{ __('blocs.page.capacite-liquide') }}</span>
           <span>{{ $block->liquidCapacity() }}</span></div>
       @endif
 
       @if($block->itemsPerSecond())
-        <div class="line"><span>{{ __('blocs.page.debit_transport') }}</span>
-          <span>{{ $number($block->itemsPerSecond()) }}{{ __('blocs.unite.par_seconde') }}</span></div>
+        <div class="line"><span>{{ __('blocs.page.debit-transport') }}</span>
+          <span>{{ $number($block->itemsPerSecond()) }}{{ __('blocs.unite.par-seconde') }}</span></div>
       @endif
 
       @if($block->rangeInTiles())
@@ -92,12 +90,12 @@
       @endif
 
       @if($block->drillTier())
-        <div class="line"><span>{{ __('blocs.page.durete_max') }}</span>
+        <div class="line"><span>{{ __('blocs.page.durete-max') }}</span>
           <span>{{ $block->drillTier() }}</span></div>
       @endif
 
       @if($block->liquidBoost())
-        <div class="line"><span>{{ __('blocs.page.boost_liquide') }}</span>
+        <div class="line"><span>{{ __('blocs.page.boost-liquide') }}</span>
           <span>&times;{{ $number($block->liquidBoost()) }}</span></div>
       @endif
     </div>
@@ -116,7 +114,7 @@
             <span>{{ $number($seconds) }} {{ __('blocs.unite.secondes') }}</span>
           </div>
         @endforeach
-        <p class="hint-line">{{ __('blocs.page.forage_note') }}</p>
+        <p class="hint-line">{{ __('blocs.page.forage-note') }}</p>
       </div>
     @endif
 
@@ -151,7 +149,7 @@
             @foreach($block->inputLiquids() as $liquid => $rate)
               @include('blocks.partials.thing', [
                 'thing' => $liquid,
-                'label' => $number($rate).__('blocs.unite.par_seconde').' '.$liquid])
+                'label' => $number($rate).__('blocs.unite.par-seconde').' '.$liquid])
             @endforeach
           </p>
         @endif
@@ -165,7 +163,7 @@
           @foreach($block->outputLiquids() as $liquid => $rate)
             @include('blocks.partials.thing', [
               'thing' => $liquid,
-              'label' => $number($rate).__('blocs.unite.par_seconde').' '.$liquid])
+              'label' => $number($rate).__('blocs.unite.par-seconde').' '.$liquid])
           @endforeach
         </p>
 
@@ -185,15 +183,15 @@
           @foreach($block->outputAtBest() as $item => $rate)
             <div class="line">
               <span>@include('blocks.partials.thing', ['thing' => $item])</span>
-              <span class="good">{{ __('blocs.page.au_mieux') }}
-                {{ $number($rate) }}{{ __('blocs.unite.par_seconde') }}</span>
+              <span class="good">{{ __('blocs.page.au-mieux') }}
+                {{ $number($rate) }}{{ __('blocs.unite.par-seconde') }}</span>
             </div>
           @endforeach
           @foreach($block->outputLiquidAtBest() as $liquid => $rate)
             <div class="line">
               <span>@include('blocks.partials.thing', ['thing' => $liquid])</span>
-              <span class="good">{{ __('blocs.page.au_mieux') }}
-                {{ $number($rate) }}{{ __('blocs.unite.par_seconde') }}</span>
+              <span class="good">{{ __('blocs.page.au-mieux') }}
+                {{ $number($rate) }}{{ __('blocs.unite.par-seconde') }}</span>
             </div>
           @endforeach
           <p class="hint-line">{{ __('blocs.page.plafond') }}</p>
@@ -205,14 +203,14 @@
       <div class="card bloc-facts">
         <h2>{{ __('blocs.page.energie') }}</h2>
         @if($block->powerOut())
-          <div class="line"><span>{{ __('blocs.page.energie_produite') }}</span>
+          <div class="line"><span>{{ __('blocs.page.energie-produite') }}</span>
             <span class="good">{{ $number($block->powerOut()) }}
-              {{ __('blocs.unite.energie_seconde') }}</span></div>
+              {{ __('blocs.unite.energie-seconde') }}</span></div>
         @endif
         @if($block->powerIn())
-          <div class="line"><span>{{ __('blocs.page.energie_consommee') }}</span>
+          <div class="line"><span>{{ __('blocs.page.energie-consommee') }}</span>
             <span class="warn">{{ $number($block->powerIn()) }}
-              {{ __('blocs.unite.energie_seconde') }}</span></div>
+              {{ __('blocs.unite.energie-seconde') }}</span></div>
         @endif
       </div>
     @endif
@@ -228,7 +226,7 @@
           </p>
         @endif
         @if($block->drinks() !== [])
-          <h2>{{ __('blocs.page.liquides_acceptes') }}</h2>
+          <h2>{{ __('blocs.page.liquides-acceptes') }}</h2>
           <p class="chips">
             @foreach($block->drinks() as $liquid)
               <span class="chip">{{ $liquid }}</span>
@@ -245,7 +243,7 @@
 <div class="bloc-cols">
   @if($sources !== [])
     <div class="card">
-      <h2>{{ __('blocs.page.alimente_par') }}</h2>
+      <h2>{{ __('blocs.page.alimente-par') }}</h2>
       <ul class="bloc-links">
         @foreach($sources as $thing => $where)
           <li>
@@ -255,15 +253,15 @@
                  because the other is filled in would hide the common answer behind the rare
                  one. --}}
             @if($where['made'] !== [])
-              <span class="bloc-of">{{ __('blocs.page.se_fabrique_dans') }}</span>
+              <span class="bloc-of">{{ __('blocs.page.se-fabrique-dans') }}</span>
               @include('blocks.partials.links', ['blocks' => $where['made']])
             @endif
             @if($where['mined'] !== [])
-              <span class="bloc-of">{{ __('blocs.page.se_mine_sur') }}</span>
+              <span class="bloc-of">{{ __('blocs.page.se-mine-sur') }}</span>
               @include('blocks.partials.links', ['blocks' => $where['mined']])
             @endif
             @if($where['made'] === [] && $where['mined'] === [])
-              <span class="bloc-of">{{ __('blocs.page.sans_source') }}</span>
+              <span class="bloc-of">{{ __('blocs.page.sans-source') }}</span>
             @endif
           </li>
         @endforeach
@@ -281,7 +279,7 @@
             @if($takers !== [])
               @include('blocks.partials.links', ['blocks' => $takers])
             @else
-              <span class="bloc-of">{{ __('blocs.page.sans_debouche') }}</span>
+              <span class="bloc-of">{{ __('blocs.page.sans-debouche') }}</span>
             @endif
           </li>
         @endforeach
@@ -296,9 +294,9 @@
 <div class="card">
   <h2>{{ __('blocs.page.schematiques') }}</h2>
   @if($schematics->isEmpty())
-    <p class="empty">{{ __('blocs.page.aucune_schematique') }}</p>
+    <p class="empty">{{ __('blocs.page.aucune-schematique') }}</p>
   @else
-    <p class="hint-line">{{ $schematicCount }} {{ __('blocs.page.schematiques_compte') }}</p>
+    <p class="hint-line">{{ $schematicCount }} {{ __('blocs.page.schematiques-compte') }}</p>
     <div class="grid">
       @foreach($schematics as $schematic)
         <article class="tile">

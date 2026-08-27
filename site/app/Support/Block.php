@@ -20,32 +20,6 @@ class Block
     /** The game's tick rate, and the only place this class says sixty. */
     private const TICKS = 60;
 
-    /**
-     * Subclasses whose `range` the dump already expressed in tiles.
-     *
-     * THIS IS A STOPGAP, not a fact about the game worth preserving. The catalogue stores
-     * `range` in two different units and says which nowhere: it is a count of tiles for
-     * bridges, beam nodes, plasma bores, mass drivers and overdrive projectors, and a world
-     * distance at eight units to the tile for every turret, mender and shockwave tower. The
-     * number alone cannot settle it, since a bridge conveyor's 4 and a mender's 40 are both
-     * plausible either way.
-     *
-     * It comes from the game: `ItemBridge.range` is an int count of tiles while
-     * `BaseTurret.range` is a float distance, and `DumpBlocks.java` divides by eight at three
-     * call sites and copies the field as it stands at the rest. The real fix is in the
-     * dumper, which should write the unit beside the value or bring everything to tiles;
-     * until somebody owns that, this list keeps the pages honest.
-     *
-     * `BlockRangeUnitsTest` fails when the catalogue grows a subclass carrying `range` that
-     * appears in neither this list nor its own list of world-unit classes, so the day the
-     * dumper is corrected, or a new block arrives, this stops being silently wrong.
-     */
-    private const RANGE_IN_TILES = [
-        'ItemBridge', 'BufferedItemBridge', 'DuctBridge', 'LiquidBridge',
-        'DirectionLiquidBridge', 'BeamNode', 'BeamDrill',
-        'MassDriver', 'PayloadMassDriver', 'OverdriveProjector',
-    ];
-
     public function __construct(
         public readonly string $name,
         public readonly array $data,
@@ -236,17 +210,21 @@ class Block
         return $power > 0 ? $power : null;
     }
 
-    /** How far it reaches, in tiles, whichever unit the catalogue happened to store. */
+    /**
+     * How far it reaches, in tiles.
+     *
+     * Read straight through, with no conversion, and that is new. The catalogue used to
+     * store `range` in tiles for bridges and beam nodes and in world units, eight times
+     * larger, for every turret and mender, saying which nowhere; this class carried a list
+     * of subclasses to tell them apart, which was a stopgap and was said to be one. The
+     * dumper now writes tiles for everything, so the stopgap is gone rather than kept
+     * "just in case": a conversion nobody needs is a conversion somebody will trust.
+     */
     public function rangeInTiles(): ?float
     {
         $range = $this->get('range');
-        if (! is_numeric($range) || $range <= 0) {
-            return null;
-        }
 
-        return in_array($this->kind(), self::RANGE_IN_TILES, true)
-            ? (float) $range
-            : (float) $range / 8;
+        return is_numeric($range) && $range > 0 ? (float) $range : null;
     }
 
     /** How far a power node throws a laser. Kept in tiles by the dump already. */

@@ -104,53 +104,42 @@ it('compte la durete du minerai, sauf la ou le jeu ne la compte pas', function (
 });
 
 /**
- * The units of `range` have to stay classified, block by block.
+ * The ranges the page prints, pinned against the game.
  *
- * The catalogue stores `range` in tiles for some blocks and in world units for others, says
- * which nowhere, and the value alone cannot settle it. `Block::RANGE_IN_TILES` is a stopgap
- * list, and a stopgap that nobody is told about becomes a fact somebody trusts.
+ * These four were read off the game's own block cards and have not moved through the one
+ * change that could have moved them. They were pinned while this class divided turret
+ * ranges by eight and the catalogue stored them in world units; the dumper now stores tiles
+ * and the division is gone, and the same four numbers come out. Two independent paths
+ * landing on the same figure is the only real evidence that neither is wrong.
  *
- * So this fails the moment a block carrying `range` belongs to a subclass neither list
- * knows. That covers the two ways this goes wrong: a new block arriving in a game update,
- * and somebody fixing `DumpBlocks.java` to emit one unit, which would silently make every
- * turret range on the site eight times too small.
+ * They stay for the next such change, whichever direction it comes from.
  */
-it('sait dans quelle unite chaque portee est stockee', function () {
-    $inTiles = (new ReflectionClass(Block::class))->getConstant('RANGE_IN_TILES');
-
-    // Everything else the catalogue currently stores in world units, at eight to the tile.
-    // Pinned rather than inferred, so that an unknown class is a failure and not a guess.
-    $inWorldUnits = [
-        'MendProjector', 'BuildTurret', 'ShockwaveTower', 'RepairTurret', 'RepairTower',
-        'LiquidTurret', 'PowerTurret', 'LaserTurret', 'ContinuousTurret',
-        'ContinuousLiquidTurret', 'TractorBeamTurret', 'PointDefenseTurret', 'ItemTurret',
-    ];
-
-    $unclassified = [];
-    foreach (BlockCatalogue::all() as $name => $block) {
-        if ($block->get('range') === null) {
-            continue;
-        }
-        $kind = $block->kind();
-        if (! in_array($kind, $inTiles, true) && ! in_array($kind, $inWorldUnits, true)) {
-            $unclassified[$name] = $kind;
-        }
-    }
-
-    expect($unclassified)->toBe([], 'une sous-classe porte une portee sans unite connue');
-});
-
-/**
- * A few ranges checked against the game, so the classification is not merely self-consistent.
- *
- * These four were read off the game's own block cards. If the dumper is ever corrected to
- * emit one unit, these move and somebody has to look, which is the whole point.
- */
-it('convertit les portees dans la bonne unite', function () {
+it('donne les portees en cases', function () {
     expect(BlockCatalogue::find('wave')->rangeInTiles())->toBe(13.75)
         ->and(BlockCatalogue::find('mender')->rangeInTiles())->toBe(5.0)
         ->and(BlockCatalogue::find('bridge-conveyor')->rangeInTiles())->toBe(4.0)
         ->and(BlockCatalogue::find('overdrive-projector')->rangeInTiles())->toBe(10.0);
+});
+
+/**
+ * The ammunition turrets used to have no range at all, and the page had a hole there.
+ *
+ * Seventeen of the twenty-eight visible turrets carried no `range` field: the dumper's
+ * `ItemTurret` branch returned before the one that writes it. It was invisible precisely
+ * because a missing field prints nothing rather than something wrong, which is the failure
+ * mode this repository keeps finding. They are pinned here so the hole cannot reopen.
+ */
+it('donne une portee a toutes les tourelles', function () {
+    $turrets = array_filter(
+        BlockCatalogue::all(),
+        fn ($block) => $block->category() === 'turret',
+    );
+
+    $mute = array_keys(array_filter($turrets, fn ($block) => $block->rangeInTiles() === null));
+
+    expect($mute)->toBe([]);
+    expect(BlockCatalogue::find('duo')->rangeInTiles())->toBe(20.0)
+        ->and(BlockCatalogue::find('salvo')->rangeInTiles())->toBe(23.75);
 });
 
 /**
