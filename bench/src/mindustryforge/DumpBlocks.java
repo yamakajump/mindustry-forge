@@ -4,8 +4,11 @@ import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.serialization.Jval;
 import mindustry.Vars;
+import mindustry.content.TechTree;
+import mindustry.content.TechTree.TechNode;
 import mindustry.core.Version;
 import mindustry.type.Item;
+import mindustry.type.Planet;
 import mindustry.type.Liquid;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
@@ -189,6 +192,30 @@ public class DumpBlocks {
                s arreter dessus et la foreuse derriere seule sur sa grille. */
             if (block instanceof PowerNode) entry.put("power_node", true);
             entry.put("rotate", block.rotate);
+            /* Ou ranger le bloc dans la palette, et avec quoi il est interchangeable.
+
+               `Block.canReplace` lit `group`, `subclass`, `replaceable`, `alwaysReplace`,
+               `privileged` et `quickRotate`. Un editeur qui n en connait qu une partie
+               refuse des gestes que le jeu accepte, et poser un convoyeur titane sur un
+               convoyeur redevient impossible. Deviner depuis `role` ne marche pas : `role`
+               regroupe des blocs que le jeu separe, et separe des blocs qu il regroupe. */
+            entry.put("category", block.category.name());
+            entry.put("group", block.group.name());
+            if (block.group.anyReplace) entry.put("group_any_replace", true);
+            if (block.subclass != null) entry.put("subclass", block.subclass.getSimpleName());
+            /* Le drapeau qui decide si un glisse trace en L ou en ligne droite. Les bandes,
+               les conduits et les gaines l ont ; un routeur ne l a pas. */
+            if (block.conveyorPlacement) entry.put("conveyor_placement", true);
+            if (!block.replaceable) entry.put("replaceable", false);
+            if (block.alwaysReplace) entry.put("always_replace", true);
+            if (block.quickRotate) entry.put("quick_rotate", true);
+            if (block.privileged) entry.put("privileged", true);
+            /* Ce que le sol sous un bloc autorise, lu dans `Build.validPlace`. Un liquide
+               profond ne porte que ce qui flotte, une thermogeneratrice exige son eau, et
+               quelques blocs se posent sur du liquide alors que rien d autre ne le peut. */
+            if (!block.placeableOn) entry.put("placeable_on", false);
+            if (block.requiresWater) entry.put("requires_water", true);
+            if (block.placeableLiquid) entry.put("placeable_liquid", true);
             // Frames between two attempts to hand an output on. It rarely binds - a press
             // makes one graphite every ninety frames and may offload every five - but it
             // is the difference between a machine that trickles and one that bursts.
@@ -340,6 +367,26 @@ public class DumpBlocks {
             describeRole(block, entry);
             describeFloor(block, entry);
             blocks.put(block.name, entry);
+        }
+
+        /* De quelle planete vient un bloc, pour qu une palette puisse ne montrer qu un des
+           deux jeux de blocs. Serpulo et Erekir ne partagent presque rien, et les melanger
+           dans une meme grille donne les 253 pastilles indifferenciees d aujourd hui.
+
+           Le champ `planet` d un noeud vaut null presque partout, y compris sur les
+           racines : lire `TechTree.all` en retombant sur Serpulo quand il est null met
+           Erekir entier sur Serpulo, ce qui est exactement le contraire du but. Mesure
+           faite, les 241 blocs des deux arbres ressortaient tous serpuliens, `core-bastion`
+           compris.
+
+           L association fiable est dans l autre sens : `Planet.techTree` porte la racine de
+           l arbre de sa planete. On descend donc depuis chaque planete, ce qui donne la
+           reponse sans dependre d un champ que le jeu ne remplit pas.
+
+           Un bloc qui n est dans aucun arbre, comme les sols et les blocs de bac a sable,
+           ne recoit pas de planete du tout. */
+        for (Planet planet : Vars.content.planets()) {
+            if (planet.techTree != null) stampPlanet(planet.techTree, planet.name, blocks);
         }
         root.put("blocks", blocks);
 
@@ -1440,6 +1487,22 @@ public class DumpBlocks {
      * blocks came back nameless. What is wanted is the first named class above it, which
      * is where `updateTile` actually lives.
      */
+    /**
+     * La planete d un noeud et de tout ce qui pend dessous.
+     *
+     * <p>Un noeud qui ne declare pas sa planete prend celle de son parent, comme le jeu le
+     * fait pour afficher son arbre. Sans cet heritage, les 200 blocs d Erekir sortent
+     * annonces sur Serpulo, et une palette qui filtre par planete montre tout partout.
+     */
+    private static void stampPlanet(TechNode node, String planet, Jval blocks) {
+        String here = node.planet == null ? planet : node.planet.name;
+        if (node.content instanceof Block) {
+            Jval entry = blocks.get(node.content.name);
+            if (entry != null) entry.put("planet", here);
+        }
+        for (TechNode child : node.children) stampPlanet(child, here, blocks);
+    }
+
     private static String kindOf(Block block) {
         Class<?> found = block.getClass();
         while (found != null && found.getSimpleName().isEmpty()) {
