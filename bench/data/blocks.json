@@ -6029,6 +6029,16 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 160,
+      "drawers": [
+        {
+          "kind": "flame",
+          "color": "#ffef99",
+          "radius": 3,
+          "scale": 5,
+          "magnitude": 2
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 32.5,
       "cost":{
         "copper": 30,
@@ -6081,6 +6091,16 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 395,
+      "drawers": [
+        {
+          "kind": "flame",
+          "color": "#ffef99",
+          "radius": 3,
+          "scale": 5,
+          "magnitude": 2
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 333.5,
       "cost":{
         "metaglass": 80,
@@ -6135,6 +6155,16 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 160,
+      "drawers": [
+        {
+          "kind": "flame",
+          "color": "#ffc099",
+          "radius": 3,
+          "scale": 5,
+          "magnitude": 2
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 81,
       "cost":{
         "copper": 60,
@@ -6297,6 +6327,16 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 430,
+      "drawers": [
+        {
+          "kind": "flame",
+          "color": "#ffc999",
+          "radius": 3,
+          "scale": 5,
+          "magnitude": 2
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 197,
       "cost":{
         "lead": 80,
@@ -6353,6 +6393,19 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 160,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "water"
+        },
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "cryofluid"
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 137.5,
       "cost":{
         "lead": 65,
@@ -6509,6 +6562,13 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 200,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid"
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 84.5,
       "cost":{
         "copper": 30,
@@ -6559,6 +6619,17 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 160,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid"
+        },
+        {
+          "kind": "rotator",
+          "suffix": "-spinner",
+          "rotate_speed": 3
+        }
+      ],
       "build_time": 40,
       "cost":{
         "copper": 30,
@@ -6621,6 +6692,17 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 465,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid"
+        },
+        {
+          "kind": "rotator",
+          "suffix": "-spinner",
+          "rotate_speed": 3
+        }
+      ],
       "build_time": 360,
       "cost":{
         "titanium": 100,
@@ -6684,6 +6766,13 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 320,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid"
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 48.5,
       "cost":{
         "lead": 35,
@@ -6733,6 +6822,14 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 40,
+      "drawers": [
+        {
+          "kind": "rotator",
+          "suffix": "-rotator",
+          "rotate_speed": 2
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 32.5,
       "cost":{
         "copper": 30,
@@ -6920,6 +7017,23 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 860,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "water"
+        },
+        {
+          "kind": "glow",
+          "suffix": "-glow",
+          "color": "#c4bdf3",
+          "alpha": 0.7,
+          "scale": 6,
+          "intensity": 0.3,
+          "rotate_speed": 0
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 356,
       "cost":{
         "graphite": 40,
@@ -6970,6 +7084,14 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 755,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "nitrogen"
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 408,
       "cost":{
         "silicon": 150,
@@ -7020,6 +7142,21 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 860,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid"
+        },
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 484,
       "cost":{
         "graphite": 80,
@@ -7069,6 +7206,17 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 460,
+      "drawers": [
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 117,
       "cost":{
         "beryllium": 30,
@@ -7114,6 +7262,22 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 1040,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "slag"
+        },
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 123,
       "cost":{
         "beryllium": 20,
@@ -7161,6 +7325,17 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 510,
+      "drawers": [
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 114,
       "cost":{
         "beryllium": 30,
@@ -7206,6 +7381,16 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 645,
+      "drawers": [
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
       "build_time": 25,
       "cost":{
         "graphite": 10,
@@ -7240,6 +7425,16 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 200,
+      "drawers": [
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
       "build_time": 11.6,
       "cost":{
         "graphite": 8,
@@ -7274,6 +7469,32 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 645,
+      "drawers": [
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        },
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        },
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
       "build_time": 32.5,
       "cost":{
         "graphite": 10,
@@ -7404,6 +7625,59 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 935,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "slag"
+        },
+        {
+          "kind": "glow",
+          "suffix": "-glow",
+          "color": "#ff7f7f",
+          "alpha": 0.4,
+          "scale": 10,
+          "intensity": 0.3,
+          "rotate_speed": 3
+        },
+        {
+          "kind": "glow",
+          "suffix": "-glow",
+          "color": "#ff7f7f",
+          "alpha": 0.4,
+          "scale": 10,
+          "intensity": 0.3,
+          "rotate_speed": 1.75
+        },
+        {
+          "kind": "glow",
+          "suffix": "-glow",
+          "color": "#ff7f7f",
+          "alpha": 0.4,
+          "scale": 10,
+          "intensity": 0.3,
+          "rotate_speed": 1.2352941
+        },
+        {
+          "kind": "glow",
+          "suffix": "-glow",
+          "color": "#ff7f7f",
+          "alpha": 0.4,
+          "scale": 10,
+          "intensity": 0.3,
+          "rotate_speed": 0.9545455
+        },
+        {
+          "kind": "glow",
+          "suffix": "-glow",
+          "color": "#ff7f7f",
+          "alpha": 0.4,
+          "scale": 10,
+          "intensity": 0.3,
+          "rotate_speed": 0.7777778
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 238,
       "cost":{
         "graphite": 60,
@@ -7459,6 +7733,30 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 825,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "slag"
+        },
+        {
+          "kind": "heat",
+          "suffix": "-glow",
+          "color": "#ff6060",
+          "alpha": 1,
+          "pulse": 0.3,
+          "scale": 10
+        },
+        {
+          "kind": "heat",
+          "suffix": "-vents",
+          "color": "#ff3838",
+          "alpha": 1,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 376,
       "cost":{
         "graphite": 80,
@@ -7514,6 +7812,22 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 1150,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "cyanogen"
+        },
+        {
+          "kind": "heat",
+          "suffix": "-heat-top",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 424,
       "cost":{
         "silicon": 120,
@@ -7570,6 +7884,17 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 1115,
+      "drawers": [
+        {
+          "kind": "heat",
+          "suffix": "-vents",
+          "color": "#ff664c",
+          "alpha": 1,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 616,
       "cost":{
         "thorium": 100,
@@ -7626,6 +7951,17 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 1005,
+      "drawers": [
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 206,
       "cost":{
         "graphite": 20,
@@ -11230,6 +11566,22 @@
       "solid": true,
       "health": 160,
       "base_explosiveness": 5,
+      "drawers": [
+        {
+          "kind": "rotator",
+          "suffix": "-turbine",
+          "rotate_speed": 2
+        },
+        {
+          "kind": "rotator",
+          "suffix": "-turbine",
+          "rotate_speed": -2
+        },
+        {
+          "kind": "liquid",
+          "suffix": "-liquid"
+        }
+      ],
       "build_time": 94.5,
       "cost":{
         "copper": 35,
@@ -11289,6 +11641,12 @@
       "solid": true,
       "health": 360,
       "base_explosiveness": 5,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid"
+        }
+      ],
       "build_time": 282,
       "cost":{
         "copper": 70,
@@ -11540,6 +11898,15 @@
       "solid": true,
       "health": 900,
       "base_explosiveness": 5,
+      "drawers": [
+        {
+          "kind": "flame",
+          "color": "#ffc999",
+          "radius": 3,
+          "scale": 5,
+          "magnitude": 2
+        }
+      ],
       "build_time": 1775,
       "cost":{
         "lead": 500,
@@ -11758,6 +12125,22 @@
       "solid": true,
       "health": 825,
       "base_explosiveness": 5,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "arkycite"
+        },
+        {
+          "kind": "glow",
+          "suffix": "-glow",
+          "color": "#c967b0",
+          "alpha": 1,
+          "scale": 5,
+          "intensity": 0.5,
+          "rotate_speed": 0
+        }
+      ],
       "build_time": 142,
       "cost":{
         "graphite": 40,
@@ -11807,6 +12190,22 @@
       "solid": true,
       "health": 935,
       "base_explosiveness": 5,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "arkycite"
+        },
+        {
+          "kind": "glow",
+          "suffix": "-glow",
+          "color": "#ffa166",
+          "alpha": 1,
+          "scale": 5,
+          "intensity": 0.5,
+          "rotate_speed": 0
+        }
+      ],
       "build_time": 336,
       "cost":{
         "graphite": 100,
@@ -11858,6 +12257,22 @@
       "solid": true,
       "health": 2850,
       "base_explosiveness": 5,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "cyanogen"
+        },
+        {
+          "kind": "glow",
+          "suffix": "-ventglow",
+          "color": "#32603a",
+          "alpha": 0.9,
+          "scale": 10,
+          "intensity": 0.5,
+          "rotate_speed": 0
+        }
+      ],
       "build_time": 948,
       "cost":{
         "graphite": 240,
@@ -11912,6 +12327,30 @@
       "solid": true,
       "health": 3900,
       "base_explosiveness": 5,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "arkycite"
+        },
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        },
+        {
+          "kind": "glow",
+          "suffix": "-glow",
+          "color": "#70170b",
+          "alpha": 0.7,
+          "scale": 10,
+          "intensity": 0.5,
+          "rotate_speed": 0
+        }
+      ],
       "build_time": 2560,
       "cost":{
         "silicon": 500,
@@ -12202,6 +12641,14 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 160,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "water"
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 38,
       "cost":{
         "copper": 25,
@@ -12307,6 +12754,14 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 575,
+      "drawers": [
+        {
+          "kind": "liquid",
+          "suffix": "-liquid",
+          "liquid": "water"
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 92,
       "cost":{
         "graphite": 20,
@@ -13283,9 +13738,9 @@
       "coolant_multiplier": 5,
       "ammo_types":{
         "slag": 1,
-        "water": 1,
+        "cryofluid": 1,
         "oil": 1,
-        "cryofluid": 1
+        "water": 1
       },
       "input_liquid":{},
       "planet": "serpulo"
@@ -13636,9 +14091,9 @@
       "coolant_multiplier": 5,
       "ammo_types":{
         "slag": 0.4,
-        "water": 0.4,
+        "cryofluid": 0.4,
         "oil": 0.4,
-        "cryofluid": 0.4
+        "water": 0.4
       },
       "input_liquid":{},
       "planet": "serpulo"
@@ -16656,6 +17111,17 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 40,
+      "drawers": [
+        {
+          "kind": "heat",
+          "suffix": "-heat",
+          "color": "#ff3838",
+          "alpha": 0.8,
+          "pulse": 0.3,
+          "scale": 10
+        }
+      ],
+      "warmup_speed": 0.019,
       "build_time": 20,
       "cost":{},
       "power": 0,

@@ -85,6 +85,19 @@ BRIDGE_PARTS = ("-bridge", "-arrow", "-end")
 #: wrong wherever a line turns, and a line that turns is most lines.
 SHAPES = 5
 
+#: And a belt has four frames per shape, which is the whole of what a running belt looks
+#: like. `Conveyor.draw` picks one with `(Time.time * speed * 8 * efficiency) % 4`, so a
+#: titanium belt scrolls half again as fast as a copper one and a stalled belt stands still.
+FRAMES = 4
+
+#: The layers a block is drawn from on top of its own plate, and what each one is for.
+#:
+#: The composite `-full` sprite the preview uses has these baked into it at rest. A picture
+#: that **moves** needs them apart: a drill's rotator turns at its warmup, a crafter's top
+#: fades in with its warmup, a pump's liquid region is tinted with what it is holding. Baked
+#: together they can only ever be drawn standing still.
+LAYERS = ("-bottom", "-rotator", "-spinner", "-liquid", "-top", "-glow", "-heat", "-team")
+
 
 def main() -> None:
     archive = zipfile.ZipFile(JAR)
@@ -106,6 +119,54 @@ def main() -> None:
                 if pattern in sprites:
                     wanted.append((f"{block}#{shape}", sprites[pattern]))
                     break
+
+    # And the frames it runs through, plus the plate underneath.
+    #
+    # A belt is drawn from `<name>-<shape>-<frame>`; a duct and a conduit have no frames at
+    # all and are drawn from a `-bottom-<join>` plate with a `-top-<join>` over it, with the
+    # item or the liquid in between. Packed apart, because in between is where the moving
+    # part goes and a single flattened sprite has no in between.
+    for block, entry in catalogue["blocks"].items():
+        role = entry.get("role")
+        if role in ("conveyor", "stack-conveyor"):
+            for shape in range(SHAPES):
+                for frame in range(FRAMES):
+                    path = sprites.get(f"{block}-{shape}-{frame}")
+                    if path:
+                        wanted.append((f"{block}#{shape}-{frame}", path))
+        elif role in ("duct", "conduit", "duct-router", "liquid-span"):
+            for shape in range(SHAPES):
+                for half in ("bottom", "top"):
+                    path = sprites.get(f"{block}-{half}-{shape}")
+                    if path:
+                        wanted.append((f"{block}#{half}-{shape}", path))
+
+    # The layers a running block is drawn from, one key each.
+    for block in catalogue["blocks"]:
+        for layer in LAYERS:
+            path = sprites.get(block + layer)
+            if path:
+                wanted.append((f"{block}#{layer[1:]}", path))
+
+        # Whatever the block's own drawing chain names, whatever it is called.
+        #
+        # `-vents`, `-heat-top`, `-glow`, `-heat`: the suffixes are the game's and there is
+        # no pattern to guess at, which is exactly why the dump carries them. Read off the
+        # catalogue, a block that gains a layer in a later version gains its sprite here
+        # without anybody noticing it had to.
+        for layer in {one.get("suffix") for one in catalogue["blocks"][block].get("drawers", [])}:
+            if layer and block + layer in sprites:
+                wanted.append((f"{block}#{layer[1:]}", sprites[block + layer]))
+
+        # And the plate under a turning part, which the composite does not leave room for.
+        #
+        # `block-<name>-full` is base, rotator and top flattened into one image with the
+        # rotator at rest. Turning a copy of the rotator over that leaves the baked one
+        # showing through underneath, so a drill that spins needs its plate on its own.
+        turning = any(one["kind"] == "rotator"
+                      for one in catalogue["blocks"][block].get("drawers", []))
+        if (turning or block + "-rotator" in sprites or block + "-spinner" in sprites)                 and block in sprites:
+            wanted.append((f"{block}#base", sprites[block]))
 
     # The ground. One sprite each, no edge variants for now: a painted patch of copper ore
     # reads as copper ore without them, and the blending rules are a day's work on their
@@ -162,6 +223,21 @@ def main() -> None:
             path = pick(name, sprites)
             if path:
                 wanted.append((name, path))
+
+    # The units, for the two blocks whose rate is a flight rather than a recipe. An
+    # assembler advances by the fraction of its drones that are in position and a cargo
+    # loader's whole output is one unit going back and forth, so a picture without them is
+    # a picture of the two blocks whose behaviour is least obvious doing nothing.
+    #
+    # Only the two the blocks name, not all sixty-nine: a reconstructor's output is a
+    # two-hundred pixel sprite that is never drawn here, and packing the lot cost four
+    # hundred kilobytes of atlas for nothing anyone would see.
+    flown = {entry.get("drone_type") for entry in catalogue["blocks"].values()}
+    flown |= {entry.get("unit_type") for entry in catalogue["blocks"].values()}
+    for unit in sorted(flown - {None}):
+        path = sprites.get(unit)
+        if path:
+            wanted.append((f"unit/{unit}", path))
 
     # The hatched backing the game shows behind a schematic, rather than one drawn by hand
     # to look like it.
