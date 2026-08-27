@@ -37,6 +37,9 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.meta.Attribute;
+import mindustry.world.blocks.production.BurstDrill;
+import mindustry.world.blocks.production.WallCrafter;
 import mindustry.world.blocks.environment.StaticWall;
 import mindustry.world.blocks.production.BeamDrill;
 import mindustry.world.blocks.distribution.DirectionLiquidBridge;
@@ -492,6 +495,42 @@ public class DumpBlocks {
             entry.put("carries", "item");
             return;
         }
+        if (block instanceof WallCrafter crusher) {
+            /* A cliff crusher, which is a drill that eats the **cliff** rather than the
+               ground: its speed is the sand attribute of whatever solid block is against
+               each tile of its face. It matched no branch at all before this, so it read
+               as an unknown block. */
+            entry.put("role", "wall-crafter");
+            entry.put("carries", "item");
+            entry.put("drill_time", crusher.drillTime);
+            entry.put("attribute", crusher.attribute.name);
+            if (crusher.output != null) {
+                Jval out = Jval.newObject();
+                out.put(crusher.output.name, 1);
+                entry.put("output", out);
+            }
+            entry.put("liquid_boost", crusher.liquidBoostIntensity);
+            entry.put("item_boost", crusher.itemBoostIntensity);
+            entry.put("boost_time", crusher.boostItemUseTime);
+            entry.put("boost_input", optionalInputsOf(block));
+            entry.put("boost_liquid", boostLiquidsOf(block));
+            return;
+        }
+        if (block instanceof BurstDrill burst) {
+            /* A burst drill, which is a `Drill` with a different clock: its progress does
+               not scale with how many ore tiles it covers, only its **batch** does. Nine
+               tiles of ore make a burst drill produce nine at a time rather than nine
+               times as often, and reading it as an ordinary drill gets the shape of the
+               output wrong even where the average is close. */
+            entry.put("role", "burst-drill");
+            entry.put("tier", burst.tier);
+            entry.put("drill_time", burst.drillTime);
+            entry.put("hardness_multiplier", burst.hardnessDrillMultiplier);
+            entry.put("liquid_boost", burst.liquidBoostIntensity);
+            entry.put("boost_liquid", boostLiquidsOf(block));
+            entry.put("input_liquid", liquidInputsOf(block));
+            return;
+        }
         if (block instanceof Drill drill) {
             entry.put("role", "drill");
             entry.put("tier", drill.tier);
@@ -900,6 +939,7 @@ public class DumpBlocks {
         if (block instanceof StaticWall wall) {
             entry.put("wall", true);
             if (wall.itemDrop != null) entry.put("drops", wall.itemDrop.name);
+            entry.put("attributes", attributesOf(block));
             return;
         }
         if (!(block instanceof Floor floor)) {
@@ -1119,6 +1159,28 @@ public class DumpBlocks {
             entry.put("unstable_speed", variable.unstableSpeed);
             entry.put("warmup_speed", variable.warmupSpeed);
         }
+    }
+
+
+    /** The liquids a block goes faster with and runs without. */
+    private static Jval boostLiquidsOf(Block block) {
+        Jval boost = Jval.newObject();
+        for (Consume consume : block.consumers) {
+            if (consume.booster && consume instanceof ConsumeLiquid one) {
+                boost.put(one.liquid.name, one.amount * TPS);
+            }
+        }
+        return boost;
+    }
+
+    /** Every attribute a block carries, which for a cliff is how much sand is in it. */
+    private static Jval attributesOf(Block block) {
+        Jval out = Jval.newObject();
+        for (Attribute attribute : Attribute.all) {
+            float found = block.attributes.get(attribute);
+            if (found != 0f) out.put(attribute.name, found);
+        }
+        return out;
     }
 
 }

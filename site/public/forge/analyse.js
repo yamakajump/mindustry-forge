@@ -18,7 +18,7 @@
 import { fromBase64 } from "./schematic.js";
 import { demand, requirements } from "./needs.js";
 import { candidates, feedFrom, markable, marksOf, readMarks } from "./marks.js";
-import { attributeOf, beamOf, yieldOf } from "./ground.js";
+import { attributeOf, beamOf, wallSumOf, yieldOf } from "./ground.js";
 import { throughput } from "./maxflow.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
@@ -953,6 +953,7 @@ export async function analyse(text, supply = {}, chosen = null,
     node.dug = yieldOf(node, ground, catalogue);
     node.attrsum = attributeOf(node, ground, catalogue);
     node.beam = beamOf(node, ground, catalogue);
+    node.wallsum = wallSumOf(node, ground, catalogue);
   }
 
   // Plugged in by itself when nobody said otherwise.

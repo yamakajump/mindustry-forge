@@ -1,0 +1,50 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "units":{},
+  "running": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "sand": 65
+      }
+    },
+    {
+      "block": "duct",
+      "x": 13,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 16,
+      "efficiency": 0
+    },
+    {
+      "block": "cliff-crusher",
+      "x": 13,
+      "y": 16,
+      "efficiency": 1
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13,
+      "items":{
+        "sand": 65
+      }
+    }
+  ],
+  "per_second":{
+    "sand": 2.1666667
+  }
+}

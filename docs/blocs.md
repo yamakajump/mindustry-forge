@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **105 classes à reproduire**, pour 228 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 57 sur 105
+## Fait : 59 sur 105
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -58,7 +58,7 @@ second, c'est une intuition qui a l'air d'un portage.
       large-plasma-bore, plasma-bore
 - [x] `BeamNode` - 2 blocs
       beam-node, beam-tower
-- [ ] `BurstDrill` - 2 blocs
+- [x] `BurstDrill` - 2 blocs
       eruption-drill, impact-drill
 - [ ] `CanvasBlock` - 2 blocs
       canvas, large-canvas
@@ -112,7 +112,7 @@ second, c'est une intuition qui a l'air d'un portage.
       switch, world-switch
 - [x] `ThermalGenerator` - 2 blocs - de l'energie a partir du sol chaud
       thermal-generator, turbine-condenser
-- [ ] `WallCrafter` - 2 blocs
+- [x] `WallCrafter` - 2 blocs
       cliff-crusher, large-cliff-crusher
 - [ ] `Accelerator` - 1 bloc
       interplanetary-accelerator
@@ -237,7 +237,10 @@ plutôt que laissé à découvrir :
   `chemical-combustion-chamber` (ozone et arkycite), `pyrolysis-generator`
   (scorie et arkycite), `neoplasia-reactor` (arkycite et eau). Les trois
   sont d'Erekir, aucun n'est mesuré, et aucun ne tournera correctement
-  tant que le module liquide n'aura pas plusieurs cases.
+  tant que le module liquide n'aura pas plusieurs cases. Les deux
+  foreuses à percussion sont dans le même cas pour leur **bonus** :
+  elles veulent de l'eau et de l'ozone en même temps, donc le bonus est
+  transcrit et non mesuré. Leur marche normale, elle, est mesurée.
 
 ## Posés par un joueur, mais sans effet sur ce qui circule
 

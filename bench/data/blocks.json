@@ -1665,7 +1665,10 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{
+        "sand": 1
+      }
     },
     "spore-wall":{
       "name": "spore-wall",
@@ -1683,7 +1686,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "dirt-wall":{
       "name": "dirt-wall",
@@ -1701,7 +1705,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "dacite-wall":{
       "name": "dacite-wall",
@@ -1719,7 +1724,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "ice-wall":{
       "name": "ice-wall",
@@ -1737,7 +1743,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "snow-wall":{
       "name": "snow-wall",
@@ -1755,7 +1762,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "dune-wall":{
       "name": "dune-wall",
@@ -1773,7 +1781,10 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{
+        "sand": 2
+      }
     },
     "regolith-wall":{
       "name": "regolith-wall",
@@ -1791,7 +1802,10 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{
+        "sand": 1
+      }
     },
     "yellow-stone-wall":{
       "name": "yellow-stone-wall",
@@ -1809,7 +1823,10 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{
+        "sand": 1.5
+      }
     },
     "rhyolite-wall":{
       "name": "rhyolite-wall",
@@ -1827,7 +1844,10 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{
+        "sand": 1
+      }
     },
     "carbon-wall":{
       "name": "carbon-wall",
@@ -1845,7 +1865,10 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{
+        "sand": 0.7
+      }
     },
     "ferric-stone-wall":{
       "name": "ferric-stone-wall",
@@ -1863,7 +1886,10 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{
+        "sand": 0.5
+      }
     },
     "beryllic-stone-wall":{
       "name": "beryllic-stone-wall",
@@ -1881,7 +1907,10 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{
+        "sand": 1.2
+      }
     },
     "arkyic-wall":{
       "name": "arkyic-wall",
@@ -1899,7 +1928,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "crystalline-stone-wall":{
       "name": "crystalline-stone-wall",
@@ -1917,7 +1947,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "red-ice-wall":{
       "name": "red-ice-wall",
@@ -1935,7 +1966,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "red-stone-wall":{
       "name": "red-stone-wall",
@@ -1953,7 +1985,10 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{
+        "sand": 1.5
+      }
     },
     "red-diamond-wall":{
       "name": "red-diamond-wall",
@@ -1971,7 +2006,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "sand-wall":{
       "name": "sand-wall",
@@ -1989,7 +2025,10 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{
+        "sand": 2
+      }
     },
     "salt-wall":{
       "name": "salt-wall",
@@ -2007,7 +2046,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "shrubs":{
       "name": "shrubs",
@@ -2025,7 +2065,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "shale-wall":{
       "name": "shale-wall",
@@ -2043,7 +2084,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "spore-pine":{
       "name": "spore-pine",
@@ -2061,7 +2103,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "snow-pine":{
       "name": "snow-pine",
@@ -2079,7 +2122,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "pine":{
       "name": "pine",
@@ -2097,7 +2141,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "white-tree-dead":{
       "name": "white-tree-dead",
@@ -2768,7 +2813,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "metal-tiles-1":{
       "name": "metal-tiles-1",
@@ -3033,7 +3079,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "metal-wall-2":{
       "name": "metal-wall-2",
@@ -3051,7 +3098,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "metal-wall-3":{
       "name": "metal-wall-3",
@@ -3069,7 +3117,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "colored-floor":{
       "name": "colored-floor",
@@ -3106,7 +3155,8 @@
       "health": 40,
       "cost":{},
       "power": 0,
-      "wall": true
+      "wall": true,
+      "attributes":{}
     },
     "character-overlay":{
       "name": "character-overlay",
@@ -3478,7 +3528,8 @@
       "cost":{},
       "power": 0,
       "wall": true,
-      "drops": "graphite"
+      "drops": "graphite",
+      "attributes":{}
     },
     "ore-wall-graphite":{
       "name": "ore-wall-graphite",
@@ -7841,7 +7892,19 @@
         "graphite": 25,
         "beryllium": 20
       },
-      "power": 11
+      "power": 11,
+      "role": "wall-crafter",
+      "carries": "item",
+      "drill_time": 110,
+      "attribute": "sand",
+      "output":{
+        "sand": 1
+      },
+      "liquid_boost": 1.6,
+      "item_boost": 1.6,
+      "boost_time": 120,
+      "boost_input":{},
+      "boost_liquid":{}
     },
     "large-cliff-crusher":{
       "name": "large-cliff-crusher",
@@ -7870,11 +7933,20 @@
         "tungsten": 50
       },
       "power": 60,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{
-        "hydrogen": 1
-      }
+      "role": "wall-crafter",
+      "carries": "item",
+      "drill_time": 48,
+      "attribute": "sand",
+      "output":{
+        "sand": 1
+      },
+      "liquid_boost": 1.6,
+      "item_boost": 1.6,
+      "boost_time": 80,
+      "boost_input":{
+        "graphite": 1
+      },
+      "boost_liquid":{}
     },
     "plasma-bore":{
       "name": "plasma-bore",
@@ -7970,12 +8042,17 @@
         "beryllium": 90
       },
       "power": 160,
-      "role": "drill",
+      "role": "burst-drill",
       "tier": 6,
       "drill_time": 720,
       "hardness_multiplier": 0,
       "liquid_boost": 1.75,
-      "warmup_speed": 0.015
+      "boost_liquid":{
+        "ozone": 3
+      },
+      "input_liquid":{
+        "water": 10
+      }
     },
     "eruption-drill":{
       "name": "eruption-drill",
@@ -8002,12 +8079,17 @@
         "oxide": 20
       },
       "power": 360,
-      "role": "drill",
+      "role": "burst-drill",
       "tier": 7,
       "drill_time": 281.25,
       "hardness_multiplier": 0,
       "liquid_boost": 2,
-      "warmup_speed": 0.015
+      "boost_liquid":{
+        "cyanogen": 0.75
+      },
+      "input_liquid":{
+        "hydrogen": 4
+      }
     },
     "core-shard":{
       "name": "core-shard",
@@ -8455,10 +8537,10 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "oil": 1,
-        "slag": 1,
         "water": 1,
-        "cryofluid": 1
+        "slag": 1,
+        "cryofluid": 1,
+        "oil": 1
       },
       "input_liquid":{}
     },
@@ -8717,10 +8799,10 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "oil": 0.4,
-        "slag": 0.4,
         "water": 0.4,
-        "cryofluid": 0.4
+        "slag": 0.4,
+        "cryofluid": 0.4,
+        "oil": 0.4
       },
       "input_liquid":{}
     },

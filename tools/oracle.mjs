@@ -914,6 +914,24 @@ const SCENARIOS = {
     return built;
   },
 
+  /* A cliff crusher, pressed against two walls that are worth different amounts.
+
+     Its speed is the sand attribute of the block against each tile of its face, summed and
+     uncapped: two dune walls are worth four, two carbon walls 1.4. The pair is the
+     measurement, and a crusher turned away from the cliff makes nothing at all. */
+  "crusher-dune": () => crusher("dune-wall"),
+  "crusher-carbon": () => crusher("carbon-wall"),
+
+  /* A burst drill, which is where the ore count sits on the other side of the
+     multiplication: an ordinary drill on sixteen tiles runs sixteen times as often, this
+     one runs at the same pace and hands over sixteen at a time. Twelve seconds of nothing
+     and then a lump, which is what backs a belt up.
+     There is no boosted twin here, and the reason is worth writing down: both burst
+     drills want two liquids at once, water and ozone or hydrogen and cyanogen, and a block
+     in this engine holds one. The boost is transcribed and cannot be measured until the
+     liquid module has more than one slot. */
+  "burst-drill": () => burst(false),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
@@ -1012,6 +1030,40 @@ function bore(lines) {
       ...(lines > 1 ? ["ore-wall-beryllium@2,1"] : []),
     ],
   };
+}
+
+/** A cliff crusher facing two walls of the same kind. */
+function crusher(wall) {
+  return {
+    tiles: [
+      // Covers 0..1 by 0..1, facing east at (2, 0) and (2, 1).
+      { x: 0, y: 0, block: "cliff-crusher", rotation: 0 },
+      { x: -1, y: 0, block: "power-source", rotation: 0 },
+      { x: 0, y: -1, block: "duct", rotation: 3 },
+      { x: 0, y: -3, block: "vault", rotation: 0 },
+    ],
+    ground: [`${wall}@2,0`, `${wall}@2,1`],
+  };
+}
+
+/** An impact drill on sixteen tiles of copper. */
+function burst(boosted) {
+  const tiles = [
+    // Covers 1..4 by 1..4.
+    { x: 2, y: 2, block: "impact-drill", rotation: 0 },
+    { x: 0, y: 2, block: "power-source", rotation: 0 },
+    { x: 0, y: 3, block: "liquid-source", rotation: 0, raw: liquid("water") },
+    { x: 5, y: 2, block: "duct", rotation: 0 },
+    { x: 6, y: 2, block: "duct", rotation: 0 },
+    // Covers 7..9 by 1..3.
+    { x: 8, y: 2, block: "vault", rotation: 0 },
+  ];
+  if (boosted) {
+    tiles.push({ x: 0, y: 1, block: "liquid-source", rotation: 0, raw: liquid("ozone") });
+  }
+  const ground = [];
+  for (let x = 1; x <= 4; x++) for (let y = 1; y <= 4; y++) ground.push(`ore-copper@${x},${y}`);
+  return { tiles, ground };
 }
 
 /** A thorium reactor, on a source that never runs out or on thirty thorium and no more. */

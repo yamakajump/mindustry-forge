@@ -603,7 +603,11 @@ function randomSeed(seed, min, max) {
 const beamDrill = {
   begin(build) {
     build.state.time = 0;
-    build.state.dumpTimer = 0;
+    /* Started full, because the game's `Interval` is not a counter on the block: it
+       compares against a global clock that is already at some large number, so the very
+       first call to `timer(timerDump, ...)` fires. A bore that waits five frames for its
+       first dump ends thirty seconds one item behind. */
+    build.state.dumpTimer = Infinity;
   },
 
   acceptItem() { return false; },
@@ -669,9 +673,180 @@ const beamDrill = {
   },
 };
 
+/**
+ * A cliff crusher: a drill that eats the cliff rather than the ground.
+ *
+ * Its speed is the sand attribute of whatever solid block is pressed against each tile of
+ * its face, summed rather than averaged and with no cap: a two by two crusher against two
+ * dune walls runs at four, and against two carbon walls at 1.4. Turned the other way it
+ * runs at nothing at all, which is a thing a rate table cannot say.
+ *
+ * Its graphite is a booster on a clock of its own: one every `boostItemUseTime` ticks while
+ * it is running, worth 1.6 times the speed, and it runs perfectly well without.
+ */
+const wallCrafter = {
+  begin(build) {
+    build.state.time = 0;
+    build.state.dumpTimer = 0;
+    build.state.boostTimer = Infinity;
+  },
+
+  acceptItem(build, source, item) {
+    return build.wants(item) && build.items.get(item) < build.itemCapacity;
+  },
+
+  update(build, world, step) {
+    const block = build.block;
+    const delta = build.delta(step);
+    const made = Object.keys(block.output || {})[0];
+
+    build.state.dumpTimer += delta;
+    if (build.state.dumpTimer >= (block.dump_time || 5)) {
+      build.state.dumpTimer = 0;
+      build.dump();
+    }
+
+    let efficiency = block.power > 0 ? (build.state.power ?? 1) : 1;
+    for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
+      const wanted = (rate / TICKS) * delta;
+      if (wanted <= 0) continue;
+      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      efficiency = Math.min(efficiency, held / wanted);
+    }
+    efficiency = Math.max(0, Math.min(1, efficiency));
+
+    // The two boosters, which the game says outright are not meant to be used together.
+    let wet = 0;
+    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
+      const wanted = (rate / TICKS) * delta;
+      if (wanted <= 0) continue;
+      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      wet = Math.min(1, held / wanted);
+    }
+    const stocked = Object.keys(block.boost_input || {}).length > 0
+      && Object.entries(block.boost_input).every(([item, n]) => build.items.get(item) >= n);
+
+    const eff = (build.node.wallsum || 0)
+      * (1 + ((block.liquid_boost ?? 1) - 1) * wet)
+      * (stocked ? (block.item_boost ?? 1) : 1);
+
+    // `shouldConsume`: it stops when it has nowhere to put what it makes, and only then.
+    const room = made ? build.items.get(made) < build.itemCapacity : false;
+
+    if (stocked && eff * efficiency > 0) {
+      build.state.boostTimer += delta;
+      if (build.state.boostTimer >= (block.boost_time || 120)) {
+        build.state.boostTimer = 0;
+        for (const [item, n] of Object.entries(block.boost_input)) build.items.remove(item, n);
+      }
+    }
+
+    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
+      if (build.liquid === liquid) {
+        build.liquidAmount = Math.max(0, build.liquidAmount - (rate / TICKS) * delta * wet);
+      }
+    }
+    for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
+      if (build.liquid === liquid) {
+        build.liquidAmount = Math.max(
+          0, build.liquidAmount - (rate / TICKS) * delta * efficiency);
+      }
+    }
+
+    if (!room || !made) return;
+    build.state.time += delta * efficiency * eff;
+    if (build.state.time >= (block.drill_time || 150)) {
+      build.offload(made);
+      build.state.time %= block.drill_time || 150;
+    }
+  },
+};
+
+/**
+ * A burst drill, which is a drill with the ore on the wrong side of the multiplication.
+ *
+ * An ordinary drill covering nine tiles of ore runs nine times as **often**; a burst drill
+ * runs at the same pace and produces nine at a time. The average is close and the shape is
+ * not: a belt behind one gets a lump of nine every twelve seconds and nothing in between,
+ * which is exactly what backs a line up and what a rate cannot show.
+ *
+ * `hardnessDrillMultiplier` is zero for the class, so hardness costs it nothing: an
+ * eruption drill takes the same time on thorium as on beryllium.
+ */
+const burstDrill = {
+  begin(build) {
+    build.state.progress = 0;
+    build.state.dumpTimer = 0;
+  },
+
+  acceptItem() { return false; },
+
+  update(build, world, step) {
+    const block = build.block;
+    const dug = build.node.dug;
+    const delta = build.delta(step);
+
+    build.state.dumpTimer += delta;
+    if (build.state.dumpTimer >= (block.dump_time || 5)) {
+      build.state.dumpTimer = 0;
+      build.dump();
+    }
+    if (!dug) return;
+
+    const batch = dug.covered;
+    // `shouldConsume`: room for a **whole** burst, not for one item. A drill with eight
+    // slots left and a burst of nine does not drill at all.
+    if (build.items.total > build.itemCapacity - batch || batch <= 0) return;
+
+    let efficiency = block.power > 0 ? (build.state.power ?? 1) : 1;
+    for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
+      const wanted = (rate / TICKS) * delta;
+      if (wanted <= 0) continue;
+      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      efficiency = Math.min(efficiency, held / wanted);
+    }
+    efficiency = Math.max(0, Math.min(1, efficiency));
+    if (efficiency <= 0) return;
+
+    let wet = 0;
+    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
+      const wanted = (rate / TICKS) * delta;
+      if (wanted <= 0) continue;
+      const held = build.liquid === liquid ? build.liquidAmount : 0;
+      wet = Math.min(1, held / wanted);
+    }
+    const speed = (1 + ((block.liquid_boost ?? 1) - 1) * wet) * efficiency;
+
+    for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
+      if (build.liquid === liquid) {
+        build.liquidAmount = Math.max(
+          0, build.liquidAmount - (rate / TICKS) * delta * efficiency);
+      }
+    }
+    for (const [liquid, rate] of Object.entries(block.boost_liquid || {})) {
+      if (build.liquid === liquid) {
+        build.liquidAmount = Math.max(0, build.liquidAmount - (rate / TICKS) * delta * wet);
+      }
+    }
+
+    // No `dominantItems` here, unlike an ordinary drill: the ore count multiplies the
+    // batch and not the clock.
+    build.state.progress += delta * speed;
+
+    const each = (block.drill_time || 300)
+      + (block.hardness_multiplier || 0) * (dug.hardness || 0);
+    if (build.state.progress >= each && build.items.total < build.itemCapacity) {
+      for (let i = 0; i < batch; i++) build.offload(dug.resource);
+      build.state.progress %= each;
+    }
+  },
+};
+
 export const MACHINES = {
   crafter,
   "beam-drill": beamDrill,
+  "wall-crafter": wallCrafter,
+  "burst-drill": burstDrill,
   drill,
   separator,
   "heat-conductor": heatConductor,
