@@ -19,7 +19,7 @@ import { buildGraph, useCatalogue } from "../../site/public/forge/analyse.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { World } from "../../site/public/forge/engine/core.js";
 import { behaviourOf } from "../../site/public/forge/engine/carriers.js";
-import { anchor, beltFrame } from "../../site/public/forge/live.js";
+import { absin, anchor, beltFrame, running } from "../../site/public/forge/live.js";
 
 const catalogue = loadCatalogue();
 useCatalogue(catalogue);
@@ -142,4 +142,53 @@ test("a duct remembers which side an item came in by", async () => {
   // rather than crossing the tile in a straight line.
   assert.equal(corner.state.from, 0);
   assert.equal(corner.rotation, 1);
+});
+
+test("a furnace comes up to heat rather than switching on", () => {
+  /* `Mathf.approachDelta(warmup, 1, warmupSpeed)`, and a `GenericCrafter` climbs at 0.019
+     a frame: two whole seconds to light up. Without it a glow snaps on between two frames,
+     which is the one thing that gives away an animation somebody wrote by hand. */
+  const oven = { block: { warmup_speed: 0.019 }, state: { efficiency: 1 } };
+  assert.equal(running(oven, 1).warmup, 0.019);
+  for (let tick = 0; tick < 60; tick += 1) running(oven, 1);
+  assert.ok(running(oven, 1).warmup > 0.9);
+
+  // And falls at the same rate the moment its supply is cut.
+  oven.state.efficiency = 0;
+  const hot = running(oven, 1).warmup;
+  assert.ok(running(oven, 1).warmup < hot);
+
+  /* `totalProgress` advances by the warmup reached and not by the time that passed: it is
+     the clock every pulse is measured against, and a cold furnace does not pulse. */
+  const cold = { block: {}, state: { efficiency: 0 } };
+  for (let tick = 0; tick < 30; tick += 1) running(cold, 1);
+  assert.equal(running(cold, 1).total, 0);
+});
+
+test("a glow breathes between nothing and its own maximum", () => {
+  // `Mathf.absin(in, scl, mag) = (sin(in / (scl * 2)) * mag + mag) / 2`.
+  assert.equal(absin(0, 10, 0.9), 0.45);
+  const seen = [];
+  for (let at = 0; at < 200; at += 1) seen.push(absin(at, 10, 0.9));
+  assert.ok(Math.min(...seen) >= 0);
+  assert.ok(Math.max(...seen) <= 0.9);
+  // A whole cycle is `scl * 2 * 2 * PI`, about 126 frames at a scale of ten.
+  assert.ok(Math.abs(absin(0, 10, 0.9) - absin(Math.round(10 * 4 * Math.PI), 10, 0.9)) < 0.01);
+});
+
+test("the drawing chain comes from the game, not from a file name", () => {
+  /* The check that matters. An electrolyser glows lilac and a kiln burns orange, and
+     nothing in `-glow` or in `-top` says so. Guessed, both colours are wrong; dumped, they
+     are the game's. */
+  const glow = catalogue.blocks.electrolyzer.drawers.find((one) => one.kind === "glow");
+  assert.equal(glow.color, "#c4bdf3");
+  assert.notEqual(glow.color, "#ff0000");
+
+  const flame = catalogue.blocks.kiln.drawers.find((one) => one.kind === "flame");
+  assert.equal(flame.color, "#ffc099");
+  assert.notEqual(flame.color, catalogue.blocks["silicon-smelter"].drawers[0].color);
+
+  // And a heater gives its heat back in red, breathing at the game's own rate.
+  const heat = catalogue.blocks["electric-heater"].drawers.find((one) => one.kind === "heat");
+  assert.deepEqual([heat.color, heat.pulse, heat.scale], ["#ff3838", 0.3, 10]);
 });

@@ -189,7 +189,14 @@ Ce qui est porté, avec la source du jeu en face :
   qui fait qu'un objet tourne visiblement le coin au lieu de traverser en ligne droite.
 - Le liquide dans les conduits et dans tout bloc qui a une image `-liquid` : teinte de ce
   qu'il contient, opacité égale à son remplissage (`Drawf.liquid`).
-- Les rotors, tournés par le `warmup` réellement atteint (`Drill.draw`).
+- Les rotors, tournés par le `warmup` réellement atteint (`Drill.draw`), et le minerai
+  qu'une foreuse sort, teinté de sa couleur (`drawMineItem`).
+- Les lueurs, les chaleurs et les flammes, **avec les constantes du bloc** et pas des
+  constantes devinées. `bench/data/blocks.json` porte la chaîne de dessin du jeu à plat
+  (`DrawGlowRegion`, `DrawHeatRegion`, `DrawHeatOutput`, `DrawFlame`, `DrawRegion`,
+  `DrawLiquidRegion`), parce que la couleur vit dans le `DrawBlock` et nulle part ailleurs :
+  l'électrolyseur est lilas, le four à chaux orangé, le four à silicium jaune pâle, et
+  aucun nom de fichier ne le dit.
 - Les drones d'un assembleur et d'un chargeur de fret, à leur position de vol.
 - Un bloc qui meurt : il se désagrège une demi-seconde au lieu de disparaître entre deux
   images.
@@ -205,6 +212,14 @@ Ce qui **n'est pas** dessiné, et pourquoi :
 - **Les textures de fluide animées** du jeu (`renderer.fluidFrames`) sont générées à
   l'exécution ; le conduit est teinté à la place, ce qui est la règle de tous les autres
   blocs à liquide.
+- **Le tremblement d'une flamme.** `DrawFlame` ajoute un `Mathf.random` à son rayon et à son
+  opacité à chaque image. Volontairement laissé de côté : ce serait la seule chose de cette
+  image qui différerait entre deux passages de la même schématique, et tout le reste ici est
+  rejouable.
+- **Une teinte remplace la couleur au lieu de la multiplier.** Le jeu fait
+  `Draw.color(c)` puis dessine, ce qui multiplie ; un canvas ne sait faire qu'un
+  `source-in`, qui remplace. Sans écart visible sur les masques blancs que le jeu fournit
+  pour ça, et c'est ce que sont toutes les couches teintées ici.
 - **`clogHeat` n'est pas dans le moteur.** Il est recalculé par le rendu, parce que le
   `blendbits` dont il dépend est une notion de dessin. Conséquence à connaître : le jeu
   interdit à un déchargeur de puiser dans une bande bouchée (`canUnload`), et ça, le moteur
