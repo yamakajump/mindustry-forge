@@ -17611,6 +17611,10 @@
         "silicon": 50
       },
       "power": 0,
+      "instructions_per_tick": 2,
+      "max_instruction_scale": 5,
+      "max_instructions_per_tick": 40,
+      "logic_range": 10,
       "planet": "serpulo"
     },
     "logic-processor":{
@@ -17648,6 +17652,10 @@
         "silicon": 80
       },
       "power": 0,
+      "instructions_per_tick": 8,
+      "max_instruction_scale": 5,
+      "max_instructions_per_tick": 40,
+      "logic_range": 22,
       "planet": "serpulo"
     },
     "hyper-processor":{
@@ -17688,6 +17696,10 @@
         "surge-alloy": 50
       },
       "power": 0,
+      "instructions_per_tick": 25,
+      "max_instruction_scale": 5,
+      "max_instructions_per_tick": 40,
+      "logic_range": 42,
       "role": "sink",
       "input_liquid":{
         "cryofluid": 4.7999997
@@ -18012,7 +18024,10 @@
       "build_time": 20,
       "cost":{},
       "power": 0,
-      "no_overdrive": true
+      "no_overdrive": true,
+      "instructions_per_tick": 8,
+      "max_instruction_scale": 5,
+      "max_instructions_per_tick": 1000
     },
     "world-cell":{
       "name": "world-cell",

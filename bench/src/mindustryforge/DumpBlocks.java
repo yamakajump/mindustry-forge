@@ -97,6 +97,7 @@ import mindustry.world.blocks.payloads.PayloadUnloader;
 import mindustry.world.blocks.defense.Door;
 import mindustry.world.blocks.sandbox.PowerVoid;
 import mindustry.world.blocks.power.PowerDiode;
+import mindustry.world.blocks.logic.LogicBlock;
 import mindustry.world.blocks.power.PowerNode;
 import mindustry.world.blocks.heat.HeatConductor;
 import mindustry.world.blocks.heat.HeatProducer;
@@ -463,6 +464,39 @@ public class DumpBlocks {
                `range`, qui reste vide pour eux : sans elle, un glisse de pylones ne sait pas
                a quel espacement les poser pour qu ils se voient encore. */
             if (block instanceof PowerNode node) entry.put("laser_range", node.laserRange);
+
+            /* How fast a processor runs, which is the whole of what separates the three of
+               them: a micro does two instructions a tick, a logic eight, a hyper
+               twenty-five. Nothing else about a processor is a number, so without this the
+               catalogue had nothing to say about them at all.
+
+               `maxInstructionScale` is the second half of the answer and the half that
+               surprises. The processor accumulates `edelta * instructionsPerTick` and
+               spends one per instruction, and that accumulator is capped at
+               `maxInstructionScale * instructionsPerTick`: a processor that falls behind
+               catches up, but only by that many ticks' worth, and past it the work is lost
+               rather than deferred. A program timed on the per-tick figure alone is timed
+               on the best case.
+
+               `maxInstructionsPerTick` is the ceiling a world processor may be configured
+               up to, and applies to no block a player can build. Carried because a field
+               that exists and is not carried is a field somebody re-derives from a wiki.
+
+               Read from the v159.7 bytecode of `LogicBuild.updateTile`, not from memory. */
+            if (block instanceof LogicBlock processor) {
+                entry.put("instructions_per_tick", processor.instructionsPerTick);
+                entry.put("max_instruction_scale", processor.maxInstructionScale);
+                entry.put("max_instructions_per_tick", processor.maxInstructionsPerTick);
+                /* In tiles, like every other distance here: the game holds it in world
+                   units, so a micro's is `8f * 10` and reads as 80.
+
+                   Skipped for a world processor, whose range is `Float.MAX_VALUE` because
+                   it reaches everything. Divided, that is 4.25e37, and a number that large
+                   is a lie rather than a measurement: it would be drawn, compared and
+                   formatted as though it meant something. An absent field says "no limit"
+                   more honestly than any figure could. */
+                if (!block.privileged) entry.put("logic_range", processor.range / TILESIZE);
+            }
 
             describeRole(block, entry);
             describeFloor(block, entry);
