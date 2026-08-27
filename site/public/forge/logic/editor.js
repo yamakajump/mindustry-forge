@@ -143,6 +143,19 @@ export class LogicEditor {
     return dead ? `<span class="mlog-dead">${out || " "}</span>` : out || " ";
   }
 
+  /**
+   * The statement the caret sits in, or nothing when it sits on a comment or a blank.
+   *
+   * Asked for by the page rather than pushed to it: the editor knows where the caret is and
+   * has no business knowing there is a strip under it reading the line aloud.
+   */
+  statementAtCaret() {
+    if (!this.report) return null;
+    const before = this.input.value.slice(0, this.input.selectionStart);
+    const line = before.split("\n").length - 1;
+    return this.report.statements.find((entry) => entry.line === line) ?? null;
+  }
+
   /** Keep the painted layer and the gutter under the same scroll as the text. */
   sync() {
     this.paint.style.transform =

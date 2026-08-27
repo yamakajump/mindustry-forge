@@ -1611,6 +1611,8 @@
   "ConditionOp": [
    {
     "name": "equal",
+    "symbol": "==",
+    "unary": true,
     "help": {
      "fr": "Égalité. Conversion des types.\nLes objets non-nuls comparés avec des nombres deviennent 1, sinon 0.",
      "en": "Equal. Coerces types.\nNon-null objects compared with numbers become 1, otherwise 0."
@@ -1618,6 +1620,8 @@
    },
    {
     "name": "notEqual",
+    "symbol": "not",
+    "unary": true,
     "help": {
      "fr": "Inégalité. Conversion des types.",
      "en": "Not equal. Coerces types."
@@ -1625,22 +1629,32 @@
    },
    {
     "name": "lessThan",
+    "symbol": "<",
+    "unary": true,
     "help": {}
    },
    {
     "name": "lessThanEq",
+    "symbol": "<=",
+    "unary": true,
     "help": {}
    },
    {
     "name": "greaterThan",
+    "symbol": ">",
+    "unary": true,
     "help": {}
    },
    {
     "name": "greaterThanEq",
+    "symbol": ">=",
+    "unary": true,
     "help": {}
    },
    {
     "name": "strictEqual",
+    "symbol": "===",
+    "unary": true,
     "help": {
      "fr": "Égalité stricte. Ne convertit pas les types.\nPeut être utilisé pour vérifier les valeurs null.",
      "en": "Strict equality. Does not coerce types.\nCan be used to check for null."
@@ -1648,6 +1662,8 @@
    },
    {
     "name": "always",
+    "symbol": "always",
+    "unary": true,
     "help": {
      "fr": "Toujours true.",
      "en": "Always true."
@@ -1657,10 +1673,14 @@
   "ContentType": [
    {
     "name": "item",
+    "symbol": "items",
+    "unary": true,
     "help": {}
    },
    {
     "name": "block",
+    "symbol": "blocks",
+    "unary": true,
     "help": {}
    },
    {
@@ -1669,22 +1689,32 @@
    },
    {
     "name": "bullet",
+    "symbol": "bullets",
+    "unary": true,
     "help": {}
    },
    {
     "name": "liquid",
+    "symbol": "liquids",
+    "unary": true,
     "help": {}
    },
    {
     "name": "status",
+    "symbol": "statuses",
+    "unary": true,
     "help": {}
    },
    {
     "name": "unit",
+    "symbol": "units",
+    "unary": true,
     "help": {}
    },
    {
     "name": "weather",
+    "symbol": "weather",
+    "unary": true,
     "help": {}
    },
    {
@@ -1693,6 +1723,8 @@
    },
    {
     "name": "sector",
+    "symbol": "sectors",
+    "unary": true,
     "help": {}
    },
    {
@@ -1709,6 +1741,8 @@
    },
    {
     "name": "planet",
+    "symbol": "planets",
+    "unary": true,
     "help": {}
    },
    {
@@ -1717,14 +1751,20 @@
    },
    {
     "name": "team",
+    "symbol": "teams",
+    "unary": true,
     "help": {}
    },
    {
     "name": "unitCommand",
+    "symbol": "unitCommands",
+    "unary": true,
     "help": {}
    },
    {
     "name": "unitStance",
+    "symbol": "unitStances",
+    "unary": true,
     "help": {}
    }
   ],
@@ -2541,18 +2581,26 @@
   "LogicOp": [
    {
     "name": "add",
+    "symbol": "+",
+    "unary": false,
     "help": {}
    },
    {
     "name": "sub",
+    "symbol": "-",
+    "unary": false,
     "help": {}
    },
    {
     "name": "mul",
+    "symbol": "*",
+    "unary": false,
     "help": {}
    },
    {
     "name": "div",
+    "symbol": "/",
+    "unary": false,
     "help": {
      "fr": "Division.\nRetourne null lors d'une division par zéro.",
      "en": "Division.\nReturns null on divide-by-zero."
@@ -2560,6 +2608,8 @@
    },
    {
     "name": "idiv",
+    "symbol": "//",
+    "unary": false,
     "help": {
      "fr": "Division entière.",
      "en": "Integer division."
@@ -2567,12 +2617,16 @@
    },
    {
     "name": "mod",
+    "symbol": "%",
+    "unary": false,
     "help": {
      "fr": "Modulo."
     }
    },
    {
     "name": "emod",
+    "symbol": "%%",
+    "unary": false,
     "help": {
      "fr": "Vrai modulo, le signe du résultat vient du diviseur.",
      "en": "True modulo, result sign comes from the divisor."
@@ -2580,10 +2634,14 @@
    },
    {
     "name": "pow",
+    "symbol": "^",
+    "unary": false,
     "help": {}
    },
    {
     "name": "equal",
+    "symbol": "==",
+    "unary": false,
     "help": {
      "fr": "Égalité. Conversion des types.\nLes objets non-nuls comparés avec des nombres deviennent 1, sinon 0.",
      "en": "Equal. Coerces types.\nNon-null objects compared with numbers become 1, otherwise 0."
@@ -2591,6 +2649,8 @@
    },
    {
     "name": "notEqual",
+    "symbol": "not",
+    "unary": false,
     "help": {
      "fr": "Inégalité. Conversion des types.",
      "en": "Not equal. Coerces types."
@@ -2598,6 +2658,8 @@
    },
    {
     "name": "land",
+    "symbol": "and",
+    "unary": false,
     "help": {
      "fr": "Opération logique AND.",
      "en": "Logical AND."
@@ -2605,22 +2667,32 @@
    },
    {
     "name": "lessThan",
+    "symbol": "<",
+    "unary": false,
     "help": {}
    },
    {
     "name": "lessThanEq",
+    "symbol": "<=",
+    "unary": false,
     "help": {}
    },
    {
     "name": "greaterThan",
+    "symbol": ">",
+    "unary": false,
     "help": {}
    },
    {
     "name": "greaterThanEq",
+    "symbol": ">=",
+    "unary": false,
     "help": {}
    },
    {
     "name": "strictEqual",
+    "symbol": "===",
+    "unary": false,
     "help": {
      "fr": "Égalité stricte. Ne convertit pas les types.\nPeut être utilisé pour vérifier les valeurs null.",
      "en": "Strict equality. Does not coerce types.\nCan be used to check for null."
@@ -2628,6 +2700,8 @@
    },
    {
     "name": "shl",
+    "symbol": "<<",
+    "unary": false,
     "help": {
      "fr": "Décalage de bits vers la gauche.",
      "en": "Bit-shift left."
@@ -2635,6 +2709,8 @@
    },
    {
     "name": "shr",
+    "symbol": ">>",
+    "unary": false,
     "help": {
      "fr": "Décalage de bits vers la droite.",
      "en": "Bit-shift right."
@@ -2642,6 +2718,8 @@
    },
    {
     "name": "ushr",
+    "symbol": ">>>",
+    "unary": false,
     "help": {
      "fr": "Décalage de bits vers la droite, non signé.",
      "en": "Unsigned bit-shift right."
@@ -2649,6 +2727,8 @@
    },
    {
     "name": "or",
+    "symbol": "or",
+    "unary": false,
     "help": {
      "fr": "Opération binaire OR.",
      "en": "Bitwise OR."
@@ -2656,6 +2736,8 @@
    },
    {
     "name": "and",
+    "symbol": "b-and",
+    "unary": false,
     "help": {
      "fr": "Opération binaire AND.",
      "en": "Bitwise AND."
@@ -2663,6 +2745,8 @@
    },
    {
     "name": "xor",
+    "symbol": "xor",
+    "unary": false,
     "help": {
      "fr": "Opération binaire XOR.",
      "en": "Bitwise XOR."
@@ -2670,6 +2754,8 @@
    },
    {
     "name": "not",
+    "symbol": "flip",
+    "unary": true,
     "help": {
      "fr": "Opération binaire flip.",
      "en": "Bitwise flip."
@@ -2677,6 +2763,8 @@
    },
    {
     "name": "max",
+    "symbol": "max",
+    "unary": false,
     "help": {
      "fr": "Le maximum des 2 nombres.",
      "en": "Maximum of two numbers."
@@ -2684,6 +2772,8 @@
    },
    {
     "name": "min",
+    "symbol": "min",
+    "unary": false,
     "help": {
      "fr": "Le minimum des 2 nombres.",
      "en": "Minimum of two numbers."
@@ -2691,6 +2781,8 @@
    },
    {
     "name": "angle",
+    "symbol": "angle",
+    "unary": false,
     "help": {
      "fr": "Angle d'un vecteur en degrés.",
      "en": "Angle of vector in degrees."
@@ -2698,6 +2790,8 @@
    },
    {
     "name": "angleDiff",
+    "symbol": "anglediff",
+    "unary": false,
     "help": {
      "fr": "Distance absolue entre 2 angles en degrés.",
      "en": "Absolute distance between two angles in degrees."
@@ -2705,6 +2799,8 @@
    },
    {
     "name": "len",
+    "symbol": "len",
+    "unary": false,
     "help": {
      "fr": "Longueur d'un vecteur.",
      "en": "Length of vector."
@@ -2712,6 +2808,8 @@
    },
    {
     "name": "noise",
+    "symbol": "noise",
+    "unary": false,
     "help": {
      "fr": "Bruit simplex 2D.",
      "en": "2D simplex noise."
@@ -2719,6 +2817,8 @@
    },
    {
     "name": "abs",
+    "symbol": "abs",
+    "unary": true,
     "help": {
      "fr": "Valeur absolue.",
      "en": "Absolute value."
@@ -2726,10 +2826,14 @@
    },
    {
     "name": "sign",
+    "symbol": "sign",
+    "unary": true,
     "help": {}
    },
    {
     "name": "log",
+    "symbol": "log",
+    "unary": true,
     "help": {
      "fr": "Logarithme naturel (ln).",
      "en": "Natural logarithm (ln)."
@@ -2737,10 +2841,14 @@
    },
    {
     "name": "logn",
+    "symbol": "logn",
+    "unary": false,
     "help": {}
    },
    {
     "name": "log10",
+    "symbol": "log10",
+    "unary": true,
     "help": {
      "fr": "Logarithme de base 10.",
      "en": "Base 10 logarithm."
@@ -2748,18 +2856,26 @@
    },
    {
     "name": "floor",
+    "symbol": "floor",
+    "unary": true,
     "help": {}
    },
    {
     "name": "ceil",
+    "symbol": "ceil",
+    "unary": true,
     "help": {}
    },
    {
     "name": "round",
+    "symbol": "round",
+    "unary": true,
     "help": {}
    },
    {
     "name": "sqrt",
+    "symbol": "sqrt",
+    "unary": true,
     "help": {
      "fr": "Racine carrée.",
      "en": "Square root."
@@ -2767,6 +2883,8 @@
    },
    {
     "name": "rand",
+    "symbol": "rand",
+    "unary": true,
     "help": {
      "fr": "Nombre aléatoire dans la plage [0, valeur).",
      "en": "Random decimal in range [0, value)."
@@ -2774,6 +2892,8 @@
    },
    {
     "name": "sin",
+    "symbol": "sin",
+    "unary": true,
     "help": {
      "fr": "Calcule le Sinus, en degrés.",
      "en": "Sine, in degrees."
@@ -2781,6 +2901,8 @@
    },
    {
     "name": "cos",
+    "symbol": "cos",
+    "unary": true,
     "help": {
      "fr": "Calcule le Cosinus, en degrés.",
      "en": "Cosine, in degrees."
@@ -2788,6 +2910,8 @@
    },
    {
     "name": "tan",
+    "symbol": "tan",
+    "unary": true,
     "help": {
      "fr": "Calcule la Tangente, en degrés.",
      "en": "Tangent, in degrees."
@@ -2795,6 +2919,8 @@
    },
    {
     "name": "asin",
+    "symbol": "asin",
+    "unary": true,
     "help": {
      "fr": "Arc sinus, en degrés.",
      "en": "Arc sine, in degrees."
@@ -2802,6 +2928,8 @@
    },
    {
     "name": "acos",
+    "symbol": "acos",
+    "unary": true,
     "help": {
      "fr": "Arc cosinus, en degrés.",
      "en": "Arc cosine, in degrees."
@@ -2809,6 +2937,8 @@
    },
    {
     "name": "atan",
+    "symbol": "atan",
+    "unary": true,
     "help": {
      "fr": "Tangente de l'arc, en degrés.",
      "en": "Arc tangent, in degrees."
