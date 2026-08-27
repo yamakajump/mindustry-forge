@@ -9,6 +9,7 @@ use App\Console\Commands\Sources\PoliteClient;
 use App\Models\Schematic;
 use Illuminate\Console\Command;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
@@ -40,20 +41,22 @@ class CollectCatalogues extends Command
 {
     protected $signature = 'forge:collecter
         {source? : mindustry-tool, mindustryschematics, ou rien pour les deux}
-        {--pause=1000 : Millisecondes entre deux appels, la politesse qui fait aboutir}
+        {--pause=0 : Millisecondes entre deux lots, quand la source demande a souffler}
         {--essais=4 : Combien de fois insister avant d abandonner un appel}
+        {--paralleles=1 : How many calls in flight at once. One by one unless asked}
         {--limite=0 : S arreter apres tant de nouvelles entrees, pour essayer}';
 
     protected $description = 'Ingerer les catalogues existants, en prive, sans les analyser';
 
     /**
-     * Combien d'echecs de suite avant de considerer que ce n'est plus la faute des donnees.
+     * Combien de pages perdues de suite avant de conclure que ce n'est plus un accident.
      *
-     * Une schematique retiree, un detail casse, un `.msch` vide : ca arrive et ca se saute.
-     * Vingt d'affilee ne sont pas vingt accidents, c'est le serveur qui a change d'avis sur
-     * nous, et continuer a taper serait exactement la mauvaise reponse.
+     * Une schematique retiree, un detail casse, un `.msch` vide : ca arrive et ca se saute
+     * sans rien compter ici. Ce qui compte ici, c'est une page entiere qui casse, donc le
+     * serveur qui a change d'avis sur nous. Trois d'affilee suffisent a le dire, et
+     * continuer a taper serait exactement la mauvaise reponse.
      */
-    private const GIVE_UP_AFTER = 20;
+    private const GIVE_UP_AFTER = 3;
 
     public function handle(): int
     {
@@ -61,6 +64,7 @@ class CollectCatalogues extends Command
             pauseMs: (int) $this->option('pause'),
             tries: (int) $this->option('essais'),
             tell: fn (string $said) => $this->warn("  {$said}"),
+            atOnce: max(1, (int) $this->option('paralleles')),
         );
 
         $wanted = $this->argument('source');
@@ -111,6 +115,7 @@ class CollectCatalogues extends Command
                 ->pluck('source_id')
                 ->flip();
 
+            $todo = [];
             foreach ($listedPage as $listed) {
                 $id = $catalogue->idOf($listed);
                 if ($id === '' || $known->has($id)) {
@@ -118,37 +123,58 @@ class CollectCatalogues extends Command
 
                     continue;
                 }
+                $todo[$id] = $listed;
+                // On a trial run, do not pay for a whole page of calls to keep three of
+                // them: the batch is capped at what is still missing.
+                if ($limit > 0 && count($todo) >= $limit - $taken) {
+                    break;
+                }
+            }
 
-                try {
-                    $row = $catalogue->fetch($listed);
-                } catch (Throwable $broke) {
-                    $failed++;
-                    $this->warn("  {$id} : {$broke->getMessage()}");
-                    if (++$inARow >= self::GIVE_UP_AFTER) {
-                        throw $broke;
+            if ($todo === []) {
+                continue;
+            }
+
+            // The whole page asked for at once. Sequential unless `--paralleles` says
+            // otherwise: what costs is the sum of the round trips, not the work.
+            try {
+                $rows = $catalogue->fetchMany($todo);
+            } catch (Throwable $broke) {
+                $failed += count($todo);
+                $this->warn("  page perdue : {$broke->getMessage()}");
+                if (++$inARow >= self::GIVE_UP_AFTER) {
+                    throw $broke;
+                }
+
+                continue;
+            }
+
+            $inARow = 0;
+
+            /* The whole page in one transaction, which is not a comfort detail. A kept
+               row costs a handful of writes - the slug it draws, the schematic, the index
+               of what it makes - and outside a transaction each one is a disk sync.
+               Measured on a hundred entries: fifty seconds, nearly all of it spent waiting
+               on the disk while the network had already handed everything over. In one
+               block, the page is written once. This is worth having on its own, whether or
+               not anything is fetched in parallel. */
+            DB::transaction(function () use ($rows, $source, &$taken, &$gone) {
+                foreach ($rows as $id => $row) {
+                    if ($row === null) {
+                        $gone++;
+
+                        continue;
                     }
 
-                    continue;
+                    $taken += $this->keep($source, (string) $id, $row) ? 1 : 0;
                 }
+            });
 
-                $inARow = 0;
+            $this->line("  {$taken} prises, {$held} deja tenues, {$gone} disparues");
 
-                if ($row === null) {
-                    $gone++;
-
-                    continue;
-                }
-
-                $taken += $this->keep($source, $id, $row) ? 1 : 0;
-
-                if ($taken % 50 === 0 && $taken > 0) {
-                    $this->line("  {$taken} prises, {$held} deja tenues");
-                }
-
-                if ($limit > 0 && $taken >= $limit) {
-                    $this->line("  limite de {$limit} atteinte");
-                    break 2;
-                }
+            if ($limit > 0 && $taken >= $limit) {
+                $this->line("  limite de {$limit} atteinte");
+                break;
             }
         }
 
