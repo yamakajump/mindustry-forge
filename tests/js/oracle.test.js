@@ -63,6 +63,11 @@ const NOTHING_HAPPENS = new Set([
   // Une pompe sans courant ne pompe rien. C'est le resultat, et le scenario existe pour
   // dire qu'il vaut zero et non un frame de plus.
   "pump-unpowered",
+  /* Un incinerateur a scories sans scories est un mur. Sa recette demande zero scorie par
+     image, donc son efficacite est zero divise par zero, et toute comparaison contre `NaN`
+     est fausse : il n'accepte rien du tout. Le vide **est** la mesure, et la paire avec
+     `incinerator-slag` est ce qui lui donne un sens. */
+  "incinerator-dry",
 ]);
 
 const scenarios = readdirSync(KEPT)

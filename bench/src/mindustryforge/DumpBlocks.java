@@ -81,7 +81,9 @@ import mindustry.world.blocks.power.NuclearReactor;
 import mindustry.world.blocks.power.ImpactReactor;
 import mindustry.world.blocks.power.ThermalGenerator;
 import mindustry.world.blocks.power.HeaterGenerator;
+import mindustry.world.blocks.campaign.LaunchPad;
 import mindustry.world.blocks.defense.Door;
+import mindustry.world.blocks.sandbox.PowerVoid;
 import mindustry.world.blocks.power.PowerDiode;
 import mindustry.world.blocks.power.PowerNode;
 import mindustry.world.blocks.heat.HeatConductor;
@@ -791,6 +793,28 @@ public class DumpBlocks {
                Erekir base wired entirely with them read as unpowered. */
             entry.put("role", "power");
             entry.put("range", beam.range);
+            return;
+        }
+        if (block instanceof LaunchPad pad) {
+            /* Une plateforme de lancement n'est pas un puits : elle se remplit jusqu'a sa
+               capacite, puis tout part d'un coup et le compteur repart. Ce qu'elle avale
+               par seconde est donc sa capacite divisee par son delai, et rien du tout tant
+               qu'elle n'est pas pleine. */
+            entry.put("role", "launch-pad");
+            entry.put("carries", "item");
+            entry.put("launch_time", pad.launchTime);
+            /* Et ce qu'elle boit : la grande plateforme tourne au petrole, et sans lui son
+               efficacite est nulle, donc son compteur ne bouge pas d'une image. */
+            entry.put("input_liquid", liquidInputsOf(block));
+            if (pad.acceptMultipleItems) entry.put("accept_multiple_items", true);
+            entry.put("items_per_second", block.itemCapacity * TPS
+                / Math.max(1f, pad.launchTime));
+            return;
+        }
+        if (block instanceof PowerVoid) {
+            /* Le puits a courant : `consumePower(Float.MAX_VALUE)`. Il ne demande pas
+               beaucoup, il demande tout, et toute sa grille tombe a zero. */
+            entry.put("role", "power-void");
             return;
         }
         if (block instanceof PowerDiode) {

@@ -1649,6 +1649,95 @@ const SCENARIOS = {
     { x: 8, y: 3, block: "vault", rotation: 0 },
   ],
 
+  /* Une plateforme de lancement, qui n'est pas un puits : elle se remplit jusqu'a cent,
+     et a vingt secondes tout part d'un coup. Les deux conditions sont separees, donc une
+     plateforme nourrie lentement part des qu'elle est pleine et une plateforme nourrie vite
+     attend son horloge. Le coffre en dessous n'est la que pour montrer qu'elle ne rend
+     rien : ce qui monte est perdu pour le schema. */
+  "launch-pad-eats": () => [
+    { x: -1, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 0, y: 1, block: "conveyor", rotation: 0 },
+    // Couvre 1..3 par 0..2.
+    { x: 2, y: 1, block: "launch-pad", rotation: 0 },
+    { x: 2, y: 4, block: "power-source", rotation: 0 },
+  ],
+
+  /* La meme, mais avancee : elle ne prend **qu'un seul type a la fois**, donc un tapis qui
+     porte deux objets la bloque des que le second arrive. Elle couvre 1..4 par 0..3. */
+  "launch-pad-one-kind": () => [
+    { x: -2, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
+    // Contre le routeur, et pas en diagonale : ecrit en diagonale, le plomb n'atteignait
+    // rien et le scenario mesurait une plateforme nourrie d'un seul type par accident.
+    { x: -1, y: 2, block: "item-source", rotation: 0, raw: item("lead") },
+    { x: -1, y: 1, block: "router", rotation: 0 },
+    { x: 0, y: 1, block: "conveyor", rotation: 0 },
+    // Quatre sur quatre : couvre 1..4 par 1..4.
+    { x: 2, y: 2, block: "advanced-launch-pad", rotation: 0 },
+    { x: 2, y: 5, block: "power-source", rotation: 0 },
+  ],
+
+  /* Un puits a courant, qui ne demande pas beaucoup mais tout : `Float.MAX_VALUE`. Toute sa
+     grille tombe a zero et la foreuse a cote ne sort rien, alors qu'elle a un generateur
+     pour elle. La batterie reste vide. */
+  "power-void-drains": () => ({
+    tiles: [
+      { x: 0, y: 4, block: "item-source", rotation: 0, raw: item("coal") },
+      { x: 0, y: 3, block: "combustion-generator", rotation: 0 },
+      { x: 1, y: 3, block: "power-void", rotation: 0 },
+      { x: 0, y: 2, block: "battery", rotation: 0 },
+      // Couvre 0..2 par -1..1, contre la batterie.
+      { x: 1, y: 0, block: "laser-drill", rotation: 0 },
+      { x: 4, y: 0, block: "conveyor", rotation: 0 },
+      // Couvre 6..8 par -1..1.
+      { x: 7, y: 0, block: "vault", rotation: 0 },
+    ],
+    ground: [0, 1, 2].flatMap((x) => [-1, 0, 1].map((y) => `ore-copper@${x},${y}`)),
+  }),
+
+  /* Un incinerateur a scories, qui n'est pas l'incinerateur de Serpulo : celui-la ne prend
+     rien tant qu'il n'a pas de scories, et avale tout ce qu'on lui donne des qu'il en a.
+     La paire est la mesure : le meme montage sans la source de scories. */
+  "incinerator-slag": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    { x: 2, y: 0, block: "slag-incinerator", rotation: 0 },
+    { x: 2, y: 1, block: "liquid-source", rotation: 0, raw: liquid("slag") },
+  ],
+
+  "incinerator-dry": () => SCENARIOS["incinerator-slag"]().filter(
+    (tile) => tile.block !== "liquid-source"),
+
+  /* Une tourelle continue avec son azote et rien a viser. Elle garde ses vingt unites pour
+     les trente secondes et n'en boit pas une : le liquide d'une tourelle est un stock et pas
+     un debit, et un portage qui le lit comme une consommation invente une ligne
+     d'alimentation. Couvre 0..3 par 0..3. */
+  "turret-lustre-idle": () => ({
+    tiles: [
+      { x: 1, y: 1, block: "lustre", rotation: 0 },
+      { x: 4, y: 1, block: "power-source", rotation: 0 },
+    ],
+    stock: ["nitrogen~20@1,1"],
+  }),
+
+  /* Et la tourelle a liquide continue, dont les munitions **sont** un liquide. Couvre 0..2
+     par 0..2. */
+  "turret-sublimate-idle": () => ({
+    tiles: [{ x: 1, y: 1, block: "sublimate", rotation: 0 }],
+    stock: ["ozone~50@1,1"],
+  }),
+
+  /* L'accelerateur interplanetaire, qui avale huit mille cuivres sans jamais rien en faire
+     hors campagne. Ce que le scenario verifie est qu'il ne bouche pas le tapis : un puits
+     de vingt-cinq mille places ne sature pas en trente secondes. Couvre -2..3 par -2..3. */
+  "accelerator-swallows": () => [
+    { x: -6, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: -5, y: 0, block: "conveyor", rotation: 0 },
+    { x: -4, y: 0, block: "conveyor", rotation: 0 },
+    // Sept sur sept : couvre -3..3 par -3..3.
+    { x: 0, y: 0, block: "interplanetary-accelerator", rotation: 0 },
+    { x: 0, y: 5, block: "power-source", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },

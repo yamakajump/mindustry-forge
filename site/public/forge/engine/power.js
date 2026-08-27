@@ -72,7 +72,8 @@ const TILE = 8;
 
 export function gridsOf(world) {
   const onGrid = world.builds.filter((build) =>
-    isNode(build) || build.block.power > 0 || output(build.block) > 0);
+    isNode(build) || build.block.power > 0 || output(build.block) > 0
+    || build.role === "power-void");
 
   const owner = new Map(onGrid.map((build) => [build, build]));
   const find = (build) => {
@@ -359,7 +360,8 @@ export class Grid {
     // needs it: a diode reads the two banks on either side of it and moves charge across.
     for (const build of builds) build.grid = this;
     this.producers = builds.filter((build) => output(build.block) > 0);
-    this.consumers = builds.filter((build) => build.block.power > 0);
+    this.consumers = builds.filter(
+      (build) => build.block.power > 0 || build.role === "power-void");
     this.batteries = builds.filter(isBattery);
 
     for (const build of this.batteries) build.state.charge = 0;
@@ -409,7 +411,12 @@ export class Grid {
          It matters more than it sounds. A turret with nothing to shoot at draws no power
          at all once it has finished reloading, and a bank of them counted as consumers
          invents a demand that dims the whole base in the report and not in the game. */
-      needed += build.block.power / 60 * build.delta(step) * (build.state.wants ?? 1);
+      /* `consumePower(Float.MAX_VALUE)`: a power void does not ask for a lot, it asks for
+         everything, and its whole grid reads zero for as long as it stands. A finite number
+         because the arithmetic that follows divides by it. */
+      needed += build.role === "power-void"
+        ? 1e18
+        : build.block.power / 60 * build.delta(step) * (build.state.wants ?? 1);
     }
 
     this.made = made;

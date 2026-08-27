@@ -314,6 +314,14 @@ public class Measure implements ApplicationListener {
                 held.append(" ~").append(
                     String.format(java.util.Locale.ROOT, "%.3f", tap.counter));
             }
+            // Le compteur d'une plateforme de lancement, et son efficacite.
+            if (build instanceof mindustry.world.blocks.campaign.LaunchPad
+                    .LaunchPadBuild pad) {
+                held.append(" ~").append(
+                    String.format(java.util.Locale.ROOT, "%.3f", pad.launchCounter))
+                    .append('/').append(
+                    String.format(java.util.Locale.ROOT, "%.3f", pad.efficiency));
+            }
             // Et l'avancement d'une machine, qui dit a quelle image tombe la fournee.
             if (build instanceof mindustry.world.blocks.production.GenericCrafter
                     .GenericCrafterBuild machine) {
@@ -458,7 +466,11 @@ public class Measure implements ApplicationListener {
             one.put("block", tile.block().name);
             one.put("x", tile.x);
             one.put("y", tile.y);
-            one.put("efficiency", tile.build.efficiency);
+            /* Zero plutot que `NaN`, qui n'est pas du JSON et faisait planter le lecteur.
+               Un incinerateur a scories a vide en produit un : sa recette demande zero
+               scorie par image, donc son efficacite est zero divise par zero. */
+            one.put("efficiency", Float.isFinite(tile.build.efficiency)
+                ? tile.build.efficiency : 0f);
             if (tile.build instanceof mindustry.world.blocks.units.UnitFactory.UnitFactoryBuild f) {
                 one.put("plan", f.currentPlan);
                 one.put("progress", f.progress);

@@ -38,6 +38,9 @@ const MACHINE_ROLES = new Set([
   "mender", "projector", "shield", "turret-idle", "laser-turret",
   "beam-drill", "wall-crafter", "burst-drill", "reconstructor", "constructor",
   "mass-driver",
+  /* Une plateforme de lancement et un accelerateur retiennent, eux : ce qu'ils tiennent a
+     la fin est la mesure, parce que rien de ce qu'ils avalent ne ressort. */
+  "launch-pad", "sink",
 ]);
 
 export const known = useCatalogue(JSON.parse(

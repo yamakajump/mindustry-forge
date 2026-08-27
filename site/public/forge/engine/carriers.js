@@ -422,6 +422,66 @@ function overflowTargetOf(build, source, item, flip) {
 }
 
 /**
+ * A launch pad, which is not a sink: it fills, and then everything leaves at once.
+ *
+ * `launchCounter += edelta()` runs whether or not it is full, so the twenty seconds and the
+ * hundred items are two conditions and not one: a pad fed slowly launches the moment it
+ * fills, and a pad fed fast waits for its clock. What goes up is gone as far as a schematic
+ * is concerned, which is exactly what makes it a measurable sink rather than a store.
+ *
+ * The plain pad takes anything; the advanced one takes **one kind at a time**, so a belt
+ * carrying two items jams it the moment the second arrives.
+ */
+const launchPad = {
+  begin(build) {
+    build.state.counter = 0;
+    build.state.launched = 0;
+    build.state.wants = 1;
+  },
+
+  acceptItem(build, source, item) {
+    return build.items.total < build.itemCapacity
+      && (build.block.accept_multiple_items
+          || build.items.total === 0
+          || build.items.first() === item);
+  },
+
+  acceptLiquid(build, source, liquid) {
+    return Boolean(build.block.drinks?.includes(liquid))
+      && build.liquids.get(liquid) < build.liquidCapacity;
+  },
+
+  update(build, world, step) {
+    /* `edelta()`, so the clock runs on **everything** the pad consumes and not only on its
+       power. The big one runs on oil, and without it its efficiency is zero and its counter
+       does not move a single frame: it fills to a hundred and sits there. Read as a
+       power-only block, the port launched at exactly thirty seconds and the game never
+       launched at all. */
+    const delta = build.delta(step);
+    let efficiency = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+    for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
+      const wanted = (rate / TICKS) * delta;
+      if (wanted <= 0) continue;
+      efficiency = Math.min(efficiency, build.liquids.get(liquid) / wanted);
+    }
+    efficiency = Math.max(0, Math.min(1, efficiency));
+    build.state.wants = efficiency > 0 ? 1 : 0;
+    for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
+      build.liquids.remove(liquid, (rate / TICKS) * delta * efficiency);
+    }
+
+    build.state.counter = Math.fround(build.state.counter + delta * efficiency);
+
+    if (build.state.counter < (build.block.launch_time || 1)) return;
+    if (build.items.total < build.itemCapacity) return;
+
+    build.state.launched += build.items.total;
+    build.items.clear();
+    build.state.counter = 0;
+  },
+};
+
+/**
  * A container or a vault.
  *
  * It takes anything with room and hands nothing on: nothing is pushed out of a container,
@@ -1545,6 +1605,13 @@ const incinerator = {
   handleItem(build) { build.state.burned = (build.state.burned || 0) + 1; },
 
   acceptLiquid(build, source, liquid) {
+    /* Its own recipe first. Two classes share this behaviour and they are not the same
+       block: Serpulo's incinerator takes a liquid **to destroy it**, and Erekir's takes
+       slag because it runs on slag. Read as an incineration, the slag one refused the very
+       thing it needs and stood there as a wall. */
+    if (build.block.drinks?.includes(liquid)) {
+      return build.liquids.get(liquid) < build.liquidCapacity;
+    }
     const known = build.world?.catalogue?.liquids?.[liquid];
     if (!known?.incinerable) return false;
     return build.block.power > 0 ? build.state.heat > 0.5 : build.state.efficiency > 0;
@@ -1554,7 +1621,17 @@ const incinerator = {
     let efficiency = build.block.power > 0 ? (build.state.power ?? 1) : 1;
     for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
       const wanted = (rate / TICKS) * build.delta(step);
-      if (wanted <= 0) continue;
+      /* A recipe that asks for **nothing per frame**, which one block in the game does: a
+         slag incinerator names slag at a rate of zero. `ConsumeLiquid.efficiency` is
+         `held / (amount * edelta)`, so with slag it divides by zero and gets infinity,
+         which clamps to one; without slag it divides zero by zero and gets `NaN`, and every
+         comparison against `NaN` is false, so the block does nothing at all.
+         Skipped as "no rate, no condition", the port swallowed items on a dry incinerator
+         that the game leaves standing as a wall. */
+      if (wanted <= 0) {
+        efficiency = Math.min(efficiency, build.liquids.get(liquid) > 0 ? 1 : 0);
+        continue;
+      }
       efficiency = Math.min(efficiency, build.liquids.get(liquid) / wanted);
       build.liquids.remove(liquid, wanted * efficiency);
     }
@@ -1655,6 +1732,7 @@ const BY_ROLE = {
   sorter,
   bridge,
   "mass-driver": massDriver,
+  "launch-pad": launchPad,
   store,
   unloader,
   sink,
@@ -1702,6 +1780,9 @@ export function behaviourOf(node) {
   // The sandbox power tap is filed under the grid rather than under generators, because
   // that is what it is: a wire that never runs out.
   if (node.role === "diode") return POWER.diode;
+  // A power void is a consumer and nothing else: `Grid` reads the role and asks for all of
+  // it, so it needs no behaviour of its own.
+  if (node.role === "power-void") return null;
   if (node.role === "power" && node.block.power_out > 0) return POWER.freeGenerator;
   if (node.role === "generator") {
     /* Six classes share the word "generator" and no behaviour whatsoever, so this goes by
