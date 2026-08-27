@@ -50,8 +50,19 @@ header {
   border-bottom: 2px solid var(--edge); background: var(--panel);
   padding: 12px 24px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
 }
-.brand { font-size: 19px; letter-spacing: .5px; color: var(--ink); }
+.brand {
+  font-size: 19px; letter-spacing: .5px; color: var(--ink);
+  display: inline-flex; align-items: center; gap: .5em;
+}
 .brand span { color: var(--accent); }
+
+/* Le signe, en ligne et dimensionne en `em`.
+
+   Pas en pixels : `.editor-bar .brand` retombe a 17px, et un signe fixe s y retrouverait
+   au mauvais rapport sans que rien ne le signale avant qu on ouvre l editeur. Pas en
+   image non plus, `currentColor` ne traverse pas un `<img>`. La geometrie est celle de
+   `brand/mark-plain.svg`, qui reste la source : un test compare les deux copies a elle. */
+.brand .signe { height: .95em; width: auto; color: var(--accent); flex: none; }
 header nav { margin-left: auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 header nav a { color: var(--dim); }
 header nav a:hover { color: var(--ink); }
@@ -98,6 +109,17 @@ header nav a:hover { color: var(--ink); }
   min-height: 44px; min-width: 44px; padding: 0;
 }
 .deplier svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+/* Sous 360 px la ligne ne tient plus.
+
+   Mesure avant d etre corrige : la marque passe de 185 a 216 px avec le signe, et l entete
+   demande `216 + 18 de gap + 44 de bouton + 48 de padding = 326 px`. A 320 px la barre se
+   replie sur deux lignes. Resserrer coute moins que masquer un mot : le signe et « Forge »
+   suffisent a identifier le site, mais tant que les deux tiennent, autant les garder. */
+@media (max-width: 360px) {
+  header { padding: 10px 12px; gap: 10px; }
+  .brand { font-size: 17px; }
+}
 
 @media (max-width: 700px) {
   .deplier { display: inline-flex; }
