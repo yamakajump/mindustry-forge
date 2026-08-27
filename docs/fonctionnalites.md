@@ -427,6 +427,33 @@ Deux règles nées de la journée :
 sont des artefacts générés**, par `tools/build_catalogue.py` et `tools/build_sprites.py`.
 Personne ne les édite à la main. La session qui change un générateur régénère.
 
+## Un port par voie
+
+Les collisions de ports ont coûté du temps à quatre voies dans la même soirée, dont une qui
+a posé trois diagnostics faux avant le bon. Une worktree isole le dépôt, pas la machine, et
+`php artisan serve` annonce « Server running » même quand le port est pris.
+
+Le tableau ferme le problème par convention plutôt que par vigilance :
+
+| Voie | Port |
+|---|---|
+| dépôt principal | 8770 |
+| `feat/i18n-nav` | 8781 |
+| `feat/wiki-blocs` | 8782 |
+| `feat/editeur-logique` | 8783 |
+| `feat/collecteur` | 8784 |
+| `feat/direction-artistique` | 8785 |
+| `feat/dumpeur` | 8786 |
+| voie suivante | 8787, puis en montant |
+
+Vérifier quand même avant de mesurer, parce qu'un port attribué peut avoir été pris par une
+session fermée dont le processus survit :
+
+```bash
+netstat -ano | grep :87xx
+curl -s localhost:87xx/une-ressource-qui-n-existe-que-chez-moi
+```
+
 ## Les pièges déjà payés
 
 Chacun a coûté du temps à quelqu'un. Les relire vaut mieux que les redécouvrir.
