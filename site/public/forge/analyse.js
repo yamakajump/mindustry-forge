@@ -404,7 +404,15 @@ function speedUp(nodes) {
       if (node.block.no_overdrive || node.block.privileged) continue;
       const [x, y] = centre(node);
       const half = (node.block.size || 1) / 2;
-      if (Math.hypot(x - px, y - py) <= reach + half) {
+      /* Strictly inside, never on the line. `BlockIndexer.eachBlock` calls
+         `build.within(x, y, range + build.hitSize() / 2f)`, and `Mathf.within` is `fcmpg`
+         then `ifge`: true only when `dst2 < dst * dst`. A block whose centre falls exactly
+         on the circle is left alone by the game, and was sped up here.
+
+         Read in the v159.7 bytecode, alongside `hitSize()`, which returns `block.size * 8`
+         for every building in the game - so the half width in tiles is `size / 2` and this
+         line needs no separate figure from the catalogue. */
+      if (Math.hypot(x - px, y - py) < reach + half) {
         node.boost = Math.max(node.boost, strength);
       }
     }

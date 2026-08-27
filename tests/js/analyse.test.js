@@ -346,6 +346,23 @@ test("an overdrive projector reaches ten tiles and no further", async () => {
   close(far.potential.made, 330, "hors de portee, rien n'accelere");
 });
 
+test("a block exactly on the projector's circle is left alone", async () => {
+  /* The same strictness the mass driver and the processor link were already held to, and
+     the same source: `Mathf.within` is `dst2 < dst * dst`, so the circle itself is out.
+
+     Both blocks are 2x2, so their centres share a row and the boundary lands on a whole
+     number: the radius is 10 plus the generator's own half width, 11, against a distance
+     of exactly 11. One tile nearer it is sped up, which is what makes this a boundary
+     rather than an off-by-one somewhere else. */
+  const on = await analyse(paste([
+    [0, 0, "steam-generator", 0], [11, 0, "overdrive-projector", 0]]));
+  close(on.potential.made, 330, "11 n'est pas strictement inferieur a 11");
+
+  const inside = await analyse(paste([
+    [0, 0, "steam-generator", 0], [10, 0, "overdrive-projector", 0]]));
+  close(inside.potential.made, 495, "une case plus pres, il accelere");
+});
+
 test("a projector does not speed up another projector", async () => {
   /* `canOverdrive` is false on it, on walls and on the whole power grid. Read from the
      game rather than listed here, so a balance patch cannot make this quietly wrong. */
