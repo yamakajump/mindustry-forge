@@ -283,6 +283,51 @@ téléphone en jouant, et une barre latérale mange la largeur qui sert à l'ape
 
 ---
 
+# Où on en est, au soir du 27/08
+
+Huit chantiers livrés dans la soirée, chacun vérifié vert sur le tronc avant que le suivant
+ne soit fusionné. Le site est passé de deux entrées de navigation à cinq.
+
+| Livré | Ce que ça change |
+|---|---|
+| **E** socle multilingue | huit domaines, français seul, deux tests qui refusent une clé absente ou un trou oublié |
+| **D** la nav | l'éditeur enfin visible, une barre qui tient à 320 px |
+| **A1** le collecteur | les deux catalogues, throttlé, reprise sans état |
+| **A8** le débit potentiel | ce qu'une schématique ferait nourrie à fond, sans rien deviner |
+| **A5** le wiki des blocs | 254 pages depuis les chiffres du jeu |
+| **B1** l'éditeur de logique | grammaire désassemblée du jeu, deux oracles |
+| **A8bis** les liens de processeur | ce qu'ils pilotent, et ce qu'ils ratent |
+| la direction artistique | logo, favicons, carte de partage 1200x630 |
+| le dumpeur | une seule unité de distance, et les compteurs de processeur |
+
+## Ce qui tourne maintenant
+
+| Voie | Chantier |
+|---|---|
+| `feat/dumpeur` | **la contradiction à l'écran** : brider au prorata de l'énergie, comme le jeu. Plus le `<=` de `speedUp`. |
+| `feat/wiki-blocs` | **A2**, le planificateur d'usine |
+| `feat/editeur-logique` | **B2**, image vers affichage logique |
+| `feat/collecteur` | **A4**, la recherche par ce dont on dispose, plus les deux règles du combustible |
+| `feat/i18n-nav` | les 91 chaînes en dur d'`index.html` |
+| `feat/direction-artistique` | le branchement `<head>` et `:root`, et le neuvième jeton |
+
+## Ce qui reste sans propriétaire
+
+**La passe de conversion en anglais**, environ 910 commentaires. À faire à froid, quand
+aucune voie n'écrit dans les fichiers concernés, ce qui n'est pas le cas ce soir. Attention :
+`analyse.js` est haché par `EngineVersion`, donc reformuler un commentaire dedans marque
+périmées toutes les analyses stockées.
+
+**Les deux fichiers de banc morts**, `bench/test_bench.py` et
+`bench/test_schematic_in_the_game.py`. Avant d'écrire une ligne, répondre à la vraie
+question : un chemin de re-mesure en Python apporte-t-il quelque chose que `npm run oracle`
+n'a pas ? Ce n'est pas évident.
+
+**A3** le comparateur, **A6** le classement par coût, **A7** la tenue au souffle, **B3**
+image vers toile, **B4** générateur de trieurs, **B5** générateur de carte, et tout **C**.
+
+**Les cartes de partage des 254 fiches de bloc**, qui n'en poussent aucune.
+
 # Ordre décidé le 27/08
 
 Premier lot, quatre voies en parallèle, une worktree chacune :
