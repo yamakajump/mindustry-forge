@@ -38,6 +38,28 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "launch-pad",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "power-source",
+      "x": 15,
+      "y": 16
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

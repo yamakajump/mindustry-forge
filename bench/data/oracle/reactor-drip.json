@@ -90,6 +90,53 @@
       "efficiency": 1
     }
   ],
+  "standing": [
+    {
+      "block": "laser-drill",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "thorium-reactor",
+      "x": 17,
+      "y": 13
+    },
+    {
+      "block": "battery",
+      "x": 19,
+      "y": 13
+    },
+    {
+      "block": "combustion-generator",
+      "x": 12,
+      "y": 15
+    },
+    {
+      "block": "combustion-generator",
+      "x": 13,
+      "y": 15
+    },
+    {
+      "block": "liquid-source",
+      "x": 17,
+      "y": 15
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 16
+    },
+    {
+      "block": "item-source",
+      "x": 13,
+      "y": 16
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

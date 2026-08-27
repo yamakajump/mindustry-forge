@@ -7762,6 +7762,7 @@
       "liquid_pressure": 1,
       "leaks": true,
       "health": 45,
+      "explosiveness_scale": 0.5,
       "build_time": 1.5,
       "cost":{
         "metaglass": 1
@@ -7788,6 +7789,7 @@
       "liquid_pressure": 1.025,
       "leaks": true,
       "health": 90,
+      "explosiveness_scale": 0.4,
       "build_time": 3.5,
       "cost":{
         "metaglass": 1,
@@ -7814,6 +7816,7 @@
       "dump_time": 5,
       "liquid_pressure": 1.025,
       "health": 220,
+      "explosiveness_scale": 0.32,
       "build_time": 5,
       "cost":{
         "metaglass": 1,
@@ -7841,6 +7844,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "explosiveness_scale": 0.16666667,
       "build_time": 7,
       "cost":{
         "metaglass": 2,
@@ -7947,6 +7951,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 40,
+      "explosiveness_scale": 0.2,
       "build_time": 16,
       "cost":{
         "metaglass": 8,
@@ -7974,6 +7979,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 50,
+      "explosiveness_scale": 0.2,
       "build_time": 52.1,
       "cost":{
         "metaglass": 20,
@@ -8038,6 +8044,7 @@
       "liquid_pressure": 1.03,
       "leaks": true,
       "health": 250,
+      "explosiveness_scale": 0.4,
       "build_time": 2.4,
       "cost":{
         "beryllium": 2
@@ -8090,6 +8097,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 250,
+      "explosiveness_scale": 0.16666667,
       "build_time": 32,
       "cost":{
         "graphite": 8,
@@ -8117,6 +8125,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 250,
+      "explosiveness_scale": 0.26666668,
       "build_time": 12.8,
       "cost":{
         "graphite": 8,
@@ -8317,6 +8326,7 @@
       "solid": true,
       "power_capacity": 4000,
       "health": 40,
+      "base_explosiveness": 1,
       "build_time": 16.5,
       "no_update": true,
       "cost":{
@@ -8346,6 +8356,7 @@
       "solid": true,
       "power_capacity": 50000,
       "health": 360,
+      "base_explosiveness": 5,
       "build_time": 79,
       "no_update": true,
       "cost":{
@@ -8380,6 +8391,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 40,
+      "base_explosiveness": 5,
       "build_time": 23,
       "cost":{
         "copper": 25,
@@ -8420,6 +8432,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 160,
+      "base_explosiveness": 5,
       "build_time": 178,
       "cost":{
         "copper": 40,
@@ -8466,6 +8479,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 160,
+      "base_explosiveness": 5,
       "build_time": 94.5,
       "cost":{
         "copper": 35,
@@ -8516,6 +8530,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 360,
+      "base_explosiveness": 5,
       "build_time": 282,
       "cost":{
         "copper": 70,
@@ -8559,6 +8574,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 245,
+      "base_explosiveness": 5,
       "build_time": 315,
       "cost":{
         "lead": 100,
@@ -8601,6 +8617,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 40,
+      "base_explosiveness": 5,
       "build_time": 13.4,
       "cost":{
         "lead": 10,
@@ -8631,6 +8648,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 450,
+      "base_explosiveness": 5,
       "build_time": 117.5,
       "cost":{
         "lead": 60,
@@ -8668,6 +8686,9 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 700,
+      "base_explosiveness": 5,
+      "explosion_radius": 19,
+      "explosion_damage": 5000,
       "build_time": 760,
       "cost":{
         "lead": 300,
@@ -8719,6 +8740,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 900,
+      "base_explosiveness": 5,
       "build_time": 1775,
       "cost":{
         "lead": 500,
@@ -8850,6 +8872,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 575,
+      "base_explosiveness": 5,
       "build_time": 72,
       "cost":{
         "beryllium": 60
@@ -8889,6 +8912,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 825,
+      "base_explosiveness": 5,
       "build_time": 142,
       "cost":{
         "graphite": 40,
@@ -8929,6 +8953,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 935,
+      "base_explosiveness": 5,
       "build_time": 336,
       "cost":{
         "graphite": 100,
@@ -8971,6 +8996,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 2850,
+      "base_explosiveness": 5,
       "build_time": 948,
       "cost":{
         "graphite": 240,
@@ -9016,6 +9042,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 3900,
+      "base_explosiveness": 5,
       "build_time": 2560,
       "cost":{
         "silicon": 500,
@@ -10126,9 +10153,9 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "oil": 1,
         "slag": 1,
         "water": 1,
+        "oil": 1,
         "cryofluid": 1
       },
       "input_liquid":{}
@@ -10416,9 +10443,9 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "oil": 0.4,
         "slag": 0.4,
         "water": 0.4,
+        "oil": 0.4,
         "cryofluid": 0.4
       },
       "input_liquid":{}
@@ -13887,76 +13914,98 @@
       "color": "#596ab8",
       "heat_capacity": 0.4,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "slag":{
       "id": 1,
       "color": "#ffa166",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 1
+      "temperature": 1,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "oil":{
       "id": 2,
       "color": "#313131",
       "heat_capacity": 0.7,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 1.2,
+      "flammability": 1.2
     },
     "cryofluid":{
       "id": 3,
       "color": "#6ecdec",
       "heat_capacity": 0.9,
       "incinerable": true,
-      "temperature": 0.25
+      "temperature": 0.25,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "neoplasm":{
       "id": 4,
       "color": "#c33e2b",
       "heat_capacity": 0.4,
-      "temperature": 0.54
+      "temperature": 0.54,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "arkycite":{
       "id": 5,
       "color": "#84a94b",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 0.4
     },
     "gallium":{
       "id": 6,
       "color": "#9a9dbf",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "ozone":{
       "id": 7,
       "color": "#fc81dd",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 1,
+      "flammability": 1
     },
     "hydrogen":{
       "id": 8,
       "color": "#9eabf7",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 1
     },
     "nitrogen":{
       "id": 9,
       "color": "#efe3ff",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "cyanogen":{
       "id": 10,
       "color": "#89e8b6",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 2
     }
   },
   "units":{

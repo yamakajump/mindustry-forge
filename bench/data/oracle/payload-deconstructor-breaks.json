@@ -64,6 +64,33 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 14
+    },
+    {
+      "block": "deconstructor",
+      "x": 19,
+      "y": 14
+    },
+    {
+      "block": "conveyor",
+      "x": 22,
+      "y": 14
+    },
+    {
+      "block": "vault",
+      "x": 24,
+      "y": 14
+    },
+    {
+      "block": "power-source",
+      "x": 19,
+      "y": 17
+    }
+  ],
   "containers": [
     {
       "block": "vault",

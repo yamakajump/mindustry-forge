@@ -77,6 +77,53 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "vault",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "duct",
+      "x": 14,
+      "y": 15
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 16
+    },
+    {
+      "block": "duct",
+      "x": 13,
+      "y": 16
+    },
+    {
+      "block": "duct-router",
+      "x": 14,
+      "y": 16
+    },
+    {
+      "block": "duct",
+      "x": 15,
+      "y": 16
+    },
+    {
+      "block": "vault",
+      "x": 17,
+      "y": 16
+    },
+    {
+      "block": "duct",
+      "x": 14,
+      "y": 17
+    },
+    {
+      "block": "vault",
+      "x": 14,
+      "y": 19
+    }
+  ],
   "containers": [
     {
       "block": "vault",

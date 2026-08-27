@@ -69,6 +69,38 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 14
+    },
+    {
+      "block": "payload-mass-driver",
+      "x": 18,
+      "y": 14
+    },
+    {
+      "block": "payload-mass-driver",
+      "x": 28,
+      "y": 14
+    },
+    {
+      "block": "payload-void",
+      "x": 32,
+      "y": 14
+    },
+    {
+      "block": "power-source",
+      "x": 18,
+      "y": 17
+    },
+    {
+      "block": "power-source",
+      "x": 28,
+      "y": 17
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

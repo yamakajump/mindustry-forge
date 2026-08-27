@@ -100,6 +100,53 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "vault",
+      "x": 21,
+      "y": 13
+    },
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 16
+    },
+    {
+      "block": "payload-loader",
+      "x": 18,
+      "y": 16
+    },
+    {
+      "block": "payload-unloader",
+      "x": 21,
+      "y": 16
+    },
+    {
+      "block": "payload-void",
+      "x": 25,
+      "y": 16
+    },
+    {
+      "block": "item-source",
+      "x": 17,
+      "y": 18
+    },
+    {
+      "block": "item-source",
+      "x": 18,
+      "y": 18
+    },
+    {
+      "block": "item-source",
+      "x": 19,
+      "y": 18
+    },
+    {
+      "block": "power-source",
+      "x": 21,
+      "y": 18
+    }
+  ],
   "containers": [
     {
       "block": "vault",

@@ -36,6 +36,23 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "rtg-generator",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "regen-projector",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "battery-large",
+      "x": 18,
+      "y": 13
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

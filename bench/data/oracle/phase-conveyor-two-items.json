@@ -105,6 +105,68 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 14,
+      "y": 12
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 14
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 14
+    },
+    {
+      "block": "phase-conveyor",
+      "x": 14,
+      "y": 14
+    },
+    {
+      "block": "phase-conveyor",
+      "x": 18,
+      "y": 14
+    },
+    {
+      "block": "conveyor",
+      "x": 19,
+      "y": 14
+    },
+    {
+      "block": "sorter",
+      "x": 20,
+      "y": 14
+    },
+    {
+      "block": "conveyor",
+      "x": 21,
+      "y": 14
+    },
+    {
+      "block": "vault",
+      "x": 23,
+      "y": 14
+    },
+    {
+      "block": "power-source",
+      "x": 16,
+      "y": 16
+    },
+    {
+      "block": "vault",
+      "x": 20,
+      "y": 16
+    }
+  ],
   "containers": [
     {
       "block": "vault",

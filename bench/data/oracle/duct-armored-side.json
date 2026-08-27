@@ -32,6 +32,28 @@
       "efficiency": 1
     }
   ],
+  "standing": [
+    {
+      "block": "armored-duct",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "duct",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 14
+    }
+  ],
   "containers": [
     {
       "block": "vault",

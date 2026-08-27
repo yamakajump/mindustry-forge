@@ -95,6 +95,58 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "titanium-conveyor",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "titanium-conveyor",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "titanium-conveyor",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "titanium-conveyor",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "titanium-conveyor",
+      "x": 17,
+      "y": 13
+    },
+    {
+      "block": "titanium-conveyor",
+      "x": 18,
+      "y": 13
+    },
+    {
+      "block": "titanium-conveyor",
+      "x": 19,
+      "y": 13
+    },
+    {
+      "block": "titanium-conveyor",
+      "x": 20,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 22,
+      "y": 13
+    }
+  ],
   "containers": [
     {
       "block": "vault",

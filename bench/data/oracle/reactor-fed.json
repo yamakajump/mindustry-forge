@@ -57,6 +57,28 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "thorium-reactor",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "battery-large",
+      "x": 17,
+      "y": 13
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

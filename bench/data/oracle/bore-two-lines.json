@@ -35,6 +35,28 @@
       "efficiency": 1
     }
   ],
+  "standing": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "duct",
+      "x": 13,
+      "y": 15
+    },
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 16
+    },
+    {
+      "block": "plasma-bore",
+      "x": 13,
+      "y": 16
+    }
+  ],
   "containers": [
     {
       "block": "vault",

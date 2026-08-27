@@ -63,6 +63,33 @@
       "efficiency": 1
     }
   ],
+  "standing": [
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 14
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 18,
+      "y": 14
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 21,
+      "y": 14
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 24,
+      "y": 14
+    },
+    {
+      "block": "payload-void",
+      "x": 28,
+      "y": 14
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

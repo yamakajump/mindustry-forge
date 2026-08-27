@@ -69,6 +69,43 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "combustion-generator",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "beam-node",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "beam-node",
+      "x": 24,
+      "y": 13
+    },
+    {
+      "block": "laser-drill",
+      "x": 26,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 28,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 30,
+      "y": 13
+    }
+  ],
   "containers": [
     {
       "block": "vault",

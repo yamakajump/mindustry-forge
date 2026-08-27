@@ -101,6 +101,38 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "block": "pyrolysis-generator",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "conduit",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "liquid-tank",
+      "x": 18,
+      "y": 13
+    },
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 15,
+      "y": 16
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

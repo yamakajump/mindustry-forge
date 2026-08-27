@@ -36,6 +36,23 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "rtg-generator",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "repair-turret",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "battery-large",
+      "x": 17,
+      "y": 13
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

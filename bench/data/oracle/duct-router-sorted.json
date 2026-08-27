@@ -59,6 +59,43 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "duct",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "duct-router",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "duct",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 17,
+      "y": 13
+    },
+    {
+      "block": "duct",
+      "x": 14,
+      "y": 14
+    },
+    {
+      "block": "vault",
+      "x": 14,
+      "y": 16
+    }
+  ],
   "containers": [
     {
       "block": "vault",

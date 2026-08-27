@@ -215,7 +215,17 @@ export async function ported(code, ticks, ground = [], stock = [], each = null) 
     }
   }
 
+  /* What is still standing, which is what makes an explosion measurable at all: the
+     counters of a dead block are zero on both sides, and that reads as agreement. */
+  const standing = world.builds
+    .filter((build) => !build.state.dead)
+    .map((build) => ({ x: build.x, y: build.y, block: build.name }));
+
   return {
+    standing: lineUp(standing, ["block"]),
+    // How many were laid down, so a scenario can tell "nothing died" from "nothing was
+    // measured": the two look the same from a list of survivors alone.
+    placed: world.builds.length,
     containers: lineUp(containers, ["items"]),
     pools: lineUp(pools, ["liquid", "amount"], "liquid"),
     batteries: lineUp(batteries, ["charge"]),
@@ -243,6 +253,8 @@ export function measured(name) {
       .filter((one) => (one.ammo || 0) > 0)
       .map((one) => ({ x: one.x, y: one.y, ammo: one.ammo })), ["ammo"]),
     payloads: lineUp(raw.payloads || [], ["payload", "payload_items", "payload_liquids"]),
+    standing: lineUp((raw.standing || []).map((one) =>
+      ({ x: one.x, y: one.y, block: one.block })), ["block"]),
     units: raw.units || {},
   };
 }
@@ -347,6 +359,28 @@ export function differences(mine, theirs) {
         out.push({ what: `${here.at} retient ${item}`, mine: a, theirs: b,
                    gap: b ? Math.abs(a - b) / b : (a ? 1 : 0) });
       }
+    }
+  }
+
+  /* Ce qui reste debout. Compare avant tout le reste, parce qu'un bloc qui a saute rend
+     toutes les autres lignes muettes. */
+  /* Le compte n'est une mesure que si quelque chose est tombe : sur un schema ou tout tient,
+     la ligne ne dirait rien et masquerait un scenario qui ne mesure rien du tout. */
+  const placed = mine.placed ?? mine.standing.length;
+  if (mine.standing.length !== theirs.standing.length
+      || placed !== theirs.standing.length) {
+    out.push({ what: "blocs encore debout", mine: mine.standing.length,
+               theirs: theirs.standing.length,
+               gap: theirs.standing.length
+                 ? Math.abs(mine.standing.length - theirs.standing.length)
+                   / theirs.standing.length : 1 });
+  }
+  if (mine.standing.length === theirs.standing.length) {
+    for (let i = 0; i < mine.standing.length; i++) {
+      const a = mine.standing[i];
+      const b = theirs.standing[i];
+      if (a.block === b.block && a.at === b.at) continue;
+      out.push({ what: `${a.at} debout`, mine: a.block, theirs: b.block, gap: 1 });
     }
   }
 
