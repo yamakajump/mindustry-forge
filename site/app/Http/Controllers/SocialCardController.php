@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Schematic;
-use App\Services\SocialCard;
+use App\Services\Cards\SchematicCard;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
@@ -64,7 +64,7 @@ class SocialCardController extends Controller
         $disk = Storage::disk('public');
         $preview = "apercus/{$schematic->slug}.png";
 
-        $card = new SocialCard(
+        $card = new SchematicCard(
             resource_path('fonts/forge.ttf'),
             resource_path('brand/mark-96.png'),
         );

@@ -427,6 +427,33 @@ Deux règles nées de la journée :
 sont des artefacts générés**, par `tools/build_catalogue.py` et `tools/build_sprites.py`.
 Personne ne les édite à la main. La session qui change un générateur régénère.
 
+## Un port par voie
+
+Les collisions de ports ont coûté du temps à quatre voies dans la même soirée, dont une qui
+a posé trois diagnostics faux avant le bon. Une worktree isole le dépôt, pas la machine, et
+`php artisan serve` annonce « Server running » même quand le port est pris.
+
+Le tableau ferme le problème par convention plutôt que par vigilance :
+
+| Voie | Port |
+|---|---|
+| dépôt principal | 8770 |
+| `feat/i18n-nav` | 8781 |
+| `feat/wiki-blocs` | 8782 |
+| `feat/editeur-logique` | 8783 |
+| `feat/collecteur` | 8784 |
+| `feat/direction-artistique` | 8785 |
+| `feat/dumpeur` | 8786 |
+| voie suivante | 8787, puis en montant |
+
+Vérifier quand même avant de mesurer, parce qu'un port attribué peut avoir été pris par une
+session fermée dont le processus survit :
+
+```bash
+netstat -ano | grep :87xx
+curl -s localhost:87xx/une-ressource-qui-n-existe-que-chez-moi
+```
+
 ## Les pièges déjà payés
 
 Chacun a coûté du temps à quelqu'un. Les relire vaut mieux que les redécouvrir.
@@ -446,9 +473,27 @@ shell.
 **`php artisan serve` annonce « Server running » même quand le port est déjà pris.** Une
 worktree isole le dépôt, pas la machine : les ports sont partagés par tout le monde. Une
 session qui démarre sur un port occupé lit tranquillement l'application d'une autre sans
-qu'aucun message ne l'en avertisse, et débogue un écran qui n'est pas le sien. Choisir un
-port à soi, et le vérifier avec une ressource qui n'existe que chez soi plutôt qu'avec la
-page d'accueil.
+qu'aucun message ne l'en avertisse, et débogue un écran qui n'est pas le sien.
+
+Ce n'est pas théorique : le 27/08 au soir, **quatre voies avaient un serveur sur le port
+8791**, une seule tenait l'écoute, et elle servait un arbre antérieur. La racine répondait
+200 et la page était normale ; seuls les fichiers qui n'existaient que chez la voie qui
+mesurait rendaient 404.
+
+Trois diagnostics ont été posés sur ce symptôme avant le bon, dont un affirmé comme un fait
+établi et faux (« `artisan serve` ne voit pas un fichier créé après son démarrage » : non,
+et redémarrer n'y change rien). Ce qui a tranché est un octet : le `favicon.ico` servi
+faisait zéro octet là où les deux arbres soupçonnés en ont 2795.
+
+Le réflexe, dans les deux sens : demander une ressource qui n'existe que chez soi **avant**
+de mesurer quoi que ce soit, et vérifier la ligne de commande du processus **avant** de
+tuer un port.
+
+```bash
+netstat -ano | grep :8791          # qui ecoute
+tasklist /FI "PID eq <pid>"        # est-ce bien le mien
+curl -s localhost:8791/ma-cle-a-moi  # est-ce bien mon arbre
+```
 
 **Le dump du catalogue n'est pas reproductible octet pour octet.** Deux lancements sans
 toucher au code donnent huit lignes de diff sur `wave` et `tsunami` : l'ordre de leurs
@@ -462,6 +507,17 @@ cycle fusion-tests-push, donc comparer contre la branche distante juste après u
 résolution compare contre une cible qui a déjà avancé, et affiche des suppressions qui
 n'existent pas. Une voie a cru supprimer trente-quatre lignes du travail d'une autre. La
 bonne référence pendant une fusion est `MERGE_HEAD`, pas `origin/<branche>`.
+
+**Une balise `og:` repetee est un tableau, pas un remplacement.** Le layout en posait une
+par defaut et chaque page en poussait une autre : les deplieurs prennent la premiere, donc
+la carte generique gagnait toujours et **aucune des deux cartes de partage construites ce
+soir ne s affichait**. Rien ne leve, la page rend 200, et la seule facon de le voir est de
+lire le HTML servi. Une page remplace desormais par `@section` au lieu d ajouter.
+
+**Une apostrophe echappee dans une directive Blade arrete le compilateur en plein fichier**,
+et la page repond **200 en affichant son propre source**, `@stack` et `@include` compris.
+Aucun test ne l attrapait. Il y en a un maintenant : aucun `@yield` ne doit sortir dans le
+HTML.
 
 **`consumes_power` peut valoir vrai sans aucune consommation.** La presse à graphite est
 mécanique dans le jeu. Se fier à la présence de `power` et `power_out`, jamais au booléen.

@@ -292,9 +292,9 @@ export class LogicEditor {
     this.suggest.style.top = `${under}px`;
     this.suggest.hidden = false;
 
-    /* Au-dessus de la ligne quand il n'y a plus la place en dessous, et seulement alors :
-       une liste qui saute d'un cote a l'autre a chaque lettre est plus penible qu'une liste
-       un peu basse. Mesure apres l'affichage, la hauteur depend de ce qu'elle contient. */
+    /* Above the line when there is no room below it, and only then: a list that jumps
+       from one side to the other on every letter is more trouble than a list sitting a
+       little low. Measured after showing it, because the height depends on the contents. */
     const height = this.suggest.offsetHeight;
     const room = this.sheet.offsetTop + this.sheet.offsetHeight;
     if (under + height > room && under - cell.height - height >= 0) {

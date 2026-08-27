@@ -59,6 +59,7 @@
         <h2 data-i18n="outils.logique.processeur">Processeur</h2>
         <select id="bloc" name="bloc" aria-label="Processeur"></select>
         <p class="mesures" id="mesures"></p>
+        <p class="hint-line" id="rattrapage"></p>
       </section>
 
       <section class="card">
@@ -94,6 +95,7 @@
 import { loadCatalogue, catalogueOf } from "../forge/logic/catalogue.js";
 import { LogicEditor } from "../forge/logic/editor.js";
 import { toSchematic, toSchematicBytes, fromSchematic } from "../forge/logic/program.js";
+import { timingOf, ticksAsText, secondsAsText } from "../forge/logic/timing.js";
 import { t, ready, translate } from "../forge/i18n.js";
 
 const $ = (id) => document.getElementById(id);
@@ -111,20 +113,20 @@ jump 0 always
 
 const LIENS_EXEMPLE = [{ name: "vault1", dx: 2, dy: 0 }, { name: "conveyor1", dx: -1, dy: 0 }];
 
-/* Le dictionnaire et le catalogue en meme temps, et les deux avant le premier mot affiche :
-   tout ce que cette page dit est construit par ce script, donc rien n'est deja ecrit dans
-   la page pour tenir pendant que le dictionnaire arrive. */
+/* The dictionary and the catalogue together, and both before the first word is shown:
+   everything this page says is built by this script, so there is nothing already written
+   in the page to stand in while the dictionary is on its way. */
 await Promise.all([ready, loadCatalogue()]);
 const catalogue = catalogueOf();
 
-/* Ce qui est ecrit en clair dans la page, lui, est deja la. `translate` ne fait rien tant
-   que le site est dans la langue ou il est ecrit, et c'est le but de l'avoir ecrit en
-   clair : pas de traduction a faire, donc pas de clignotement a eviter. */
+/* What is written in clear in the page is already there. `translate` does nothing while
+   the site is in the language it is written in, and that is the point of writing it in
+   clear: no translation to do, so no flash to avoid. */
 translate(document);
 
-/* L'etat de la page, en un seul endroit. Les liens vivent ici plutot que dans l'editeur :
-   ils appartiennent au processeur, pas au texte, et l'export en a autant besoin que la
-   verification. */
+/* The page's state, in one place. The links live here rather than in the editor: they
+   belong to the processor, not to the text, and the export needs them as much as the
+   checker does. */
 let liens = LIENS_EXEMPLE.map((lien) => ({ ...lien }));
 
 const editeur = new LogicEditor($("editeur"), { onChange: rendre });
@@ -138,21 +140,36 @@ for (const bloc of catalogue.processors) {
 }
 $("bloc").value = "micro-processor";
 
-/* D'ou viennent les regles. Ecrit une fois : la version du jeu ne bouge pas en cours de
-   visite, et un outil qui verifie du code doit dire contre quoi il le verifie. */
+/* The slowest of the three is the default, and changing it changes what the panel says
+   about time, so the report is drawn again from the one the editor already holds. */
+$("bloc").onchange = () => rendre(editeur.report);
+
+/* Where the rules come from. Written once: the game's version does not move during a
+   visit, and a tool that checks code owes the reader what it checked against. */
 $("provenance").textContent = t("outils.logique.aide-texte", { build: catalogue.build });
 
 editeur.setLinks(liens);
 editeur.value = EXEMPLE;
 dessinerLiens();
 
-/* Le rapport --------------------------------------------------------------------------- */
+/* The report ---------------------------------------------------------------------------- */
 
 function rendre(rapport) {
+  /* The timing depends on the processor as much as on the program, so this runs again when
+     the picker moves and not only when the text does. */
+  const chrono = timingOf($("bloc").value, rapport.statements.length);
+
   $("mesures").innerHTML = `
     <span>${t("outils.logique.compte-instructions", { compte: `<b>${rapport.statements.length}</b>` })}</span>
     <span>${t("outils.logique.compte-octets", {
-      octets: `<b>${rapport.bytes ?? 0}</b>`, maximum: catalogue.limits.code_bytes })}</span>`;
+      octets: `<b>${rapport.bytes ?? 0}</b>`, maximum: catalogue.limits.code_bytes })}</span>
+    ${chrono ? `<span>${t("outils.logique.chrono", {
+      ticks: `<b>${ticksAsText(chrono.ticks)}</b>`,
+      duree: secondsAsText(chrono.seconds) })}</span>` : ""}`;
+
+  $("rattrapage").textContent = chrono
+    ? t("outils.logique.chrono-rattrapage", { rafale: chrono.burst })
+    : "";
 
   const problemes = [...rapport.problems, ...problemesDesLiens()];
   const liste = $("problemes");
@@ -181,8 +198,8 @@ function rendre(rapport) {
     bouton.lastChild.textContent =
       t(probleme.key, probleme.params);
 
-    /* Cliquer sur un probleme pose le curseur dessus. Une liste d'erreurs qu'il faut aller
-       retrouver a la main dans le texte est une liste qu'on lit une fois. */
+    /* Clicking a problem puts the caret on it. A list of errors you then have to hunt for
+       by hand in the text is a list you read once. */
     if (probleme.line != null) bouton.onclick = () => viser(probleme);
     item.append(bouton);
     liste.append(item);
@@ -196,7 +213,7 @@ function viser(probleme) {
   editeur.input.setSelectionRange(debut + (probleme.start ?? 0), debut + (probleme.end ?? 0));
 }
 
-/** Ce que la verification du programme ne peut pas voir : les liens eux-memes. */
+/** What checking the program cannot see: the links themselves. */
 function problemesDesLiens() {
   const vus = new Set();
   const out = [];
@@ -214,7 +231,7 @@ function problemesDesLiens() {
   return out;
 }
 
-/* Les liens ------------------------------------------------------------------------------ */
+/* The links ------------------------------------------------------------------------------ */
 
 function dessinerLiens() {
   const liste = $("liens");
@@ -261,8 +278,8 @@ function champ(type, valeur, etiquette, classe = "", nom = "") {
   return input;
 }
 
-/* Un champ vide vaut zero plutot que rien : `LogicBlock` ecrit deux entiers courts, et il
-   n'y a pas de « pas de position ». */
+/* An empty field reads as zero rather than as nothing: `LogicBlock` writes two shorts, so
+   there is no such thing as "no position". */
 const entier = (texte) => Number.parseInt(texte, 10) || 0;
 
 const majLiens = () => editeur.setLinks(liens);
@@ -274,7 +291,7 @@ $("ajouter-lien").onclick = () => {
   $("liens").querySelector("input")?.focus();
 };
 
-/* Entrees et sorties --------------------------------------------------------------------- */
+/* In and out ----------------------------------------------------------------------------- */
 
 const dire = (message, ton = "") => {
   $("etat").textContent = message;
@@ -345,10 +362,10 @@ $("fichier").onchange = async (event) => {
 };
 
 /**
- * Reprendre un processeur deja pose.
+ * Pick up a processor that is already placed.
  *
- * Le premier processeur de la schematique, et on le dit quand il y en avait d'autres :
- * ouvrir le premier sans prevenir donnerait une page qui a l'air d'avoir tout lu.
+ * The first processor in the schematic, and the page says so when there were others:
+ * opening the first without a word would look like it had read the lot.
  */
 async function lire(source) {
   const processeurs = await fromSchematic(source);

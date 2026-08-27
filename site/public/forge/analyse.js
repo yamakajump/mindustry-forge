@@ -22,6 +22,9 @@ import { attributeOf, beamOf, dryTilesOf, wallSumOf, yieldOf } from "./ground.js
 import { centre, footprint } from "./geometry.js";
 import { logicOf, readProgram } from "./logic.js";
 import { throughput } from "./maxflow.js";
+import { World } from "./engine/core.js";
+import { behaviourOf } from "./engine/carriers.js";
+import { gridsOf } from "./engine/power.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -404,7 +407,15 @@ function speedUp(nodes) {
       if (node.block.no_overdrive || node.block.privileged) continue;
       const [x, y] = centre(node);
       const half = (node.block.size || 1) / 2;
-      if (Math.hypot(x - px, y - py) <= reach + half) {
+      /* Strictly inside, never on the line. `BlockIndexer.eachBlock` calls
+         `build.within(x, y, range + build.hitSize() / 2f)`, and `Mathf.within` is `fcmpg`
+         then `ifge`: true only when `dst2 < dst * dst`. A block whose centre falls exactly
+         on the circle is left alone by the game, and was sped up here.
+
+         Read in the v159.7 bytecode, alongside `hitSize()`, which returns `block.size * 8`
+         for every building in the game - so the half width in tiles is `size / 2` and this
+         line needs no separate figure from the catalogue. */
+      if (Math.hypot(x - px, y - py) < reach + half) {
         node.boost = Math.max(node.boost, strength);
       }
     }
@@ -441,6 +452,65 @@ function appetite(block) {
     wants[liquid] = rate;
   }
   return wants;
+}
+
+/**
+ * Which power grid each node sits on, borrowed from the engine rather than found again.
+ *
+ * `engine/power.js` already ports `PowerGraph`: grids found rather than declared, nodes and
+ * their saved links, beam nodes, and the autolinking a node does when it is placed without
+ * links of its own. Every one of those was a bug once. Writing a second finder here would
+ * be a second thing to have wrong, and the wrong half would be the one the player reads.
+ *
+ * The world is built and wired but never stepped: `gridsOf` needs the proximity ring and
+ * the links, which the constructor lays out, and nothing else.
+ */
+function powerGrids(graph) {
+  const world = new World(graph, behaviourOf).wire(gridsOf);
+  const indexOf = new Map(graph.nodes.map((node, index) => [node, index]));
+  return world.grids.map((grid) => grid.builds
+    .map((build) => indexOf.get(build.node))
+    .filter((index) => index !== undefined));
+}
+
+/**
+ * What fraction of the current each consumer on a grid actually gets.
+ *
+ * `PowerGraph.getPowerNeeded` sums `ConsumePower.requestedPower`, which is the flat
+ * `usage`, over the buildings whose `shouldConsumePower` is true - and that flag is false
+ * only when a **non-power** consumer is unsatisfied. So the game asks how much a machine
+ * *wants*, never how much it is currently getting.
+ *
+ * That distinction is the whole of this function, and getting it wrong does not merely give
+ * a wrong number, it never settles. Demand measured on the throttled rate falls as coverage
+ * falls, which raises coverage, which raises demand: the solve oscillates between flat out
+ * and starved for ever. Measured on the rate the items alone allow, demand is a fixed
+ * quantity within a round and the coverage that comes out of it is stable.
+ *
+ * A machine stopped for want of items draws nothing, which is `shouldConsumePower` being
+ * false; in a rate model, running a third of the time means drawing a third of the current
+ * on average, so the item share is the right weight rather than a flag.
+ */
+function coverageOf(graph, grids, itemShare) {
+  const coverage = graph.nodes.map(() => 1);
+  const running = (index) => (itemShare[index] === undefined ? 1 : itemShare[index])
+    * (graph.nodes[index].boost || 1);
+
+  for (const members of grids) {
+    let made = 0;
+    let wanted = 0;
+    for (const index of members) {
+      const block = graph.nodes[index].block;
+      made += (block.power_out || 0) * running(index);
+      wanted += (block.power || 0) * running(index);
+    }
+    if (wanted <= SETTLED) continue;
+    const share = Math.min(1, made / wanted);
+    for (const index of members) {
+      if ((graph.nodes[index].block.power || 0) > 0) coverage[index] = share;
+    }
+  }
+  return coverage;
 }
 
 /**
@@ -485,6 +555,14 @@ function solveFlow(graph, supply) {
   const carrying = graph.nodes.map(() => ({}));
   const fed = {};
 
+  /* The grids, found once: they come from the shape of the schematic and nothing the solve
+     does can move a wire. The coverage does change from round to round, and it starts at
+     one so that the first round asks what the layout would do with all the current it
+     wants - which is the question the second round then answers. */
+  const grids = powerGrids(graph);
+  let coverage = graph.nodes.map(() => 1);
+  let wanted = {};
+
   for (let round = 0; round < 12; round++) {
     let moved = false;
 
@@ -504,7 +582,10 @@ function solveFlow(graph, supply) {
           sources[index] = (sources[index] || 0) + sourceRate(graph, index, resource);
         }
         if (node.dug?.resource === resource) {
-          sources[index] = (sources[index] || 0) + node.dug.rate * (node.boost || 1);
+          // A laser drill on a dim grid turns slower, and what it pulls up is the one
+          // thing about it the rest of the layout can see.
+          sources[index] = (sources[index] || 0)
+            + node.dug.rate * (node.boost || 1) * coverage[index];
         }
       }
       if (!Object.keys(sources).length) continue;
@@ -526,7 +607,10 @@ function solveFlow(graph, supply) {
       }
     }
 
-    // What each machine makes with what it just received.
+    /* What the items alone allow, before the grid has its say. Kept apart from what the
+       machine ends up running at, because the grid is asked how much the layout *wants*,
+       and what it wants is what its items would let it do. */
+    const itemShare = {};
     for (let index = 0; index < nodes; index++) {
       const node = graph.nodes[index];
       if (node.role !== "crafter" && node.role !== "generator") continue;
@@ -546,7 +630,20 @@ function solveFlow(graph, supply) {
           .reduce((sum, [, rate]) => sum + rate, 0);
         share = Math.min(share, burn > 0 ? offered / burn : 1);
       }
-      share = Math.max(0, Math.min(1, Number.isFinite(share) ? share : 0));
+      itemShare[index] = Math.max(0, Math.min(1, Number.isFinite(share) ? share : 0));
+    }
+
+    /* And then the grid, on the demand those shares imply. A machine's realised rate is the
+       two multiplied and not the smaller of the two: in the game the items decide whether a
+       frame happens at all and the current decides how far that frame gets, so a machine
+       with half its coal on a grid at half strength runs at a quarter. */
+    coverage = coverageOf(graph, grids, itemShare);
+
+    for (let index = 0; index < nodes; index++) {
+      const node = graph.nodes[index];
+      if (node.role !== "crafter" && node.role !== "generator") continue;
+      const speed = node.boost || 1;
+      const share = itemShare[index] * coverage[index];
       fed[index] = share;
 
       const now = {};
@@ -562,9 +659,13 @@ function solveFlow(graph, supply) {
       made[index] = now;
     }
 
-    if (!moved) return { arriving, carrying, made, fed, settled: true, rounds: round + 1 };
+    wanted = itemShare;
+    if (!moved) {
+      return { arriving, carrying, made, fed, wanted, coverage,
+               settled: true, rounds: round + 1 };
+    }
   }
-  return { arriving, carrying, made, fed, settled: false, rounds: 12 };
+  return { arriving, carrying, made, fed, wanted, coverage, settled: false, rounds: 12 };
 }
 
 /**
@@ -797,6 +898,14 @@ export function solve(graph, supply = {}) {
   return {
     through,
     fed: solved.fed,
+    /* What the items alone would allow, which is what the layout **asks** the grid for.
+       Kept apart from `fed` because the two answer different questions and the report needs
+       both: `fed` is what actually runs, `wanted` is the demand that decides whether it
+       can. A smelter on a grid with no generator runs at nothing and still needs its thirty
+       a second, and a report carrying only the first would have quietly deleted the one
+       figure that tells the player what to build. */
+    wanted: solved.wanted,
+    coverage: solved.coverage,
     settled: solved.settled,
     rounds: solved.rounds,
     arriving: solved.arriving,
@@ -841,12 +950,20 @@ export function powerBudget(graph, solved, { boosted = true } = {}) {
   let spent = 0;
   for (let index = 0; index < graph.nodes.length; index++) {
     const node = graph.nodes[index];
-    const running = solved.fed[index] === undefined ? 1 : solved.fed[index];
+    /* Production on what actually ran, demand on what the items would have allowed.
+       `PowerGraph.getPowerNeeded` asks every building whose non-power consumers are
+       satisfied for its flat `usage`, whatever the grid is giving it at that moment, and
+       that is the number a player needs: a smelter on a dead grid runs at nothing and still
+       wants its thirty a second. Measured on what it managed to run at instead, a deficit
+       would report itself as zero, and this card would come to agree with the rest of the
+       page by deleting the only figure that says what to build. */
+    const supplied = solved.fed[index] === undefined ? 1 : solved.fed[index];
+    const asked = solved.wanted?.[index] === undefined ? 1 : solved.wanted[index];
     // A boosted generator makes more and a boosted consumer draws more, both because the
     // game multiplies by `delta()` and `delta()` carries the time scale.
     const speed = boosted ? (node.boost || 1) : 1;
-    made += (node.block.power_out || 0) * running * speed;
-    spent += (node.block.power || 0) * running * speed;
+    made += (node.block.power_out || 0) * supplied * speed;
+    spent += (node.block.power || 0) * asked * speed;
   }
   return { made, spent, net: made - spent };
 }
@@ -1045,7 +1162,13 @@ export async function analyse(text, supply = {}, chosen = null,
   }
 
   const culprit = bottleneckOf(graph, solved);
-  const power = powerBudget(graph, solved);
+  /* The dimmest grid in the plan, which is what the throughput above has already been
+     multiplied by. Reported rather than left implicit: a figure that has been throttled and
+     a figure that has not look exactly alike on the page, and the difference is the whole
+     reason the player is reading it. */
+  const coverage = Math.min(1, ...graph.nodes.map((node, index) =>
+    ((node.block.power || 0) > 0 ? solved.coverage[index] : 1)));
+  const power = { ...powerBudget(graph, solved), coverage };
 
   // What leaves, and separately what is made and eaten inside. A schematic that turns
   // water into power makes coal on the way and none of it comes out, so reporting the coal

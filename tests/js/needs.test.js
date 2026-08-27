@@ -69,3 +69,107 @@ test("a chain does not ask for its own intermediates", () => {
   assert.ok(!outside.coal || outside.coal < 2 * 60 / 90,
     "et le charbon qu'elle fabrique couvre en partie celui de la presse");
 });
+
+/*
+ * The shopping list has to be buildable on the world it is for.
+ *
+ * `producers` matched on `role === "drill"`, which is the four Serpulo drills and nothing
+ * else, and filtered by no world at all. So an Erekir schematic was told to install a blast
+ * drill, and Erekir's own tungsten and graphite had no source offered at all, because a
+ * plasma bore's role is `beam-drill` and an impact drill's is `burst-drill`.
+ *
+ * A correct rate attached to a block that cannot be placed is the worst shape a wrong
+ * answer can take: it does not read as a gap, it reads as an instruction.
+ */
+
+test("Erekir is offered Erekir drills and never Serpulo ones", () => {
+  const offered = producers(known, "tungsten", 10, "erekir");
+
+  assert.ok(offered.length, "le tungstene d'Erekir a une source");
+  for (const option of offered) {
+    assert.notEqual(known.blocks[option.block].planet, "serpulo",
+      `${option.block} ne se pose pas sur Erekir`);
+  }
+  assert.ok(offered.some((o) => known.blocks[o.block].role === "beam-drill"),
+    "dont les foreuses a faisceau, que le role unique ratait");
+});
+
+test("Serpulo keeps its own, which is how this could break unnoticed", () => {
+  const offered = producers(known, "coal", 10, "serpulo");
+
+  assert.ok(offered.length);
+  for (const option of offered) {
+    assert.notEqual(known.blocks[option.block].planet, "erekir");
+  }
+  assert.ok(offered.some((o) => o.block === "mechanical-drill"));
+});
+
+test("without a world, the whole game is offered", () => {
+  const both = producers(known, "copper", 10);
+  const worlds = new Set(both.map((o) => known.blocks[o.block].planet));
+
+  assert.ok(worlds.has("serpulo") && worlds.has("erekir"),
+    "un appelant qui ne dit pas son monde les recoit tous");
+});
+
+test("a burst drill pays no hardness, and a beam drill works its width", () => {
+  /* Two shapes, and the game's. An ordinary drill covers its whole footprint and pays
+     fifty ticks per point of hardness; a burst drill covers its footprint and pays none,
+     because its class zeroes the multiplier; a beam drill fires one line out of each tile
+     across its face, so it works its width and not its area. */
+  const impact = producers(known, "tungsten", 1, "erekir")
+    .find((o) => o.block === "impact-drill");
+  // Le beryllium et pas le tungstene : une foreuse a plasma est de rang trois et ne touche
+  // pas un minerai de durete cinq. Le premier jet de ce test demandait l'impossible, et
+  // c'est la moitie du travail de `producers` que de refuser.
+  const bore = producers(known, "beryllium", 1, "erekir")
+    .find((o) => o.block === "plasma-bore");
+
+  // Impact drill: four by four tiles, 720 ticks, no hardness term whatever the ore.
+  close(impact.each, (4 * 4 * 60) / 720, "une foreuse a percussion couvre son emprise");
+
+  // Plasma bore: size two, so two beams and not four tiles, at 160 ticks.
+  close(bore.each, (2 * 60) / 160, "une foreuse a faisceau travaille sa largeur");
+});
+
+test("a cliff crusher is not a drill, and is not offered as one", () => {
+  /* It carries a `drill_time` and eats cliffs rather than ore, so it states no tier. It is
+     already a maker of sand through its recipe; offering it here as well would be saying a
+     player can point one at a beach. */
+  for (const option of producers(known, "sand", 10, "erekir")) {
+    assert.notEqual(option.block, "cliff-crusher");
+    assert.notEqual(option.block, "large-cliff-crusher");
+  }
+});
+
+test("a sandbox tap is never part of a plan", () => {
+  // `liquid-source` states an output a second like a pump. It is handed out in a sandbox
+  // and nowhere else, so planning a base around one is worse than saying nothing.
+  for (const option of producers(known, "water", 10)) {
+    assert.notEqual(option.block, "liquid-source");
+  }
+  assert.ok(producers(known, "water", 10, "erekir").some((o) => o.block === "reinforced-pump"));
+});
+
+test("the same question comes back in the same order", () => {
+  assert.deepEqual(producers(known, "copper", 37, "serpulo"),
+    producers(known, "copper", 37, "serpulo"));
+});
+
+test("a schematic's own blocks say which world its shopping list is for", async () => {
+  const { requirements, planetOf } = await import("../../site/public/forge/needs.js");
+  const { buildGraph } = await import("../../site/public/forge/analyse.js");
+
+  const erekir = await analyse(paste([[0, 0, "carbide-crucible", 0]]));
+  const graphite = erekir.needs.find((n) => n.resource === "graphite");
+
+  assert.ok(graphite, "un creuset a carbure veut du graphite");
+  for (const option of graphite.options) {
+    assert.notEqual(known.blocks[option.block].planet, "serpulo",
+      "et on ne lui propose pas une foreuse de Serpulo");
+  }
+
+  const serpulo = await analyse(paste([[0, 0, "graphite-press", 0]]));
+  assert.equal(planetOf(serpulo.graph), "serpulo");
+  assert.ok(buildGraph, "le graphe est bien celui de l'analyse");
+});

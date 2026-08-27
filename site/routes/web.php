@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlockCardController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\SchematicController;
@@ -35,6 +36,16 @@ Route::get('/editer', fn () => response()->file(public_path('index.html')));
  */
 Route::get('/outils/logique', fn () => response()->file(public_path('outils/logique.html')));
 
+/*
+ * The factory planner, the analysis run backwards.
+ *
+ * Static like the logic editor and for the same reason: it needs no server. It reads the
+ * catalogue the bench dumped and unrolls a recipe chain in the visitor's browser, which is
+ * the same arithmetic the analyser runs and has no business being a second implementation
+ * behind an endpoint.
+ */
+Route::get('/outils/planificateur', fn () => response()->file(public_path('outils/planificateur.html')));
+
 Route::get('/auth/discord', [AuthController::class, 'start'])->name('login');
 Route::get('/auth/discord/callback', [AuthController::class, 'callback']);
 Route::post('/deconnexion', [AuthController::class, 'logout']);
@@ -58,6 +69,10 @@ Route::get('/s/{schematic}/carte.jpg', [SocialCardController::class, 'show']);
  */
 Route::get('/blocs', [BlockController::class, 'index']);
 Route::get('/blocs/{name}', [BlockController::class, 'show']);
+
+/* The thumbnail the page above unfurls into. Two hundred and fifty-four pages all shared
+   the site's generic image, so every block link looked like every other one. */
+Route::get('/blocs/{name}/carte.jpg', [BlockCardController::class, 'show']);
 
 /* The string itself, so the analyser can pull one in from a shared link. Plain text and
    nothing else: this is a public schematic, and everything else about it is on its page. */
