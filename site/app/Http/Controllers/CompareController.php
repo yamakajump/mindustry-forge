@@ -29,6 +29,15 @@ class CompareController extends Controller
     /** How many to offer. Enough to recognise one, few enough to read without scrolling. */
     private const OFFERED = 8;
 
+    /**
+     * What marks an escaped character in a `like`, and why it is not a backslash.
+     *
+     * A backslash has to pass through the SQL string literal before it reaches the
+     * pattern, and the two dialects disagree about that step. `=` means nothing to
+     * either of them, so it arrives as itself.
+     */
+    private const ESCAPE = '=';
+
     public function index(Request $request): View
     {
         // `is_string` before anything else: `?a[]=1` hands back an array, and casting one
@@ -100,19 +109,31 @@ class CompareController extends Controller
             return null;
         }
 
-        // A name is not a query language: what is typed goes in as text, and the wildcards
-        // in it are escaped rather than honoured. Somebody searching for "100%" is not
-        // writing a pattern.
-        $escaped = addcslashes($term, '%_\\\\');
+        /* What was typed goes in as text. A name is not a query language: somebody
+           looking for "100%" is not writing a pattern, and a `like` would read that as
+           "anything".
+
+           The escape character is `=` and not the backslash everybody reaches for. A
+           backslash has to survive a SQL string literal as well as the `like`, and it
+           does not survive it the same way twice: MySQL reads `escape '\'` as an escaped
+           quote and never closes the literal, so the query is a syntax error, while
+           SQLite parses it happily. That is a 500 anybody could fire by typing one
+           character into a public search box, and it passed every local test because the
+           local database is SQLite. `=` has no meaning inside a string literal in either
+           dialect, so there is nothing left to get wrong.
+
+           Declared rather than left to the default, too: SQLite has no default escape
+           character at all and MySQL has one, so an implicit `escape` means two
+           behaviours from one query. */
+        $escaped = str_replace(
+            [self::ESCAPE, '%', '_'],
+            [self::ESCAPE.self::ESCAPE, self::ESCAPE.'%', self::ESCAPE.'_'],
+            $term,
+        );
 
         return Schematic::query()
             ->listed()
-            /* The escape character has to be declared. SQLite has no default one, so a
-               `\%` written without `escape` is matched as two literal characters and finds
-               nothing, while MySQL takes `\` by default and finds it. Left implicit, this
-               query passes here and behaves differently in production - the exact shape of
-               failure `docs/fonctionnalites.md` warns about for JSON key order. */
-            ->whereRaw("name like ? escape '\'", ["%{$escaped}%"])
+            ->whereRaw('name like ? escape ?', ["%{$escaped}%", self::ESCAPE])
             // Shortest first, so "graphite" offers "Graphite" before "Graphite line v3
             // reworked": the closer a name is to what was typed, the likelier it is meant.
             ->orderByRaw('length(name) asc')
