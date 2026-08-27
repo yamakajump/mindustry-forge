@@ -1061,10 +1061,19 @@ export function powerBudget(graph, solved, { boosted = true } = {}) {
        page by deleting the only figure that says what to build. */
     const supplied = solved.fed[index] === undefined ? 1 : solved.fed[index];
     const asked = solved.wanted?.[index] === undefined ? 1 : solved.wanted[index];
+    /* A sandbox power source is not production, and this is the one figure it could still
+       reach after the page stopped quoting it: `power_made` is a column, so a listing sorted
+       on it put 479,999,971 energy a second at the top of "who makes power" on a schematic
+       nobody can place outside a sandbox.
+       
+       Left in the grid below, though, and deliberately: the layout really is powered, so
+       the machines on that grid really do run. What is refused is calling it production.
+       Saying so is `needs.js:isTap`'s rule, in the one place that had not got it yet. */
+    const givesFreely = (node.block.build_visibility || "shown") !== "shown";
     // A boosted generator makes more and a boosted consumer draws more, both because the
     // game multiplies by `delta()` and `delta()` carries the time scale.
     const speed = boosted ? (node.boost || 1) : 1;
-    made += (node.block.power_out || 0) * supplied * speed;
+    if (!givesFreely) made += (node.block.power_out || 0) * supplied * speed;
     spent += (node.block.power || 0) * asked * speed;
   }
   return { made, spent, net: made - spent };
@@ -1223,7 +1232,12 @@ export async function analyse(text, supply = {}, chosen = null,
   // A belt that starts from nowhere is where something arrives, and the machines behind it
   // say what. Asking the player instead was asking them to state what the schematic
   // already says, and it meant a layout nobody had described analysed to nothing at all.
-  const { outside, wanted, made: atFullSpeed } = demand(graph);
+  /* `tapped` rather than `poured`: this file already has a `poured(graph, resource)`, and
+     the two are not the same quantity. The function caps a tap at what the factory around
+     it asks for, which is right for the measured side; `demand` reports the raw declared
+     rate it counted, which is what the ceiling has to take back out. Destructured under the
+     function's name, it shadowed it and the measured side started throwing. */
+  const { outside, wanted, made: atFullSpeed, poured: tapped } = demand(graph);
   const marks = readMarks(chosen);
   const marked = Object.keys(marks).length ? marks : null;
 
@@ -1348,7 +1362,12 @@ export async function analyse(text, supply = {}, chosen = null,
   for (const [item, rate] of Object.entries(atFullSpeed)) {
     // `*combustible` is a hole in a shopping list, not something that comes out.
     if (item.startsWith("*")) continue;
-    const spare = (rate - (wanted[item] || 0)) * 60;
+    /* Minus whatever a sandbox tap poured. A ceiling says what this schematic could make
+       if it were fed; a tap is not a way of feeding it, it is a way of not answering the
+       question. Left in, a single `liquid-source` claimed a ceiling of thirty-six million
+       water a minute, and an `item-source` six thousand copper. */
+    const own = rate - (tapped[item] || 0);
+    const spare = (own - (wanted[item] || 0)) * 60;
     if (spare >= 0.1) potentialPerMinute[item] = spare;
   }
 
