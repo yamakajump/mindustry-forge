@@ -140,7 +140,14 @@ class Schematic extends Model
      */
     protected static function booted(): void
     {
-        static::saved(fn (self $schematic) => $schematic->indexWhatItMakes());
+        static::saved(function (self $schematic) {
+            $schematic->indexWhatItMakes();
+            // Le plafond passe par le meme crochet et pour la meme raison : la route
+            // d'envoi, un moderateur qui corrige un nom et la passe d'analyse ecrivent
+            // toutes les trois par ici, et n'en cabler qu'une laisserait les deux autres
+            // avec un index qui ne dit plus la meme chose que la schematique.
+            $schematic->indexWhatItCouldMake();
+        });
     }
 
     /**
@@ -187,6 +194,65 @@ class Schematic extends Model
         foreach ($rows as $item => $rate) {
             $this->items()->updateOrCreate(
                 ['item' => $item, 'sens' => SchematicItem::PRODUIT, 'kind' => SchematicItem::MESURE],
+                ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
+            );
+        }
+    }
+
+    /**
+     * Ce qu'elle pourrait faire si on l'alimentait, indexe a cote de ce qu'elle fait.
+     *
+     * Deux lignes pour une meme schematique et un meme objet, et c'est voulu : `mesure` est
+     * ce qu'elle rend branchee comme son auteur l'a decrite, `plafond` est ce que ses
+     * machines sortiraient a plein regime. Les melanger classerait une promesse a cote d'un
+     * fait, ce qui est l'erreur que ce depot passe ses journees a defaire.
+     *
+     * Sans ca, la moitie de l'argument du site ne tient pas : quinze mille schematiques
+     * collectees ailleurs que personne ne marquera jamais une par une n'ont pas de mesure,
+     * donc « trouve-moi une usine a silicium » ne les trouve pas. Sur les quarante
+     * premieres entrees reelles, cinq portaient un chiffre.
+     *
+     * Ne touche a rien quand l'analyse ne dit rien du plafond, plutot que de conclure qu'il
+     * est vide. Une schematique renommee par un moderateur passe par ici avec l'analyse
+     * qu'elle avait ; si ce silence effacait les lignes, un changement de nom supprimerait
+     * le travail de la passe d'analyse sans que rien ne le signale. C'est exactement le
+     * piege repare dans la methode d'a cote, dans l'autre sens.
+     */
+    public function indexWhatItCouldMake(): void
+    {
+        $analysis = (array) $this->analysis;
+        if (! array_key_exists('potentialPerMinute', $analysis)
+            && ! array_key_exists('potential', $analysis)) {
+            return;
+        }
+
+        $blocks = max(1, (int) $this->blocks);
+
+        $rows = [];
+        foreach ((array) ($analysis['potentialPerMinute'] ?? []) as $item => $rate) {
+            if (is_string($item) && is_numeric($rate) && $rate > 0) {
+                $rows[substr($item, 0, 40)] = round((float) $rate, 2);
+            }
+        }
+
+        // L'energie suit la meme regle que du cote mesure : ce qui reste une fois que la
+        // schematique s'est servie. Un plafond de production brute classerait une centrale
+        // qui brule la moitie de ce qu'elle fait au-dessus de celle qui la rend.
+        $spare = (float) ($analysis['potential']['made'] ?? 0)
+            - (float) ($analysis['potential']['spent'] ?? 0);
+        if ($spare > 0) {
+            $rows[SchematicItem::POWER] = $spare;
+        }
+
+        $mine = $this->items()
+            ->where('sens', SchematicItem::PRODUIT)
+            ->where('kind', SchematicItem::PLAFOND);
+
+        (clone $mine)->whereNotIn('item', array_keys($rows) ?: [''])->delete();
+
+        foreach ($rows as $item => $rate) {
+            $this->items()->updateOrCreate(
+                ['item' => $item, 'sens' => SchematicItem::PRODUIT, 'kind' => SchematicItem::PLAFOND],
                 ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
             );
         }
