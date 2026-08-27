@@ -1197,6 +1197,11 @@ export async function analyse(text, supply = {}, chosen = null,
       cost: node.block.cost || {},
     })),
     graph,
+    /* What the player said arrives, per block per second. The analytic side has already
+       used it; the moving picture needs the same thing, and needs it to be the **same**
+       thing: a schematic watched running on one supply and reported on another would be
+       two answers to one question. */
+    feeds,
     // The nodes rather than the raw tiles: they carry the size, the role and the checked
     // bridge link, so the picture and the analysis cannot disagree about what is connected.
     tiles: graph.nodes,
