@@ -35,6 +35,16 @@ Route::get('/editer', fn () => response()->file(public_path('index.html')));
  */
 Route::get('/outils/logique', fn () => response()->file(public_path('outils/logique.html')));
 
+/*
+ * The factory planner, the analysis run backwards.
+ *
+ * Static like the logic editor and for the same reason: it needs no server. It reads the
+ * catalogue the bench dumped and unrolls a recipe chain in the visitor's browser, which is
+ * the same arithmetic the analyser runs and has no business being a second implementation
+ * behind an endpoint.
+ */
+Route::get('/outils/planificateur', fn () => response()->file(public_path('outils/planificateur.html')));
+
 Route::get('/auth/discord', [AuthController::class, 'start'])->name('login');
 Route::get('/auth/discord/callback', [AuthController::class, 'callback']);
 Route::post('/deconnexion', [AuthController::class, 'logout']);
