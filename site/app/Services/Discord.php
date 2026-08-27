@@ -18,15 +18,16 @@ use Illuminate\Support\Facades\Http;
 class Discord
 {
     private const AUTHORIZE = 'https://discord.com/oauth2/authorize';
+
     private const TOKEN = 'https://discord.com/api/oauth2/token';
+
     private const ME = 'https://discord.com/api/users/@me';
 
     public function __construct(
         private readonly string $clientId,
         private readonly string $clientSecret,
         private readonly string $redirect,
-    ) {
-    }
+    ) {}
 
     public static function fromConfig(): self
     {
