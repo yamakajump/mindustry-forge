@@ -1,0 +1,3 @@
+set x 1
+tourner-a-gauche 3
+print x

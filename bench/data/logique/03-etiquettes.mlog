@@ -1,0 +1,5 @@
+set i 0
+boucle:
+op add i i 1
+jump boucle lessThan i 10
+end

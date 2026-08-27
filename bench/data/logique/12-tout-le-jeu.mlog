@@ -1,0 +1,11 @@
+sensor total vault1 @totalItems
+radar enemy any any distance turret1 1 cible
+ucontrol move 10 20 0 0 0
+ulocate building core true @copper outx outy trouve construction
+draw color 255 0 0 255 0 0
+drawflush display1
+lookup item resultat 0
+packcolor c 1 0 0 1
+wait 0.5
+op rand r 10 0
+end
