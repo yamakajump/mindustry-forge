@@ -54,6 +54,19 @@ const conduit = {
 
   update(build, world, step) {
     if (build.liquidAmount <= 0.0001) return;
+
+    /* `moveLiquidForward(leaks, ...)`: a pipe pointing at open ground **spills**, two
+       thirds of what it holds every frame, so it never fills up.
+
+       The flag was in the catalogue and read by nothing. An open pipe at the end of a
+       layout blocked the whole line here and drains continuously in the game, which
+       inverts everything upstream: the pump behind it runs flat out in the game and stops
+       on a full tank here. A plated conduit is the one that does not leak, and the one
+       case this had right. */
+    if (build.block.leaks && !build.facing(world)) {
+      build.liquids.remove(build.liquids.current, build.liquids.currentAmount / 1.5);
+      return;
+    }
     build.moveLiquidForward(world, build.liquid);
   },
 };
@@ -109,19 +122,50 @@ const liquidJunction = {
  * block and pushes round.
  */
 const liquidBridge = {
+  begin(build) { build.state.warmup = 0; },
+
   acceptLiquid(build, source, liquid) {
     return (!build.liquid || build.liquid === liquid || build.liquidAmount < 0.2)
       && build.liquidAmount < build.liquidCapacity;
   },
 
-  update(build, world) {
-    if (build.liquidAmount <= 0.0001) return;
+  update(build, world, step) {
     const link = build.node.link;
     const target = link ? world.at(link[0], link[1]) : null;
-    if (target) build.moveLiquid(target, build.liquid);
-    else build.dumpLiquid(build.liquid);
+
+    /* Warmup, which was missing entirely: it creeps towards `efficiency` at a thirtieth a
+       frame and the beam carries nothing below a quarter. A phase conduit with no power
+       carried everything here and nothing in the game; a powered one started seven and a
+       half frames early. */
+    if (target) {
+      build.state.wants = 1;
+      build.state.warmup = approachTo(build.state.warmup || 0,
+        build.block.power > 0 ? (build.state.power ?? 1) : 1, build.delta(step) / 30);
+      if (build.state.warmup >= 0.25 && build.liquids.currentAmount > 0.0001) {
+        build.moveLiquid(target, build.liquids.current);
+      }
+      return;
+    }
+
+    build.state.warmup = 0;
+    /* `doDump` passes **one**, not the default two: unlinked, a liquid bridge pours twice
+       as hard as anything else. The error used to be hidden by `dumpLiquid` borrowing
+       `moveLiquid`'s formula, which is why the two had to be fixed together. */
+    if (build.liquids.currentAmount > 0.0001) {
+      build.dumpLiquid(build.liquids.current, 1);
+    }
+  },
+
+  /** `canDumpLiquid` is `checkDump`: never back down its own beam. */
+  canDumpLiquid(build, other) {
+    return !(other.node?.link
+      && build.world?.at(other.node.link[0], other.node.link[1]) === build);
   },
 };
+
+/** `Mathf.approachDelta`, which this file needed its own copy of. */
+const approachTo = (from, to, speed) =>
+  (from < to ? Math.min(to, from + speed) : Math.max(to, from - speed));
 
 /**
  * A sandbox liquid source.
@@ -268,7 +312,13 @@ const solidPump = {
       (build.node.dry || 0) * (block.base_efficiency || 0) / area
       + (build.node.attrsum || 0) / area);
 
-    let efficiency = block.power > 0 ? (build.state.power ?? 1) : 1;
+    /* `shouldConsume` is "is there room for the result", so a blocked oil extractor stops
+       eating sand and drinking water and stops asking the grid for its hundred and eighty.
+       Kept filling but never stopped consuming, it burned both for nothing. */
+    let efficiency = build.liquids.get(made) < build.liquidCapacity - 0.01 ? 1 : 0;
+    if (efficiency > 0 && block.power > 0) {
+      efficiency = Math.min(efficiency, build.state.power ?? 1);
+    }
     for (const [item, amount] of Object.entries(block.input || {})) {
       if (build.items.get(item) < amount) efficiency = 0;
     }
@@ -279,6 +329,7 @@ const solidPump = {
       efficiency = Math.min(efficiency, held / wanted);
     }
     efficiency = Math.max(0, Math.min(1, efficiency));
+    build.state.wants = efficiency > 0 ? 1 : 0;
 
     if (efficiency > 0) {
       /* The item is taken **before** the pumping, on a counter that only moves while it is

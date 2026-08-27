@@ -111,4 +111,7 @@ measure bXNjaAF4nDWJUQrDIBQEJ0ZDKelnj+GhjPohPJvU+Fp6+yK0sMswu1yxE/YRaua+aTu7T62I
 measure bXNjaAF4nB2KwQqAIBTAZhod7Ff8KEkPUqmZEv19vC4bjLGgFSb7M7LWcVZXyxNbDAbbSvftdVJZtpLDSB17pGuk4LrPO+s/u7uMtkXAgEIJtGhiFmmk8AEYBBe6 30 ../bench/data/oracle/pump-powered.json shallow-water@1,1 shallow-water@2,1 shallow-water@1,2 shallow-water@2,2
 measure bXNjaAF4nBXIWwqAIBQA0fFBfQjtxEVJ+iHlI1Gi3ceFgQPDhlHYGkri6Kt0v2pvbxopGtxoM4zPy2c/W40rT9ydn5Wjn6FegAFQkhY0VvgBFEITng== 30 ../bench/data/oracle/pump-unpowered.json shallow-water@0,1 shallow-water@1,1 shallow-water@0,2 shallow-water@1,2
 measure bXNjaAF4nCXKXQrCMBBF4TPJxB98ciFZVK0DFmwHkrTg7mX05cJ3OShXQbdpNe7d27BWHz5etS9P68ptGbbW7nubjcvs22Efb5z+KeWY9vcAzgBaYgVBIZF+RzBRkEyKLJTJIYEvlCgVmg== 30 ../bench/data/oracle/sorter-both-sides.json
+measure bXNjaAF4nC3JMQ6AIBAAwT3AWPEUHkWAgogQxfu/wbjNFItFBNfjWfBp9Kz1Ca3EYxp8q5fWHObQOxX2fwOW1eYAQfgwixf9Ww9O 30 ../bench/data/oracle/conduit-leaks.json
+measure bXNjaAF4nC2KOw6AIBTAysdRJ6/BoQiPRBIEFbi/wdilQ4tBKWzxZ2QPtchI3V3Z9yjuqFmaZs3pHklcq+MJke2v/wwYJosFFIpPeuoFm2gUtA== 30 ../bench/data/oracle/conduit-plated-holds.json
+measure bXNjaAF4nE3KQQrDIBSE4V9jyKLprtfwUGLeQmJ8qVVKe/oitFCYWczH4FgMroRDuEmW2Krm11uq1yK+hXNm/WfWU59S/UN7jcI1p3tP228uUcvWU+Py9RbKDsxgMYyMWoY5YMIyYRx2fD5V6yDe 30 ../bench/data/oracle/electrolyzer-one-tap.json
 measure bXNjaAF4nD2KWwqAIBQFR82K+mglLcrsEkFp2APafRgRB2ZgODQYRRHcKrRDmsdJ+n1zoaCdD1n7PZ7JC7WP4ZI7Jrrv9Ad7uXM5gBJA2Zfv0GhUBZgc0dhcFWWWoc56AM60Fo0= 30 ../bench/data/oracle/bridge-span.json
