@@ -1,119 +1,182 @@
 <?php
 
 use App\Models\Schematic;
+use App\Models\SchematicItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
 /**
- * What the listing costs, and what it must keep answering while costing less.
+ * What the listing ranks on, and what it costs to answer.
  *
- * The marketplace is heading for fifteen thousand rows, and two things on this page were
- * priced for forty. Measured on a seeded catalogue that size, a single view of the listing
- * spent 141 ms reading the `produces` blob of every public schematic to fill a dropdown of
- * twenty, and sorted the entire catalogue in a temporary B-tree because its default order
- * was an expression no index could serve. Together they were most of the page.
+ * Two separate problems met on this page, and one of them was hiding the other.
  *
- * These tests hold the two fixes in place, and hold the behaviour they were not allowed to
- * change: the ranking has to mean exactly what it meant before it was stored.
+ * The cost: over fifteen thousand rows a single view spent 141 ms reading the `produces`
+ * blob of every public schematic to fill a dropdown of twenty, and its default sort was an
+ * expression no index could serve. Both are gone now that what a schematic makes is a row
+ * in `schematic_items` rather than a key in a blob.
+ *
+ * The meaning: that default sort ranked on net power, so every factory that consumes
+ * electricity scored below zero and sorted beneath an empty schematic. Electricity is
+ * something a base already has. It is a prerequisite the page states, never a debt held
+ * against a schematic, and these tests are what keep it that way.
  */
-it('classe exactement comme l ancienne expression le faisait', function () {
+function ligne(string $name, array $makes, float $powerUsed = 0, float $powerMade = 0, int $blocks = 40): Schematic
+{
+    return Schematic::factory()->create([
+        'visibility' => 'public', 'name' => $name, 'produces' => $makes,
+        'power_used' => $powerUsed, 'power_made' => $powerMade, 'blocks' => $blocks,
+    ]);
+}
+
+it('ne penalise pas une usine parce qu elle consomme du courant', function () {
     /*
-     * The one thing the optimisation was not allowed to touch. `power_per_block` replaced
-     * `(power_made - power_used) / blocks` computed in the ORDER BY, so it has to agree
-     * with it on every row, or the listing quietly reorders itself the day it is deployed.
+     * The bug this whole design turns on. Ranking on `power_made - power_used` meant a
+     * silicon smelter, which eats power and makes none, scored negative, so it sorted
+     * below a schematic containing nothing at all. The default view of a site whose pitch
+     * is "search by what it makes" showed reactors and empty plates.
      */
-    foreach ([[2970.0, 568.0, 90], [400.0, 0.0, 200], [300.0, 0.0, 10],
-        [0.0, 120.0, 40], [50.0, 50.0, 7]] as [$made, $used, $blocks]) {
-        Schematic::factory()->create([
-            'visibility' => 'public',
-            'power_made' => $made, 'power_used' => $used, 'blocks' => $blocks,
-        ]);
-    }
+    ligne('Four a silicium', ['silicon' => 90.0], powerUsed: 600);
+    ligne('Presse a graphite', ['graphite' => 30.0]);
+    Schematic::factory()->create(['visibility' => 'public', 'name' => 'Plaque vide', 'blocks' => 40]);
 
-    $ancien = Schematic::query()->orderByRaw(
-        '(power_made - power_used) / CASE WHEN blocks = 0 THEN 1 ELSE blocks END DESC'
-    )->orderByDesc('power_made')->orderByDesc('id')->pluck('id')->all();
+    $page = $this->get('/schematiques?produit=silicon&tri=best')->assertOk();
 
-    $nouveau = Schematic::query()->orderByDesc('power_per_block')
-        ->orderByDesc('power_made')->orderByDesc('id')->pluck('id')->all();
-
-    expect($nouveau)->toBe($ancien);
+    $page->assertSee('Four a silicium')
+        ->assertDontSee('Plaque vide')
+        ->assertDontSee('Presse a graphite');
 });
 
-it('tient la colonne de classement a jour quel que soit le chemin d ecriture', function () {
-    // Derived on save, so a moderator renaming a schematic cannot leave the site sorting
-    // by a figure that no longer matches the one on the page.
-    $schematic = Schematic::factory()->create([
-        'power_made' => 1000.0, 'power_used' => 200.0, 'blocks' => 40,
-    ]);
-    expect($schematic->fresh()->power_per_block)->toBe(20.0);
+it('classe sur ce qui sort, rapporte a la place occupee', function () {
+    ligne('Grosse et molle', ['graphite' => 100.0], blocks: 200);
+    ligne('Petite et vive', ['graphite' => 60.0], blocks: 10);
 
-    $schematic->update(['power_made' => 2000.0]);
-    expect($schematic->fresh()->power_per_block)->toBe(45.0);
+    $page = $this->get('/schematiques?produit=graphite&tri=best')->assertOk()->getContent();
 
-    // A schematic that parsed into nothing must not divide by zero.
-    $vide = Schematic::factory()->create([
-        'power_made' => 10.0, 'power_used' => 0.0, 'blocks' => 0,
-    ]);
-    expect($vide->fresh()->power_per_block)->toBe(10.0);
-});
-
-it('met bien les mieux faites devant, en lisant la colonne', function () {
-    Schematic::factory()->create([
-        'visibility' => 'public', 'name' => 'Grosse et molle',
-        'blocks' => 200, 'power_made' => 400, 'power_used' => 0,
-    ]);
-    Schematic::factory()->create([
-        'visibility' => 'public', 'name' => 'Petite et vive',
-        'blocks' => 10, 'power_made' => 300, 'power_used' => 0,
-    ]);
-
-    $page = $this->get('/schematiques?tri=best')->assertOk()->getContent();
     expect(strpos($page, 'Petite et vive'))->toBeLessThan(strpos($page, 'Grosse et molle'));
 });
 
-it('ne relit pas tout le catalogue a chaque affichage de la liste', function () {
+it('traite l energie comme une production, donc comme un item cherchable', function () {
+    // A reactor makes energy the way a press makes graphite, so it is found the same way.
+    ligne('Reacteur compact', [], powerUsed: 40, powerMade: 900, blocks: 30);
+    ligne('Four a silicium', ['silicon' => 90.0], powerUsed: 600);
+
+    $this->get('/schematiques?produit='.SchematicItem::POWER.'&tri=best')
+        ->assertOk()
+        ->assertSee('Reacteur compact')
+        ->assertDontSee('Four a silicium');
+});
+
+it('classe une centrale sur ce qu elle laisse, pas sur ce qu elle brule', function () {
     /*
-     * The 141 ms. Filling the "qui produit" dropdown meant pulling every public row's
-     * `produces` into PHP and counting keys, on every single view, for twenty entries.
+     * A plant making six thousand and burning thirteen hundred on its own pumps hands the
+     * base four thousand seven hundred, and that is what somebody comparing two reactors
+     * is comparing. This is not the consumption rule in reverse: a factory's power draw
+     * still never touches its ranking on graphite. It is that when energy is the product,
+     * the product is the surplus.
      */
+    $gourmande = ligne('Grosse et gourmande', [], powerUsed: 1300, powerMade: 6000, blocks: 100);
+    $sobre = ligne('Petite et sobre', [], powerUsed: 0, powerMade: 5000, blocks: 100);
+
+    expect($gourmande->items()->where('item', SchematicItem::POWER)->value('rate'))->toBe(4700.0)
+        ->and($sobre->items()->where('item', SchematicItem::POWER)->value('rate'))->toBe(5000.0);
+
+    $page = $this->get('/schematiques?produit='.SchematicItem::POWER.'&tri=best')
+        ->assertOk()->getContent();
+
+    expect(strpos($page, 'Petite et sobre'))->toBeLessThan(strpos($page, 'Grosse et gourmande'));
+});
+
+it('ne repertorie pas comme centrale ce qui consomme plus qu il ne produit', function () {
+    // A factory with a few solar panels on it is not a power plant, and must not turn up
+    // under "produit de l'energie" ahead of something that actually supplies any.
+    $usine = ligne('Usine avec panneaux', ['silicon' => 90.0], powerUsed: 600, powerMade: 100);
+
+    expect($usine->items()->pluck('item')->all())->toBe(['silicon']);
+});
+
+it('ne pretend pas classer un rendement sans savoir de quoi on parle', function () {
+    /*
+     * Ranking forty graphite a minute against twenty-five silicon a minute would declare
+     * one graphite worth one silicon. It is false, and it would be invisible. So with no
+     * item chosen the listing sorts by date and says so.
+     */
+    ligne('Une schematique', ['graphite' => 40.0]);
+
+    $page = $this->get('/schematiques?tri=best')->assertOk();
+
+    expect($page->viewData('order'))->toBe('new');
+    $page->assertSee('Classees par date, faute de mieux');
+});
+
+it('dit sur la page qu il faudra l alimenter', function () {
+    // The page used to mention power only when there was a surplus, so a silicon line
+    // asking for six hundred energy a second said nothing at all about needing any.
+    $usine = ligne('Four a silicium', ['silicon' => 90.0], powerUsed: 600);
+
+    $this->get("/s/{$usine->slug}")
+        ->assertOk()
+        ->assertSee('Il lui faut')
+        ->assertSee('electricite')
+        ->assertSee('600')
+        ->assertSee('il faudra la brancher sur ton reseau', escape: false)
+        // And it must be clear this is not held against it.
+        ->assertSee('Ce n\'est pas compte contre elle', escape: false);
+});
+
+it('dit au contraire ce qu une centrale laisse au reste de la base', function () {
+    $centrale = ligne('Reacteur compact', [], powerUsed: 40, powerMade: 900, blocks: 30);
+
+    $this->get("/s/{$centrale->slug}")
+        ->assertOk()
+        ->assertSee('elle s\'alimente', escape: false)
+        ->assertSee('860');
+});
+
+it('tient l index de ce qu elle produit a jour a chaque ecriture', function () {
+    $schematic = ligne('Chaine', ['graphite' => 40.0], powerMade: 300, blocks: 20);
+
+    expect($schematic->items()->pluck('rate_per_block', 'item')->all())
+        ->toBe(['graphite' => 2.0, SchematicItem::POWER => 15.0]);
+
+    // Corrected to make something else: it has to stop turning up under graphite.
+    $schematic->update(['produces' => ['silicon' => 10.0], 'power_made' => 0]);
+
+    expect($schematic->items()->pluck('item')->all())->toBe(['silicon']);
+});
+
+it('ne relit pas tout le catalogue a chaque affichage de la liste', function () {
+    // The 141 ms: filling the dropdown meant pulling every public row's `produces` into
+    // PHP and counting keys, on every single view, for twenty entries.
     Schematic::factory()->count(30)->create([
         'visibility' => 'public', 'produces' => ['graphite' => 40.0],
     ]);
 
-    $this->get('/schematiques')->assertOk();
-
     DB::flushQueryLog();
     DB::enableQueryLog();
     $this->get('/schematiques')->assertOk();
-    $requetes = collect(DB::getQueryLog())->pluck('query');
 
-    // Nothing may select `produces` across the whole table a second time.
-    expect($requetes->filter(fn ($sql) => str_contains($sql, 'produces')
-        && ! str_contains($sql, 'limit'))->all())->toBeEmpty();
+    $lourdes = collect(DB::getQueryLog())->pluck('query')
+        ->filter(fn ($sql) => str_contains($sql, 'produces') && ! str_contains($sql, 'limit'));
+
+    expect($lourdes->all())->toBeEmpty();
 });
 
-it('propose quand meme les items, une fois le cache chaud', function () {
-    Cache::flush();
-    Schematic::factory()->create(['visibility' => 'public', 'produces' => ['silicon' => 25.0]]);
+it('propose les items reellement produits, l energie comprise', function () {
+    ligne('Chaine a graphite', ['graphite' => 40.0]);
+    ligne('Reacteur', [], powerMade: 900);
+    Schematic::factory()->create(['visibility' => 'private', 'produces' => ['thorium' => 5.0]]);
 
-    $this->get('/schematiques')->assertOk()->assertSee('silicon');
+    $page = $this->get('/schematiques')->assertOk();
+
+    expect($page->viewData('items'))->toContain('graphite', SchematicItem::POWER)
+        // Nothing private leaks into the dropdown.
+        ->and($page->viewData('items'))->not->toContain('thorium');
 });
 
-it('ne construit pas un chemin json avec ce que le visiteur tape', function () {
-    /*
-     * The item name is interpolated into a JSON path rather than bound as a parameter.
-     * Laravel escapes the quotes, so this is not an injection; it is that an unchecked
-     * three hundred character path is a full scan of the catalogue that cannot match
-     * anything, requested by whoever felt like requesting it.
-     */
-    Schematic::factory()->create([
-        'visibility' => 'public', 'name' => 'Presse a graphite',
-        'produces' => ['graphite' => 40.0],
-    ]);
+it('ne construit pas une requete avec ce que le visiteur tape', function () {
+    ligne('Presse a graphite', ['graphite' => 40.0]);
 
     foreach (["graphite' or '1'='1", str_repeat('x', 300), 'GRAPHITE"', '../etc'] as $bidon) {
         $this->get('/schematiques?produit='.urlencode($bidon))
@@ -121,25 +184,22 @@ it('ne construit pas un chemin json avec ce que le visiteur tape', function () {
             // Rejected, so the filter falls away and the listing is simply unfiltered.
             ->assertSee('Presse a graphite');
     }
-
-    $this->get('/schematiques?produit=silicon')->assertOk()->assertDontSee('Presse a graphite');
 });
 
 it('donne un ordre total, pour que la pagination ne perde rien', function () {
     /*
      * Every sort here has ties, and rows that compare equal come back in whatever order
      * the database found convenient, which it has no reason to repeat between two pages.
-     * The result would be a schematic shown on page two and again on page three while
-     * another is never shown at all, and it would read as the site losing things.
+     * The result would be a schematic shown twice while another is never shown at all.
      */
     Schematic::factory()->count(50)->create([
-        'visibility' => 'public', 'power_made' => 100, 'power_used' => 0, 'blocks' => 10,
+        'visibility' => 'public', 'produces' => ['graphite' => 40.0], 'blocks' => 10,
     ]);
 
     $vus = [];
     foreach (range(1, 3) as $page) {
-        foreach ($this->get("/schematiques?page={$page}")->assertOk()
-            ->viewData('schematics')->items() as $row) {
+        foreach ($this->get("/schematiques?produit=graphite&tri=best&page={$page}")
+            ->assertOk()->viewData('schematics')->items() as $row) {
             $vus[] = $row->id;
         }
     }
