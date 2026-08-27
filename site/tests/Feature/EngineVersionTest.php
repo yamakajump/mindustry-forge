@@ -44,3 +44,34 @@ it('change quand une source change', function () {
 
     expect(EngineVersion::current())->toBe($before);
 });
+
+/**
+ * The stamp has to cover the pass as well as the engine.
+ *
+ * A field the analysis computes and the ingestion pass drops is a field nobody has, and
+ * for a whole evening that was true of the item ceiling: `potentialPerMinute` reached no
+ * column, the version did not move because only `public/forge` was hashed, and fifteen
+ * thousand rows read as current while two per cent of them carried the figure the site
+ * sells. Editing the pass has to age the catalogue, or the next omission hides the same
+ * way.
+ */
+it('change quand le tamis de la passe change', function () {
+    $before = EngineVersion::current();
+
+    $path = dirname(base_path()).DIRECTORY_SEPARATOR.'tools'.DIRECTORY_SEPARATOR.'ingest.mjs';
+    expect(is_file($path))->toBeTrue('tools/ingest.mjs introuvable');
+
+    $kept = file_get_contents($path);
+    try {
+        file_put_contents($path, $kept."
+// touche par un test
+");
+        cache()->flush();
+        expect(EngineVersion::current())->not->toBe($before);
+    } finally {
+        file_put_contents($path, $kept);
+        cache()->flush();
+    }
+
+    expect(EngineVersion::current())->toBe($before);
+});

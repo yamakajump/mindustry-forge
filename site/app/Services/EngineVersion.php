@@ -54,6 +54,20 @@ class EngineVersion
         'engine/units.js',
     ];
 
+    /**
+     * What survives the pass, as opposed to what computes it.
+     *
+     * `tools/ingest.mjs` decides which of the analysis's fields reach a column, and a
+     * figure the engine produced but the pass dropped is a figure nobody has. It cost two
+     * evenings to learn that: `potentialPerMinute` was computed for every schematic and
+     * kept for none, the version never moved because only `public/forge` was hashed, so
+     * fifteen thousand rows read as current while the item ceiling did not exist in any of
+     * them. Relative to the repository root, not to `public/forge`.
+     */
+    private const PIPELINE = [
+        'tools/ingest.mjs',
+    ];
+
     /* The list has to be walked against the directory when a file is added, and it was not:
        `assembler.js`, `blast.js`, `cargo.js` and `units.js` sat outside it for four commits.
        A missing file is the silent failure this class exists to prevent - the version stays
@@ -82,8 +96,15 @@ class EngineVersion
     {
         $digest = hash_init('sha256');
 
+        $files = [];
         foreach (self::SOURCES as $file) {
-            $path = public_path("forge/{$file}");
+            $files[$file] = public_path("forge/{$file}");
+        }
+        foreach (self::PIPELINE as $file) {
+            $files[$file] = dirname(base_path()).DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $file);
+        }
+
+        foreach ($files as $file => $path) {
             // The name goes in as well as the contents, so that renaming a file, or losing
             // one, changes the version. A missing source hashes as absent rather than
             // being skipped: an engine with a file gone is not the engine that ran before.
