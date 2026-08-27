@@ -1848,6 +1848,24 @@ const SCENARIOS = {
     { x: 18, y: 0, block: "payload-void", rotation: 0 },
   ],
 
+  /* Un assembleur a moitie alimente. Il construit ses quatre drones un par un, et chacun
+     coute quatre secondes divisees par la fraction de courant qu'il recoit : avec une seule
+     chambre a combustion pour cent cinquante par seconde, il en sort trois en trente
+     secondes et pas quatre. Les drones sont des unites sur la carte, donc le banc les
+     compte comme les autres.
+
+     Et il ne boit rien : `shouldConsume` demande que tout son plan soit la, et il n'a aucun
+     stell ni aucun mur. Ses quatre-vingt-dix cyanogenes sont intacts a la fin. Cinq sur
+     cinq : couvre 3..7 par -2..2. */
+  "assembler-half-fed": () => ({
+    tiles: [
+      { x: 5, y: 0, block: "tank-assembler", rotation: 0 },
+      { x: 5, y: 3, block: "combustion-generator", rotation: 0 },
+      { x: 5, y: 4, block: "item-source", rotation: 0, raw: item("coal") },
+    ],
+    stock: ["cyanogen~90@5,0"],
+  }),
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },

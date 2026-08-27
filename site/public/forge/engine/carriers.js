@@ -19,6 +19,7 @@ import { LIQUIDS } from "./liquids.js";
 import { POWER } from "./power.js";
 import { PAYLOADS } from "./payloads.js";
 import { massDriver } from "./massdriver.js";
+import { ASSEMBLERS } from "./assembler.js";
 
 /** `Conveyor.itemSpace` and `Conveyor.capacity`, both private constants in the game. */
 const ITEM_SPACE = 0.4;
@@ -1775,6 +1776,10 @@ export function behaviourOf(node) {
      they are the same shape, and to a simulation they are nothing alike. */
   if (node.block.carries === "liquid") return LIQUIDS[node.role] || null;
   // Cargo is a third network, and it moves like neither of the other two.
+  /* `Object.hasOwn`, and not a plain lookup: one of the roles in this engine is literally
+     called `constructor`, and `{}["constructor"]` is `Object`, which is truthy. A block
+     producer read as an assembler and stopped making anything. */
+  if (Object.hasOwn(ASSEMBLERS, node.role)) return ASSEMBLERS[node.role];
   if (node.block.carries === "payload") return PAYLOADS[node.role] || null;
   if (node.role === "pump") return LIQUIDS.pump;
   // The sandbox power tap is filed under the grid rather than under generators, because
