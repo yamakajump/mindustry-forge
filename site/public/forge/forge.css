@@ -322,9 +322,15 @@ details.supply input[type=text] { width: 280px; }
 .block-panel .sub { margin: 0 0 10px; }
 .stage canvas { cursor: pointer; }
 
+/* La largeur naturelle d'une liste deroulante est celle de son plus long libelle, et rien
+   ne la borne par defaut : sur la page des schematiques en 320 px, le choix « n'importe
+   quoi » faisait 281 px dans une ligne de 221 et poussait la page 3 px hors de l'ecran.
+   Trois pixels ne sont pas un defaut visuel, c'est une page qui glisse lateralement sous le
+   pouce. `max-width` la contient sans rien changer partout ou elle tenait deja. */
 select {
   background: var(--bg); color: var(--ink); border: 2px solid var(--edge);
   border-radius: 6px; padding: 10px 12px; min-height: 44px; font: inherit;
+  max-width: 100%;
 }
 
 /* Managing a schematic: who can see it, its link, and getting rid of it.
@@ -571,6 +577,39 @@ select {
 
 @media (max-width: 720px) {
   .editor { grid-template-columns: 180px 1fr; }
+}
+
+/*
+ * L'editeur au doigt.
+ *
+ * Mesure sur un telephone courant, en 390 px : la barre voulait 656 px, donc le selecteur
+ * de mode sortait de 36 px, l'annulation de 136 et la jauge de taille de 266. Le document
+ * ne defile pas horizontalement, alors ces commandes n'etaient pas a l'etroit, elles
+ * n'existaient pas. Le mode edition est notre plus gros ecart en notre faveur face a la
+ * concurrence, et il etait inutilisable sur telephone.
+ *
+ * Deux corrections, et l'ordre compte.
+ *
+ * `flex-wrap` est la garantie : une barre qui passe a la ligne ne peut pas cacher une
+ * commande, alors qu'une barre qui defile la cache derriere un geste que rien n'annonce, et
+ * qu'une barre qui retrecit finit par ne plus pouvoir. C'est le filet, et il tient meme le
+ * jour ou une traduction rallonge un libelle ou qu'un bouton s'ajoute.
+ *
+ * Le reste est ce qui evite d'avoir besoin du filet. Le bloc de marque mangeait 194 px des
+ * 386 disponibles, la moitie de la barre pour une decoration : dans l'editeur c'est un
+ * `span`, il ne mene nulle part, et le selecteur de mode ramene deja a l'analyseur. Et la
+ * jauge de taille est un temoin, pas une commande, donc elle se lit aussi bien courte.
+ * Ensemble, la barre retombe a 372 px et tient sur une ligne en francais a 390.
+ */
+@media (max-width: 560px) {
+  .editor-bar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
+  .editor-bar .brand { display: none; }
+  .editor-modes { margin-left: 0; }
+  /* Pas `margin-left: auto` ici : sur une barre qui passe a la ligne, la marge automatique
+     mange tout l'espace libre et pousse la jauge sur une ligne a elle, calee a droite,
+     ou elle a l'air d'un oubli. Collee aux boutons, elle se lit comme leur suite. */
+  .editor-size { margin-left: 0; gap: 6px; }
+  .editor-size .bar { width: 48px; }
 }
 
 /* Les filtres de la palette : la planète d'abord, la catégorie ensuite.

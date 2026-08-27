@@ -21,7 +21,7 @@
 @endphp
 
 @section('body')
-<p class="sub"><a href="/blocs">{{ __('blocs.page.retour') }}</a></p>
+<p class="sub bloc-retour"><a href="/blocs">{{ __('blocs.page.retour') }}</a></p>
 
 <div class="bloc-head">
   @php($sprite = \App\Services\Sprites::block($block->name, 96))

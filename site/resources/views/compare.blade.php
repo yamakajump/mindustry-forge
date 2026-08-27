@@ -38,7 +38,10 @@
     @if($recent->isEmpty())
       <p class="empty">{{ __('schema.comparer.rien-a-comparer') }}</p>
     @else
-      <ul class="bloc-links">
+      {{-- Sa propre classe et pas celle du wiki des blocs : deux pages qui partagent une
+           forme ne partagent pas un selecteur, sinon un reglage fait pour l'une deplace
+           l'autre sans que personne le voie. --}}
+      <ul class="cmp-liste">
         @foreach($recent as $one)
           <li><a href="/s/{{ $one->slug }}">{{ $one->name }}</a>
             <span class="cmp-de">{{ $one->slug }}</span></li>
