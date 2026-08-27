@@ -285,3 +285,34 @@ it('ne reprend pas ce que le moteur courant a deja mesure', function () {
         ->expectsOutputToContain('0 analysees')
         ->assertSuccessful();
 });
+
+it('keeps exactly the same rows whether it asks one by one or in flight', function () {
+    /*
+     * The batched path is an optimisation, and an optimisation that changes the answer is
+     * a bug wearing a stopwatch. Same fixture, both settings, same rows.
+     */
+    toolFake(['aaa', 'bbb']);
+    collecte(['source' => Schematic::MINDUSTRY_TOOL]);
+    $oneByOne = Schematic::orderBy('source_id')->get(['source_id', 'name', 'author', 'code']);
+
+    Schematic::query()->delete();
+
+    toolFake(['aaa', 'bbb']);
+    collecte(['source' => Schematic::MINDUSTRY_TOOL, '--paralleles' => 8]);
+    $inFlight = Schematic::orderBy('source_id')->get(['source_id', 'name', 'author', 'code']);
+
+    expect($inFlight->toArray())->toBe($oneByOne->toArray());
+});
+
+it('does not lose a whole page to one duplicate inside it', function () {
+    /*
+     * A page is written in one transaction, and a duplicate id inside it raises a
+     * constraint violation mid-way. If that aborted the batch, one repeated entry on their
+     * side would silently cost us the ninety-nine others, page after page.
+     */
+    toolFake(['aaa', 'aaa', 'bbb']);
+
+    collecte(['source' => Schematic::MINDUSTRY_TOOL]);
+
+    expect(Schematic::pluck('source_id')->sort()->values()->all())->toBe(['aaa', 'bbb']);
+});

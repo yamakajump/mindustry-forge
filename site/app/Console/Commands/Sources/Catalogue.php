@@ -50,6 +50,30 @@ abstract class Catalogue
      */
     abstract public function fetch(array $listed): ?array;
 
+    /**
+     * A whole page at once, which is the only way to make this fast.
+     *
+     * One entry costs one or two round trips, and a round trip costs two hundred
+     * milliseconds that no pause makes shorter. Asking one at a time means eighty minutes
+     * of waiting for twelve thousand entries, even flat out. Asking together means two
+     * hundred milliseconds for twenty-four.
+     *
+     * The default loops, so a source written later works without knowing any of this. The
+     * two that exist replace it.
+     *
+     * @param  array<string, array>  $listed  The entries to take, by id.
+     * @return array<string, ?array>
+     */
+    public function fetchMany(array $listed): array
+    {
+        $rows = [];
+        foreach ($listed as $id => $one) {
+            $rows[$id] = $this->fetch($one);
+        }
+
+        return $rows;
+    }
+
     /** Une chaine vide n'est pas une description, c'est l'absence de description. */
     protected function orNothing(mixed $text): ?string
     {

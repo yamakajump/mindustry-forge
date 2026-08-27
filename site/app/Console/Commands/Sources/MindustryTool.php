@@ -107,6 +107,64 @@ class MindustryTool extends Catalogue
     }
 
     /**
+     * A page in three waves instead of two hundred calls in single file.
+     *
+     * Details together, then the `.msch` bodies together, then the authors those reveal.
+     * The order matters: the authors are only known once the details are in, and there is
+     * a handful of them per page once deduplicated, where asking one by one would be a
+     * third of the whole collection's traffic.
+     */
+    public function fetchMany(array $listed): array
+    {
+        $details = [];
+        foreach ($this->http->all(array_map(
+            fn ($id) => self::BASE."/schematics/{$id}", array_combine(array_keys($listed), array_keys($listed))
+        )) as $id => $answer) {
+            $found = $answer?->json();
+            $details[$id] = is_array($found) && $found !== [] ? $found : null;
+        }
+
+        // Only the ones whose detail answered: asking for the schematic of an entry that
+        // vanished between listing and detail is a call paid for a 404.
+        $alive = array_keys(array_filter($details));
+        $codes = $this->http->all(array_map(
+            fn ($id) => self::BASE."/schematics/{$id}/data", array_combine($alive, $alive)
+        ));
+
+        // The authors this page introduces, each asked for once. The cache holds from one
+        // page to the next, so a whole collection pays for a person once however many
+        // schematics they posted.
+        $missing = [];
+        foreach ($details as $detail) {
+            $who = $detail['createdBy'] ?? null;
+            if (is_string($who) && $who !== '' && ! array_key_exists($who, $this->names)) {
+                $missing[$who] = self::BASE."/users/{$who}";
+            }
+        }
+        foreach ($this->http->all($missing) as $who => $answer) {
+            $user = $answer?->json();
+            $this->names[$who] = is_array($user) ? $this->orNothing($user['name'] ?? null) : null;
+        }
+
+        $rows = [];
+        foreach ($listed as $id => $one) {
+            $detail = $details[$id] ?? null;
+            $body = $codes[$id] ?? null;
+            $rows[$id] = $detail === null || $body === null || $body->body() === ''
+                ? null
+                : [
+                    'name' => (string) ($detail['name'] ?? $one['name'] ?? ''),
+                    'description' => $this->orNothing($detail['description'] ?? null),
+                    'code' => base64_encode($body->body()),
+                    'author' => $this->names[$detail['createdBy'] ?? ''] ?? null,
+                    'meta' => $detail,
+                ];
+        }
+
+        return $rows;
+    }
+
+    /**
      * Le pseudo derriere l'identifiant que le detail donne.
      *
      * Le detail ne nomme pas l'auteur, il le numerote. Un credit qu'on ne peut pas lire
