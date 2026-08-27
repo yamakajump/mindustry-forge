@@ -101,6 +101,7 @@
 import { loadCatalogue } from "../forge/analyse.js";
 import { plan } from "../forge/plan.js";
 import { t, translate, ready } from "../forge/i18n.js";
+import { loadNames, nameOf } from "../forge/noms.js";
 
 /* Chaque hypothese nommee en toutes lettres, jamais un prefixe suivi d'une variable. Une
    cle collee au rendu est une cle qu'aucun controle ne voit, donc le jour ou `plan.js` en
@@ -120,7 +121,9 @@ const $ = (id) => document.getElementById(id);
 const sortie = $("sortie");
 
 const catalogue = await loadCatalogue("../forge/blocks.json");
-await ready;
+/* Les noms du jeu, charges avec le reste. Dix-huit kilo-octets, et sans eux la page affiche
+   des identifiants redresses : `Blast drill` au lieu de `Foreuse a explosion`. */
+await Promise.all([loadNames(), ready]);
 
 /* Les objets qu'on peut demander : ce que le jeu sait fabriquer, plus ce qu'il sait
    extraire. Proposes plutot que tapes, pour qu'un joueur choisisse dans ce qui existe au
@@ -145,10 +148,17 @@ function remplirObjets() {
   const planete = $("planete").value;
   const garde = $("objet").value;
   $("objet").innerHTML = "";
-  for (const nom of objetsProposes(planete)) {
+  /* Triees sur le nom affiche et pas sur l'identifiant : une liste francaise rangee dans
+     l'ordre alphabetique anglais met « Charbon » avant « Cuivre » et « Sable » apres
+     « Silicium », ce qui se lit comme un desordre. */
+  const objets = objetsProposes(planete)
+    .map((nom) => ({ nom, affiche: lisible(nom) }))
+    .sort((a, b) => a.affiche.localeCompare(b.affiche, "fr"));
+
+  for (const { nom, affiche } of objets) {
     const option = document.createElement("option");
     option.value = nom;
-    option.textContent = nom;
+    option.textContent = affiche;
     $("objet").append(option);
   }
   if ([...$("objet").options].some((o) => o.value === garde)) $("objet").value = garde;
@@ -171,7 +181,10 @@ const nombre = (valeur, decimales = 2) =>
  * brut. Meme regle que `Block::title()` cote PHP, et les deux bougeront ensemble le jour ou
  * le catalogue portera de vrais noms.
  */
-const lisible = (id) => String(id).replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
+/* Le nom que le jeu lui donne, dans la langue du lecteur, et l'identifiant redresse quand
+   il n'en donne aucun. Le repli sert a dix-sept blocs que le jeu ne nomme dans aucune de ses
+   trente-sept langues, et au premier rendu si les noms ne sont pas encore charges. */
+const lisible = (id, famille = null) => nameOf(famille || familleDe(id), id);
 
 /*
  * De quelle famille une chose releve, demande au catalogue plutot qu'ecrit en liste.
@@ -202,7 +215,7 @@ function chose(nom, famille = null, taille = 20) {
      personne n'affiche ici. Si l'un passait quand meme, l'image cassee se retire elle-meme
      et le nom reste : une icone manquante ne doit pas se voir. */
   img.addEventListener("error", () => img.remove());
-  span.append(img, document.createTextNode(lisible(nom)));
+  span.append(img, document.createTextNode(lisible(nom, famille || familleDe(nom))));
   return span;
 }
 
