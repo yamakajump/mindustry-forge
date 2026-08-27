@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Services\GameNames;
+
 /**
  * One block of the game, read from the catalogue the bench printed.
  *
@@ -38,9 +40,18 @@ class Block
      * searching for what they saw in the game has to find it here, so the identifier is
      * shown alongside and this prettier form is only ever decoration.
      */
+    /**
+     * What to call it on screen, in the reader's language.
+     *
+     * The game's own name when the game states one, which it does for four hundred and
+     * eleven of these. The fallback is the identifier with its dashes taken out, and it is
+     * reached only by `air`, three removed unit factories and thirteen ore floors, none of
+     * which the game names in any of its thirty-seven languages.
+     */
     public function title(): string
     {
-        return ucfirst(str_replace('-', ' ', $this->name));
+        return GameNames::of('block', $this->name)
+            ?? ucfirst(str_replace('-', ' ', $this->name));
     }
 
     public function category(): string

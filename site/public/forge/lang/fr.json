@@ -132,6 +132,8 @@
   "outils.planificateur.je-veux": "Je veux",
   "outils.planificateur.par-min": "/min",
   "outils.planificateur.par-minute": "par minute",
+  "outils.planificateur.par-sec": "/s",
+  "outils.planificateur.par-seconde": "par seconde",
   "outils.planificateur.plan": "Le plan",
   "outils.planificateur.rien": "Rien a construire pour cette demande.",
   "outils.planificateur.sans-source": "rien ne le produit dans le catalogue",

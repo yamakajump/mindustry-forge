@@ -85,8 +85,12 @@ it('dit ou trouver ce que le bloc consomme, y compris au sol', function () {
     // prints it in plain text rather than pointing at a dead link. That is why this looks
     // for the title and not for the `sand-floor` identifier: the identifier only ever
     // appears in an href.
-    $page->assertSee('Pulverizer')
-        ->assertSee('Sand floor')
+    //
+    // The titles are the game's own French, since `Block::title()` reads the bundle the jar
+    // carries. They were `Pulverizer` and `Sand floor` here, which was the identifier with
+    // its dashes taken out and offered to a French reader.
+    $page->assertSee('Pulvérisateur')
+        ->assertSee('Sable')
         ->assertDontSee('/blocs/sand-floor');
 });
 

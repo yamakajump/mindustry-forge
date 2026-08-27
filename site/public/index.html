@@ -289,7 +289,12 @@ function render(report) {
   const needs = report.needs || [];
   if (needs.length) {
     right.push(`<div class="card"><h2>${escape(t("analyse.besoins.titre"))}</h2>${needs.map((need) => {
-      const best = need.options.slice(0, 3);
+      /* Quatre, comme le planificateur. Trois retirait toujours l'option la moins chere a
+         debloquer, la liste etant triee par nombre de blocs croissant : la foreuse
+         mecanique n'etait jamais proposee. Quatre est le vivier d'une planete, donc une
+         schematique dont le monde est reconnu voit tout ; une schematique qui melange les
+         deux mondes en voit quatre sur huit, et la n'importe quel choix serait arbitraire. */
+      const best = need.options.slice(0, 4);
       const label = need.resource.startsWith("*")
         ? escape(t("analyse.besoins.combustible"))
         : `${withIcon(need.resource)}${escape(need.resource)}`;
