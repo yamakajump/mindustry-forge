@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\SchematicController;
+use App\Http\Controllers\SocialCardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,6 +40,12 @@ Route::post('/deconnexion', [AuthController::class, 'logout']);
 
 Route::get('/schematiques', [BrowseController::class, 'index']);
 Route::get('/s/{schematic}', [SchematicController::class, 'show']);
+
+/* What Discord shows when the link above is pasted. An address of its own rather than the
+   raw preview: a plan is square or very long depending on what was copied, and an unfurler
+   crops it without saying so. The card is always the shape they expect, and it carries the
+   name, the figures and the mark. */
+Route::get('/s/{schematic}/carte.jpg', [SocialCardController::class, 'show']);
 
 /* The string itself, so the analyser can pull one in from a shared link. Plain text and
    nothing else: this is a public schematic, and everything else about it is on its page. */
