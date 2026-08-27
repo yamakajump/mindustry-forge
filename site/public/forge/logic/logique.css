@@ -1,10 +1,10 @@
 /*
- * L'editeur de logique, et lui seul.
+ * The logic editor, and nothing else.
  *
- * Sa propre feuille plutot qu'une section de plus dans `forge.css` : trois voies editent ce
- * fichier en ce moment, et une page d'outil n'a aucune raison de faire partie du chemin
- * critique de la page d'analyse. Les couleurs viennent des variables de `forge.css`, donc
- * un changement de palette la traverse sans qu'on y touche.
+ * A sheet of its own rather than one more section of `forge.css`: three voies are editing
+ * that file right now, and a tool page has no business on the analyser's critical path.
+ * The colours come from `forge.css` variables, so a change of palette reaches this page
+ * without anyone touching it.
  */
 
 .outil {
@@ -35,7 +35,7 @@
   .atelier { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* La feuille de code ------------------------------------------------------------------ */
+/* The sheet of code -------------------------------------------------------------------- */
 
 .mlog {
   position: relative;
@@ -44,18 +44,17 @@
   background: var(--panel);
   border: 2px solid var(--edge);
   border-radius: var(--radius);
-  /* Pas de `overflow: hidden` ici : la liste des suggestions est une fille de ce bloc, et
-     elle doit pouvoir depasser en bas. C'est la gouttiere et la feuille qui rognent, pas
-     le cadre. */
+  /* No `overflow: hidden` here: the suggestion list is a child of this block and has to be
+     able to hang below it. The gutter and the sheet do the clipping, not the frame. */
 
-  /* Une seule mesure pour les deux couches. Elles doivent tomber au pixel pres, sinon le
-     texte peint glisse sous le curseur des la premiere ligne un peu longue. */
+  /* One set of measurements for both layers. They have to land on the same pixel, or the
+     painted text drifts out from under the caret on the first slightly long line. */
   --pas: 21px;
   --taille: 14px;
   --marge: 10px 12px;
 
-  /* Les couleurs de la syntaxe, ici et pas dans `:root` : elles ne servent qu'a cet
-     outil, et `:root` est un bien commun que trois voies se partagent. */
+  /* The syntax colours, here rather than in `:root`: they serve this one tool, and
+     `:root` is common ground that three voies share. */
   --k-instruction: var(--accent);
   --k-monde: var(--warn);
   --k-inconnu: var(--bad);
@@ -88,7 +87,7 @@
 
 .mlog-sheet { position: relative; min-height: 420px; overflow: hidden; border-radius: 0 6px 6px 0; }
 
-/* Les deux couches. Toute propriete qui deplace un caractere doit etre dans les deux. */
+/* The two layers. Any property that moves a character has to be in both of them. */
 .mlog-paint,
 .mlog-input {
   margin: 0;
@@ -145,11 +144,11 @@
 .k-etiquette { color: var(--k-etiquette); font-weight: 600; }
 .k-variable, .k-operande { color: var(--k-variable); }
 
-/* Une ligne que le jeu remplace par un noop. Elle reste lisible : elle est a corriger,
-   pas a cacher. */
+/* A line the game turns into a noop. It stays readable: it is there to be fixed, not
+   hidden. */
 .mlog-dead { opacity: .55; background: rgba(255, 139, 139, .07); }
 
-/* La liste des suggestions ------------------------------------------------------------ */
+/* The suggestion list ------------------------------------------------------------------ */
 
 .mlog-suggest {
   position: absolute;
@@ -193,7 +192,7 @@
   overflow: hidden;
 }
 
-/* Le panneau de droite ---------------------------------------------------------------- */
+/* The panel on the right ---------------------------------------------------------------- */
 
 .cote { display: grid; gap: 16px; }
 .cote .card { margin: 0; }
