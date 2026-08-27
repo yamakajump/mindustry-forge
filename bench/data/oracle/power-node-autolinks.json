@@ -38,6 +38,28 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "block": "laser-drill",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 18,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 20,
+      "y": 13
+    }
+  ],
   "containers": [
     {
       "block": "vault",

@@ -203,6 +203,118 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 17,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 18,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 19,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 20,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 21,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 22,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 23,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 24,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 25,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 26,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 27,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 28,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 29,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 30,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 31,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 32,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 34,
+      "y": 13
+    }
+  ],
   "containers": [
     {
       "block": "vault",

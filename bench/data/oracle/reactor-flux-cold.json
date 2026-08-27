@@ -35,6 +35,18 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "flux-reactor",
+      "x": 14,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 18,
+      "y": 14
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

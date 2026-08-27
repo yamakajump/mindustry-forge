@@ -771,6 +771,11 @@ export class World {
     this.tick = 0;
     this.grids = [];
 
+    /* `Time.run(delay, ...)`: what the game schedules for later rather than doing now. One
+       thing uses it and it matters: an explosion goes off in waves, two frames apart, so a
+       row of reactors comes down over a second rather than inside one call. */
+    this.pending = [];
+
     /* Who is actually updated, which is not everybody: a block that fell asleep comes out
        of this list, and waking pushes it back on the **end**. */
     this.awake = this.builds.filter((build) => !build.block.no_update);
@@ -806,8 +811,26 @@ export class World {
   at(x, y) { return this.tiles.get(`${x},${y}`) || null; }
 
   /** One frame at sixty a second. `Time.delta` is 1. */
+  /** `Time.run`: do this in `delay` frames. */
+  later(delay, task) {
+    this.pending.push({ left: delay, task });
+  }
+
   step(delta = 1) {
     this.tick++;
+
+    // Whatever came due, before anything else moves.
+    if (this.pending.length) {
+      const due = [];
+      this.pending = this.pending.filter((one) => {
+        one.left -= delta;
+        if (one.left > 0) return true;
+        due.push(one);
+        return false;
+      });
+      for (const one of due) one.task();
+    }
+
     /* The grids settle **first**, which is the order the game's own loop runs in:
        `Groups.powerGraph.update()` at `Logic.java:478`, `Groups.build.update()` at 482.
 

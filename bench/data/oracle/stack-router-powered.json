@@ -44,6 +44,33 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "duct",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "surge-router",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "power-source",
+      "x": 14,
+      "y": 14
+    }
+  ],
   "containers": [
     {
       "block": "vault",

@@ -52,6 +52,33 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "duct-unloader",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "duct",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "duct",
+      "x": 17,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13
+    }
+  ],
   "containers": [
     {
       "block": "vault",

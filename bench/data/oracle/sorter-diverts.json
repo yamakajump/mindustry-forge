@@ -68,6 +68,48 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "vault",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 15
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 16
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 16
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 16
+    },
+    {
+      "block": "sorter",
+      "x": 15,
+      "y": 16
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 16
+    },
+    {
+      "block": "vault",
+      "x": 18,
+      "y": 16
+    }
+  ],
   "containers": [
     {
       "block": "vault",

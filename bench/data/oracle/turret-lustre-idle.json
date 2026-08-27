@@ -28,6 +28,18 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "lustre",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "power-source",
+      "x": 16,
+      "y": 13
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

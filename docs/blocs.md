@@ -124,9 +124,9 @@ second, c'est une intuition qui a l'air d'un portage.
       bridge-conveyor
 - [x] `BuildTurret` - 1 bloc - ne consomme rien tant qu'il n'a rien a reconstruire
       build-tower
-- [x] `ColoredFloor` - 1 bloc - de la peinture
+- [x] `ColoredFloor` - 1 bloc - le jeu refuse de le poser depuis une schematique
       colored-floor
-- [x] `ColoredWall` - 1 bloc - de la peinture
+- [x] `ColoredWall` - 1 bloc - idem : il ne peut pas etre dans un schema
       colored-wall
 - [x] `ContinuousLiquidTurret` - 1 bloc - ses munitions sont un liquide
       sublimate

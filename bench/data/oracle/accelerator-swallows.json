@@ -47,6 +47,33 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 15
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 15
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 15
+    },
+    {
+      "block": "interplanetary-accelerator",
+      "x": 18,
+      "y": 15
+    },
+    {
+      "block": "power-source",
+      "x": 18,
+      "y": 20
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

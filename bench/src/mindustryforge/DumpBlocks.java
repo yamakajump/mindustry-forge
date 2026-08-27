@@ -259,6 +259,19 @@ public class DumpBlocks {
                 entry.put("power_capacity", block.consPower.capacity);
             }
             entry.put("health", block.health);
+            /* De quoi mourir, et emporter les voisins. Un bloc qui saute rend au souffle son
+               explosivite de base plus ce qu'il tenait, et un reacteur au thorium y ajoute
+               un second souffle qui lui est propre. */
+            if (block.baseExplosiveness != 0f) {
+                entry.put("base_explosiveness", block.baseExplosiveness);
+            }
+            if (block.explosivenessScale != 1f) {
+                entry.put("explosiveness_scale", block.explosivenessScale);
+            }
+            if (block instanceof mindustry.world.blocks.power.NuclearReactor pile) {
+                entry.put("explosion_radius", pile.explosionRadius);
+                entry.put("explosion_damage", pile.explosionDamage);
+            }
             /* How long this block takes to build, which is not a field anyone typed: it is
                derived from the requirements in `Block.init` as the sum of amount times item
                cost. A constructor's whole clock is the build time of whatever it was set
@@ -371,6 +384,10 @@ public class DumpBlocks {
             // Whether an incinerator will take it. Water will not burn.
             if (liquid.incinerable) entry.put("incinerable", true);
             entry.put("temperature", liquid.temperature);
+            /* Ce qu'un plein de ce liquide ajoute au souffle quand le bloc qui le tenait
+               saute. Un reservoir d'huile ne fait pas le meme trou qu'un reservoir d'eau. */
+            entry.put("explosiveness", liquid.explosiveness);
+            entry.put("flammability", liquid.flammability);
             liquids.put(liquid.name, entry);
         }
         root.put("liquids", liquids);

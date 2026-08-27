@@ -65,9 +65,22 @@ après mille huit cents images ne sait pas dire laquelle a divergé. Il sert pou
 
 ### 3. Ce que le moteur ne modélise pas du tout
 
-- **Le souffle d'une explosion.** `kill()` vide le bloc et le ferme, et un bloc mort
-  n'accepte plus rien, mais le jeu emporte aussi une partie de ce qui le touchait.
-  `reactor-neoplasia-full` est construit autour de ce trou.
+- ~~**Le souffle d'une explosion.**~~ Fait. Un bloc a des points de vie, il meurt à zéro, et
+  sa mort part en vagues qui rayonnent depuis son centre. `Damage.tileDamage` n'est pas un
+  rayon : chaque rayon **se dépense** sur ce qu'il traverse, donc un mur devant un réacteur
+  encaisse à sa place et ce qui est derrière tient. C'est la raison pour laquelle on
+  construit un banc de réacteurs avec des murs entre eux, et c'est un fait sur un plan
+  qu'aucun débit ne dit.
+
+  Deux surprises mesurées : le souffle propre d'un réacteur au thorium, dix-neuf cases de
+  cinq mille dégâts, **épargne ta propre équipe** (`Damage.damage` prend en argument
+  l'équipe à ne pas toucher), donc dans une schématique il ne touche rien. Ce qui blesse
+  vraiment est le souffle générique, fait de ce que le bloc **tenait** : trente thoriums
+  valent trente-huit d'explosivité en trois vagues de dix-neuf, ce qui tue une jonction
+  collée à lui et laisse un convoyeur deux cases plus loin.
+
+  Le banc compare désormais **ce qui reste debout**, ce qui manquait : les compteurs d'un
+  bloc mort sont à zéro des deux côtés, et ça se lit comme un accord.
 - **Le fret aérien, à moitié.** `cargo.js` fait voler l'unité, la charge et la décharge, et
   `units.js` porte la physique de vol du jeu. Ce qui manque n'est pas du code : au moment où
   l'unité naît, `AIController` tire `Mathf.random(40)` pour décaler son premier ciblage, et

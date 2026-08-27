@@ -1525,11 +1525,9 @@ const SCENARIOS = {
       { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("phase-fabric") },
       { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("arkycite") },
     ],
-    /* Son eau en reserve plutot qu une source de plus. Ce que la mort du reacteur fait
-       autour de lui, le portage ne le modelise pas : le jeu emporte une partie de ce qui
-       touche un bloc de cinq sur cinq qui saute, donc le scenario ne pose que ce qui a
-       survecu a la mesure. Ce qu il verifie est le reacteur lui-meme : il n est plus la,
-       et il ne reste rien dedans. */
+    /* Son eau en reserve plutot qu'une source de plus. Ce que le scenario verifie est le
+       reacteur lui-meme : il n'est plus la, et il ne reste rien dedans. Son souffle est
+       mesure par son jumeau juste apres. */
     stock: ["water~80@2,2"],
   }),
 
@@ -1766,10 +1764,10 @@ const SCENARIOS = {
   "refuses-switch": () => refuses("switch"),
   "refuses-door": () => refuses("door"),
   "refuses-blast-door": () => refuses("blast-door"),
+  /* Ni le mur colore ni le sol colore : le jeu refuse de les poser depuis une
+     schematique, donc ils ne peuvent pas y apparaitre et il n y a rien a mesurer. */
   "refuses-canvas": () => refuses("canvas"),
   "refuses-large-canvas": () => refuses("large-canvas"),
-  "refuses-colored-wall": () => refuses("colored-wall"),
-  "refuses-colored-floor": () => refuses("colored-floor"),
   /* Un processeur ne consomme rien du tout : ni courant, ni objet, ni liquide. Ce
      qu il fait passe par une instruction sur un bloc auquel il est relie, et ca ne
      se simule pas ici. Ce que le banc peut dire, et qui est vrai, est qu il ne prend
@@ -1885,6 +1883,49 @@ const SCENARIOS = {
     { x: 8, y: 0, block: "unit-cargo-unload-point", rotation: 0 },
     // Couvre 10..12 par -1..1.
     { x: 11, y: 0, block: "vault", rotation: 0 },
+  ],
+
+  /* Un reacteur au thorium sans refroidissement, avec de quoi mesurer le souffle.
+
+     Trente thoriums valent six d'explosivite, plus les cinq du bloc, fois trois et demi :
+     trente-huit, en trois vagues de dix-neuf. Un convoyeur a quarante-cinq points de vie et
+     tombe ; un coffre en a quatre cent quatre-vingt-quinze et tient. Ce qui reste debout est
+     la mesure, et sans elle un schema qui se detruit lui-meme se lisait comme un schema qui
+     marche : les compteurs d'un bloc mort sont a zero des deux cotes.
+
+     Le reacteur couvre 1..3 par 1..3. */
+  "reactor-blast": () => ({
+    tiles: [
+      { x: 2, y: 2, block: "thorium-reactor", rotation: 0 },
+      /* Une jonction a trente points de vie, un routeur quarante, un convoyeur
+         quarante-cinq. Le souffle les separe : c'est ca, la mesure. */
+      { x: 4, y: 2, block: "junction", rotation: 0 },
+      { x: 2, y: 4, block: "router", rotation: 0 },
+      { x: 0, y: 4, block: "conveyor", rotation: 0 },
+      { x: 7, y: 2, block: "junction", rotation: 0 },
+      // Couvre 1..3 par -4..-2 : assez solide pour tenir.
+      { x: 2, y: -3, block: "vault", rotation: 0 },
+    ],
+    stock: ["thorium*30@2,2"],
+  }),
+
+  /* Le meme, avec de quoi mesurer le souffle : une source d'eau collee contre lui.
+
+     Un reacteur neoplasique qui se tue emporte ce qui le touche, et c'est la seule chose de
+     tout ce depot qu'on ne peut pas lire dans un compteur : ceux d'un bloc mort sont a zero
+     des deux cotes, ce qui se lit comme un accord. Ce qui reste debout est la mesure. */
+  "reactor-neoplasia-blast": () => [
+    // Couvre 0..4 par 0..4.
+    { x: 2, y: 2, block: "neoplasia-reactor", rotation: 0 },
+    { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("phase-fabric") },
+    { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("arkycite") },
+    { x: -1, y: 3, block: "liquid-source", rotation: 0, raw: liquid("water") },
+    // Des convoyeurs autour, qui n'ont que quarante-cinq points de vie : ceux qui tombent
+    // et ceux qui tiennent sont ce que le souffle dit.
+    { x: 2, y: 5, block: "conveyor", rotation: 0 },
+    { x: 5, y: 2, block: "conveyor", rotation: 0 },
+    { x: 2, y: 7, block: "conveyor", rotation: 0 },
+    { x: 8, y: 2, block: "conveyor", rotation: 0 },
   ],
 
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */

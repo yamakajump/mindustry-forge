@@ -9,7 +9,9 @@
       "block": "large-constructor",
       "x": 14,
       "y": 14,
-      "payload": "laser-drill"
+      "payload": "laser-drill",
+      "payload_items":{},
+      "payload_liquids":{}
     }
   ],
   "units":{},
@@ -43,6 +45,28 @@
       "x": 14,
       "y": 17,
       "efficiency": 0
+    }
+  ],
+  "standing": [
+    {
+      "block": "large-constructor",
+      "x": 14,
+      "y": 14
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 18,
+      "y": 14
+    },
+    {
+      "block": "payload-void",
+      "x": 22,
+      "y": 14
+    },
+    {
+      "block": "power-source",
+      "x": 14,
+      "y": 17
     }
   ],
   "containers": [],

@@ -558,6 +558,22 @@ public class Measure implements ApplicationListener {
         }
         root.put("running", running);
 
+        /* Ce qui est encore debout, et ce qui ne l'est plus.
+
+           Un reacteur qui surchauffe emporte ses voisins, et sans cette liste le portage
+           declarait sain un schema qui se detruit lui-meme : les compteurs d'un bloc mort
+           sont a zero des deux cotes, ce qui se lit comme un accord. */
+        Jval standing = Jval.newArray();
+        for (Tile tile : Vars.world.tiles) {
+            if (tile.build == null || tile.build.tile != tile) continue;
+            Jval one = Jval.newObject();
+            one.put("block", tile.block().name);
+            one.put("x", tile.x);
+            one.put("y", tile.y);
+            standing.asArray().add(one);
+        }
+        root.put("standing", standing);
+
         Jval stores = Jval.newArray();
         Jval totals = Jval.newObject();
         Seq<Tile> seen = new Seq<>();

@@ -19,6 +19,7 @@
  */
 
 import { DIRECTIONS, edgesOf, TICKS } from "./core.js";
+import { hurt } from "./blast.js";
 import { heatReaching } from "./machines.js";
 
 /**
@@ -596,11 +597,7 @@ const burner = {
       build.dumpLiquid(liquid);
       if (block.explode_on_full
           && build.liquids.get(liquid) >= build.liquidCapacity - 0.01) {
-        build.state.dead = true;
-        build.state.running = 0;
-        build.state.heat = 0;
-        build.items.clear();
-        build.liquids.clear();
+        hurt(build, build.state.health ?? block.health ?? 1);
         return;
       }
     }
@@ -817,13 +814,10 @@ const nuclear = {
                                 (block.heat_warmup_rate ?? 1) * delta);
 
     if (build.state.overheat >= 0.999) {
-      // `kill()`. The block is gone, and so is everything that was inside it: a reactor
-      // that overheated does not sit there holding twenty five thorium.
-      build.state.dead = true;
-      build.state.running = 0;
-      build.state.heat = 0;
-      build.items.clear();
-      build.liquids.clear();
+      /* `kill()`. The block is gone, and so is everything that was inside it, and so is a
+         good deal of what was standing next to it: a thorium reactor going up is nineteen
+         tiles of five thousand damage against a vault's four hundred and ninety-five. */
+      hurt(build, build.state.health ?? build.block.health ?? 1);
     }
   },
 };

@@ -186,6 +186,83 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "liquid-source",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "block": "heat-source",
+      "x": 12,
+      "y": 14
+    },
+    {
+      "block": "flux-reactor",
+      "x": 15,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 19,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 22,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 25,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 28,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 31,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 34,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 37,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 40,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 43,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 46,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 49,
+      "y": 14
+    },
+    {
+      "block": "battery-large",
+      "x": 52,
+      "y": 14
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

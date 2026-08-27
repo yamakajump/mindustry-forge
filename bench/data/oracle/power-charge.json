@@ -45,6 +45,28 @@
       "efficiency": 0
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 12
+    },
+    {
+      "block": "combustion-generator",
+      "x": 14,
+      "y": 12
+    },
+    {
+      "block": "battery",
+      "x": 15,
+      "y": 12
+    }
+  ],
   "containers": [],
   "per_second":{}
 }

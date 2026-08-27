@@ -29,6 +29,23 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "overflow-duct",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 15,
+      "y": 13
+    }
+  ],
   "containers": [
     {
       "block": "vault",

@@ -53,6 +53,38 @@
       }
     }
   ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 12
+    },
+    {
+      "block": "router",
+      "x": 14,
+      "y": 12
+    },
+    {
+      "block": "item-void",
+      "x": 15,
+      "y": 12
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 14,
+      "y": 15
+    }
+  ],
   "containers": [
     {
       "block": "vault",
