@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SocialCardController;
@@ -46,6 +47,17 @@ Route::get('/s/{schematic}', [SchematicController::class, 'show']);
    crops it without saying so. The card is always the shape they expect, and it carries the
    name, the figures and the mark. */
 Route::get('/s/{schematic}/carte.jpg', [SocialCardController::class, 'show']);
+
+/*
+ * The block wiki, one page per block, rendered from the catalogue the bench dumped.
+ *
+ * No language prefix, deliberately. One language is shipped, so prefixing every route in
+ * the site would be paying now for a need nobody has yet; the day a second language lands,
+ * the prefix goes on the whole site at once, with redirects, as a job of its own. Decided
+ * with the pilot on 27/08 rather than left to whichever route was written first.
+ */
+Route::get('/blocs', [BlockController::class, 'index']);
+Route::get('/blocs/{name}', [BlockController::class, 'show']);
 
 /* The string itself, so the analyser can pull one in from a shared link. Plain text and
    nothing else: this is a public schematic, and everything else about it is on its page. */

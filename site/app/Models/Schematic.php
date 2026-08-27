@@ -131,12 +131,12 @@ class Schematic extends Model
     }
 
     /**
-     * Keep the searchable index of what it produces in step with the schematic itself.
+     * Keep the searchable indexes in step with the schematic itself.
      *
      * Rebuilt on the way out, whatever wrote the row: the upload route, a moderator fixing
      * a name, the ingestion pass, a factory in a test. Doing it only where the analysis
      * arrives would leave every other write path with a schematic listed under something
-     * it no longer makes.
+     * it no longer makes, or built from a block it no longer holds.
      */
     protected static function booted(): void
     {
@@ -147,6 +147,9 @@ class Schematic extends Model
             // toutes les trois par ici, et n'en cabler qu'une laisserait les deux autres
             // avec un index qui ne dit plus la meme chose que la schematique.
             $schematic->indexWhatItCouldMake();
+            // Which blocks it is built from, for the wiki. A different table, so the two
+            // rebuilds never touch each other's rows.
+            $schematic->indexWhatItHolds();
         });
     }
 
@@ -262,6 +265,68 @@ class Schematic extends Model
     public function items(): HasMany
     {
         return $this->hasMany(SchematicItem::class);
+    }
+
+    /**
+     * Write out one row per kind of block this schematic is built from.
+     *
+     * The block wiki asks the question this answers: which layouts actually use a silicon
+     * smelter. It reads the stored analysis rather than parsing the `.msch` again, because
+     * the analysis already walked every tile and a second walk in a second language is a
+     * second thing to have wrong.
+     *
+     * Two queries, whatever the schematic holds, and that is not incidental. The ingestion
+     * pass will run this fifteen thousand times; a row-at-a-time write of the fifty-odd
+     * block kinds in a large layout would be the difference between an ingestion that takes
+     * an hour and one that takes a night.
+     */
+    public function indexWhatItHolds(): void
+    {
+        $counts = self::countBlocks($this->analysis);
+
+        $this->blocksHeld()->delete();
+
+        if ($counts === []) {
+            return;
+        }
+
+        $this->blocksHeld()->insert(array_map(
+            fn ($block, $count) => [
+                'schematic_id' => $this->id,
+                'block' => $block,
+                'count' => $count,
+            ],
+            array_keys($counts),
+            $counts,
+        ));
+    }
+
+    /**
+     * Count each kind of block in an analysis, defensively.
+     *
+     * The analysis arrives from a browser and a browser can send anything, so this coerces
+     * and drops rather than trusting, exactly as `fromAnalysis` does. A name is cut to the
+     * column width and a count is capped: neither is expected to be hit by a real
+     * schematic, and both stop a hand-made payload from becoming a database error.
+     */
+    public static function countBlocks(mixed $analysis): array
+    {
+        $counts = [];
+        foreach ((array) ($analysis['detail'] ?? []) as $tile) {
+            $name = is_array($tile) ? ($tile['name'] ?? null) : null;
+            if (is_string($name) && $name !== '') {
+                $key = substr($name, 0, 40);
+                $counts[$key] = ($counts[$key] ?? 0) + 1;
+            }
+        }
+
+        return array_map(fn ($count) => min(65535, $count), $counts);
+    }
+
+    /** Which blocks it is built from, one row per kind, indexed so the wiki can search it. */
+    public function blocksHeld(): HasMany
+    {
+        return $this->hasMany(SchematicBlock::class);
     }
 
     /**
