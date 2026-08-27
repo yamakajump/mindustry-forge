@@ -41,8 +41,17 @@
 .bloc-head .bloc-id { font-family: var(--mono); color: var(--dim); font-size: 13px; }
 
 /* Two columns where there is room, one where there is not. The site is read on a phone
-   while playing, so the single column is the case that has to work. */
-.bloc-cols { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
+   while playing, so the single column is the case that has to work.
+
+   `min(300px, 100%)` and not a bare 300px: a bare minimum is a floor the column cannot go
+   under, so at 320 px the card stayed 300 wide inside a 272 wide content box and pushed the
+   whole page 4 px past the viewport. Four pixels is not a visual defect, it is a page that
+   scrolls sideways under a thumb. Measured at 320, which is the narrowest width that still
+   counts. */
+.bloc-cols {
+  display: grid; gap: 12px; align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+}
 
 .bloc-facts { margin: 0; }
 .bloc-facts .line span:last-child { font-family: var(--mono); font-variant-numeric: tabular-nums; }
@@ -54,8 +63,39 @@
 .bloc-arrow { color: var(--dim); }
 
 .bloc-links { list-style: none; margin: 0; padding: 0; }
-.bloc-links li { padding: 5px 0; }
+.bloc-links li { padding: 8px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .bloc-links li + li { border-top: 1px solid var(--edge); }
 .bloc-links .bloc-of { color: var(--dim); font-size: 12.5px; }
+
+/*
+ * Les liens de ces listes sont des cibles, pas de la prose.
+ *
+ * Ils etaient enchainees par des virgules, ce qui donnait, sur la page du four a silicium,
+ * dix-neuf liens de quinze pixels de haut formant un pave de huit lignes ou viser « Mender »
+ * sans toucher « Overdrive dome » tenait de la chance. Vu a l'ecran en 390 px : le chiffre
+ * disait « quinze pixels », l'oeil disait « slab illisible », et c'est le second qui a
+ * decide de la forme.
+ *
+ * Encadres, ils deviennent atteignables au doigt et surtout lisibles un par un. La virgule
+ * disparait du gabarit avec eux : deux separateurs pour une seule liste, c'est un de trop.
+ *
+ * La regle porte sur `.bloc-links a` et pas sur `a` : un lien dans une phrase doit rester
+ * dans la phrase, et une hauteur minimale posee sur tous les liens defoncerait l'interligne
+ * de chaque note du site. C'est le role qui decide, pas l'apparence.
+ */
+.bloc-links a {
+  display: inline-flex; align-items: center;
+  min-height: 40px; padding: 0 10px;
+  border: 1px solid var(--edge); border-radius: 6px;
+  background: var(--raised); color: var(--ink);
+  touch-action: manipulation;
+}
+.bloc-links a:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+/* Le retour vers l'index est la seule navigation de la page : il merite une cible. */
+.bloc-retour a {
+  display: inline-flex; align-items: center; min-height: 44px;
+  touch-action: manipulation;
+}
 
 .bloc-none { color: var(--dim); font-size: 12.5px; margin: 4px 0 0; }

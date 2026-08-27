@@ -1,9 +1,12 @@
 {{-- A list of blocks, in one sentence, separated by commas.
 
-     Assembled in PHP rather than with a `@foreach` and `$loop->last`: the comma has to sit
-     against the word before it, and Blade puts the template's own layout whitespace between
-     the two. Each piece is escaped explicitly, so the closing `{!! !!}` renders only what
-     this loop built.
+     Assembled in PHP rather than with a `@foreach`: each piece is escaped explicitly, so the
+     closing `{!! !!}` renders only what this loop built.
+
+     No comma between them any more. They are drawn as bounded targets rather than as a run
+     of prose, because on a phone nineteen comma-separated links fifteen pixels tall are a
+     slab nobody can aim at; the box is the separator now, and a comma on top of it would be
+     one separator too many.
 
      A floor has no page: the game does not offer it in the build menu, so it is not one of
      the 254. It is still a valid answer to "where does sand come from", so it is named in
@@ -16,4 +19,4 @@
           : e($one->title());
   }
 @endphp
-{!! implode(', ', $parts) !!}
+{!! implode(' ', $parts) !!}
