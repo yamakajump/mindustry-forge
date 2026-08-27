@@ -6,6 +6,7 @@
     "air":{
       "name": "air",
       "kind": "AirBlock",
+      "id": 0,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": -1,
@@ -17,6 +18,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": -1,
+      "build_time": -1,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -25,6 +27,7 @@
     "spawn":{
       "name": "spawn",
       "kind": "SpawnBlock",
+      "id": 1,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -36,6 +39,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -45,6 +49,7 @@
     "remove-wall":{
       "name": "remove-wall",
       "kind": "RemoveWall",
+      "id": 2,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -56,12 +61,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "remove-ore":{
       "name": "remove-ore",
       "kind": "RemoveOre",
+      "id": 3,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -73,6 +80,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -82,6 +90,7 @@
     "cliff":{
       "name": "cliff",
       "kind": "Cliff",
+      "id": 4,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -93,12 +102,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build1":{
       "name": "build1",
       "kind": "ConstructBlock",
+      "id": 5,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -110,12 +121,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build2":{
       "name": "build2",
       "kind": "ConstructBlock",
+      "id": 6,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -127,12 +140,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build3":{
       "name": "build3",
       "kind": "ConstructBlock",
+      "id": 7,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -144,12 +159,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build4":{
       "name": "build4",
       "kind": "ConstructBlock",
+      "id": 8,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -161,12 +178,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build5":{
       "name": "build5",
       "kind": "ConstructBlock",
+      "id": 9,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -178,12 +197,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build6":{
       "name": "build6",
       "kind": "ConstructBlock",
+      "id": 10,
       "size": 6,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -195,12 +216,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build7":{
       "name": "build7",
       "kind": "ConstructBlock",
+      "id": 11,
       "size": 7,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -212,12 +235,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build8":{
       "name": "build8",
       "kind": "ConstructBlock",
+      "id": 12,
       "size": 8,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -229,12 +254,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build9":{
       "name": "build9",
       "kind": "ConstructBlock",
+      "id": 13,
       "size": 9,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -246,12 +273,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build10":{
       "name": "build10",
       "kind": "ConstructBlock",
+      "id": 14,
       "size": 10,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -263,12 +292,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build11":{
       "name": "build11",
       "kind": "ConstructBlock",
+      "id": 15,
       "size": 11,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -280,12 +311,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build12":{
       "name": "build12",
       "kind": "ConstructBlock",
+      "id": 16,
       "size": 12,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -297,12 +330,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build13":{
       "name": "build13",
       "kind": "ConstructBlock",
+      "id": 17,
       "size": 13,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -314,12 +349,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build14":{
       "name": "build14",
       "kind": "ConstructBlock",
+      "id": 18,
       "size": 14,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -331,12 +368,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build15":{
       "name": "build15",
       "kind": "ConstructBlock",
+      "id": 19,
       "size": 15,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -348,12 +387,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "build16":{
       "name": "build16",
       "kind": "ConstructBlock",
+      "id": 20,
       "size": 16,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -365,12 +406,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 10,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "deep-water":{
       "name": "deep-water",
       "kind": "Floor",
+      "id": 21,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -382,6 +425,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -394,6 +438,7 @@
     "shallow-water":{
       "name": "shallow-water",
       "kind": "Floor",
+      "id": 22,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -405,6 +450,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -416,6 +462,7 @@
     "tainted-water":{
       "name": "tainted-water",
       "kind": "Floor",
+      "id": 23,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -427,6 +474,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -441,6 +489,7 @@
     "deep-tainted-water":{
       "name": "deep-tainted-water",
       "kind": "Floor",
+      "id": 24,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -452,6 +501,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -467,6 +517,7 @@
     "darksand-tainted-water":{
       "name": "darksand-tainted-water",
       "kind": "ShallowLiquid",
+      "id": 25,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -478,6 +529,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -492,6 +544,7 @@
     "sand-water":{
       "name": "sand-water",
       "kind": "ShallowLiquid",
+      "id": 26,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -503,6 +556,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -514,6 +568,7 @@
     "darksand-water":{
       "name": "darksand-water",
       "kind": "ShallowLiquid",
+      "id": 27,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -525,6 +580,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -536,6 +592,7 @@
     "tar":{
       "name": "tar",
       "kind": "Floor",
+      "id": 28,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -547,6 +604,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -559,6 +617,7 @@
     "pooled-cryofluid":{
       "name": "pooled-cryofluid",
       "kind": "Floor",
+      "id": 29,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -570,6 +629,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -582,6 +642,7 @@
     "molten-slag":{
       "name": "molten-slag",
       "kind": "Floor",
+      "id": 30,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -593,6 +654,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -608,6 +670,7 @@
     "space":{
       "name": "space",
       "kind": "Floor",
+      "id": 31,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -619,6 +682,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -627,6 +691,7 @@
     "empty":{
       "name": "empty",
       "kind": "EmptyFloor",
+      "id": 32,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -638,6 +703,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -646,6 +712,7 @@
     "stone":{
       "name": "stone",
       "kind": "Floor",
+      "id": 33,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -657,6 +724,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -665,6 +733,7 @@
     "crater-stone":{
       "name": "crater-stone",
       "kind": "Floor",
+      "id": 34,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -676,6 +745,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -684,6 +754,7 @@
     "char":{
       "name": "char",
       "kind": "Floor",
+      "id": 35,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -695,6 +766,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -706,6 +778,7 @@
     "basalt":{
       "name": "basalt",
       "kind": "Floor",
+      "id": 36,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -717,6 +790,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -728,6 +802,7 @@
     "hotrock":{
       "name": "hotrock",
       "kind": "Floor",
+      "id": 37,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -739,6 +814,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -751,6 +827,7 @@
     "magmarock":{
       "name": "magmarock",
       "kind": "Floor",
+      "id": 38,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -762,6 +839,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -774,6 +852,7 @@
     "sand-floor":{
       "name": "sand-floor",
       "kind": "Floor",
+      "id": 39,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -785,6 +864,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -798,6 +878,7 @@
     "darksand":{
       "name": "darksand",
       "kind": "Floor",
+      "id": 40,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -809,6 +890,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -822,6 +904,7 @@
     "dirt":{
       "name": "dirt",
       "kind": "Floor",
+      "id": 41,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -833,6 +916,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -841,6 +925,7 @@
     "mud":{
       "name": "mud",
       "kind": "Floor",
+      "id": 42,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -852,6 +937,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -863,6 +949,7 @@
     "dacite":{
       "name": "dacite",
       "kind": "Floor",
+      "id": 43,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -874,6 +961,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -882,6 +970,7 @@
     "rhyolite":{
       "name": "rhyolite",
       "kind": "Floor",
+      "id": 44,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -893,6 +982,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -904,6 +994,7 @@
     "rhyolite-crater":{
       "name": "rhyolite-crater",
       "kind": "Floor",
+      "id": 45,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -915,6 +1006,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -926,6 +1018,7 @@
     "rough-rhyolite":{
       "name": "rough-rhyolite",
       "kind": "Floor",
+      "id": 46,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -937,6 +1030,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -948,6 +1042,7 @@
     "regolith":{
       "name": "regolith",
       "kind": "Floor",
+      "id": 47,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -959,6 +1054,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -970,6 +1066,7 @@
     "yellow-stone":{
       "name": "yellow-stone",
       "kind": "Floor",
+      "id": 48,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -981,6 +1078,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -992,6 +1090,7 @@
     "carbon-stone":{
       "name": "carbon-stone",
       "kind": "Floor",
+      "id": 49,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1003,6 +1102,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1014,6 +1114,7 @@
     "ferric-stone":{
       "name": "ferric-stone",
       "kind": "Floor",
+      "id": 50,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1025,6 +1126,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1036,6 +1138,7 @@
     "ferric-craters":{
       "name": "ferric-craters",
       "kind": "Floor",
+      "id": 51,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1047,6 +1150,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1058,6 +1162,7 @@
     "beryllic-stone":{
       "name": "beryllic-stone",
       "kind": "Floor",
+      "id": 52,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1069,6 +1174,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1077,6 +1183,7 @@
     "crystalline-stone":{
       "name": "crystalline-stone",
       "kind": "Floor",
+      "id": 53,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1088,6 +1195,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1096,6 +1204,7 @@
     "crystal-floor":{
       "name": "crystal-floor",
       "kind": "Floor",
+      "id": 54,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1107,6 +1216,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1115,6 +1225,7 @@
     "yellow-stone-plates":{
       "name": "yellow-stone-plates",
       "kind": "Floor",
+      "id": 55,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1126,6 +1237,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1134,6 +1246,7 @@
     "red-stone":{
       "name": "red-stone",
       "kind": "Floor",
+      "id": 56,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1145,6 +1258,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1156,6 +1270,7 @@
     "dense-red-stone":{
       "name": "dense-red-stone",
       "kind": "Floor",
+      "id": 57,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1167,6 +1282,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1178,6 +1294,7 @@
     "red-ice":{
       "name": "red-ice",
       "kind": "Floor",
+      "id": 58,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1189,6 +1306,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1200,6 +1318,7 @@
     "arkycite-floor":{
       "name": "arkycite-floor",
       "kind": "Floor",
+      "id": 59,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1211,6 +1330,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1223,6 +1343,7 @@
     "arkyic-stone":{
       "name": "arkyic-stone",
       "kind": "Floor",
+      "id": 60,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1234,6 +1355,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1242,6 +1364,7 @@
     "rhyolite-vent":{
       "name": "rhyolite-vent",
       "kind": "SteamVent",
+      "id": 61,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1253,6 +1376,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1264,6 +1388,7 @@
     "carbon-vent":{
       "name": "carbon-vent",
       "kind": "SteamVent",
+      "id": 62,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1275,6 +1400,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1286,6 +1412,7 @@
     "arkyic-vent":{
       "name": "arkyic-vent",
       "kind": "SteamVent",
+      "id": 63,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1297,6 +1424,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1308,6 +1436,7 @@
     "yellow-stone-vent":{
       "name": "yellow-stone-vent",
       "kind": "SteamVent",
+      "id": 64,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1319,6 +1448,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1330,6 +1460,7 @@
     "red-stone-vent":{
       "name": "red-stone-vent",
       "kind": "SteamVent",
+      "id": 65,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1341,6 +1472,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1352,6 +1484,7 @@
     "crystalline-vent":{
       "name": "crystalline-vent",
       "kind": "SteamVent",
+      "id": 66,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1363,6 +1496,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1374,6 +1508,7 @@
     "stone-vent":{
       "name": "stone-vent",
       "kind": "SteamVent",
+      "id": 67,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1385,6 +1520,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1396,6 +1532,7 @@
     "basalt-vent":{
       "name": "basalt-vent",
       "kind": "SteamVent",
+      "id": 68,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1407,6 +1544,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1418,6 +1556,7 @@
     "redmat":{
       "name": "redmat",
       "kind": "Floor",
+      "id": 69,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1429,6 +1568,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1437,6 +1577,7 @@
     "bluemat":{
       "name": "bluemat",
       "kind": "Floor",
+      "id": 70,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1448,6 +1589,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1456,6 +1598,7 @@
     "grass":{
       "name": "grass",
       "kind": "Floor",
+      "id": 71,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1467,6 +1610,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1478,6 +1622,7 @@
     "salt":{
       "name": "salt",
       "kind": "Floor",
+      "id": 72,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1489,6 +1634,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1501,6 +1647,7 @@
     "snow":{
       "name": "snow",
       "kind": "Floor",
+      "id": 73,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1512,6 +1659,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1523,6 +1671,7 @@
     "ice":{
       "name": "ice",
       "kind": "Floor",
+      "id": 74,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1534,6 +1683,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1545,6 +1695,7 @@
     "ice-snow":{
       "name": "ice-snow",
       "kind": "Floor",
+      "id": 75,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1556,6 +1707,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1567,6 +1719,7 @@
     "shale":{
       "name": "shale",
       "kind": "Floor",
+      "id": 76,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1578,6 +1731,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1589,6 +1743,7 @@
     "moss":{
       "name": "moss",
       "kind": "Floor",
+      "id": 77,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1600,6 +1755,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1611,6 +1767,7 @@
     "core-zone":{
       "name": "core-zone",
       "kind": "Floor",
+      "id": 78,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1622,6 +1779,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1630,6 +1788,7 @@
     "spore-moss":{
       "name": "spore-moss",
       "kind": "Floor",
+      "id": 79,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1641,6 +1800,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1652,6 +1812,7 @@
     "stone-wall":{
       "name": "stone-wall",
       "kind": "StaticWall",
+      "id": 80,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1663,6 +1824,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1673,6 +1835,7 @@
     "spore-wall":{
       "name": "spore-wall",
       "kind": "StaticWall",
+      "id": 81,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1684,6 +1847,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1692,6 +1856,7 @@
     "dirt-wall":{
       "name": "dirt-wall",
       "kind": "StaticWall",
+      "id": 82,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1703,6 +1868,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1711,6 +1877,7 @@
     "dacite-wall":{
       "name": "dacite-wall",
       "kind": "StaticWall",
+      "id": 83,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1722,6 +1889,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1730,6 +1898,7 @@
     "ice-wall":{
       "name": "ice-wall",
       "kind": "StaticWall",
+      "id": 84,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1741,6 +1910,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1749,6 +1919,7 @@
     "snow-wall":{
       "name": "snow-wall",
       "kind": "StaticWall",
+      "id": 85,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1760,6 +1931,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1768,6 +1940,7 @@
     "dune-wall":{
       "name": "dune-wall",
       "kind": "StaticWall",
+      "id": 86,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1779,6 +1952,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1789,6 +1963,7 @@
     "regolith-wall":{
       "name": "regolith-wall",
       "kind": "StaticWall",
+      "id": 87,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1800,6 +1975,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1810,6 +1986,7 @@
     "yellow-stone-wall":{
       "name": "yellow-stone-wall",
       "kind": "StaticWall",
+      "id": 88,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1821,6 +1998,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1831,6 +2009,7 @@
     "rhyolite-wall":{
       "name": "rhyolite-wall",
       "kind": "StaticWall",
+      "id": 89,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1842,6 +2021,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1852,6 +2032,7 @@
     "carbon-wall":{
       "name": "carbon-wall",
       "kind": "StaticWall",
+      "id": 90,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1863,6 +2044,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1873,6 +2055,7 @@
     "ferric-stone-wall":{
       "name": "ferric-stone-wall",
       "kind": "StaticWall",
+      "id": 91,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1884,6 +2067,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1894,6 +2078,7 @@
     "beryllic-stone-wall":{
       "name": "beryllic-stone-wall",
       "kind": "StaticWall",
+      "id": 92,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1905,6 +2090,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1915,6 +2101,7 @@
     "arkyic-wall":{
       "name": "arkyic-wall",
       "kind": "StaticWall",
+      "id": 93,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1926,6 +2113,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1934,6 +2122,7 @@
     "crystalline-stone-wall":{
       "name": "crystalline-stone-wall",
       "kind": "StaticWall",
+      "id": 94,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1945,6 +2134,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1953,6 +2143,7 @@
     "red-ice-wall":{
       "name": "red-ice-wall",
       "kind": "StaticWall",
+      "id": 95,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1964,6 +2155,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1972,6 +2164,7 @@
     "red-stone-wall":{
       "name": "red-stone-wall",
       "kind": "StaticWall",
+      "id": 96,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -1983,6 +2176,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -1993,6 +2187,7 @@
     "red-diamond-wall":{
       "name": "red-diamond-wall",
       "kind": "StaticTree",
+      "id": 97,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2004,6 +2199,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2012,6 +2208,7 @@
     "sand-wall":{
       "name": "sand-wall",
       "kind": "StaticWall",
+      "id": 98,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2023,6 +2220,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2033,6 +2231,7 @@
     "salt-wall":{
       "name": "salt-wall",
       "kind": "StaticWall",
+      "id": 99,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2044,6 +2243,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2052,6 +2252,7 @@
     "shrubs":{
       "name": "shrubs",
       "kind": "StaticWall",
+      "id": 100,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2063,6 +2264,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2071,6 +2273,7 @@
     "shale-wall":{
       "name": "shale-wall",
       "kind": "StaticWall",
+      "id": 101,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2082,6 +2285,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2090,6 +2294,7 @@
     "spore-pine":{
       "name": "spore-pine",
       "kind": "StaticTree",
+      "id": 102,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2101,6 +2306,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2109,6 +2315,7 @@
     "snow-pine":{
       "name": "snow-pine",
       "kind": "StaticTree",
+      "id": 103,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2120,6 +2327,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2128,6 +2336,7 @@
     "pine":{
       "name": "pine",
       "kind": "StaticTree",
+      "id": 104,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2139,6 +2348,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2147,6 +2357,7 @@
     "white-tree-dead":{
       "name": "white-tree-dead",
       "kind": "TreeBlock",
+      "id": 105,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2158,12 +2369,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "white-tree":{
       "name": "white-tree",
       "kind": "TreeBlock",
+      "id": 106,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2175,12 +2388,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "spore-cluster":{
       "name": "spore-cluster",
       "kind": "Prop",
+      "id": 107,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2192,12 +2407,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "redweed":{
       "name": "redweed",
       "kind": "Seaweed",
+      "id": 108,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2209,12 +2426,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "pur-bush":{
       "name": "pur-bush",
       "kind": "SeaBush",
+      "id": 109,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2226,12 +2445,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "yellowcoral":{
       "name": "yellowcoral",
       "kind": "SeaBush",
+      "id": 110,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2243,12 +2464,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "boulder":{
       "name": "boulder",
       "kind": "StaticProp",
+      "id": 111,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2260,12 +2483,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "snow-boulder":{
       "name": "snow-boulder",
       "kind": "StaticProp",
+      "id": 112,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2277,12 +2502,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "shale-boulder":{
       "name": "shale-boulder",
       "kind": "StaticProp",
+      "id": 113,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2294,12 +2521,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "sand-boulder":{
       "name": "sand-boulder",
       "kind": "StaticProp",
+      "id": 114,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2311,12 +2540,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "dacite-boulder":{
       "name": "dacite-boulder",
       "kind": "StaticProp",
+      "id": 115,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2328,12 +2559,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "basalt-boulder":{
       "name": "basalt-boulder",
       "kind": "StaticProp",
+      "id": 116,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2345,12 +2578,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "carbon-boulder":{
       "name": "carbon-boulder",
       "kind": "StaticProp",
+      "id": 117,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2362,12 +2597,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "ferric-boulder":{
       "name": "ferric-boulder",
       "kind": "StaticProp",
+      "id": 118,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2379,12 +2616,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "beryllic-boulder":{
       "name": "beryllic-boulder",
       "kind": "StaticProp",
+      "id": 119,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2396,12 +2635,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "yellow-stone-boulder":{
       "name": "yellow-stone-boulder",
       "kind": "StaticProp",
+      "id": 120,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2413,12 +2654,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "arkyic-boulder":{
       "name": "arkyic-boulder",
       "kind": "Prop",
+      "id": 121,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2430,12 +2673,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "crystal-cluster":{
       "name": "crystal-cluster",
       "kind": "TallBlock",
+      "id": 122,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2447,12 +2692,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "vibrant-crystal-cluster":{
       "name": "vibrant-crystal-cluster",
       "kind": "TallBlock",
+      "id": 123,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2464,12 +2711,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "crystal-blocks":{
       "name": "crystal-blocks",
       "kind": "TallBlock",
+      "id": 124,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2481,12 +2730,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "crystal-orbs":{
       "name": "crystal-orbs",
       "kind": "TallBlock",
+      "id": 125,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2498,12 +2749,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "crystalline-boulder":{
       "name": "crystalline-boulder",
       "kind": "StaticProp",
+      "id": 126,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2515,12 +2768,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "red-ice-boulder":{
       "name": "red-ice-boulder",
       "kind": "StaticProp",
+      "id": 127,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2532,12 +2787,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "rhyolite-boulder":{
       "name": "rhyolite-boulder",
       "kind": "StaticProp",
+      "id": 128,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2549,12 +2806,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "red-stone-boulder":{
       "name": "red-stone-boulder",
       "kind": "StaticProp",
+      "id": 129,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2566,12 +2825,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "metal-floor":{
       "name": "metal-floor",
       "kind": "Floor",
+      "id": 130,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2583,6 +2844,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2591,6 +2853,7 @@
     "metal-floor-damaged":{
       "name": "metal-floor-damaged",
       "kind": "Floor",
+      "id": 131,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2602,6 +2865,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2610,6 +2874,7 @@
     "metal-floor-2":{
       "name": "metal-floor-2",
       "kind": "Floor",
+      "id": 132,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2621,6 +2886,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2629,6 +2895,7 @@
     "metal-floor-3":{
       "name": "metal-floor-3",
       "kind": "Floor",
+      "id": 133,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2640,6 +2907,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2648,6 +2916,7 @@
     "metal-floor-4":{
       "name": "metal-floor-4",
       "kind": "Floor",
+      "id": 134,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2659,6 +2928,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2667,6 +2937,7 @@
     "metal-floor-5":{
       "name": "metal-floor-5",
       "kind": "Floor",
+      "id": 135,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2678,6 +2949,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2686,6 +2958,7 @@
     "dark-panel-1":{
       "name": "dark-panel-1",
       "kind": "Floor",
+      "id": 136,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2697,6 +2970,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2705,6 +2979,7 @@
     "dark-panel-2":{
       "name": "dark-panel-2",
       "kind": "Floor",
+      "id": 137,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2716,6 +2991,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2724,6 +3000,7 @@
     "dark-panel-3":{
       "name": "dark-panel-3",
       "kind": "Floor",
+      "id": 138,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2735,6 +3012,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2743,6 +3021,7 @@
     "dark-panel-4":{
       "name": "dark-panel-4",
       "kind": "Floor",
+      "id": 139,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2754,6 +3033,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2762,6 +3042,7 @@
     "dark-panel-5":{
       "name": "dark-panel-5",
       "kind": "Floor",
+      "id": 140,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2773,6 +3054,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2781,6 +3063,7 @@
     "dark-panel-6":{
       "name": "dark-panel-6",
       "kind": "Floor",
+      "id": 141,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2792,6 +3075,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2800,6 +3084,7 @@
     "dark-metal":{
       "name": "dark-metal",
       "kind": "StaticWall",
+      "id": 142,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2811,6 +3096,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2819,6 +3105,7 @@
     "metal-tiles-1":{
       "name": "metal-tiles-1",
       "kind": "Floor",
+      "id": 143,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2830,6 +3117,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2838,6 +3126,7 @@
     "metal-tiles-2":{
       "name": "metal-tiles-2",
       "kind": "Floor",
+      "id": 144,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2849,6 +3138,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2857,6 +3147,7 @@
     "metal-tiles-3":{
       "name": "metal-tiles-3",
       "kind": "Floor",
+      "id": 145,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2868,6 +3159,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2876,6 +3168,7 @@
     "metal-tiles-4":{
       "name": "metal-tiles-4",
       "kind": "Floor",
+      "id": 146,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2887,6 +3180,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2895,6 +3189,7 @@
     "metal-tiles-5":{
       "name": "metal-tiles-5",
       "kind": "Floor",
+      "id": 147,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2906,6 +3201,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2914,6 +3210,7 @@
     "metal-tiles-6":{
       "name": "metal-tiles-6",
       "kind": "Floor",
+      "id": 148,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2925,6 +3222,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2933,6 +3231,7 @@
     "metal-tiles-7":{
       "name": "metal-tiles-7",
       "kind": "Floor",
+      "id": 149,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2944,6 +3243,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2952,6 +3252,7 @@
     "metal-tiles-8":{
       "name": "metal-tiles-8",
       "kind": "Floor",
+      "id": 150,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2963,6 +3264,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2971,6 +3273,7 @@
     "metal-tiles-9":{
       "name": "metal-tiles-9",
       "kind": "Floor",
+      "id": 151,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -2982,6 +3285,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2990,6 +3294,7 @@
     "metal-tiles-10":{
       "name": "metal-tiles-10",
       "kind": "Floor",
+      "id": 152,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3001,6 +3306,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3009,6 +3315,7 @@
     "metal-tiles-11":{
       "name": "metal-tiles-11",
       "kind": "Floor",
+      "id": 153,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3020,6 +3327,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3028,6 +3336,7 @@
     "metal-tiles-12":{
       "name": "metal-tiles-12",
       "kind": "Floor",
+      "id": 154,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3039,6 +3348,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3047,6 +3357,7 @@
     "metal-tiles-13":{
       "name": "metal-tiles-13",
       "kind": "Floor",
+      "id": 155,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3058,6 +3369,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3066,6 +3378,7 @@
     "metal-wall-1":{
       "name": "metal-wall-1",
       "kind": "StaticWall",
+      "id": 156,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3077,6 +3390,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3085,6 +3399,7 @@
     "metal-wall-2":{
       "name": "metal-wall-2",
       "kind": "StaticWall",
+      "id": 157,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3096,6 +3411,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3104,6 +3420,7 @@
     "metal-wall-3":{
       "name": "metal-wall-3",
       "kind": "StaticWall",
+      "id": 158,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3115,6 +3432,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3123,6 +3441,7 @@
     "colored-floor":{
       "name": "colored-floor",
       "kind": "ColoredFloor",
+      "id": 159,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3134,6 +3453,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3142,6 +3462,7 @@
     "colored-wall":{
       "name": "colored-wall",
       "kind": "ColoredWall",
+      "id": 160,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3153,6 +3474,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3161,6 +3483,7 @@
     "character-overlay":{
       "name": "character-overlay",
       "kind": "CharacterOverlay",
+      "id": 161,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3172,6 +3495,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3181,6 +3505,7 @@
     "character-overlay-white":{
       "name": "character-overlay-white",
       "kind": "CharacterOverlay",
+      "id": 162,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3192,6 +3517,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3201,6 +3527,7 @@
     "rune-overlay":{
       "name": "rune-overlay",
       "kind": "RuneOverlay",
+      "id": 163,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3212,6 +3539,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3221,6 +3549,7 @@
     "rune-overlay-crux":{
       "name": "rune-overlay-crux",
       "kind": "RuneOverlay",
+      "id": 164,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3232,6 +3561,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3241,6 +3571,7 @@
     "pebbles":{
       "name": "pebbles",
       "kind": "OverlayFloor",
+      "id": 165,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3252,6 +3583,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3261,6 +3593,7 @@
     "tendrils":{
       "name": "tendrils",
       "kind": "OverlayFloor",
+      "id": 166,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3272,6 +3605,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3281,6 +3615,7 @@
     "ore-copper":{
       "name": "ore-copper",
       "kind": "OreBlock",
+      "id": 167,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3292,6 +3627,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3302,6 +3638,7 @@
     "ore-lead":{
       "name": "ore-lead",
       "kind": "OreBlock",
+      "id": 168,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3313,6 +3650,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3323,6 +3661,7 @@
     "ore-scrap":{
       "name": "ore-scrap",
       "kind": "OreBlock",
+      "id": 169,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3334,6 +3673,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3344,6 +3684,7 @@
     "ore-coal":{
       "name": "ore-coal",
       "kind": "OreBlock",
+      "id": 170,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3355,6 +3696,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3365,6 +3707,7 @@
     "ore-titanium":{
       "name": "ore-titanium",
       "kind": "OreBlock",
+      "id": 171,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3376,6 +3719,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3386,6 +3730,7 @@
     "ore-thorium":{
       "name": "ore-thorium",
       "kind": "OreBlock",
+      "id": 172,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3397,6 +3742,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3407,6 +3753,7 @@
     "ore-beryllium":{
       "name": "ore-beryllium",
       "kind": "OreBlock",
+      "id": 173,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3418,6 +3765,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3428,6 +3776,7 @@
     "ore-tungsten":{
       "name": "ore-tungsten",
       "kind": "OreBlock",
+      "id": 174,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3439,6 +3788,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3449,6 +3799,7 @@
     "ore-crystal-thorium":{
       "name": "ore-crystal-thorium",
       "kind": "OreBlock",
+      "id": 175,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3460,6 +3811,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -3470,6 +3822,7 @@
     "ore-wall-thorium":{
       "name": "ore-wall-thorium",
       "kind": "OreBlock",
+      "id": 176,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3481,6 +3834,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall_ore": true,
@@ -3492,6 +3846,7 @@
     "ore-wall-beryllium":{
       "name": "ore-wall-beryllium",
       "kind": "OreBlock",
+      "id": 177,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3503,6 +3858,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall_ore": true,
@@ -3514,6 +3870,7 @@
     "graphitic-wall":{
       "name": "graphitic-wall",
       "kind": "StaticWall",
+      "id": 178,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3525,6 +3882,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3534,6 +3892,7 @@
     "ore-wall-graphite":{
       "name": "ore-wall-graphite",
       "kind": "OreBlock",
+      "id": 179,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3545,6 +3904,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall_ore": true,
@@ -3556,6 +3916,7 @@
     "ore-wall-tungsten":{
       "name": "ore-wall-tungsten",
       "kind": "OreBlock",
+      "id": 180,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3567,6 +3928,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "wall_ore": true,
@@ -3578,6 +3940,7 @@
     "graphite-press":{
       "name": "graphite-press",
       "kind": "GenericCrafter",
+      "id": 181,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3592,6 +3955,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 58.5,
       "cost":{
         "copper": 75,
         "lead": 30
@@ -3612,6 +3976,7 @@
     "multi-press":{
       "name": "multi-press",
       "kind": "GenericCrafter",
+      "id": 182,
       "size": 3,
       "item_capacity": 20,
       "liquid_capacity": 60,
@@ -3629,6 +3994,7 @@
       ],
       "liquid_pressure": 1,
       "health": 360,
+      "build_time": 240,
       "cost":{
         "lead": 100,
         "graphite": 50,
@@ -3653,6 +4019,7 @@
     "silicon-smelter":{
       "name": "silicon-smelter",
       "kind": "GenericCrafter",
+      "id": 183,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3668,6 +4035,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 32.5,
       "cost":{
         "copper": 30,
         "lead": 25
@@ -3689,6 +4057,7 @@
     "silicon-crucible":{
       "name": "silicon-crucible",
       "kind": "AttributeCrafter",
+      "id": 184,
       "size": 3,
       "item_capacity": 30,
       "liquid_capacity": 10,
@@ -3705,6 +4074,7 @@
       ],
       "liquid_pressure": 1,
       "health": 395,
+      "build_time": 333.5,
       "cost":{
         "metaglass": 80,
         "titanium": 120,
@@ -3732,6 +4102,7 @@
     "kiln":{
       "name": "kiln",
       "kind": "GenericCrafter",
+      "id": 185,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3747,6 +4118,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 81,
       "cost":{
         "copper": 60,
         "lead": 30,
@@ -3769,6 +4141,7 @@
     "plastanium-compressor":{
       "name": "plastanium-compressor",
       "kind": "GenericCrafter",
+      "id": 186,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 60,
@@ -3786,6 +4159,7 @@
       ],
       "liquid_pressure": 1,
       "health": 320,
+      "build_time": 284.5,
       "cost":{
         "lead": 115,
         "graphite": 60,
@@ -3810,6 +4184,7 @@
     "phase-weaver":{
       "name": "phase-weaver",
       "kind": "GenericCrafter",
+      "id": 187,
       "size": 2,
       "item_capacity": 30,
       "liquid_capacity": 10,
@@ -3825,6 +4200,7 @@
       ],
       "liquid_pressure": 1,
       "health": 190,
+      "build_time": 270.5,
       "cost":{
         "lead": 120,
         "thorium": 75,
@@ -3847,6 +4223,7 @@
     "surge-smelter":{
       "name": "surge-smelter",
       "kind": "GenericCrafter",
+      "id": 188,
       "size": 3,
       "item_capacity": 20,
       "liquid_capacity": 10,
@@ -3864,6 +4241,7 @@
       ],
       "liquid_pressure": 1,
       "health": 430,
+      "build_time": 197,
       "cost":{
         "lead": 80,
         "thorium": 70,
@@ -3888,6 +4266,7 @@
     "cryofluid-mixer":{
       "name": "cryofluid-mixer",
       "kind": "GenericCrafter",
+      "id": 189,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 36,
@@ -3905,6 +4284,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 137.5,
       "cost":{
         "lead": 65,
         "titanium": 60,
@@ -3928,6 +4308,7 @@
     "pyratite-mixer":{
       "name": "pyratite-mixer",
       "kind": "GenericCrafter",
+      "id": 190,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3944,6 +4325,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 42.5,
       "cost":{
         "copper": 50,
         "lead": 25
@@ -3966,6 +4348,7 @@
     "blast-mixer":{
       "name": "blast-mixer",
       "kind": "GenericCrafter",
+      "id": 191,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -3981,6 +4364,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 41,
       "cost":{
         "lead": 30,
         "titanium": 20
@@ -4002,6 +4386,7 @@
     "melter":{
       "name": "melter",
       "kind": "GenericCrafter",
+      "id": 192,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4016,6 +4401,7 @@
       ],
       "liquid_pressure": 1,
       "health": 200,
+      "build_time": 84.5,
       "cost":{
         "copper": 30,
         "lead": 35,
@@ -4037,6 +4423,7 @@
     "separator":{
       "name": "separator",
       "kind": "Separator",
+      "id": 193,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 40,
@@ -4051,6 +4438,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 40,
       "cost":{
         "copper": 30,
         "titanium": 25
@@ -4084,6 +4472,7 @@
     "disassembler":{
       "name": "disassembler",
       "kind": "Separator",
+      "id": 194,
       "size": 3,
       "item_capacity": 20,
       "liquid_capacity": 72,
@@ -4101,6 +4490,7 @@
       ],
       "liquid_pressure": 1,
       "health": 465,
+      "build_time": 360,
       "cost":{
         "titanium": 100,
         "thorium": 80,
@@ -4138,6 +4528,7 @@
     "spore-press":{
       "name": "spore-press",
       "kind": "GenericCrafter",
+      "id": 195,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 60,
@@ -4152,6 +4543,7 @@
       ],
       "liquid_pressure": 1,
       "health": 320,
+      "build_time": 48.5,
       "cost":{
         "lead": 35,
         "silicon": 30
@@ -4172,6 +4564,7 @@
     "pulverizer":{
       "name": "pulverizer",
       "kind": "GenericCrafter",
+      "id": 196,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4186,6 +4579,7 @@
       ],
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 32.5,
       "cost":{
         "copper": 30,
         "lead": 25
@@ -4206,6 +4600,7 @@
     "coal-centrifuge":{
       "name": "coal-centrifuge",
       "kind": "GenericCrafter",
+      "id": 197,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 60,
@@ -4220,6 +4615,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 81,
       "cost":{
         "lead": 30,
         "graphite": 40,
@@ -4241,6 +4637,7 @@
     "incinerator":{
       "name": "incinerator",
       "kind": "Incinerator",
+      "id": 198,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4252,6 +4649,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 90,
+      "build_time": 15.5,
       "cost":{
         "lead": 15,
         "graphite": 5
@@ -4263,6 +4661,7 @@
     "silicon-arc-furnace":{
       "name": "silicon-arc-furnace",
       "kind": "GenericCrafter",
+      "id": 199,
       "size": 3,
       "item_capacity": 30,
       "liquid_capacity": 10,
@@ -4278,6 +4677,7 @@
       ],
       "liquid_pressure": 1,
       "health": 575,
+      "build_time": 164,
       "cost":{
         "graphite": 80,
         "beryllium": 70
@@ -4299,6 +4699,7 @@
     "electrolyzer":{
       "name": "electrolyzer",
       "kind": "GenericCrafter",
+      "id": 200,
       "size": 3,
       "item_capacity": 0,
       "liquid_capacity": 50,
@@ -4313,6 +4714,7 @@
       ],
       "liquid_pressure": 1,
       "health": 860,
+      "build_time": 356,
       "cost":{
         "graphite": 40,
         "silicon": 50,
@@ -4336,6 +4738,7 @@
     "atmospheric-concentrator":{
       "name": "atmospheric-concentrator",
       "kind": "HeatCrafter",
+      "id": 201,
       "size": 3,
       "item_capacity": 0,
       "liquid_capacity": 60,
@@ -4347,6 +4750,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 755,
+      "build_time": 408,
       "cost":{
         "silicon": 150,
         "beryllium": 180,
@@ -4368,6 +4772,7 @@
     "oxidation-chamber":{
       "name": "oxidation-chamber",
       "kind": "HeatProducer",
+      "id": 202,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 30,
@@ -4385,6 +4790,7 @@
       ],
       "liquid_pressure": 1,
       "health": 860,
+      "build_time": 484,
       "cost":{
         "graphite": 80,
         "silicon": 100,
@@ -4411,6 +4817,7 @@
     "electric-heater":{
       "name": "electric-heater",
       "kind": "HeatProducer",
+      "id": 203,
       "size": 2,
       "item_capacity": 0,
       "liquid_capacity": 10,
@@ -4422,6 +4829,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 460,
+      "build_time": 117,
       "cost":{
         "beryllium": 30,
         "tungsten": 30,
@@ -4441,6 +4849,7 @@
     "slag-heater":{
       "name": "slag-heater",
       "kind": "HeatProducer",
+      "id": 204,
       "size": 3,
       "item_capacity": 0,
       "liquid_capacity": 120,
@@ -4455,6 +4864,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1040,
+      "build_time": 123,
       "cost":{
         "beryllium": 20,
         "tungsten": 50,
@@ -4476,6 +4886,7 @@
     "phase-heater":{
       "name": "phase-heater",
       "kind": "HeatProducer",
+      "id": 205,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4490,6 +4901,7 @@
       ],
       "liquid_pressure": 1,
       "health": 510,
+      "build_time": 114,
       "cost":{
         "beryllium": 30,
         "oxide": 30,
@@ -4511,6 +4923,7 @@
     "heat-redirector":{
       "name": "heat-redirector",
       "kind": "HeatConductor",
+      "id": 206,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4522,6 +4935,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 645,
+      "build_time": 25,
       "cost":{
         "graphite": 10,
         "tungsten": 10
@@ -4532,6 +4946,7 @@
     "small-heat-redirector":{
       "name": "small-heat-redirector",
       "kind": "HeatConductor",
+      "id": 207,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4543,6 +4958,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 200,
+      "build_time": 11.6,
       "cost":{
         "graphite": 8,
         "surge-alloy": 3
@@ -4553,6 +4969,7 @@
     "heat-router":{
       "name": "heat-router",
       "kind": "HeatConductor",
+      "id": 208,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4564,6 +4981,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 645,
+      "build_time": 32.5,
       "cost":{
         "graphite": 10,
         "tungsten": 15
@@ -4575,6 +4993,7 @@
     "slag-incinerator":{
       "name": "slag-incinerator",
       "kind": "ItemIncinerator",
+      "id": 209,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4589,6 +5008,7 @@
       ],
       "liquid_pressure": 1,
       "health": 70,
+      "build_time": 22.5,
       "cost":{
         "tungsten": 15
       },
@@ -4601,6 +5021,7 @@
     "carbide-crucible":{
       "name": "carbide-crucible",
       "kind": "HeatCrafter",
+      "id": 210,
       "size": 3,
       "item_capacity": 20,
       "liquid_capacity": 10,
@@ -4616,6 +5037,7 @@
       ],
       "liquid_pressure": 1,
       "health": 900,
+      "build_time": 402,
       "cost":{
         "thorium": 150,
         "tungsten": 110,
@@ -4640,6 +5062,7 @@
     "slag-centrifuge":{
       "name": "slag-centrifuge",
       "kind": "GenericCrafter",
+      "id": 211,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 80,
@@ -4657,6 +5080,7 @@
       ],
       "liquid_pressure": 1,
       "health": 935,
+      "build_time": 238,
       "cost":{
         "graphite": 60,
         "silicon": 40,
@@ -4681,6 +5105,7 @@
     "surge-crucible":{
       "name": "surge-crucible",
       "kind": "HeatCrafter",
+      "id": 212,
       "size": 3,
       "item_capacity": 20,
       "liquid_capacity": 400,
@@ -4698,6 +5123,7 @@
       ],
       "liquid_pressure": 1,
       "health": 825,
+      "build_time": 376,
       "cost":{
         "graphite": 80,
         "silicon": 100,
@@ -4724,6 +5150,7 @@
     "cyanogen-synthesizer":{
       "name": "cyanogen-synthesizer",
       "kind": "HeatCrafter",
+      "id": 213,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 80,
@@ -4741,6 +5168,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1150,
+      "build_time": 424,
       "cost":{
         "silicon": 120,
         "beryllium": 140,
@@ -4767,6 +5195,7 @@
     "phase-synthesizer":{
       "name": "phase-synthesizer",
       "kind": "HeatCrafter",
+      "id": 214,
       "size": 3,
       "item_capacity": 40,
       "liquid_capacity": 40,
@@ -4785,6 +5214,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1115,
+      "build_time": 616,
       "cost":{
         "thorium": 100,
         "silicon": 100,
@@ -4812,6 +5242,7 @@
     "heat-reactor":{
       "name": "heat-reactor",
       "kind": "HeatProducer",
+      "id": 215,
       "size": 3,
       "item_capacity": 20,
       "liquid_capacity": 10,
@@ -4829,6 +5260,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1005,
+      "build_time": 206,
       "cost":{
         "graphite": 20,
         "thorium": 80,
@@ -4855,6 +5287,7 @@
     "copper-wall":{
       "name": "copper-wall",
       "kind": "Wall",
+      "id": 216,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4866,6 +5299,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 320,
+      "build_time": 18,
       "cost":{
         "copper": 6
       },
@@ -4875,6 +5309,7 @@
     "copper-wall-large":{
       "name": "copper-wall-large",
       "kind": "Wall",
+      "id": 217,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4886,6 +5321,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 1280,
+      "build_time": 72,
       "cost":{
         "copper": 24
       },
@@ -4895,6 +5331,7 @@
     "titanium-wall":{
       "name": "titanium-wall",
       "kind": "Wall",
+      "id": 218,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4906,6 +5343,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 440,
+      "build_time": 36,
       "cost":{
         "titanium": 6
       },
@@ -4915,6 +5353,7 @@
     "titanium-wall-large":{
       "name": "titanium-wall-large",
       "kind": "Wall",
+      "id": 219,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4926,6 +5365,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 1760,
+      "build_time": 144,
       "cost":{
         "titanium": 24
       },
@@ -4935,6 +5375,7 @@
     "plastanium-wall":{
       "name": "plastanium-wall",
       "kind": "Wall",
+      "id": 220,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4946,6 +5387,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 500,
+      "build_time": 57,
       "insulated": true,
       "cost":{
         "metaglass": 2,
@@ -4957,6 +5399,7 @@
     "plastanium-wall-large":{
       "name": "plastanium-wall-large",
       "kind": "Wall",
+      "id": 221,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4968,6 +5411,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 2000,
+      "build_time": 228,
       "insulated": true,
       "cost":{
         "metaglass": 8,
@@ -4979,6 +5423,7 @@
     "thorium-wall":{
       "name": "thorium-wall",
       "kind": "Wall",
+      "id": 222,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -4990,6 +5435,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 800,
+      "build_time": 39.600002,
       "cost":{
         "thorium": 6
       },
@@ -4999,6 +5445,7 @@
     "thorium-wall-large":{
       "name": "thorium-wall-large",
       "kind": "Wall",
+      "id": 223,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5010,6 +5457,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 3200,
+      "build_time": 158.40001,
       "cost":{
         "thorium": 24
       },
@@ -5019,6 +5467,7 @@
     "phase-wall":{
       "name": "phase-wall",
       "kind": "Wall",
+      "id": 224,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5030,6 +5479,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 600,
+      "build_time": 46.8,
       "cost":{
         "phase-fabric": 6
       },
@@ -5039,6 +5489,7 @@
     "phase-wall-large":{
       "name": "phase-wall-large",
       "kind": "Wall",
+      "id": 225,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5050,6 +5501,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 2400,
+      "build_time": 187.2,
       "cost":{
         "phase-fabric": 24
       },
@@ -5059,6 +5511,7 @@
     "surge-wall":{
       "name": "surge-wall",
       "kind": "Wall",
+      "id": 226,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5070,6 +5523,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 920,
+      "build_time": 43.2,
       "cost":{
         "surge-alloy": 6
       },
@@ -5079,6 +5533,7 @@
     "surge-wall-large":{
       "name": "surge-wall-large",
       "kind": "Wall",
+      "id": 227,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5090,6 +5545,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 3680,
+      "build_time": 172.8,
       "cost":{
         "surge-alloy": 24
       },
@@ -5099,6 +5555,7 @@
     "door":{
       "name": "door",
       "kind": "Door",
+      "id": 228,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5110,6 +5567,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 400,
+      "build_time": 55.199997,
       "cost":{
         "titanium": 6,
         "silicon": 4
@@ -5120,6 +5578,7 @@
     "door-large":{
       "name": "door-large",
       "kind": "Door",
+      "id": 229,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5131,6 +5590,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 1600,
+      "build_time": 220.79999,
       "cost":{
         "titanium": 24,
         "silicon": 16
@@ -5141,6 +5601,7 @@
     "scrap-wall":{
       "name": "scrap-wall",
       "kind": "Wall",
+      "id": 230,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5152,6 +5613,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 240,
+      "build_time": 12,
       "cost":{
         "scrap": 6
       },
@@ -5161,6 +5623,7 @@
     "scrap-wall-large":{
       "name": "scrap-wall-large",
       "kind": "Wall",
+      "id": 231,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5172,6 +5635,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 960,
+      "build_time": 48,
       "cost":{
         "scrap": 24
       },
@@ -5181,6 +5645,7 @@
     "scrap-wall-huge":{
       "name": "scrap-wall-huge",
       "kind": "Wall",
+      "id": 232,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5192,6 +5657,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 2160,
+      "build_time": 108,
       "cost":{
         "scrap": 54
       },
@@ -5201,6 +5667,7 @@
     "scrap-wall-gigantic":{
       "name": "scrap-wall-gigantic",
       "kind": "Wall",
+      "id": 233,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5212,6 +5679,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 3840,
+      "build_time": 192,
       "cost":{
         "scrap": 96
       },
@@ -5221,6 +5689,7 @@
     "thruster":{
       "name": "thruster",
       "kind": "Thruster",
+      "id": 234,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5232,6 +5701,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 3520,
+      "build_time": 288,
       "cost":{
         "scrap": 96
       },
@@ -5241,6 +5711,7 @@
     "beryllium-wall":{
       "name": "beryllium-wall",
       "kind": "Wall",
+      "id": 235,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5252,6 +5723,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 520,
+      "build_time": 57.600002,
       "cost":{
         "beryllium": 6
       },
@@ -5261,6 +5733,7 @@
     "beryllium-wall-large":{
       "name": "beryllium-wall-large",
       "kind": "Wall",
+      "id": 236,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5272,6 +5745,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 2080,
+      "build_time": 144,
       "cost":{
         "beryllium": 24
       },
@@ -5281,6 +5755,7 @@
     "tungsten-wall":{
       "name": "tungsten-wall",
       "kind": "Wall",
+      "id": 237,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5292,6 +5767,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 720,
+      "build_time": 72,
       "cost":{
         "tungsten": 6
       },
@@ -5301,6 +5777,7 @@
     "tungsten-wall-large":{
       "name": "tungsten-wall-large",
       "kind": "Wall",
+      "id": 238,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5312,6 +5789,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 2880,
+      "build_time": 180,
       "cost":{
         "tungsten": 24
       },
@@ -5321,6 +5799,7 @@
     "blast-door":{
       "name": "blast-door",
       "kind": "AutoDoor",
+      "id": 239,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5332,6 +5811,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 2800,
+      "build_time": 331.2,
       "cost":{
         "silicon": 24,
         "tungsten": 24
@@ -5342,6 +5822,7 @@
     "reinforced-surge-wall":{
       "name": "reinforced-surge-wall",
       "kind": "Wall",
+      "id": 240,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5353,6 +5834,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 1000,
+      "build_time": 61.200005,
       "cost":{
         "surge-alloy": 6,
         "tungsten": 2
@@ -5363,6 +5845,7 @@
     "reinforced-surge-wall-large":{
       "name": "reinforced-surge-wall-large",
       "kind": "Wall",
+      "id": 241,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5374,6 +5857,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 4000,
+      "build_time": 244.80002,
       "cost":{
         "surge-alloy": 24,
         "tungsten": 8
@@ -5384,6 +5868,7 @@
     "carbide-wall":{
       "name": "carbide-wall",
       "kind": "Wall",
+      "id": 242,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5395,6 +5880,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 1080,
+      "build_time": 90,
       "cost":{
         "thorium": 6,
         "carbide": 6
@@ -5405,6 +5891,7 @@
     "carbide-wall-large":{
       "name": "carbide-wall-large",
       "kind": "Wall",
+      "id": 243,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5416,6 +5903,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 4320,
+      "build_time": 360,
       "cost":{
         "thorium": 24,
         "carbide": 24
@@ -5426,6 +5914,7 @@
     "shielded-wall":{
       "name": "shielded-wall",
       "kind": "ShieldWall",
+      "id": 244,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5437,6 +5926,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 4160,
+      "build_time": 328.80002,
       "cost":{
         "phase-fabric": 20,
         "surge-alloy": 12,
@@ -5448,6 +5938,7 @@
     "mender":{
       "name": "mender",
       "kind": "MendProjector",
+      "id": 245,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5462,6 +5953,7 @@
       ],
       "liquid_pressure": 1,
       "health": 80,
+      "build_time": 33.5,
       "cost":{
         "copper": 25,
         "lead": 30
@@ -5481,6 +5973,7 @@
     "mend-projector":{
       "name": "mend-projector",
       "kind": "MendProjector",
+      "id": 246,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5495,6 +5988,7 @@
       ],
       "liquid_pressure": 1,
       "health": 320,
+      "build_time": 152,
       "cost":{
         "copper": 50,
         "lead": 100,
@@ -5516,6 +6010,7 @@
     "overdrive-projector":{
       "name": "overdrive-projector",
       "kind": "OverdriveProjector",
+      "id": 247,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5530,6 +6025,7 @@
       ],
       "liquid_pressure": 1,
       "health": 175,
+      "build_time": 244,
       "cost":{
         "lead": 100,
         "titanium": 75,
@@ -5555,6 +6051,7 @@
     "overdrive-dome":{
       "name": "overdrive-dome",
       "kind": "OverdriveProjector",
+      "id": 248,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5570,6 +6067,7 @@
       ],
       "liquid_pressure": 1,
       "health": 485,
+      "build_time": 622,
       "cost":{
         "lead": 200,
         "titanium": 130,
@@ -5596,6 +6094,7 @@
     "force-projector":{
       "name": "force-projector",
       "kind": "ForceProjector",
+      "id": 249,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 60,
@@ -5614,6 +6113,7 @@
       ],
       "liquid_pressure": 1,
       "health": 360,
+      "build_time": 245,
       "cost":{
         "lead": 100,
         "titanium": 75,
@@ -5634,6 +6134,7 @@
     "shock-mine":{
       "name": "shock-mine",
       "kind": "ShockMine",
+      "id": 250,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5645,6 +6146,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 50,
+      "build_time": 27.1,
       "cost":{
         "lead": 25,
         "silicon": 12
@@ -5654,6 +6156,7 @@
     "radar":{
       "name": "radar",
       "kind": "Radar",
+      "id": 251,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5665,6 +6168,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 60,
+      "build_time": 110,
       "cost":{
         "graphite": 50,
         "silicon": 60,
@@ -5677,6 +6181,7 @@
     "build-tower":{
       "name": "build-tower",
       "kind": "BuildTurret",
+      "id": 252,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 30,
@@ -5691,6 +6196,7 @@
       ],
       "liquid_pressure": 1,
       "health": 610,
+      "build_time": 234,
       "cost":{
         "thorium": 60,
         "silicon": 150,
@@ -5707,6 +6213,7 @@
     "regen-projector":{
       "name": "regen-projector",
       "kind": "RegenProjector",
+      "id": 253,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5724,6 +6231,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1040,
+      "build_time": 298,
       "cost":{
         "silicon": 80,
         "beryllium": 80,
@@ -5740,6 +6248,7 @@
     "shockwave-tower":{
       "name": "shockwave-tower",
       "kind": "ShockwaveTower",
+      "id": 254,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 15,
@@ -5754,6 +6263,7 @@
       ],
       "liquid_pressure": 1,
       "health": 915,
+      "build_time": 366,
       "cost":{
         "silicon": 150,
         "surge-alloy": 50,
@@ -5769,6 +6279,7 @@
     "shield-projector":{
       "name": "shield-projector",
       "kind": "BaseShield",
+      "id": 255,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5780,12 +6291,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 360,
+      "build_time": 20,
       "cost":{},
       "power": 300
     },
     "large-shield-projector":{
       "name": "large-shield-projector",
       "kind": "BaseShield",
+      "id": 256,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5797,12 +6310,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 640,
+      "build_time": 20,
       "cost":{},
       "power": 300
     },
     "conveyor":{
       "name": "conveyor",
       "kind": "Conveyor",
+      "id": 257,
       "size": 1,
       "item_capacity": 3,
       "liquid_capacity": 10,
@@ -5813,6 +6328,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 45,
+      "build_time": 0.5,
       "cost":{
         "copper": 1
       },
@@ -5825,6 +6341,7 @@
     "titanium-conveyor":{
       "name": "titanium-conveyor",
       "kind": "Conveyor",
+      "id": 258,
       "size": 1,
       "item_capacity": 3,
       "liquid_capacity": 10,
@@ -5835,6 +6352,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 65,
+      "build_time": 2.2,
       "cost":{
         "copper": 1,
         "lead": 1,
@@ -5849,6 +6367,7 @@
     "plastanium-conveyor":{
       "name": "plastanium-conveyor",
       "kind": "StackConveyor",
+      "id": 259,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5860,6 +6379,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 90,
+      "build_time": 3.1,
       "cost":{
         "graphite": 1,
         "silicon": 1,
@@ -5876,6 +6396,7 @@
     "armored-conveyor":{
       "name": "armored-conveyor",
       "kind": "ArmoredConveyor",
+      "id": 260,
       "size": 1,
       "item_capacity": 3,
       "liquid_capacity": 10,
@@ -5886,6 +6407,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 280,
+      "build_time": 3.8999999,
       "cost":{
         "metaglass": 1,
         "thorium": 1,
@@ -5900,6 +6422,7 @@
     "junction":{
       "name": "junction",
       "kind": "Junction",
+      "id": 261,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5910,6 +6433,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 30,
+      "build_time": 4.5,
       "cost":{
         "copper": 3
       },
@@ -5923,6 +6447,7 @@
     "bridge-conveyor":{
       "name": "bridge-conveyor",
       "kind": "BufferedItemBridge",
+      "id": 262,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5933,6 +6458,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 7.2,
       "cost":{
         "copper": 6,
         "lead": 6
@@ -5950,6 +6476,7 @@
     "phase-conveyor":{
       "name": "phase-conveyor",
       "kind": "ItemBridge",
+      "id": 263,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5960,6 +6487,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 50,
+      "build_time": 29.1,
       "cost":{
         "lead": 10,
         "graphite": 10,
@@ -5976,6 +6504,7 @@
     "sorter":{
       "name": "sorter",
       "kind": "Sorter",
+      "id": 264,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -5986,6 +6515,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 7.2000003,
       "cost":{
         "copper": 2,
         "lead": 2
@@ -5997,6 +6527,7 @@
     "inverted-sorter":{
       "name": "inverted-sorter",
       "kind": "Sorter",
+      "id": 265,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -6007,6 +6538,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 7.2000003,
       "cost":{
         "copper": 2,
         "lead": 2
@@ -6018,6 +6550,7 @@
     "router":{
       "name": "router",
       "kind": "Router",
+      "id": 266,
       "size": 1,
       "item_capacity": 1,
       "liquid_capacity": 10,
@@ -6028,6 +6561,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 6,
       "cost":{
         "copper": 3
       },
@@ -6038,6 +6572,7 @@
     "distributor":{
       "name": "distributor",
       "kind": "Router",
+      "id": 267,
       "size": 2,
       "item_capacity": 1,
       "liquid_capacity": 10,
@@ -6048,6 +6583,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 14.400001,
       "cost":{
         "copper": 4,
         "lead": 4
@@ -6059,6 +6595,7 @@
     "overflow-gate":{
       "name": "overflow-gate",
       "kind": "OverflowGate",
+      "id": 268,
       "size": 1,
       "item_capacity": 0,
       "liquid_capacity": 10,
@@ -6069,6 +6606,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 10.200001,
       "cost":{
         "copper": 4,
         "lead": 2
@@ -6083,6 +6621,7 @@
     "underflow-gate":{
       "name": "underflow-gate",
       "kind": "OverflowGate",
+      "id": 269,
       "size": 1,
       "item_capacity": 0,
       "liquid_capacity": 10,
@@ -6093,6 +6632,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 10.200001,
       "cost":{
         "copper": 4,
         "lead": 2
@@ -6108,6 +6648,7 @@
     "unloader":{
       "name": "unloader",
       "kind": "Unloader",
+      "id": 270,
       "size": 1,
       "item_capacity": 0,
       "liquid_capacity": 10,
@@ -6118,6 +6659,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 70,
+      "build_time": 49,
       "cost":{
         "titanium": 25,
         "silicon": 30
@@ -6130,6 +6672,7 @@
     "mass-driver":{
       "name": "mass-driver",
       "kind": "MassDriver",
+      "id": 271,
       "size": 3,
       "item_capacity": 120,
       "liquid_capacity": 10,
@@ -6141,6 +6684,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 430,
+      "build_time": 327.5,
       "cost":{
         "lead": 125,
         "titanium": 125,
@@ -6155,6 +6699,7 @@
     "duct":{
       "name": "duct",
       "kind": "Duct",
+      "id": 272,
       "size": 1,
       "item_capacity": 1,
       "liquid_capacity": 10,
@@ -6165,6 +6710,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 90,
+      "build_time": 1.2,
       "cost":{
         "beryllium": 1
       },
@@ -6177,6 +6723,7 @@
     "armored-duct":{
       "name": "armored-duct",
       "kind": "Duct",
+      "id": 273,
       "size": 1,
       "item_capacity": 1,
       "liquid_capacity": 10,
@@ -6187,6 +6734,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 140,
+      "build_time": 3.9,
       "cost":{
         "beryllium": 2,
         "tungsten": 1
@@ -6201,6 +6749,7 @@
     "duct-router":{
       "name": "duct-router",
       "kind": "DuctRouter",
+      "id": 274,
       "size": 1,
       "item_capacity": 1,
       "liquid_capacity": 10,
@@ -6211,6 +6760,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 90,
+      "build_time": 12,
       "cost":{
         "beryllium": 10
       },
@@ -6223,6 +6773,7 @@
     "overflow-duct":{
       "name": "overflow-duct",
       "kind": "OverflowDuct",
+      "id": 275,
       "size": 1,
       "item_capacity": 1,
       "liquid_capacity": 10,
@@ -6233,6 +6784,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 90,
+      "build_time": 17.6,
       "cost":{
         "graphite": 8,
         "beryllium": 8
@@ -6247,6 +6799,7 @@
     "underflow-duct":{
       "name": "underflow-duct",
       "kind": "OverflowDuct",
+      "id": 276,
       "size": 1,
       "item_capacity": 1,
       "liquid_capacity": 10,
@@ -6257,6 +6810,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 90,
+      "build_time": 17.6,
       "cost":{
         "graphite": 8,
         "beryllium": 8
@@ -6272,6 +6826,7 @@
     "duct-bridge":{
       "name": "duct-bridge",
       "kind": "DuctBridge",
+      "id": 277,
       "size": 1,
       "item_capacity": 4,
       "liquid_capacity": 10,
@@ -6283,6 +6838,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 90,
+      "build_time": 36,
       "cost":{
         "beryllium": 15
       },
@@ -6296,6 +6852,7 @@
     "duct-unloader":{
       "name": "duct-unloader",
       "kind": "DirectionalUnloader",
+      "id": 278,
       "size": 1,
       "item_capacity": 0,
       "liquid_capacity": 10,
@@ -6306,6 +6863,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 120,
+      "build_time": 51,
       "cost":{
         "graphite": 20,
         "silicon": 20,
@@ -6320,6 +6878,7 @@
     "surge-conveyor":{
       "name": "surge-conveyor",
       "kind": "StackConveyor",
+      "id": 279,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -6331,6 +6890,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 130,
+      "build_time": 2.7,
       "cost":{
         "surge-alloy": 1,
         "tungsten": 1
@@ -6346,6 +6906,7 @@
     "surge-router":{
       "name": "surge-router",
       "kind": "StackRouter",
+      "id": 280,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -6356,6 +6917,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 130,
+      "build_time": 7.5,
       "cost":{
         "surge-alloy": 5,
         "tungsten": 1
@@ -6370,6 +6932,7 @@
     "unit-cargo-loader":{
       "name": "unit-cargo-loader",
       "kind": "UnitCargoLoader",
+      "id": 281,
       "size": 3,
       "item_capacity": 200,
       "liquid_capacity": 100,
@@ -6384,6 +6947,7 @@
       ],
       "liquid_pressure": 1,
       "health": 630,
+      "build_time": 148,
       "cost":{
         "silicon": 80,
         "surge-alloy": 50,
@@ -6399,6 +6963,7 @@
     "unit-cargo-unload-point":{
       "name": "unit-cargo-unload-point",
       "kind": "UnitCargoUnloadPoint",
+      "id": 282,
       "size": 2,
       "item_capacity": 100,
       "liquid_capacity": 10,
@@ -6410,6 +6975,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 285,
+      "build_time": 138,
       "cost":{
         "silicon": 60,
         "tungsten": 60
@@ -6422,6 +6988,7 @@
     "mechanical-pump":{
       "name": "mechanical-pump",
       "kind": "Pump",
+      "id": 283,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -6433,6 +7000,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 22.5,
       "cost":{
         "copper": 15,
         "metaglass": 10
@@ -6446,6 +7014,7 @@
     "rotary-pump":{
       "name": "rotary-pump",
       "kind": "Pump",
+      "id": 284,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 80,
@@ -6457,6 +7026,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 161,
       "cost":{
         "copper": 70,
         "metaglass": 50,
@@ -6472,6 +7042,7 @@
     "impulse-pump":{
       "name": "impulse-pump",
       "kind": "Pump",
+      "id": 285,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 200,
@@ -6483,6 +7054,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 430,
+      "build_time": 277.5,
       "cost":{
         "copper": 80,
         "metaglass": 90,
@@ -6499,6 +7071,7 @@
     "conduit":{
       "name": "conduit",
       "kind": "Conduit",
+      "id": 286,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -6511,6 +7084,7 @@
       "liquid_pressure": 1,
       "leaks": true,
       "health": 45,
+      "build_time": 1.5,
       "cost":{
         "metaglass": 1
       },
@@ -6522,6 +7096,7 @@
     "pulse-conduit":{
       "name": "pulse-conduit",
       "kind": "Conduit",
+      "id": 287,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 40,
@@ -6534,6 +7109,7 @@
       "liquid_pressure": 1.025,
       "leaks": true,
       "health": 90,
+      "build_time": 3.5,
       "cost":{
         "metaglass": 1,
         "titanium": 2
@@ -6546,6 +7122,7 @@
     "plated-conduit":{
       "name": "plated-conduit",
       "kind": "ArmoredConduit",
+      "id": 288,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 50,
@@ -6557,6 +7134,7 @@
       "dump_time": 5,
       "liquid_pressure": 1.025,
       "health": 220,
+      "build_time": 5,
       "cost":{
         "metaglass": 1,
         "thorium": 2,
@@ -6570,6 +7148,7 @@
     "liquid-router":{
       "name": "liquid-router",
       "kind": "LiquidRouter",
+      "id": 289,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 120,
@@ -6581,6 +7160,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 7,
       "cost":{
         "metaglass": 2,
         "graphite": 4
@@ -6593,6 +7173,7 @@
     "liquid-container":{
       "name": "liquid-container",
       "kind": "LiquidRouter",
+      "id": 290,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 700,
@@ -6604,6 +7185,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 32.5,
       "cost":{
         "metaglass": 15,
         "titanium": 10
@@ -6616,6 +7198,7 @@
     "liquid-tank":{
       "name": "liquid-tank",
       "kind": "LiquidRouter",
+      "id": 291,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 1800,
@@ -6627,6 +7210,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 500,
+      "build_time": 90,
       "cost":{
         "metaglass": 40,
         "titanium": 30
@@ -6639,6 +7223,7 @@
     "liquid-junction":{
       "name": "liquid-junction",
       "kind": "LiquidJunction",
+      "id": 292,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -6650,6 +7235,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 16,
       "cost":{
         "metaglass": 8,
         "graphite": 4
@@ -6661,6 +7247,7 @@
     "bridge-conduit":{
       "name": "bridge-conduit",
       "kind": "LiquidBridge",
+      "id": 293,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 100,
@@ -6671,6 +7258,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 16,
       "cost":{
         "metaglass": 8,
         "graphite": 4
@@ -6684,6 +7272,7 @@
     "phase-conduit":{
       "name": "phase-conduit",
       "kind": "LiquidBridge",
+      "id": 294,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 100,
@@ -6694,6 +7283,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 50,
+      "build_time": 52.1,
       "cost":{
         "metaglass": 20,
         "titanium": 10,
@@ -6709,6 +7299,7 @@
     "reinforced-pump":{
       "name": "reinforced-pump",
       "kind": "Pump",
+      "id": 295,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 160,
@@ -6723,6 +7314,7 @@
       ],
       "liquid_pressure": 1,
       "health": 380,
+      "build_time": 109,
       "cost":{
         "silicon": 20,
         "beryllium": 40,
@@ -6739,6 +7331,7 @@
     "reinforced-conduit":{
       "name": "reinforced-conduit",
       "kind": "ArmoredConduit",
+      "id": 296,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 50,
@@ -6751,6 +7344,7 @@
       "liquid_pressure": 1.03,
       "leaks": true,
       "health": 250,
+      "build_time": 2.4,
       "cost":{
         "beryllium": 2
       },
@@ -6762,6 +7356,7 @@
     "reinforced-liquid-junction":{
       "name": "reinforced-liquid-junction",
       "kind": "LiquidJunction",
+      "id": 297,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -6773,6 +7368,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 250,
+      "build_time": 40.800003,
       "cost":{
         "graphite": 4,
         "beryllium": 8
@@ -6784,6 +7380,7 @@
     "reinforced-bridge-conduit":{
       "name": "reinforced-bridge-conduit",
       "kind": "DirectionLiquidBridge",
+      "id": 298,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 120,
@@ -6795,6 +7392,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 250,
+      "build_time": 32,
       "cost":{
         "graphite": 8,
         "beryllium": 20
@@ -6808,6 +7406,7 @@
     "reinforced-liquid-router":{
       "name": "reinforced-liquid-router",
       "kind": "LiquidRouter",
+      "id": 299,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 150,
@@ -6819,6 +7418,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 250,
+      "build_time": 12.8,
       "cost":{
         "graphite": 8,
         "beryllium": 4
@@ -6831,6 +7431,7 @@
     "reinforced-liquid-container":{
       "name": "reinforced-liquid-container",
       "kind": "LiquidRouter",
+      "id": 300,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 1000,
@@ -6842,6 +7443,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 400,
+      "build_time": 34.2,
       "cost":{
         "beryllium": 16,
         "tungsten": 10
@@ -6854,6 +7456,7 @@
     "reinforced-liquid-tank":{
       "name": "reinforced-liquid-tank",
       "kind": "LiquidRouter",
+      "id": 301,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 2700,
@@ -6865,6 +7468,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 900,
+      "build_time": 120,
       "cost":{
         "beryllium": 50,
         "tungsten": 40
@@ -6877,6 +7481,7 @@
     "power-node":{
       "name": "power-node",
       "kind": "PowerNode",
+      "id": 302,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -6888,6 +7493,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 5.2,
       "cost":{
         "copper": 2,
         "lead": 6
@@ -6899,6 +7505,7 @@
     "power-node-large":{
       "name": "power-node-large",
       "kind": "PowerNode",
+      "id": 303,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -6910,6 +7517,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 14.4,
       "cost":{
         "lead": 10,
         "titanium": 5,
@@ -6922,6 +7530,7 @@
     "surge-tower":{
       "name": "surge-tower",
       "kind": "PowerNode",
+      "id": 304,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -6933,6 +7542,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 200,
+      "build_time": 44,
       "cost":{
         "lead": 10,
         "titanium": 7,
@@ -6946,6 +7556,7 @@
     "diode":{
       "name": "diode",
       "kind": "PowerDiode",
+      "id": 305,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -6957,6 +7568,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 29.5,
       "insulated": true,
       "cost":{
         "metaglass": 10,
@@ -6968,6 +7580,7 @@
     "battery":{
       "name": "battery",
       "kind": "Battery",
+      "id": 306,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -6980,6 +7593,7 @@
       "liquid_pressure": 1,
       "power_capacity": 4000,
       "health": 40,
+      "build_time": 16.5,
       "cost":{
         "copper": 5,
         "lead": 20
@@ -6991,6 +7605,7 @@
     "battery-large":{
       "name": "battery-large",
       "kind": "Battery",
+      "id": 307,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7003,6 +7618,7 @@
       "liquid_pressure": 1,
       "power_capacity": 50000,
       "health": 360,
+      "build_time": 79,
       "cost":{
         "lead": 50,
         "titanium": 20,
@@ -7015,6 +7631,7 @@
     "combustion-generator":{
       "name": "combustion-generator",
       "kind": "ConsumeGenerator",
+      "id": 308,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7032,6 +7649,7 @@
       ],
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 23,
       "cost":{
         "copper": 25,
         "lead": 15
@@ -7057,6 +7675,7 @@
     "thermal-generator":{
       "name": "thermal-generator",
       "kind": "ThermalGenerator",
+      "id": 309,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7068,6 +7687,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 178,
       "cost":{
         "copper": 40,
         "lead": 50,
@@ -7090,6 +7710,7 @@
     "steam-generator":{
       "name": "steam-generator",
       "kind": "ConsumeGenerator",
+      "id": 310,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 60,
@@ -7110,6 +7731,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 94.5,
       "cost":{
         "copper": 35,
         "lead": 40,
@@ -7139,6 +7761,7 @@
     "differential-generator":{
       "name": "differential-generator",
       "kind": "ConsumeGenerator",
+      "id": 311,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 60,
@@ -7156,6 +7779,7 @@
       ],
       "liquid_pressure": 1,
       "health": 360,
+      "build_time": 282,
       "cost":{
         "copper": 70,
         "lead": 100,
@@ -7179,6 +7803,7 @@
     "rtg-generator":{
       "name": "rtg-generator",
       "kind": "ConsumeGenerator",
+      "id": 312,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7195,6 +7820,7 @@
       ],
       "liquid_pressure": 1,
       "health": 245,
+      "build_time": 315,
       "cost":{
         "lead": 100,
         "thorium": 50,
@@ -7222,6 +7848,7 @@
     "solar-panel":{
       "name": "solar-panel",
       "kind": "SolarGenerator",
+      "id": 313,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7233,6 +7860,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 13.4,
       "cost":{
         "lead": 10,
         "silicon": 8
@@ -7248,6 +7876,7 @@
     "solar-panel-large":{
       "name": "solar-panel-large",
       "kind": "SolarGenerator",
+      "id": 314,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7259,6 +7888,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 450,
+      "build_time": 117.5,
       "cost":{
         "lead": 60,
         "silicon": 70,
@@ -7275,6 +7905,7 @@
     "thorium-reactor":{
       "name": "thorium-reactor",
       "kind": "NuclearReactor",
+      "id": 315,
       "size": 3,
       "item_capacity": 30,
       "liquid_capacity": 30,
@@ -7292,6 +7923,7 @@
       ],
       "liquid_pressure": 1,
       "health": 700,
+      "build_time": 760,
       "cost":{
         "lead": 300,
         "metaglass": 50,
@@ -7320,6 +7952,7 @@
     "impact-reactor":{
       "name": "impact-reactor",
       "kind": "ImpactReactor",
+      "id": 316,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 80,
@@ -7337,6 +7970,7 @@
       ],
       "liquid_pressure": 1,
       "health": 900,
+      "build_time": 1775,
       "cost":{
         "lead": 500,
         "metaglass": 250,
@@ -7362,6 +7996,7 @@
     "beam-node":{
       "name": "beam-node",
       "kind": "BeamNode",
+      "id": 317,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7374,6 +8009,7 @@
       "liquid_pressure": 1,
       "power_capacity": 1000,
       "health": 90,
+      "build_time": 9.6,
       "cost":{
         "beryllium": 8
       },
@@ -7384,6 +8020,7 @@
     "beam-tower":{
       "name": "beam-tower",
       "kind": "BeamNode",
+      "id": 318,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7396,6 +8033,7 @@
       "liquid_pressure": 1,
       "power_capacity": 40000,
       "health": 810,
+      "build_time": 56,
       "cost":{
         "silicon": 10,
         "beryllium": 30,
@@ -7408,6 +8046,7 @@
     "beam-link":{
       "name": "beam-link",
       "kind": "LongPowerNode",
+      "id": 319,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7419,6 +8058,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 1170,
+      "build_time": 972.5,
       "cost":{
         "silicon": 250,
         "phase-fabric": 75,
@@ -7434,6 +8074,7 @@
     "turbine-condenser":{
       "name": "turbine-condenser",
       "kind": "ThermalGenerator",
+      "id": 320,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -7445,6 +8086,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 575,
+      "build_time": 72,
       "cost":{
         "beryllium": 60
       },
@@ -7465,6 +8107,7 @@
     "chemical-combustion-chamber":{
       "name": "chemical-combustion-chamber",
       "kind": "ConsumeGenerator",
+      "id": 321,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 100,
@@ -7480,6 +8123,7 @@
       ],
       "liquid_pressure": 1,
       "health": 825,
+      "build_time": 142,
       "cost":{
         "graphite": 40,
         "silicon": 30,
@@ -7501,6 +8145,7 @@
     "pyrolysis-generator":{
       "name": "pyrolysis-generator",
       "kind": "ConsumeGenerator",
+      "id": 322,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 150,
@@ -7516,6 +8161,7 @@
       ],
       "liquid_pressure": 1,
       "health": 935,
+      "build_time": 336,
       "cost":{
         "graphite": 100,
         "silicon": 100,
@@ -7540,6 +8186,7 @@
     "flux-reactor":{
       "name": "flux-reactor",
       "kind": "VariableReactor",
+      "id": 323,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 30,
@@ -7554,6 +8201,7 @@
       ],
       "liquid_pressure": 1,
       "health": 2850,
+      "build_time": 948,
       "cost":{
         "graphite": 240,
         "silicon": 480,
@@ -7577,6 +8225,7 @@
     "neoplasia-reactor":{
       "name": "neoplasia-reactor",
       "kind": "HeaterGenerator",
+      "id": 324,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 80,
@@ -7595,6 +8244,7 @@
       ],
       "liquid_pressure": 1,
       "health": 3900,
+      "build_time": 2560,
       "cost":{
         "silicon": 500,
         "phase-fabric": 150,
@@ -7627,6 +8277,7 @@
     "mechanical-drill":{
       "name": "mechanical-drill",
       "kind": "Drill",
+      "id": 325,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 30,
@@ -7641,6 +8292,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 6,
       "cost":{
         "copper": 12
       },
@@ -7655,6 +8307,7 @@
     "pneumatic-drill":{
       "name": "pneumatic-drill",
       "kind": "Drill",
+      "id": 326,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 35,
@@ -7669,6 +8322,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 19,
       "cost":{
         "copper": 18,
         "graphite": 10
@@ -7684,6 +8338,7 @@
     "laser-drill":{
       "name": "laser-drill",
       "kind": "Drill",
+      "id": 327,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 48,
@@ -7698,6 +8353,7 @@
       ],
       "liquid_pressure": 1,
       "health": 360,
+      "build_time": 91.5,
       "cost":{
         "copper": 35,
         "graphite": 30,
@@ -7715,6 +8371,7 @@
     "blast-drill":{
       "name": "blast-drill",
       "kind": "Drill",
+      "id": 328,
       "size": 4,
       "item_capacity": 20,
       "liquid_capacity": 60,
@@ -7729,6 +8386,7 @@
       ],
       "liquid_pressure": 1,
       "health": 765,
+      "build_time": 213,
       "cost":{
         "copper": 65,
         "titanium": 50,
@@ -7746,6 +8404,7 @@
     "water-extractor":{
       "name": "water-extractor",
       "kind": "SolidPump",
+      "id": 329,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 40,
@@ -7757,6 +8416,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 111,
       "cost":{
         "copper": 30,
         "lead": 30,
@@ -7778,6 +8438,7 @@
     "cultivator":{
       "name": "cultivator",
       "kind": "AttributeCrafter",
+      "id": 330,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 80,
@@ -7792,6 +8453,7 @@
       ],
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 38,
       "cost":{
         "copper": 25,
         "lead": 25,
@@ -7816,6 +8478,7 @@
     "oil-extractor":{
       "name": "oil-extractor",
       "kind": "Fracker",
+      "id": 331,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 40,
@@ -7833,6 +8496,7 @@
       ],
       "liquid_pressure": 1,
       "health": 430,
+      "build_time": 517,
       "cost":{
         "copper": 150,
         "lead": 115,
@@ -7860,6 +8524,7 @@
     "vent-condenser":{
       "name": "vent-condenser",
       "kind": "AttributeCrafter",
+      "id": 332,
       "size": 3,
       "item_capacity": 0,
       "liquid_capacity": 60,
@@ -7871,6 +8536,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 575,
+      "build_time": 92,
       "cost":{
         "graphite": 20,
         "beryllium": 60
@@ -7892,6 +8558,7 @@
     "cliff-crusher":{
       "name": "cliff-crusher",
       "kind": "WallCrafter",
+      "id": 333,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7903,6 +8570,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 255,
+      "build_time": 49,
       "cost":{
         "graphite": 25,
         "beryllium": 20
@@ -7924,6 +8592,7 @@
     "large-cliff-crusher":{
       "name": "large-cliff-crusher",
       "kind": "WallCrafter",
+      "id": 334,
       "size": 3,
       "item_capacity": 20,
       "liquid_capacity": 10,
@@ -7941,6 +8610,7 @@
       ],
       "liquid_pressure": 1,
       "health": 950,
+      "build_time": 277,
       "cost":{
         "silicon": 80,
         "surge-alloy": 15,
@@ -7966,6 +8636,7 @@
     "plasma-bore":{
       "name": "plasma-bore",
       "kind": "BeamDrill",
+      "id": 335,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -7980,6 +8651,7 @@
       ],
       "liquid_pressure": 1,
       "health": 255,
+      "build_time": 48,
       "cost":{
         "beryllium": 40
       },
@@ -7998,6 +8670,7 @@
     "large-plasma-bore":{
       "name": "large-plasma-bore",
       "kind": "BeamDrill",
+      "id": 336,
       "size": 3,
       "item_capacity": 20,
       "liquid_capacity": 30,
@@ -8013,6 +8686,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1040,
+      "build_time": 335,
       "cost":{
         "silicon": 100,
         "beryllium": 100,
@@ -8036,6 +8710,7 @@
     "impact-drill":{
       "name": "impact-drill",
       "kind": "BurstDrill",
+      "id": 337,
       "size": 4,
       "item_capacity": 40,
       "liquid_capacity": 100,
@@ -8051,6 +8726,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1020,
+      "build_time": 224,
       "cost":{
         "graphite": 60,
         "silicon": 70,
@@ -8072,6 +8748,7 @@
     "eruption-drill":{
       "name": "eruption-drill",
       "kind": "BurstDrill",
+      "id": 338,
       "size": 5,
       "item_capacity": 60,
       "liquid_capacity": 40,
@@ -8087,6 +8764,7 @@
       ],
       "liquid_pressure": 1,
       "health": 2500,
+      "build_time": 804,
       "cost":{
         "thorium": 150,
         "silicon": 300,
@@ -8109,6 +8787,7 @@
     "core-shard":{
       "name": "core-shard",
       "kind": "CoreBlock",
+      "id": 339,
       "size": 3,
       "item_capacity": 4000,
       "liquid_capacity": 10,
@@ -8120,6 +8799,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 1100,
+      "build_time": 2120,
       "cost":{
         "copper": 1000,
         "lead": 800
@@ -8132,6 +8812,7 @@
     "core-foundation":{
       "name": "core-foundation",
       "kind": "CoreBlock",
+      "id": 340,
       "size": 4,
       "item_capacity": 9000,
       "liquid_capacity": 10,
@@ -8143,6 +8824,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 3500,
+      "build_time": 5200,
       "cost":{
         "copper": 3000,
         "lead": 3000,
@@ -8156,6 +8838,7 @@
     "core-nucleus":{
       "name": "core-nucleus",
       "kind": "CoreBlock",
+      "id": 341,
       "size": 5,
       "item_capacity": 13000,
       "liquid_capacity": 10,
@@ -8167,6 +8850,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 6000,
+      "build_time": 18000,
       "cost":{
         "copper": 8000,
         "lead": 8000,
@@ -8181,6 +8865,7 @@
     "core-bastion":{
       "name": "core-bastion",
       "kind": "CoreBlock",
+      "id": 342,
       "size": 4,
       "item_capacity": 2000,
       "liquid_capacity": 10,
@@ -8192,6 +8877,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 4500,
+      "build_time": 1932,
       "cost":{
         "graphite": 1000,
         "silicon": 1000,
@@ -8205,6 +8891,7 @@
     "core-citadel":{
       "name": "core-citadel",
       "kind": "CoreBlock",
+      "id": 343,
       "size": 5,
       "item_capacity": 3000,
       "liquid_capacity": 10,
@@ -8216,6 +8903,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 16000,
+      "build_time": 9590,
       "cost":{
         "silicon": 4000,
         "beryllium": 4000,
@@ -8230,6 +8918,7 @@
     "core-acropolis":{
       "name": "core-acropolis",
       "kind": "CoreBlock",
+      "id": 344,
       "size": 6,
       "item_capacity": 4000,
       "liquid_capacity": 10,
@@ -8241,6 +8930,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 30000,
+      "build_time": 18550,
       "cost":{
         "silicon": 5000,
         "beryllium": 6000,
@@ -8256,6 +8946,7 @@
     "container":{
       "name": "container",
       "kind": "StorageBlock",
+      "id": 345,
       "size": 2,
       "item_capacity": 300,
       "liquid_capacity": 10,
@@ -8267,6 +8958,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 220,
+      "build_time": 100,
       "cost":{
         "titanium": 100
       },
@@ -8277,6 +8969,7 @@
     "vault":{
       "name": "vault",
       "kind": "StorageBlock",
+      "id": 346,
       "size": 3,
       "item_capacity": 1000,
       "liquid_capacity": 10,
@@ -8288,6 +8981,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 495,
+      "build_time": 387.5,
       "cost":{
         "titanium": 250,
         "thorium": 125
@@ -8299,6 +8993,7 @@
     "reinforced-container":{
       "name": "reinforced-container",
       "kind": "StorageBlock",
+      "id": 347,
       "size": 2,
       "item_capacity": 160,
       "liquid_capacity": 10,
@@ -8310,6 +9005,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 480,
+      "build_time": 85,
       "cost":{
         "graphite": 40,
         "tungsten": 30
@@ -8321,6 +9017,7 @@
     "reinforced-vault":{
       "name": "reinforced-vault",
       "kind": "StorageBlock",
+      "id": 348,
       "size": 3,
       "item_capacity": 900,
       "liquid_capacity": 10,
@@ -8332,6 +9029,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 1080,
+      "build_time": 384.5,
       "cost":{
         "thorium": 70,
         "beryllium": 100,
@@ -8344,6 +9042,7 @@
     "duo":{
       "name": "duo",
       "kind": "ItemTurret",
+      "id": 349,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8364,6 +9063,7 @@
       ],
       "liquid_pressure": 1,
       "health": 250,
+      "build_time": 17.5,
       "cost":{
         "copper": 35
       },
@@ -8389,6 +9089,7 @@
     "scatter":{
       "name": "scatter",
       "kind": "ItemTurret",
+      "id": 350,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8409,6 +9110,7 @@
       ],
       "liquid_pressure": 1,
       "health": 800,
+      "build_time": 74,
       "cost":{
         "copper": 85,
         "lead": 45
@@ -8435,6 +9137,7 @@
     "scorch":{
       "name": "scorch",
       "kind": "ItemTurret",
+      "id": 351,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8454,6 +9157,7 @@
       ],
       "liquid_pressure": 1,
       "health": 400,
+      "build_time": 34.5,
       "cost":{
         "copper": 25,
         "graphite": 22
@@ -8478,6 +9182,7 @@
     "hail":{
       "name": "hail",
       "kind": "ItemTurret",
+      "id": 352,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8498,6 +9203,7 @@
       ],
       "liquid_pressure": 1,
       "health": 260,
+      "build_time": 37,
       "cost":{
         "copper": 40,
         "graphite": 17
@@ -8524,6 +9230,7 @@
     "wave":{
       "name": "wave",
       "kind": "LiquidTurret",
+      "id": 353,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -8541,6 +9248,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1000,
+      "build_time": 132.5,
       "cost":{
         "copper": 25,
         "lead": 75,
@@ -8552,16 +9260,17 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "oil": 1,
-        "slag": 1,
         "water": 1,
-        "cryofluid": 1
+        "slag": 1,
+        "cryofluid": 1,
+        "oil": 1
       },
       "input_liquid":{}
     },
     "lancer":{
       "name": "lancer",
       "kind": "PowerTurret",
+      "id": 354,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8577,6 +9286,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1120,
+      "build_time": 157,
       "cost":{
         "copper": 60,
         "lead": 70,
@@ -8598,6 +9308,7 @@
     "arc":{
       "name": "arc",
       "kind": "PowerTurret",
+      "id": 355,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8613,6 +9324,7 @@
       ],
       "liquid_pressure": 1,
       "health": 260,
+      "build_time": 60,
       "cost":{
         "copper": 50,
         "lead": 50
@@ -8632,6 +9344,7 @@
     "parallax":{
       "name": "parallax",
       "kind": "TractorBeamTurret",
+      "id": 356,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -8643,6 +9356,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 640,
+      "build_time": 288,
       "cost":{
         "graphite": 50,
         "titanium": 110,
@@ -8657,6 +9371,7 @@
     "swarmer":{
       "name": "swarmer",
       "kind": "ItemTurret",
+      "id": 357,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8677,6 +9392,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1200,
+      "build_time": 152.5,
       "cost":{
         "graphite": 35,
         "titanium": 35,
@@ -8705,6 +9421,7 @@
     "salvo":{
       "name": "salvo",
       "kind": "ItemTurret",
+      "id": 358,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8727,6 +9444,7 @@
       ],
       "liquid_pressure": 1,
       "health": 960,
+      "build_time": 180,
       "cost":{
         "copper": 100,
         "graphite": 80,
@@ -8758,6 +9476,7 @@
     "segment":{
       "name": "segment",
       "kind": "PointDefenseTurret",
+      "id": 359,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -8769,6 +9488,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 1000,
+      "build_time": 284,
       "cost":{
         "titanium": 40,
         "thorium": 80,
@@ -8785,6 +9505,7 @@
     "tsunami":{
       "name": "tsunami",
       "kind": "LiquidTurret",
+      "id": 360,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 40,
@@ -8802,6 +9523,7 @@
       ],
       "liquid_pressure": 1,
       "health": 2250,
+      "build_time": 790,
       "cost":{
         "lead": 400,
         "metaglass": 100,
@@ -8814,16 +9536,17 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "oil": 0.4,
-        "slag": 0.4,
         "water": 0.4,
-        "cryofluid": 0.4
+        "slag": 0.4,
+        "cryofluid": 0.4,
+        "oil": 0.4
       },
       "input_liquid":{}
     },
     "fuse":{
       "name": "fuse",
       "kind": "ItemTurret",
+      "id": 361,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8843,6 +9566,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1980,
+      "build_time": 447.5,
       "cost":{
         "copper": 225,
         "graphite": 225,
@@ -8868,6 +9592,7 @@
     "ripple":{
       "name": "ripple",
       "kind": "ItemTurret",
+      "id": 362,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8890,6 +9615,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1170,
+      "build_time": 270,
       "cost":{
         "copper": 150,
         "graphite": 135,
@@ -8921,6 +9647,7 @@
     "cyclone":{
       "name": "cyclone",
       "kind": "ItemTurret",
+      "id": 363,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -8942,6 +9669,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1305,
+      "build_time": 329,
       "cost":{
         "copper": 200,
         "titanium": 125,
@@ -8971,6 +9699,7 @@
     "foreshadow":{
       "name": "foreshadow",
       "kind": "ItemTurret",
+      "id": 364,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 60,
@@ -8989,6 +9718,7 @@
       ],
       "liquid_pressure": 1,
       "health": 2400,
+      "build_time": 2500,
       "cost":{
         "copper": 1000,
         "metaglass": 600,
@@ -9014,6 +9744,7 @@
     "spectre":{
       "name": "spectre",
       "kind": "ItemTurret",
+      "id": 365,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 120,
@@ -9034,6 +9765,7 @@
       ],
       "liquid_pressure": 1,
       "health": 2560,
+      "build_time": 1552.5,
       "cost":{
         "copper": 900,
         "graphite": 300,
@@ -9063,6 +9795,7 @@
     "meltdown":{
       "name": "meltdown",
       "kind": "LaserTurret",
+      "id": 366,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 60,
@@ -9078,6 +9811,7 @@
       ],
       "liquid_pressure": 1,
       "health": 3200,
+      "build_time": 1795,
       "cost":{
         "copper": 1200,
         "lead": 350,
@@ -9101,6 +9835,7 @@
     "breach":{
       "name": "breach",
       "kind": "ItemTurret",
+      "id": 367,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -9120,6 +9855,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1620,
+      "build_time": 540,
       "cost":{
         "graphite": 125,
         "silicon": 150,
@@ -9147,6 +9883,7 @@
     "diffuse":{
       "name": "diffuse",
       "kind": "ItemTurret",
+      "id": 368,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -9166,6 +9903,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1890,
+      "build_time": 615,
       "cost":{
         "graphite": 200,
         "silicon": 200,
@@ -9194,6 +9932,7 @@
     "sublimate":{
       "name": "sublimate",
       "kind": "ContinuousLiquidTurret",
+      "id": 369,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 50,
@@ -9209,6 +9948,7 @@
       ],
       "liquid_pressure": 1,
       "health": 1890,
+      "build_time": 913,
       "cost":{
         "silicon": 200,
         "beryllium": 400,
@@ -9225,6 +9965,7 @@
     "titan":{
       "name": "titan",
       "kind": "ItemTurret",
+      "id": 370,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -9245,6 +9986,7 @@
       ],
       "liquid_pressure": 1,
       "health": 4000,
+      "build_time": 1055,
       "cost":{
         "thorium": 400,
         "silicon": 300,
@@ -9274,6 +10016,7 @@
     "disperse":{
       "name": "disperse",
       "kind": "ItemTurret",
+      "id": 371,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -9294,6 +10037,7 @@
       ],
       "liquid_pressure": 1,
       "health": 4480,
+      "build_time": 695,
       "cost":{
         "thorium": 50,
         "silicon": 200,
@@ -9324,6 +10068,7 @@
     "afflict":{
       "name": "afflict",
       "kind": "PowerTurret",
+      "id": 372,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -9335,6 +10080,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 3520,
+      "build_time": 867,
       "cost":{
         "graphite": 250,
         "silicon": 200,
@@ -9351,6 +10097,7 @@
     "lustre":{
       "name": "lustre",
       "kind": "ContinuousTurret",
+      "id": 373,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -9365,6 +10112,7 @@
       ],
       "liquid_pressure": 1,
       "health": 3360,
+      "build_time": 586,
       "cost":{
         "graphite": 200,
         "silicon": 250,
@@ -9383,6 +10131,7 @@
     "scathe":{
       "name": "scathe",
       "kind": "ItemTurret",
+      "id": 374,
       "size": 4,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -9402,6 +10151,7 @@
       ],
       "liquid_pressure": 1,
       "health": 3520,
+      "build_time": 1910,
       "cost":{
         "graphite": 400,
         "silicon": 450,
@@ -9431,6 +10181,7 @@
     "smite":{
       "name": "smite",
       "kind": "ItemTurret",
+      "id": 375,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -9448,6 +10199,7 @@
       ],
       "liquid_pressure": 1,
       "health": 8750,
+      "build_time": 2450,
       "cost":{
         "silicon": 800,
         "phase-fabric": 300,
@@ -9473,6 +10225,7 @@
     "malign":{
       "name": "malign",
       "kind": "PowerTurret",
+      "id": 376,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 20,
@@ -9484,6 +10237,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 9250,
+      "build_time": 2640,
       "cost":{
         "graphite": 500,
         "silicon": 500,
@@ -9501,6 +10255,7 @@
     "ground-factory":{
       "name": "ground-factory",
       "kind": "UnitFactory",
+      "id": 377,
       "size": 3,
       "item_capacity": 60,
       "liquid_capacity": 10,
@@ -9515,6 +10270,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 360,
+      "build_time": 173,
       "cost":{
         "copper": 50,
         "lead": 120,
@@ -9557,6 +10313,7 @@
     "air-factory":{
       "name": "air-factory",
       "kind": "UnitFactory",
+      "id": 378,
       "size": 3,
       "item_capacity": 60,
       "liquid_capacity": 10,
@@ -9571,6 +10328,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 360,
+      "build_time": 127,
       "cost":{
         "copper": 60,
         "lead": 70,
@@ -9602,6 +10360,7 @@
     "naval-factory":{
       "name": "naval-factory",
       "kind": "UnitFactory",
+      "id": 379,
       "size": 3,
       "item_capacity": 70,
       "liquid_capacity": 10,
@@ -9616,6 +10375,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 360,
+      "build_time": 346,
       "cost":{
         "copper": 150,
         "lead": 130,
@@ -9648,6 +10408,7 @@
     "additive-reconstructor":{
       "name": "additive-reconstructor",
       "kind": "Reconstructor",
+      "id": 380,
       "size": 3,
       "item_capacity": 80,
       "liquid_capacity": 10,
@@ -9666,6 +10427,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 360,
+      "build_time": 256,
       "cost":{
         "copper": 200,
         "lead": 120,
@@ -9718,6 +10480,7 @@
     "multiplicative-reconstructor":{
       "name": "multiplicative-reconstructor",
       "kind": "Reconstructor",
+      "id": 381,
       "size": 5,
       "item_capacity": 260,
       "liquid_capacity": 10,
@@ -9737,6 +10500,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 1200,
+      "build_time": 1880,
       "cost":{
         "lead": 650,
         "titanium": 350,
@@ -9792,6 +10556,7 @@
     "exponential-reconstructor":{
       "name": "exponential-reconstructor",
       "kind": "Reconstructor",
+      "id": 382,
       "size": 7,
       "item_capacity": 1700,
       "liquid_capacity": 600,
@@ -9814,6 +10579,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 3035,
+      "build_time": 6390,
       "cost":{
         "lead": 2000,
         "titanium": 2000,
@@ -9873,6 +10639,7 @@
     "tetrative-reconstructor":{
       "name": "tetrative-reconstructor",
       "kind": "Reconstructor",
+      "id": 383,
       "size": 9,
       "item_capacity": 2000,
       "liquid_capacity": 1800,
@@ -9896,6 +10663,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 5830,
+      "build_time": 8820,
       "cost":{
         "lead": 4000,
         "thorium": 1000,
@@ -9957,6 +10725,7 @@
     "repair-point":{
       "name": "repair-point",
       "kind": "RepairTurret",
+      "id": 384,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -9968,6 +10737,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 52,
       "cost":{
         "copper": 30,
         "lead": 30,
@@ -9978,6 +10748,7 @@
     "repair-turret":{
       "name": "repair-turret",
       "kind": "RepairTurret",
+      "id": 385,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 96,
@@ -9993,6 +10764,7 @@
       ],
       "liquid_pressure": 1,
       "health": 205,
+      "build_time": 238,
       "cost":{
         "thorium": 80,
         "silicon": 90,
@@ -10005,6 +10777,7 @@
     "tank-fabricator":{
       "name": "tank-fabricator",
       "kind": "UnitFactory",
+      "id": 386,
       "size": 3,
       "item_capacity": 100,
       "liquid_capacity": 10,
@@ -10019,6 +10792,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 575,
+      "build_time": 340,
       "cost":{
         "silicon": 200,
         "beryllium": 150
@@ -10041,6 +10815,7 @@
     "ship-fabricator":{
       "name": "ship-fabricator",
       "kind": "UnitFactory",
+      "id": 387,
       "size": 3,
       "item_capacity": 140,
       "liquid_capacity": 10,
@@ -10055,6 +10830,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 575,
+      "build_time": 440,
       "cost":{
         "silicon": 250,
         "beryllium": 200
@@ -10077,6 +10853,7 @@
     "mech-fabricator":{
       "name": "mech-fabricator",
       "kind": "UnitFactory",
+      "id": 388,
       "size": 3,
       "item_capacity": 140,
       "liquid_capacity": 10,
@@ -10091,6 +10868,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 860,
+      "build_time": 475,
       "cost":{
         "silicon": 200,
         "beryllium": 250,
@@ -10114,6 +10892,7 @@
     "tank-refabricator":{
       "name": "tank-refabricator",
       "kind": "Reconstructor",
+      "id": 389,
       "size": 3,
       "item_capacity": 80,
       "liquid_capacity": 30,
@@ -10135,6 +10914,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 860,
+      "build_time": 440,
       "cost":{
         "silicon": 100,
         "beryllium": 200,
@@ -10165,6 +10945,7 @@
     "ship-refabricator":{
       "name": "ship-refabricator",
       "kind": "Reconstructor",
+      "id": 390,
       "size": 3,
       "item_capacity": 120,
       "liquid_capacity": 30,
@@ -10186,6 +10967,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 1040,
+      "build_time": 618,
       "cost":{
         "silicon": 150,
         "beryllium": 250,
@@ -10217,6 +10999,7 @@
     "mech-refabricator":{
       "name": "mech-refabricator",
       "kind": "Reconstructor",
+      "id": 391,
       "size": 3,
       "item_capacity": 100,
       "liquid_capacity": 30,
@@ -10238,6 +11021,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 860,
+      "build_time": 682.5,
       "cost":{
         "silicon": 150,
         "beryllium": 250,
@@ -10268,6 +11052,7 @@
     "prime-refabricator":{
       "name": "prime-refabricator",
       "kind": "Reconstructor",
+      "id": 392,
       "size": 5,
       "item_capacity": 200,
       "liquid_capacity": 100,
@@ -10289,6 +11074,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 2500,
+      "build_time": 1135,
       "cost":{
         "thorium": 250,
         "silicon": 400,
@@ -10328,6 +11114,7 @@
     "tank-assembler":{
       "name": "tank-assembler",
       "kind": "UnitAssembler",
+      "id": 393,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 90,
@@ -10345,6 +11132,7 @@
       "payload_rotate_speed": 5,
       "accepts_payload": true,
       "health": 2800,
+      "build_time": 1362,
       "cost":{
         "thorium": 500,
         "silicon": 650,
@@ -10361,6 +11149,7 @@
     "ship-assembler":{
       "name": "ship-assembler",
       "kind": "UnitAssembler",
+      "id": 394,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 120,
@@ -10378,6 +11167,7 @@
       "payload_rotate_speed": 5,
       "accepts_payload": true,
       "health": 3600,
+      "build_time": 2365,
       "cost":{
         "thorium": 400,
         "silicon": 900,
@@ -10395,6 +11185,7 @@
     "mech-assembler":{
       "name": "mech-assembler",
       "kind": "UnitAssembler",
+      "id": 395,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 120,
@@ -10412,6 +11203,7 @@
       "payload_rotate_speed": 5,
       "accepts_payload": true,
       "health": 3600,
+      "build_time": 2805,
       "cost":{
         "thorium": 600,
         "silicon": 1000,
@@ -10429,6 +11221,7 @@
     "basic-assembler-module":{
       "name": "basic-assembler-module",
       "kind": "UnitAssemblerModule",
+      "id": 396,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10443,6 +11236,7 @@
       "payload_rotate_speed": 5,
       "accepts_payload": true,
       "health": 3050,
+      "build_time": 1790,
       "cost":{
         "thorium": 500,
         "phase-fabric": 400,
@@ -10454,6 +11248,7 @@
     "unit-repair-tower":{
       "name": "unit-repair-tower",
       "kind": "RepairTower",
+      "id": 397,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 30,
@@ -10468,6 +11263,7 @@
       ],
       "liquid_pressure": 1,
       "health": 285,
+      "build_time": 282,
       "cost":{
         "graphite": 90,
         "silicon": 90,
@@ -10482,6 +11278,7 @@
     "payload-conveyor":{
       "name": "payload-conveyor",
       "kind": "PayloadConveyor",
+      "id": 398,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10494,6 +11291,7 @@
       "liquid_pressure": 1,
       "outputs_payload": true,
       "health": 360,
+      "build_time": 15,
       "cost":{
         "copper": 10,
         "graphite": 10
@@ -10508,6 +11306,7 @@
     "payload-router":{
       "name": "payload-router",
       "kind": "PayloadRouter",
+      "id": 399,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10520,6 +11319,7 @@
       "liquid_pressure": 1,
       "outputs_payload": true,
       "health": 360,
+      "build_time": 20,
       "cost":{
         "copper": 10,
         "graphite": 15
@@ -10534,6 +11334,7 @@
     "reinforced-payload-conveyor":{
       "name": "reinforced-payload-conveyor",
       "kind": "PayloadConveyor",
+      "id": 400,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10546,6 +11347,7 @@
       "liquid_pressure": 1,
       "outputs_payload": true,
       "health": 800,
+      "build_time": 15,
       "cost":{
         "tungsten": 10
       },
@@ -10559,6 +11361,7 @@
     "reinforced-payload-router":{
       "name": "reinforced-payload-router",
       "kind": "PayloadRouter",
+      "id": 401,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10571,6 +11374,7 @@
       "liquid_pressure": 1,
       "outputs_payload": true,
       "health": 800,
+      "build_time": 22.5,
       "cost":{
         "tungsten": 15
       },
@@ -10584,6 +11388,7 @@
     "payload-mass-driver":{
       "name": "payload-mass-driver",
       "kind": "PayloadMassDriver",
+      "id": 402,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10598,6 +11403,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 645,
+      "build_time": 120,
       "cost":{
         "graphite": 20,
         "silicon": 50,
@@ -10608,6 +11414,7 @@
     "large-payload-mass-driver":{
       "name": "large-payload-mass-driver",
       "kind": "PayloadMassDriver",
+      "id": 403,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10622,6 +11429,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 2550,
+      "build_time": 622,
       "cost":{
         "graphite": 100,
         "silicon": 200,
@@ -10634,6 +11442,7 @@
     "small-deconstructor":{
       "name": "small-deconstructor",
       "kind": "PayloadDeconstructor",
+      "id": 404,
       "size": 3,
       "item_capacity": 100,
       "liquid_capacity": 10,
@@ -10648,6 +11457,7 @@
       "payload_rotate_speed": 5,
       "accepts_payload": true,
       "health": 755,
+      "build_time": 328,
       "cost":{
         "graphite": 80,
         "silicon": 100,
@@ -10659,6 +11469,7 @@
     "deconstructor":{
       "name": "deconstructor",
       "kind": "PayloadDeconstructor",
+      "id": 405,
       "size": 5,
       "item_capacity": 250,
       "liquid_capacity": 10,
@@ -10673,6 +11484,7 @@
       "payload_rotate_speed": 5,
       "accepts_payload": true,
       "health": 3195,
+      "build_time": 690,
       "cost":{
         "silicon": 250,
         "beryllium": 250,
@@ -10684,6 +11496,7 @@
     "constructor":{
       "name": "constructor",
       "kind": "Constructor",
+      "id": 406,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10698,19 +11511,30 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 860,
+      "build_time": 190,
       "cost":{
         "silicon": 50,
         "beryllium": 75,
         "tungsten": 40
       },
       "power": 150,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "constructor",
+      "carries": "payload",
+      "build_speed": 0.6,
+      "produces": [
+        "tungsten-wall-large",
+        "beryllium-wall-large",
+        "carbide-wall-large",
+        "reinforced-surge-wall-large",
+        "reinforced-liquid-container",
+        "reinforced-container",
+        "beam-node"
+      ]
     },
     "large-constructor":{
       "name": "large-constructor",
       "kind": "Constructor",
+      "id": 407,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10725,6 +11549,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 2500,
+      "build_time": 628,
       "cost":{
         "thorium": 80,
         "silicon": 150,
@@ -10732,13 +11557,14 @@
         "oxide": 100
       },
       "power": 180,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{}
+      "role": "constructor",
+      "carries": "payload",
+      "build_speed": 0.75
     },
     "payload-loader":{
       "name": "payload-loader",
       "kind": "PayloadLoader",
+      "id": 408,
       "size": 3,
       "item_capacity": 100,
       "liquid_capacity": 100,
@@ -10753,6 +11579,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 645,
+      "build_time": 343,
       "cost":{
         "graphite": 80,
         "silicon": 160,
@@ -10766,6 +11593,7 @@
     "payload-unloader":{
       "name": "payload-unloader",
       "kind": "PayloadUnloader",
+      "id": 409,
       "size": 3,
       "item_capacity": 100,
       "liquid_capacity": 100,
@@ -10780,6 +11608,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 645,
+      "build_time": 586,
       "cost":{
         "graphite": 140,
         "silicon": 220,
@@ -10793,6 +11622,7 @@
     "power-source":{
       "name": "power-source",
       "kind": "PowerSource",
+      "id": 410,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10804,6 +11634,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "no_overdrive": true,
@@ -10813,6 +11644,7 @@
     "power-void":{
       "name": "power-void",
       "kind": "PowerVoid",
+      "id": 411,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10824,6 +11656,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "power_void": true
@@ -10831,6 +11664,7 @@
     "item-source":{
       "name": "item-source",
       "kind": "ItemSource",
+      "id": 412,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10842,6 +11676,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "role": "source",
@@ -10851,6 +11686,7 @@
     "item-void":{
       "name": "item-void",
       "kind": "ItemVoid",
+      "id": 413,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10862,12 +11698,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "liquid-source":{
       "name": "liquid-source",
       "kind": "LiquidSource",
+      "id": 414,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10000,
@@ -10879,6 +11717,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "role": "source",
@@ -10888,6 +11727,7 @@
     "liquid-void":{
       "name": "liquid-void",
       "kind": "LiquidVoid",
+      "id": 415,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10000,
@@ -10899,6 +11739,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "role": "sink",
@@ -10907,6 +11748,7 @@
     "payload-source":{
       "name": "payload-source",
       "kind": "PayloadSource",
+      "id": 416,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10921,6 +11763,7 @@
       "payload_rotate_speed": 5,
       "outputs_payload": true,
       "health": 1000,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "role": "payload-source",
@@ -10929,6 +11772,7 @@
     "payload-void":{
       "name": "payload-void",
       "kind": "PayloadVoid",
+      "id": 417,
       "size": 5,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10943,6 +11787,7 @@
       "payload_rotate_speed": 5,
       "accepts_payload": true,
       "health": 1000,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "role": "payload-void",
@@ -10951,6 +11796,7 @@
     "heat-source":{
       "name": "heat-source",
       "kind": "HeatProducer",
+      "id": 418,
       "size": 1,
       "item_capacity": 0,
       "liquid_capacity": 10,
@@ -10962,6 +11808,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "no_overdrive": true,
@@ -10977,6 +11824,7 @@
     "illuminator":{
       "name": "illuminator",
       "kind": "LightBlock",
+      "id": 419,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -10988,6 +11836,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 24,
       "cost":{
         "lead": 8,
         "graphite": 12,
@@ -10998,6 +11847,7 @@
     "legacy-mech-pad":{
       "name": "legacy-mech-pad",
       "kind": "LegacyMechPad",
+      "id": 420,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11009,12 +11859,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "legacy-unit-factory":{
       "name": "legacy-unit-factory",
       "kind": "LegacyUnitFactory",
+      "id": 421,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11026,6 +11878,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "role": "sink",
@@ -11035,6 +11888,7 @@
     "legacy-unit-factory-air":{
       "name": "legacy-unit-factory-air",
       "kind": "LegacyUnitFactory",
+      "id": 422,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11046,6 +11900,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "role": "sink",
@@ -11055,6 +11910,7 @@
     "legacy-unit-factory-ground":{
       "name": "legacy-unit-factory-ground",
       "kind": "LegacyUnitFactory",
+      "id": 423,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11066,6 +11922,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "role": "sink",
@@ -11075,6 +11932,7 @@
     "command-center":{
       "name": "command-center",
       "kind": "LegacyCommandCenter",
+      "id": 424,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11086,12 +11944,14 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 160,
+      "build_time": 20,
       "cost":{},
       "power": 0
     },
     "launch-pad":{
       "name": "launch-pad",
       "kind": "LaunchPad",
+      "id": 425,
       "size": 3,
       "item_capacity": 100,
       "liquid_capacity": 10,
@@ -11103,6 +11963,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 360,
+      "build_time": 577,
       "cost":{
         "copper": 350,
         "lead": 200,
@@ -11114,6 +11975,7 @@
     "advanced-launch-pad":{
       "name": "advanced-launch-pad",
       "kind": "LaunchPad",
+      "id": 426,
       "size": 4,
       "item_capacity": 100,
       "liquid_capacity": 40,
@@ -11128,6 +11990,7 @@
       ],
       "liquid_pressure": 1,
       "health": 640,
+      "build_time": 785,
       "cost":{
         "copper": 350,
         "lead": 300,
@@ -11143,6 +12006,7 @@
     "landing-pad":{
       "name": "landing-pad",
       "kind": "LandingPad",
+      "id": 427,
       "size": 4,
       "item_capacity": 100,
       "liquid_capacity": 3000,
@@ -11157,6 +12021,7 @@
       ],
       "liquid_pressure": 1,
       "health": 640,
+      "build_time": 300,
       "cost":{
         "copper": 200,
         "graphite": 100,
@@ -11172,6 +12037,7 @@
     "interplanetary-accelerator":{
       "name": "interplanetary-accelerator",
       "kind": "Accelerator",
+      "id": 428,
       "size": 7,
       "item_capacity": 25000,
       "liquid_capacity": 10,
@@ -11189,6 +12055,7 @@
       ],
       "liquid_pressure": 1,
       "health": 3920,
+      "build_time": 28400,
       "cost":{
         "copper": 16000,
         "titanium": 12000,
@@ -11210,6 +12077,7 @@
     "message":{
       "name": "message",
       "kind": "MessageBlock",
+      "id": 429,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11221,6 +12089,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 7.5,
       "cost":{
         "copper": 5,
         "graphite": 5
@@ -11230,6 +12099,7 @@
     "switch":{
       "name": "switch",
       "kind": "SwitchBlock",
+      "id": 430,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11241,6 +12111,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 7.5,
       "cost":{
         "copper": 5,
         "graphite": 5
@@ -11250,6 +12121,7 @@
     "micro-processor":{
       "name": "micro-processor",
       "kind": "LogicBlock",
+      "id": 431,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11261,6 +12133,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 120,
       "cost":{
         "copper": 90,
         "lead": 50,
@@ -11271,6 +12144,7 @@
     "logic-processor":{
       "name": "logic-processor",
       "kind": "LogicBlock",
+      "id": 432,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11282,6 +12156,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 190,
+      "build_time": 403,
       "cost":{
         "lead": 320,
         "graphite": 60,
@@ -11293,6 +12168,7 @@
     "hyper-processor":{
       "name": "hyper-processor",
       "kind": "LogicBlock",
+      "id": 433,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 48,
@@ -11307,6 +12183,7 @@
       ],
       "liquid_pressure": 1,
       "health": 520,
+      "build_time": 577.5,
       "cost":{
         "lead": 450,
         "thorium": 75,
@@ -11322,6 +12199,7 @@
     "memory-cell":{
       "name": "memory-cell",
       "kind": "MemoryBlock",
+      "id": 434,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11333,6 +12211,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 69,
       "cost":{
         "copper": 30,
         "graphite": 30,
@@ -11344,6 +12223,7 @@
     "memory-bank":{
       "name": "memory-bank",
       "kind": "MemoryBlock",
+      "id": 435,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11355,6 +12235,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 200,
+      "build_time": 198,
       "cost":{
         "copper": 30,
         "graphite": 80,
@@ -11367,6 +12248,7 @@
     "logic-display":{
       "name": "logic-display",
       "kind": "LogicDisplay",
+      "id": 436,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11378,6 +12260,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 360,
+      "build_time": 185,
       "cost":{
         "lead": 100,
         "metaglass": 50,
@@ -11389,6 +12272,7 @@
     "large-logic-display":{
       "name": "large-logic-display",
       "kind": "LogicDisplay",
+      "id": 437,
       "size": 6,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11400,6 +12284,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 1800,
+      "build_time": 507.5,
       "cost":{
         "lead": 200,
         "metaglass": 100,
@@ -11412,6 +12297,7 @@
     "tile-logic-display":{
       "name": "tile-logic-display",
       "kind": "TileableLogicDisplay",
+      "id": 438,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11423,6 +12309,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 50,
+      "build_time": 27.9,
       "cost":{
         "lead": 8,
         "metaglass": 8,
@@ -11435,6 +12322,7 @@
     "canvas":{
       "name": "canvas",
       "kind": "CanvasBlock",
+      "id": 439,
       "size": 2,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11446,6 +12334,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 255,
+      "build_time": 20,
       "cost":{
         "silicon": 10,
         "beryllium": 10
@@ -11456,6 +12345,7 @@
     "large-canvas":{
       "name": "large-canvas",
       "kind": "CanvasBlock",
+      "id": 440,
       "size": 3,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11467,6 +12357,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 665,
+      "build_time": 36,
       "cost":{
         "silicon": 15,
         "surge-alloy": 5,
@@ -11478,6 +12369,7 @@
     "reinforced-message":{
       "name": "reinforced-message",
       "kind": "MessageBlock",
+      "id": 441,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11489,6 +12381,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 100,
+      "build_time": 16,
       "cost":{
         "graphite": 10,
         "beryllium": 5
@@ -11498,6 +12391,7 @@
     "world-processor":{
       "name": "world-processor",
       "kind": "LogicBlock",
+      "id": 442,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11509,6 +12403,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "no_overdrive": true,
@@ -11517,6 +12412,7 @@
     "world-cell":{
       "name": "world-cell",
       "kind": "MemoryBlock",
+      "id": 443,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11528,6 +12424,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "no_overdrive": true,
@@ -11536,6 +12433,7 @@
     "world-message":{
       "name": "world-message",
       "kind": "MessageBlock",
+      "id": 444,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11547,6 +12445,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "privileged": true
@@ -11554,6 +12453,7 @@
     "world-switch":{
       "name": "world-switch",
       "kind": "SwitchBlock",
+      "id": 445,
       "size": 1,
       "item_capacity": 10,
       "liquid_capacity": 10,
@@ -11565,6 +12465,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "build_time": 20,
       "cost":{},
       "power": 0,
       "privileged": true

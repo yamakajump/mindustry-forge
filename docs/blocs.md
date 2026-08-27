@@ -12,7 +12,7 @@ second, c'est une intuition qui a l'air d'un portage.
 
 **105 classes à reproduire**, pour 228 blocs. 182 autres sont du décor : sol, murs statiques, arbres, échafaudages de construction. Rien à reproduire, ils ne bougent pas.
 
-## Fait : 66 sur 105
+## Fait : 67 sur 105
 
 - [x] `GenericCrafter` - 17 blocs - toute usine : entrees, duree, sorties
       blast-mixer, coal-centrifuge, cryofluid-mixer, electrolyzer, graphite-press, kiln, et 11 autres
@@ -64,7 +64,7 @@ second, c'est une intuition qui a l'air d'un portage.
       canvas, large-canvas
 - [x] `Conduit` - 2 blocs - un tuyau : directionnel, comme une bande
       conduit, pulse-conduit
-- [ ] `Constructor` - 2 blocs
+- [x] `Constructor` - 2 blocs
       constructor, large-constructor
 - [x] `Conveyor` - 2 blocs - une bande : positions d'objets le long d'elle-meme
       conveyor, titanium-conveyor

@@ -36,7 +36,7 @@ const { attributeOf, beamOf, dryTilesOf, wallSumOf, yieldOf } = await import(
 const MACHINE_ROLES = new Set([
   "crafter", "unit-factory", "generator", "drill", "separator",
   "mender", "projector", "shield", "turret-idle", "laser-turret",
-  "beam-drill", "wall-crafter", "burst-drill", "reconstructor",
+  "beam-drill", "wall-crafter", "burst-drill", "reconstructor", "constructor",
 ]);
 
 export const known = useCatalogue(JSON.parse(
@@ -138,6 +138,7 @@ export async function ported(code, ticks, ground = [], stock = []) {
      on its map position - a separator, whose draw is seeded from `tile.pos()` - is asked
      the same question on both sides. `Measure.MARGIN`. */
   world.origin = [12, 12];
+  world.catalogue = known;
   fill(world, stock);
   for (let i = 0; i < ticks; i++) world.step();
 
