@@ -6,34 +6,58 @@ l'ordre où je compte les faire, avec ce qui a été dit pour la demander.
 
 ## À faire
 
-### 1. L'audit est vidé
+### 1. L'audit, deux fois
 
-Le rapport complet est dans `docs/audit-2026-08.md` : 39 défauts survivants sur 50
-proposés, chacun passé par trois sceptiques. **Tous sont corrigés**, dans l'ordre que le
-rapport recommandait lui-même, et le banc est passé de 91 à 128 scénarios.
+Le rapport d'origine est dans `docs/audit-2026-08.md` : 39 défauts survivants sur 50
+proposés. **Tous corrigés.**
 
-Deux d'entre eux sont corrigés sans être mesurés, et il faut le dire plutôt que le laisser
-croire :
+Relancé ensuite sur le code écrit dans la foulée, qui n'avait été relu par personne, il en
+a rendu **six de plus**, et c'est la leçon à retenir plutôt que la liste :
 
-- **L'ordre de `dump(null)`.** Le jeu balaie `content.items()` par identifiant, le portage
-  balayait une `Map` dans l'ordre d'arrivée. Transcrit parce que c'est ce que fait le jeu,
-  mais aucune forme que le banc sait construire ne les distingue : un séparateur fabrique
-  un objet toutes les trente-cinq images et en propose un toutes les cinq, donc il n'en
-  retient jamais deux à la fois tant que sa sortie bouge, et dès qu'elle se ferme plus rien
-  ne part du tout. `separator-jammed` mesure sa réserve bloquée, ce qui est déjà une chose
-  de plus, mais pas l'ordre.
-- **La chaleur transmise d'un réacteur au thorium.** `heatProgress` vaut `heat × 15` et
-  c'est lui que lisent les voisins, pas le `heat` interne dans zéro-un. La correction est
-  juste et invérifiable : un réacteur refroidi voit sa chaleur ramenée à zéro à chaque
-  image, donc il n'en transmet aucune, et un réacteur qui en transmet vraiment est un
-  réacteur en train d'exploser. Il faudrait modéliser le souffle pour mesurer ça.
+- Le mass driver n'était porté qu'à moitié. La simulation était exacte et la page annonçait
+  zéro, parce que `tools/compare.mjs` ne compare que la simulation et ne peut pas voir
+  l'analyse. Quatre tests neufs dans `analyse.test.js` bouchent ce trou pour ce bloc ; il
+  reste ouvert pour tous les autres.
+- `Edges.getFacingEdge` manquait complètement. Le jeu mesure toujours à la case de bordure
+  du voisin, jamais à sa case de rangement, et pour un bloc de taille paire les deux ne
+  disent pas la même chose sur les coins.
+- `items.take()` est un curseur qui tourne sur les identifiants, pas un premier trouvé.
+- Un lien enregistré dans un schéma n'est pas un lien : le jeu le revalide, des deux côtés.
+- Deux boucles `while` étaient devenues des modulos, ce qui ne se voit que sous surcharge.
+- Une usine affamée demandait quand même son courant, et une foreuse à côté en payait le
+  prix au carré.
 
-Ce souffle est la seule chose que la mort d'un bloc laisse de côté ici : `kill()` vide le
-bloc et le ferme, et un bloc mort n'accepte plus rien, mais le jeu emporte aussi une partie
-de ce qui le touchait. `reactor-neoplasia-full` est construit autour de ce trou, avec juste
-ce qui survit à la mesure.
+Deux corrections restent invérifiables et il faut le dire plutôt que le laisser croire :
 
-### 2. Relancer l'audit sur ce qu'il n'a pas vu
+- **L'ordre de `dump(null)`.** Transcrit parce que c'est ce que fait le jeu, mais aucune
+  forme que le banc sait construire ne le distingue : un séparateur ne retient jamais deux
+  objets à la fois tant que sa sortie bouge, et dès qu'elle se ferme plus rien ne part.
+- **La chaleur transmise d'un réacteur au thorium.** `heatProgress` vaut `heat × 15`. Juste
+  et invérifiable : un réacteur refroidi voit sa chaleur ramenée à zéro à chaque image, donc
+  il n'en transmet aucune, et un réacteur qui en transmet vraiment est en train d'exploser.
+
+### 2. Les deux écarts qui restent au banc
+
+- **`crafter-two-presses`**, une presse retient neuf charbons au lieu de dix. Mesuré : le
+  portage est **exactement une image en retard** sur cette branche-là, il atteint dix au
+  tick 1801. L'autre branche du même routeur est exacte. Trouver l'image manquante demande
+  de tracer les deux moteurs image par image, ce que le banc ne sait pas encore faire.
+- **`turret-meltdown-drain`**, 17,4 eau contre 18,0 sur une case de conduite. Un gradient de
+  pression, pas un compte.
+
+Les deux demandent la même chose : une commande `trace` dans le banc qui écrive l'état d'un
+bâtiment à chaque image. C'est le prochain outil à écrire, et il servira à tout le reste.
+
+### 3. Ce que le moteur ne modélise pas du tout
+
+- **Le souffle d'une explosion.** `kill()` vide le bloc et le ferme, et un bloc mort
+  n'accepte plus rien, mais le jeu emporte aussi une partie de ce qui le touchait.
+  `reactor-neoplasia-full` est construit autour de ce trou.
+- **Le vol des unités.** Une unité posée au sol reste posée ; dans le jeu elle marche, et le
+  jeu refuse une dépose tant qu'une autre unité chevauche encore la case. C'est le risque
+  dominant sur tout scénario d'usine dépassant deux unités.
+
+### 4. Relancer l'audit une troisieme fois
 
 Un audit multi-agent a relu le moteur classe par classe contre la source du jeu, avec
 trois sceptiques par trouvaille. Il a tourné **avant** les charges utiles, le module
@@ -49,7 +73,7 @@ Et sur tout ce que la correction de l'audit a écrit depuis, qui n'a été relu 
 non plus : `massdriver.js` en entier, `checkAccept` et `checkDump` des ponts dans `core.js`,
 l'overflow duct, l'usine d'unités passée par `moveOutPayload`, et les deux réacteurs.
 
-### 3. Le reste de la famille des charges utiles
+### 5. Le reste de la famille des charges utiles
 
 Le socle est là et mesuré : la cargaison glisse, les convoyeurs battent sur l'horloge de
 la carte, le reconstructeur consomme, le constructeur fabrique. Ce qui manque demande une
@@ -63,7 +87,7 @@ avec son contenu**.
 Un `BuildPayload` porte aujourd'hui un nom ; il lui faudra porter des objets et des
 liquides.
 
-### 4. `UnitAssembler`
+### 6. `UnitAssembler`
 
 Transcrit à moitié et non coché, pour une raison précise. Ses quatre drones et son
 énergie se mesurent en trente secondes ; l'unité qu'il assemble demande trois mille
@@ -71,7 +95,7 @@ images **et** que les drones soient en position, ce qui dépend de leur vol. Il 
 soit un modèle de vol minimal, soit un scénario plus long, et le banc accepte déjà une
 durée par scénario.
 
-### 5. Les processeurs : déclarer, pas simuler
+### 7. Les processeurs : déclarer, pas simuler
 
 Un processeur ne consomme rien du tout, ni énergie ni objets. Son seul effet sur un débit
 passe par une instruction, `control`, sur les blocs qu'il pilote. Simuler tout
@@ -87,19 +111,32 @@ Ce qu'il faut faire à la place, en deux temps :
    liens **écrits**. Un processeur qui ne fait que `sensor` et `print` ne change aucun
    débit, et c'est la majorité de ceux qu'on croise.
 
-### 6. La longue traîne des blocs
+### 8. La longue traîne des blocs
 
 `docs/blocs.md` tient le compte, généré depuis la liste de classes du jeu. Une case
-cochée veut dire transcrite **et** mesurée dans un vrai serveur.
+cochée veut dire transcrite **et** mesurée dans un vrai serveur. Soixante-dix-neuf classes
+sur cent cinq.
 
-### 7. Place de marché
+Ce qui reste se range en trois tas, et le tri compte plus que la liste :
+
+- **Un vrai comportement, portable tel quel** : `PowerVoid`, `ItemIncinerator`, `LaunchPad`,
+  `Accelerator`, les deux tourelles continues.
+- **Un comportement qui demande une machinerie que le moteur n'a pas** : toute la famille
+  des charges utiles (§5), l'assembleur (§6), et les deux blocs de fret aérien, qui
+  demandent une unité qui vole.
+- **Rien du tout, et il faut le prouver plutôt que le supposer** : afficheurs, interrupteurs,
+  toiles, portes, propulseurs, plateforme d'arrivée, centre de commande hérité, sols et murs
+  colorés, algue. Chacun mérite un scénario qui montre qu'il ne change aucun chiffre, sinon
+  la case cochée ne vaut rien.
+
+### 9. Place de marché
 
 - Comparer deux schématiques côte à côte.
 - Filtrer sur ce dont elle a besoin : « j'ai du charbon, montre ce que je peux faire
   tourner ».
 - Classement par cuivre investi et pas seulement par bloc.
 
-### 8. Reste
+### 10. Reste
 
 - Diagnostic explicite : « trois bandes reliées à rien », en tête plutôt qu'en bas.
 - Marquer plusieurs blocs d'un coup (glisser sur une rangée de tuyaux).
