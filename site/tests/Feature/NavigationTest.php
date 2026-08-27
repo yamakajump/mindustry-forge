@@ -131,11 +131,32 @@ it('ne mene nulle part vers une page qui n existe pas encore', function () {
     expect($dead)->toBe([], 'une entree allumee dont la route n existe pas est un 404 en production');
 });
 
-it('ecrit le meme entete dans la page statique que dans les vues', function () {
+it('ecrit le meme entete dans les pages statiques que dans les vues', function () {
     /* La page statique ne sait pas qui lit : « Les miennes » y est ajoutee par `whoAmI`
-       une fois `/api/moi` repondu, donc elle est comparee a l entete d un visiteur. */
-    expect(navIn(File::get(public_path('index.html'))))->toBe(expectedNav(signedIn: false),
-        'config/nav.php et public/index.html ne disent plus la meme chose');
+       une fois `/api/moi` repondu, donc elle est comparee a l entete d un visiteur.
+
+       Les pages d outils sont dans la liste depuis qu on a constate leur derive : elles
+       portaient un entete de deux entrees, fige au jour ou la premiere a ete ecrite, et
+       personne ne le voyait parce que ce test ne regardait qu `index.html`. Une copie ecrite
+       a la main qu aucun test ne surveille finit toujours par mentir. */
+    foreach (['index.html', 'outils/logique.html', 'outils/planificateur.html'] as $page) {
+        expect(navIn(File::get(public_path($page))))->toBe(expectedNav(signedIn: false),
+            "config/nav.php et public/{$page} ne disent plus la meme chose");
+    }
+});
+
+it('sert la meme favicone sur toutes les pages', function () {
+    /* Les deux pages d outils portaient une icone en ligne, en `data:`, differente de celle
+       du reste du site : l icone de l onglet changeait donc en passant sur le planificateur.
+       Signale par Corentin avant que ce test existe. */
+    $reference = ['/favicon.ico', '/favicon.svg', '/apple-touch-icon.png'];
+
+    foreach (['index.html', 'outils/logique.html', 'outils/planificateur.html'] as $page) {
+        $html = File::get(public_path($page));
+        preg_match_all('~<link rel="(?:icon|apple-touch-icon)"[^>]*href="([^"]+)"~', $html, $m);
+
+        expect($m[1])->toBe($reference, "public/{$page} ne sert pas les memes icones");
+    }
 });
 
 it('rend dans Blade exactement ce que la config declare, pour un visiteur', function () {
