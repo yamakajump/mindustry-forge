@@ -12,6 +12,18 @@ use Illuminate\Support\Facades\Route;
  */
 Route::get('/', fn () => response()->file(public_path('index.html')));
 
+/*
+ * L'éditeur, qui est la même page.
+ *
+ * Il se monte en plein écran par-dessus l'analyseur, donc il n'avait pas d'adresse à lui
+ * et rien ne pouvait pointer dessus : onze modules en production, aucun lien vers eux. La
+ * page lit son propre chemin au chargement pour savoir lequel des deux ouvrir.
+ *
+ * Une route plutôt qu'un fragment `#editer` : un fragment ne part pas au serveur, donc il
+ * ne se partage pas dans un fil Discord et ne s'indexe pas.
+ */
+Route::get('/editer', fn () => response()->file(public_path('index.html')));
+
 Route::get('/auth/discord', [AuthController::class, 'start'])->name('login');
 Route::get('/auth/discord/callback', [AuthController::class, 'callback']);
 Route::post('/deconnexion', [AuthController::class, 'logout']);
