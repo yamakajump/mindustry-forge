@@ -15,6 +15,16 @@ This does that, and then tells you where to move the blocks.
 
 Live at **[mindustryforge.com](https://mindustryforge.com)**.
 
+<p align="center">
+  <img src="docs/captures/rapport-analyse.png" width="900"
+       alt="The analyser on a real schematic: the plan drawn from the pasted code, 240 graphite a minute, and an item void wired to nothing.">
+</p>
+
+<p align="center">
+  <em>A real schematic from the catalogue, analysed in the browser. It makes 240 graphite a
+  minute, and one of its 23 blocks is an item void connected to nothing.</em>
+</p>
+
 ## Why you can check the numbers instead of trusting them
 
 Every other tool computes its figures by hand and asks you to believe them. This repository
@@ -78,6 +88,18 @@ thousand use it.
 That settles half a question this repository keeps asking of itself: there is exactly one
 implementation of the analysis, in one language. A second one, in another language, for a
 command line or a backend, would be a second thing to be wrong.
+
+## Every block, with the game's own figures
+
+<p align="center">
+  <img src="docs/captures/fiche-bloc.png" width="900"
+       alt="The silicon smelter's page: size, health, build cost, recipe, energy, and what can feed it.">
+</p>
+
+<p align="center">
+  <em>Rates on a block page are nominal ceilings, and the page says so. What a block does
+  inside a real schematic is measured by the analysis, and it is almost always less.</em>
+</p>
 
 ## Try it
 
