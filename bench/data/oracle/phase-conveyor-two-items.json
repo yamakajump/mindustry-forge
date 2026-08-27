@@ -1,0 +1,130 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 14,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 3
+      }
+    },
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 14,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 14,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "phase-conveyor",
+      "x": 14,
+      "y": 14,
+      "efficiency": 1,
+      "holds":{
+        "copper": 10
+      }
+    },
+    {
+      "block": "phase-conveyor",
+      "x": 18,
+      "y": 14,
+      "efficiency": 0,
+      "holds":{
+        "copper": 1,
+        "coal": 9
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 19,
+      "y": 14,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "sorter",
+      "x": 20,
+      "y": 14,
+      "efficiency": 0
+    },
+    {
+      "block": "conveyor",
+      "x": 21,
+      "y": 14,
+      "efficiency": 1,
+      "holds":{
+        "copper": 3
+      }
+    },
+    {
+      "block": "vault",
+      "x": 23,
+      "y": 14,
+      "efficiency": 0,
+      "holds":{
+        "copper": 182
+      }
+    },
+    {
+      "block": "power-source",
+      "x": 16,
+      "y": 16,
+      "efficiency": 0
+    },
+    {
+      "block": "vault",
+      "x": 20,
+      "y": 16,
+      "efficiency": 0,
+      "holds":{
+        "coal": 11
+      }
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 23,
+      "y": 14,
+      "items":{
+        "copper": 182
+      }
+    },
+    {
+      "block": "vault",
+      "x": 20,
+      "y": 16,
+      "items":{
+        "coal": 11
+      }
+    }
+  ],
+  "per_second":{
+    "copper": 6.0666666,
+    "coal": 0.36666667
+  }
+}

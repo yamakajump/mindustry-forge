@@ -52,6 +52,7 @@ export function edgesOf(size) {
 /** What a building is holding. `ItemModule` in the game: counts, and a total. */
 export class Held {
   constructor() {
+    this.taking = 0;
     this.counts = new Map();
     this.total = 0;
   }
@@ -69,6 +70,28 @@ export class Held {
   }
   first() {
     for (const [item, count] of this.counts) if (count > 0) return item;
+    return null;
+  }
+
+  /**
+   * `ItemModule.take`: the next one round a cursor that walks the **item ids**.
+   *
+   * Not `first()`, which is what a bridge used to call. The game keeps a `takeRotation` per
+   * block and moves it past whatever it just handed over, so a bridge fed copper on one
+   * side and coal on the other alternates strictly. Reading the first key of a Map instead,
+   * whichever arrived first won for ever: the press at the far end of a phase conveyor lost
+   * a third of its coal to copper that had no business being served first.
+   */
+  take(order) {
+    for (let i = 0; i < order.length; i++) {
+      const at = (i + this.taking) % order.length;
+      const item = order[at];
+      if (this.get(item) > 0) {
+        this.remove(item, 1);
+        this.taking = at + 1;
+        return item;
+      }
+    }
     return null;
   }
   /** Everything at once, which is what `kill()` amounts to for whatever was inside. */
@@ -465,6 +488,75 @@ export class Build {
     if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 0 : 2;
     return dy > 0 ? 1 : 3;
   }
+
+  /**
+   * Which side something was handed in from, measured to the **edge** it was handed over.
+   *
+   * `Edges.getFacingEdge(source.tile, tile).relativeTo(tile)`, which is what a conveyor, a
+   * duct and an overflow duct all ask, and what this used to answer with the neighbour's
+   * stored tile. `Tile.relativeTo` is a plain four way adjacency test that answers minus
+   * one for anything else, and the edge tile is what makes it answerable at all when the
+   * neighbour is bigger than one tile.
+   *
+   * The two agree for every neighbour of an odd sized block. For an even one they part on
+   * the corner tiles: a two by two press beside a line of ducts hands on where the game
+   * refuses, and its whole output appears in the middle of a line that carries none of it.
+   */
+  arrivedFrom(source) {
+    if (!source) return (this.rotation + 2) % 4;
+    const [ex, ey] = facingEdge(source, this);
+    if (ex === this.x && ey === this.y - 1) return 1;
+    if (ex === this.x && ey === this.y + 1) return 3;
+    if (ex === this.x - 1 && ey === this.y) return 0;
+    if (ex === this.x + 1 && ey === this.y) return 2;
+    return -1;
+  }
+
+  /**
+   * `Building.relativeTo(int, int)`, which is `Tile.absoluteRelativeTo` and a different
+   * question: not "which of my four sides is that on" but "which way does that lie", at any
+   * distance. A bridge asks it about a link twelve tiles away.
+   */
+  sideTowards(x, y) {
+    return sideOf(this.size, this.x, this.y, x, y);
+  }
+}
+
+/**
+ * `Edges.getFacingEdge`: the tile of a block that is nearest another tile.
+ *
+ * A one tile block is its own edge. Anything bigger is clamped tile by tile into its own
+ * footprint, with the game's own integer halves: a two wide block clamps into nought to
+ * one, a three wide into minus one to one.
+ */
+function facingEdge(source, target) {
+  if ((source.size || 1) <= 1) return [source.x, source.y];
+  const low = -Math.trunc((source.size - 1) / 2);
+  const high = Math.trunc(source.size / 2);
+  const held = (value) => Math.min(high, Math.max(low, value));
+  return [source.x + held(target.x - source.x), source.y + held(target.y - source.y)];
+}
+
+/**
+ * `Tile.absoluteRelativeTo`: which way `(cx, cy)` lies from a tile of a block this size.
+ *
+ * Two branches, and the even one is not a rounding detail: it shifts the tile half a
+ * square before comparing, because an even block's stored tile is its lower left middle
+ * rather than its centre. `-1` when neither axis wins, which the game leaves as `-1` and
+ * compares as such.
+ */
+function sideOf(size, x, y, cx, cy) {
+  const shift = (size || 1) % 2 === 1 ? 0 : 0.5;
+  const px = x + shift;
+  const py = y + shift;
+  if (Math.abs(px - cx) > Math.abs(py - cy)) {
+    if (px <= cx - 1) return 0;
+    if (px >= cx + 1) return 2;
+  } else {
+    if (py <= cy - 1) return 1;
+    if (py >= cy + 1) return 3;
+  }
+  return -1;
 }
 
 /**
@@ -486,27 +578,61 @@ export function bridgeAccepts(build, source) {
 
   const target = bridgeTarget(build);
   if (!target) return false;
-  return build.relativeTo(target) !== build.relativeTo(source);
+  // Both sides measured from this bridge: the way its beam points, against the way the
+  // face the item came over lies. Same face, refused.
+  const [ex, ey] = facingEdge(source, build);
+  return build.sideTowards(target.x, target.y) !== build.sideTowards(ex, ey);
 }
 
 /** `ItemBridge.checkDump`. */
 export function bridgeDumps(build, other) {
   const target = bridgeTarget(build);
-  if (target) return build.relativeTo(target) !== build.relativeTo(other);
+  /* Linked, the game compares the far end against the receiver's **stored** tile with no
+     edge in between, which is an asymmetry with `checkAccept` a few lines above it and is
+     the game's own. */
+  if (target) {
+    return build.sideTowards(target.x, target.y) !== build.sideTowards(other.x, other.y);
+  }
 
   // Unlinked, it still refuses to pour back towards anything that is feeding it.
-  const side = build.relativeTo(other);
-  return !feedersOf(build).some((feeder) => build.relativeTo(feeder) === side);
+  const [ex, ey] = facingEdge(other, build);
+  const side = build.sideTowards(ex, ey);
+  return !feedersOf(build).some(
+    (feeder) => build.sideTowards(feeder.x, feeder.y) === side);
 }
 
-/** Where a bridge sends, or nothing when it is not set or the far end is gone. */
-function bridgeTarget(build) {
+/**
+ * Where a bridge sends, or nothing when it is not set or the far end is not a bridge.
+ *
+ * `ItemBridge.linkValid` asks two things beyond the reach that `bridgeLink` already
+ * checked, and neither was asked here:
+ *
+ * - **the far end has to be the same block.** A schematic keeps a bridge's configuration
+ *   even when someone has since built something else on the tile it pointed at. The game
+ *   reads the link as dead, so the bridge stops being a bridge and pours round its own
+ *   sides; this teleported the items twelve tiles instead, up to nine hundred of them over
+ *   thirty seconds, and lost the spill upstream as well.
+ * - **and it must not point back.** Two bridges set at each other are both invalid, both of
+ *   them, and neither carries anything.
+ */
+export function bridgeTarget(build) {
+  const link = build.node.link;
+  const other = link ? build.world?.at(link[0], link[1]) || null : null;
+  if (!other || other.name !== build.name) return null;
+  return bridgeTargetTile(other) === build ? null : other;
+}
+
+/** The far end as the tile says it, without asking whether it points back. */
+function bridgeTargetTile(build) {
   const link = build.node.link;
   return link ? build.world?.at(link[0], link[1]) || null : null;
 }
 
+/* `linked(source)`, which is `linkValid(source.tile, tile)` from the other side: a bridge
+   pointing here may always feed it. Asked with `bridgeTarget`, a mutual pair would answer
+   no from both ends, which is right for carrying and wrong for this. */
 const pointsAt = (source, build) =>
-  Boolean(source.node?.link) && bridgeTarget(source) === build;
+  source.name === build.name && bridgeTargetTile(source) === build;
 
 /**
  * `incoming`: which bridges are pointed at this one.
@@ -520,6 +646,17 @@ function feedersOf(build) {
       .filter((other) => other !== build && pointsAt(other, build));
   }
   return build.state.feeders;
+}
+
+/** Every item in the game, in id order, which is the array `ItemModule` walks. */
+export function itemOrder(build) {
+  const world = build.world;
+  if (!world) return [];
+  if (!world.itemsById) {
+    const known = world.catalogue?.items || {};
+    world.itemsById = Object.keys(known).sort((a, b) => known[a].id - known[b].id);
+  }
+  return world.itemsById;
 }
 
 /** `content.items()` order, which is what `dump(null)` walks. */

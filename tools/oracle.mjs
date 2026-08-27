@@ -1581,6 +1581,74 @@ const SCENARIOS = {
     { x: -2, y: 2, block: "shielded-wall", rotation: 0 },
   ],
 
+  /* Une presse deux sur deux dont le coin touche un duct blinde.
+
+     Un blinde ne prend que par l'arriere, et l'arriere se mesure a la **case de bordure**
+     que le jeu clampe dans l'empreinte du voisin, pas a sa case de rangement. Pour un bloc
+     de taille paire les deux ne disent pas la meme chose : la presse est a l'est du duct
+     et la case de rangement le fait passer pour au sud, donc le portage acceptait ce que le
+     jeu refuse et vidait toute la presse dans une ligne qui n'en porte rien.
+
+     La presse couvre 2..3 par 2..3 et n'a que cette sortie. */
+  "press-corner-armored": () => [
+    { x: 4, y: 2, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: 2, y: 2, block: "graphite-press", rotation: 0 },
+    { x: 1, y: 3, block: "armored-duct", rotation: 1 },
+    { x: 1, y: 4, block: "duct", rotation: 1 },
+    { x: 1, y: 5, block: "duct", rotation: 1 },
+    // Couvre 0..2 par 6..8.
+    { x: 1, y: 7, block: "vault", rotation: 0 },
+  ],
+
+  /* Un pont configure sur une case ou quelqu'un a depuis pose autre chose.
+
+     Le jeu revalide le lien a chaque image : la case d'en face doit porter **le meme
+     bloc**. Sinon le pont n'est plus un pont, il deverse autour de lui. Le portage
+     teleportait quand meme, quatre cases plus loin, et le debordement en amont
+     n'apparaissait jamais. Le coffre du haut est ce que le jeu remplit, celui du bout est
+     ce que le portage remplissait. */
+  "bridge-onto-wrong-block": () => [
+    { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 0, block: "conveyor", rotation: 0 },
+    // Le premier pont vise le second, qui lui vise une case ou il n'y a pas de pont. Il
+    // faut les deux : un pont sans lien valide n'accepte rien d'un tapis, donc seul un
+    // autre pont peut lui donner de quoi deverser.
+    { x: 2, y: 0, block: "bridge-conveyor", rotation: 0, raw: point(3, 0) },
+    { x: 5, y: 0, block: "bridge-conveyor", rotation: 0, raw: point(3, 0) },
+    // Couvre 4..6 par 1..3 : ce que le second repand autour de lui.
+    { x: 5, y: 2, block: "vault", rotation: 0 },
+    // La case visee, qui porte un convoyeur ordinaire et pas un pont.
+    { x: 8, y: 0, block: "conveyor", rotation: 0 },
+    { x: 9, y: 0, block: "conveyor", rotation: 0 },
+    // Couvre 10..12 par -1..1.
+    { x: 11, y: 0, block: "vault", rotation: 0 },
+  ],
+
+  /* Un convoyeur de phase nourri de deux objets a la fois, avec une sortie plus etroite
+     que ses entrees, donc il sature et doit choisir.
+
+     `items.take()` est un curseur qui tourne sur les **identifiants** d'objets et qui
+     avance a chaque passage, donc les deux alternent strictement. Le portage lisait la
+     premiere cle d'une Map, c'est-a-dire le type arrive en premier, qui gagnait pour
+     toujours. Le trieur au bout separe les deux : ce sont les deux coffres qui le disent,
+     pas leur total, qui est le meme des deux facons. */
+  "phase-conveyor-two-items": () => [
+    { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 1, y: 1, block: "conveyor", rotation: 0 },
+    { x: 2, y: -1, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: 2, y: 0, block: "conveyor", rotation: 1 },
+    { x: 2, y: 1, block: "phase-conveyor", rotation: 0, raw: point(4, 0) },
+    { x: 4, y: 3, block: "power-source", rotation: 0 },
+    { x: 6, y: 1, block: "phase-conveyor", rotation: 0 },
+    { x: 7, y: 1, block: "conveyor", rotation: 0 },
+    { x: 8, y: 1, block: "sorter", rotation: 0, raw: item("copper") },
+    { x: 9, y: 1, block: "conveyor", rotation: 0 },
+    // Couvre 10..12 par 0..2 : ce que le trieur laisse passer tout droit.
+    { x: 11, y: 1, block: "vault", rotation: 0 },
+    // Couvre 7..9 par 2..4 : ce qu'il pousse sur le cote.
+    { x: 8, y: 3, block: "vault", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
