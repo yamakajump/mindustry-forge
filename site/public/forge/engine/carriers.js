@@ -1196,6 +1196,55 @@ const idlePower = {
 };
 
 /**
+ * An incinerator: a sink with a condition, and a **wall** when it is unpowered.
+ *
+ * `acceptItem` is `heat > 0.5`, and `heat` creeps towards `efficiency` at 0.04 a frame:
+ * thirteen frames of power before it will take anything, and nothing ever if the grid is
+ * down. A belt into an unpowered incinerator backs up, which is the opposite of what a
+ * sink does and exactly the sort of thing a player wants told.
+ *
+ * The slag one asks `efficiency > 0` rather than heat, and its efficiency is its slag
+ * rather than its power.
+ */
+const incinerator = {
+  begin(build) {
+    build.state.heat = 0;
+    build.state.wants = 1;
+  },
+
+  acceptItem(build) {
+    return build.block.power > 0 ? build.state.heat > 0.5 : build.state.efficiency > 0;
+  },
+
+  handleItem(build) { build.state.burned = (build.state.burned || 0) + 1; },
+
+  acceptLiquid(build, source, liquid) {
+    const known = build.world?.catalogue?.liquids?.[liquid];
+    if (!known?.incinerable) return false;
+    return build.block.power > 0 ? build.state.heat > 0.5 : build.state.efficiency > 0;
+  },
+
+  update(build, world, step) {
+    let efficiency = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+    for (const [liquid, rate] of Object.entries(build.block.input_liquid || {})) {
+      const wanted = (rate / TICKS) * build.delta(step);
+      if (wanted <= 0) continue;
+      efficiency = Math.min(efficiency, build.liquids.get(liquid) / wanted);
+      build.liquids.remove(liquid, wanted * efficiency);
+    }
+    build.state.efficiency = Math.max(0, Math.min(1, efficiency));
+    build.state.heat = approachTo(build.state.heat, build.state.efficiency,
+                                  0.04 * build.delta(step));
+    // Whatever it was handed is gone; it holds nothing.
+    build.items.clear();
+  },
+};
+
+/** `Mathf.approachDelta`, which several blocks here need and none of them shared. */
+const approachTo = (from, to, speed) =>
+  (from < to ? Math.min(to, from + speed) : Math.max(to, from - speed));
+
+/**
  * A sandbox drain: whatever is handed to it is gone.
  *
  * Filed under items, a liquid void refused every drop and the pipe into it backed up
@@ -1295,6 +1344,7 @@ const BY_ROLE = {
   "laser-turret": laserTurret,
   "idle-power": idlePower,
   void: drain,
+  incinerator,
   mender: mendProjector,
   projector: overdriveProjector,
   shield: forceProjector,

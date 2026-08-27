@@ -37,6 +37,8 @@ import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.production.ItemIncinerator;
+import mindustry.world.blocks.production.Incinerator;
 import mindustry.world.blocks.sandbox.LiquidVoid;
 import mindustry.world.blocks.sandbox.ItemVoid;
 import mindustry.world.blocks.defense.ShockwaveTower;
@@ -306,6 +308,8 @@ public class DumpBlocks {
             entry.put("id", liquid.id);
             entry.put("color", "#" + liquid.color.toString().substring(0, 6));
             entry.put("heat_capacity", liquid.heatCapacity);
+            // Whether an incinerator will take it. Water will not burn.
+            if (liquid.incinerable) entry.put("incinerable", true);
             entry.put("temperature", liquid.temperature);
             liquids.put(liquid.name, entry);
         }
@@ -1027,6 +1031,20 @@ public class DumpBlocks {
             entry.put("role", "idle-power");
             entry.put("reload", shock.reload);
             entry.put("range", shock.range);
+            return;
+        }
+        if (block instanceof Incinerator || block instanceof ItemIncinerator) {
+            /* An incinerator is a sink with a condition, and unpowered it is a **wall**.
+
+               `acceptItem` is `heat > 0.5f`, and `heat` creeps towards `efficiency` at
+               0.04 a frame: thirteen frames of power before it will take anything, and
+               nothing ever if the grid is down. A belt into one backs up, which is the
+               opposite of what a sink does and exactly what a player wants to know. The
+               slag one asks `efficiency > 0` instead, which is its slag rather than its
+               power. */
+            entry.put("role", "incinerator");
+            entry.put("carries", "item");
+            entry.put("input_liquid", liquidInputsOf(block));
             return;
         }
         if (block instanceof ItemVoid || block instanceof LiquidVoid) {
