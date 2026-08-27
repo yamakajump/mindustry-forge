@@ -327,6 +327,30 @@ class Schematic extends Model
         return GameMarkup::strip((string) $this->name);
     }
 
+    /**
+     * What it could make, per minute, biggest first.
+     *
+     * The listing filters and ranks on the ceiling, so a tile has to show the ceiling: a
+     * tile showing a measurement under a ranking made on something else would say one thing
+     * while the list beside it says another.
+     *
+     * Read off the relation rather than queried per tile, so a page of twenty-four costs one
+     * eager load and not twenty-four round trips.
+     *
+     * @return array<string, float>
+     */
+    public function plafonds(): array
+    {
+        $rows = $this->items
+            ->where('sens', SchematicItem::PRODUIT)
+            ->where('kind', SchematicItem::PLAFOND)
+            ->sortByDesc('rate')
+            ->pluck('rate', 'item')
+            ->all();
+
+        return $rows;
+    }
+
     /** Everything it makes, one row each, indexed so the listing can search and rank on it. */
     public function items(): HasMany
     {
