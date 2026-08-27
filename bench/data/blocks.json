@@ -106,6 +106,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -713,6 +714,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -735,6 +737,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -1904,6 +1907,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -1928,6 +1932,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -1950,6 +1955,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -1972,6 +1978,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -1994,6 +2001,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2016,6 +2024,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2038,6 +2047,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2062,6 +2072,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2086,6 +2097,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2110,6 +2122,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2134,6 +2147,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2158,6 +2172,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2182,6 +2197,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2206,6 +2222,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2228,6 +2245,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2250,6 +2268,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2272,6 +2291,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2296,6 +2316,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2318,6 +2339,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2342,6 +2364,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2364,6 +2387,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2386,6 +2410,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2408,6 +2433,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2430,6 +2456,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2452,6 +2479,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2474,6 +2502,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2494,6 +2523,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2814,6 +2844,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2834,6 +2865,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2854,6 +2886,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -2874,6 +2907,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -3238,6 +3272,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -3546,6 +3581,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -3568,6 +3604,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -3590,6 +3627,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -3634,6 +3672,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -4060,6 +4099,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -4136,6 +4176,7 @@
         "coal"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 58.5,
       "cost":{
@@ -4179,6 +4220,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 360,
       "build_time": 240,
       "cost":{
@@ -4224,6 +4266,7 @@
         "coal"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 32.5,
       "cost":{
@@ -4267,6 +4310,7 @@
         "pyratite"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 395,
       "build_time": 333.5,
       "cost":{
@@ -4312,6 +4356,7 @@
         "sand"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 81,
       "cost":{
@@ -4357,6 +4402,7 @@
         "oil"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 320,
       "build_time": 284.5,
       "cost":{
@@ -4402,6 +4448,7 @@
         "thorium"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 190,
       "build_time": 270.5,
       "cost":{
@@ -4447,6 +4494,7 @@
         "silicon"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 430,
       "build_time": 197,
       "cost":{
@@ -4494,6 +4542,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 137.5,
       "cost":{
@@ -4539,6 +4588,7 @@
         "coal"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 42.5,
       "cost":{
@@ -4582,6 +4632,7 @@
         "pyratite"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 41,
       "cost":{
@@ -4623,6 +4674,7 @@
         "scrap"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 200,
       "build_time": 84.5,
       "cost":{
@@ -4664,6 +4716,7 @@
         "slag"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 40,
       "cost":{
@@ -4717,6 +4770,7 @@
         "slag"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 465,
       "build_time": 360,
       "cost":{
@@ -4771,6 +4825,7 @@
         "spore-pod"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 320,
       "build_time": 48.5,
       "cost":{
@@ -4811,6 +4866,7 @@
         "scrap"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 32.5,
       "cost":{
@@ -4851,6 +4907,7 @@
         "oil"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 81,
       "cost":{
@@ -4889,6 +4946,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 90,
       "build_time": 15.5,
       "cost":{
@@ -4919,6 +4977,7 @@
         "sand"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 575,
       "build_time": 164,
       "cost":{
@@ -4960,6 +5019,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 860,
       "build_time": 356,
       "cost":{
@@ -5001,6 +5061,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 755,
       "build_time": 408,
       "cost":{
@@ -5042,6 +5103,7 @@
         "ozone"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 860,
       "build_time": 484,
       "cost":{
@@ -5082,6 +5144,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 460,
       "build_time": 117,
       "cost":{
@@ -5118,6 +5181,7 @@
         "slag"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1040,
       "build_time": 123,
       "cost":{
@@ -5156,6 +5220,7 @@
         "phase-fabric"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 510,
       "build_time": 114,
       "cost":{
@@ -5191,6 +5256,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 645,
       "build_time": 25,
       "cost":{
@@ -5215,6 +5281,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 200,
       "build_time": 11.6,
       "cost":{
@@ -5239,6 +5306,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 645,
       "build_time": 32.5,
       "cost":{
@@ -5267,6 +5335,7 @@
         "slag"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 70,
       "build_time": 22.5,
       "cost":{
@@ -5298,6 +5367,7 @@
         "tungsten"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 900,
       "build_time": 402,
       "cost":{
@@ -5342,6 +5412,7 @@
         "slag"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 935,
       "build_time": 238,
       "cost":{
@@ -5389,6 +5460,7 @@
         "slag"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 825,
       "build_time": 376,
       "cost":{
@@ -5435,6 +5507,7 @@
         "arkycite"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1150,
       "build_time": 424,
       "cost":{
@@ -5482,6 +5555,7 @@
         "ozone"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1115,
       "build_time": 616,
       "cost":{
@@ -5529,6 +5603,7 @@
         "nitrogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1005,
       "build_time": 206,
       "cost":{
@@ -5569,6 +5644,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 320,
       "build_time": 18,
       "cost":{
@@ -5592,6 +5668,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1280,
       "build_time": 72,
       "cost":{
@@ -5615,6 +5692,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 440,
       "build_time": 36,
       "cost":{
@@ -5638,6 +5716,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1760,
       "build_time": 144,
       "cost":{
@@ -5661,6 +5740,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 500,
       "build_time": 57,
       "insulated": true,
@@ -5686,6 +5766,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 2000,
       "build_time": 228,
       "insulated": true,
@@ -5711,6 +5792,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 800,
       "build_time": 39.600002,
       "cost":{
@@ -5734,6 +5816,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3200,
       "build_time": 158.40001,
       "cost":{
@@ -5757,6 +5840,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 600,
       "build_time": 46.8,
       "cost":{
@@ -5780,6 +5864,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 2400,
       "build_time": 187.2,
       "cost":{
@@ -5803,6 +5888,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 920,
       "build_time": 43.2,
       "cost":{
@@ -5826,6 +5912,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3680,
       "build_time": 172.8,
       "cost":{
@@ -5897,6 +5984,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 240,
       "build_time": 12,
       "cost":{
@@ -5920,6 +6008,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 960,
       "build_time": 48,
       "cost":{
@@ -5943,6 +6032,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 2160,
       "build_time": 108,
       "cost":{
@@ -5966,6 +6056,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3840,
       "build_time": 192,
       "cost":{
@@ -5989,6 +6080,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3520,
       "build_time": 288,
       "cost":{
@@ -6012,6 +6104,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 520,
       "build_time": 57.600002,
       "cost":{
@@ -6035,6 +6128,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 2080,
       "build_time": 144,
       "cost":{
@@ -6058,6 +6152,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 720,
       "build_time": 72,
       "cost":{
@@ -6081,6 +6176,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 2880,
       "build_time": 180,
       "cost":{
@@ -6128,6 +6224,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1000,
       "build_time": 61.200005,
       "cost":{
@@ -6152,6 +6249,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 4000,
       "build_time": 244.80002,
       "cost":{
@@ -6176,6 +6274,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1080,
       "build_time": 90,
       "cost":{
@@ -6200,6 +6299,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 4320,
       "build_time": 360,
       "cost":{
@@ -6225,6 +6325,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 4160,
       "build_time": 328.80002,
       "cost":{
@@ -6253,6 +6354,7 @@
         "silicon"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 80,
       "build_time": 33.5,
       "cost":{
@@ -6289,6 +6391,7 @@
         "phase-fabric"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 320,
       "build_time": 152,
       "cost":{
@@ -6327,6 +6430,7 @@
         "phase-fabric"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 175,
       "build_time": 244,
       "cost":{
@@ -6370,6 +6474,7 @@
         "phase-fabric"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 485,
       "build_time": 622,
       "cost":{
@@ -6417,6 +6522,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 360,
       "build_time": 245,
       "cost":{
@@ -6474,6 +6580,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 60,
       "build_time": 110,
       "cost":{
@@ -6503,6 +6610,7 @@
         "nitrogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 610,
       "build_time": 234,
       "cost":{
@@ -6539,6 +6647,7 @@
         "hydrogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1040,
       "build_time": 298,
       "cost":{
@@ -6569,6 +6678,7 @@
         "cyanogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 915,
       "build_time": 366,
       "cost":{
@@ -6597,6 +6707,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 360,
       "build_time": 20,
       "cost":{},
@@ -6617,6 +6728,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 640,
       "build_time": 20,
       "cost":{},
@@ -6771,6 +6883,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 7.2,
       "cost":{
@@ -6801,6 +6914,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 50,
       "build_time": 29.1,
       "cost":{
@@ -6986,6 +7100,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 70,
       "build_time": 49,
       "cost":{
@@ -7014,6 +7129,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 430,
       "build_time": 327.5,
       "cost":{
@@ -7174,6 +7290,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 90,
       "build_time": 36,
       "cost":{
@@ -7289,6 +7406,7 @@
         "nitrogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 630,
       "build_time": 148,
       "cost":{
@@ -7318,6 +7436,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 285,
       "build_time": 138,
       "cost":{
@@ -7344,6 +7463,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 22.5,
       "cost":{
@@ -7371,6 +7491,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 161,
       "cost":{
@@ -7400,6 +7521,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 430,
       "build_time": 277.5,
       "cost":{
@@ -7536,6 +7658,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 32.5,
       "cost":{
@@ -7562,6 +7685,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 500,
       "build_time": 90,
       "cost":{
@@ -7612,6 +7736,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 16,
       "cost":{
@@ -7638,6 +7763,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 50,
       "build_time": 52.1,
       "cost":{
@@ -7670,6 +7796,7 @@
         "hydrogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 380,
       "build_time": 109,
       "cost":{
@@ -7751,6 +7878,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 250,
       "build_time": 32,
       "cost":{
@@ -7804,6 +7932,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 400,
       "build_time": 34.2,
       "cost":{
@@ -7830,6 +7959,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 900,
       "build_time": 120,
       "cost":{
@@ -7855,6 +7985,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 5.2,
       "cost":{
@@ -7879,6 +8010,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 14.4,
       "cost":{
@@ -7904,6 +8036,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 200,
       "build_time": 44,
       "cost":{
@@ -7931,6 +8064,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 29.5,
       "insulated": true,
@@ -7957,6 +8091,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "power_capacity": 4000,
       "health": 40,
       "build_time": 16.5,
@@ -7984,6 +8119,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "power_capacity": 50000,
       "health": 360,
       "build_time": 79,
@@ -8017,6 +8153,7 @@
         "pyratite"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 23,
       "cost":{
@@ -8056,6 +8193,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 178,
       "cost":{
@@ -8101,6 +8239,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 94.5,
       "cost":{
@@ -8150,6 +8289,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 360,
       "build_time": 282,
       "cost":{
@@ -8192,6 +8332,7 @@
         "fissile-matter"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 245,
       "build_time": 315,
       "cost":{
@@ -8233,6 +8374,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 13.4,
       "cost":{
@@ -8262,6 +8404,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 450,
       "build_time": 117.5,
       "cost":{
@@ -8298,6 +8441,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 700,
       "build_time": 760,
       "cost":{
@@ -8347,6 +8491,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 900,
       "build_time": 1775,
       "cost":{
@@ -8387,6 +8532,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "power_capacity": 1000,
       "health": 90,
       "build_time": 9.6,
@@ -8413,6 +8559,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "power_capacity": 40000,
       "health": 810,
       "build_time": 56,
@@ -8439,6 +8586,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1170,
       "build_time": 972.5,
       "cost":{
@@ -8468,6 +8616,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 575,
       "build_time": 72,
       "cost":{
@@ -8506,6 +8655,7 @@
         "ozone"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 825,
       "build_time": 142,
       "cost":{
@@ -8545,6 +8695,7 @@
         "arkycite"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 935,
       "build_time": 336,
       "cost":{
@@ -8586,6 +8737,7 @@
         "cyanogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 2850,
       "build_time": 948,
       "cost":{
@@ -8630,6 +8782,7 @@
         "arkycite"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3900,
       "build_time": 2560,
       "cost":{
@@ -8679,6 +8832,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 6,
       "cost":{
@@ -8715,6 +8869,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 19,
       "cost":{
@@ -8752,6 +8907,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 360,
       "build_time": 91.5,
       "cost":{
@@ -8791,6 +8947,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 765,
       "build_time": 213,
       "cost":{
@@ -8827,6 +8984,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 111,
       "cost":{
@@ -8865,6 +9023,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 160,
       "build_time": 38,
       "cost":{
@@ -8909,6 +9068,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 430,
       "build_time": 517,
       "cost":{
@@ -8950,6 +9110,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 575,
       "build_time": 92,
       "cost":{
@@ -8985,6 +9146,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 255,
       "build_time": 49,
       "cost":{
@@ -9026,6 +9188,7 @@
         "hydrogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 950,
       "build_time": 277,
       "cost":{
@@ -9068,6 +9231,7 @@
         "hydrogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 255,
       "build_time": 48,
       "cost":{
@@ -9105,6 +9269,7 @@
         "nitrogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1040,
       "build_time": 335,
       "cost":{
@@ -9147,6 +9312,7 @@
         "ozone"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1020,
       "build_time": 224,
       "cost":{
@@ -9192,6 +9358,7 @@
         "cyanogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 2500,
       "build_time": 804,
       "cost":{
@@ -9232,6 +9399,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1100,
       "build_time": 2120,
       "cost":{
@@ -9258,6 +9426,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3500,
       "build_time": 5200,
       "cost":{
@@ -9285,6 +9454,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 6000,
       "build_time": 18000,
       "cost":{
@@ -9313,6 +9483,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 4500,
       "build_time": 1932,
       "cost":{
@@ -9340,6 +9511,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 16000,
       "build_time": 9590,
       "cost":{
@@ -9368,6 +9540,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 30000,
       "build_time": 18550,
       "cost":{
@@ -9397,6 +9570,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 220,
       "build_time": 100,
       "cost":{
@@ -9421,6 +9595,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 495,
       "build_time": 387.5,
       "cost":{
@@ -9446,6 +9621,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 480,
       "build_time": 85,
       "cost":{
@@ -9471,6 +9647,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1080,
       "build_time": 384.5,
       "cost":{
@@ -9506,6 +9683,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 250,
       "build_time": 17.5,
       "cost":{
@@ -9554,6 +9732,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 800,
       "build_time": 74,
       "cost":{
@@ -9602,6 +9781,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 400,
       "build_time": 34.5,
       "cost":{
@@ -9649,6 +9829,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 260,
       "build_time": 37,
       "cost":{
@@ -9695,6 +9876,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1000,
       "build_time": 132.5,
       "cost":{
@@ -9708,10 +9890,10 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "slag": 1,
         "water": 1,
-        "oil": 1,
-        "cryofluid": 1
+        "slag": 1,
+        "cryofluid": 1,
+        "oil": 1
       },
       "input_liquid":{}
     },
@@ -9734,6 +9916,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1120,
       "build_time": 157,
       "cost":{
@@ -9773,6 +9956,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 260,
       "build_time": 60,
       "cost":{
@@ -9806,6 +9990,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 640,
       "build_time": 288,
       "cost":{
@@ -9843,6 +10028,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1200,
       "build_time": 152.5,
       "cost":{
@@ -9896,6 +10082,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 960,
       "build_time": 180,
       "cost":{
@@ -9941,6 +10128,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1000,
       "build_time": 284,
       "cost":{
@@ -9977,6 +10165,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 2250,
       "build_time": 790,
       "cost":{
@@ -9991,10 +10180,10 @@
       "reload": 3,
       "coolant_multiplier": 5,
       "ammo_types":{
-        "slag": 0.4,
         "water": 0.4,
-        "oil": 0.4,
-        "cryofluid": 0.4
+        "slag": 0.4,
+        "cryofluid": 0.4,
+        "oil": 0.4
       },
       "input_liquid":{}
     },
@@ -10021,6 +10210,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1980,
       "build_time": 447.5,
       "cost":{
@@ -10071,6 +10261,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1170,
       "build_time": 270,
       "cost":{
@@ -10126,6 +10317,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1305,
       "build_time": 329,
       "cost":{
@@ -10176,6 +10368,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 2400,
       "build_time": 2500,
       "cost":{
@@ -10224,6 +10417,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 2560,
       "build_time": 1552.5,
       "cost":{
@@ -10271,6 +10465,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3200,
       "build_time": 1795,
       "cost":{
@@ -10316,6 +10511,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1620,
       "build_time": 540,
       "cost":{
@@ -10365,6 +10561,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1890,
       "build_time": 615,
       "cost":{
@@ -10411,6 +10608,7 @@
         "cyanogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1890,
       "build_time": 913,
       "cost":{
@@ -10450,6 +10648,7 @@
         "hydrogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 4000,
       "build_time": 1055,
       "cost":{
@@ -10502,6 +10701,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 4480,
       "build_time": 695,
       "cost":{
@@ -10546,6 +10746,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3520,
       "build_time": 867,
       "cost":{
@@ -10579,6 +10780,7 @@
         "nitrogen"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3360,
       "build_time": 586,
       "cost":{
@@ -10619,6 +10821,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3520,
       "build_time": 1910,
       "cost":{
@@ -10668,6 +10871,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 8750,
       "build_time": 2450,
       "cost":{
@@ -10707,6 +10911,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 9250,
       "build_time": 2640,
       "cost":{
@@ -10741,6 +10946,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 360,
       "build_time": 173,
       "cost":{
@@ -10800,6 +11006,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 360,
       "build_time": 127,
       "cost":{
@@ -10848,6 +11055,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 360,
       "build_time": 346,
       "cost":{
@@ -10901,6 +11109,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 360,
       "build_time": 256,
       "cost":{
@@ -10975,6 +11184,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 1200,
       "build_time": 1880,
       "cost":{
@@ -11055,6 +11265,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 3035,
       "build_time": 6390,
       "cost":{
@@ -11140,6 +11351,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 5830,
       "build_time": 8820,
       "cost":{
@@ -11215,6 +11427,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 52,
       "cost":{
@@ -11245,6 +11458,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 205,
       "build_time": 238,
       "cost":{
@@ -11274,6 +11488,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 575,
       "build_time": 340,
       "cost":{
@@ -11313,6 +11528,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 575,
       "build_time": 440,
       "cost":{
@@ -11352,6 +11568,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 860,
       "build_time": 475,
       "cost":{
@@ -11399,6 +11616,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 860,
       "build_time": 440,
       "cost":{
@@ -11453,6 +11671,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 1040,
       "build_time": 618,
       "cost":{
@@ -11508,6 +11727,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 860,
       "build_time": 682.5,
       "cost":{
@@ -11562,6 +11782,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 2500,
       "build_time": 1135,
       "cost":{
@@ -11621,6 +11842,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "accepts_payload": true,
+      "solid": true,
       "health": 2800,
       "build_time": 1362,
       "cost":{
@@ -11657,6 +11879,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "accepts_payload": true,
+      "solid": true,
       "health": 3600,
       "build_time": 2365,
       "cost":{
@@ -11694,6 +11917,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "accepts_payload": true,
+      "solid": true,
       "health": 3600,
       "build_time": 2805,
       "cost":{
@@ -11756,6 +11980,7 @@
         "ozone"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 285,
       "build_time": 282,
       "cost":{
@@ -11899,6 +12124,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 645,
       "build_time": 120,
       "cost":{
@@ -11926,6 +12152,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 2550,
       "build_time": 622,
       "cost":{
@@ -11955,6 +12182,7 @@
       "payload_speed": 1,
       "payload_rotate_speed": 5,
       "accepts_payload": true,
+      "solid": true,
       "health": 755,
       "build_time": 328,
       "cost":{
@@ -11983,6 +12211,7 @@
       "payload_speed": 1,
       "payload_rotate_speed": 5,
       "accepts_payload": true,
+      "solid": true,
       "health": 3195,
       "build_time": 690,
       "cost":{
@@ -12011,6 +12240,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 860,
       "build_time": 190,
       "cost":{
@@ -12050,6 +12280,7 @@
       "payload_speed": 0.7,
       "payload_rotate_speed": 5,
       "outputs_payload": true,
+      "solid": true,
       "health": 2500,
       "build_time": 628,
       "cost":{
@@ -12139,6 +12370,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -12162,6 +12394,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -12183,6 +12416,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -12206,6 +12440,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -12228,6 +12463,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -12251,6 +12487,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -12323,6 +12560,7 @@
       "rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -12485,6 +12723,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 360,
       "build_time": 577,
       "cost":{
@@ -12513,6 +12752,7 @@
         "oil"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 640,
       "build_time": 785,
       "cost":{
@@ -12545,6 +12785,7 @@
         "water"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 640,
       "build_time": 300,
       "cost":{
@@ -12580,6 +12821,7 @@
         "silicon"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 3920,
       "build_time": 28400,
       "cost":{
@@ -12615,6 +12857,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 7.5,
       "cost":{
@@ -12661,6 +12904,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 120,
       "cost":{
@@ -12685,6 +12929,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 190,
       "build_time": 403,
       "cost":{
@@ -12713,6 +12958,7 @@
         "cryofluid"
       ],
       "liquid_pressure": 1,
+      "solid": true,
       "health": 520,
       "build_time": 577.5,
       "cost":{
@@ -12742,6 +12988,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 69,
       "cost":{
@@ -12767,6 +13014,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 200,
       "build_time": 198,
       "cost":{
@@ -12793,6 +13041,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 360,
       "build_time": 185,
       "cost":{
@@ -12818,6 +13067,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1800,
       "build_time": 507.5,
       "cost":{
@@ -12844,6 +13094,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 50,
       "build_time": 27.9,
       "cost":{
@@ -12870,6 +13121,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 255,
       "build_time": 20,
       "cost":{
@@ -12894,6 +13146,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 665,
       "build_time": 36,
       "cost":{
@@ -12919,6 +13172,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 100,
       "build_time": 16,
       "cost":{
@@ -12942,6 +13196,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -12964,6 +13219,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},
@@ -12986,6 +13242,7 @@
       "rotate": false,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 40,
       "build_time": 20,
       "cost":{},

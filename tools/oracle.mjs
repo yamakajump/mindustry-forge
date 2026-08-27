@@ -347,6 +347,18 @@ const SCENARIOS = {
       (tile.block === "ground-factory" ? { ...tile, rotation: 0 } : tile)),
   }),
 
+  /* And the same factory pointed at a conveyor, which is the ordinary layout: you put the
+     output on the side the belt runs. `canDump` is `front == null || !front.tile.solid()`,
+     and a conveyor is not solid, so the game drops the dagger on the ground beside it and
+     carries on. Reading any building at all as a wall, the port built one and then sat on
+     sixty silicon and forty lead for the rest of the run. */
+  "units-onto-belt": () => ({
+    tiles: [
+      ...SCENARIOS["units-daggers"]().tiles,
+      { x: -1, y: 1, block: "conveyor", rotation: 2 },
+    ],
+  }),
+
   /* And the same factory with nobody having chosen what it builds, which makes nothing.
      Worth a scenario of its own, because it is a mistake a player really makes. */
   "units-unset": () => ({

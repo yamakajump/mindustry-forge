@@ -11,6 +11,7 @@
  */
 
 import { DIRECTIONS, TICKS } from "./core.js";
+import { moveOutPayload } from "./payloads.js";
 
 /**
  * How much of a frame this machine gets.
@@ -447,55 +448,46 @@ const unitFactory = {
 
   update(build, world, step) {
     const plan = build.state.plan;
-    if (!plan) return;
 
-    /* A finished unit is held as a payload until there is somewhere to put it down, and
-       the factory stops dead while it waits. `shouldConsume` is `payload == null`.
-    
-       This is not a detail. Measured against the engine, a factory boxed in on the side it
-       faces built exactly one dagger and then sat on sixty silicon and forty lead for the
-       rest of the run, and the port that ignored the payload happily built a second. */
-    if (build.state.payload) {
-      if (releasePayload(build, world)) build.state.made++;
+    /* `shouldConsume` is `payload == null`: a factory still holding a finished unit asks
+       the grid for nothing at all. */
+    build.state.wants = build.state.payload ? 0 : 1;
+
+    /* Everything the plan asks for and the grid's share of the power are one `efficiency`
+       between them, and `progress += edelta()` is that efficiency times the frame. */
+    let efficiency = plan ? (build.block.power > 0 ? (build.state.power ?? 1) : 1) : 0;
+    for (const [item, amount] of Object.entries(plan?.requirements || {})) {
+      if (build.items.get(item) < amount) efficiency = 0;
+    }
+    if (efficiency > 0) build.state.progress += build.delta(step) * efficiency;
+
+    /* The cargo slides out **before** the next unit is considered, and it is a real wait:
+       half the block's own width at seven tenths of a pixel a frame. What is in front
+       decides where it goes: a payload block takes it, anything that is not solid gets it
+       dropped beside it, and only a wall keeps it. */
+    moveOutPayload(build, world);
+
+    if (!plan || build.state.payload) {
+      /* And this is the branch that costs a factory its work: `progress = 0f` runs every
+         frame the cargo is still sitting there. A factory waiting for room does not pause,
+         it starts over. */
+      build.state.progress = 0;
       return;
     }
 
-    // Everything the plan asks for, and the grid's share of the power.
-    for (const [item, amount] of Object.entries(plan.requirements)) {
-      if (build.items.get(item) < amount) return;
+    if (build.state.progress >= plan.time) {
+      build.state.progress %= 1;
+      for (const [item, amount] of Object.entries(plan.requirements)) {
+        build.items.remove(item, amount);
+      }
+      build.state.payload = plan.unit;
+      build.state.payVector = [0, 0];
+      build.state.payRotation = build.rotation * 90;
+      build.state.wants = 0;
     }
-    const power = build.block.power > 0 ? (build.state.power ?? 1) : 1;
-    if (power <= 0) return;
-
-    build.state.progress += build.delta(step) * power;
-    if (build.state.progress < plan.time) return;
-
-    for (const [item, amount] of Object.entries(plan.requirements)) {
-      build.items.remove(item, amount);
-    }
-    build.state.progress %= plan.time;
-    build.state.payload = plan.unit;
-    if (releasePayload(build, world)) build.state.made++;
+    build.state.progress = Math.max(0, Math.min(build.state.progress, plan.time));
   },
 };
-
-/**
- * Put a finished unit down, if there is room.
- *
- * `moveOutPayload` walks it out of the side the factory faces, which has to be clear of
- * buildings. A factory pointed into a wall builds one unit and stops.
- */
-function releasePayload(build, world) {
-  const [dx, dy] = DIRECTIONS[build.rotation];
-  const size = build.size;
-  const offset = Math.trunc(-(size - 1) / 2);
-  const from = [build.x + offset + (dx > 0 ? size - 1 : 0),
-                build.y + offset + (dy > 0 ? size - 1 : 0)];
-  if (world.at(from[0] + dx, from[1] + dy)) return false;
-
-  build.state.payload = null;
-  return true;
-}
 
 /**
  * How much of one item a factory will hold.
