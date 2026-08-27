@@ -1413,6 +1413,24 @@ export async function analyse(text, supply = {}, chosen = null,
     idle,
     surplus: surplusOf(graph, solved, feeds),
     unknown,
+    /* What it is built from, one entry per kind of block with its count.
+     *
+     * `detail` already holds this, one object per block, and that is exactly why this
+     * exists: `tools/ingest.mjs` keeps a whitelist of fields to store, `detail` is not on
+     * it, and storing it would mean writing two and a half thousand objects of fifteen
+     * fields each for a schematic like POLAR STAR to end up with a dictionary of thirty
+     * entries. So the dictionary is made here, where the blocks are already in hand.
+     *
+     * Three things wait on it and none of them can be answered from a count of blocks: a
+     * build cost in materials, a search by the block a schematic contains, and telling a
+     * layout meant for a sandbox from one a player can actually build. The last is decided
+     * by `build_visibility`, which the game writes, and never by the schematic's name -
+     * `useless box` and `Server lagger` carry no keyword and belong to the same lot.
+     */
+    held: graph.nodes.reduce((counts, node) => {
+      counts[node.name] = (counts[node.name] || 0) + 1;
+      return counts;
+    }, {}),
     cost,
     internal,
     power,
