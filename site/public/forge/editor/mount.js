@@ -106,6 +106,13 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   let moving = null;
   /** Le pont qu'on est en train de recibler, tant qu'on n'a pas désigné sa cible. */
   let linking = null;
+  /** L'onglet sol est-il ouvert, et avec quel pinceau. */
+  let painting = false;
+  let brush = { layer: "floor", block: null, tool: "pencil", size: 1 };
+  /** Ce qu'un trait de pinceau a déjà peint, pour n'en faire qu'un geste d'historique. */
+  let stroke = null;
+  /** À quel point les blocs s'effacent, pour voir le sol dessous. */
+  let opacity = 1;
 
   function viewportOf() {
     return { width: stage.clientWidth || 800, height: stage.clientHeight || 600 };
@@ -118,6 +125,32 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       held = name;
       rotation = 0;
       rail.setHeld(held, rotation);
+      say();
+      paint();
+    },
+    onTab(which, fade) {
+      painting = which === "ground";
+      opacity = fade;
+      /* Passer sur le sol repose ce qu'on tenait : garder un bloc en main pendant qu'on
+         peint donnerait un fantôme de convoyeur au dessus du pinceau, et un clic gauche qui
+         ne sait plus lequel des deux il sert. */
+      if (painting && held) {
+        held = null;
+        rail.setHeld(null);
+      }
+      selection = null;
+      linking = null;
+      showPickBar();
+      say();
+      paint();
+    },
+    onBrush(state, what) {
+      brush = state;
+      if (what === "wipe" && Object.keys(board.ground).length) {
+        const wipe = {};
+        for (const cell of Object.keys(board.ground)) wipe[cell] = null;
+        board.apply({ paint: wipe });
+      }
       say();
       paint();
     },
@@ -140,6 +173,15 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       hints.innerHTML = `<strong>${picked().length} blocs</strong> sélectionnés ·
         <kbd>glisser dedans</kbd> déplacer · <kbd>Z</kbd> <kbd>X</kbd> miroirs ·
         <kbd>ctrl+C</kbd> copier · <kbd>suppr</kbd> supprimer · <kbd>échap</kbd> désélectionner`;
+      return;
+    }
+    if (painting) {
+      hints.innerHTML = brush.block || brush.tool === "eraser"
+        ? `<strong>${brush.block || "gomme"}</strong> au pinceau ·
+           <kbd>glisser</kbd> peindre · <kbd>ctrl+Z</kbd> annuler le trait ·
+           les blocs sont fondus pour qu'on voie dessous`
+        : `Choisis un sol, un minerai ou un mur à gauche · une case sans sol peint n'a
+           aucune règle`;
       return;
     }
     if (turning) {
@@ -178,6 +220,84 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   function moved() {
     if (!moving || !cursor) return [];
     return translate(moving.tiles, cursor.x - moving.from.x, cursor.y - moving.from.y);
+  }
+
+  /* ------------------------------------------------------------------------------------
+     Peindre le sol.
+
+     Un trait de pinceau est **un** geste d'historique, comme une ligne de convoyeurs : on
+     accumule les cases touchées pendant que le bouton est tenu et on applique tout au
+     relâchement. Appliquer case par case remplirait l'historique de trois cents entrées
+     pour un seul mouvement de la main.
+     ------------------------------------------------------------------------------------ */
+
+  /** Les cases qu'un coup de crayon couvre, centré sur le curseur. */
+  function dab(point) {
+    const reach = Math.floor(brush.size / 2);
+    const cells = [];
+    for (let dx = -reach; dx <= reach; dx++) {
+      for (let dy = -reach; dy <= reach; dy++) cells.push([point.x + dx, point.y + dy]);
+    }
+    return cells;
+  }
+
+  /** Les cases d'un rectangle, bornes comprises. */
+  function area(from, to) {
+    const cells = [];
+    for (let x = Math.min(from.x, to.x); x <= Math.max(from.x, to.x); x++) {
+      for (let y = Math.min(from.y, to.y); y <= Math.max(from.y, to.y); y++) cells.push([x, y]);
+    }
+    return cells;
+  }
+
+  /**
+   * Le pot de peinture : la zone contiguë qui porte le même sol que la case visée.
+   *
+   * Bornée à la boîte du schéma élargie de vingt cases. Sans borne, un pot cliqué sur du
+   * vide part remplir un plan infini et ne revient jamais : le terrain n'a pas de bord,
+   * contrairement à une carte du jeu.
+   */
+  function fill(point) {
+    const box = board.box();
+    const margin = 20;
+    const left = Math.min(box.left, point.x) - margin;
+    const bottom = Math.min(box.bottom, point.y) - margin;
+    const right = Math.max(box.left + box.width, point.x) + margin;
+    const top = Math.max(box.bottom + box.height, point.y) + margin;
+
+    const same = (x, y) => (board.ground[`${x},${y}`]?.[brush.layer] ?? null)
+      === (board.ground[`${point.x},${point.y}`]?.[brush.layer] ?? null);
+
+    const cells = [];
+    const seen = new Set();
+    const queue = [[point.x, point.y]];
+    while (queue.length) {
+      const [x, y] = queue.pop();
+      const key = `${x},${y}`;
+      if (seen.has(key) || x < left || x > right || y < bottom || y > top) continue;
+      seen.add(key);
+      if (!same(x, y)) continue;
+      cells.push([x, y]);
+      queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+    }
+    return cells;
+  }
+
+  /** Ce que peindre ces cases changerait, dans la forme que `board.apply` attend. */
+  function strokeOf(cells) {
+    const out = {};
+    for (const [x, y] of cells) {
+      const key = `${x},${y}`;
+      if (brush.tool === "eraser") { out[key] = null; continue; }
+      if (!brush.block) continue;
+      /* Un minerai posé sur une case nue emmène de la pierre avec lui : le jeu n'a pas de
+         minerai flottant, et une surcouche sans sol dessous n'existe pas. */
+      const under = board.ground[key];
+      out[key] = brush.layer === "overlay" && !under?.floor
+        ? { floor: "stone", overlay: brush.block }
+        : { [brush.layer]: brush.block };
+    }
+    return out;
   }
 
   /** La case est-elle dans la sélection retenue ? */
@@ -266,12 +386,13 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     relink();
     const viewport = viewportOf();
     draw(canvas, board.tiles, sizeOf, roleOf, {
-      camera, viewport, ground: board.ground, grid: true,
+      camera, viewport, ground: board.ground, grid: true, opacity,
     });
     updateGauge(board.box());
     outline(viewport);
     linkable(viewport);
-    ghost(viewport);
+    if (painting) brushGhost(viewport);
+    else ghost(viewport);
     showPickBar();
   }
 
@@ -378,6 +499,41 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     context.restore();
   }
 
+  /**
+   * L'empreinte du pinceau, sous le curseur.
+   *
+   * Un pinceau qu'on ne voit pas est un pinceau qu'on utilise au jugé : la taille réglable
+   * ne sert à rien si on ne sait pas ce qu'elle couvre avant de cliquer.
+   */
+  function brushGhost(viewport) {
+    if (!cursor) return;
+    const cells = stroke
+      ? (brush.tool === "rect" ? area(stroke.from, cursor) : stroke.cells)
+      : (brush.tool === "rect" || brush.tool === "bucket" ? [[cursor.x, cursor.y]] : dab(cursor));
+
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const gomme = brush.tool === "eraser";
+    context.fillStyle = gomme ? "rgba(255, 139, 139, .25)" : "rgba(255, 211, 127, .22)";
+    context.strokeStyle = gomme ? "#ff8b8b" : "#ffd37f";
+    context.lineWidth = 1;
+    for (const [x, y] of cells) {
+      const { px, py, size } = camera.rectOf(x, y, viewport);
+      context.fillRect(px, py, size, size);
+    }
+    // Le contour ne suit que le tour du geste, pas chaque case : un quadrillage ambre sur
+    // trois cents cases est illisible.
+    if (cells.length <= 81) {
+      for (const [x, y] of cells) {
+        const { px, py, size } = camera.rectOf(x, y, viewport);
+        context.strokeRect(px + 0.5, py + 0.5, size - 1, size - 1);
+      }
+    }
+    context.restore();
+  }
+
   /** L'aperçu rouge d'une casse en rectangle, tant que le bouton droit est tenu. */
   function erased(viewport) {
     const context = canvas.getContext("2d");
@@ -468,6 +624,18 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
+    /* Le pinceau passe avant tout le reste quand l'onglet sol est ouvert : là, un clic
+       gauche peint, et rien d'autre. */
+    if (painting && event.button === 0 && (brush.block || brush.tool === "eraser")) {
+      if (brush.tool === "bucket") {
+        board.apply({ paint: strokeOf(fill(cursor)) });
+        paint();
+        return;
+      }
+      stroke = { from: cursor, cells: brush.tool === "rect" ? [] : dab(cursor) };
+      paint();
+      return;
+    }
     if (event.button === 0 && pasting) {
       const posable = pastedAt().filter((plan) =>
         canPlace(board, plan, catalogue, pastedAt()).ok);
@@ -509,7 +677,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
     const was = cursor;
     cursor = tileUnder(event);
-    if (!was || was.x !== cursor.x || was.y !== cursor.y) paint();
+    if (was && was.x === cursor.x && was.y === cursor.y) return;
+    /* Le crayon accumule pendant le trait ; le rectangle, lui, se recalcule à chaque
+       mouvement puisque sa forme entière dépend de là où on en est. */
+    if (stroke && brush.tool !== "rect") stroke.cells.push(...dab(cursor));
+    paint();
   });
 
   canvas.addEventListener("pointerup", (event) => {
@@ -520,6 +692,14 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
     cursor = tileUnder(event);
 
+    if (stroke) {
+      const cells = brush.tool === "rect" ? area(stroke.from, cursor) : stroke.cells;
+      stroke = null;
+      const change = strokeOf(cells);
+      if (Object.keys(change).length) board.apply({ paint: change });
+      paint();
+      return;
+    }
     if (moving) {
       const after = moved();
       const before = moving.tiles;

@@ -69,12 +69,46 @@ const CATEGORIES = {
 const PLANETS = { serpulo: "Serpulo", erekir: "Erekir" };
 
 /**
+ * Les trois couches du sol, comme le jeu les empile.
+ *
+ * Un minerai va **par dessus** un sol, pas à sa place, et un mur va par dessus les deux.
+ * Les séparer dans l'interface est ce qui évite d'avoir à deviner, en voyant une pastille
+ * de cuivre, si la poser effacera la pierre qui est dessous.
+ */
+const LAYERS = [
+  { key: "floor", label: "Sols",
+    of: (block) => block.floor && !block.overlay && !block.wall },
+  { key: "overlay", label: "Minerais", of: (block) => block.overlay },
+  { key: "wall", label: "Murs", of: (block) => block.wall },
+];
+
+/** Les outils du pinceau, ceux de l'éditeur de carte du jeu. */
+const TOOLS = [
+  { key: "pencil", label: "Crayon", hint: "peindre à la main, taille réglable" },
+  { key: "rect", label: "Rectangle", hint: "remplir une zone d'un glissé" },
+  { key: "bucket", label: "Pot", hint: "remplir la zone contiguë de même sol" },
+  { key: "eraser", label: "Gomme", hint: "effacer le sol peint" },
+];
+
+/** Ce que le catalogue offre pour peindre, rangé par couche. */
+export function grounds(catalogue) {
+  return LAYERS.map((layer) => ({
+    ...layer,
+    blocks: Object.entries(catalogue.blocks)
+      .filter(([, block]) => layer.of(block))
+      .map(([name]) => name)
+      .sort(),
+  }));
+}
+
+/**
  * Monte le rail et rend de quoi le tenir à jour.
  *
  * `onPick` reçoit le nom du bloc choisi, ou `null` quand on repose ce qu'on avait en main.
  */
-export function mountRail({ host, catalogue, onPick }) {
+export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   const all = buildables(catalogue);
+  const layers = grounds(catalogue);
 
   /* Les catégories et les planètes présentes, prises au catalogue plutôt qu'écrites ici.
      Une liste tenue à la main se met à mentir le jour où le jeu en ajoute une. */
@@ -103,15 +137,50 @@ export function mountRail({ host, catalogue, onPick }) {
       </select>
     </div>
     <div class="editor-grid" role="listbox" aria-label="Blocs"></div>
+    <div class="editor-ground" hidden>
+      <div class="tools">
+        ${TOOLS.map((tool, i) => `<button type="button" class="chip" data-tool="${tool.key}"
+          title="${escape(tool.hint)}" aria-pressed="${i === 0}">${escape(tool.label)}</button>`)
+          .join("")}
+      </div>
+      <label class="size">Taille du crayon
+        <input type="range" min="1" max="9" step="2" value="1">
+        <span class="num">1 × 1</span></label>
+      <label class="fade">Transparence des blocs
+        <input type="range" min="0" max="100" value="35">
+        <span class="num">35 %</span></label>
+      ${layers.map((layer) => `<section data-layer="${layer.key}">
+        <h3>${escape(layer.label)} <span class="num">${layer.blocks.length}</span></h3>
+        <div class="chips"></div>
+      </section>`).join("")}
+      <button type="button" class="wipe">Effacer tout le sol peint</button>
+    </div>
     <div class="editor-held"><p class="empty">Rien en main. Choisis un bloc.</p></div>`;
 
   const grid = host.querySelector(".editor-grid");
   const held = host.querySelector(".editor-held");
   const search = host.querySelector(".search input");
+  const groundPanel = host.querySelector(".editor-ground");
+  const filters = host.querySelector(".editor-filters");
+  const searchRow = host.querySelector(".search");
   let holding = null;
   let needle = "";
   let planet = "";
   let category = "";
+
+  /** Ce que le pinceau tient : quelle couche, quel bloc, quel outil, quelle taille. */
+  const brush = { layer: "floor", block: null, tool: "pencil", size: 1 };
+
+  /* Les pastilles de sol, dessinées une fois : elles ne se filtrent pas et ne bougent pas. */
+  for (const layer of layers) {
+    const box = groundPanel.querySelector(`[data-layer="${layer.key}"] .chips`);
+    box.innerHTML = layer.blocks.map((name) => {
+      const src = iconOf(name, 20);
+      return `<button type="button" class="chip pick" data-ground="${escape(name)}"
+        data-of="${layer.key}" title="${escape(name)}" aria-pressed="false">${
+        src ? `<img src="${src}" alt="">` : ""}${escape(name.replace(/-/g, " "))}</button>`;
+    }).join("");
+  }
 
   const paint = () => {
     const shown = all.filter(({ name, block }) =>
@@ -194,6 +263,77 @@ export function mountRail({ host, catalogue, onPick }) {
     paint();
   });
 
+  /* ------------------------------------------------------------------------------------
+     L'onglet sol.
+
+     Bâtir et peindre sont deux intentions, avec deux palettes et deux jeux d'outils. Il n'y
+     a pas de barre d'outils du côté bâtir parce que le jeu n'en a pas ; il y en a une ici
+     parce que l'éditeur de carte du jeu en a une. L'asymétrie est voulue.
+     ------------------------------------------------------------------------------------ */
+
+  const sizeRange = groundPanel.querySelector(".size input");
+  const sizeLabel = groundPanel.querySelector(".size .num");
+  const fadeRange = groundPanel.querySelector(".fade input");
+  const fadeLabel = groundPanel.querySelector(".fade .num");
+
+  function showTab(which) {
+    const onGround = which === "ground";
+    for (const tab of host.querySelectorAll("[data-tab]")) {
+      tab.setAttribute("aria-pressed", String(tab.dataset.tab === which));
+    }
+    groundPanel.hidden = !onGround;
+    grid.hidden = onGround;
+    filters.hidden = onGround;
+    searchRow.hidden = onGround;
+    held.hidden = onGround;
+    /* La transparence bascule toute seule : passer sur le sol fond les blocs pour qu'on
+       voie ce qu'on peint, revenir les rend opaques. C'est ce qui supprime la peinture à
+       l'aveugle sans demander un geste de plus, et c'était le défaut principal de l'édition
+       d'avant, où le curseur vivait dans une autre carte que le pinceau. */
+    onTab?.(which, onGround ? Number(fadeRange.value) / 100 : 1, brush);
+  }
+
+  host.querySelector(".editor-tabs").addEventListener("click", (event) => {
+    const tab = event.target.closest("[data-tab]");
+    if (tab) showTab(tab.dataset.tab);
+  });
+
+  groundPanel.querySelector(".tools").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-tool]");
+    if (!button) return;
+    brush.tool = button.dataset.tool;
+    for (const other of groundPanel.querySelectorAll("[data-tool]")) {
+      other.setAttribute("aria-pressed", String(other === button));
+    }
+    onBrush?.(brush);
+  });
+
+  groundPanel.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-ground]");
+    if (!chip) return;
+    const same = brush.block === chip.dataset.ground;
+    brush.block = same ? null : chip.dataset.ground;
+    brush.layer = chip.dataset.of;
+    for (const other of groundPanel.querySelectorAll("[data-ground]")) {
+      other.setAttribute("aria-pressed", String(!same && other === chip));
+    }
+    onBrush?.(brush);
+  });
+
+  sizeRange.addEventListener("input", () => {
+    brush.size = Number(sizeRange.value);
+    sizeLabel.textContent = `${brush.size} × ${brush.size}`;
+    onBrush?.(brush);
+  });
+
+  fadeRange.addEventListener("input", () => {
+    fadeLabel.textContent = `${fadeRange.value} %`;
+    onTab?.("ground", Number(fadeRange.value) / 100, brush);
+  });
+
+  groundPanel.querySelector(".wipe").addEventListener("click", () => onBrush?.(brush, "wipe"));
+
+  rail.brush = brush;
   paint();
   return rail;
 }
