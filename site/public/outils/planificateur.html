@@ -72,7 +72,13 @@
       <input id="quantite" type="number" min="1" max="100000" step="1" value="100"
              inputmode="numeric">
       <select id="objet"></select>
-      <label class="lead" for="objet" data-i18n="outils.planificateur.par-minute">par minute</label>
+      <!-- Une cadence choisie plutot qu'imposee. Une chaine de fin de partie se pense a la
+           seconde, un debut de partie a la minute, et convertir de tete pendant qu'on
+           dimensionne une usine est exactement le calcul que cette page existe pour eviter. -->
+      <select id="cadence" aria-label="Cadence">
+        <option value="minute" data-i18n="outils.planificateur.par-minute">par minute</option>
+        <option value="seconde" data-i18n="outils.planificateur.par-seconde">par seconde</option>
+      </select>
       <select id="planete">
         <option value="serpulo">Serpulo</option>
         <option value="erekir">Erekir</option>
@@ -119,6 +125,11 @@ await ready;
 /* Les objets qu'on peut demander : ce que le jeu sait fabriquer, plus ce qu'il sait
    extraire. Proposes plutot que tapes, pour qu'un joueur choisisse dans ce qui existe au
    lieu de deviner une orthographe. */
+/** Quelle unite le joueur a choisie. Lue au meme endroit par le calcul et par l'affichage. */
+function parSeconde() {
+  return $("cadence").value === "seconde";
+}
+
 function objetsProposes(planete) {
   const noms = new Set();
   for (const [nom, bloc] of Object.entries(catalogue.blocks)) {
@@ -223,13 +234,27 @@ function dessiner(resultat) {
   if (resultat.raw.length) {
     const sol = carte("outils.planificateur.a-fournir");
     for (const brut of resultat.raw) {
-      const debit = `${nombre(brut.perMinute, 1)} ${t("outils.planificateur.par-min")}`;
+      /* Le nombre reste hors de la traduction. Une clef manquante rend la clef sans
+         substituer, donc `t("...", { n })` ferait disparaitre le chiffre en silence, et sur
+         un site qui ne vend que des chiffres c'est l'information qui part. */
+      const debit = parSeconde()
+        ? `${nombre(brut.perMinute / 60, 2)} ${t("outils.planificateur.par-sec")}`
+        : `${nombre(brut.perMinute, 1)} ${t("outils.planificateur.par-min")}`;
       /* Plusieurs foreuses proposees, pas seulement la meilleure. `needs.js` les classe par
          nombre croissant, donc la premiere est toujours la plus grosse du jeu : repondre
          « une foreuse a explosifs » a « il me faut du sable » est exact et inutilisable,
          parce que personne ne debloque la foreuse de fin de partie pour du sable. Le
          planificateur montre le choix au lieu de le faire a la place du joueur. */
-      const choix = brut.options.slice(0, 3)
+      /* Quatre, et pas trois. La liste est triee par nombre de blocs croissant, donc couper
+         a trois retirait toujours la derniere, qui est la moins chere a debloquer : la
+         foreuse mecanique sur Serpulo, le foreur a plasma sur Erekir. Autrement dit la
+         coupe supprimait systematiquement la seule option que possede quelqu'un qui
+         commence, c'est-a-dire le lecteur qui a le plus besoin de cet ecran.
+
+         Quatre parce que c'est le vivier reel d'un monde, mesure dans le catalogue : huit
+         blocs extraient du minerai, quatre par planete. La planete etant toujours choisie
+         ici, quatre montre tout. */
+      const choix = brut.options.slice(0, 4)
         .map((option) => `${option.count} ${option.block}`).join(" / ");
       const droite = choix
         ? `${debit} - ${choix}`
@@ -254,12 +279,21 @@ function calculer(evenement) {
   evenement?.preventDefault();
   dessiner(plan(catalogue, {
     item: $("objet").value,
-    perMinute: Number($("quantite").value),
+    /* Converti ici et nulle part ailleurs : le moteur raisonne en debit par minute, et
+       laisser deux unites circuler dans le calcul est la facon dont un facteur soixante
+       finit par manquer a un seul endroit.
+
+       La valeur de l'option est le nom de l'unite et pas son facteur. Avec le facteur ecrit
+       dans le HTML, la premiere version portait 60 sur « par minute » et 1 sur « par
+       seconde », c'est-a-dire l'inverse, et rien ne le disait : la page repondait, avec des
+       chiffres soixante fois trop grands. Un nom se relit, un multiplicateur non. */
+    perMinute: Number($("quantite").value) * (parSeconde() ? 60 : 1),
     planet: $("planete").value,
   }));
 }
 
 $("planete").addEventListener("change", () => { remplirObjets(); calculer(); });
+$("cadence").addEventListener("change", () => calculer());
 $("demande").addEventListener("submit", calculer);
 
 remplirObjets();
