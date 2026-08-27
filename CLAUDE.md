@@ -87,10 +87,37 @@ jamais, et aucun message d'erreur ne le signale.
 
 ## 📏 Conventions
 
-- Commits conventionnels **en français**, sujet à l'impératif, 50 caractères max.
+### La langue : anglais dans le dépôt, français sur le site
+
+**Tout ce qu'un contributeur lit est en anglais** : le code, ses commentaires, les messages
+de commit, les descriptions de pull request, et les documents de `docs/`. Le dépôt part en
+open source, et un projet dont les commits et la documentation sont dans une langue que
+son lecteur ne parle pas est un projet qu'il ne reprend pas.
+
+**Tout ce qu'un joueur lit reste en français**, et vit dans `site/lang/` et
+`site/public/forge/lang/`. Le site s'adresse d'abord à des joueurs francophones ; les
+autres langues viendront, et le socle multilingue est là pour ça.
+
+La frontière est nette et elle passe entre les deux publics, pas entre deux fichiers.
+
+Décidé le 27/08/2026. Le code était déjà entièrement en anglais ; ce qui change est le
+reste. La conversion de l'existant, environ 910 commentaires, se fait **à froid**, quand
+aucune voie n'écrit dans les fichiers concernés. Attention : `analyse.js` est haché par
+`EngineVersion`, donc reformuler un commentaire dedans marque périmées toutes les analyses
+stockées, et déclenche une re-mesure du catalogue entier.
+
+Les accents s'écrivent, dans les deux langues. La police les porte, c'est vérifié, et du
+français sans accents est du français mal écrit.
+
+### Le reste
+
+- Commits conventionnels, sujet à l'impératif, 50 caractères max.
 - Le corps du commit explique *pourquoi*, pas *quoi* : le diff dit déjà quoi.
-- Commentaires en français, code en anglais.
 - Pas de tiret cadratin (—), nulle part.
+- Les clés de traduction s'écrivent `<domaine>.<écran>.<élément>`, en kebab-case, **jamais
+  assemblées à l'exécution** : une clé collée au rendu est une clé qu'aucun contrôle ne
+  voit. Et **aucun chiffre ne passe par un placeholder** : quand une clé manque, Laravel
+  rend la clé sans substituer, et le nombre disparaît.
 
 ## 🚧 Plusieurs sessions travaillent souvent sur ce dépôt en parallèle
 
