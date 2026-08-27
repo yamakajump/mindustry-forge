@@ -43,7 +43,7 @@
            l'autre sans que personne le voie. --}}
       <ul class="cmp-liste">
         @foreach($recent as $one)
-          <li><a href="/s/{{ $one->slug }}">{{ $one->name }}</a>
+          <li><a href="/s/{{ $one->slug }}">{{ $one->displayName() }}</a>
             <span class="cmp-de">{{ $one->slug }}</span></li>
         @endforeach
       </ul>
@@ -53,12 +53,12 @@
   <div class="cmp-tetes">
     <div class="card">
       <h2>{{ __('schema.comparer.gauche') }}</h2>
-      <p class="cmp-nom"><a href="/s/{{ $left->slug }}">{{ $left->name }}</a></p>
+      <p class="cmp-nom"><a href="/s/{{ $left->slug }}">{{ $left->displayName() }}</a></p>
       <p class="meta">{{ $left->credit() }}</p>
     </div>
     <div class="card">
       <h2>{{ __('schema.comparer.droite') }}</h2>
-      <p class="cmp-nom"><a href="/s/{{ $right->slug }}">{{ $right->name }}</a></p>
+      <p class="cmp-nom"><a href="/s/{{ $right->slug }}">{{ $right->displayName() }}</a></p>
       <p class="meta">{{ $right->credit() }}</p>
     </div>
   </div>
@@ -92,8 +92,8 @@
       <h2>{{ __('schema.comparer.ce-quelles-font') }}</h2>
         <div class="line cmp-ligne cmp-entete">
           <span></span>
-          <span class="cmp-val">{{ $left->name }}</span>
-          <span class="cmp-val">{{ $right->name }}</span>
+          <span class="cmp-val">{{ $left->displayName() }}</span>
+          <span class="cmp-val">{{ $right->displayName() }}</span>
           <span class="cmp-ecart">{{ __('schema.comparer.ecart') }}</span>
         </div>
 
@@ -125,7 +125,7 @@
         <div class="line">
           <span>{{ $row['item'] === SchematicItem::POWER
             ? __('schema.comparer.energie') : $row['item'] }}</span>
-          <span>{{ $row['left'] ? $left->name : $right->name }}
+          <span>{{ $row['left'] ? $left->name : $right->displayName() }}
             &middot; {{ $number($row['left']?->rate ?? $row['right']->rate) }}</span>
         </div>
       @endforeach
@@ -141,8 +141,8 @@
       <h2>{{ __('schema.comparer.la-place') }}</h2>
         <div class="line cmp-ligne cmp-entete">
           <span></span>
-          <span class="cmp-val">{{ $left->name }}</span>
-          <span class="cmp-val">{{ $right->name }}</span>
+          <span class="cmp-val">{{ $left->displayName() }}</span>
+          <span class="cmp-val">{{ $right->displayName() }}</span>
           <span class="cmp-ecart">{{ __('schema.comparer.ecart') }}</span>
         </div>
 
@@ -164,8 +164,8 @@
       <h2>{{ __('schema.comparer.le-cout') }}</h2>
         <div class="line cmp-ligne cmp-entete">
           <span></span>
-          <span class="cmp-val">{{ $left->name }}</span>
-          <span class="cmp-val">{{ $right->name }}</span>
+          <span class="cmp-val">{{ $left->displayName() }}</span>
+          <span class="cmp-val">{{ $right->displayName() }}</span>
           <span class="cmp-ecart">{{ __('schema.comparer.ecart') }}</span>
         </div>
 
@@ -187,11 +187,11 @@
     <div class="card">
       <h2>{{ __('schema.comparer.ce-qui-bloque') }}</h2>
       <div class="line">
-        <span>{{ $left->name }}</span>
+        <span>{{ $left->displayName() }}</span>
         <span>{{ $stops['left'] ?? __('schema.comparer.rien-ne-bloque') }}</span>
       </div>
       <div class="line">
-        <span>{{ $right->name }}</span>
+        <span>{{ $right->displayName() }}</span>
         <span>{{ $stops['right'] ?? __('schema.comparer.rien-ne-bloque') }}</span>
       </div>
     </div>
