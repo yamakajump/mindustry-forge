@@ -72,6 +72,11 @@ class BrowseController extends Controller
             // must not require reading every row on the site.
             $query->join('schematic_items', 'schematic_items.schematic_id', '=', 'schematics.id')
                 ->where('schematic_items.item', $makes)
+                // Ce qui sort, et constate. La table sait aussi dire ce qui entre et ce
+                // qu'une schematique ferait alimentee a fond ; melanger un plafond a une
+                // mesure dans un meme classement serait mentir sans que rien ne le dise.
+                ->where('schematic_items.sens', SchematicItem::PRODUIT)
+                ->where('schematic_items.kind', SchematicItem::MESURE)
                 ->select('schematics.*');
         }
 
@@ -123,6 +128,8 @@ class BrowseController extends Controller
         return SchematicItem::query()
             ->join('schematics', 'schematics.id', '=', 'schematic_items.schematic_id')
             ->where('schematics.visibility', Schematic::PUBLIC)
+            ->where('schematic_items.sens', SchematicItem::PRODUIT)
+            ->where('schematic_items.kind', SchematicItem::MESURE)
             ->groupBy('schematic_items.item')
             ->orderByRaw('count(*) desc')
             ->limit(20)
