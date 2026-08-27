@@ -14,6 +14,8 @@ import { draw, spriteOf } from "../render.js";
 import { createBoard, footprint, MAX_SIZE } from "./state.js";
 import { lineOf } from "./lines.js";
 import { canPlace } from "./rules.js";
+import { flip, inBox, rotateBy, translate } from "./selection.js";
+import { fromBase64, toBase64 } from "../schematic.js";
 import { createCamera } from "./camera.js";
 import { mountRail, sizeGauge } from "./ui.js";
 
@@ -31,7 +33,15 @@ const SHELL = `
     <span class="editor-size"></span>
   </div>
   <div class="editor-rail"></div>
-  <div class="editor-stage"><canvas></canvas></div>
+  <div class="editor-stage"><canvas></canvas>
+    <div class="editor-pick" hidden>
+      <button type="button" data-pick="copy" title="Copier (ctrl+C)">Copier</button>
+      <button type="button" data-pick="turn" title="Tourner d un quart">↻</button>
+      <button type="button" data-pick="flipx" title="Miroir gauche-droite">↔</button>
+      <button type="button" data-pick="flipy" title="Miroir haut-bas">↕</button>
+      <button type="button" data-pick="drop" title="Supprimer (suppr)">Supprimer</button>
+    </div>
+  </div>
   <div class="editor-foot">
     <span class="hints"></span>
     <span class="spacer"></span>
@@ -75,6 +85,12 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   let drawing = null;
   /** Le coin où une casse en rectangle a commencé, tant qu'elle dure. */
   let erasing = null;
+  /** Le coin d'une sélection en cours, puis la boîte retenue. */
+  let picking = null;
+  let selection = null;
+  /** Ce qui a été copié, et ce qui attend d'être posé au prochain clic. */
+  let clipboard = null;
+  let pasting = null;
 
   function viewportOf() {
     return { width: stage.clientWidth || 800, height: stage.clientHeight || 600 };
@@ -94,12 +110,23 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   /** La barre d'état dit les gestes du moment, pas tous les gestes possibles. */
   function say() {
+    if (pasting) {
+      hints.innerHTML = `<strong>${pasting.length} blocs</strong> à poser ·
+        <kbd>clic</kbd> poser · <kbd>maj+clic</kbd> poser en série · <kbd>échap</kbd> annuler`;
+      return;
+    }
+    if (selection) {
+      hints.innerHTML = `<strong>${picked().length} blocs</strong> sélectionnés ·
+        <kbd>ctrl+C</kbd> copier · <kbd>suppr</kbd> supprimer · <kbd>échap</kbd> désélectionner`;
+      return;
+    }
     hints.innerHTML = held
       ? `<strong>${held}</strong> en main · <kbd>glisser</kbd> tracer une ligne ·
          <kbd>R</kbd> tourner · <kbd>clic droit</kbd> casser · <kbd>Q</kbd> reprendre un bloc ·
          <kbd>échap</kbd> reposer`
       : `Choisis un bloc à gauche · <kbd>Q</kbd> en reprendre un pose ·
-         <kbd>clic droit glisse</kbd> effacer une zone · <kbd>ctrl+Z</kbd> annuler`;
+         <kbd>ctrl+glisser</kbd> sélectionner · <kbd>ctrl+V</kbd> coller ·
+         <kbd>ctrl+Z</kbd> annuler`;
   }
 
   /**
@@ -162,6 +189,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     updateGauge(board.box());
     outline(viewport);
     ghost(viewport);
+    showPickBar();
   }
 
   /**
@@ -196,7 +224,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * refusait la pose.
    */
   function ghost(viewport) {
-    const plans = pending();
+    if (picking || selection) frame(viewport);
+    const plans = pasting ? pastedAt() : pending();
     if (erasing) {
       erased(viewport);
       showWhy(null);
@@ -246,6 +275,24 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
     context.restore();
     showWhy(why);
+  }
+
+  /** Le cadre ambre de la sélection, en cours de tracé ou retenue. */
+  function frame(viewport) {
+    const zone = picking ? rectOf(picking, cursor) : selection;
+    if (!zone) return;
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    const { px, py } = camera.rectOf(zone.left, zone.bottom + zone.height - 1, viewport);
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.fillStyle = "rgba(255, 211, 127, .12)";
+    context.strokeStyle = "#ffd37f";
+    context.lineWidth = 2;
+    context.fillRect(px, py, zone.width * camera.scale, zone.height * camera.scale);
+    context.strokeRect(px + 1, py + 1,
+                       zone.width * camera.scale - 2, zone.height * camera.scale - 2);
+    context.restore();
   }
 
   /** L'aperçu rouge d'une casse en rectangle, tant que le bouton droit est tenu. */
@@ -333,6 +380,22 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
+    if (event.button === 0 && pasting) {
+      const posable = pastedAt().filter((plan) =>
+        canPlace(board, plan, catalogue, pastedAt()).ok);
+      if (posable.length) board.apply({ place: posable });
+      if (!event.shiftKey) pasting = null;   // shift maintenu : coller en série
+      say();
+      paint();
+      return;
+    }
+    if (event.button === 0 && (event.ctrlKey || event.metaKey)) {
+      picking = cursor;
+      selection = null;
+      showPickBar();
+      paint();
+      return;
+    }
     if (event.button === 0 && held) {
       drawing = cursor;
       paint();
@@ -359,6 +422,15 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
     cursor = tileUnder(event);
 
+    if (picking) {
+      const zone = rectOf(picking, cursor);
+      picking = null;
+      selection = inBox(board.tiles, zone, sizeOf).length ? zone : null;
+      showPickBar();
+      say();
+      paint();
+      return;
+    }
     if (erasing) {
       const gone = inside(rectOf(erasing, cursor));
       erasing = null;
@@ -407,6 +479,136 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     paint();
   }, { passive: false });
 
+  /* ----------------------------------------------------------------------------------
+     La sélection : ctrl+glisser, puis une barre flottante posée à côté d'elle.
+
+     À côté d'elle et non dans le rail : une barre à l'autre bout de l'écran oblige à
+     quitter des yeux ce sur quoi elle agit, et à traverser mille pixels pour chaque quart
+     de tour.
+     ---------------------------------------------------------------------------------- */
+
+  const picked = () => (selection ? inBox(board.tiles, selection, sizeOf) : []);
+
+  /** Remplacer la sélection par sa version transformée, en un seul geste d'historique. */
+  function reshape(change) {
+    const before = picked();
+    if (!before.length) return;
+    const after = change(before);
+    board.apply({ remove: before, place: after });
+    selection = boxAround(after);
+    paint();
+  }
+
+  /** La boîte d'un groupe de blocs, empreintes comprises. */
+  function boxAround(tiles) {
+    if (!tiles.length) return null;
+    let left = Infinity, bottom = Infinity, right = -Infinity, top = -Infinity;
+    for (const tile of tiles) {
+      for (const [x, y] of footprint(tile, sizeOf)) {
+        left = Math.min(left, x); bottom = Math.min(bottom, y);
+        right = Math.max(right, x); top = Math.max(top, y);
+      }
+    }
+    return { left, bottom, width: right - left + 1, height: top - bottom + 1 };
+  }
+
+  /**
+   * Copier la sélection, dans l'éditeur et dans le presse-papiers du système.
+   *
+   * Les deux, parce que ce sont deux usages : recoller ailleurs sur le même plateau, et
+   * coller dans le jeu. Le second est ce qui fait de cet éditeur autre chose qu'un jouet,
+   * et `schematic.js` sait déjà écrire le format que le jeu lit.
+   */
+  async function copy() {
+    const chosen = picked();
+    if (!chosen.length) return;
+    clipboard = chosen.map((tile) => ({ ...tile }));
+    /* L'écriture est courue contre une seconde : elle est normalement accordée dans un
+       geste utilisateur, mais un refus qui ne vient jamais ne doit pas laisser le joueur
+       devant une interface qui ne répond plus. */
+    try {
+      const code = await toBase64(clipboard, { tags: { name: "selection" }, sizeOf });
+      await Promise.race([
+        navigator.clipboard.writeText(code),
+        new Promise((_, fail) => setTimeout(() => fail(new Error("trop long")), 1000)),
+      ]);
+      flash(`${clipboard.length} blocs copiés, collables dans le jeu`);
+    } catch {
+      flash(`${clipboard.length} blocs copiés dans l'éditeur`);
+    }
+  }
+
+  /**
+   * Coller ce qu'on a copié, dans l'éditeur ou dans le jeu.
+   *
+   * Le presse-papiers du système arrive par l'événement `paste` du navigateur, plus bas, et
+   * non par `navigator.clipboard.readText()`. La différence n'est pas cosmétique : la
+   * lecture directe demande une permission, et là où elle n'est ni accordée ni refusée elle
+   * **suspend la promesse indéfiniment**. Mesuré ici : le premier essai figeait la page à
+   * chaque ctrl+V. L'événement `paste`, lui, ne demande rien, parce que c'est l'utilisateur
+   * qui l'a déclenché.
+   *
+   * Cette fonction-ci ne sert donc qu'au repli : recoller ce qu'on avait copié dans
+   * l'éditeur, quand le presse-papiers du système n'a rien pour nous.
+   */
+  function paste(coming = clipboard) {
+    if (!coming || !coming.length) {
+      flash("rien à coller");
+      return;
+    }
+    pasting = coming.map((tile) => ({ ...tile, rotation: tile.rotation || 0 }));
+    selection = null;
+    showPickBar();
+    say();
+    paint();
+  }
+
+  /** Ce que le collage poserait, ramené sous le curseur. */
+  function pastedAt() {
+    if (!pasting || !cursor) return [];
+    const box = boxAround(pasting);
+    return translate(pasting, cursor.x - box.left, cursor.y - box.bottom);
+  }
+
+  const pickBar = host.querySelector(".editor-pick");
+
+  function showPickBar() {
+    if (!selection || !picked().length) {
+      pickBar.hidden = true;
+      return;
+    }
+    const viewport = viewportOf();
+    const { px, py } = camera.rectOf(selection.left,
+                                     selection.bottom + selection.height - 1, viewport);
+    pickBar.hidden = false;
+    pickBar.style.left = `${Math.max(4, px)}px`;
+    pickBar.style.top = `${Math.max(4, py - 44)}px`;
+  }
+
+  pickBar.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-pick]");
+    if (!button) return;
+    const what = button.dataset.pick;
+    if (what === "copy") copy();
+    if (what === "turn") reshape((tiles) => rotateBy(tiles, 1, catalogue));
+    if (what === "flipx") reshape((tiles) => flip(tiles, "x", catalogue));
+    if (what === "flipy") reshape((tiles) => flip(tiles, "y", catalogue));
+    if (what === "drop") {
+      const gone = picked();
+      selection = null;
+      if (gone.length) board.apply({ remove: gone });
+      paint();
+    }
+  });
+
+  /** Un mot dans la barre d'état, qui s'efface tout seul. */
+  let fading = null;
+  function flash(message) {
+    hints.innerHTML = `<strong>${message}</strong>`;
+    clearTimeout(fading);
+    fading = setTimeout(say, 2600);
+  }
+
   /**
    * Reprendre en main un bloc déjà posé, avec sa rotation.
    *
@@ -437,6 +639,22 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       return;
     }
     if (ctrl && event.key.toLowerCase() === "y") { board.redo(); paint(); return; }
+    if (ctrl && event.key.toLowerCase() === "c") { copy(); event.preventDefault(); return; }
+    if ((event.key === "Delete" || event.key === "Backspace") && selection) {
+      const gone = picked();
+      selection = null;
+      if (gone.length) board.apply({ remove: gone });
+      paint();
+      return;
+    }
+    if (event.key === "Escape" && (selection || pasting)) {
+      selection = null;
+      pasting = null;
+      showPickBar();
+      say();
+      paint();
+      return;
+    }
     if (event.key === "Escape" && held) {
       held = null;
       rail.setHeld(null);
@@ -453,8 +671,30 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   };
   const onKeyUp = (event) => { if (event.code === "Space") spacing = false; };
 
+  /**
+   * Ce que le joueur colle, venu du jeu ou d'ailleurs.
+   *
+   * C'est le seul canal qui marche sans permission, et c'est aussi celui qui rend la
+   * passerelle avec le jeu réelle : copier une schématique dans Mindustry, faire ctrl+V
+   * ici, et la voir apparaître sous le curseur.
+   */
+  const onPaste = async (event) => {
+    if (/^(INPUT|TEXTAREA)$/.test(event.target.tagName)) return;
+    const text = (event.clipboardData?.getData("text") || "").trim();
+    event.preventDefault();
+    if (!text) return paste();
+    try {
+      paste((await fromBase64(text)).tiles);
+    } catch {
+      /* Un presse-papiers qui contient autre chose qu'une schématique n'est pas une erreur
+         du joueur : il avait peut-être copié un lien. On repose ce qu'on avait. */
+      paste();
+    }
+  };
+
   document.addEventListener("keydown", onKey);
   document.addEventListener("keyup", onKeyUp);
+  document.addEventListener("paste", onPaste);
 
   host.querySelector('[data-do="undo"]').onclick = () => { board.undo(); paint(); };
   host.querySelector('[data-do="redo"]').onclick = () => { board.redo(); paint(); };
@@ -471,6 +711,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     destroy() {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("keyup", onKeyUp);
+      document.removeEventListener("paste", onPaste);
+      clearTimeout(fading);
       resize?.disconnect();
       rail.destroy();
       host.className = "";
