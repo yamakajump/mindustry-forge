@@ -30,6 +30,7 @@
       "liquid_pressure": 1,
       "health": -1,
       "build_time": -1,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -61,6 +62,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -93,6 +95,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -122,6 +125,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -153,6 +157,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -614,6 +619,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -649,6 +655,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -683,6 +690,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -720,6 +728,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -758,6 +767,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -795,6 +805,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -829,6 +840,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -863,6 +875,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -898,6 +911,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -933,6 +947,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -973,6 +988,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1006,6 +1022,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1037,6 +1054,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1068,6 +1086,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1099,6 +1118,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1133,6 +1153,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1167,6 +1188,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1202,6 +1224,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1237,6 +1260,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1273,6 +1297,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1309,6 +1334,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1340,6 +1366,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1374,6 +1401,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1405,6 +1433,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1439,6 +1468,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1473,6 +1503,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1507,6 +1538,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1541,6 +1573,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1575,6 +1608,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1609,6 +1643,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1643,6 +1678,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1677,6 +1713,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1708,6 +1745,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1739,6 +1777,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1770,6 +1809,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1801,6 +1841,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1835,6 +1876,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1869,6 +1911,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1903,6 +1946,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1938,6 +1982,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -1969,6 +2014,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2003,6 +2049,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2037,6 +2084,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2071,6 +2119,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2105,6 +2154,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2139,6 +2189,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2173,6 +2224,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2207,6 +2259,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2241,6 +2294,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2272,6 +2326,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2303,6 +2358,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2337,6 +2393,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2372,6 +2429,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2406,6 +2464,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2440,6 +2499,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2474,6 +2534,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2508,6 +2569,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2542,6 +2604,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2573,6 +2636,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -2608,6 +2672,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2642,6 +2707,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2674,6 +2740,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2706,6 +2773,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2738,6 +2806,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2770,6 +2839,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2802,6 +2872,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2836,6 +2907,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2870,6 +2942,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2904,6 +2977,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2938,6 +3012,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -2972,6 +3047,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3006,6 +3082,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3040,6 +3117,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3072,6 +3150,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3104,6 +3183,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3136,6 +3216,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3170,6 +3251,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3202,6 +3284,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3236,6 +3319,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3268,6 +3352,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3300,6 +3385,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3332,6 +3418,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3364,6 +3451,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3396,6 +3484,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -3426,6 +3515,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3454,6 +3544,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3482,6 +3573,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3510,6 +3602,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3538,6 +3631,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3566,6 +3660,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3594,6 +3689,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3622,6 +3718,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3650,6 +3747,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3678,6 +3776,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3706,6 +3805,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3734,6 +3834,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3762,6 +3863,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3790,6 +3892,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3818,6 +3921,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3846,6 +3950,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3874,6 +3979,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3902,6 +4008,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3930,6 +4037,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3958,6 +4066,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -3986,6 +4095,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -4014,6 +4124,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -4042,6 +4153,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -4070,6 +4182,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -4098,6 +4211,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -4127,6 +4241,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4158,6 +4273,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4189,6 +4305,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4220,6 +4337,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4251,6 +4369,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4282,6 +4401,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4313,6 +4433,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4344,6 +4465,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4375,6 +4497,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4406,6 +4529,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4437,6 +4561,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4468,6 +4593,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4500,6 +4626,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -4531,6 +4658,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4562,6 +4690,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4593,6 +4722,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4624,6 +4754,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4655,6 +4786,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4686,6 +4818,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4717,6 +4850,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4748,6 +4882,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4779,6 +4914,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4810,6 +4946,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4841,6 +4978,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4872,6 +5010,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4903,6 +5042,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -4935,6 +5075,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -4967,6 +5108,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -4999,6 +5141,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -5031,6 +5174,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5064,6 +5208,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -5096,6 +5241,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5129,6 +5275,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5162,6 +5309,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5195,6 +5343,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5227,6 +5376,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5259,6 +5409,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5291,6 +5442,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5324,6 +5476,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5357,6 +5510,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5390,6 +5544,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5423,6 +5578,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5456,6 +5612,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5489,6 +5646,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5522,6 +5680,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5555,6 +5714,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "floor": true,
@@ -5588,6 +5748,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall_ore": true,
@@ -5622,6 +5783,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall_ore": true,
@@ -5657,6 +5819,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall": true,
@@ -5689,6 +5852,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall_ore": true,
@@ -5723,6 +5887,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "wall_ore": true,
@@ -7511,6 +7676,7 @@
       "solid": true,
       "health": 320,
       "build_time": 18,
+      "no_update": true,
       "cost":{
         "copper": 6
       },
@@ -7544,6 +7710,7 @@
       "solid": true,
       "health": 1280,
       "build_time": 72,
+      "no_update": true,
       "cost":{
         "copper": 24
       },
@@ -7577,6 +7744,7 @@
       "solid": true,
       "health": 440,
       "build_time": 36,
+      "no_update": true,
       "cost":{
         "titanium": 6
       },
@@ -7610,6 +7778,7 @@
       "solid": true,
       "health": 1760,
       "build_time": 144,
+      "no_update": true,
       "cost":{
         "titanium": 24
       },
@@ -7645,6 +7814,7 @@
       "health": 500,
       "build_time": 57,
       "insulated": true,
+      "no_update": true,
       "cost":{
         "metaglass": 2,
         "plastanium": 5
@@ -7681,6 +7851,7 @@
       "health": 2000,
       "build_time": 228,
       "insulated": true,
+      "no_update": true,
       "cost":{
         "metaglass": 8,
         "plastanium": 20
@@ -7715,6 +7886,7 @@
       "solid": true,
       "health": 800,
       "build_time": 39.600002,
+      "no_update": true,
       "cost":{
         "thorium": 6
       },
@@ -7748,6 +7920,7 @@
       "solid": true,
       "health": 3200,
       "build_time": 158.40001,
+      "no_update": true,
       "cost":{
         "thorium": 24
       },
@@ -7781,6 +7954,7 @@
       "solid": true,
       "health": 600,
       "build_time": 46.8,
+      "no_update": true,
       "cost":{
         "phase-fabric": 6
       },
@@ -7814,6 +7988,7 @@
       "solid": true,
       "health": 2400,
       "build_time": 187.2,
+      "no_update": true,
       "cost":{
         "phase-fabric": 24
       },
@@ -7847,6 +8022,7 @@
       "solid": true,
       "health": 920,
       "build_time": 43.2,
+      "no_update": true,
       "cost":{
         "surge-alloy": 6
       },
@@ -7880,6 +8056,7 @@
       "solid": true,
       "health": 3680,
       "build_time": 172.8,
+      "no_update": true,
       "cost":{
         "surge-alloy": 24
       },
@@ -7910,8 +8087,10 @@
       "quick_rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 400,
       "build_time": 55.199997,
+      "no_update": true,
       "cost":{
         "titanium": 6,
         "silicon": 4
@@ -7943,8 +8122,10 @@
       "quick_rotate": true,
       "dump_time": 5,
       "liquid_pressure": 1,
+      "solid": true,
       "health": 1600,
       "build_time": 220.79999,
+      "no_update": true,
       "cost":{
         "titanium": 24,
         "silicon": 16
@@ -7979,6 +8160,7 @@
       "solid": true,
       "health": 240,
       "build_time": 12,
+      "no_update": true,
       "cost":{
         "scrap": 6
       },
@@ -8012,6 +8194,7 @@
       "solid": true,
       "health": 960,
       "build_time": 48,
+      "no_update": true,
       "cost":{
         "scrap": 24
       },
@@ -8045,6 +8228,7 @@
       "solid": true,
       "health": 2160,
       "build_time": 108,
+      "no_update": true,
       "cost":{
         "scrap": 54
       },
@@ -8078,6 +8262,7 @@
       "solid": true,
       "health": 3840,
       "build_time": 192,
+      "no_update": true,
       "cost":{
         "scrap": 96
       },
@@ -8110,6 +8295,7 @@
       "solid": true,
       "health": 3520,
       "build_time": 288,
+      "no_update": true,
       "cost":{
         "scrap": 96
       },
@@ -8142,6 +8328,7 @@
       "solid": true,
       "health": 520,
       "build_time": 57.600002,
+      "no_update": true,
       "cost":{
         "beryllium": 6
       },
@@ -8175,6 +8362,7 @@
       "solid": true,
       "health": 2080,
       "build_time": 144,
+      "no_update": true,
       "cost":{
         "beryllium": 24
       },
@@ -8208,6 +8396,7 @@
       "solid": true,
       "health": 720,
       "build_time": 72,
+      "no_update": true,
       "cost":{
         "tungsten": 6
       },
@@ -8241,6 +8430,7 @@
       "solid": true,
       "health": 2880,
       "build_time": 180,
+      "no_update": true,
       "cost":{
         "tungsten": 24
       },
@@ -8307,6 +8497,7 @@
       "solid": true,
       "health": 1000,
       "build_time": 61.200005,
+      "no_update": true,
       "cost":{
         "surge-alloy": 6,
         "tungsten": 2
@@ -8341,6 +8532,7 @@
       "solid": true,
       "health": 4000,
       "build_time": 244.80002,
+      "no_update": true,
       "cost":{
         "surge-alloy": 24,
         "tungsten": 8
@@ -8375,6 +8567,7 @@
       "solid": true,
       "health": 1080,
       "build_time": 90,
+      "no_update": true,
       "cost":{
         "thorium": 6,
         "carbide": 6
@@ -8409,6 +8602,7 @@
       "solid": true,
       "health": 4320,
       "build_time": 360,
+      "no_update": true,
       "cost":{
         "thorium": 24,
         "carbide": 24
@@ -8728,6 +8922,7 @@
       "liquid_pressure": 1,
       "health": 50,
       "build_time": 27.1,
+      "no_update": true,
       "cost":{
         "lead": 25,
         "silicon": 12
@@ -9251,6 +9446,7 @@
       "instant_transfer": true,
       "health": 40,
       "build_time": 7.2000003,
+      "no_update": true,
       "cost":{
         "copper": 2,
         "lead": 2
@@ -9288,6 +9484,7 @@
       "instant_transfer": true,
       "health": 40,
       "build_time": 7.2000003,
+      "no_update": true,
       "cost":{
         "copper": 2,
         "lead": 2
@@ -9389,6 +9586,7 @@
       "instant_transfer": true,
       "health": 40,
       "build_time": 10.200001,
+      "no_update": true,
       "cost":{
         "copper": 4,
         "lead": 2
@@ -9426,6 +9624,7 @@
       "instant_transfer": true,
       "health": 40,
       "build_time": 10.200001,
+      "no_update": true,
       "cost":{
         "copper": 4,
         "lead": 2
@@ -9901,8 +10100,10 @@
         "oxide": 20
       },
       "power": 8,
-      "role": "sink",
-      "input":{},
+      "role": "cargo-loader",
+      "carries": "item",
+      "unit_build_time": 480,
+      "unit_type": "manifold",
       "input_liquid":{
         "nitrogen": 10
       },
@@ -9941,9 +10142,9 @@
         "tungsten": 60
       },
       "power": 0,
-      "role": "sink",
-      "input":{},
-      "input_liquid":{},
+      "role": "cargo-unload",
+      "carries": "item",
+      "stale_time": 360,
       "planet": "erekir"
     },
     "mechanical-pump":{
@@ -10088,6 +10289,7 @@
       "liquid_pressure": 1,
       "leaks": true,
       "health": 45,
+      "explosiveness_scale": 0.5,
       "build_time": 1.5,
       "cost":{
         "metaglass": 1
@@ -10124,6 +10326,7 @@
       "liquid_pressure": 1.025,
       "leaks": true,
       "health": 90,
+      "explosiveness_scale": 0.4,
       "build_time": 3.5,
       "cost":{
         "metaglass": 1,
@@ -10160,6 +10363,7 @@
       "dump_time": 5,
       "liquid_pressure": 1.025,
       "health": 220,
+      "explosiveness_scale": 0.32,
       "build_time": 5,
       "cost":{
         "metaglass": 1,
@@ -10196,6 +10400,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 40,
+      "explosiveness_scale": 0.16666667,
       "build_time": 7,
       "cost":{
         "metaglass": 2,
@@ -10304,6 +10509,7 @@
       "liquid_pressure": 1,
       "health": 40,
       "build_time": 16,
+      "no_update": true,
       "cost":{
         "metaglass": 8,
         "graphite": 4
@@ -10338,6 +10544,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 40,
+      "explosiveness_scale": 0.2,
       "build_time": 16,
       "cost":{
         "metaglass": 8,
@@ -10375,6 +10582,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 50,
+      "explosiveness_scale": 0.2,
       "build_time": 52.1,
       "cost":{
         "metaglass": 20,
@@ -10458,6 +10666,7 @@
       "liquid_pressure": 1.03,
       "leaks": true,
       "health": 250,
+      "explosiveness_scale": 0.4,
       "build_time": 2.4,
       "cost":{
         "beryllium": 2
@@ -10493,6 +10702,7 @@
       "liquid_pressure": 1,
       "health": 250,
       "build_time": 40.800003,
+      "no_update": true,
       "cost":{
         "graphite": 4,
         "beryllium": 8
@@ -10528,6 +10738,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 250,
+      "explosiveness_scale": 0.16666667,
       "build_time": 32,
       "cost":{
         "graphite": 8,
@@ -10564,6 +10775,7 @@
       "dump_time": 5,
       "liquid_pressure": 1,
       "health": 250,
+      "explosiveness_scale": 0.26666668,
       "build_time": 12.8,
       "cost":{
         "graphite": 8,
@@ -10675,13 +10887,15 @@
       "solid": true,
       "health": 40,
       "build_time": 5.2,
+      "no_update": true,
+      "laser_range": 6,
+      "max_nodes": 10,
       "cost":{
         "copper": 2,
         "lead": 6
       },
       "power": 0,
       "no_overdrive": true,
-      "laser_range": 6,
       "role": "power",
       "planet": "serpulo"
     },
@@ -10713,6 +10927,9 @@
       "solid": true,
       "health": 160,
       "build_time": 14.4,
+      "no_update": true,
+      "laser_range": 15,
+      "max_nodes": 15,
       "cost":{
         "lead": 10,
         "titanium": 5,
@@ -10720,7 +10937,6 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "laser_range": 15,
       "role": "power",
       "planet": "serpulo"
     },
@@ -10752,6 +10968,9 @@
       "solid": true,
       "health": 200,
       "build_time": 44,
+      "no_update": true,
+      "laser_range": 40,
+      "max_nodes": 2,
       "cost":{
         "lead": 10,
         "titanium": 7,
@@ -10760,7 +10979,6 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "laser_range": 40,
       "role": "power",
       "planet": "serpulo"
     },
@@ -10797,6 +11015,7 @@
         "plastanium": 5
       },
       "power": 0,
+      "role": "diode",
       "planet": "serpulo"
     },
     "battery":{
@@ -10825,7 +11044,9 @@
       "solid": true,
       "power_capacity": 4000,
       "health": 40,
+      "base_explosiveness": 1,
       "build_time": 16.5,
+      "no_update": true,
       "cost":{
         "copper": 5,
         "lead": 20
@@ -10861,7 +11082,9 @@
       "solid": true,
       "power_capacity": 50000,
       "health": 360,
+      "base_explosiveness": 5,
       "build_time": 79,
+      "no_update": true,
       "cost":{
         "lead": 50,
         "titanium": 20,
@@ -10902,6 +11125,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 40,
+      "base_explosiveness": 5,
       "build_time": 23,
       "cost":{
         "copper": 25,
@@ -10950,6 +11174,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 160,
+      "base_explosiveness": 5,
       "build_time": 178,
       "cost":{
         "copper": 40,
@@ -11004,6 +11229,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 160,
+      "base_explosiveness": 5,
       "build_time": 94.5,
       "cost":{
         "copper": 35,
@@ -11062,6 +11288,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 360,
+      "base_explosiveness": 5,
       "build_time": 282,
       "cost":{
         "copper": 70,
@@ -11113,6 +11340,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 245,
+      "base_explosiveness": 5,
       "build_time": 315,
       "cost":{
         "lead": 100,
@@ -11163,6 +11391,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 40,
+      "base_explosiveness": 5,
       "build_time": 13.4,
       "cost":{
         "lead": 10,
@@ -11201,6 +11430,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 450,
+      "base_explosiveness": 5,
       "build_time": 117.5,
       "cost":{
         "lead": 60,
@@ -11247,6 +11477,9 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 700,
+      "base_explosiveness": 5,
+      "explosion_radius": 19,
+      "explosion_damage": 5000,
       "build_time": 760,
       "cost":{
         "lead": 300,
@@ -11306,6 +11539,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 900,
+      "base_explosiveness": 5,
       "build_time": 1775,
       "cost":{
         "lead": 500,
@@ -11432,6 +11666,11 @@
       "solid": true,
       "health": 1170,
       "build_time": 972.5,
+      "no_update": true,
+      "laser_range": 500,
+      "max_nodes": 1,
+      "no_autolink": true,
+      "same_block_link": true,
       "cost":{
         "silicon": 250,
         "phase-fabric": 75,
@@ -11442,7 +11681,6 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "laser_range": 500,
       "role": "power",
       "planet": "erekir"
     },
@@ -11471,6 +11709,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 575,
+      "base_explosiveness": 5,
       "build_time": 72,
       "cost":{
         "beryllium": 60
@@ -11518,6 +11757,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 825,
+      "base_explosiveness": 5,
       "build_time": 142,
       "cost":{
         "graphite": 40,
@@ -11566,6 +11806,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 935,
+      "base_explosiveness": 5,
       "build_time": 336,
       "cost":{
         "graphite": 100,
@@ -11616,6 +11857,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 2850,
+      "base_explosiveness": 5,
       "build_time": 948,
       "cost":{
         "graphite": 240,
@@ -11669,6 +11911,7 @@
       "liquid_pressure": 1,
       "solid": true,
       "health": 3900,
+      "base_explosiveness": 5,
       "build_time": 2560,
       "cost":{
         "silicon": 500,
@@ -12646,6 +12889,7 @@
       "solid": true,
       "health": 220,
       "build_time": 100,
+      "no_update": true,
       "cost":{
         "titanium": 100
       },
@@ -12680,6 +12924,7 @@
       "solid": true,
       "health": 495,
       "build_time": 387.5,
+      "no_update": true,
       "cost":{
         "titanium": 250,
         "thorium": 125
@@ -12715,6 +12960,7 @@
       "solid": true,
       "health": 480,
       "build_time": 85,
+      "no_update": true,
       "cost":{
         "graphite": 40,
         "tungsten": 30
@@ -12750,6 +12996,7 @@
       "solid": true,
       "health": 1080,
       "build_time": 384.5,
+      "no_update": true,
       "cost":{
         "thorium": 70,
         "beryllium": 100,
@@ -13036,9 +13283,9 @@
       "coolant_multiplier": 5,
       "ammo_types":{
         "slag": 1,
-        "cryofluid": 1,
+        "water": 1,
         "oil": 1,
-        "water": 1
+        "cryofluid": 1
       },
       "input_liquid":{},
       "planet": "serpulo"
@@ -13389,9 +13636,9 @@
       "coolant_multiplier": 5,
       "ammo_types":{
         "slag": 0.4,
-        "cryofluid": 0.4,
+        "water": 0.4,
         "oil": 0.4,
-        "water": 0.4
+        "cryofluid": 0.4
       },
       "input_liquid":{},
       "planet": "serpulo"
@@ -15358,8 +15605,30 @@
         "carbide": 80
       },
       "power": 150,
-      "role": "sink",
-      "input":{},
+      "role": "unit-assembler",
+      "carries": "payload",
+      "area_size": 13,
+      "drones_created": 4,
+      "drone_construct_time": 240,
+      "drone_type": "assembly-drone",
+      "plans": [
+        {
+          "unit": "vanquish",
+          "time": 3000,
+          "payloads":{
+            "stell": 4,
+            "tungsten-wall-large": 10
+          }
+        },
+        {
+          "unit": "conquer",
+          "time": 10800,
+          "payloads":{
+            "locus": 6,
+            "carbide-wall-large": 20
+          }
+        }
+      ],
       "input_liquid":{
         "cyanogen": 9
       },
@@ -15403,8 +15672,30 @@
         "carbide": 100
       },
       "power": 150,
-      "role": "sink",
-      "input":{},
+      "role": "unit-assembler",
+      "carries": "payload",
+      "area_size": 13,
+      "drones_created": 4,
+      "drone_construct_time": 240,
+      "drone_type": "assembly-drone",
+      "plans": [
+        {
+          "unit": "quell",
+          "time": 3600,
+          "payloads":{
+            "elude": 4,
+            "beryllium-wall-large": 12
+          }
+        },
+        {
+          "unit": "disrupt",
+          "time": 10800,
+          "payloads":{
+            "avert": 6,
+            "carbide-wall-large": 20
+          }
+        }
+      ],
       "input_liquid":{
         "cyanogen": 12
       },
@@ -15448,8 +15739,30 @@
         "carbide": 200
       },
       "power": 180,
-      "role": "sink",
-      "input":{},
+      "role": "unit-assembler",
+      "carries": "payload",
+      "area_size": 13,
+      "drones_created": 4,
+      "drone_construct_time": 240,
+      "drone_type": "assembly-drone",
+      "plans": [
+        {
+          "unit": "tecta",
+          "time": 4200,
+          "payloads":{
+            "merui": 5,
+            "tungsten-wall-large": 12
+          }
+        },
+        {
+          "unit": "collaris",
+          "time": 10800,
+          "payloads":{
+            "cleroi": 6,
+            "carbide-wall-large": 20
+          }
+        }
+      ],
       "input_liquid":{
         "cyanogen": 12
       },
@@ -15490,6 +15803,9 @@
         "carbide": 300
       },
       "power": 210,
+      "role": "assembler-module",
+      "carries": "payload",
+      "tier": 1,
       "planet": "erekir"
     },
     "unit-repair-tower":{
@@ -15719,6 +16035,16 @@
         "tungsten": 40
       },
       "power": 30,
+      "role": "payload-driver",
+      "carries": "payload",
+      "range": 87.5,
+      "rotate_speed": 5,
+      "reload": 130,
+      "charge_time": 90,
+      "transfer_time": 11,
+      "length": 11.125,
+      "knockback": 5,
+      "max_payload_size": 2.5,
       "planet": "erekir"
     },
     "large-payload-mass-driver":{
@@ -15758,6 +16084,16 @@
         "oxide": 30
       },
       "power": 180,
+      "role": "payload-driver",
+      "carries": "payload",
+      "range": 262.5,
+      "rotate_speed": 5,
+      "reload": 130,
+      "charge_time": 100,
+      "transfer_time": 11,
+      "length": 11.125,
+      "knockback": 5,
+      "max_payload_size": 4,
       "planet": "erekir"
     },
     "small-deconstructor":{
@@ -15796,6 +16132,11 @@
         "oxide": 40
       },
       "power": 60,
+      "role": "payload-deconstructor",
+      "carries": "payload",
+      "deconstruct_speed": 3,
+      "dump_rate": 4,
+      "max_payload_size": 4,
       "planet": "erekir"
     },
     "deconstructor":{
@@ -15834,6 +16175,11 @@
         "carbide": 50
       },
       "power": 180,
+      "role": "payload-deconstructor",
+      "carries": "payload",
+      "deconstruct_speed": 6,
+      "dump_rate": 4,
+      "max_payload_size": 4,
       "planet": "erekir"
     },
     "constructor":{
@@ -15965,8 +16311,12 @@
       },
       "power": 0,
       "no_overdrive": true,
-      "role": "sink",
-      "input_liquid":{},
+      "role": "payload-loader",
+      "carries": "payload",
+      "load_time": 2,
+      "items_loaded": 8,
+      "liquids_loaded": 40,
+      "max_block_size": 3,
       "planet": "erekir"
     },
     "payload-unloader":{
@@ -16005,8 +16355,13 @@
       },
       "power": 120,
       "no_overdrive": true,
-      "role": "sink",
-      "input_liquid":{},
+      "role": "payload-unloader",
+      "carries": "payload",
+      "load_time": 2,
+      "items_loaded": 8,
+      "liquids_loaded": 40,
+      "max_block_size": 3,
+      "offload_speed": 4,
       "planet": "erekir"
     },
     "power-source":{
@@ -16038,10 +16393,12 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
+      "laser_range": 6,
+      "max_nodes": 100,
       "cost":{},
       "power": 0,
       "no_overdrive": true,
-      "laser_range": 6,
       "role": "power",
       "power_out": 999999.94
     },
@@ -16072,7 +16429,8 @@
       "build_time": 20,
       "cost":{},
       "power": 0,
-      "power_void": true
+      "power_void": true,
+      "role": "power-void"
     },
     "item-source":{
       "name": "item-source",
@@ -16522,7 +16880,13 @@
         "titanium": 150,
         "silicon": 140
       },
-      "power": 240
+      "power": 240,
+      "role": "launch-pad",
+      "carries": "item",
+      "launch_time": 1200,
+      "input_liquid":{},
+      "accept_multiple_items": true,
+      "items_per_second": 5
     },
     "advanced-launch-pad":{
       "name": "advanced-launch-pad",
@@ -16560,10 +16924,13 @@
         "silicon": 250
       },
       "power": 480,
-      "role": "sink",
+      "role": "launch-pad",
+      "carries": "item",
+      "launch_time": 1800,
       "input_liquid":{
         "oil": 9
       },
+      "items_per_second": 3.3333333,
       "planet": "serpulo"
     },
     "landing-pad":{
@@ -16686,6 +17053,7 @@
       "solid": true,
       "health": 40,
       "build_time": 7.5,
+      "no_update": true,
       "cost":{
         "copper": 5,
         "graphite": 5
@@ -16869,6 +17237,7 @@
       "solid": true,
       "health": 40,
       "build_time": 69,
+      "no_update": true,
       "cost":{
         "copper": 30,
         "graphite": 30,
@@ -16904,6 +17273,7 @@
       "solid": true,
       "health": 200,
       "build_time": 198,
+      "no_update": true,
       "cost":{
         "copper": 30,
         "graphite": 80,
@@ -17048,6 +17418,7 @@
       "solid": true,
       "health": 255,
       "build_time": 20,
+      "no_update": true,
       "cost":{
         "silicon": 10,
         "beryllium": 10
@@ -17082,6 +17453,7 @@
       "solid": true,
       "health": 665,
       "build_time": 36,
+      "no_update": true,
       "cost":{
         "silicon": 15,
         "surge-alloy": 5,
@@ -17118,6 +17490,7 @@
       "solid": true,
       "health": 100,
       "build_time": 16,
+      "no_update": true,
       "cost":{
         "graphite": 10,
         "beryllium": 5
@@ -17185,6 +17558,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0,
       "no_overdrive": true
@@ -17217,6 +17591,7 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "no_update": true,
       "cost":{},
       "power": 0
     },
@@ -17501,354 +17876,790 @@
       "color": "#596ab8",
       "heat_capacity": 0.4,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "slag":{
       "id": 1,
       "color": "#ffa166",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 1
+      "temperature": 1,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "oil":{
       "id": 2,
       "color": "#313131",
       "heat_capacity": 0.7,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 1.2,
+      "flammability": 1.2
     },
     "cryofluid":{
       "id": 3,
       "color": "#6ecdec",
       "heat_capacity": 0.9,
       "incinerable": true,
-      "temperature": 0.25
+      "temperature": 0.25,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "neoplasm":{
       "id": 4,
       "color": "#c33e2b",
       "heat_capacity": 0.4,
-      "temperature": 0.54
+      "temperature": 0.54,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "arkycite":{
       "id": 5,
       "color": "#84a94b",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 0.4
     },
     "gallium":{
       "id": 6,
       "color": "#9a9dbf",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "ozone":{
       "id": 7,
       "color": "#fc81dd",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 1,
+      "flammability": 1
     },
     "hydrogen":{
       "id": 8,
       "color": "#9eabf7",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 1
     },
     "nitrogen":{
       "id": 9,
       "color": "#efe3ff",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 0
     },
     "cyanogen":{
       "id": 10,
       "color": "#89e8b6",
       "heat_capacity": 0.5,
       "incinerable": true,
-      "temperature": 0.5
+      "temperature": 0.5,
+      "explosiveness": 0,
+      "flammability": 2
     }
   },
   "units":{
     "dagger":{
       "id": 0,
-      "health": 150
+      "health": 150,
+      "speed": 0.5,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 5,
+      "hit_size": 8,
+      "item_capacity": 30
     },
     "mace":{
       "id": 1,
-      "health": 550
+      "health": 550,
+      "speed": 0.5,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 5,
+      "hit_size": 10,
+      "item_capacity": 40
     },
     "fortress":{
       "id": 2,
-      "health": 900
+      "health": 900,
+      "speed": 0.43,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 3,
+      "hit_size": 13,
+      "item_capacity": 50
     },
     "scepter":{
       "id": 3,
-      "health": 9000
+      "health": 9000,
+      "speed": 0.36,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 2.1,
+      "hit_size": 22,
+      "item_capacity": 80
     },
     "reign":{
       "id": 4,
-      "health": 24000
+      "health": 24000,
+      "speed": 0.4,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 1.65,
+      "hit_size": 30,
+      "item_capacity": 120
     },
     "nova":{
       "id": 5,
-      "health": 120
+      "health": 120,
+      "speed": 0.55,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 5,
+      "hit_size": 8,
+      "item_capacity": 30
     },
     "pulsar":{
       "id": 6,
-      "health": 320
+      "health": 320,
+      "speed": 0.7,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 5,
+      "hit_size": 11,
+      "item_capacity": 40
     },
     "quasar":{
       "id": 7,
-      "health": 640
+      "health": 640,
+      "speed": 0.5,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 5,
+      "hit_size": 13,
+      "item_capacity": 50
     },
     "vela":{
       "id": 8,
-      "health": 8200
+      "health": 8200,
+      "speed": 0.44,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 1.8,
+      "hit_size": 24,
+      "item_capacity": 90
     },
     "corvus":{
       "id": 9,
-      "health": 18000
+      "health": 18000,
+      "speed": 0.3,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 1.5,
+      "hit_size": 29,
+      "item_capacity": 110
     },
     "crawler":{
       "id": 10,
-      "health": 150
+      "health": 150,
+      "speed": 1,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 5,
+      "hit_size": 8,
+      "item_capacity": 30
     },
     "atrax":{
       "id": 11,
-      "health": 600
+      "health": 600,
+      "speed": 0.6,
+      "accel": 0.5,
+      "drag": 0.4,
+      "rotate_speed": 3,
+      "hit_size": 13,
+      "item_capacity": 50
     },
     "spiroct":{
       "id": 12,
-      "health": 1000
+      "health": 1000,
+      "speed": 0.54,
+      "accel": 0.5,
+      "drag": 0.4,
+      "rotate_speed": 3,
+      "hit_size": 15,
+      "item_capacity": 60
     },
     "arkyid":{
       "id": 13,
-      "health": 8000
+      "health": 8000,
+      "speed": 0.62,
+      "accel": 0.5,
+      "drag": 0.1,
+      "rotate_speed": 2.7,
+      "hit_size": 23,
+      "item_capacity": 90
     },
     "toxopid":{
       "id": 14,
-      "health": 22000
+      "health": 22000,
+      "speed": 0.5,
+      "accel": 0.5,
+      "drag": 0.1,
+      "rotate_speed": 1.9,
+      "hit_size": 26,
+      "item_capacity": 100
     },
     "flare":{
       "id": 15,
-      "health": 70
+      "health": 70,
+      "speed": 2.7,
+      "accel": 0.08,
+      "drag": 0.04,
+      "rotate_speed": 5,
+      "hit_size": 9,
+      "item_capacity": 10
     },
     "horizon":{
       "id": 16,
-      "health": 340
+      "health": 340,
+      "speed": 1.65,
+      "accel": 0.08,
+      "drag": 0.03,
+      "rotate_speed": 4.5,
+      "hit_size": 11,
+      "item_capacity": 0
     },
     "zenith":{
       "id": 17,
-      "health": 700
+      "health": 700,
+      "speed": 1.7,
+      "accel": 0.04,
+      "drag": 0.016,
+      "rotate_speed": 5,
+      "hit_size": 20,
+      "item_capacity": 80
     },
     "antumbra":{
       "id": 18,
-      "health": 7200
+      "health": 7200,
+      "speed": 0.8,
+      "accel": 0.04,
+      "drag": 0.04,
+      "rotate_speed": 1.9,
+      "hit_size": 46,
+      "item_capacity": 180
     },
     "eclipse":{
       "id": 19,
-      "health": 22000
+      "health": 22000,
+      "speed": 0.54,
+      "accel": 0.04,
+      "drag": 0.04,
+      "rotate_speed": 1,
+      "hit_size": 58,
+      "item_capacity": 230
     },
     "mono":{
       "id": 20,
-      "health": 100
+      "health": 100,
+      "speed": 1.5,
+      "accel": 0.12,
+      "drag": 0.06,
+      "rotate_speed": 5,
+      "hit_size": 6,
+      "item_capacity": 20
     },
     "poly":{
       "id": 21,
-      "health": 400
+      "health": 400,
+      "speed": 2.6,
+      "accel": 0.1,
+      "drag": 0.05,
+      "rotate_speed": 15,
+      "hit_size": 9,
+      "item_capacity": 30
     },
     "mega":{
       "id": 22,
-      "health": 460
+      "health": 460,
+      "speed": 2.5,
+      "accel": 0.06,
+      "drag": 0.017,
+      "rotate_speed": 5,
+      "hit_size": 16.05,
+      "item_capacity": 60
     },
     "quad":{
       "id": 23,
-      "health": 6000
+      "health": 6000,
+      "speed": 1.2,
+      "accel": 0.05,
+      "drag": 0.017,
+      "rotate_speed": 2,
+      "hit_size": 36,
+      "item_capacity": 140
     },
     "oct":{
       "id": 24,
-      "health": 24000
+      "health": 24000,
+      "speed": 0.8,
+      "accel": 0.04,
+      "drag": 0.018,
+      "rotate_speed": 1,
+      "hit_size": 66,
+      "item_capacity": 260
     },
     "risso":{
       "id": 25,
-      "health": 280
+      "health": 280,
+      "speed": 1.1,
+      "accel": 0.4,
+      "drag": 0.13,
+      "rotate_speed": 3.3,
+      "hit_size": 10,
+      "item_capacity": 40
     },
     "minke":{
       "id": 26,
-      "health": 600
+      "health": 600,
+      "speed": 0.9,
+      "accel": 0.3,
+      "drag": 0.15,
+      "rotate_speed": 2.6,
+      "hit_size": 13,
+      "item_capacity": 50
     },
     "bryde":{
       "id": 27,
-      "health": 910
+      "health": 910,
+      "speed": 0.85,
+      "accel": 0.2,
+      "drag": 0.17,
+      "rotate_speed": 1.8,
+      "hit_size": 20,
+      "item_capacity": 80
     },
     "sei":{
       "id": 28,
-      "health": 11000
+      "health": 11000,
+      "speed": 0.73,
+      "accel": 0.2,
+      "drag": 0.17,
+      "rotate_speed": 1.3,
+      "hit_size": 39,
+      "item_capacity": 150
     },
     "omura":{
       "id": 29,
-      "health": 22000
+      "health": 22000,
+      "speed": 0.62,
+      "accel": 0.19,
+      "drag": 0.18,
+      "rotate_speed": 0.9,
+      "hit_size": 58,
+      "item_capacity": 230
     },
     "retusa":{
       "id": 30,
-      "health": 270
+      "health": 270,
+      "speed": 0.9,
+      "accel": 0.4,
+      "drag": 0.14,
+      "rotate_speed": 5,
+      "hit_size": 11,
+      "item_capacity": 40
     },
     "oxynoe":{
       "id": 31,
-      "health": 560
+      "health": 560,
+      "speed": 0.83,
+      "accel": 0.4,
+      "drag": 0.14,
+      "rotate_speed": 4,
+      "hit_size": 14,
+      "item_capacity": 50
     },
     "cyerce":{
       "id": 32,
-      "health": 870
+      "health": 870,
+      "speed": 0.86,
+      "accel": 0.22,
+      "drag": 0.16,
+      "rotate_speed": 2.6,
+      "hit_size": 20,
+      "item_capacity": 80
     },
     "aegires":{
       "id": 33,
-      "health": 12000
+      "health": 12000,
+      "speed": 0.7,
+      "accel": 0.2,
+      "drag": 0.17,
+      "rotate_speed": 1.4,
+      "hit_size": 44,
+      "item_capacity": 170
     },
     "navanax":{
       "id": 34,
-      "health": 20000
+      "health": 20000,
+      "speed": 0.65,
+      "accel": 0.2,
+      "drag": 0.17,
+      "rotate_speed": 1.1,
+      "hit_size": 58,
+      "item_capacity": 230
     },
     "alpha":{
       "id": 35,
-      "health": 150
+      "health": 150,
+      "speed": 3,
+      "accel": 0.1,
+      "drag": 0.05,
+      "rotate_speed": 15,
+      "hit_size": 8,
+      "item_capacity": 30
     },
     "beta":{
       "id": 36,
-      "health": 170
+      "health": 170,
+      "speed": 3.3,
+      "accel": 0.1,
+      "drag": 0.05,
+      "rotate_speed": 17,
+      "hit_size": 9,
+      "item_capacity": 50
     },
     "gamma":{
       "id": 37,
-      "health": 220
+      "health": 220,
+      "speed": 3.55,
+      "accel": 0.11,
+      "drag": 0.05,
+      "rotate_speed": 19,
+      "hit_size": 11,
+      "item_capacity": 70
     },
     "stell":{
       "id": 38,
-      "health": 850
+      "health": 850,
+      "speed": 0.75,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 3.5,
+      "hit_size": 12,
+      "item_capacity": 0
     },
     "locus":{
       "id": 39,
-      "health": 2100
+      "health": 2100,
+      "speed": 0.7,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 2.6,
+      "hit_size": 18,
+      "item_capacity": 0
     },
     "precept":{
       "id": 40,
-      "health": 5000
+      "health": 5000,
+      "speed": 0.64,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 1.5,
+      "hit_size": 24,
+      "item_capacity": 0
     },
     "vanquish":{
       "id": 41,
-      "health": 11000
+      "health": 11000,
+      "speed": 0.63,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 1.3,
+      "hit_size": 28,
+      "item_capacity": 0
     },
     "conquer":{
       "id": 42,
-      "health": 22000
+      "health": 22000,
+      "speed": 0.48,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 0.8,
+      "hit_size": 46,
+      "item_capacity": 180
     },
     "merui":{
       "id": 43,
-      "health": 680
+      "health": 680,
+      "speed": 0.72,
+      "accel": 0.5,
+      "drag": 0.11,
+      "rotate_speed": 3,
+      "hit_size": 9,
+      "item_capacity": 30
     },
     "cleroi":{
       "id": 44,
-      "health": 1100
+      "health": 1100,
+      "speed": 0.6,
+      "accel": 0.5,
+      "drag": 0.1,
+      "rotate_speed": 3,
+      "hit_size": 14,
+      "item_capacity": 50
     },
     "anthicus":{
       "id": 45,
-      "health": 2700
+      "health": 2700,
+      "speed": 0.65,
+      "accel": 0.5,
+      "drag": 0.1,
+      "rotate_speed": 3,
+      "hit_size": 21,
+      "item_capacity": 80
     },
     "anthicus-missile":{
       "id": 46,
-      "health": 55
+      "health": 55,
+      "speed": 3.35,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 2.5,
+      "hit_size": 6,
+      "item_capacity": 20
     },
     "tecta":{
       "id": 47,
-      "health": 6500
+      "health": 6500,
+      "speed": 0.6,
+      "accel": 0.5,
+      "drag": 0.1,
+      "rotate_speed": 2.1,
+      "hit_size": 30,
+      "item_capacity": 120
     },
     "collaris":{
       "id": 48,
-      "health": 18000
+      "health": 18000,
+      "speed": 1.1,
+      "accel": 0.5,
+      "drag": 0.1,
+      "rotate_speed": 1.6,
+      "hit_size": 44,
+      "item_capacity": 170
     },
     "elude":{
       "id": 49,
-      "health": 600
+      "health": 600,
+      "speed": 1.8,
+      "accel": 0.09,
+      "drag": 0.07,
+      "rotate_speed": 5,
+      "hit_size": 11,
+      "item_capacity": 0
     },
     "avert":{
       "id": 50,
-      "health": 1100
+      "health": 1100,
+      "speed": 2,
+      "accel": 0.09,
+      "drag": 0.08,
+      "rotate_speed": 8,
+      "hit_size": 12,
+      "item_capacity": 0
     },
     "obviate":{
       "id": 51,
-      "health": 2300
+      "health": 2300,
+      "speed": 1.8,
+      "accel": 0.09,
+      "drag": 0.08,
+      "rotate_speed": 2.5,
+      "hit_size": 25,
+      "item_capacity": 0
     },
     "quell":{
       "id": 52,
-      "health": 6000
+      "health": 6000,
+      "speed": 1.1,
+      "accel": 0.1,
+      "drag": 0.06,
+      "rotate_speed": 3.2,
+      "hit_size": 36,
+      "item_capacity": 140
     },
     "quell-missile":{
       "id": 53,
-      "health": 45
+      "health": 45,
+      "speed": 4.3,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 2.5,
+      "hit_size": 6,
+      "item_capacity": 20
     },
     "disrupt":{
       "id": 54,
-      "health": 12000
+      "health": 12000,
+      "speed": 1,
+      "accel": 0.1,
+      "drag": 0.07,
+      "rotate_speed": 2,
+      "hit_size": 46,
+      "item_capacity": 180
     },
     "disrupt-missile":{
       "id": 55,
-      "health": 70
+      "health": 70,
+      "speed": 4.6,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 2.5,
+      "hit_size": 6,
+      "item_capacity": 20
     },
     "renale":{
       "id": 56,
-      "health": 500
+      "health": 500,
+      "speed": 1.2,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 2.5,
+      "hit_size": 9,
+      "item_capacity": 30
     },
     "latum":{
       "id": 57,
-      "health": 20000
+      "health": 20000,
+      "speed": 1,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 1.7,
+      "hit_size": 48,
+      "item_capacity": 190
     },
     "evoke":{
       "id": 58,
-      "health": 300
+      "health": 300,
+      "speed": 5.6,
+      "accel": 0.09,
+      "drag": 0.08,
+      "rotate_speed": 7,
+      "hit_size": 9,
+      "item_capacity": 60
     },
     "incite":{
       "id": 59,
-      "health": 500
+      "health": 500,
+      "speed": 7,
+      "accel": 0.09,
+      "drag": 0.08,
+      "rotate_speed": 8,
+      "hit_size": 11,
+      "item_capacity": 90
     },
     "emanate":{
       "id": 60,
-      "health": 700
+      "health": 700,
+      "speed": 7.5,
+      "accel": 0.08,
+      "drag": 0.08,
+      "rotate_speed": 8,
+      "hit_size": 12,
+      "item_capacity": 110
     },
     "block":{
       "id": 61,
-      "health": 1
+      "health": 1,
+      "speed": 0,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 360,
+      "hit_size": 0,
+      "item_capacity": 0
     },
     "manifold":{
       "id": 62,
-      "health": 200
+      "health": 200,
+      "speed": 3.5,
+      "accel": 0.1,
+      "drag": 0.06,
+      "rotate_speed": 9,
+      "hit_size": 11,
+      "item_capacity": 100
     },
     "assembly-drone":{
       "id": 63,
-      "health": 90
+      "health": 90,
+      "speed": 1.3,
+      "accel": 0.11,
+      "drag": 0.06,
+      "rotate_speed": 5,
+      "hit_size": 6,
+      "item_capacity": 20
     },
     "scathe-missile":{
       "id": 64,
-      "health": 240
+      "health": 240,
+      "speed": 4.6,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 0.25,
+      "hit_size": 10,
+      "item_capacity": 40
     },
     "scathe-missile-phase":{
       "id": 65,
-      "health": 500
+      "health": 500,
+      "speed": 2.5,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 0.2,
+      "hit_size": 10,
+      "item_capacity": 40
     },
     "scathe-missile-surge":{
       "id": 66,
-      "health": 300
+      "health": 300,
+      "speed": 4.4,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 0.25,
+      "hit_size": 10,
+      "item_capacity": 40
     },
     "scathe-missile-surge-split":{
       "id": 67,
-      "health": 50
+      "health": 50,
+      "speed": 4.8,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 1.4,
+      "hit_size": 6,
+      "item_capacity": 20
     },
     "turret-unit-build-tower":{
       "id": 68,
-      "health": 1
+      "health": 1,
+      "speed": 0,
+      "accel": 0.5,
+      "drag": 0.3,
+      "rotate_speed": 10,
+      "hit_size": 0,
+      "item_capacity": 0
     }
   }
 }
