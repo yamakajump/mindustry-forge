@@ -278,3 +278,35 @@ it('does not offer to compare something nobody else can see', function () {
 
     $this->get("/s/{$mine->slug}")->assertOk()->assertDontSee('/comparer?a=');
 });
+
+it('survives every character a search box can be handed', function () {
+    /*
+     * A backslash in the search field returned a 500 in production and passed every test
+     * here, because the local database is SQLite and the live one is MySQL. `escape '\\'`
+     * is an escaped quote to MySQL, so the string literal never closes and the query is a
+     * syntax error: one character, typed into a public box, by anybody.
+     *
+     * So this sends the characters rather than checking that the code escapes them. A test
+     * asserting "the term was escaped" would pass with the wrong escaping function, which
+     * is exactly what happened.
+     */
+    Schematic::factory()->create(['visibility' => Schematic::PUBLIC, 'name' => 'Rendement 100%']);
+    Schematic::factory()->create(['visibility' => Schematic::PUBLIC, 'name' => 'Ligne_A']);
+    Schematic::factory()->create(['visibility' => Schematic::PUBLIC, 'name' => 'Chemin\\Windows']);
+    Schematic::factory()->create(['visibility' => Schematic::PUBLIC, 'name' => 'Sortie = entree']);
+
+    $awkward = ['\\', '%', '_', '=', "'", '"', '\\\\', '%_\\', '100%', 'Ligne_A', '=%'];
+
+    foreach ($awkward as $typed) {
+        $this->get('/comparer?a='.rawurlencode($typed))->assertOk();
+    }
+
+    // And each one is still read as text: a search finds what literally contains it, and
+    // nothing else. A wildcard would have matched everything, an over-escape nothing.
+    $this->get('/comparer?a='.rawurlencode('\\'))->assertOk()->assertSee('Chemin\\Windows');
+    $this->get('/comparer?a='.rawurlencode('_'))->assertOk()
+        ->assertSee('Ligne_A')->assertDontSee('Rendement');
+    $this->get('/comparer?a='.rawurlencode('='))->assertOk()->assertSee('Sortie = entree');
+    $this->get('/comparer?a='.rawurlencode('%'))->assertOk()
+        ->assertSee('Rendement 100%')->assertDontSee('Ligne_A');
+});
