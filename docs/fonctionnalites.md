@@ -243,19 +243,82 @@ téléphone en jouant, et une barre latérale mange la largeur qui sert à l'ape
 
 ---
 
-# Ordre proposé
+# Ordre décidé le 27/08
 
-**D** en premier et seul, parce que tout le monde s'y branche ensuite.
+Premier lot, quatre voies en parallèle, une worktree chacune :
 
-Puis, en parallèle et sans se croiser : **A1** (collecteur), **A5** (wiki des blocs),
-**B1** (logique), **A2** (planificateur), **A7** (tenue au souffle).
+| Voie | Chantier |
+|---|---|
+| `feat/i18n-nav` | **E puis D** : le socle multilingue, puis la nav qui s'en sert |
+| `feat/wiki-blocs` | **A5** : une page par bloc, depuis les vrais chiffres du jeu |
+| `feat/editeur-logique` | **B1** : l'éditeur de logique |
+| `feat/collecteur` | **A1** : ingérer les deux catalogues |
 
-Puis **B2**, **B3**, **B4** qui dépendent de B1 ou lui ressemblent, et **A3** (comparateur).
+E et D vont ensemble et passent devant : la nav est la première surface à traduire, et elle
+sert à prouver le mécanisme. Les trois autres écrivent leurs chaînes suivant la convention
+ci-dessus dès le premier jour, même si le module n'a pas encore atterri.
 
-**A4** et **A6** touchent tous deux le schéma de la place de marché : à faire l'un après
-l'autre, jamais en même temps.
+Le rendu animé continue dans le répertoire principal, il n'est pas dans ce lot.
+
+Ensuite : **A2** (planificateur), **A7** (tenue au souffle), **A3** (comparateur), puis
+**B2**, **B3**, **B4** qui dépendent de B1 ou lui ressemblent.
+
+**A4** et **A6** touchent tous deux le schéma de la place de marché : l'un après l'autre,
+jamais en même temps.
 
 **B5** et tout **C** en dernier.
+
+# E. Le socle multilingue
+
+Demandé le 27/08 : le site doit pouvoir parler plusieurs langues. **Une seule langue est
+livrée pour l'instant, le français.** Ce chantier ne traduit rien, il rend la traduction
+possible sans réécrire le site une deuxième fois.
+
+Il est transverse : il touche toute chaîne visible par un joueur. C'est pour ça qu'il passe
+en premier avec la nav, et pas quand quatre voies auront écrit du texte en dur partout.
+
+Deux moitiés, et la deuxième est celle qu'on oublie :
+
+**Côté Laravel**, la localisation est native. `lang/fr/*.php`, `__('cle')` dans les vues,
+la langue dans la session ou dans l'URL.
+
+**Côté navigateur**, il n'y a rien. `analyse.js`, l'éditeur et le rapport sont pleins de
+français en dur, et c'est là qu'est la moitié du texte du site. Il faut un petit module
+`site/public/forge/i18n.js` avec un dictionnaire chargé en JSON, et une fonction `t()`. Pas
+de dépendance : le besoin est de remplacer une clé par une chaîne, pas d'accorder des
+pluriels en arabe.
+
+**Les deux dictionnaires ne doivent pas diverger.** Un test qui compare les clés utilisées
+au dictionnaire, et qui échoue quand une clé manque, sinon on découvre les trous en
+production dans une langue qu'on ne lit pas.
+
+## La convention, à suivre dès maintenant par toutes les voies
+
+Même avant que ce chantier soit livré. Une chaîne écrite en dur aujourd'hui est une chaîne
+à retrouver plus tard, et personne ne les retrouve toutes.
+
+```php
+// Blade et PHP
+{{ __('vitrine.tri.best') }}
+```
+
+```js
+// JavaScript
+import { t } from "./i18n.js";
+t("analyse.goulot.titre")
+```
+
+Nommage : `<domaine>.<ecran>.<element>`. Domaines : `nav`, `vitrine`, `schema`, `analyse`,
+`edition`, `outils`, `blocs`, `compte`.
+
+Le français reste écrit en clair dans `lang/fr/` et `forge/lang/fr.json`. Aucune autre
+langue n'est ajoutée tant que le site bouge autant : traduire une interface qui change
+toutes les semaines, c'est payer la traduction plusieurs fois.
+
+- **Possède** : `site/lang/`, `site/public/forge/i18n.js`, `site/public/forge/lang/`,
+  `site/config/app.php` pour la locale, plus un test de cohérence des clés.
+- **Ordre** : avant la nav, et dans la même voie, parce que la nav est la première surface
+  à passer par le mécanisme et qu'elle sert à le prouver.
 
 # Qui tient quoi, au 27/08 en fin de journée
 
