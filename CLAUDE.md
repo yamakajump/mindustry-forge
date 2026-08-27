@@ -127,6 +127,29 @@ fichier qu'elle avait elle-même écrit, qui disait disque. Sa conclusion :
 
 Ce n'est pas de mesurer qu'on oublie. C'est de se mesurer soi.
 
+## 🔖 Ce qui entre dans l'empreinte du moteur, et ce qui n'y entre pas
+
+`EngineVersion` hache les sources de l'analyse et estampille le résultat dans chaque ligne,
+pour qu'un chiffre périmé soit trouvable. La frontière a été fausse dans les deux sens le
+même jour :
+
+**Trop étroite.** Elle ne couvrait que `public/forge`, pas `tools/ingest.mjs`, qui décide
+lesquels des champs calculés atteignent une colonne. Un champ produit puis jeté par le tamis
+laissait quinze mille lignes se lire à jour alors que le plafond d'objet n'existait dans
+aucune. Le catalogue est passé de 2 % à 64 % de couverture le jour où le tamis est entré
+dans l'empreinte.
+
+**Trop large.** Y ajouter un registre de couleurs, qui ne change aucun chiffre, aurait
+périmé les quinze mille analyses et relancé une re-mesure complète pour de la présentation.
+
+**La règle** : ce qui décide une réponse va dans le fichier haché, ce qui décide comment une
+page se lit n'y va pas. Un registre de couleurs vit dans son propre fichier, à côté.
+
+**Et le contrôle qui va avec, parce que la règle seule est une intention** : comparer la
+somme de contrôle de `blocks.json` avant et après le changement. Identique à l'octet près
+veut dire zéro analyse périmée. Une intention écrite au présent se lit comme une mesure,
+et ce dépôt a déjà payé ça une fois.
+
 ## 📏 Conventions
 
 ### La langue : anglais dans le dépôt, français sur le site
