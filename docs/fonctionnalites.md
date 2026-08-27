@@ -343,18 +343,45 @@ compare un ordre passe en local et casse en CI ; et le serveur de développement
 envoyer `no-store`, sinon le navigateur sert un fichier périmé et on débogue du code déjà
 corrigé.
 
-# L'état des branches, qu'il faut démêler avant de distribuer
+# L'état des branches
 
-- `origin/restart/place-de-marche` est le tronc. Il contient l'éditeur **et** tout le
-  travail de place de marché, ramassés ensemble par le squash de la PR #3.
-- `feat/animation` porte le rendu et douze commits de moteur. Elle est partie du tronc
-  avant ce merge, donc elle ne l'a pas.
-- Le dossier de travail principal est **actuellement sur `feat/animation`**, avec du
-  travail non commité de la voie rendu.
+**Démêlé le 27/08 en fin de journée. La divergence décrite dans les versions précédentes de
+ce document n'existe plus** : trois sessions l'ont signalée en lisant ces lignes, elles
+avaient raison, et c'est exactement le service qu'on attend d'un document qui sert de
+briefing.
 
-Rien n'est perdu et rien n'est cassé, mais le tronc et la voie rendu ont divergé d'un
-merge. Plus on attend, plus la réunion coûte. À faire dans un worktree séparé pour ne pas
-arracher le sol sous la session qui édite, et pas pendant qu'elle régénère le catalogue.
+Ce qui s'est passé : le tronc n'avait jamais reçu les douze commits de moteur (charges
+utiles, mass driver, processeurs, assembleur, fret, souffle), et `feat/animation` n'avait
+pas le mode édition. La PR #4 a réuni les deux.
+
+L'état actuel, vérifié :
+
+- `origin/restart/place-de-marche` est le tronc, à `5b389d9`, et il contient **tout** :
+  moteur complet, rendu animé, mode édition, place de marché, licence.
+- `feat/animation` pointe au même endroit. Il n'y a plus rien à fusionner.
+- Le dossier principal est sur le tronc, arbre propre. C'est le dossier de référence : on y
+  relit les PR, et c'est de là qu'on crée les voies suivantes.
+- Les quatre voies du premier lot partent toutes de `5b389d9`.
+
+## Comment on ouvre une voie
+
+Une worktree par session, sans exception. Trois sessions ont partagé un seul répertoire le
+27/08, donc un seul index et un seul HEAD : un `checkout` de l'une changeait la branche des
+autres, et pendant un rebase, HEAD est passé en détaché pour tout le monde. Deux commits ont
+embarqué le travail d'une session voisine pour cette raison, et **aucune discipline de
+staging n'en protège**. Ce n'était pas de la négligence, c'était mécanique.
+
+```bash
+tools/nouvelle-voie.sh <nom-court> feat/<branche>
+```
+
+Le script monte la worktree, y recopie ce que git ne suit pas (`.env`, `vendor/`), crée une
+base SQLite à elle, joue les migrations, et vérifie que les tests passent avant de rendre
+la main. Une voie qui démarre rouge fait perdre son premier quart d'heure à la session.
+
+Une session ne peut pas se déplacer elle-même dans une worktree : son répertoire est fixé à
+l'ouverture. C'est donc le dossier qui décide, pas la session, et un terminal ouvert au
+mauvais endroit se ferme et se rouvre plutôt qu'il ne se rattrape.
 
 # Règles de coexistence
 
