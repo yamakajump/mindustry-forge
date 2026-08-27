@@ -116,8 +116,19 @@ français sans accents est du français mal écrit.
 - Pas de tiret cadratin (—), nulle part.
 - Les clés de traduction s'écrivent `<domaine>.<écran>.<élément>`, en kebab-case, **jamais
   assemblées à l'exécution** : une clé collée au rendu est une clé qu'aucun contrôle ne
-  voit. Et **aucun chiffre ne passe par un placeholder** : quand une clé manque, Laravel
-  rend la clé sans substituer, et le nombre disparaît.
+  voit, et c'est vérifié mécaniquement.
+- **Une unité ne passe pas par un placeholder.** Quand une clé manque, Laravel rend la clé
+  sans substituer, donc `__('blocs.unite.points', ['n' => 160])` affiche
+  `blocs.unite.points` et **le 160 disparaît**. Perdre un mot est un défaut d'affichage ;
+  perdre un chiffre, sur un site qui ne vend que des chiffres, c'est perdre l'information.
+  Écrire `{{ $n }} {{ __('blocs.unite.points') }}`, qui dégrade en `160 blocs.unite.points`.
+
+  **La ligne passe là où la disparition est silencieuse.** Dure pour les quantités et les
+  unités, où le nombre est toute l'information et où son absence ne se voit pas. Libre pour
+  les phrases, où un mot manquant se remarque et où figer l'ordre nombre-puis-mot casserait
+  la traduction. Le test l'applique aux clés `.unite.`, parce que ni PHP ni JS ne disent
+  statiquement qu'une variable est un nombre, et qu'un test qui devine devient capricieux
+  puis se fait désactiver.
 
 ## 🚧 Plusieurs sessions travaillent souvent sur ce dépôt en parallèle
 
