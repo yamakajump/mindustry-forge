@@ -446,9 +446,27 @@ shell.
 **`php artisan serve` annonce « Server running » même quand le port est déjà pris.** Une
 worktree isole le dépôt, pas la machine : les ports sont partagés par tout le monde. Une
 session qui démarre sur un port occupé lit tranquillement l'application d'une autre sans
-qu'aucun message ne l'en avertisse, et débogue un écran qui n'est pas le sien. Choisir un
-port à soi, et le vérifier avec une ressource qui n'existe que chez soi plutôt qu'avec la
-page d'accueil.
+qu'aucun message ne l'en avertisse, et débogue un écran qui n'est pas le sien.
+
+Ce n'est pas théorique : le 27/08 au soir, **quatre voies avaient un serveur sur le port
+8791**, une seule tenait l'écoute, et elle servait un arbre antérieur. La racine répondait
+200 et la page était normale ; seuls les fichiers qui n'existaient que chez la voie qui
+mesurait rendaient 404.
+
+Trois diagnostics ont été posés sur ce symptôme avant le bon, dont un affirmé comme un fait
+établi et faux (« `artisan serve` ne voit pas un fichier créé après son démarrage » : non,
+et redémarrer n'y change rien). Ce qui a tranché est un octet : le `favicon.ico` servi
+faisait zéro octet là où les deux arbres soupçonnés en ont 2795.
+
+Le réflexe, dans les deux sens : demander une ressource qui n'existe que chez soi **avant**
+de mesurer quoi que ce soit, et vérifier la ligne de commande du processus **avant** de
+tuer un port.
+
+```bash
+netstat -ano | grep :8791          # qui ecoute
+tasklist /FI "PID eq <pid>"        # est-ce bien le mien
+curl -s localhost:8791/ma-cle-a-moi  # est-ce bien mon arbre
+```
 
 **Le dump du catalogue n'est pas reproductible octet pour octet.** Deux lancements sans
 toucher au code donnent huit lignes de diff sur `wave` et `tsunami` : l'ordre de leurs
