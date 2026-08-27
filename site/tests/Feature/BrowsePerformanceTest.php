@@ -207,3 +207,72 @@ it('donne un ordre total, pour que la pagination ne perde rien', function () {
     expect($vus)->toHaveCount(50)
         ->and(array_unique($vus))->toHaveCount(50);
 });
+
+it('sait dire quatre choses differentes du meme objet', function () {
+    /*
+     * Deux axes independants, poses ensemble parce que trois chantiers arrivaient sur
+     * cette table en meme temps. Ce qui sort et ce qui entre sont des questions opposees ;
+     * un debit constate et un plafond sont deux reponses a la meme question, et melanger
+     * les deux dans un classement est le mensonge qu on a passe la journee a reparer.
+     */
+    $schematic = ligne('Four a silicium', ['silicon' => 90.0], powerUsed: 600);
+
+    foreach ([
+        [SchematicItem::PRODUIT, SchematicItem::PLAFOND, 240.0],
+        [SchematicItem::CONSOMME, SchematicItem::MESURE, 120.0],
+        [SchematicItem::CONSOMME, SchematicItem::PLAFOND, 300.0],
+    ] as [$sens, $kind, $rate]) {
+        $schematic->items()->create([
+            'item' => 'silicon', 'sens' => $sens, 'kind' => $kind,
+            'rate' => $rate, 'rate_per_block' => $rate / $schematic->blocks,
+        ]);
+    }
+
+    expect($schematic->items()->where('item', 'silicon')->count())->toBe(4);
+});
+
+it('ne classe que ce qui sort et qui a ete constate', function () {
+    // Un plafond est cherchable, il n est pas comparable a une mesure.
+    $mesuree = ligne('Constatee', ['graphite' => 30.0], blocks: 10);
+
+    $plafond = ligne('Au mieux', [], blocks: 10);
+    $plafond->items()->create([
+        'item' => 'graphite', 'sens' => SchematicItem::PRODUIT,
+        'kind' => SchematicItem::PLAFOND, 'rate' => 900.0, 'rate_per_block' => 90.0,
+    ]);
+
+    $this->get('/schematiques?produit=graphite&tri=best')
+        ->assertOk()
+        ->assertSee('Constatee')
+        ->assertDontSee('Au mieux');
+
+    // Et il ne doit pas non plus peupler la liste deroulante des items proposes.
+    $vide = ligne('Sans rien', [], blocks: 10);
+    $vide->items()->create([
+        'item' => 'thorium', 'sens' => SchematicItem::PRODUIT,
+        'kind' => SchematicItem::PLAFOND, 'rate' => 5.0, 'rate_per_block' => 0.5,
+    ]);
+
+    expect($this->get('/schematiques')->assertOk()->viewData('items'))
+        ->toContain('graphite')->not->toContain('thorium');
+
+    expect($mesuree->items()->count())->toBe(1);
+});
+
+it('ne jette pas le travail d une autre passe en enregistrant', function () {
+    /*
+     * Renommer une schematique reconstruit son index de production mesuree. Si cette
+     * reconstruction balayait toute la table, elle emporterait les plafonds et les
+     * consommations etablis ailleurs, et personne ne verrait qu ils ont disparu.
+     */
+    $schematic = ligne('Chaine', ['graphite' => 40.0], blocks: 20);
+    $schematic->items()->create([
+        'item' => 'coal', 'sens' => SchematicItem::CONSOMME,
+        'kind' => SchematicItem::MESURE, 'rate' => 80.0, 'rate_per_block' => 4.0,
+    ]);
+
+    $schematic->update(['name' => 'Chaine renommee']);
+
+    expect($schematic->items()->where('sens', SchematicItem::CONSOMME)->count())->toBe(1)
+        ->and($schematic->items()->where('sens', SchematicItem::PRODUIT)->count())->toBe(1);
+});
