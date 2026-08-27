@@ -1770,6 +1770,12 @@ const SCENARIOS = {
   "refuses-large-canvas": () => refuses("large-canvas"),
   "refuses-colored-wall": () => refuses("colored-wall"),
   "refuses-colored-floor": () => refuses("colored-floor"),
+  /* Un processeur ne consomme rien du tout : ni courant, ni objet, ni liquide. Ce
+     qu il fait passe par une instruction sur un bloc auquel il est relie, et ca ne
+     se simule pas ici. Ce que le banc peut dire, et qui est vrai, est qu il ne prend
+     rien et ne rend rien. */
+  "refuses-micro-processor": () => refuses("micro-processor"),
+  "refuses-hyper-processor": () => refuses("hyper-processor"),
   "refuses-thruster": () => refuses("thruster"),
   "refuses-logic-display": () => refuses("logic-display"),
   "refuses-tile-logic-display": () => refuses("tile-logic-display"),
