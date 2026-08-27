@@ -112,3 +112,61 @@ export function logicOf(nodes) {
     driven: [...driven].sort(),
   };
 }
+
+/**
+ * `LogicBlock.compress`, forwards.
+ *
+ * The mirror of `readProgram`, and deliberately in the same file as it: a format written in
+ * one place and read in another is a format that gets to disagree with itself. The round
+ * trip is what the tests check, so a byte moved on one side fails on the other.
+ *
+ * The deflate is written here rather than borrowed from `schematic.js`, which keeps its own
+ * private copy: this file already decompresses on its own, and the pair reads better than a
+ * dependency across two formats that only happen to share a compression.
+ */
+export async function writeProgram({ code = "", links = [] } = {}) {
+  const text = new TextEncoder().encode(code);
+  const names = links.map((link) => new TextEncoder().encode(link.name));
+
+  const size = 1 + 4 + text.length + 4
+    + names.reduce((total, name) => total + 2 + name.length + 4, 0);
+  const body = new Uint8Array(size);
+  const view = new DataView(body.buffer);
+  let at = 0;
+
+  /* Version 1, which is the byte `LogicBlock.compress` writes. The reader above discards
+     it, and so does the game's, so a zero here would have round tripped perfectly and
+     shipped a file no version of Mindustry has ever written. `tools/LogicPaste.java` is
+     what caught it: it compresses the same program with the game's own writer and compares. */
+  view.setUint8(at++, 1);
+  view.setInt32(at, text.length); at += 4;
+  body.set(text, at); at += text.length;
+
+  view.setInt32(at, links.length); at += 4;
+  for (const [index, link] of links.entries()) {
+    const name = names[index];
+    // `DataOutputStream.writeUTF`: two bytes of length, then the bytes.
+    view.setUint16(at, name.length); at += 2;
+    body.set(name, at); at += name.length;
+    view.setInt16(at, link.dx | 0); at += 2;
+    view.setInt16(at, link.dy | 0); at += 2;
+  }
+
+  return deflate(body);
+}
+
+/** Zlib-wrapped deflate, which is what Java's `DeflaterOutputStream` writes. */
+async function deflate(bytes) {
+  const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream("deflate"));
+  const chunks = [];
+  const reader = stream.getReader();
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  const out = new Uint8Array(chunks.reduce((total, chunk) => total + chunk.length, 0));
+  let at = 0;
+  for (const chunk of chunks) { out.set(chunk, at); at += chunk.length; }
+  return out;
+}

@@ -1,0 +1,25 @@
+{
+ "width": 2,
+ "height": 2,
+ "processors": [
+  {
+   "block": "logic-processor",
+   "x": 0,
+   "y": 0,
+   "code": "# lit une cellule et l'affiche\nboucle:\nread valeur cell1 0\nprint \"il y en a : \"\nprint valeur\nprintflush message1\nwait 0.5\njump boucle always\n",
+   "links": [
+    {
+     "name": "cell1",
+     "dx": 1,
+     "dy": 0
+    },
+    {
+     "name": "message1",
+     "dx": -2,
+     "dy": -3
+    }
+   ],
+   "matches_game_writer": true
+  }
+ ]
+}

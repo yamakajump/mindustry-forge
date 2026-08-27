@@ -1,0 +1,272 @@
+/*
+ * L'editeur de logique, et lui seul.
+ *
+ * Sa propre feuille plutot qu'une section de plus dans `forge.css` : trois voies editent ce
+ * fichier en ce moment, et une page d'outil n'a aucune raison de faire partie du chemin
+ * critique de la page d'analyse. Les couleurs viennent des variables de `forge.css`, donc
+ * un changement de palette la traverse sans qu'on y touche.
+ */
+
+.outil {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.outil > header.titre {
+  border: 0;
+  background: none;
+  padding: 0 0 18px;
+  display: block;
+}
+
+.outil h1 { margin: 0 0 6px; font-size: 24px; font-weight: 600; }
+
+.outil .lede { margin: 0; color: var(--dim); font-size: 14px; }
+
+.atelier {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .atelier { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* La feuille de code ------------------------------------------------------------------ */
+
+.mlog {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  background: var(--panel);
+  border: 2px solid var(--edge);
+  border-radius: var(--radius);
+  /* Pas de `overflow: hidden` ici : la liste des suggestions est une fille de ce bloc, et
+     elle doit pouvoir depasser en bas. C'est la gouttiere et la feuille qui rognent, pas
+     le cadre. */
+
+  /* Une seule mesure pour les deux couches. Elles doivent tomber au pixel pres, sinon le
+     texte peint glisse sous le curseur des la premiere ligne un peu longue. */
+  --pas: 21px;
+  --taille: 14px;
+  --marge: 10px 12px;
+
+  /* Les couleurs de la syntaxe, ici et pas dans `:root` : elles ne servent qu'a cet
+     outil, et `:root` est un bien commun que trois voies se partagent. */
+  --k-instruction: var(--accent);
+  --k-monde: var(--warn);
+  --k-inconnu: var(--bad);
+  --k-chaine: #a8e6a3;
+  --k-nombre: #9fd0ff;
+  --k-commentaire: #6b7684;
+  --k-valeur: #d7b3ff;
+  --k-globale: #7fe3d4;
+  --k-propriete: #7fe3d4;
+  --k-contenu: #ffb27f;
+  --k-lien: #86d7ff;
+  --k-etiquette: #ffd37f;
+  --k-variable: var(--ink);
+}
+
+.mlog-gutter {
+  padding: var(--marge);
+  overflow: hidden;
+  border-radius: 6px 0 0 6px;
+  border-right: 2px solid var(--edge);
+  background: #171c22;
+  font: var(--taille)/var(--pas) var(--mono);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.mlog-line { display: flex; gap: 10px; height: var(--pas); }
+.mlog-line i { color: #4d5764; font-style: normal; min-width: 2.2em; text-align: right; }
+.mlog-line b { color: var(--dim); font-weight: 400; min-width: 2.2em; text-align: right; }
+
+.mlog-sheet { position: relative; min-height: 420px; overflow: hidden; border-radius: 0 6px 6px 0; }
+
+/* Les deux couches. Toute propriete qui deplace un caractere doit etre dans les deux. */
+.mlog-paint,
+.mlog-input {
+  margin: 0;
+  padding: var(--marge);
+  font: var(--taille)/var(--pas) var(--mono);
+  letter-spacing: 0;
+  tab-size: 4;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+  border: 0;
+}
+
+.mlog-paint {
+  position: absolute;
+  inset: 0;
+  width: max-content;
+  min-width: 100%;
+  color: var(--k-variable);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.mlog-input {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  resize: vertical;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--ink);
+  overflow: auto;
+  outline: 0;
+}
+
+.mlog-input::selection { background: #3a4b63; color: transparent; }
+.mlog-input:focus-visible { outline: 0; }
+.mlog:focus-within { border-color: var(--accent); }
+
+.mlog-ruler { position: absolute; visibility: hidden; white-space: pre; }
+
+.k-instruction { color: var(--k-instruction); }
+.k-monde { color: var(--k-monde); text-decoration: underline dotted; }
+.k-inconnu { color: var(--k-inconnu); text-decoration: underline wavy; }
+.k-chaine { color: var(--k-chaine); }
+.k-nombre { color: var(--k-nombre); }
+.k-commentaire { color: var(--k-commentaire); font-style: italic; }
+.k-valeur { color: var(--k-valeur); }
+.k-globale, .k-propriete { color: var(--k-globale); }
+.k-contenu { color: var(--k-contenu); }
+.k-lien { color: var(--k-lien); }
+.k-etiquette { color: var(--k-etiquette); font-weight: 600; }
+.k-variable, .k-operande { color: var(--k-variable); }
+
+/* Une ligne que le jeu remplace par un noop. Elle reste lisible : elle est a corriger,
+   pas a cacher. */
+.mlog-dead { opacity: .55; background: rgba(255, 139, 139, .07); }
+
+/* La liste des suggestions ------------------------------------------------------------ */
+
+.mlog-suggest {
+  position: absolute;
+  z-index: 5;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  width: 280px;
+  max-height: 260px;
+  overflow: auto;
+  background: var(--raised);
+  border: 2px solid var(--edge);
+  border-radius: 6px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .45);
+}
+
+.mlog-suggest li {
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+}
+
+.mlog-suggest li.on { background: #2f3742; }
+.mlog-suggest li:hover { background: #2b323c; }
+
+.mlog-suggest-text { font: 13px var(--mono); overflow: hidden; text-overflow: ellipsis; }
+.mlog-suggest-kind { color: var(--dim); font-size: 11px; align-self: center; }
+
+.mlog-suggest-help {
+  grid-column: 1 / -1;
+  color: var(--dim);
+  font-size: 11.5px;
+  line-height: 1.35;
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Le panneau de droite ---------------------------------------------------------------- */
+
+.cote { display: grid; gap: 16px; }
+.cote .card { margin: 0; }
+
+.mesures { display: grid; gap: 4px; margin: 0; font-size: 13px; color: var(--dim); }
+.mesures b { color: var(--ink); font-weight: 600; font-family: var(--mono); }
+
+.liens { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+.lien {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 62px 62px auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.lien input[type=text] { margin: 0; min-height: 38px; padding: 0 8px; font-size: 13px; }
+.lien input.pos { font-family: var(--mono); text-align: center; }
+
+.lien button {
+  min-height: 38px;
+  padding: 0 10px;
+  font-size: 13px;
+  border-color: transparent;
+  background: none;
+  color: var(--dim);
+}
+
+.lien button:hover { color: var(--bad); background: none; }
+
+.entetes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 62px 62px 38px;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--dim);
+  margin-bottom: 6px;
+}
+
+.entetes span:not(:first-child) { text-align: center; }
+
+.problemes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+.probleme {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-left: 3px solid var(--edge);
+  background: #171c22;
+  cursor: pointer;
+  text-align: left;
+  min-height: auto;
+  color: var(--ink);
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  align-items: start;
+}
+
+.probleme:hover { background: #1f252d; }
+.probleme.refus { border-left-color: var(--bad); }
+.probleme.erreur { border-left-color: var(--bad); }
+.probleme.avertissement { border-left-color: var(--warn); }
+.probleme .ou { color: var(--dim); font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+
+.tout-va-bien { color: var(--good); font-size: 13px; margin: 0; }
+
+.etat { font-size: 13px; color: var(--dim); margin: 10px 0 0; min-height: 1.4em; }
+.etat.bien { color: var(--good); }
+.etat.mal { color: var(--bad); }
+
+.cote select { width: 100%; }

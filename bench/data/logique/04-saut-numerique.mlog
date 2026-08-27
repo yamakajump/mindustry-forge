@@ -1,0 +1,3 @@
+set i 0
+op add i i 1
+jump 1 lessThan i 10

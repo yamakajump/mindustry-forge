@@ -1,0 +1,7 @@
+set a @time
+set b @tick
+set c @links
+set d @this
+set e @counter
+set f @unit
+sensor g @unit @x

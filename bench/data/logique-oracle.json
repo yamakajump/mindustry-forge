@@ -1,0 +1,75 @@
+{
+ "01-vide.mlog": {
+  "statements": 0,
+  "written": ""
+ },
+ "02-commentaires.mlog": {
+  "statements": 2,
+  "written": "set x 1\nprint x\n"
+ },
+ "03-etiquettes.mlog": {
+  "statements": 4,
+  "written": "set i 0\nop add i i 1\njump 1 lessThan i 10\nend\n"
+ },
+ "04-saut-numerique.mlog": {
+  "statements": 3,
+  "written": "set i 0\nop add i i 1\njump 1 lessThan i 10\n"
+ },
+ "05-chaines.mlog": {
+  "statements": 4,
+  "written": "print \"avec des espaces\"\nprint \"un # dedans\"\nprint \"un ; dedans\"\nprintflush message1\n"
+ },
+ "06-point-virgule.mlog": {
+  "statements": 3,
+  "written": "set a 1\nset b 2\nprint a\n"
+ },
+ "07-noms-anciens.mlog": {
+  "statements": 3,
+  "written": "op angle r a b\nop len d x y\ncontrol config sorter1 @copper 0 0 0\n"
+ },
+ "08-inconnue.mlog": {
+  "statements": 3,
+  "written": "set x 1\nnoop\nprint x\n"
+ },
+ "09-privilegiee.mlog": {
+  "statements": 3,
+  "written": "noop\nnoop\nprint \"apres\"\n"
+ },
+ "10-guillemet-ouvert.mlog": {
+  "refused": "RuntimeException: Invalid code. Missing closing quote \" before end of line."
+ },
+ "11-etiquette-double.mlog": {
+  "refused": "RuntimeException: Invalid code. Jump label already defined: \"ici\"."
+ },
+ "12-tout-le-jeu.mlog": {
+  "statements": 11,
+  "written": "sensor total vault1 @totalItems\nradar enemy any any distance turret1 1 cible\nucontrol move 10 20 0 0 0\nulocate building core true @copper outx outy trouve construction\ndraw color 255 0 0 255 0 0\ndrawflush display1\nlookup item resultat 0\npackcolor c 1 0 0 1\nwait 0.5\nop rand r 10 0\nend\n"
+ },
+ "13-espaces.mlog": {
+  "statements": 3,
+  "written": "set x 1\nprint x\nset y 2\n"
+ },
+ "14-operandes-en-trop.mlog": {
+  "statements": 2,
+  "written": "set x 1\nprint a\n"
+ },
+ "15-variables.mlog": {
+  "statements": 7,
+  "written": "set a @time\nset b @tick\nset c @links\nset d @this\nset e @counter\nset f @unit\nsensor g @unit @x\n"
+ },
+ "16-valeur-inconnue.mlog": {
+  "statements": 4,
+  "written": "noop\nnoop\nnoop\nnoop\n"
+ },
+ "17-etiquette-absente.mlog": {
+  "refused": "RuntimeException: Invalid code. Undefined jump location: \"nullepart\". Make sure the jump label exists and is typed correctly."
+ },
+ "18-saut-hors.mlog": {
+  "statements": 3,
+  "written": "set x 1\njump 99 always x false\njump -1 always x false\n"
+ },
+ "19-operandes-manquants.mlog": {
+  "statements": 4,
+  "written": "set x 0\nprint \"frog\"\nop add result a b\ncontrol enabled block1 0 0 0 0\n"
+ }
+}

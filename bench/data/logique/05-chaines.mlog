@@ -1,0 +1,4 @@
+print "avec des espaces"
+print "un # dedans"
+print "un ; dedans"
+printflush message1

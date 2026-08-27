@@ -1,0 +1,3 @@
+set x 1
+jump 99 always
+jump -1 always
