@@ -197,6 +197,13 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 .split { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 1fr); gap: 20px; }
 @media (max-width: 860px) { .split { grid-template-columns: minmax(0, 1fr); } }
 
+/* The plan's panel takes the height of the plan, not of the column beside it.
+   A grid item stretches by default, so a wide flat schematic left the panel as tall as the
+   report next to it: measured on a 35 by 9 plan, 792 pixels of panel for 117 pixels of
+   drawing, and 657 of emptiness underneath. Only the schematic page is concerned; the
+   analyser nests its own stage inside `.side`, so `>` leaves it alone. */
+.split > .stage { align-self: start; }
+
 .stage {
   background: var(--stage); border: 2px solid var(--edge); border-radius: var(--radius);
   padding: 16px; display: flex; align-items: flex-start; justify-content: center;
