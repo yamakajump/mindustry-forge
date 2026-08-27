@@ -122,7 +122,7 @@ function fill(world, stock) {
 }
 
 /** Run a schematic through the port, and report what settled where. */
-export async function ported(code, ticks, ground = [], stock = []) {
+export async function ported(code, ticks, ground = [], stock = [], each = null) {
   const parsed = await fromBase64(code);
   const graph = buildGraph(parsed.tiles);
   const painted = groundOf(ground);
@@ -141,7 +141,12 @@ export async function ported(code, ticks, ground = [], stock = []) {
   world.origin = [12, 12];
   world.catalogue = known;
   fill(world, stock);
-  for (let i = 0; i < ticks; i++) world.step();
+  for (let i = 0; i < ticks; i++) {
+    world.step();
+    // `tools/trace.mjs` hangs a line-per-frame writer here, so that both engines walk the
+    // same run rather than two runs that happen to share a scenario file.
+    if (each) each(world, i + 1);
+  }
 
   const containers = world.builds
     .filter((build) => build.role === "store" || build.role === "core")

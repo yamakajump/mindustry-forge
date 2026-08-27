@@ -183,6 +183,8 @@ export class Build {
 
     /** The rotating cursor `dump` walks `proximity` from. */
     this.cdump = 0;
+    this.sleeping = false;
+    this.sleepTime = 0;
     this.proximity = [];
 
     /** How much of the tick this block gets, which an overdrive projector raises. */
@@ -205,6 +207,37 @@ export class Build {
 
   /** `Building.delta()`: the frame, scaled by anything speeding this block up. */
   delta(step) { return step * this.timeScale; }
+
+  /**
+   * `Building.sleep`: a block with nothing to do drops out of the update list.
+   *
+   * It sounds like an optimisation and it is not, because **waking puts it back at the
+   * end**. A belt that stood empty for a second and then got an item updates after
+   * everything that was placed later, and a machine it feeds therefore reads last frame's
+   * stock rather than this frame's.
+   *
+   * That is worth one frame of a press's ninety, once, and the two engines had sat a coal
+   * apart on `crafter-two-presses` since the scenario was written.
+   *
+   * Two blocks in the game do it: a conveyor with nothing on it, and a conduit with
+   * nothing in it. A second of quiet, not a frame: `timeToSleep` is sixty.
+   */
+  sleep(step) {
+    this.sleepTime += step;
+    if (!this.sleeping && this.sleepTime >= 60) {
+      this.sleeping = true;
+      this.world?.dropAwake(this);
+    }
+  }
+
+  /** `Building.noSleep`, which is what puts it back at the end of the list. */
+  noSleep() {
+    this.sleepTime = 0;
+    if (this.sleeping) {
+      this.sleeping = false;
+      this.world?.wake(this);
+    }
+  }
 
   /** `Building.acceptItem`: does this recipe call for it, and is there room. */
   acceptItem(source, item) {
@@ -529,7 +562,7 @@ export class Build {
  * footprint, with the game's own integer halves: a two wide block clamps into nought to
  * one, a three wide into minus one to one.
  */
-function facingEdge(source, target) {
+export function facingEdge(source, target) {
   if ((source.size || 1) <= 1) return [source.x, source.y];
   const low = -Math.trunc((source.size - 1) / 2);
   const high = Math.trunc(source.size / 2);
@@ -719,6 +752,13 @@ export class World {
     this.tick = 0;
     this.grids = [];
 
+    /* Who is actually updated, which is not everybody: a block that fell asleep comes out
+       of this list, and waking pushes it back on the **end**. */
+    this.awake = this.builds.filter((build) => !build.block.no_update);
+    /* Where `step` has got to, because the list moves while it is being walked. Not `at`,
+       which is already the method that looks a tile up: an own property shadows it. */
+    this.walking = 0;
+
     /* Where the bottom left of the schematic sits on the map.
     
        Almost nothing cares. A separator does: its draw is seeded from `tile.pos()`, so the
@@ -758,9 +798,39 @@ export class World {
        got one free frame at full power: a pump on a dead grid pumped exactly one frame's
        worth of water, which is nothing and is not zero. */
     for (const grid of this.grids) grid.update(delta);
-    for (const build of this.builds) {
+    /* Walked live and by index, cursor and all, because the list moves under it.
+       `EntityGroup.update` is `for(index = 0; index < array.size; index++)`, and a block
+       that falls asleep mid-walk is taken out of the array while the walk is going on. */
+    for (this.walking = 0; this.walking < this.awake.length; this.walking++) {
+      const build = this.awake[this.walking];
       if (build.behaviour?.update) build.behaviour.update(build, this, delta);
     }
+  }
+
+  /**
+   * `EntityGroup.remove`: a block that fell asleep leaves the update list.
+   *
+   * And the list is **unordered**, which is the whole of it: `array = new Seq<>(false, ...)`,
+   * so removing an entity drops the **last** one into its place rather than shifting
+   * everything down. Two empty belts going to sleep on the same frame therefore reshuffle
+   * the tail of the update order, and a press that was updated after a belt is updated
+   * before it from then on.
+   *
+   * Which is worth exactly one frame of that press's ninety, once. `crafter-two-presses`
+   * had been one coal apart since the day it was written.
+   */
+  dropAwake(build) {
+    const at = this.awake.indexOf(build);
+    if (at < 0) return;
+    this.awake[at] = this.awake[this.awake.length - 1];
+    this.awake.pop();
+    // `if(index >= idx) index--`, so the one swapped into the hole is not stepped over.
+    if (this.walking >= at) this.walking--;
+  }
+
+  /** `add()`, which appends, and is why waking up costs a block its place. */
+  wake(build) {
+    if (!this.awake.includes(build)) this.awake.push(build);
   }
 
   run(seconds) {
