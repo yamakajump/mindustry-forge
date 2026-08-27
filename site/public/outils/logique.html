@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forge - editeur de logique Mindustry</title>
+<meta name="description" content="Ecris le programme d'un processeur Mindustry avec coloration, autocompletion et verification, puis repars avec la schematique a coller dans le jeu.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314161c'/%3E%3Cpath d='M8 22V10h10M8 16h8' stroke='%23ffd37f' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../forge/forge.css">
+<link rel="stylesheet" href="../forge/logic/logique.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="/">Mindustry <span>Forge</span></a>
+  <nav id="nav">
+    <a href="/">Analyser</a>
+    <a href="/schematiques">Parcourir</a>
+  </nav>
+</header>
+
+<div class="outil">
+  <header class="titre">
+    <h1 data-i18n="outils.logique.titre">Editeur de logique</h1>
+    <p class="lede" data-i18n="outils.logique.sous-titre">
+      Ecris le programme d'un processeur, et repars avec la schematique a coller dans le jeu.
+    </p>
+  </header>
+
+  <div class="atelier">
+    <div>
+      <div id="editeur"></div>
+      <div class="row">
+        <button class="primary" id="copier" type="button">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/></svg>
+          <span data-i18n="outils.logique.copier">Copier la schematique</span>
+        </button>
+        <button id="telecharger" type="button">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 19h16"/></svg>
+          <span data-i18n="outils.logique.telecharger">Telecharger le .msch</span>
+        </button>
+        <button id="coller" type="button">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3M4 12h16M8 16h8"/></svg>
+          <span data-i18n="outils.logique.coller">Coller une schematique</span>
+        </button>
+        <label class="file">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></svg>
+          <span data-i18n="outils.logique.importer">Ouvrir une schematique</span>
+          <input type="file" id="fichier" name="fichier" accept=".msch" aria-label="Ouvrir une schematique">
+        </label>
+        <button id="exemple" type="button" data-i18n="outils.logique.exemple">
+          Charger un exemple
+        </button>
+      </div>
+      <p class="etat" id="etat" aria-live="polite"></p>
+    </div>
+
+    <aside class="cote">
+      <section class="card">
+        <h2 data-i18n="outils.logique.processeur">Processeur</h2>
+        <select id="bloc" name="bloc" aria-label="Processeur"></select>
+        <p class="mesures" id="mesures"></p>
+      </section>
+
+      <section class="card">
+        <h2 data-i18n="outils.logique.liens">Liens</h2>
+        <p class="hint-line" data-i18n="outils.logique.liens-aide">
+          Le nom est celui que le programme emploie, et les deux nombres disent ou se
+          trouve le bloc par rapport au processeur, en cases.
+        </p>
+        <div class="entetes" aria-hidden="true">
+          <span data-i18n="outils.logique.lien-nom">Nom</span>
+          <span data-i18n="outils.logique.lien-dx">Vers la droite</span>
+          <span data-i18n="outils.logique.lien-dy">Vers le haut</span>
+          <span></span>
+        </div>
+        <ul class="liens" id="liens"></ul>
+        <div class="row">
+          <button id="ajouter-lien" type="button" data-i18n="outils.logique.lien-ajouter">
+            Ajouter un lien
+          </button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 id="titre-problemes">Verification</h2>
+        <ul class="problemes" id="problemes"></ul>
+        <p class="hint-line" id="provenance"></p>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script type="module">
+import { loadCatalogue, catalogueOf } from "../forge/logic/catalogue.js";
+import { LogicEditor } from "../forge/logic/editor.js";
+import { toSchematic, toSchematicBytes, fromSchematic } from "../forge/logic/program.js";
+import { t } from "../forge/logic/i18n.js";
+
+const $ = (id) => document.getElementById(id);
+
+const EXEMPLE = `# Coupe le convoyeur quand le coffre est plein, et le rouvre quand il se vide.
+sensor capacite vault1 @itemCapacity
+sensor dedans vault1 @totalItems
+jump plein greaterThanEq dedans capacite
+control enabled conveyor1 1 0 0 0
+jump 0 always
+plein:
+control enabled conveyor1 0 0 0 0
+jump 0 always
+`;
+
+const LIENS_EXEMPLE = [{ name: "vault1", dx: 2, dy: 0 }, { name: "conveyor1", dx: -1, dy: 0 }];
+
+await loadCatalogue();
+const catalogue = catalogueOf();
+
+/* L'etat de la page, en un seul endroit. Les liens vivent ici plutot que dans l'editeur :
+   ils appartiennent au processeur, pas au texte, et l'export en a autant besoin que la
+   verification. */
+let liens = LIENS_EXEMPLE.map((lien) => ({ ...lien }));
+
+const editeur = new LogicEditor($("editeur"), { onChange: rendre });
+
+for (const bloc of catalogue.processors) {
+  if (bloc.world) continue;
+  const option = document.createElement("option");
+  option.value = bloc.name;
+  option.textContent = bloc.label;
+  $("bloc").append(option);
+}
+$("bloc").value = "micro-processor";
+
+/* D'ou viennent les regles. Ecrit une fois : la version du jeu ne bouge pas en cours de
+   visite, et un outil qui verifie du code doit dire contre quoi il le verifie. */
+$("provenance").textContent = t("outils.logique.aide-texte", { build: catalogue.build });
+
+editeur.setLinks(liens);
+editeur.value = EXEMPLE;
+dessinerLiens();
+
+/* Le rapport --------------------------------------------------------------------------- */
+
+function rendre(rapport) {
+  $("mesures").innerHTML = `
+    <span>${t("outils.logique.compte-instructions", { compte: `<b>${rapport.statements.length}</b>` })}</span>
+    <span>${t("outils.logique.compte-octets", {
+      octets: `<b>${rapport.bytes ?? 0}</b>`, maximum: catalogue.limits.code_bytes })}</span>`;
+
+  const problemes = [...rapport.problems, ...problemesDesLiens()];
+  const liste = $("problemes");
+  liste.innerHTML = "";
+
+  $("titre-problemes").textContent = problemes.length
+    ? t("outils.logique.problemes", { compte: problemes.length })
+    : t("outils.logique.verification");
+
+  if (!problemes.length) {
+    const bien = document.createElement("p");
+    bien.className = "tout-va-bien";
+    bien.textContent = t("outils.logique.aucun-probleme");
+    liste.append(bien);
+    return;
+  }
+
+  for (const probleme of problemes) {
+    const item = document.createElement("li");
+    const bouton = document.createElement("button");
+    bouton.type = "button";
+    bouton.className = `probleme ${probleme.severity}`;
+    bouton.innerHTML = `<span class="ou">${
+      probleme.line == null ? "" : t("outils.logique.ligne", { ligne: probleme.line + 1 })
+    }</span><span></span>`;
+    bouton.lastChild.textContent =
+      t(`outils.logique.probleme.${probleme.key}`, probleme.params);
+
+    /* Cliquer sur un probleme pose le curseur dessus. Une liste d'erreurs qu'il faut aller
+       retrouver a la main dans le texte est une liste qu'on lit une fois. */
+    if (probleme.line != null) bouton.onclick = () => viser(probleme);
+    item.append(bouton);
+    liste.append(item);
+  }
+}
+
+function viser(probleme) {
+  const lignes = editeur.value.split("\n");
+  const debut = lignes.slice(0, probleme.line).reduce((somme, ligne) => somme + ligne.length + 1, 0);
+  editeur.focus();
+  editeur.input.setSelectionRange(debut + (probleme.start ?? 0), debut + (probleme.end ?? 0));
+}
+
+/** Ce que la verification du programme ne peut pas voir : les liens eux-memes. */
+function problemesDesLiens() {
+  const vus = new Set();
+  const out = [];
+  for (const lien of liens) {
+    if (!lien.name.trim()) {
+      out.push({ key: "lien-sans-nom", severity: "avertissement", line: null, params: {} });
+      continue;
+    }
+    if (vus.has(lien.name)) {
+      out.push({ key: "lien-double", severity: "avertissement", line: null,
+                 params: { nom: lien.name } });
+    }
+    vus.add(lien.name);
+  }
+  return out;
+}
+
+/* Les liens ------------------------------------------------------------------------------ */
+
+function dessinerLiens() {
+  const liste = $("liens");
+  liste.innerHTML = "";
+
+  if (!liens.length) {
+    const vide = document.createElement("p");
+    vide.className = "hint-line";
+    vide.textContent = t("outils.logique.liens-vides");
+    liste.append(vide);
+  }
+
+  liens.forEach((lien, index) => {
+    const item = document.createElement("li");
+    item.className = "lien";
+
+    const nom = champ("text", lien.name, t("outils.logique.lien-nom"), "", `lien-${index}-nom`);
+    nom.oninput = () => { lien.name = nom.value.trim(); majLiens(); };
+
+    const dx = champ("text", lien.dx, t("outils.logique.lien-dx"), "pos", `lien-${index}-dx`);
+    dx.oninput = () => { lien.dx = entier(dx.value); majLiens(); };
+
+    const dy = champ("text", lien.dy, t("outils.logique.lien-dy"), "pos", `lien-${index}-dy`);
+    dy.oninput = () => { lien.dy = entier(dy.value); majLiens(); };
+
+    const retirer = document.createElement("button");
+    retirer.type = "button";
+    retirer.textContent = "×";
+    retirer.setAttribute("aria-label", t("outils.logique.lien-retirer"));
+    retirer.onclick = () => { liens.splice(index, 1); dessinerLiens(); majLiens(); };
+
+    item.append(nom, dx, dy, retirer);
+    liste.append(item);
+  });
+}
+
+function champ(type, valeur, etiquette, classe = "", nom = "") {
+  const input = document.createElement("input");
+  input.type = type;
+  input.value = valeur;
+  input.className = classe;
+  input.name = nom;
+  input.setAttribute("aria-label", etiquette);
+  return input;
+}
+
+/* Un champ vide vaut zero plutot que rien : `LogicBlock` ecrit deux entiers courts, et il
+   n'y a pas de « pas de position ». */
+const entier = (texte) => Number.parseInt(texte, 10) || 0;
+
+const majLiens = () => editeur.setLinks(liens);
+
+$("ajouter-lien").onclick = () => {
+  liens.push({ name: "", dx: 0, dy: 0 });
+  dessinerLiens();
+  majLiens();
+  $("liens").querySelector("input")?.focus();
+};
+
+/* Entrees et sorties --------------------------------------------------------------------- */
+
+const dire = (message, ton = "") => {
+  $("etat").textContent = message;
+  $("etat").className = `etat ${ton}`;
+};
+
+const sortie = () => toSchematic({
+  code: editeur.value,
+  links: liens.filter((lien) => lien.name),
+  block: $("bloc").value,
+  name: "programme",
+});
+
+$("copier").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(await sortie());
+    dire(t("outils.logique.copiee"), "bien");
+  } catch (erreur) {
+    dire(erreur.message, "mal");
+  }
+};
+
+$("telecharger").onclick = async () => {
+  try {
+    const octets = await toSchematicBytes({
+      code: editeur.value,
+      links: liens.filter((lien) => lien.name),
+      block: $("bloc").value,
+      name: "programme",
+    });
+    const lien = document.createElement("a");
+    lien.href = URL.createObjectURL(new Blob([octets], { type: "application/octet-stream" }));
+    lien.download = "programme.msch";
+    lien.click();
+    URL.revokeObjectURL(lien.href);
+    dire("");
+  } catch (erreur) {
+    dire(erreur.message, "mal");
+  }
+};
+
+$("exemple").onclick = () => {
+  liens = LIENS_EXEMPLE.map((lien) => ({ ...lien }));
+  dessinerLiens();
+  majLiens();
+  editeur.value = EXEMPLE;
+  dire("");
+};
+
+$("coller").onclick = async () => {
+  try {
+    await lire(await navigator.clipboard.readText());
+  } catch (erreur) {
+    dire(t("outils.logique.import-refuse", { raison: erreur.message }), "mal");
+  }
+};
+
+$("fichier").onchange = async (event) => {
+  const fichier = event.target.files?.[0];
+  if (!fichier) return;
+  try {
+    await lire(new Uint8Array(await fichier.arrayBuffer()));
+  } catch (erreur) {
+    dire(t("outils.logique.import-refuse", { raison: erreur.message }), "mal");
+  } finally {
+    event.target.value = "";
+  }
+};
+
+/**
+ * Reprendre un processeur deja pose.
+ *
+ * Le premier processeur de la schematique, et on le dit quand il y en avait d'autres :
+ * ouvrir le premier sans prevenir donnerait une page qui a l'air d'avoir tout lu.
+ */
+async function lire(source) {
+  const processeurs = await fromSchematic(source);
+  if (!processeurs.length) {
+    dire(t("outils.logique.import-sans-processeur"), "mal");
+    return;
+  }
+
+  const premier = processeurs[0];
+  liens = premier.links.map((lien) => ({ ...lien }));
+  dessinerLiens();
+  majLiens();
+  editeur.value = premier.code;
+  if (catalogue.processors.some((bloc) => bloc.name === premier.block)) {
+    $("bloc").value = premier.block;
+  }
+
+  dire(t("outils.logique.importee", {
+    compte: editeur.report.statements.length,
+    liens: liens.length,
+  }), "bien");
+}
+</script>
+</body>
+</html>
