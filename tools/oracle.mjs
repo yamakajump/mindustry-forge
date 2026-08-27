@@ -1509,6 +1509,78 @@ const SCENARIOS = {
     stock: ["water~80@2,2"],
   }),
 
+  /* Un noeud pose sans lien enregistre se relie tout seul.
+     `placed()` appelle `getPotentialLinks` des que `power.links` est vide, donc une source
+     de courant lachee a cote de rien alimente la foreuse quatre cases plus loin. Le portage
+     ne lisait que les liens enregistres, donc la foreuse restait seule sur sa grille a
+     couverture zero et ne sortait rien du tout. C'est le cas d'un schema dont les liens
+     n'ont pas ete copies, et c'est aussi ce qui avait fausse `reactor-drip`. */
+  "power-node-autolinks": () => ({
+    tiles: [
+      { x: 0, y: 0, block: "power-source", rotation: 0 },
+      // Couvre 3..5 par 0..2, sans toucher la source.
+      { x: 4, y: 1, block: "laser-drill", rotation: 0 },
+      { x: 6, y: 1, block: "conveyor", rotation: 0 },
+      // Couvre 7..9 par 0..2.
+      { x: 8, y: 1, block: "vault", rotation: 0 },
+    ],
+    ground: [3, 4, 5].flatMap((x) => [0, 1, 2].map((y) => `ore-copper@${x},${y}`)),
+  }),
+
+  /* Un beam-link, qui est un `LongPowerNode` : cinq cents cases de portee, **un** seul
+     lien, pas d'auto-liaison, et `sameBlockConnection`, donc il ne se relie qu'a un autre
+     beam-link et a rien d'autre.
+
+     Ecrit d'abord avec un seul beam-link vise sur la foreuse, il donnait trente-neuf
+     cuivres au portage et zero dans le jeu : un lien enregistre dans un schema n'est pas
+     un lien, le jeu le revalide a la pose. */
+  "beam-link-span": () => ({
+    tiles: [
+      { x: 5, y: 2, block: "item-source", rotation: 0, raw: item("coal") },
+      { x: 4, y: 2, block: "combustion-generator", rotation: 0 },
+      // Couvre 1..3 par 1..3, contre le generateur, relie au beam-link d'en face.
+      { x: 2, y: 2, block: "beam-link", rotation: 0, raw: links([[10, 0]]) },
+      // Couvre 11..13 par 1..3.
+      { x: 12, y: 2, block: "beam-link", rotation: 0 },
+      // Couvre 14..16 par 1..3.
+      { x: 15, y: 2, block: "laser-drill", rotation: 0 },
+      { x: 17, y: 2, block: "conveyor", rotation: 0 },
+      // Couvre 18..20 par 1..3.
+      { x: 19, y: 2, block: "vault", rotation: 0 },
+    ],
+    ground: [14, 15, 16].flatMap((x) => [1, 2, 3].map((y) => `ore-copper@${x},${y}`)),
+  }),
+
+  /* Une diode, le seul bloc qui deplace de la charge entre deux grilles sans etre sur
+     aucune des deux. Derriere elle une grille qui produit, devant elle une batterie seule.
+     Elle envoie la moitie de l'ecart de remplissage a chaque image, donc les deux finissent
+     au meme niveau. Classee en `sink`, la batterie de devant restait a plat. */
+  "diode-levels": () => [
+    { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: 0, y: 0, block: "combustion-generator", rotation: 0 },
+    { x: 1, y: 0, block: "battery", rotation: 0 },
+    { x: 2, y: 0, block: "diode", rotation: 0 },
+    { x: 3, y: 0, block: "battery", rotation: 0 },
+  ],
+
+  /* Un mur bouclier tire trois par seconde en permanence, qu'on lui tire dessus ou non :
+     rien dans `updateTile` ne conditionne sa consommation. Huit d'entre eux autour d'une
+     batterie mangent la moitie de ce qu'une chambre a combustion fabrique, et ce qui reste
+     est ce que la batterie a pris. */
+  "shielded-wall-drains": () => [
+    { x: -2, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
+    { x: -1, y: 1, block: "combustion-generator", rotation: 0 },
+    // Couvre 0..2 par 0..2.
+    { x: 1, y: 1, block: "battery-large", rotation: 0 },
+    // Deux sur deux chacun, donc six tiennent autour d'une batterie de trois sur trois.
+    { x: 3, y: 0, block: "shielded-wall", rotation: 0 },
+    { x: 3, y: 2, block: "shielded-wall", rotation: 0 },
+    { x: 0, y: 3, block: "shielded-wall", rotation: 0 },
+    { x: 0, y: -2, block: "shielded-wall", rotation: 0 },
+    { x: 2, y: -2, block: "shielded-wall", rotation: 0 },
+    { x: -2, y: 2, block: "shielded-wall", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },

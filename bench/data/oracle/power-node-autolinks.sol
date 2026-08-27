@@ -1,0 +1,1 @@
+ore-copper@3,0 ore-copper@3,1 ore-copper@3,2 ore-copper@4,0 ore-copper@4,1 ore-copper@4,2 ore-copper@5,0 ore-copper@5,1 ore-copper@5,2

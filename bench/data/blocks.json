@@ -7996,6 +7996,8 @@
       "solid": true,
       "health": 40,
       "build_time": 5.2,
+      "laser_range": 6,
+      "max_nodes": 10,
       "cost":{
         "copper": 2,
         "lead": 6
@@ -8022,6 +8024,8 @@
       "solid": true,
       "health": 160,
       "build_time": 14.4,
+      "laser_range": 15,
+      "max_nodes": 15,
       "cost":{
         "lead": 10,
         "titanium": 5,
@@ -8049,6 +8053,8 @@
       "solid": true,
       "health": 200,
       "build_time": 44,
+      "laser_range": 40,
+      "max_nodes": 2,
       "cost":{
         "lead": 10,
         "titanium": 7,
@@ -8083,7 +8089,8 @@
         "silicon": 10,
         "plastanium": 5
       },
-      "power": 0
+      "power": 0,
+      "role": "diode"
     },
     "battery":{
       "name": "battery",
@@ -8601,6 +8608,10 @@
       "solid": true,
       "health": 1170,
       "build_time": 972.5,
+      "laser_range": 500,
+      "max_nodes": 1,
+      "no_autolink": true,
+      "same_block_link": true,
       "cost":{
         "silicon": 250,
         "phase-fabric": 75,
@@ -12386,6 +12397,8 @@
       "solid": true,
       "health": 40,
       "build_time": 20,
+      "laser_range": 6,
+      "max_nodes": 100,
       "cost":{},
       "power": 0,
       "no_overdrive": true,

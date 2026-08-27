@@ -18,7 +18,7 @@
  * number for both is how a design with an isolated reactor reads as fine.
  */
 
-import { DIRECTIONS, TICKS } from "./core.js";
+import { DIRECTIONS, edgesOf, TICKS } from "./core.js";
 import { heatReaching } from "./machines.js";
 
 /**
@@ -68,6 +68,8 @@ const isBattery = (build) => isNode(build) && (build.block.power_capacity || 0) 
  */
 const output = (block) => block.power_production ?? block.power_out ?? 0;
 
+const TILE = 8;
+
 export function gridsOf(world) {
   const onGrid = world.builds.filter((build) =>
     isNode(build) || build.block.power > 0 || output(build.block) > 0);
@@ -91,16 +93,16 @@ export function gridsOf(world) {
     }
     // And whatever a node reaches, which is the other half and the one a schematic
     // usually relies on: a node in the middle wiring six things that touch nothing.
-    const links = build.node.config?.type === 8 ? build.node.config.links : null;
-    for (const packed of links || []) {
-      const other = world.at(build.x + (packed >> 16), build.y + ((packed << 16) >> 16));
-      if (other && owner.has(other)) join(build, other);
+    for (const other of savedLinks(build, world)) {
+      if (owner.has(other) && linkValid(build, other)) join(build, other);
     }
     // And a beam node's four beams, which carry no configuration at all.
     for (const other of beamsOf(build, world)) {
       if (owner.has(other)) join(build, other);
     }
   }
+
+  autolinkAll(world, onGrid, owner, find, join);
 
   const grids = new Map();
   for (const build of onGrid) {
@@ -109,6 +111,209 @@ export function gridsOf(world) {
     grids.get(root).push(build);
   }
   return [...grids.values()].map((builds) => new Grid(builds));
+}
+
+/**
+ * `PowerNode.placed`: a node laid down with no links of its own wires itself.
+ *
+ * `if(net.client() || power.links.size > 0) return;` and then `getPotentialLinks`. So a
+ * node that came out of a schematic with its links saved keeps exactly those, and a node
+ * that came without any reaches for whatever is in range the moment it is built.
+ *
+ * Nothing here read that, and it is not a corner: a schematic copied without its far ends,
+ * a sandbox power source dropped in a test, a node a player placed and never configured.
+ * All of them wire themselves up in the game and stood alone on their own grid here, so
+ * every machine they should have been feeding read a coverage of zero.
+ *
+ * Five rules decide who gets picked, and each of them earns its place:
+ *
+ * - **never a neighbour it already touches**, because touching is already a connection;
+ * - **never a second link into a grid it can already reach**, which is what stops a node
+ *   from spending all its links on one side of the base;
+ * - **nothing behind insulation**, along the straight line between the two tiles;
+ * - **never a node that has used up its own allowance**;
+ * - and among what is left, **other nodes first, then whatever is nearest**, up to
+ *   `maxNodes`.
+ */
+function autolinkAll(world, onGrid, owner, find, join) {
+  const held = new Map();
+  const bump = (build) => held.set(build, (held.get(build) || 0) + 1);
+
+  // `power.links.size`, seeded from what the schematic actually saved.
+  for (const build of onGrid) {
+    for (const other of savedLinks(build, world)) {
+      if (owner.has(other)) { bump(build); bump(other); }
+    }
+  }
+
+  /* In the order the bench builds: everything is standing, everything is configured, and
+     then each block in turn is told it was placed. So a node sees the grids that the nodes
+     before it have already joined. */
+  for (const build of world.builds) {
+    const block = build.block;
+    if (!block.laser_range || block.no_autolink) continue;
+    if (held.get(build)) continue;
+
+    const seen = new Set();
+    const touching = new Set();
+    for (const [dx, dy] of edgesOf(build.size)) {
+      const other = world.at(build.x + dx, build.y + dy);
+      if (!other) continue;
+      touching.add(other);
+      if (owner.has(other)) seen.add(find(other));
+    }
+    if (owner.has(build)) seen.add(find(build));
+
+    const reach = (block.laser_range || 0) * TILE;
+    const wanted = onGrid.filter((other) => other !== build
+      && !other.block.no_connected_power
+      && (other.block.outputs_power_flag || other.block.consumes_power
+          || other.block.power_node)
+      && withinLaser(build, other, reach)
+      && !seen.has(find(other))
+      && !insulatedBetween(world, build, other)
+      && !(other.block.power_node
+           && (held.get(other) || 0) >= (other.block.max_nodes ?? 0))
+      && !touching.has(other));
+
+    // Nodes before anything else, then nearest first.
+    wanted.sort((a, b) => (b.block.power_node ? 1 : 0) - (a.block.power_node ? 1 : 0)
+      || squareTo(a, build) - squareTo(b, build));
+
+    let made = 0;
+    for (const other of wanted) {
+      if (made >= (block.max_nodes ?? 0)) break;
+      // Re-checked as the list is walked, because linking one changes what the next sees.
+      if (seen.has(find(other))) continue;
+      if (other.block.power_node
+          && (held.get(other) || 0) >= (other.block.max_nodes ?? 0)) continue;
+      join(build, other);
+      seen.add(find(other));
+      bump(build);
+      bump(other);
+      made++;
+    }
+  }
+}
+
+/**
+ * `PowerNode.linkValid`: a saved link is not automatically a real one.
+ *
+ * A schematic keeps whatever the node was wired to, and the game checks it again on
+ * placement. Believed as written, a beam-link read as wiring a drill ten tiles away and
+ * powering it: `sameBlockConnection` means it links to **another beam-link** and to nothing
+ * else, so the drill has no power at all and the schematic makes nothing.
+ */
+function linkValid(build, other) {
+  if (build === other) return false;
+  if (other.block.no_connected_power) return false;
+  if (build.block.same_block_link && build.name !== other.name) return false;
+
+  const mine = (build.block.laser_range || 0) * TILE;
+  const theirs = (other.block.laser_range || 0) * TILE;
+  return withinLaser(build, other, mine)
+    || (other.block.power_node && withinLaser(other, build, theirs));
+}
+
+/** The links a node carries out of the schematic, as buildings. */
+function savedLinks(build, world) {
+  if (build.node.config?.type !== 8) return [];
+  return (build.node.config.links || [])
+    .map((packed) => world.at(build.x + (packed >> 16), build.y + ((packed << 16) >> 16)))
+    .filter(Boolean);
+}
+
+/**
+ * `overlaps`: a circle round the node against the far block's own square.
+ *
+ * The reach is measured to the **edge** of what it is linking to, not to its middle, so a
+ * node just out of range of a vault's centre still reaches its near side.
+ */
+function withinLaser(build, other, reach) {
+  const [x, y] = centreOf(build);
+  const [ox, oy] = centreOf(other);
+  const half = (other.size * TILE) / 2;
+  const dx = Math.max(Math.abs(x - ox) - half, 0);
+  const dy = Math.max(Math.abs(y - oy) - half, 0);
+  return dx * dx + dy * dy <= reach * reach;
+}
+
+/** `PowerNode.insulated`: `World.raycast` along the line, stopping at the first shield. */
+function insulatedBetween(world, build, other) {
+  let x = build.x;
+  let y = build.y;
+  const x2 = other.x;
+  const y2 = other.y;
+  const dx = Math.abs(x2 - x);
+  const dy = Math.abs(y2 - y);
+  const sx = x < x2 ? 1 : -1;
+  const sy = y < y2 ? 1 : -1;
+  let err = dx - dy;
+
+  for (;;) {
+    if (world.at(x, y)?.block.insulated) return true;
+    if (x === x2 && y === y2) return false;
+    const e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x += sx; }
+    if (e2 < dx) { err += dx; y += sy; }
+  }
+}
+
+/** Where a building sits in pixels, `Block.offset` included. */
+function centreOf(build) {
+  const off = ((build.size + 1) % 2) * (TILE / 2);
+  return [build.x * TILE + off, build.y * TILE + off];
+}
+
+/** `dst2(tile)`: from the far block's middle to the node's **tile**, offset and all. */
+function squareTo(other, build) {
+  const [ox, oy] = centreOf(other);
+  const [x, y] = centreOf(build);
+  return (ox - x) ** 2 + (oy - y) ** 2;
+}
+
+/**
+ * A power diode, which is the one block that moves charge between two grids.
+ *
+ * It is not on either of them: `insulated` and no power module of its own. It looks at what
+ * is behind it and what is in front, and if the bank behind is a larger **fraction** full
+ * than the bank in front, it sends half the difference forward. Half a frame, so a full
+ * bank empties into an empty one over about a second and a half rather than at once.
+ *
+ * Nothing here modelled it, so it read as a sink: two grids that the game keeps levelled
+ * stayed one charged and one flat.
+ */
+const diode = {
+  update(build, world) {
+    const back = facingOf(build, world, 2);
+    const front = facingOf(build, world, 0);
+    if (!back?.grid || !front?.grid || back.grid === front.grid) return;
+
+    const backRoom = back.grid.capacity;
+    const frontRoom = front.grid.capacity;
+    if (backRoom <= 0 || frontRoom <= 0) return;
+
+    const backHas = back.grid.stored;
+    const frontHas = front.grid.stored;
+    if (backHas / backRoom <= frontHas / frontRoom) return;
+
+    // Where the two would settle if they were one bank, and half the way there.
+    const settled = (frontHas + backHas) / (frontRoom + backRoom);
+    const moved = (settled * frontRoom - frontHas) / 2;
+    if (moved <= 0) return;
+
+    back.grid.useBatteries(moved);
+    front.grid.chargeBatteries(moved);
+  },
+
+  acceptItem() { return false; },
+};
+
+/** `front()` and `back()`, which for a one tile block are simply the two neighbours. */
+function facingOf(build, world, turn) {
+  const step = Math.trunc(build.size / 2) + 1;
+  const [dx, dy] = DIRECTIONS[(build.rotation + turn) % 4];
+  return world.at(build.x + dx * step, build.y + dy * step);
 }
 
 /**
@@ -150,6 +355,9 @@ function beamsOf(build, world) {
 export class Grid {
   constructor(builds) {
     this.builds = builds;
+    // Each block knows which grid it landed on, which is `Building.power.graph`. One block
+    // needs it: a diode reads the two banks on either side of it and moves charge across.
+    for (const build of builds) build.grid = this;
     this.producers = builds.filter((build) => output(build.block) > 0);
     this.consumers = builds.filter((build) => build.block.power > 0);
     this.batteries = builds.filter(isBattery);
@@ -679,4 +887,5 @@ export const POWER = {
   impact,
   nuclear,
   variable,
+  diode,
 };

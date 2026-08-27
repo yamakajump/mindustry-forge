@@ -170,7 +170,7 @@ second, c'est une intuition qui a l'air d'un portage.
       liquid-source
 - [x] `LiquidVoid` - 1 bloc
       liquid-void
-- [ ] `LongPowerNode` - 1 bloc
+- [x] `LongPowerNode` - 1 bloc - cinq cents cases, un lien, et seulement vers un autre
       beam-link
 - [x] `MassDriver` - 1 bloc - il ne passe pas ses objets, il les tire
       mass-driver
@@ -186,7 +186,7 @@ second, c'est une intuition qui a l'air d'un portage.
       payload-void
 - [x] `PointDefenseTurret` - 1 bloc
       segment
-- [ ] `PowerDiode` - 1 bloc
+- [x] `PowerDiode` - 1 bloc - met deux grilles au meme niveau de charge
       diode
 - [x] `PowerSource` - 1 bloc
       power-source
@@ -200,7 +200,7 @@ second, c'est une intuition qui a l'air d'un portage.
       unit-repair-tower
 - [ ] `Seaweed` - 1 bloc
       redweed
-- [ ] `ShieldWall` - 1 bloc
+- [x] `ShieldWall` - 1 bloc - trois par seconde en permanence, qu'on lui tire dessus ou non
       shielded-wall
 - [x] `ShockwaveTower` - 1 bloc
       shockwave-tower
