@@ -14,17 +14,38 @@ uses(RefreshDatabase::class);
  * matters about it is that it degrades to nothing: served by a static file server the
  * marker is an inert comment, and the page loses its showcase and keeps its analyser.
  */
-function produisant(string $nom, float $debit, float $parBloc = 0.5): Schematic
+/**
+ * Une schematique comme le catalogue en contient.
+ *
+ * Un plafond, et une mesure seulement si on le demande. C'est la forme reelle : 14 847
+ * lignes de plafond contre 419 de mesure, et sur ces 419 il n'y a que de l'energie et des
+ * gaz -- une schematique a graphite avec une mesure n'existe pas.
+ *
+ * Le premier montage de ce fichier faisait l'inverse, une mesure et pas de plafond. Il
+ * decrivait un catalogue qui n'existe pas, et il a rendu vert un code qui, en production,
+ * ne pouvait montrer que de l'energie et des gaz sur quinze mille schematiques.
+ */
+function produisant(string $nom, float $debit, string $item = 'silicon', ?float $mesure = null): Schematic
 {
     $s = Schematic::factory()->create(['visibility' => 'public', 'name' => $nom]);
     $s->items()->delete();
     $s->items()->create([
-        'item' => 'silicon',
+        'item' => $item,
         'sens' => SchematicItem::PRODUIT,
-        'kind' => SchematicItem::MESURE,
+        'kind' => SchematicItem::PLAFOND,
         'rate' => $debit,
-        'rate_per_block' => $parBloc,
+        'rate_per_block' => $debit / max(1, $s->blocks),
     ]);
+
+    if ($mesure !== null) {
+        $s->items()->create([
+            'item' => $item,
+            'sens' => SchematicItem::PRODUIT,
+            'kind' => SchematicItem::MESURE,
+            'rate' => $mesure,
+            'rate_per_block' => $mesure / max(1, $s->blocks),
+        ]);
+    }
 
     return $s;
 }
@@ -51,18 +72,18 @@ it('pose son ilot dans la page, avec le compte reel', function () {
 });
 
 it('ne met en avant que ce qui produit une quantite mesuree', function () {
-    produisant('Usine a graphite', 3.0);
+    produisant('Usine a graphite', 3.0, 'graphite');
 
     /* Le bac a sable ne produit rien, donc il ne peut pas remonter. C'est un effet de bord
        du critere et pas une liste noire a tenir a jour. */
     Schematic::factory()->create(['visibility' => 'public', 'name' => 'Fps Droper']);
 
-    /* Un plafond n'est pas une mesure : c'est ce que les machines sortiraient si on les
-       nourrissait, et le classement de la vitrine l'exclut pour la meme raison. */
-    $plafond = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Plafond seul']);
-    $plafond->items()->delete();
-    $plafond->items()->create([
-        'item' => 'silicon', 'sens' => SchematicItem::PRODUIT,
+    /* Ce qu'elle consomme n'est pas ce qu'elle produit. Une schematique qui n'a que des
+       lignes d'entree ne fait rien avancer et n'a rien a montrer en vitrine. */
+    $consomme = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Ne fait que manger']);
+    $consomme->items()->delete();
+    $consomme->items()->create([
+        'item' => 'silicon', 'sens' => 'consomme',
         'kind' => SchematicItem::PLAFOND, 'rate' => 999, 'rate_per_block' => 999,
     ]);
 
@@ -70,7 +91,7 @@ it('ne met en avant que ce qui produit une quantite mesuree', function () {
 
     expect($noms)->toContain('Usine a graphite');
     expect($noms)->not->toContain('Fps Droper');
-    expect($noms)->not->toContain('Plafond seul');
+    expect($noms)->not->toContain('Ne fait que manger');
 });
 
 it('ne laisse pas un nom collecte fermer la balise', function () {
@@ -150,7 +171,7 @@ it('annonce le meme chiffre que la place de marche, pour la meme schematique', f
     $s->items()->delete();
     $s->items()->create([
         'item' => 'water', 'sens' => SchematicItem::PRODUIT,
-        'kind' => SchematicItem::MESURE, 'rate' => 39700, 'rate_per_block' => 500,
+        'kind' => SchematicItem::PLAFOND, 'rate' => 39700, 'rate_per_block' => 500,
     ]);
 
     $accueil = collect(ilot($this->get('/')->getContent())['schematiques'])
@@ -171,7 +192,7 @@ it('dit l energie par seconde, comme partout ailleurs sur le site', function () 
     $s->items()->delete();
     $s->items()->create([
         'item' => SchematicItem::POWER, 'sens' => SchematicItem::PRODUIT,
-        'kind' => SchematicItem::MESURE, 'rate' => 56562, 'rate_per_block' => 900,
+        'kind' => SchematicItem::PLAFOND, 'rate' => 56562, 'rate_per_block' => 900,
     ]);
 
     $mis = collect(ilot($this->get('/')->getContent())['schematiques'])->firstWhere('nom', 'Centrale');
@@ -179,4 +200,19 @@ it('dit l energie par seconde, comme partout ailleurs sur le site', function () 
     expect((float) $mis['debit'])->toBe(56562.0);
     expect($mis['unite'])->toBe('/ s');
     expect($mis['produit'])->toBe('energie');
+});
+
+it('dit que ce qu il montre est un plafond, chaque fois', function () {
+    /* Un plafond annonce sans le dire est un chiffre qui ment : c'est ce que les machines
+       sortiraient alimentees a fond, pas ce que la schematique fait. La tuile de la vitrine
+       porte la meme mention, et les deux surfaces doivent la porter ou aucune.
+
+       Sans ce test, retirer la mention passait inapercu : la premiere version de ce fichier
+       verifiait le chiffre et pas ce qu'il annonce etre. */
+    produisant('Usine a graphite', 3.0, 'graphite');
+
+    $mis = ilot($this->get('/')->getContent())['schematiques'][0];
+
+    expect($mis['au-mieux'])->toBe(__('schema.page.au-mieux'))->not->toBeEmpty();
+    expect($this->get('/schematiques')->getContent())->toContain(__('schema.page.au-mieux'));
 });

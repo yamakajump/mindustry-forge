@@ -76,9 +76,17 @@ class HomeController extends Controller
      * Not the most viewed: the column tops out at 7 across the whole catalogue, so it ranks
      * nothing. Not the newest either, which is the order they happened to be collected in.
      *
-     * A schematic with a *measured* output, on the same criterion the browse page ranks by.
-     * The sandbox entries drop out as a side effect rather than by a rule somebody has to
-     * maintain: a schematic named `Fps Droper` produces nothing, so it cannot come up.
+     * Le plafond, comme la vitrine, et nomme comme tel.
+     *
+     * La mesure aurait ete le meilleur chiffre et elle n existe presque pas : le catalogue
+     * porte 419 lignes mesurees contre 14 847 plafonds, et sur ces 419 il n y a que de
+     * l energie et des gaz -- pas un objet solide, ni graphite ni silicium. La raison tient
+     * a la donnee : une schematique importee n a aucune entree marquee, donc son analyse ne
+     * sort rien, donc `produces` est vide. Mettre en avant sur la mesure revenait a ne
+     * jamais pouvoir montrer une schematique a graphite sur un catalogue ou 844 en font.
+     *
+     * Le bac a sable disparait comme effet de bord et non par une liste noire : ces lignes
+     * ne sont indexees pour aucune des deux sortes.
      */
     private function showcase(): array
     {
@@ -86,7 +94,7 @@ class HomeController extends Controller
             ->listed()
             ->join('schematic_items', 'schematic_items.schematic_id', '=', 'schematics.id')
             ->where('schematic_items.sens', SchematicItem::PRODUIT)
-            ->where('schematic_items.kind', SchematicItem::MESURE)
+            ->where('schematic_items.kind', SchematicItem::PLAFOND)
             ->where('schematic_items.rate', '>', 0)
             ->select('schematics.*', 'schematic_items.item', 'schematic_items.rate')
             ->orderByDesc('schematic_items.rate_per_block')
@@ -106,6 +114,9 @@ class HomeController extends Controller
                    energie qui contredisait le reste du site. */
                 'produit' => SchematicItem::nomAffiche($s->item),
                 'debit' => round((float) $s->rate, 1),
+                /* Nomme, chaque fois. Un plafond annonce sans le dire est un chiffre qui
+                   ment, et c'est la mention que porte deja la tuile de la vitrine. */
+                'au-mieux' => __('schema.page.au-mieux'),
                 'unite' => __(SchematicItem::parSeconde($s->item)
                     ? 'schema.unite.par-seconde'
                     : 'schema.unite.par-minute'),
