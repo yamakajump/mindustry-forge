@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Schematic;
+use App\Models\SchematicItem;
 use App\Models\User;
 use App\Services\EngineVersion;
 use Illuminate\Database\Seeder;
@@ -94,9 +95,6 @@ class CatalogueSeeder extends Seeder
                     'blocks' => $blocks,
                     'power_made' => $powerMade,
                     'power_used' => $powerUsed,
-                    // Written by hand because this insert goes round Eloquent for speed,
-                    // and so misses the hook that normally keeps this column in step.
-                    'power_per_block' => ($powerMade - $powerUsed) / max(1, $blocks),
                     'produces' => json_encode([$makes => 10 + $n % 300]),
                     'needs' => json_encode([$needs => 5 + $n % 150]),
                     'views' => $n % 900,
@@ -109,6 +107,47 @@ class CatalogueSeeder extends Seeder
             $made += $size;
         }
 
+        $this->indexWhatTheyMake();
+
         $this->command?->info("{$made} schematiques de test en base.");
+    }
+
+    /**
+     * Fill `schematic_items` for everything just written.
+     *
+     * A second pass, because the bulk insert above goes round Eloquent for speed and so
+     * misses the hook that normally keeps this in step, and because it hands back no ids
+     * to hang the rows off.
+     */
+    private function indexWhatTheyMake(): void
+    {
+        DB::table('schematic_items')->delete();
+
+        DB::table('schematics')->orderBy('id')->chunk(500, function ($schematics) {
+            $rows = [];
+            foreach ($schematics as $schematic) {
+                $blocks = max(1, (int) $schematic->blocks);
+                foreach ((array) json_decode($schematic->produces ?? '[]', true) as $item => $rate) {
+                    $rows[] = [
+                        'schematic_id' => $schematic->id,
+                        'item' => $item,
+                        'rate' => (float) $rate,
+                        'rate_per_block' => (float) $rate / $blocks,
+                    ];
+                }
+                $spare = (float) $schematic->power_made - (float) $schematic->power_used;
+                if ($spare > 0) {
+                    $rows[] = [
+                        'schematic_id' => $schematic->id,
+                        'item' => SchematicItem::POWER,
+                        'rate' => $spare,
+                        'rate_per_block' => $spare / $blocks,
+                    ];
+                }
+            }
+            if ($rows !== []) {
+                DB::table('schematic_items')->insert($rows);
+            }
+        });
     }
 }
