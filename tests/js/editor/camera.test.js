@@ -99,3 +99,20 @@ test("recadrer un plateau vide ne rend pas une echelle absurde", () => {
   assert.ok(camera.scale >= 4 && camera.scale <= 64, `echelle ${camera.scale}`);
   assert.ok(Number.isFinite(camera.x) && Number.isFinite(camera.y));
 });
+
+test("cadrer un petit schema ne colle pas le nez au bloc", () => {
+  /* Cinq convoyeurs dans une vue de 1160 pixels : l ajustement pur donne une echelle de
+     165, ramenee au maximum de 64, et on arrive nez colle au bloc. Le cadrage s arrete
+     donc a la taille native du sprite, alors que le zoom a la main garde ses 64 : au dela
+     du natif on ne montre pas plus de choses, on montre les memes pixels en plus gros. */
+  const camera = createCamera({ scale: 24, x: 0, y: 0 });
+  camera.frame({ left: 0, bottom: 0, width: 5, height: 1 }, { width: 1160, height: 810 });
+  assert.equal(camera.scale, 32);
+});
+
+test("cadrer un grand schema reduit autant qu il faut", () => {
+  const camera = createCamera({ scale: 32, x: 0, y: 0 });
+  camera.frame({ left: 0, bottom: 0, width: 64, height: 64 }, { width: 800, height: 600 });
+  // 600 / 66 arrondi vers le bas, soit neuf pixels par tuile.
+  assert.equal(camera.scale, 9);
+});

@@ -367,8 +367,42 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   // is not exactly one to one.
   context.imageSmoothingEnabled = false;
 
+  /* The grid, under everything else and only for the editor.
+
+     The report draws a portrait of a build and needs no grid: the build is the picture. An
+     editor draws a plain, and a plain without a grid gives a player nothing to aim at. The
+     first version had none and placing a block was guesswork until the ghost appeared.
+
+     Every eighth line is brighter, which is the spacing the game uses for its own chunk
+     lines, so counting eight tiles is a glance rather than an arithmetic. */
+  if (options.grid && scale >= 6) {
+    context.save();
+    context.lineWidth = 1;
+    const from = Math.ceil(box.left);
+    const upto = box.left + box.width;
+    for (let x = from; x <= upto; x++) {
+      context.strokeStyle = x % 8 === 0 ? "rgba(255,255,255,.085)" : "rgba(255,255,255,.035)";
+      const px = Math.round((x - box.left) * scale) + 0.5;
+      context.beginPath();
+      context.moveTo(px, 0);
+      context.lineTo(px, box.height * scale);
+      context.stroke();
+    }
+    const low = Math.ceil(box.bottom);
+    const high = box.bottom + box.height;
+    for (let y = low; y <= high; y++) {
+      context.strokeStyle = y % 8 === 0 ? "rgba(255,255,255,.085)" : "rgba(255,255,255,.035)";
+      const py = Math.round((box.height - (y - box.bottom)) * scale) + 0.5;
+      context.beginPath();
+      context.moveTo(0, py);
+      context.lineTo(box.width * scale, py);
+      context.stroke();
+    }
+    context.restore();
+  }
+
   /* The ground, under everything.
-     
+
      Painted tiles win over the game's hatched schematic background, because a schematic
      standing on a patch of copper ore is standing on copper ore and the hatching is only
      there to say "this tile belongs to the build". An ore is an overlay: it goes over the
@@ -602,6 +636,18 @@ function drawPowerLinks(context, tiles, sizeOf, box, scale) {
     }
   }
   context.restore();
+}
+
+/**
+ * One sprite's place in the atlas, for drawing straight onto a canvas.
+ *
+ * `itemIcon` below answers a neighbouring question and answers it with a data URL, which
+ * is a base64 round trip through a second canvas. Fine once per chip in a palette, absurd
+ * for a ghost that follows the cursor at sixty frames a second.
+ */
+export function spriteOf(name) {
+  const found = atlas?.sprites?.[name];
+  return found && sheet ? { sheet, ...found } : null;
 }
 
 /**

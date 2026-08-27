@@ -895,6 +895,26 @@ La mesure se fait donc en tâche 7, quand le plateau existe : compter le temps d
 sur une schématique dense pendant un tracé. Au-dessus de 8 ms par image, on met en calques
 et on l'écrit ici. En dessous, on ne le fait pas et on l'écrit aussi.
 
+**Mesuré le 27/08/2026, dans Chrome, vue de 1160 × 810, sol peint sous chaque bloc :**
+
+| Blocs posés | Temps d'un `draw` |
+|---|---|
+| grille seule | 0,07 ms |
+| 50 | 0,31 ms |
+| 200 | 0,80 ms |
+| 500 | 1,68 ms |
+| 1 000 | 3,67 ms |
+| 2 000 | 5,92 ms |
+| 4 096, soit 64 × 64 entièrement rempli | 20,6 ms |
+
+**Décision : pas de calques.** Le budget de 8 ms n'est franchi que par une schématique qui
+remplit chacune de ses 4 096 cases, ce qui n'existe pas dans la vraie vie, et même là on
+tombe à environ 48 images par seconde, pas sur un diaporama. Un cache coûterait deux états
+supplémentaires à tenir cohérents avec le plateau, pour un gain que personne ne verrait.
+
+Le repère invoqué au départ était donc bon pour le tableau de bord et faux ici. C'est la
+raison d'avoir mesuré.
+
 - [ ] **Étape 5 : Vérifier que le rapport n'a pas bougé**
 
 ```bash

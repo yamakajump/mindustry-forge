@@ -14,6 +14,9 @@
 const MIN_SCALE = 4;
 const MAX_SCALE = 64;
 
+/** La taille réelle d'un sprite de bloc dans l'atlas du jeu. */
+const NATIVE = 32;
+
 const clamp = (value) => Math.max(MIN_SCALE, Math.min(MAX_SCALE, Math.round(value)));
 
 export function createCamera({ scale = 24, x = 0, y = 0 } = {}) {
@@ -80,12 +83,22 @@ export function createCamera({ scale = 24, x = 0, y = 0 } = {}) {
     return camera;
   };
 
-  /** Cadrer une boîte entière, avec un peu d'air autour. */
+  /**
+   * Cadrer une boîte entière, avec un peu d'air autour.
+   *
+   * L'échelle s'arrête à `NATIVE`, la taille réelle du sprite, alors que le zoom à la main
+   * monte jusqu'à `MAX_SCALE`. Ce n'est pas une incohérence : agrandir au delà de la taille
+   * native ne montre rien de plus, ça montre les mêmes pixels en plus gros. Sans ce
+   * plafond, ouvrir une schématique de cinq convoyeurs dans une vue de 1 160 pixels
+   * calculait une échelle de 165, ramenée à 64, et on arrivait le nez collé au bloc sans
+   * comprendre pourquoi. Mesuré, pas supposé.
+   */
   camera.frame = (box, viewport) => {
     const width = Math.max(1, box.width);
     const height = Math.max(1, box.height);
-    camera.scale = clamp(Math.floor(
-      Math.min(viewport.width / (width + 2), viewport.height / (height + 2))));
+    const fit = Math.floor(
+      Math.min(viewport.width / (width + 2), viewport.height / (height + 2)));
+    camera.scale = clamp(Math.min(NATIVE, fit));
     camera.x = box.left + (width - 1) / 2;
     camera.y = box.bottom + (height - 1) / 2;
     return camera;
