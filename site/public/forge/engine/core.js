@@ -350,22 +350,43 @@ export class Build {
     return 0;
   }
 
-  /** `dumpLiquid`: offer it round the neighbours, cursor rotating, as items are. */
-  dumpLiquid(liquid, scaling = 2) {
+  /**
+   * `dumpLiquid`: offer it round the neighbours, cursor rotating, as items are.
+   *
+   * `outputDir` is for a block that pours its liquids out of named faces rather than
+   * anywhere: an electrolyzer sends its ozone out of relative face one and its hydrogen out
+   * of face three. Poured everywhere, a layout that separates the two gases mixes them, and
+   * the tapped face receives a flow that does not exist.
+   *
+   * `scaling` is two for nearly everything and **one** for an unlinked liquid bridge, which
+   * pours twice as hard as anything else.
+   */
+  dumpLiquid(liquid, scaling = 2, outputDir = -1) {
     if (this.liquids.get(liquid) <= 0.0001 || !this.proximity.length) return;
 
     const start = this.cdump;
     for (let i = 0; i < this.proximity.length; i++) {
       this.cdump = (this.cdump + 1) % this.proximity.length;
       let other = this.proximity[(i + start) % this.proximity.length];
+      // Tested on the neighbour itself, before following any beam off it.
+      if (outputDir !== -1 && (outputDir + this.rotation) % 4 !== this.relativeTo(other)) {
+        continue;
+      }
       other = other.liquidDestination?.(this, liquid);
       if (!other || !other.block.has_liquids || !other.liquids) continue;
+      if (!this.canDumpLiquid(other, liquid)) continue;
       const ofract = other.liquids.get(liquid) / (other.block.liquid_capacity || 10);
       const fract = this.liquids.get(liquid) / this.liquidCapacity;
       if (ofract < fract) {
         this.transferLiquid(other, (fract - ofract) * this.liquidCapacity / scaling, liquid);
       }
     }
+  }
+
+  /** `canDumpLiquid`, which a bridge overrides so it never pours back down its own beam. */
+  canDumpLiquid(other, liquid) {
+    return this.behaviour?.canDumpLiquid
+      ? this.behaviour.canDumpLiquid(this, other, liquid) : true;
   }
 
   transferLiquid(next, amount, liquid) {

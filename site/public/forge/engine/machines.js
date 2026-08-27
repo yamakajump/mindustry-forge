@@ -81,9 +81,24 @@ function shouldConsume(build) {
   for (const [item, amount] of Object.entries(build.block.output || {})) {
     if (build.items.get(item) + amount > build.itemCapacity) return false;
   }
-  for (const liquid of Object.keys(build.block.output_liquid || {})) {
-    const held = build.liquids.get(liquid);
-    if (held >= build.liquidCapacity - 0.001) return false;
+  /* Un seul reservoir de sortie plein n'arrete pas la machine.
+
+     `dumpExtraLiquid` vaut vrai par defaut : le bloc tourne tant qu'**un** de ses liquides
+     a de la place, et le surplus des autres est perdu. Un seul bloc du jeu sort deux
+     liquides, l'electrolyseur, et c'est le montage courant de ne taper que l'ozone : son
+     hydrogene sature en huit secondes, apres quoi le jeu continue a quatre ozone la seconde
+     pour toujours et le portage tombait a zero en bloquant tout l'aval. */
+  const outputs = Object.keys(build.block.output_liquid || {});
+  if (outputs.length && !build.block.ignore_liquid_fullness) {
+    let allFull = true;
+    for (const liquid of outputs) {
+      if (build.liquids.get(liquid) >= build.liquidCapacity - 0.001) {
+        if (build.block.no_dump_extra) return false;
+      } else {
+        allFull = false;
+      }
+    }
+    if (allFull) return false;
   }
   return true;
 }
@@ -174,7 +189,8 @@ const crafter = {
          what a tank in equilibrium is: one tick of its own consumption short of full. */
       const drink = build.delta(step) * efficiency * heatScale(build)
         * (block.scale_liquid_consumption ? groundScale(build) : 1);
-      const delta = build.delta(step) * efficiency * heatScale(build) * groundScale(build);
+      const delta = build.delta(step) * efficiency * heatScale(build) * groundScale(build)
+        * liquidRoomScale(build, efficiency, step);
       build.state.progress += delta / (block.craft_time || 1);
 
       // A liquid comes out continuously rather than in a batch: half a craft's worth of
@@ -227,6 +243,30 @@ function drinkBoost(build, step, share) {
   for (const [liquid, rate] of Object.entries(build.block.boost_liquid || {})) {
     build.liquids.remove(liquid, (rate / TICKS) * build.delta(step) * share);
   }
+}
+
+/**
+ * How much a nearly full output tank slows a machine down.
+ *
+ * `getProgressIncrease` divides by how many frames' worth of room is left in each output
+ * tank, and takes the **largest** of them when the block is willing to throw the surplus
+ * away. So a crafter with one tank tapped and one full does not stop and does not run at
+ * full pace either: it runs at whatever the tapped one can take.
+ */
+function liquidRoomScale(build, efficiency, step) {
+  const outputs = Object.entries(build.block.output_liquid || {});
+  if (!outputs.length || build.block.ignore_liquid_fullness) return 1;
+
+  const edelta = build.delta(step) * efficiency;
+  let smallest = 1;
+  let largest = 0;
+  for (const [liquid, rate] of outputs) {
+    const room = build.liquidCapacity - build.liquids.get(liquid);
+    const worth = room / ((rate / TICKS) * edelta);
+    smallest = Math.min(smallest, worth);
+    largest = Math.max(largest, worth);
+  }
+  return build.block.no_dump_extra ? smallest : Math.min(largest, 1);
 }
 
 /**
@@ -285,9 +325,13 @@ function dumpOutputs(build, step) {
   build.state.dumpTimer = 0;
 
   for (const item of Object.keys(build.block.output || {})) build.dump(item);
-  for (const liquid of Object.keys(build.block.output_liquid || {})) {
-    build.dumpLiquid(liquid);
-  }
+  /* Chaque liquide par sa face, quand le bloc les nomme : l'ozone de l'electrolyseur sort
+     par la face relative 1 et l'hydrogene par la 3. Verses partout, un plan qui separe
+     correctement les deux gaz les melange. */
+  const faces = build.block.liquid_output_directions || [];
+  Object.keys(build.block.output_liquid || {}).forEach((liquid, at) => {
+    build.dumpLiquid(liquid, 2, faces.length > at ? faces[at] : -1);
+  });
 }
 
 /**

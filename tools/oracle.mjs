@@ -1263,6 +1263,42 @@ const SCENARIOS = {
     { x: 2, y: -3, block: "vault", rotation: 0 },
   ],
 
+  /* Un conduit qui pointe dans le vide fuit.
+
+     `moveLiquidForward(leaks, ...)` verse les deux tiers de ce qu'il tient dans une flaque
+     a chaque image, donc il ne sature jamais. Le drapeau etait dans le catalogue et lu
+     nulle part : une conduite ouverte bloquait la ligne ici et se vidange en continu dans
+     le jeu, ce qui inverse tout l'amont. Le tuyau plaque est le seul qui ne fuit pas, et le
+     seul cas que le portage avait juste. */
+  "conduit-leaks": () => [
+    { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
+    { x: 1, y: 0, block: "conduit", rotation: 0 },
+    { x: 2, y: 0, block: "conduit", rotation: 0 },
+    // Et rien devant : la case (3,0) est du sol nu.
+  ],
+
+  "conduit-plated-holds": () => [
+    { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
+    { x: 1, y: 0, block: "plated-conduit", rotation: 0 },
+    { x: 2, y: 0, block: "plated-conduit", rotation: 0 },
+  ],
+
+  /* Un electrolyseur dont on ne tape qu'un des deux gaz.
+
+     C'est le montage courant, et le seul bloc du jeu a deux liquides de sortie. Son
+     hydrogene sature en huit secondes ; ensuite le jeu continue a sortir de l'ozone pour
+     toujours et le portage tombait a zero en bloquant tout l'aval. Et chaque gaz sort par
+     sa propre face : l'ozone par la face relative 1, l'hydrogene par la 3. */
+  "electrolyzer-one-tap": () => [
+    // Covers 0..2 by 0..2, tourne vers l'est.
+    { x: 1, y: 1, block: "electrolyzer", rotation: 0 },
+    { x: -1, y: 1, block: "power-source", rotation: 0 },
+    { x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
+    // Face relative 1 (le nord quand la rotation est zero) : l'ozone.
+    { x: 1, y: 3, block: "conduit", rotation: 1 },
+    { x: 1, y: 5, block: "liquid-tank", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },

@@ -813,6 +813,23 @@ public class DumpBlocks {
         }
         if (block instanceof GenericCrafter crafter) {
             entry.put("role", "crafter");
+            /* Un bloc du jeu verse ses deux liquides par deux faces nommees : l'ozone de
+               l'electrolyseur sort par la face relative 1 et l'hydrogene par la 3. Verses
+               partout, un plan qui separe correctement les deux gaz les melange, et un plan
+               qui ne branche qu'une face recoit un debit qui n'existe pas. */
+            if (crafter.liquidOutputDirections != null
+                    && crafter.liquidOutputDirections.length > 0) {
+                Jval faces = Jval.newArray();
+                for (int dir : crafter.liquidOutputDirections) {
+                    faces.asArray().add(Jval.valueOf(dir));
+                }
+                entry.put("liquid_output_directions", faces);
+            }
+            /* Ecrits a l'envers, parce que le catalogue jette les valeurs fausses : le
+               defaut du jeu est `dumpExtraLiquid = true`, donc "absent" doit vouloir dire
+               vrai et c'est l'exception qu'il faut nommer. */
+            if (!crafter.dumpExtraLiquid) entry.put("no_dump_extra", true);
+            if (crafter.ignoreLiquidFullness) entry.put("ignore_liquid_fullness", true);
             entry.put("craft_time", crafter.craftTime);
             entry.put("crafts_per_second", TPS / Math.max(1f, crafter.craftTime));
 
