@@ -139,13 +139,19 @@ export function logicOf(nodes) {
     for (const link of node.program?.links || []) {
       const other = at.get(`${node.x + link.dx},${node.y + link.dy}`);
       if (!other || other === node) continue;
-      if (writes) driven.add(other.name);
 
       /* Checked whether the processor writes or only reads. `drives` answers "does this
          change any number", which has nothing to say about whether the processor can see
          what it reads: a `sensor` aimed past the range reads nothing, for ever, and the
          program branches on that nothing. */
       const { within, distance, reach } = reaches(node, other);
+
+      /* Named as driven only when the processor can actually reach it. A `control` aimed
+         past the range does nothing at all, so listing its target among the blocks a
+         schematic drives is a false statement in the one place a reader goes to find out
+         what the processors touch. A block linked twice, once in reach and once not, still
+         appears: the near link drives it and that is true. */
+      if (writes && within) driven.add(other.name);
       if (within) continue;
       unreachable.push({
         from: node.name, to: other.name,

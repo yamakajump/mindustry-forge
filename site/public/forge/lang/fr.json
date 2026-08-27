@@ -1,4 +1,10 @@
 {
+  "analyse.logique.aucun-pilote": "Aucun ne pilote de bloc : ils lisent seulement.",
+  "analyse.logique.hors-portee": "hors de portee",
+  "analyse.logique.hors-portee-aide": "Distance mesuree puis portee du processeur, en cases. Le jeu refuse un lien pose exactement a sa portee, et il ne le dit pas : il l'enregistre, puis n'en tient jamais compte. Un lien dont la cible n'a pas ete copiee avec la schematique n'est pas compte ici.",
+  "analyse.logique.pilote": "Pilote",
+  "analyse.logique.processeurs": "Processeurs",
+  "analyse.logique.titre": "Logique",
   "compte.barre.connexion": "Se connecter avec Discord",
   "nav.barre.analyser": "Analyser",
   "nav.barre.blocs": "Blocs",
