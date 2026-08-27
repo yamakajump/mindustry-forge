@@ -63,9 +63,9 @@ it('change quand le tamis de la passe change', function () {
 
     $kept = file_get_contents($path);
     try {
-        file_put_contents($path, $kept."
+        file_put_contents($path, $kept.'
 // touche par un test
-");
+');
         cache()->flush();
         expect(EngineVersion::current())->not->toBe($before);
     } finally {
