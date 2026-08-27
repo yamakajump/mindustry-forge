@@ -35,12 +35,33 @@ function costOf(block) {
  * Un sol n'est pas un bloc qu'on pose, et un bloc sans coût de construction n'existe pas
  * dans une schématique : sans ce tri, la palette proposait l'air, les marqueurs d'apparition
  * et l'outil qui efface le minerai.
+ *
+ * Triés par l'identifiant du jeu, qui suit l'ordre de son propre registre : à l'intérieur
+ * d'une catégorie, un convoyeur arrive avant un convoyeur titane, comme dans l'arbre
+ * technologique. L'ordre alphabétique mettrait « titanium-conveyor » avant « conveyor »,
+ * ce qui n'est l'ordre de rien.
  */
 export function buildables(catalogue) {
   return Object.entries(catalogue.blocks)
     .filter(([, block]) => block.cost && !block.floor && !block.wall)
-    .map(([name, block]) => ({ name, block }));
+    .map(([name, block]) => ({ name, block }))
+    .sort((a, b) => (a.block.id || 0) - (b.block.id || 0));
 }
+
+/**
+ * Le nom français d'une catégorie du jeu.
+ *
+ * C'est de la traduction d'interface, pas de la donnée de jeu : les catégories elles-mêmes
+ * sortent du catalogue, et une catégorie inconnue de cette table s'affiche telle quelle
+ * plutôt que de disparaître.
+ */
+const CATEGORIES = {
+  turret: "Tourelles", production: "Production", distribution: "Distribution",
+  liquid: "Liquides", power: "Énergie", defense: "Défense", crafting: "Usines",
+  units: "Unités", effect: "Effets", logic: "Logique",
+};
+
+const PLANETS = { serpulo: "Serpulo", erekir: "Erekir" };
 
 /**
  * Monte le rail et rend de quoi le tenir à jour.
@@ -49,6 +70,11 @@ export function buildables(catalogue) {
  */
 export function mountRail({ host, catalogue, onPick }) {
   const all = buildables(catalogue);
+
+  /* Les catégories et les planètes présentes, prises au catalogue plutôt qu'écrites ici.
+     Une liste tenue à la main se met à mentir le jour où le jeu en ajoute une. */
+  const categories = [...new Set(all.map(({ block }) => block.category))].filter(Boolean);
+  const planets = [...new Set(all.map(({ block }) => block.planet))].filter(Boolean);
 
   host.innerHTML = `
     <div class="editor-tabs">
@@ -59,6 +85,18 @@ export function mountRail({ host, catalogue, onPick }) {
       <input type="search" placeholder="Chercher dans ${all.length} blocs"
              aria-label="Chercher un bloc">
     </div>
+    <div class="editor-filters">
+      <div class="chips planets">
+        <button type="button" class="chip" data-planet="" aria-pressed="true">Tout</button>
+        ${planets.map((p) => `<button type="button" class="chip" data-planet="${escape(p)}"
+           aria-pressed="false">${escape(PLANETS[p] || p)}</button>`).join("")}
+      </div>
+      <select class="cats" aria-label="Categorie de blocs">
+        <option value="">Toutes categories</option>
+        ${categories.map((c) => `<option value="${escape(c)}">${
+          escape(CATEGORIES[c] || c)}</option>`).join("")}
+      </select>
+    </div>
     <div class="editor-grid" role="listbox" aria-label="Blocs"></div>
     <div class="editor-held"><p class="empty">Rien en main. Choisis un bloc.</p></div>`;
 
@@ -66,18 +104,53 @@ export function mountRail({ host, catalogue, onPick }) {
   const held = host.querySelector(".editor-held");
   const search = host.querySelector(".search input");
   let holding = null;
+  let needle = "";
+  let planet = "";
+  let category = "";
 
-  const paint = (needle = "") => {
-    const shown = needle
-      ? all.filter(({ name }) => name.includes(needle.toLowerCase()))
-      : all;
-    grid.innerHTML = shown.map(({ name }) => {
+  const paint = () => {
+    const shown = all.filter(({ name, block }) =>
+      (!needle || name.includes(needle))
+      && (!planet || block.planet === planet)
+      && (!category || block.category === category));
+
+    if (!shown.length) {
+      grid.innerHTML = `<p class="empty">Aucun bloc ne répond à ça.</p>`;
+      return;
+    }
+    grid.innerHTML = shown.map(({ name, block }) => {
       const src = iconOf(name);
-      return `<button type="button" data-block="${escape(name)}" title="${escape(name)}"
+      return `<button type="button" data-block="${escape(name)}"
+        title="${escape(name)} — ${escape(costOf(block))}"
         aria-pressed="${name === holding}">${
         src ? `<img src="${src}" alt="${escape(name)}">` : escape(name.slice(0, 3))}</button>`;
     }).join("");
   };
+
+  /** Un groupe de filtres où un seul choix vaut à la fois. */
+  const wireFilter = (selector, attribute, set) => {
+    host.querySelector(selector).addEventListener("click", (event) => {
+      const chip = event.target.closest(`[data-${attribute}]`);
+      if (!chip) return;
+      set(chip.dataset[attribute]);
+      for (const other of host.querySelectorAll(`${selector} [data-${attribute}]`)) {
+        other.setAttribute("aria-pressed", String(other === chip));
+      }
+      paint();
+    });
+  };
+  wireFilter(".planets", "planet", (v) => { planet = v; });
+
+  /* La categorie est une liste deroulante et non des pastilles, faute de place : les onze
+     pastilles occupaient cinq rangees, soit un tiers de la hauteur du rail, contre une
+     ligne ici. Le jeu les montre en icones sur une seule rangee, mais ses icones de
+     categorie ne sont pas dans l atlas et aller les chercher dans le jar est un chantier
+     a lui seul. Une liste deroulante ne cache aucune option, contrairement a une rangee
+     qui defile. */
+  host.querySelector("select.cats").addEventListener("change", (event) => {
+    category = event.target.value;
+    paint();
+  });
 
   const rail = {
     /** Ce qui est en main, dit en toutes lettres : rien n'apprend les raccourcis à celui qui arrive. */
@@ -111,7 +184,10 @@ export function mountRail({ host, catalogue, onPick }) {
     onPick(chip.dataset.block === holding ? null : chip.dataset.block);
   });
 
-  search.addEventListener("input", (event) => paint(event.target.value.trim()));
+  search.addEventListener("input", (event) => {
+    needle = event.target.value.trim().toLowerCase();
+    paint();
+  });
 
   paint();
   return rail;

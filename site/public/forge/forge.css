@@ -448,3 +448,23 @@ select {
 @media (max-width: 720px) {
   .editor { grid-template-columns: 180px 1fr; }
 }
+
+/* Les filtres de la palette : la planète d'abord, la catégorie ensuite.
+   Serpulo et Erekir ne partagent presque aucun bloc, donc c'est le tri qui coupe le plus. */
+.editor-filters {
+  padding: 8px 10px; border-bottom: 1px solid var(--edge);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.editor-filters .chips { gap: 4px; }
+.editor-filters select {
+  flex: 1; min-width: 120px; min-height: 30px; padding: 0 8px; font: inherit;
+  font-size: 12px; color: var(--ink); background: var(--raised);
+  border: 1px solid var(--edge); border-radius: 6px;
+}
+.editor-filters .chip {
+  cursor: pointer; font-size: 11.5px; padding: 3px 8px; color: var(--dim);
+}
+.editor-filters .chip[aria-pressed="true"] {
+  color: #241d0c; background: var(--accent); border-color: #e0b45f;
+}
+.editor-grid .empty { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; padding: 8px; }
