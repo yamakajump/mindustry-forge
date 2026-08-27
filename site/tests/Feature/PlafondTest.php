@@ -175,11 +175,12 @@ it('does not touch a name that merely contains brackets', function () {
      * Crusibles` is a real schematic published on 27/08/2026, and `\[[^\]]*\]` renames it
      * `Stackable Thin Crusibles`. That is not cleaning a name, it is breaking one.
      *
-     * `[green]` survives too, for now: telling it from `[Silicon]` needs the game's colour
-     * registry, which is not dumped yet. Leaving a tag in is visible and reported; eating
-     * a title is not.
+     * `[Green]` is in here too, with a capital, because the game's lookup is exact: it
+     * registers `GREEN` and `green` and knows neither `Green` nor `Silicon`. A
+     * case-insensitive match would be a rule we invented, and it would eat a title.
      */
-    foreach (['[Silicon]Stackable Thin Crusibles', '[green]rpahT', 'T3 [at core', '100% [[wip]]'] as $name) {
+    foreach (['[Silicon]Stackable Thin Crusibles', '[Green]Majuscule', 'T3 [at core',
+        'Electrolyzer Compact [Hydrogen Tank]', '100% [[wip]]'] as $name) {
         $kept = Schematic::factory()->create(['name' => $name]);
         expect($kept->displayName())->toBe(str_replace('[[', '[', $name));
     }
@@ -242,4 +243,23 @@ it('lets no surface print raw markup, including the ones added later', function 
             ->assertSee('Gauche')
             ->assertDontSee($mark, escape: false);
     }
+});
+
+it('strips a colour the game knows, and only those', function () {
+    /*
+     * The half that was waiting for the registry. `[green]` is markup because `Colors`
+     * holds that key; `[Silicon]` is a title because it does not. The list is dumped from
+     * the game by the bench rather than typed here, for the same reason the block
+     * catalogue is: a list typed here is a second copy of the game's data, right until the
+     * game adds a colour.
+     */
+    $registry = json_decode((string) file_get_contents(public_path('forge/colors.json')), true);
+
+    expect($registry)->toHaveKeys(['green', 'GREEN'])
+        ->and($registry)->not->toHaveKey('Silicon')
+        ->and($registry)->not->toHaveKey('Green');
+
+    expect(Schematic::factory()->create(['name' => '[green]Ligne'])->displayName())->toBe('Ligne')
+        ->and(Schematic::factory()->create(['name' => '[GREEN]Ligne'])->displayName())->toBe('Ligne')
+        ->and(Schematic::factory()->create(['name' => '[Green]Ligne'])->displayName())->toBe('[Green]Ligne');
 });
