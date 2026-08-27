@@ -508,6 +508,17 @@ résolution compare contre une cible qui a déjà avancé, et affiche des suppre
 n'existent pas. Une voie a cru supprimer trente-quatre lignes du travail d'une autre. La
 bonne référence pendant une fusion est `MERGE_HEAD`, pas `origin/<branche>`.
 
+**Une balise `og:` repetee est un tableau, pas un remplacement.** Le layout en posait une
+par defaut et chaque page en poussait une autre : les deplieurs prennent la premiere, donc
+la carte generique gagnait toujours et **aucune des deux cartes de partage construites ce
+soir ne s affichait**. Rien ne leve, la page rend 200, et la seule facon de le voir est de
+lire le HTML servi. Une page remplace desormais par `@section` au lieu d ajouter.
+
+**Une apostrophe echappee dans une directive Blade arrete le compilateur en plein fichier**,
+et la page repond **200 en affichant son propre source**, `@stack` et `@include` compris.
+Aucun test ne l attrapait. Il y en a un maintenant : aucun `@yield` ne doit sortir dans le
+HTML.
+
 **`consumes_power` peut valoir vrai sans aucune consommation.** La presse à graphite est
 mécanique dans le jeu. Se fier à la présence de `power` et `power_out`, jamais au booléen.
 
