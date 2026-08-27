@@ -52,6 +52,8 @@
   "nav.menu.planificateur": "Planificateur",
   "outils.logique.aide-texte": "Les instructions, leurs operandes et les listes de valeurs sont lues dans le jeu lui-meme, {build}. Le programme n'est pas execute : cet outil est un editeur, pas un moteur.",
   "outils.logique.aucun-probleme": "Le jeu lira ce programme tel quel.",
+  "outils.logique.chrono": "un passage en {ticks} ticks, soit {duree}",
+  "outils.logique.chrono-rattrapage": "Au plus {rafale} instructions dans un seul tick : un processeur qui a pris du retard rattrape cinq ticks, et perd le reste au lieu de le reporter.",
   "outils.logique.coller": "Coller une schematique",
   "outils.logique.completion-contenu": "contenu",
   "outils.logique.completion-etiquette": "etiquette",

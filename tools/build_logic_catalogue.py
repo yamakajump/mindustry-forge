@@ -267,6 +267,14 @@ def processors(words: dict[str, dict[str, str]]) -> list[dict]:
     there rather than from `site/public/forge/blocks.json`, so that the editor page does not
     have to fetch two hundred kilobytes of block data to learn that a micro processor is one
     tile wide.
+
+    Two of the rate fields are copied and the third is not. `instructions_per_tick` and
+    `max_instruction_scale` are what `updateTile` actually runs on. `max_instructions_per_tick`
+    is left behind on purpose: the only thing that writes to a building's rate is `setrate`,
+    and `updateTile` puts the rate back to the block's own every tick on anything that is
+    not privileged. So on the three processors a schematic can hold, that ceiling is a
+    number no program can ever reach, and carrying it here would be handing the page
+    something true about the world processor and false about everything it can show.
     """
     registry = json.loads(BLOCKS.read_text(encoding="utf-8"))
     registry = registry.get("blocks", registry)
@@ -278,6 +286,8 @@ def processors(words: dict[str, dict[str, str]]) -> list[dict]:
                     "size": block.get("size", 1),
                     "label": words["fr"].get(f"block.{name}.name")
                           or words["en"].get(f"block.{name}.name", name),
+                    "instructions_per_tick": block.get("instructions_per_tick"),
+                    "max_instruction_scale": block.get("max_instruction_scale"),
                     # The world processor cannot be placed: it has no business in a
                     # schematic, and it is here so the page can say so rather than offer it.
                     "world": name == "world-processor"})

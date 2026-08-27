@@ -59,6 +59,7 @@
         <h2 data-i18n="outils.logique.processeur">Processeur</h2>
         <select id="bloc" name="bloc" aria-label="Processeur"></select>
         <p class="mesures" id="mesures"></p>
+        <p class="hint-line" id="rattrapage"></p>
       </section>
 
       <section class="card">
@@ -94,6 +95,7 @@
 import { loadCatalogue, catalogueOf } from "../forge/logic/catalogue.js";
 import { LogicEditor } from "../forge/logic/editor.js";
 import { toSchematic, toSchematicBytes, fromSchematic } from "../forge/logic/program.js";
+import { timingOf, ticksAsText, secondsAsText } from "../forge/logic/timing.js";
 import { t, ready, translate } from "../forge/i18n.js";
 
 const $ = (id) => document.getElementById(id);
@@ -138,6 +140,10 @@ for (const bloc of catalogue.processors) {
 }
 $("bloc").value = "micro-processor";
 
+/* The slowest of the three is the default, and changing it changes what the panel says
+   about time, so the report is drawn again from the one the editor already holds. */
+$("bloc").onchange = () => rendre(editeur.report);
+
 /* Where the rules come from. Written once: the game's version does not move during a
    visit, and a tool that checks code owes the reader what it checked against. */
 $("provenance").textContent = t("outils.logique.aide-texte", { build: catalogue.build });
@@ -149,10 +155,21 @@ dessinerLiens();
 /* The report ---------------------------------------------------------------------------- */
 
 function rendre(rapport) {
+  /* The timing depends on the processor as much as on the program, so this runs again when
+     the picker moves and not only when the text does. */
+  const chrono = timingOf($("bloc").value, rapport.statements.length);
+
   $("mesures").innerHTML = `
     <span>${t("outils.logique.compte-instructions", { compte: `<b>${rapport.statements.length}</b>` })}</span>
     <span>${t("outils.logique.compte-octets", {
-      octets: `<b>${rapport.bytes ?? 0}</b>`, maximum: catalogue.limits.code_bytes })}</span>`;
+      octets: `<b>${rapport.bytes ?? 0}</b>`, maximum: catalogue.limits.code_bytes })}</span>
+    ${chrono ? `<span>${t("outils.logique.chrono", {
+      ticks: `<b>${ticksAsText(chrono.ticks)}</b>`,
+      duree: secondsAsText(chrono.seconds) })}</span>` : ""}`;
+
+  $("rattrapage").textContent = chrono
+    ? t("outils.logique.chrono-rattrapage", { rafale: chrono.burst })
+    : "";
 
   const problemes = [...rapport.problems, ...problemesDesLiens()];
   const liste = $("problemes");
