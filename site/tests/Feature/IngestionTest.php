@@ -316,3 +316,37 @@ it('does not lose a whole page to one duplicate inside it', function () {
 
     expect(Schematic::pluck('source_id')->sort()->values()->all())->toBe(['aaa', 'bbb']);
 });
+
+/** A graphite press on its own: nothing feeds it, so it measures zero and its ceiling is 40. */
+const PRESSE = 'bXNjaAF4nGNgYmBiZGDJS8xNZWArKEotLk5lZOBLL0osyMgsSdUFizAwMDAyQAAA/NAKAQ==';
+
+it('carries the ceiling all the way from Node to the search index', function () {
+    /*
+     * The chain this test walks is exactly the one that was broken, and it was broken by a
+     * single missing word. `analyse.js` computed the ceiling, the model was wired to index
+     * it, and `tools/ingest.mjs` dropped it in between because its whitelist did not name
+     * it. Nothing failed, nothing warned: 317 of 15 533 published schematics carried a
+     * production figure, two per cent, on a site whose promise is finding one by what it
+     * makes.
+     *
+     * Every unit on that path passed on its own. Only running the whole of it fails, which
+     * is why this test spends the two hundred milliseconds it takes to start Node.
+     */
+    $imported = Schematic::factory()->imported()->create(['code' => PRESSE]);
+
+    $this->artisan('forge:analyser')->assertSuccessful();
+
+    $imported->refresh();
+
+    // Nothing feeds it, so there is nothing to measure and the honest answer is silence.
+    expect($imported->items()->where('kind', SchematicItem::MESURE)->count())->toBe(0)
+        ->and($imported->analysis)->toHaveKey('potentialPerMinute');
+
+    // What it would make if it were fed, which is what makes it findable at all.
+    $ceiling = $imported->items()
+        ->where('kind', SchematicItem::PLAFOND)
+        ->where('item', 'graphite')
+        ->sole();
+
+    expect(round($ceiling->rate))->toBe(40.0);
+});

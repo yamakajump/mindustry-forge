@@ -45,7 +45,13 @@ const KEPT = [
   "name", "width", "height", "blocks", "gameVersion",
   "perMinute", "produced", "internal", "surplus",
   "bottleneck", "idle", "unknown", "cost", "needs",
-  "power", "potential", "asTheGameSaysIt", "logic",
+  // `potential` is the power ceiling and `potentialPerMinute` the matter one. They were
+  // written together and only the first was listed here, so every collected schematic got
+  // a power ceiling and no item ceiling: 317 of 15 533 rows carried a production figure,
+  // two per cent, on a site whose promise is "search by what it makes". A whitelist is the
+  // right shape for this file - the analysis returns a graph that cannot be serialised -
+  // but it is also a list somebody has to remember to add to, and nobody did.
+  "power", "potential", "potentialPerMinute", "asTheGameSaysIt", "logic",
   "awaiting", "sealed", "selfFed", "settled", "altered", "truncated",
 ];
 
