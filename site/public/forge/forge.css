@@ -566,3 +566,21 @@ select {
 }
 .editor-picker button[aria-pressed="true"] { border-color: var(--accent); background: #2f2a1c; }
 .editor-picker img { width: 20px; height: 20px; image-rendering: pixelated; }
+
+/* La reprise d'un brouillon, proposée en bas du plateau. Jamais imposée : ecraser d'office
+   ce que quelqu'un vient de coller serait pire que de perdre le brouillon. */
+.editor-draft {
+  position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 5;
+  display: flex; align-items: center; gap: 12px; max-width: 92%;
+  background: var(--panel); border: 2px solid var(--accent); border-radius: var(--radius);
+  padding: 10px 14px; font-size: 13.5px;
+}
+.editor-draft button { min-height: 34px; padding: 0 14px; font-size: 13px; }
+
+/* Tourner au doigt, faute de molette. Il n'apparaît que quand il sert. */
+.editor-turn {
+  position: absolute; right: 16px; bottom: 16px; z-index: 5;
+  width: 52px; height: 52px; min-height: 52px; padding: 0; justify-content: center;
+  border-radius: 50%; font-size: 22px;
+}
+@media (hover: hover) and (pointer: fine) { .editor-turn { display: none !important; } }

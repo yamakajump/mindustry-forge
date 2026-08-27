@@ -25,6 +25,7 @@ import { fromBase64, toBase64 } from "../schematic.js";
 import { createCamera } from "./camera.js";
 import { mountRail, showHelp, sizeGauge } from "./ui.js";
 import { choicesFor, configFor, readsAs } from "./configure.js";
+import { ageOf, dropDraft, keepDraft, readDraft } from "./draft.js";
 
 const SHELL = `
   <div class="editor-bar">
@@ -42,6 +43,8 @@ const SHELL = `
   <div class="editor-rail"></div>
   <div class="editor-stage"><canvas tabindex="0" aria-label="Le plateau"></canvas>
     <div class="editor-picker" hidden></div>
+    <button type="button" class="editor-turn" data-do="turn-held" hidden
+            title="Tourner ce qu'on tient">↻</button>
     <div class="editor-pick" hidden>
       <button type="button" data-pick="copy" title="Copier (ctrl+C)">Copier</button>
       <button type="button" data-pick="turn" title="Tourner d un quart">↻</button>
@@ -154,7 +157,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       if (what === "wipe" && Object.keys(board.ground).length) {
         const wipe = {};
         for (const cell of Object.keys(board.ground)) wipe[cell] = null;
-        board.apply({ paint: wipe });
+        commit({ paint: wipe });
       }
       say();
       paint();
@@ -392,6 +395,19 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
   }
 
+  /**
+   * Tout ce qui change le plateau passe par ici.
+   *
+   * Un seul point d'entrée pour appliquer un geste, et donc un seul endroit où le brouillon
+   * se met à jour. Éparpiller la sauvegarde sur les quinze appels à `board.apply`
+   * garantirait qu'on en oublie un, et que le brouillon mente sur ce cas là précisément.
+   */
+  function commit(change) {
+    const done = board.apply(change);
+    if (done) keepDraft(board, Date.now());
+    return done;
+  }
+
   function paint() {
     relink();
     const viewport = viewportOf();
@@ -399,6 +415,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       camera, viewport, ground: board.ground, grid: true, opacity,
     });
     updateGauge(board.box());
+    turnButton.hidden = !(held && catalogue.blocks[held]?.rotate);
     outline(viewport);
     linkable(viewport);
     if (painting) brushGhost(viewport);
@@ -638,7 +655,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
        gauche peint, et rien d'autre. */
     if (painting && event.button === 0 && (brush.block || brush.tool === "eraser")) {
       if (brush.tool === "bucket") {
-        board.apply({ paint: strokeOf(fill(cursor)) });
+        commit({ paint: strokeOf(fill(cursor)) });
         paint();
         return;
       }
@@ -649,7 +666,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (event.button === 0 && pasting) {
       const posable = pastedAt().filter((plan) =>
         canPlace(board, plan, catalogue, pastedAt()).ok);
-      if (posable.length) board.apply({ place: posable });
+      if (posable.length) commit({ place: posable });
       if (!event.shiftKey) pasting = null;   // shift maintenu : coller en série
       say();
       paint();
@@ -706,7 +723,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       const cells = brush.tool === "rect" ? area(stroke.from, cursor) : stroke.cells;
       stroke = null;
       const change = strokeOf(cells);
-      if (Object.keys(change).length) board.apply({ paint: change });
+      if (Object.keys(change).length) commit({ paint: change });
       paint();
       return;
     }
@@ -717,7 +734,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       /* Retirer et reposer en un seul geste : sinon un déplacement d'une case retire les
          blocs puis les repose sur eux-mêmes, et l'annulation en demande deux. */
       if (after.length) {
-        board.apply({ remove: before, place: after });
+        commit({ remove: before, place: after });
         selection = boxAround(after);
       }
       showPickBar();
@@ -736,7 +753,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (erasing) {
       const gone = inside(rectOf(erasing, cursor));
       erasing = null;
-      if (gone.length) board.apply({ remove: gone });
+      if (gone.length) commit({ remove: gone });
       paint();
       return;
     }
@@ -747,7 +764,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
         .filter(({ verdict }) => verdict.ok)
         .map(({ plan }) => plan);
       drawing = null;
-      if (posable.length) board.apply({ place: posable });
+      if (posable.length) commit({ place: posable });
       paint();
     }
   });
@@ -787,7 +804,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       const under = board.at(cursor.x, cursor.y);
       const block = under && catalogue.blocks[under.block];
       if (block?.rotate && block?.quick_rotate) {
-        board.apply({
+        commit({
           remove: [under],
           place: [{ ...under, rotation: ((((under.rotation || 0) + way) % 4) + 4) % 4 }],
         });
@@ -824,7 +841,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     const before = picked();
     if (!before.length) return;
     const after = change(before);
-    board.apply({ remove: before, place: after });
+    commit({ remove: before, place: after });
     selection = boxAround(after);
     paint();
   }
@@ -927,7 +944,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (what === "drop") {
       const gone = picked();
       selection = null;
-      if (gone.length) board.apply({ remove: gone });
+      if (gone.length) commit({ remove: gone });
       paint();
     }
   });
@@ -995,7 +1012,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
     const chosen = choicesFor(catalogue.blocks[tile.block], catalogue)
       .find((choice) => choice.name === button.dataset.pickContent);
-    board.apply({
+    commit({
       remove: [tile],
       /* `raw` est effacé en même temps : il porte les octets d'origine relus d'un fichier,
          et les laisser ferait rejouer l'ancienne configuration à l'écriture, par dessus
@@ -1020,14 +1037,14 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
         /* Recliquer le pont qu'on venait d'armer coupe sa liaison, ce qui est la seule
            façon de défaire un lien sans casser le pont. */
         if (under === armed && armed.config) {
-          board.apply({ remove: [armed], place: [{ ...armed, config: null, link: null }] });
+          commit({ remove: [armed], place: [{ ...armed, config: null, link: null }] });
         }
         say();
         paint();
         return;
       }
       if (targetsFor(armed).includes(under)) {
-        board.apply({
+        commit({
           remove: [armed],
           place: [{ ...armed, link: null,
                     config: { type: 7, dx: under.x - armed.x, dy: under.y - armed.y } }],
@@ -1155,7 +1172,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if ((event.key === "Delete" || event.key === "Backspace") && selection) {
       const gone = picked();
       selection = null;
-      if (gone.length) board.apply({ remove: gone });
+      if (gone.length) commit({ remove: gone });
       paint();
       return;
     }
@@ -1192,6 +1209,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * disparaît entre temps.
    */
   function settle() {
+    keepDraft(board, Date.now());
     selection = null;
     linking = null;
     showPickBar();
@@ -1239,12 +1257,116 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   host.querySelector('[data-do="redo"]').onclick = () => { board.redo(); settle(); };
   host.querySelector('[data-mode="analyse"]').onclick = () => onAnalyse(board);
   host.querySelector('[data-do="help"]').onclick = () => showHelp(host);
+  /* Le bouton de rotation du tactile, sans molette pour le remplacer. Il n'apparaît que
+     quand il sert, c'est à dire quand on tient un bloc qui tourne. */
+  const turnButton = host.querySelector('[data-do="turn-held"]');
+  turnButton.onclick = () => {
+    rotation = (rotation + 1) % 4;
+    rail.setHeld(held, rotation);
+    paint();
+  };
 
   const resize = window.ResizeObserver ? new ResizeObserver(() => paint()) : null;
   resize?.observe(stage);
 
+  /**
+   * Le brouillon d'une session précédente, proposé et jamais imposé.
+   *
+   * Écraser d'office ce que quelqu'un vient de coller par un brouillon vieux de trois jours
+   * est pire que de perdre le brouillon : dans un cas on perd du travail qu'on savait avoir,
+   * dans l'autre on perd celui qu'on croyait avoir devant les yeux.
+   */
+  function offerDraft() {
+    if (board.tiles.length || Object.keys(board.ground).length) return;
+    const kept = readDraft(Date.now());
+    if (!kept) return;
+
+    const bar = document.createElement("div");
+    bar.className = "editor-draft";
+    bar.innerHTML = `<span>Un brouillon de <strong>${kept.tiles.length} blocs</strong>
+      attend, gardé ${ageOf(kept.at, Date.now())}.</span>
+      <button type="button" class="primary" data-draft="take">Le reprendre</button>
+      <button type="button" data-draft="drop">Repartir de zéro</button>`;
+    bar.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-draft]");
+      if (!button) return;
+      if (button.dataset.draft === "take") {
+        commit({ place: kept.tiles, paint: kept.ground });
+        camera.frame(board.box(), viewportOf());
+      } else {
+        dropDraft();
+      }
+      bar.remove();
+      paint();
+    });
+    stage.appendChild(bar);
+  }
+
+  /* ------------------------------------------------------------------------------------
+     Le tactile.
+
+     Ce ne sera pas le confort du bureau, et ça n'a pas à l'être : ce qui compte est que
+     rien ne soit cassé. Un doigt pose, un appui long casse, deux doigts déplacent et
+     zooment. Le reste passe par les boutons.
+     ------------------------------------------------------------------------------------ */
+
+  let longPress = null;
+  let pinch = null;
+
+  canvas.addEventListener("touchstart", (event) => {
+    if (event.touches.length === 2) {
+      const [a, b] = event.touches;
+      pinch = {
+        gap: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
+        x: (a.clientX + b.clientX) / 2,
+        y: (a.clientY + b.clientY) / 2,
+      };
+      /* Un pincement annule ce qu'un doigt avait commencé : sans ça, écarter deux doigts
+         pour zoomer trace une ligne de convoyeurs jusqu'au bord de l'écran. */
+      drawing = null;
+      stroke = null;
+      longPress = clearTimeout(longPress) || null;
+      return;
+    }
+    const touch = event.touches[0];
+    longPress = setTimeout(() => {
+      longPress = null;
+      drawing = null;
+      const rect = canvas.getBoundingClientRect();
+      const at = camera.toTile(touch.clientX - rect.left, touch.clientY - rect.top,
+                               viewportOf());
+      const under = board.at(at.x, at.y);
+      if (under) commit({ remove: [under] });
+      paint();
+    }, 480);
+  }, { passive: true });
+
+  canvas.addEventListener("touchmove", (event) => {
+    if (event.touches.length !== 2 || !pinch) return;
+    event.preventDefault();
+    const [a, b] = event.touches;
+    const gap = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    const x = (a.clientX + b.clientX) / 2;
+    const y = (a.clientY + b.clientY) / 2;
+    const rect = canvas.getBoundingClientRect();
+    camera.pan(x - pinch.x, y - pinch.y);
+    if (pinch.gap > 4) {
+      camera.zoomAt(gap / pinch.gap, x - rect.left, y - rect.top, viewportOf());
+    }
+    pinch = { gap, x, y };
+    paint();
+  }, { passive: false });
+
+  for (const kind of ["touchend", "touchcancel"]) {
+    canvas.addEventListener(kind, () => {
+      pinch = null;
+      longPress = clearTimeout(longPress) || null;
+    }, { passive: true });
+  }
+
   say();
   paint();
+  offerDraft();
 
   return {
     board,
@@ -1254,6 +1376,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       document.removeEventListener("paste", onPaste);
       clearTimeout(fading);
       resize?.disconnect();
+      clearTimeout(longPress);
       rail.destroy();
       host.className = "";
       host.innerHTML = "";
