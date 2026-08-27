@@ -356,3 +356,27 @@ Ce qui **n'est pas** dessiné, et pourquoi :
 - [x] Ponts : embouts arrondis, transparence, largeur réelle, flèches répétées.
 - [x] Clic sur un bloc pour le lire et le désigner comme entrée ou sortie.
 - [x] Détection des prises par l'orientation et non par la position sur le bord.
+
+## Deux règles pour le combustible, et elles ne disent pas la même chose
+
+Trouvé le 27/08 en écrivant le plafond de production, signalé sans être corrigé, ce qui
+était le bon réflexe : corriger `needs` au passage, dans une correction qui parle d'autre
+chose, c'est casser une mesure que le banc corrobore sans que personne ne relie les deux.
+
+Un générateur qui brûle n'importe quoi ne déclare pas d'ingrédient, seulement une durée. La
+schématique manque donc d'« un combustible » et pas de charbon, et les deux fichiers qui
+répondent à cette question ne répondent pas pareil :
+
+- `needs.js`, dans `demand()` : ce qui couvre le besoin de combustible est **la somme de
+  tout ce que la schématique fabrique**, inflammable ou non.
+- `marks.js`, dans `candidates()` : ce qui peut couvrir ce besoin est filtré sur
+  `flammability > 0.1`, d'après ce que le jeu déclare.
+
+Conséquence, sur une forme parfaitement banale : une chaîne qui fait du silicium et brûle du
+charbon s'entend dire que son silicium nourrit ses brûleurs, donc « il lui faut » omet le
+charbon. Le joueur colle la schématique, elle s'arrête, et la page lui avait dit qu'elle
+tournerait.
+
+La règle de `marks.js` est la bonne, c'est celle du jeu. À corriger dans sa propre
+correction, avec un scénario de banc qui montre la différence : une schématique qui produit
+quelque chose d'ininflammable **et** brûle autre chose.
