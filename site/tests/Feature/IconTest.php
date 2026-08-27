@@ -26,13 +26,36 @@ it('serves a block and an item, at the sizes a page may ask for', function () {
     }
 });
 
-it('says nothing rather than drawing a grey square for a liquid', function () {
+it('serves a liquid, which lives under the item prefix and not its own', function () {
     Storage::fake('public');
 
-    /* The sheet carries no `liquid/` prefix at all, so not one of the game's eleven liquids
-       has a picture in it. Serving a placeholder would hide that, and a page that names a
-       liquid is meant to show its name alone until the sprite builder exports them. */
-    $this->get('/icone/liquide/water.png')->assertNotFound();
+    /* This test asserted the opposite for an hour. Looking for `liquid/water` in the sheet
+       finds nothing, and calling that "no liquid has a picture" was one query away from
+       being wrong: all eleven are packed under `item/`, beside the twenty-two items, and no
+       item and no liquid share a name. An absence somewhere is not an absence. */
+    foreach (['water', 'slag', 'oil', 'cryofluid'] as $liquid) {
+        $response = $this->get("/icone/liquide/{$liquid}.png?t=32");
+        $response->assertOk()->assertHeader('Content-Type', 'image/png');
+        expect(imagesx(imagecreatefromstring($response->getContent())))->toBe(32);
+    }
+});
+
+it('covers every liquid the catalogue names', function () {
+    Storage::fake('public');
+
+    /* Read out of the catalogue file rather than through BlockCatalogue::all(), which
+       returns the blocks map and nothing else: asking it for `liquids` gave an empty array,
+       and this loop ran zero times while reporting green. A test that asserts nothing passes
+       forever, and this one was written precisely because this family had already been got
+       wrong once. */
+    $catalogue = json_decode(file_get_contents(public_path('forge/blocks.json')), true);
+    $liquids = array_keys($catalogue['liquids'] ?? []);
+
+    expect($liquids)->toHaveCount(11, 'le catalogue ne porte plus onze liquides');
+
+    foreach ($liquids as $liquid) {
+        $this->get("/icone/liquide/{$liquid}.png?t=32")->assertOk();
+    }
 });
 
 it('refuses a name that is not in the sheet', function () {
