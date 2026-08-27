@@ -5,6 +5,21 @@
  * key the browser code asks for has to exist, and every key that exists has to be asked
  * for. Without it a missing string is found in production, in a language nobody here
  * reads, which is exactly the failure this whole mechanism was built to make impossible.
+ *
+ * ONE THING TO KNOW BEFORE IT COSTS YOU AN HOUR: the scan reads comments too. A key
+ * written in a docblock to explain the convention is reported like any other, and it has
+ * already turned a branch red for the crime of documenting this file's own rule.
+ *
+ * That is deliberate rather than an oversight. A key sitting in a comment is usually a key
+ * somebody just moved and forgot, which is precisely what this test is for, and telling
+ * code from prose reliably would mean parsing the language rather than reading it.
+ *
+ * So write examples with the shape rather than with plausible names:
+ *
+ *     <domaine>.<ecran>.<element>      seen by nobody, says the same thing
+ *     analyse.goulot.titre             reported as a key with no translation
+ *
+ * The cost is one sentence written carefully, once. The detection it buys is kept.
  */
 
 import test from "node:test";
