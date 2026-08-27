@@ -22,6 +22,15 @@ from pathlib import Path
 SOURCE = Path("bench/data/blocks.json")
 TARGET = Path("site/public/forge/blocks.json")
 
+#: The game's named colours, written beside the catalogue rather than inside it.
+#:
+#: `EngineVersion` hashes `blocks.json`, so anything added there marks every stored analysis
+#: stale and re-measures the whole catalogue. A colour cannot change what a schematic
+#: produces, and paying fifteen thousand re-analyses for one is a cost with nothing on the
+#: other side. What decides an answer belongs in the hashed file; what decides how a page
+#: reads does not.
+PALETTE = Path("site/public/forge/colors.json")
+
 #: What the analysis reads. Everything else the game knows about a block is weight.
 KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output",
         "input_liquid", "output_liquid", "power", "power_out",
@@ -135,8 +144,16 @@ def main() -> None:
         "units": raw["units"],
     }, separators=(",", ":")), encoding="utf-8")
 
+    # Both cases, exactly as the game registers them: `Colors` holds `GREEN` and `green`
+    # as separate keys and the lookup is exact, so `[Green]` is not markup and must not be
+    # treated as any.
+    colours = raw.get("colors", {})
+    PALETTE.write_text(json.dumps(colours, separators=(",", ":"), sort_keys=True),
+                       encoding="utf-8")
+
     print(f"{len(blocks)} blocs sur {len(raw['blocks'])}, "
           f"{TARGET.stat().st_size // 1024} ko dans {TARGET}")
+    print(f"{len(colours)} couleurs nommees dans {PALETTE}")
 
 
 if __name__ == "__main__":
