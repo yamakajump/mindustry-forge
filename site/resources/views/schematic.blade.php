@@ -27,11 +27,11 @@
   <meta property="og:description" content="{{ $summary }}">
   <meta property="og:type" content="article">
   <meta property="og:url" content="{{ url()->current() }}">
-  {{-- La carte composee plutot que le rendu brut du plan. Un plan est carre ou tres
-       allonge selon ce qu'on a copie, donc un deplieur le rogne ou le pose sur des bandes
-       noires, et il n'y a dessus ni titre, ni chiffre, ni marque. La carte a toujours le
-       format attendu, et elle existe meme quand la schematique n'a pas d'apercu, ce qui
-       est le cas de tout ce qui vient d'un autre catalogue. --}}
+  {{-- The composed card rather than the raw plan. A plan is square or very long depending
+       on what was copied, so an unfurler crops it or sits it on black bars, and it carries
+       no title, no figure and no mark. The card is always the shape they expect, and it
+       exists even when a schematic has no preview, which is every schematic that came from
+       another catalogue. --}}
   <meta property="og:image" content="{{ url("/s/{$schematic->slug}/carte.jpg") }}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">

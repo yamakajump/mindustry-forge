@@ -41,10 +41,10 @@ Route::post('/deconnexion', [AuthController::class, 'logout']);
 Route::get('/schematiques', [BrowseController::class, 'index']);
 Route::get('/s/{schematic}', [SchematicController::class, 'show']);
 
-/* La vignette que Discord affiche quand on colle le lien ci-dessus. Une adresse a elle
-   plutot que l'apercu brut : un plan est carre ou tres allonge selon ce qu'on a copie, et
-   un deplieur le rogne sans rien dire. La carte, elle, a toujours le format attendu, et
-   elle porte le nom, les chiffres et la marque. */
+/* What Discord shows when the link above is pasted. An address of its own rather than the
+   raw preview: a plan is square or very long depending on what was copied, and an unfurler
+   crops it without saying so. The card is always the shape they expect, and it carries the
+   name, the figures and the mark. */
 Route::get('/s/{schematic}/carte.jpg', [SocialCardController::class, 'show']);
 
 /* The string itself, so the analyser can pull one in from a shared link. Plain text and

@@ -109,16 +109,31 @@ Les images de partage, elles, **portent leurs accents**. C'est assumé : « sche
 sans accent dans la vignette d'un lien collé sur Discord se lit comme un encodage cassé,
 et une première impression ne se rattrape pas. Une incohérence, si.
 
-### Un point de licence à trancher, pas par nous
+### Les deux polices n'ont pas la même licence, et ça a été vérifié
 
-La police vient des assets du jeu. `tools/build_fonts.py` documente le raisonnement :
-Anuke autorise l'usage des assets du jeu par les outils communautaires, et c'est le
-terrain sur lequel tous les autres sites Mindustry se tiennent. Le dépôt est passé en
-**AGPL-3.0** le 27/08/2026, et faire de cette police un **élément d'identité de marque**
-n'est pas tout à fait le même usage que de s'en servir pour afficher du texte.
+`site/public/forge/fonts/README.md` porte le relevé, fait en lisant la table `name` de
+chaque fichier. Le résumé :
 
-Ça ne bloque rien aujourd'hui, et le repli tient en une ligne de CSS. Mais c'est une
-question pour Corentin, pas une question qu'une session tranche seule.
+- **`forge.woff2`**, celle sur laquelle l'identité est construite, repose sur
+  l'autorisation d'Anuke pour les assets du jeu. **Rien dans le fichier ne la confirme.**
+- **`forge-mono.woff2` est Fira Code Medium**, une police tierce sous **SIL Open Font
+  License 1.1** qu'Anuke redistribue sans l'avoir écrite. Le raisonnement de
+  `build_fonts.py` ne la couvrait pas. `FiraCode-OFL.txt` est posé à côté, ce que l'OFL
+  demande.
+
+Conséquence pour la marque : **le monogramme ne dépend d'aucune police.** Il est dessiné
+en chemins, pas composé en lettres, donc un changement de police ne le touche pas. Ce qui
+dépend de `forge.woff2`, c'est le logotype et le texte des images de partage, et ça se
+recompose d'une exécution de `build_brand.py`.
+
+`resources/fonts/forge.ttf` est un dérivé de `forge.woff2` pour le serveur, pas une
+deuxième police : voir `site/resources/fonts/README.md`.
+
+**Ce qui reste à trancher, par Corentin et pas par une session** : faire d'une police
+extraite d'un jeu tiers un élément d'identité de marque n'est pas tout à fait le même usage
+que s'en servir pour afficher du texte, et le dépôt est en AGPL-3.0. Si une certitude est
+voulue, c'est la licence des assets de Mindustry qu'il faut lire à la source. Ça ne bloque
+rien aujourd'hui, et le repli tient en une ligne de CSS puisque le signe, lui, ne bouge pas.
 
 ## Les fichiers, et à quoi chacun répond
 
