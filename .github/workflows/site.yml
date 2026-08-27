@@ -23,6 +23,24 @@ jobs:
       # le meme resultat qu'ici.
       - run: npm test
 
+      # Le controle que le README presente comme l'argument du projet : les
+      # chiffres se prouvent contre le jeu. Il ne tournait nulle part.
+      #
+      # Le rejeu ne demande ni serveur ni jeu, seulement les mesures deja
+      # enregistrees sous bench/data/oracle/, et il sort en erreur au-dela
+      # de deux pour cent d'ecart. Il n'y avait donc aucune raison de ne
+      # pas l'avoir ici, et le README affirmait qu'il y etait.
+      - name: L'ecart contre le jeu
+        run: npm run oracle
+
+      # Informatif : de combien le solveur d'etat stationnaire s'ecarte du
+      # moteur a tics, sur les memes scenarios. Ce n'est pas une barriere,
+      # les deux modeles sont connus pour diverger et le README le dit ;
+      # c'est pour que le chiffre soit dans le journal de chaque passage
+      # plutot que dans la memoire de quelqu'un.
+      - name: L'ecart entre les deux modeles
+        run: node tools/gap.mjs | tail -6
+
   application:
     name: Application (Laravel)
     runs-on: ubuntu-latest
