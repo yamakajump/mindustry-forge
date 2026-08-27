@@ -1092,9 +1092,14 @@ function laserDrill(generators) {
   const tiles = [
     // Covers 0..2 by 0..2, with its ore under it.
     { x: 1, y: 1, block: "laser-drill", rotation: 0 },
-    { x: 3, y: 1, block: "conveyor", rotation: 0 },
-    { x: 4, y: 1, block: "conveyor", rotation: 0 },
-    { x: 6, y: 1, block: "vault", rotation: 0 },
+    /* The vault against the drill rather than two belts away, which is not tidiness.
+    
+       With belts between them the pair disagreed by one item for a long time, and the
+       disagreement was not about drilling: both engines produced forty eight, and they
+       differed on whether the forty eighth had reached the vault or was still a sub-tile
+       position on a belt. Standing the vault against the drill, everything produced is
+       counted, and the scenario measures the drill instead of the belt phase. */
+    { x: 4, y: 1, block: "vault", rotation: 0 },
 
     { x: 0, y: 5, block: "item-source", rotation: 0, raw: item("coal") },
     { x: 0, y: 4, block: "router", rotation: 0 },

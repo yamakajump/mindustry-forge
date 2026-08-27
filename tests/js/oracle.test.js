@@ -28,17 +28,14 @@ const { differences, KEPT, measured, paintedFor, ported, stockedFor } = await im
 /**
  * What does not match yet, and by how much.
  *
- * Named rather than quietly skipped. The bridge used to be here at four and eight tenths
- * per cent and is not any more: it turned out to be a `BufferedItemBridge`, a delay line
- * with a gate rather than a hand-off with a timer, and writing down the gap is what kept
- * it in view until it was found.
+ * Named rather than quietly skipped, and both of the first two entries are gone because of
+ * it. The bridge turned out to be a `BufferedItemBridge`, a delay line with a gate rather
+ * than a hand-off with a timer. And the laser drill with power to spare was never a drill
+ * problem at all: both engines produced forty eight items, and they disagreed on whether
+ * the forty eighth had reached the vault or was still a sub-tile position on a belt. The
+ * vault now stands against the drill, and the scenario measures the drill.
  */
 const KNOWN_GAPS = {
-  // A laser drill with power to spare makes 46 where the engine makes 47, one item in
-  // thirty seconds. The same drill on a grid that cannot keep up matches exactly, which
-  // is the odd part: the harder case is the one that is right. Left as a number rather
-  // than rounded away, because a gap that only appears at full power is a clue.
-  "power-plenty": 0.03,
   /* A meltdown winding its reload down through a pipe. Both engines agree it drinks two
      hundred and twenty five water, to within half a unit, and disagree by two units on
      sixty about where the last of it sits when the clock stops. That is a settled gradient

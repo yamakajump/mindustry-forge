@@ -13,27 +13,12 @@
       "efficiency": 0.9090909
     },
     {
-      "block": "conveyor",
-      "x": 15,
-      "y": 13,
-      "efficiency": 1
-    },
-    {
-      "block": "conveyor",
-      "x": 16,
-      "y": 13,
-      "efficiency": 1,
-      "holds":{
-        "copper": 1
-      }
-    },
-    {
       "block": "vault",
-      "x": 18,
+      "x": 16,
       "y": 13,
       "efficiency": 0,
       "holds":{
-        "copper": 38
+        "copper": 39
       }
     },
     {
@@ -64,14 +49,14 @@
   "containers": [
     {
       "block": "vault",
-      "x": 18,
+      "x": 16,
       "y": 13,
       "items":{
-        "copper": 38
+        "copper": 39
       }
     }
   ],
   "per_second":{
-    "copper": 1.2666667
+    "copper": 1.3
   }
 }
