@@ -153,6 +153,13 @@ export class Grid {
     this.batteries = builds.filter(isBattery);
 
     for (const build of this.batteries) build.state.charge = 0;
+    /* And nobody starts out fully powered.
+
+       The grids are worked out **before** the blocks in the game's own loop, so a consumer
+       reads a real coverage on its very first frame. Left unset here, the first frame read
+       `?? 1` and every consumer got one free frame at full power: a rotary pump on a dead
+       grid pumped exactly one frame's worth of water, which is nothing and is not zero. */
+    for (const build of this.consumers) build.state.power = 0;
     this.coverage = 0;
     this.made = 0;
     this.needed = 0;

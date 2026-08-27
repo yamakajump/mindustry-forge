@@ -389,7 +389,16 @@ public class DumpBlocks {
         if (block instanceof Junction junction) {
             entry.put("role", "junction");
             entry.put("carries", "item");
-            entry.put("items_per_second", TPS / Math.max(1f, junction.speed));
+            /* `60 / speed * capacity`, and not `60 / speed`.
+
+               A junction is four queues of `capacity` items, each item spending `speed`
+               frames inside: the throughput is the queue length over the transit time. The
+               game states thirteen for itself and its own comment works the real figure out
+               at `60/26*6 = 13.84`. Written as `60 / speed` it came to 2.31, so any line
+               crossing a junction was capped at a fifth of a copper belt and the junction
+               became the bottleneck of every layout containing one. */
+            entry.put("items_per_second",
+                TPS / Math.max(1f, junction.speed) * junction.capacity);
             // Frames an item spends crossing, and how many may be crossing at once, per
             // side. A junction is four queues, not a buffer.
             entry.put("junction_speed", junction.speed);

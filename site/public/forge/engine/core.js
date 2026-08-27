@@ -517,14 +517,18 @@ export class World {
   /** One frame at sixty a second. `Time.delta` is 1. */
   step(delta = 1) {
     this.tick++;
+    /* The grids settle **first**, which is the order the game's own loop runs in:
+       `Groups.powerGraph.update()` at `Logic.java:478`, `Groups.build.update()` at 482.
+
+       So a block reads a real coverage on its first frame rather than a default, and what
+       the grid hands out is worked out from what the generators made last frame and what
+       the consumers said they wanted last frame. Run the other way round, every consumer
+       got one free frame at full power: a pump on a dead grid pumped exactly one frame's
+       worth of water, which is nothing and is not zero. */
+    for (const grid of this.grids) grid.update(delta);
     for (const build of this.builds) {
       if (build.behaviour?.update) build.behaviour.update(build, this, delta);
     }
-    // The grids settle after the blocks have run, so what a generator made this frame is
-    // what the grid has to hand out. Tried the other way round as well, on the chance it
-    // explained a one item gap on a fully powered drill; it did not, and this way round
-    // matches a battery's charge to three decimals.
-    for (const grid of this.grids) grid.update(delta);
   }
 
   run(seconds) {
