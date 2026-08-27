@@ -89,14 +89,32 @@ export function moveOutPayload(build, world) {
   if (!arrived) return;
 
   const front = payloadFront(build, world);
-  if (front && (front.block.outputs_payload || front.block.accepts_payload)) {
+  const canMove = !!front
+    && (front.block.outputs_payload || front.block.accepts_payload);
+
+  if (canMove) {
     if (front.acceptPayload?.(build, state.payload)) {
       front.handlePayload(build, state.payload);
       state.payload = null;
     }
+    return;
   }
-  // A payload with nowhere to go and no room to be dropped simply stays put. Dropping a
-  // unit on the ground is a thing the game does and this engine has no ground to drop on.
+
+  /* `canDump = front == null || !front.tile.solid()`, and the cargo is set down on the
+     ground.
+
+     Anything at all in front used to count as a wall here. A ground factory pointed at a
+     conveyor is the ordinary layout, and it built exactly one dagger before sitting on
+     sixty silicon and forty lead for the rest of the run. A conveyor, a duct, a pipe, a
+     router: none of them are solid, so the game drops the unit beside them and carries on.
+
+     What the game does next, this does not: a `dump` is refused while another ground unit
+     is still standing on the spot, and whether it has walked off by then is its own AI's
+     business. */
+  if (!front || !front.block.solid) {
+    state.payload = null;
+    state.made = (state.made || 0) + 1;
+  }
 }
 
 /**
