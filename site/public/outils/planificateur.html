@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forge - planificateur d'usine Mindustry</title>
+<meta name="description" content="Dis combien tu veux produire par minute, et repars avec la liste des blocs, le cout de construction, l'energie a fournir et les foreuses a poser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314161c'/%3E%3Cpath d='M6 24V8h6v16M14 24V13h6v11M22 24v-7h4v7' stroke='%23ffd37f' stroke-width='2.5' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../forge/forge.css">
+<link rel="stylesheet" href="../forge/plan.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="/">Mindustry <span>Forge</span></a>
+  <nav id="nav">
+    <a href="/">Analyser</a>
+    <a href="/schematiques">Parcourir</a>
+  </nav>
+</header>
+
+<div class="outil">
+  <header class="titre">
+    <h1 data-i18n="outils.planificateur.titre">Planificateur d'usine</h1>
+    <p class="lede" data-i18n="outils.planificateur.sous-titre">
+      Dis ce que tu veux produire et a quel rythme. La chaine est remontee jusqu'au sol,
+      avec les chiffres du jeu.
+    </p>
+  </header>
+
+  <form class="card demande" id="demande">
+    <div class="row" style="margin:0">
+      <label class="lead" for="quantite" data-i18n="outils.planificateur.je-veux">Je veux</label>
+      <input id="quantite" type="number" min="1" max="100000" step="1" value="100"
+             inputmode="numeric">
+      <select id="objet"></select>
+      <label class="lead" for="objet" data-i18n="outils.planificateur.par-minute">par minute</label>
+      <select id="planete">
+        <option value="serpulo">Serpulo</option>
+        <option value="erekir">Erekir</option>
+      </select>
+      <button class="primary" type="submit" data-i18n="outils.planificateur.calculer">Calculer</button>
+    </div>
+  </form>
+
+  <div id="sortie"></div>
+</div>
+
+<script type="module">
+/*
+ * La page du planificateur.
+ *
+ * Elle ne calcule rien : tout vient de `plan.js`, qui remonte la chaine depuis le
+ * catalogue, et de `needs.js`, qui traduit un debit brut en foreuses. Une page qui
+ * calculerait de son cote serait une deuxieme reponse a la meme question.
+ */
+import { loadCatalogue } from "../forge/analyse.js";
+import { plan } from "../forge/plan.js";
+import { t, translate, ready } from "../forge/i18n.js";
+
+/* Chaque hypothese nommee en toutes lettres, jamais un prefixe suivi d'une variable. Une
+   cle collee au rendu est une cle qu'aucun controle ne voit, donc le jour ou `plan.js` en
+   ajoute une, la page imprime la cle brute a un lecteur et rien ne le signale.
+
+   Ecrit sans exemple, volontairement : le controle des cles lit aussi les commentaires,
+   donc un fragment de cle dans cette phrase serait rapporte comme une cle sans traduction.
+   Constate ici meme, apres l'avoir signale a deux autres voies. */
+const HYPOTHESES = {
+  fed: "outils.planificateur.suppose-alimente",
+  partial: "outils.planificateur.suppose-partiel",
+  power: "outils.planificateur.suppose-courant",
+  patch: "outils.planificateur.suppose-tache",
+};
+
+const $ = (id) => document.getElementById(id);
+const sortie = $("sortie");
+
+const catalogue = await loadCatalogue("../forge/blocks.json");
+await ready;
+
+/* Les objets qu'on peut demander : ce que le jeu sait fabriquer, plus ce qu'il sait
+   extraire. Proposes plutot que tapes, pour qu'un joueur choisisse dans ce qui existe au
+   lieu de deviner une orthographe. */
+function objetsProposes(planete) {
+  const noms = new Set();
+  for (const [nom, bloc] of Object.entries(catalogue.blocks)) {
+    if (bloc.build_visibility === "hidden") continue;
+    if (bloc.planet && bloc.planet !== planete) continue;
+    for (const objet of Object.keys(bloc.output || {})) noms.add(objet);
+  }
+  return [...noms].sort((a, b) =>
+    (catalogue.items[a]?.id ?? 0) - (catalogue.items[b]?.id ?? 0));
+}
+
+function remplirObjets() {
+  const planete = $("planete").value;
+  const garde = $("objet").value;
+  $("objet").innerHTML = "";
+  for (const nom of objetsProposes(planete)) {
+    const option = document.createElement("option");
+    option.value = nom;
+    option.textContent = nom;
+    $("objet").append(option);
+  }
+  if ([...$("objet").options].some((o) => o.value === garde)) $("objet").value = garde;
+}
+
+const nombre = (valeur, decimales = 2) =>
+  Number(valeur).toLocaleString("fr-FR", { maximumFractionDigits: decimales });
+
+function ligne(gauche, droite, classe = "") {
+  const div = document.createElement("div");
+  div.className = "line";
+  const a = document.createElement("span");
+  a.textContent = gauche;
+  const b = document.createElement("span");
+  b.className = classe;
+  b.textContent = droite;
+  div.append(a, b);
+  return div;
+}
+
+function carte(titreCle) {
+  const div = document.createElement("div");
+  div.className = "card";
+  const h2 = document.createElement("h2");
+  h2.textContent = t(titreCle);
+  div.append(h2);
+  return div;
+}
+
+function dessiner(resultat) {
+  sortie.replaceChildren();
+
+  if (resultat.cycles.length) {
+    const alerte = carte("outils.planificateur.boucle");
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = resultat.cycles[0].join(" -> ");
+    alerte.append(p);
+    sortie.append(alerte);
+    return;
+  }
+
+  if (!resultat.steps.length && !resultat.raw.length) {
+    const rien = carte("outils.planificateur.plan");
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = t("outils.planificateur.rien");
+    rien.append(p);
+    sortie.append(rien);
+    return;
+  }
+
+  /* Les hypotheses en premier, jamais en note de bas de page. Un joueur qui construit
+     contre un chiffre optimiste construit une usine qui sous-tourne sans qu'il puisse
+     voir pourquoi, et c'est la faute que ce depot a payee trois fois dans la journee. */
+  if (resultat.assumptions.length) {
+    const dit = carte("outils.planificateur.hypotheses");
+    const liste = document.createElement("ul");
+    liste.className = "notes";
+    for (const cle of resultat.assumptions) {
+      if (!HYPOTHESES[cle]) continue;
+      const li = document.createElement("li");
+      li.textContent = t(HYPOTHESES[cle]);
+      liste.append(li);
+    }
+    dit.append(liste);
+    sortie.append(dit);
+  }
+
+  const usines = carte("outils.planificateur.a-construire");
+  for (const etape of resultat.steps) {
+    /* Le nombre entier et la fraction, toujours les deux : 3,2 fours, c'est 4 fours a
+       80 %, et ce sont deux usines differentes. Le nombre est assemble ici et jamais glisse dans une chaine traduite : quand une
+       cle manque, `t` rend la cle sans substituer, et le chiffre disparaitrait. Un chiffre
+       perdu est pire qu'un mot illisible sur un site qui ne vend que des chiffres. */
+    const droite = `${etape.whole} ${t("outils.planificateur.blocs")}`
+      + ` - ${nombre(etape.load * 100, 0)} ${t("outils.planificateur.de-charge")}`;
+    usines.append(ligne(`${etape.block} - ${etape.item}`, droite,
+      etape.load < 0.999 ? "warn" : "good"));
+  }
+  sortie.append(usines);
+
+  if (resultat.raw.length) {
+    const sol = carte("outils.planificateur.a-fournir");
+    for (const brut of resultat.raw) {
+      const debit = `${nombre(brut.perMinute, 1)} ${t("outils.planificateur.par-min")}`;
+      /* Plusieurs foreuses proposees, pas seulement la meilleure. `needs.js` les classe par
+         nombre croissant, donc la premiere est toujours la plus grosse du jeu : repondre
+         « une foreuse a explosifs » a « il me faut du sable » est exact et inutilisable,
+         parce que personne ne debloque la foreuse de fin de partie pour du sable. Le
+         planificateur montre le choix au lieu de le faire a la place du joueur. */
+      const choix = brut.options.slice(0, 3)
+        .map((option) => `${option.count} ${option.block}`).join(" / ");
+      const droite = choix
+        ? `${debit} - ${choix}`
+        : `${debit} - ${t("outils.planificateur.sans-source")}`;
+      sol.append(ligne(brut.resource, droite));
+    }
+    sortie.append(sol);
+  }
+
+  const bilan = carte("outils.planificateur.bilan");
+  if (resultat.power > 0) {
+    bilan.append(ligne(t("outils.planificateur.energie"),
+      `${nombre(resultat.power, 0)} ${t("outils.planificateur.energie-seconde")}`, "warn"));
+  }
+  for (const [objet, quantite] of Object.entries(resultat.cost)) {
+    bilan.append(ligne(objet, nombre(quantite, 0)));
+  }
+  sortie.append(bilan);
+}
+
+function calculer(evenement) {
+  evenement?.preventDefault();
+  dessiner(plan(catalogue, {
+    item: $("objet").value,
+    perMinute: Number($("quantite").value),
+    planet: $("planete").value,
+  }));
+}
+
+$("planete").addEventListener("change", () => { remplirObjets(); calculer(); });
+$("demande").addEventListener("submit", calculer);
+
+remplirObjets();
+if ([...$("objet").options].some((o) => o.value === "silicon")) $("objet").value = "silicon";
+translate(document);
+calculer();
+</script>
+</body>
+</html>
