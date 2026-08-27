@@ -49,3 +49,18 @@
 /* Les hypotheses portent la couleur d'un avertissement sans en avoir le ton : ce ne sont
    pas des erreurs, ce sont les conditions sous lesquelles le chiffre au-dessus est vrai. */
 #sortie .card:first-child .notes { color: var(--warn); }
+
+/* Une chose du jeu : son icone puis son nom, qui ne se separent jamais en fin de ligne. */
+.plan-chose { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+
+/* Ce qui relie deux choses, et les separateurs : plus discret que ce qu'ils separent. */
+.plan-fleche { color: var(--dim); }
+
+/* Une paire ou une suite qui se replie plutot que de deborder : « il faut du sable, et voici
+   trois foreuses » tient sur une ligne en 1280 et sur trois en 390. */
+.plan-paire,
+.plan-choix { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* Les lignes portent maintenant des icones, donc elles ne s'alignent plus sur la ligne de
+   base du texte seul. */
+#sortie .line { align-items: center; }
