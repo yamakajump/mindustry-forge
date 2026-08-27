@@ -82,6 +82,9 @@ import mindustry.world.blocks.power.ImpactReactor;
 import mindustry.world.blocks.power.ThermalGenerator;
 import mindustry.world.blocks.power.HeaterGenerator;
 import mindustry.world.blocks.campaign.LaunchPad;
+import mindustry.world.blocks.payloads.PayloadDeconstructor;
+import mindustry.world.blocks.payloads.PayloadLoader;
+import mindustry.world.blocks.payloads.PayloadUnloader;
 import mindustry.world.blocks.defense.Door;
 import mindustry.world.blocks.sandbox.PowerVoid;
 import mindustry.world.blocks.power.PowerDiode;
@@ -793,6 +796,30 @@ public class DumpBlocks {
                Erekir base wired entirely with them read as unpowered. */
             entry.put("role", "power");
             entry.put("range", beam.range);
+            return;
+        }
+        if (block instanceof PayloadDeconstructor taker) {
+            /* Un bloc entre, son propre cout de construction en sort, au fil du temps. */
+            entry.put("role", "payload-deconstructor");
+            entry.put("carries", "payload");
+            entry.put("deconstruct_speed", taker.deconstructSpeed);
+            entry.put("dump_rate", taker.dumpRate);
+            entry.put("max_payload_size", taker.maxPayloadSize);
+            return;
+        }
+        if (block instanceof PayloadLoader loader) {
+            /* Un chargeur remplit le bloc qu'il porte, un dechargeur le vide. Les deux
+               regardent **dedans**, ce qu'aucun autre bloc du jeu ne fait. */
+            entry.put("role", block instanceof PayloadUnloader
+                ? "payload-unloader" : "payload-loader");
+            entry.put("carries", "payload");
+            entry.put("load_time", loader.loadTime);
+            entry.put("items_loaded", loader.itemsLoaded);
+            entry.put("liquids_loaded", loader.liquidsLoaded);
+            entry.put("max_block_size", loader.maxBlockSize);
+            if (block instanceof PayloadUnloader out) {
+                entry.put("offload_speed", out.offloadSpeed);
+            }
             return;
         }
         if (block instanceof LaunchPad pad) {

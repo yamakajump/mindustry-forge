@@ -11,7 +11,7 @@
  */
 
 import { DIRECTIONS, TICKS } from "./core.js";
-import { moveOutPayload } from "./payloads.js";
+import { Cargo, moveOutPayload } from "./payloads.js";
 
 /**
  * How much of a frame this machine gets.
@@ -498,7 +498,7 @@ const unitFactory = {
       for (const [item, amount] of Object.entries(plan.requirements)) {
         build.items.remove(item, amount);
       }
-      build.state.payload = plan.unit;
+      build.state.payload = new Cargo(plan.unit);
       build.state.payVector = [0, 0];
       build.state.payRotation = build.rotation * 90;
       build.state.wants = 0;

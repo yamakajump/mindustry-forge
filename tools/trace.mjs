@@ -76,6 +76,13 @@ function snapshot(world, tick) {
     if (build.state.ids) {
       held += ` ~${build.state.len}:${(build.state.minitem ?? 1).toFixed(3)}`;
     }
+    // And what it is carrying, with whatever is inside that.
+    if (build.state.payload) {
+      held += ` %${build.state.payload.name}`;
+      for (const [item, count] of build.state.payload.items.counts) {
+        if (count > 0) held += `/${item}:${count}`;
+      }
+    }
     /* And its place in the update list, because a block that falls asleep leaves it and
        the list is unordered: the last one drops into the hole. Minus one means asleep, or
        a block the game never updates at all. */

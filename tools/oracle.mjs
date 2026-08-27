@@ -1786,6 +1786,44 @@ const SCENARIOS = {
     stock: ["water~100@1,1"],
   }),
 
+  /* La chaine complete de la famille des charges utiles : une source fabrique un conteneur,
+     un chargeur le remplit de cuivre, un dechargeur le vide dans un coffre, et le conteneur
+     vide repart au vide.
+
+     C'est la premiere forme du banc ou une charge utile est autre chose qu'un nom : un
+     `BuildPayload` est un batiment entier et il emporte son stock. Ce que le chargeur tient
+     **dedans** est compare, pas seulement ce qu'il tient. */
+  "payload-loader-line": () => [
+    // Cinq sur cinq : couvre -2..2 par -2..2, et atteint trois cases a l'est.
+    { x: 0, y: 0, block: "payload-source", rotation: 0, raw: blockOf("container") },
+    // Trois sur trois : couvre 3..5 par -1..1.
+    { x: 4, y: 0, block: "payload-loader", rotation: 0 },
+    // Trois sources contre sa face nord : un tapis ne remplirait jamais trois cents.
+    { x: 3, y: 2, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 4, y: 2, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 5, y: 2, block: "item-source", rotation: 0, raw: item("copper") },
+    // Couvre 6..8 par -1..1.
+    { x: 7, y: 0, block: "payload-unloader", rotation: 0 },
+    { x: 7, y: 2, block: "power-source", rotation: 0 },
+    // Couvre 6..8 par -4..-2 : ce que le dechargeur vide.
+    { x: 7, y: -3, block: "vault", rotation: 0 },
+    // Couvre 9..13 par -2..2 : le conteneur vide repart la-dedans.
+    { x: 11, y: 0, block: "payload-void", rotation: 0 },
+  ],
+
+  /* Et un deconstructeur, qui rend un bloc sous forme de son propre cout de construction.
+     Un routeur coute trois cuivres et se construit en six images, donc il repart aussi vite
+     qu'il arrive, et ce qui sort finit dans le coffre. */
+  "payload-deconstructor-breaks": () => [
+    { x: 0, y: 0, block: "payload-source", rotation: 0, raw: blockOf("router") },
+    // Cinq sur cinq : couvre 3..7 par -2..2.
+    { x: 5, y: 0, block: "deconstructor", rotation: 0 },
+    { x: 5, y: 3, block: "power-source", rotation: 0 },
+    { x: 8, y: 0, block: "conveyor", rotation: 0 },
+    // Couvre 9..11 par -1..1.
+    { x: 10, y: 0, block: "vault", rotation: 0 },
+  ],
+
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
