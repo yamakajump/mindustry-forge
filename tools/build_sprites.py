@@ -148,6 +148,16 @@ def main() -> None:
             if path:
                 wanted.append((f"{block}#{layer[1:]}", path))
 
+        # Whatever the block's own drawing chain names, whatever it is called.
+        #
+        # `-vents`, `-heat-top`, `-glow`, `-heat`: the suffixes are the game's and there is
+        # no pattern to guess at, which is exactly why the dump carries them. Read off the
+        # catalogue, a block that gains a layer in a later version gains its sprite here
+        # without anybody noticing it had to.
+        for layer in {one.get("suffix") for one in catalogue["blocks"][block].get("drawers", [])}:
+            if layer and block + layer in sprites:
+                wanted.append((f"{block}#{layer[1:]}", sprites[block + layer]))
+
         # And the plate under a turning part, which the composite does not leave room for.
         #
         # `block-<name>-full` is base, rotator and top flattened into one image with the
