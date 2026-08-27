@@ -73,6 +73,15 @@
 </header>
 
 <main>
+  <!-- L'accroche precede le champ, et elle est ecrite en clair avec sa cle a cote. Un
+       visiteur qui arrive sans savoir ce qu'est ce site voyait un champ vide et repartait. -->
+  <section class="accroche" id="accroche">
+    <h1 data-i18n="vitrine.accueil.titre">Sache ce que ta schematique produit vraiment</h1>
+    <p class="lede" data-i18n="vitrine.accueil.accroche">Colle-la, et Forge te dit ce qui en
+      sort par minute, quel bloc limite toute la ligne, et ce qui se perd en route. Les
+      chiffres sont mesures contre un vrai serveur Mindustry, pas estimes.</p>
+  </section>
+
   <div class="drop" id="drop">
     <label class="lead" for="text">
       Colle la schematique copiee dans le jeu (ctrl+c sur une selection), ou depose un
@@ -116,6 +125,37 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
   </div>
 
   <div id="out" aria-live="polite"></div>
+
+  <!-- Tout ce qui suit disparait des qu'un rapport s'affiche : c'est l'accueil d'une page
+       vide, pas un pied de page. `montrerAccueil` s'en charge. -->
+  <section class="accueil" id="accueil">
+    <!-- Une capture reelle du site en train d'analyser, pas une illustration : les chiffres
+         dessus sont ceux que l'analyse calcule. Produite par tools/build_brand.py. -->
+    <figure class="apercu">
+      <img src="./brand/apercu-produit.png" width="1072" height="710" loading="lazy"
+           data-i18n-alt="vitrine.accueil.apercu-alt"
+           alt="Un rapport d'analyse : les debits, le goulot, ce qui est gaspille">
+    </figure>
+
+    <div class="accueil-mots">
+      <h2 data-i18n="vitrine.accueil.preuve-titre">Pourquoi ces chiffres plutot que d'autres</h2>
+      <p data-i18n="vitrine.accueil.preuve">Un banc fait tourner le vrai jeu sur un monde
+        fige, y pose la schematique, et compte ce qui sort. L'analyse est confrontee a cette
+        mesure a chaque changement du code.</p>
+      <p class="hint-line" data-i18n="vitrine.accueil.sans-compte">Tout se passe dans ton
+        navigateur. Rien n'est envoye, rien n'est garde, et il n'y a pas de compte a creer
+        pour analyser.</p>
+
+      <p class="porte">
+        <span class="dim" data-i18n="vitrine.accueil.rien-a-coller">Rien a coller ?</span>
+        <!-- Pas `primary` : « Analyser » est le geste principal et doit rester le seul
+             bouton ambre de la page. Une porte secondaire n'a pas a crier aussi fort que
+             la porte principale, surtout sur telephone ou elle est plus large. -->
+        <a class="button" href="/schematiques"
+           data-i18n="vitrine.accueil.parcourir">Parcourir les schematiques deja analysees</a>
+      </p>
+    </div>
+  </section>
 </main>
 
 <!-- L'editeur vit hors de <main>, qui est borne a 1120 pixels de large : le plateau prend
@@ -707,12 +747,27 @@ async function edit(change) {
   }
 }
 
+/**
+ * L'accueil d'une page vide.
+ *
+ * Le bloc de presentation n'est pas un pied de page : il repond a quelqu'un qui n'a rien
+ * colle encore. Des qu'un rapport existe, il n'a plus rien a dire et il s'en va, sinon il
+ * pousse le resultat vers le bas au moment ou c'est lui qu'on est venu lire.
+ */
+function montrerAccueil(oui) {
+  for (const id of ["accueil", "accroche"]) {
+    const bloc = $(id);
+    if (bloc) bloc.hidden = !oui;
+  }
+}
+
 async function run() {
   const payload = String(text.value).replace(/\s+/g, "");
   if (!payload) {
     out.innerHTML = `<div class="card error">Colle une schematique, ou depose un fichier.</div>`;
     return;
   }
+  montrerAccueil(false);
   if (payload !== lastPayload) {
     marked = {};
     sealed = false;
@@ -772,6 +827,7 @@ async function enterEditor(tiles = null) {
   }
   if (editor) editor.destroy();
   const same = kept && keptFor === lastPayload;
+  montrerAccueil(false);
   editor = mountEditor({
     host: $("editor"),
     board: same ? kept : null,
