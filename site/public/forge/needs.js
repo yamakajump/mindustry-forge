@@ -24,6 +24,12 @@ const TICKS = 60;
 export function demand(graph) {
   const wanted = {};
   const made = {};
+  /* What the sandbox taps inside the schematic pour, kept apart from what its blocks make.
+     Both halves are needed and they answer different questions: a layout standing on twelve
+     liquid sources must not be told to go and find a pump, and it must not be credited with
+     producing thirty-six million water a minute either. The first is `made`, the second is
+     what this subtracts. */
+  const poured = {};
 
   for (const node of graph.nodes) {
     const block = node.block;
@@ -53,8 +59,15 @@ export function demand(graph) {
     // A sandbox source is a tap the builder put inside the schematic. Left out, a test
     // layout standing on twelve liquid sources was told to go and find a pump.
     if (node.role === "source" && node.configured) {
-      made[node.configured] = (made[node.configured] || 0)
-        + (block.output_per_second || 0) * speed;
+      const rate = (block.output_per_second || 0) * speed;
+      made[node.configured] = (made[node.configured] || 0) + rate;
+      // `shown` is the game's own word for a block a player can actually place. The two
+      // sandbox taps state an output a second like anything else - a hundred for items,
+      // six hundred thousand for liquids - and a ceiling built on either is a promise
+      // nobody can keep outside a sandbox.
+      if (block.build_visibility !== "shown") {
+        poured[node.configured] = (poured[node.configured] || 0) + rate;
+      }
     }
     // And a drill standing on ore is not something to go and find either: it is already
     // there, pulling out exactly what the tiles under it hold.
@@ -78,7 +91,7 @@ export function demand(graph) {
     const short = rate - covered;
     if (short > 1e-4) outside[name] = short;
   }
-  return { outside, wanted, made };
+  return { outside, wanted, made, poured };
 }
 
 /**
