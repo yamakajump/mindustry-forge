@@ -1,5 +1,5 @@
 @extends('layout')
-@section('title', $schematic->name.' - Mindustry Forge')
+@section('title', $schematic->displayName().' - Mindustry Forge')
 
 
 @php
@@ -25,9 +25,9 @@
      figure together are the whole point: a link that shows what a schematic does gets
      clicked, a link that shows a domain name does not. --}}
 @section('og-type', 'article')
-@section('og-title', $schematic->name)
+@section('og-title', $schematic->displayName())
 @section('og-description', $summary)
-@section('og-alt', $schematic->name.' - '.$summary)
+@section('og-alt', $schematic->displayName().' - '.$summary)
 @section('og-image', url("/s/{$schematic->slug}/carte.jpg"))
 
 @push('head')
@@ -49,14 +49,14 @@
   <div class="stage"
        @unless($preview) data-code="{{ $schematic->code }}" @endunless>
     @if($preview)
-      <img src="{{ $preview }}" alt="Apercu de {{ $schematic->name }}">
+      <img src="{{ $preview }}" alt="Apercu de {{ $schematic->displayName() }}">
     @else
       <p class="empty">Dessin du plan...</p>
     @endif
   </div>
 
   <div>
-    <h1 class="title">{{ $schematic->name }}</h1>
+    <h1 class="title">{{ $schematic->displayName() }}</h1>
     <p class="sub">
       par {{ $schematic->credit() }} &middot;
       {{ $schematic->width }}x{{ $schematic->height }} &middot;
@@ -127,8 +127,12 @@
       </div>
     @elseif($power > 0.5 || $made->isNotEmpty())
       <div class="card"><h2>Sortie</h2>
+        {{-- « au mieux », parce que la colonne vient de `analysis['potential']` : c'est
+             ce que la disposition ferait alimentee a fond, pas ce qu'elle a ete mesuree
+             faisant. Le meme mot que la page de comparaison emploie deja, et pour la meme
+             raison : un plafond ne s'affiche jamais sans dire qu'il en est un. --}}
         @if($power > 0.5)
-          <div class="line"><span>Energie nette</span>
+          <div class="line"><span>{{ __('schema.page.energie-plafond') }}</span>
             <span class="num good">{{ number_format($power, 0, ',', ' ') }} / s</span></div>
         @endif
         @foreach($schematic->produces ?? [] as $item => $itemRate)

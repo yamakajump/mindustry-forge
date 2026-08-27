@@ -143,3 +143,103 @@ it('garde les plafonds hors de la vitrine tant que personne n a dit comment les 
         ->assertOk()
         ->assertDontSee('<option value="silicon"', escape: false);
 });
+
+/*
+ * Colour markup in names.
+ *
+ * 1 233 of the 15 533 collected schematics carry Mindustry's colour tags in their name,
+ * and they were published raw everywhere including `og:title`, so they reached the cards
+ * that unfurl in a Discord thread.
+ *
+ * The tests below are as much about what must NOT be stripped as about what must.
+ */
+
+it('takes the game markup out of a name, everywhere a reader sees it', function () {
+    $kept = Schematic::factory()->for(User::factory())->create([
+        'visibility' => Schematic::PUBLIC,
+        'name' => '[#1000][] [#ffa77a99]Graphite',
+    ]);
+
+    expect($kept->displayName())->toBe(' Graphite')
+        // The raw name is untouched in the database: a stripper we get wrong once must not
+        // have eaten the original by the time we find out.
+        ->and($kept->name)->toBe('[#1000][] [#ffa77a99]Graphite');
+
+    $this->get("/s/{$kept->slug}")->assertOk()->assertDontSee('[#ffa77a99]');
+    $this->get('/schematiques')->assertOk()->assertDontSee('[#ffa77a99]');
+});
+
+it('does not touch a name that merely contains brackets', function () {
+    /*
+     * The reason this is a scan and not a regular expression. `[Silicon]Stackable Thin
+     * Crusibles` is a real schematic published on 27/08/2026, and `\[[^\]]*\]` renames it
+     * `Stackable Thin Crusibles`. That is not cleaning a name, it is breaking one.
+     *
+     * `[green]` survives too, for now: telling it from `[Silicon]` needs the game's colour
+     * registry, which is not dumped yet. Leaving a tag in is visible and reported; eating
+     * a title is not.
+     */
+    foreach (['[Silicon]Stackable Thin Crusibles', '[green]rpahT', 'T3 [at core', '100% [[wip]]'] as $name) {
+        $kept = Schematic::factory()->create(['name' => $name]);
+        expect($kept->displayName())->toBe(str_replace('[[', '[', $name));
+    }
+});
+
+it('prints an escaped bracket the way the game prints it', function () {
+    // `[[` is how the game writes a bracket somebody meant, and it shows one.
+    expect(Schematic::factory()->create(['name' => 'a [[b]] c'])->displayName())->toBe('a [b]] c');
+});
+
+it('leaves a malformed colour alone rather than guessing', function () {
+    // Nine digits is not a colour, and neither is a bracket that never closes. Copying
+    // them through is the safe direction.
+    foreach (['[#123456789]x', '[#12]y', '[#nothex]z', '[#abc'] as $name) {
+        $expected = $name === '[#12]y' ? 'y' : $name;
+        expect(Schematic::factory()->create(['name' => $name])->displayName())->toBe($expected);
+    }
+});
+
+it('shows the author their own name unchanged when they edit it', function () {
+    // The one surface that deliberately shows the raw name. Renaming through a form
+    // pre-filled with the stripped version would silently destroy the colours they chose.
+    $mine = User::factory()->create();
+    $kept = Schematic::factory()->for($mine)->create(['name' => '[#ff0000]Ma ligne']);
+
+    $this->actingAs($mine)->get("/s/{$kept->slug}")
+        ->assertOk()
+        ->assertSee('data-name="[#ff0000]Ma ligne"', escape: false);
+});
+
+it('lets no surface print raw markup, including the ones added later', function () {
+    /*
+     * The guard, rather than five separate assertions. This defect existed because three
+     * surfaces had to remember and the share card did not, so what is worth testing is the
+     * set of them: every route that shows a schematic's name, walked with one that carries
+     * markup. A route added later and wired to `name` instead of `displayName()` fails
+     * here, which is the only way that mistake gets caught before a reader sees it.
+     */
+    $mark = '[#ffa77a99]';
+    $left = Schematic::factory()->for(User::factory())->create([
+        'visibility' => Schematic::PUBLIC, 'name' => "{$mark}Gauche",
+    ]);
+    $right = Schematic::factory()->for(User::factory())->create([
+        'visibility' => Schematic::PUBLIC, 'name' => "{$mark}Droite",
+    ]);
+
+    $pages = [
+        '/schematiques',
+        '/schematiques?tri=new',
+        "/s/{$left->slug}",
+        "/comparer?a={$left->slug}&b={$right->slug}",
+    ];
+
+    foreach ($pages as $page) {
+        // Asserted rather than skipped on a non-200. A loop that quietly passes over a
+        // page it could not load is a test that reports success for pages it never saw,
+        // which is the same class of silence this whole file is about.
+        $this->get($page)
+            ->assertOk()
+            ->assertSee('Gauche')
+            ->assertDontSee($mark, escape: false);
+    }
+});
