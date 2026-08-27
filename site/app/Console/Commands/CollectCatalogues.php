@@ -7,6 +7,7 @@ use App\Console\Commands\Sources\MindustrySchematics;
 use App\Console\Commands\Sources\MindustryTool;
 use App\Console\Commands\Sources\PoliteClient;
 use App\Models\Schematic;
+use App\Models\Withdrawal;
 use Illuminate\Console\Command;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -102,7 +103,7 @@ class CollectCatalogues extends Command
         $this->newLine();
         $this->info($source.($announced ? " : {$announced} annoncees" : ''));
 
-        $taken = $held = $gone = $failed = 0;
+        $taken = $held = $gone = $failed = $withdrawn = 0;
         $inARow = 0;
         $limit = (int) $this->option('limite');
 
@@ -115,9 +116,25 @@ class CollectCatalogues extends Command
                 ->pluck('source_id')
                 ->flip();
 
+            /* What an author asked us to take down, checked before anything is fetched.
+               `SECURITY.md` promises a takedown is honoured, and deleting the row does not
+               do that: this collector holds no cursor, it asks the database whether it
+               already has a schematic, and a deliberate removal looks exactly like
+               something never collected. It came back on the next run, counted as new. The
+               memory has to live outside the table the removal empties. */
+            $refused = Withdrawal::where('source', $source)
+                ->whereIn('source_id', array_map($catalogue->idOf(...), $listedPage))
+                ->pluck('source_id')
+                ->flip();
+
             $todo = [];
             foreach ($listedPage as $listed) {
                 $id = $catalogue->idOf($listed);
+                if ($id !== '' && $refused->has($id)) {
+                    $withdrawn++;
+
+                    continue;
+                }
                 if ($id === '' || $known->has($id)) {
                     $held++;
 
@@ -170,7 +187,8 @@ class CollectCatalogues extends Command
                 }
             });
 
-            $this->line("  {$taken} prises, {$held} deja tenues, {$gone} disparues");
+            $this->line("  {$taken} prises, {$held} deja tenues, {$gone} disparues"
+                .($withdrawn ? ", {$withdrawn} retirees sur demande" : ''));
 
             if ($limit > 0 && $taken >= $limit) {
                 $this->line("  limite de {$limit} atteinte");
@@ -179,8 +197,8 @@ class CollectCatalogues extends Command
         }
 
         $this->table(
-            ['prises', 'deja tenues', 'disparues', 'echecs'],
-            [[$taken, $held, $gone, $failed]],
+            ['prises', 'deja tenues', 'disparues', 'echecs', 'retirees'],
+            [[$taken, $held, $gone, $failed, $withdrawn]],
         );
     }
 

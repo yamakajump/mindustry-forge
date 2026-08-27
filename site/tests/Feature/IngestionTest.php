@@ -3,6 +3,7 @@
 use App\Console\Commands\Sources\PoliteClient;
 use App\Models\Schematic;
 use App\Models\SchematicItem;
+use App\Models\Withdrawal;
 use App\Services\EngineVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -349,4 +350,76 @@ it('carries the ceiling all the way from Node to the search index', function () 
         ->sole();
 
     expect(round($ceiling->rate))->toBe(40.0);
+});
+
+/*
+ * Takedowns.
+ *
+ * `SECURITY.md` promises an author's schematic will be removed without argument. Before
+ * these tests it could not be: deleting the row was the whole gesture, and the next
+ * collection put it back, counted as a new entry. The failure was silent from both ends -
+ * nothing logged it, and the author had been told it was done.
+ */
+
+it('does not bring back a schematic somebody asked us to take down', function () {
+    toolFake(['aaa', 'bbb']);
+    collecte(['source' => Schematic::MINDUSTRY_TOOL]);
+
+    $this->artisan('forge:retirer', [
+        'slug' => Schematic::where('source_id', 'aaa')->value('slug'),
+        '--raison' => 'demande de l auteur',
+    ])->assertSuccessful();
+
+    expect(Schematic::where('source_id', 'aaa')->exists())->toBeFalse();
+
+    // The whole point: a second collection sees it in the listing and leaves it alone.
+    toolFake(['aaa', 'bbb']);
+    collecte(['source' => Schematic::MINDUSTRY_TOOL]);
+
+    expect(Schematic::where('source_id', 'aaa')->exists())->toBeFalse()
+        ->and(Schematic::where('source_id', 'bbb')->exists())->toBeTrue();
+});
+
+it('never even asks the source about a withdrawn schematic', function () {
+    /*
+     * Stronger than "does not store it": we stop before the request. Fetching a schematic
+     * an author asked us to forget, then throwing it away, is still going and getting it,
+     * and their download counter would say so.
+     */
+    Withdrawal::create(['source' => Schematic::MINDUSTRY_TOOL, 'source_id' => 'aaa']);
+
+    toolFake(['aaa', 'bbb']);
+    collecte(['source' => Schematic::MINDUSTRY_TOOL]);
+
+    Http::assertNotSent(fn ($request) => str_contains($request->url(), '/schematics/aaa'));
+});
+
+it('keeps the reason, so the request can be answered later', function () {
+    toolFake(['aaa']);
+    collecte(['source' => Schematic::MINDUSTRY_TOOL]);
+
+    $this->artisan('forge:retirer', [
+        'slug' => Schematic::sole()->slug,
+        '--raison' => 'courriel du 28/08',
+    ])->assertSuccessful();
+
+    $kept = Withdrawal::sole();
+    expect($kept->source)->toBe(Schematic::MINDUSTRY_TOOL)
+        ->and($kept->source_id)->toBe('aaa')
+        ->and($kept->reason)->toBe('courriel du 28/08');
+});
+
+it('removes an uploaded schematic without recording a takedown', function () {
+    // Nothing collected it, so nothing brings it back and there is nothing to remember.
+    // Recording it anyway would put a source-less row in a table keyed on the source.
+    $mine = Schematic::factory()->create();
+
+    $this->artisan('forge:retirer', ['slug' => $mine->slug])->assertSuccessful();
+
+    expect(Schematic::count())->toBe(0)
+        ->and(Withdrawal::count())->toBe(0);
+});
+
+it('says so rather than pretending when the address is wrong', function () {
+    $this->artisan('forge:retirer', ['slug' => 'jamaisvu123'])->assertFailed();
 });
