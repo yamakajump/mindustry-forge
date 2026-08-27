@@ -1,134 +1,212 @@
-# mindustry-forge
+<p align="center">
+  <img src="site/public/brand/depot-entete.jpg" alt="Mindustry Forge" width="900">
+</p>
+
+# Mindustry Forge
 
 **Paste a schematic. Find out what it actually does.**
 
-Every Mindustry calculator on the web answers the same question: how many machines do you
-need for a clean ratio. That is arithmetic, and four sites already do it. None of them will
-look at *your* layout, on *your* ore patch, and tell you it produces 47.3 graphite a minute
-because the second press is only fed 61% of the time.
+Every Mindustry calculator on the web answers the same question: how many machines for a
+clean ratio. That is arithmetic, and four sites already do it. None of them will look at
+*your* layout, on *your* ore patch, and tell you it makes 47.3 graphite a minute because
+the second press is fed 61% of the time.
 
-This does that. And then it tells you where to move the blocks.
+This does that, and then tells you where to move the blocks.
 
-## Why the numbers here can be trusted
+Live at **[mindustryforge.com](https://mindustryforge.com)**.
+
+## Why you can check the numbers instead of trusting them
 
 Every other tool computes its figures by hand and asks you to believe them. This repository
-ships a bench that **runs the actual game**: a headless Mindustry server on a pinned world
-for a pinned number of seconds, stamping the schematic in and counting what comes out.
+ships a bench that **runs the actual game**: a headless Mindustry server, a pinned world, a
+pinned number of seconds, the schematic stamped in, and a count of what comes out.
 
-So the analyser is not the source of truth, it is a fast approximation of one, and the
-bench is what proves it. A layout whose calculated output disagrees with its measured
-output is a bug in this repository, not a matter of opinion. That check runs in CI.
+So the analyser is not the source of truth. It is a fast approximation of one, and the bench
+is what holds it to account. A layout whose computed output disagrees with its measured
+output is a bug here, not a matter of opinion.
+
+```
+npm run oracle          # replays every recorded scenario against its measurement
+```
+
+**Largest disagreement: 0.00%, over 164 recorded scenarios** (27 August 2026). Two of them
+have never been measured, and say so rather than passing quietly.
+
+**This runs on every push.** The replay needs no server and no game, only the measurements
+already recorded, so continuous integration does it in seconds and fails the build past two
+percent. It is a gate, not a log line. `node tools/gap.mjs` runs beside it without a gate,
+so the figure below lands in the record of every run instead of in somebody's memory.
 
 Nobody else can make that claim, because nobody else has the bench.
 
-## It runs on your machine
+## What this repository is honest about
 
-The analysis is JavaScript and happens in your browser. Nothing is uploaded, so a base you
-have not published stays yours, and the page costs nothing to host however many people use
-it. There is no server to pay for and no server to go down.
+The engine is proven. **The report the player reads is computed by something else**, and the
+two do not agree yet. That is written here rather than left for a reader to find.
 
-That also settles half a question this repository keeps asking of itself: there is exactly
-one implementation *in one language*. A second one, in another language, for the command
-line or for a backend, would be a second thing to be wrong, and there is none.
-
-The other half is not settled, and it is written here rather than left for a reader to
-find. There are **two models in JavaScript**, and they do not agree on the same physics:
-
-- `site/public/forge/engine/**` steps the game tick by tick. It throttles a machine by the
-  power it actually receives, in five places. It is what `npm run oracle` measures against
-  a real server, and what the animated view runs.
+- `site/public/forge/engine/**` steps the game tick by tick, and throttles a machine by the
+  power it actually receives. This is what the bench measures, and what the animated view
+  runs.
 - `site/public/forge/analyse.js` solves a steady state by maximum flow. Power never enters
-  the solve at all, so the bottleneck it reports is blind to it.
+  the solve, so the bottleneck it reports is blind to it.
 
-**The one shown to the player is the second, and the one proven against the game is the
-first.** A layout short of thirty energy a second can therefore be told that everything
-runs flat out. Bringing the report onto the engine is the honest fix and it changes every
-number on the site at once, so it is a stated piece of work rather than a silent one:
-`docs/todo.md` carries it.
+**The one shown to the player is the second. The one proven against the game is the first.**
+A layout thirty energy a second short can therefore be told everything runs flat out.
 
-## What is here
+The gap is measured, not estimated:
 
-| | |
-|---|---|
-| `site/public/forge/` | the analysis: reads a `.msch`, builds the flow graph, finds the bottleneck |
-| `site/public/index.html` | the page, which holds no calculation of its own |
-| `bench/` | runs the real game and measures the same schematic, to prove the analysis right |
-| `tests/js/` | the analysis, run exactly as the page runs it |
-| `tests/` | the bench |
-
-## The `.msch` format is not guessed
-
-`site/public/forge/schematic.js` implements the layout of `Schematics.write` and `TypeIO`
-from Mindustry v159.7, the version pinned throughout this repository. Reading a format from
-a wiki is how a tool comes to disagree with the game about what a player pasted.
-
-## Trying it
-
-```bash
-cd site/public && python -m http.server 8770     # then open http://127.0.0.1:8770/
-node --test "tests/js/*.test.js"
+```
+node tools/gap.mjs
 ```
 
-Any static file server does. The page fetches its block catalogue, so opening the HTML from
-the filesystem is the one thing that does not work: a browser refuses a module import over
-`file://`.
+```
+88 scenarios compared, of 164 recorded      (27 August 2026)
+  agree within 20%                    49
+  the throughput is wrong             27
+  right throughput, wrong container   12
+```
 
-## Status
+Moving the report onto the engine changes every number on the site at once, so it is stated
+work rather than silent work. `docs/todo.md` carries it.
 
-Restarted from scratch on 26 August 2026. The state before that, a search that invented
-layouts and published a catalogue of them, is kept at the tag
-`archive/recherche-de-designs`. It worked, and on the one toy problem it was ever given it
-beat a hand-written layout: 24 items delivered with 17 blocks against 19 with 21. It had
-also only ever solved that one problem, which is why the product changed rather than the
-code.
+## It runs on your machine
 
-## Faire tourner le site
+The analysis is JavaScript and happens in your browser. Nothing is uploaded, a base you have
+not published stays yours, and the page costs the same to host whether ten people or ten
+thousand use it.
+
+That settles half a question this repository keeps asking of itself: there is exactly one
+implementation of the analysis, in one language. A second one, in another language, for a
+command line or a backend, would be a second thing to be wrong.
+
+## Try it
+
+The analyser is a static page and needs no server of its own:
+
+```bash
+cd site/public && python -m http.server 8770
+```
+
+Then open <http://127.0.0.1:8770/> and paste a schematic. Any static file server will do.
+Opening the HTML straight off the filesystem is the one thing that does not work: a browser
+refuses a module import over `file://`.
+
+That gets you the analyser, and the editor with it: the *Build from scratch* button opens
+it without leaving the page. What it does not get you is anything with its own address.
+`/editer`, `/blocs`, `/comparer` and the tools are routes, not files, and a static server
+answers 404 for all of them -- along with accounts, saving and the public catalogue. Those
+need the Laravel application below.
+
+## Run the whole site
 
 ```bash
 cd site
 composer install
 cp .env.example .env && php artisan key:generate
+touch database/database.sqlite          # see below
 php artisan migrate
 php artisan storage:link
 php artisan serve --port=8770
 ```
 
-Discord se configure dans `.env` :
+The empty database file is not optional and not obvious. `.env.example` selects SQLite, and
+`php artisan migrate` on a fresh clone stops on `Database file at path [...] does not
+exist`. Laravel offers to create it when you are sitting at a prompt and simply fails when
+you are not, which is every script and every CI job. On Windows without a POSIX shell, use
+`New-Item database/database.sqlite`.
+
+The whole sequence above was run against a fresh clone on 27 August 2026, and `php artisan
+test` passes at the end of it.
+
+Discord sign-in is configured in `.env`:
 
 ```
 DISCORD_CLIENT_ID=...
 DISCORD_CLIENT_SECRET=...
 ```
 
-L'application se cree sur https://discord.com/developers/applications, avec
-`http://127.0.0.1:8770/auth/discord/callback` comme URI de redirection.
+Create the application at <https://discord.com/developers/applications>, with
+`http://127.0.0.1:8770/auth/discord/callback` as the redirect URI.
 
-Sous Windows, PHP arrive sans magasin de certificats et tout appel HTTPS sortant
-echoue sur `unable to get local issuer certificate`. Le remede est le paquet de
-certificats, pas la desactivation de la verification :
+On Windows, PHP ships without a certificate store and every outbound HTTPS call fails on
+`unable to get local issuer certificate`. The fix is the certificate bundle, not turning
+verification off:
 
 ```bash
 curl -o C:/php/extras/cacert.pem https://curl.se/ca/cacert.pem
-# puis dans php.ini
+```
+
+```ini
+; then in php.ini
 curl.cainfo = "C:\php\extras\cacert.pem"
 openssl.cafile = "C:\php\extras\cacert.pem"
 ```
 
+## Tests
+
+```bash
+npm test                     # the analyser, run exactly as the page runs it
+cd site && php artisan test  # the application
+python -m pytest tests/ -q   # the file formats. Runs no game, despite sitting by the bench
+```
+
+Counts on 27 August 2026: 565, 141 and 8. They will be wrong tomorrow, which is why they
+carry a date.
+
+Use `npm test` rather than a glob of your own. `node --test "tests/js/*.test.js"` looks
+equivalent and silently skips every subdirectory, which is 208 of the 565.
+
+## What is where
+
+| | |
+|---|---|
+| `site/public/forge/` | the analysis: reads a `.msch`, builds the flow graph, finds the bottleneck |
+| `site/public/forge/engine/` | the tick-by-tick simulation, the half the bench proves |
+| `site/public/forge/editor/` | the editor, with the game's own placement mechanics |
+| `site/public/index.html` | the page, which holds no calculation of its own |
+| `site/app/`, `site/routes/` | what a server is actually for: remembering, and letting people share |
+| `bench/` | runs the real game and measures the same schematic |
+| `tests/js/` | the analysis, run exactly as the page runs it |
+| `tools/` | the oracle, the gap, and the generators for the catalogue and the sprites |
+| `docs/` | the plan, what is done, what is left, and the defects we know by name |
+
+## The `.msch` format is not guessed
+
+`site/public/forge/schematic.js` implements the layout of `Schematics.write` and `TypeIO`
+from Mindustry v159.7, the version pinned throughout this repository. Reading a format off a
+wiki is how a tool comes to disagree with the game about what a player just pasted.
+
+## Contributing
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) says what this project is strict about, so you can
+decide before writing code whether the rules suit you. Conduct is in
+[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), and vulnerabilities go through GitHub's private
+reporting rather than an issue: [`SECURITY.md`](SECURITY.md).
+
+`docs/fonctionnalites.md` is the plan: what exists, what is being built, and who holds what.
+`docs/todo.md` names the known defects, including the one above.
+
+Two rules govern the repository, and both are in `CLAUDE.md`:
+
+**One implementation of the analysis.** A second, in another language, would be a second
+thing to be wrong.
+
+**Figures are proven against the game, not against us.** If the analysis and the bench
+disagree, that is a bug here. Never adjust a constant to make a test pass without checking
+what the bench says.
+
 ## Licence
 
-AGPL-3.0. Le texte complet est dans [`LICENSE`](LICENSE).
+AGPL-3.0. The full text is in [`LICENSE`](LICENSE).
 
-La GPL aurait suffi pour un logiciel qu'on installe : elle se declenche a la
-distribution d'un binaire. Ici le produit est un service web, et personne ne
-distribue rien. Sous GPL, n'importe qui pourrait donc heberger une version fermee
-de ce moteur, amelioree dans son coin, sans jamais rien rendre. L'AGPL ajoute la
-seule clause qui compte pour ce projet : faire tourner le code sur un serveur
-accessible au public oblige a en publier la source.
+The GPL would have been enough for software you install: it triggers on distributing a
+binary. Here the product is a web service and nobody distributes anything, so under the GPL
+anyone could host a closed, privately improved copy of this engine and never give anything
+back. The AGPL adds the one clause that matters to this project: running the code on a
+publicly reachable server obliges you to publish the source.
 
-Ce qui est mis en commun, c'est le moteur d'analyse et le banc qui le verifie.
-C'est le travail difficile, et c'est celui dont la communaute Mindustry n'a
-aucune autre copie.
+What is shared is the analysis engine and the bench that verifies it. That is the hard part,
+and it is the part the Mindustry community has no other copy of.
 
-Les schematiques ne sont pas couvertes par cette licence. Elles appartiennent a
-leurs auteurs, et celles qui ont ete collectees ailleurs portent leur origine en
-base et sur leur page.
+Schematics are not covered by this licence. They belong to their authors, and the ones
+collected elsewhere carry their origin in the database and on their page.
