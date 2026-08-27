@@ -155,8 +155,8 @@
       <div class="card"><h2>{{ __('schema.page.cout') }}</h2>
         @foreach($schematic->cost() as $item => $amount)
           <div class="line">
-            <span><img src="/icone/objet/{{ $item }}.png?t=32" width="16" height="16"
-                       alt="" loading="lazy"> {{ $item }}</span>
+            <span><img class="icone" src="/icone/objet/{{ $item }}.png?t=32"
+                       width="16" height="16" alt="" loading="lazy"> {{ $item }}</span>
             <span class="num">{{ number_format($amount, 0, ',', ' ') }}</span></div>
         @endforeach
         <p class="hint-line">{{ __('schema.page.cout-aide') }}</p>
