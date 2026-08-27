@@ -126,13 +126,17 @@ it('donne a chaque schematique une adresse imprevisible', function () {
 it('trouve une schematique par ce qu elle produit', function () {
     // The thing no other Mindustry site can do: they search names and hand-typed tags,
     // because that is all they hold.
+    // Le plafond autant que la mesure : l'analyse rend toujours les deux, et c'est sur le
+    // plafond que la vitrine cherche, faute d'une mesure dans le catalogue importe.
     Schematic::factory()->create([
         'visibility' => 'public', 'name' => 'Presse a graphite',
         'produces' => ['graphite' => 40.0],
+        'analysis' => ['potentialPerMinute' => ['graphite' => 40.0]],
     ]);
     Schematic::factory()->create([
         'visibility' => 'public', 'name' => 'Four a silicium',
         'produces' => ['silicon' => 25.0],
+        'analysis' => ['potentialPerMinute' => ['silicon' => 25.0]],
     ]);
 
     $this->get('/schematiques?produit=graphite')

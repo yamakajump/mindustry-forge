@@ -119,11 +119,20 @@ it('n invente pas de plafond pour une schematique qui n en a pas', function () {
     expect($kept->items()->where('kind', SchematicItem::PLAFOND)->count())->toBe(0);
 });
 
-it('garde les plafonds hors de la vitrine tant que personne n a dit comment les montrer', function () {
+it('cherche sur les plafonds, en disant que ce sont des plafonds', function () {
     /*
-     * La vitrine lit `sens = produit` et `kind = mesure`, explicitement. Un plafond en base
-     * ne doit donc apparaitre ni dans le classement ni dans la liste deroulante : mieux
-     * vaut invisible que melange a une mesure sans que rien ne les distingue.
+     * Ce test disait l inverse, et sa condition etait dans son titre : « tant que personne
+     * n a dit comment les montrer ». Quelqu un l a dit, et la page le dit maintenant.
+     *
+     * Mesure en production : 117 schematiques portent une mesure contre 6 775 un plafond,
+     * et ni le graphite ni le silicium n avaient un seul resultat alors que 844 et 1 700
+     * plans en produisent. Ce n est pas un retard : une schematique arrachee d une base n a
+     * pas la foreuse qui l alimentait, donc sa mesure vaut zero et le restera. Exiger une
+     * mesure condamnait le catalogue importe a rester muet pour toujours.
+     *
+     * La regle n est pas assouplie, elle est appliquee : un plafond ne s affiche jamais sans
+     * dire qu il en est un. Ce qui etait interdit, c est de le melanger a une mesure sans
+     * que rien ne le dise ; le nommer n est pas le melanger.
      */
     $ceilingOnly = Schematic::factory()->for(User::factory())->create([
         'visibility' => Schematic::PUBLIC, 'name' => 'Plafond seul', 'blocks' => 30,
@@ -132,16 +141,17 @@ it('garde les plafonds hors de la vitrine tant que personne n a dit comment les 
 
     expect($ceilingOnly->items()->where('kind', SchematicItem::PLAFOND)->count())->toBe(1);
 
-    // Ni dans le classement filtre sur ce qu'elle est censee produire...
+    // Elle se trouve par ce qu'elle pourrait produire...
     $this->get('/schematiques?produit=silicon')
         ->assertOk()
-        ->assertDontSee('Plafond seul');
+        ->assertSee('Plafond seul');
 
-    // ...ni dans la liste deroulante, qui n'offre que ce qui a ete mesure. Une entree
-    // « silicon » qui ne rend aucune schematique serait une impasse pour le visiteur.
+    // ...et elle peuple la liste, qui offre exactement ce qui rend des resultats. Une entree
+    // qui ne rend rien serait une impasse ; une entree absente pour 1 700 plans en est une
+    // autre, et c'etait celle-la.
     $this->get('/schematiques')
         ->assertOk()
-        ->assertDontSee('<option value="silicon"', escape: false);
+        ->assertSee('<option value="silicon"', escape: false);
 });
 
 /*

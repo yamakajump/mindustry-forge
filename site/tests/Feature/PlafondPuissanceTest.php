@@ -72,17 +72,31 @@ it('laisse une centrale reellement alimentee dans le classement', function () {
         ->value('rate'))->toBe(860.0);
 });
 
-it('sort la ferme sans carburant du tri qui promet des mesures', function () {
+it('garde la ferme sans carburant, parce qu un plafond dit ce qu elle ferait nourrie', function () {
+    /*
+     * Ce test l en sortait, du temps ou la vitrine n acceptait que des mesures. Une ferme
+     * sans carburant a une mesure nulle et un plafond de neuf cents, et « ce qu elle ferait
+     * alimentee » est exactement la question que se pose quelqu un qui cherche une centrale.
+     *
+     * Le plafond est dit comme tel a cote du chiffre, donc rien n est presente comme une
+     * mesure. C etait la seule condition.
+     */
     fermeSansCarburant()->indexWhatItMakes();
+
+    // `potential` autant que `power` : l analyse rend toujours les deux, et une fixture qui
+    // n ecrivait que la mesure decrivait une schematique qui ne peut pas exister.
     Schematic::factory()->create([
         'visibility' => 'public', 'name' => 'Reacteur nourri', 'blocks' => 30,
         'produces' => [],
         'power_made' => 900.0, 'power_used' => 40.0,
-        'analysis' => ['power' => ['made' => 900.0, 'spent' => 40.0]],
+        'analysis' => [
+            'power' => ['made' => 900.0, 'spent' => 40.0],
+            'potential' => ['made' => 900.0, 'spent' => 40.0],
+        ],
     ]);
 
     $page = $this->get('/schematiques?produit='.SchematicItem::POWER.'&tri=output')->assertOk();
 
     $page->assertSee('Reacteur nourri');
-    $page->assertDontSee('POLAR STAR');
+    $page->assertSee('POLAR STAR');
 });

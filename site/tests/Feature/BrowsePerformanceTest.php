@@ -36,11 +36,21 @@ function ligne(string $name, array $makes, float $powerUsed = 0, float $powerMad
      * Set to the same figures here on purpose: these are plants that are fed, so the two
      * agree, and every assertion below is about the net-versus-gross rule rather than
      * about which of the two figures is being read.
+     *
+     * The ceiling is written as well, and that is not padding. Every real schematic carries
+     * both: `indexWhatItMakes` writes the measurement and `indexWhatItCouldMake` the
+     * ceiling, from the same analysis. A fixture that wrote only the measurement described a
+     * schematic that cannot exist, and it went unnoticed for as long as the listing ranked
+     * on measurements alone.
      */
     return Schematic::factory()->create([
         'visibility' => 'public', 'name' => $name, 'produces' => $makes,
         'power_used' => $powerUsed, 'power_made' => $powerMade, 'blocks' => $blocks,
-        'analysis' => ['power' => ['made' => $powerMade, 'spent' => $powerUsed]],
+        'analysis' => [
+            'power' => ['made' => $powerMade, 'spent' => $powerUsed],
+            'potentialPerMinute' => $makes,
+            'potential' => ['made' => $powerMade, 'spent' => $powerUsed],
+        ],
     ]);
 }
 
@@ -107,7 +117,8 @@ it('ne repertorie pas comme centrale ce qui consomme plus qu il ne produit', fun
     // under "produit de l'energie" ahead of something that actually supplies any.
     $usine = ligne('Usine avec panneaux', ['silicon' => 90.0], powerUsed: 600, powerMade: 100);
 
-    expect($usine->items()->pluck('item')->all())->toBe(['silicon']);
+    expect($usine->items()->where('kind', SchematicItem::MESURE)->pluck('item')->all())
+        ->toBe(['silicon']);
 });
 
 it('ne pretend pas classer un rendement sans savoir de quoi on parle', function () {
@@ -151,7 +162,8 @@ it('dit au contraire ce qu une centrale laisse au reste de la base', function ()
 it('tient l index de ce qu elle produit a jour a chaque ecriture', function () {
     $schematic = ligne('Chaine', ['graphite' => 40.0], powerMade: 300, blocks: 20);
 
-    expect($schematic->items()->pluck('rate_per_block', 'item')->all())
+    expect($schematic->items()->where('kind', SchematicItem::MESURE)
+        ->pluck('rate_per_block', 'item')->all())
         ->toBe(['graphite' => 2.0, SchematicItem::POWER => 15.0]);
 
     /* Corrected to make something else: it has to stop turning up under graphite.
@@ -165,7 +177,8 @@ it('tient l index de ce qu elle produit a jour a chaque ecriture', function () {
         'analysis' => ['power' => ['made' => 0, 'spent' => 0]],
     ]);
 
-    expect($schematic->items()->pluck('item')->all())->toBe(['silicon']);
+    expect($schematic->items()->where('kind', SchematicItem::MESURE)->pluck('item')->all())
+        ->toBe(['silicon']);
 });
 
 it('ne relit pas tout le catalogue a chaque affichage de la liste', function () {
@@ -214,8 +227,11 @@ it('donne un ordre total, pour que la pagination ne perde rien', function () {
      * the database found convenient, which it has no reason to repeat between two pages.
      * The result would be a schematic shown twice while another is never shown at all.
      */
+    // Le plafond autant que la mesure, comme toute schematique reelle en porte : c est sur
+    // le plafond que la vitrine classe, faute d une mesure dans le catalogue importe.
     Schematic::factory()->count(50)->create([
         'visibility' => 'public', 'produces' => ['graphite' => 40.0], 'blocks' => 10,
+        'analysis' => ['potentialPerMinute' => ['graphite' => 40.0]],
     ]);
 
     $vus = [];
@@ -239,22 +255,39 @@ it('sait dire quatre choses differentes du meme objet', function () {
      */
     $schematic = ligne('Four a silicium', ['silicon' => 90.0], powerUsed: 600);
 
+    /* Le plafond produit est deja ecrit par la fixture, comme l analyse l ecrit pour toute
+       schematique reelle : `updateOrCreate` plutot que `create`, sinon la contrainte
+       d unicite refuse la ligne et le test echoue sur sa propre mise en place. */
     foreach ([
         [SchematicItem::PRODUIT, SchematicItem::PLAFOND, 240.0],
         [SchematicItem::CONSOMME, SchematicItem::MESURE, 120.0],
         [SchematicItem::CONSOMME, SchematicItem::PLAFOND, 300.0],
     ] as [$sens, $kind, $rate]) {
-        $schematic->items()->create([
-            'item' => 'silicon', 'sens' => $sens, 'kind' => $kind,
-            'rate' => $rate, 'rate_per_block' => $rate / $schematic->blocks,
-        ]);
+        $schematic->items()->updateOrCreate(
+            ['item' => 'silicon', 'sens' => $sens, 'kind' => $kind],
+            ['rate' => $rate, 'rate_per_block' => $rate / $schematic->blocks],
+        );
     }
 
     expect($schematic->items()->where('item', 'silicon')->count())->toBe(4);
 });
 
-it('ne classe que ce qui sort et qui a ete constate', function () {
-    // Un plafond est cherchable, il n est pas comparable a une mesure.
+it('classe sur le plafond, qui est la seule nature que tout le catalogue porte', function () {
+    /*
+     * Cette regle disait l inverse jusqu ici : seule une mesure etait cherchable, et un
+     * plafond etait ecarte du classement comme de la liste. C etait defendable et ca rendait
+     * le catalogue muet.
+     *
+     * Mesure en production : 117 schematiques portent une mesure contre 6 775 un plafond, et
+     * ni le graphite ni le silicium n avaient un seul resultat alors que 844 et 1 700 plans
+     * en produisent. Ce n est pas un retard qui se resorbe : une schematique arrachee d une
+     * base n a pas la foreuse qui l alimentait, donc sa mesure vaut zero et le restera.
+     *
+     * Le plafond seul, et non « plafond ou mesure », parce qu un classement qui melange deux
+     * natures est la faute reparee sur l energie nette. Et il n exclut personne : le plafond
+     * se calcule avec une alimentation infinie, donc il est toujours superieur ou egal a la
+     * mesure. Une seule nature dans un seul ordre, sans rien perdre.
+     */
     $mesuree = ligne('Constatee', ['graphite' => 30.0], blocks: 10);
 
     $plafond = ligne('Au mieux', [], blocks: 10);
@@ -263,12 +296,13 @@ it('ne classe que ce qui sort et qui a ete constate', function () {
         'kind' => SchematicItem::PLAFOND, 'rate' => 900.0, 'rate_per_block' => 90.0,
     ]);
 
+    // Les deux sont la, et celle qui promet le plus passe devant.
     $this->get('/schematiques?produit=graphite&tri=best')
         ->assertOk()
-        ->assertSee('Constatee')
-        ->assertDontSee('Au mieux');
+        ->assertSee('Au mieux')
+        ->assertSee('Constatee');
 
-    // Et il ne doit pas non plus peupler la liste deroulante des items proposes.
+    // Et un plafond peuple la liste deroulante, sans quoi le catalogue reste incherchable.
     $vide = ligne('Sans rien', [], blocks: 10);
     $vide->items()->create([
         'item' => 'thorium', 'sens' => SchematicItem::PRODUIT,
@@ -276,9 +310,11 @@ it('ne classe que ce qui sort et qui a ete constate', function () {
     ]);
 
     expect($this->get('/schematiques')->assertOk()->viewData('items'))
-        ->toContain('graphite')->not->toContain('thorium');
+        ->toContain('graphite')->toContain('thorium');
 
-    expect($mesuree->items()->count())->toBe(1);
+    // La mesure n est pas perdue pour autant : elle reste ecrite a cote de son plafond.
+    expect($mesuree->items()->where('kind', SchematicItem::MESURE)->count())->toBe(1)
+        ->and($mesuree->items()->where('kind', SchematicItem::PLAFOND)->count())->toBe(1);
 });
 
 it('ne jette pas le travail d une autre passe en enregistrant', function () {
@@ -296,5 +332,6 @@ it('ne jette pas le travail d une autre passe en enregistrant', function () {
     $schematic->update(['name' => 'Chaine renommee']);
 
     expect($schematic->items()->where('sens', SchematicItem::CONSOMME)->count())->toBe(1)
-        ->and($schematic->items()->where('sens', SchematicItem::PRODUIT)->count())->toBe(1);
+        ->and($schematic->items()->where('sens', SchematicItem::PRODUIT)
+            ->where('kind', SchematicItem::MESURE)->count())->toBe(1);
 });
