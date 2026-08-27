@@ -43,8 +43,15 @@ return new class extends Migration
         Schema::table('schematic_items', function (Blueprint $table) {
             // La même chose peut désormais être dite quatre fois d'une schématique : ce
             // qu'elle produit et ce qu'elle consomme, mesuré et au mieux.
-            $table->dropUnique(['schematic_id', 'item']);
+            //
+            // Le nouvel index est posé avant que l'ancien parte, et l'ordre n'est pas un
+            // détail de style : la clé étrangère sur `schematic_id` a besoin d'un index qui
+            // commence par cette colonne, et MySQL refuse de supprimer le seul qui reste.
+            // SQLite l'accepte, parce qu'il reconstruit la table, donc l'erreur ne se voit
+            // qu'en production. Elle a été trouvée par le contrôle MySQL de la CI, écrit ce
+            // matin précisément pour ça.
             $table->unique(['schematic_id', 'item', 'sens', 'kind']);
+            $table->dropUnique(['schematic_id', 'item']);
 
             // Les deux tris du listing, une fois l'objet choisi. Les trois colonnes de
             // filtre passent devant celle de tri, sinon l'index ne sert que la moitié de
@@ -61,7 +68,6 @@ return new class extends Migration
         Schema::table('schematic_items', function (Blueprint $table) {
             $table->dropIndex(['item', 'sens', 'kind', 'rate_per_block']);
             $table->dropIndex(['item', 'sens', 'kind', 'rate']);
-            $table->dropUnique(['schematic_id', 'item', 'sens', 'kind']);
         });
 
         // Sous l'ancienne forme une schématique ne peut avoir qu'une ligne par objet.
@@ -73,9 +79,16 @@ return new class extends Migration
             ->orWhere('kind', '!=', 'mesure')
             ->delete();
 
+        // Même contrainte qu'à l'aller, dans l'autre sens : l'ancien index unique revient
+        // avant que le nouveau parte, sinon la clé étrangère se retrouve un instant sans
+        // index qui commence par `schematic_id` et MySQL refuse.
         Schema::table('schematic_items', function (Blueprint $table) {
-            $table->dropColumn(['sens', 'kind']);
             $table->unique(['schematic_id', 'item']);
+        });
+
+        Schema::table('schematic_items', function (Blueprint $table) {
+            $table->dropUnique(['schematic_id', 'item', 'sens', 'kind']);
+            $table->dropColumn(['sens', 'kind']);
             $table->index(['item', 'rate_per_block']);
             $table->index(['item', 'rate']);
         });
