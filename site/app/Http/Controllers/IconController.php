@@ -36,12 +36,14 @@ class IconController extends Controller
     /**
      * Where a family's sprites sit on the sheet.
      *
-     * Liquids are absent on purpose, and not by oversight: the sheet carries no `liquid/`
-     * prefix at all, so not one of the game's eleven liquids has a picture in it. Adding a
-     * family here would serve a grey square and hide the hole; the fix belongs in the sprite
-     * builder, and until then a page that names a liquid shows its name alone.
+     * Liquids share the `item/` prefix with items, which is not a mistake in the sheet and
+     * was very nearly recorded as one here: looking for `liquid/water` finds nothing, and
+     * reporting that as "no liquid has a picture" is one query away from being wrong. All
+     * eleven are packed, under `item/`, and the two families never collide because no item
+     * and no liquid share a name. The prefix is repeated rather than shared so that a
+     * caller says which of the two it means.
      */
-    private const FAMILIES = ['bloc' => '', 'objet' => 'item/'];
+    private const FAMILIES = ['bloc' => '', 'objet' => 'item/', 'liquide' => 'item/'];
 
     public function show(string $family, string $name): Response
     {
