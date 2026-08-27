@@ -328,25 +328,45 @@ class Schematic extends Model
     }
 
     /**
-     * What it could make, per minute, biggest first.
+     * What a tile should print about what it makes, biggest first.
      *
-     * The listing filters and ranks on the ceiling, so a tile has to show the ceiling: a
-     * tile showing a measurement under a ranking made on something else would say one thing
+     * The ceiling when there is one, because that is what the listing filters and ranks on:
+     * a tile showing a measurement under a ranking made on something else says one thing
      * while the list beside it says another.
+     *
+     * The measurement when there is no ceiling, which production says is a net under an
+     * empty stretch: of fourteen thousand eight hundred ceilings there are four hundred and
+     * nineteen measurements, on five things and no solid item at all, and every one of them
+     * sits on something that also carries a ceiling. An imported schematic has no marked
+     * input, so the analysis states no throughput, so no measured row is written.
+     *
+     * Kept anyway, and kept loud. The alternative is a tile that prints a name and no figure
+     * on a listing whose whole argument is its figures, and the day the analysis learns to
+     * measure an imported line, that tile appears without anybody having decided it should.
+     * The view names which of the two it is printing, both ways round: a measurement left
+     * unlabelled would read as the ceiling on the tile beside it.
      *
      * Read off the relation rather than queried per tile, so a page of twenty-four costs one
      * eager load and not twenty-four round trips.
      *
-     * @return array<string, float>
+     * @return array<string, array{rate: float, kind: string}>
      */
-    public function plafonds(): array
+    public function chiffresMontres(): array
     {
-        $rows = $this->items
-            ->where('sens', SchematicItem::PRODUIT)
-            ->where('kind', SchematicItem::PLAFOND)
-            ->sortByDesc('rate')
-            ->pluck('rate', 'item')
-            ->all();
+        $produced = $this->items->where('sens', SchematicItem::PRODUIT);
+
+        $rows = [];
+        foreach ($produced->sortByDesc('rate') as $row) {
+            // Le plafond gagne quand les deux existent, et le tri par debit decroissant
+            // ferait passer le plus grand des deux en premier : on force, plutot que de
+            // dependre de l'ordre.
+            if (isset($rows[$row->item]) && $rows[$row->item]['kind'] === SchematicItem::PLAFOND) {
+                continue;
+            }
+            $rows[$row->item] = ['rate' => (float) $row->rate, 'kind' => $row->kind];
+        }
+
+        uasort($rows, fn ($a, $b) => $b['rate'] <=> $a['rate']);
 
         return $rows;
     }
