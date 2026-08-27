@@ -1,3 +1,5 @@
+**English** | [Français](README.fr.md)
+
 <p align="center">
   <img src="site/public/brand/depot-entete.jpg" alt="Mindustry Forge" width="900">
 </p>
@@ -176,7 +178,7 @@ Counts on 27 August 2026: 565, 141 and 8. They will be wrong tomorrow, which is 
 carry a date.
 
 Use `npm test` rather than a glob of your own. `node --test "tests/js/*.test.js"` looks
-equivalent and silently skips every subdirectory, which is 208 of the 565.
+equivalent and silently skips every subdirectory, which is 196 of the 565.
 
 ## What is where
 
