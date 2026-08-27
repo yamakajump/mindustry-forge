@@ -16,6 +16,19 @@ return [
      * par la vue, parce qu'une cle manquante rendrait la cle sans substituer et le nombre
      * disparaitrait.
      */
+    /*
+     * Chercher par un bloc contenu : « montre-moi ce qu'on construit avec un reacteur au
+     * thorium ». Le site ne savait pas y repondre tant que `schematic_blocks` etait vide.
+     */
+    'bloc' => [
+        'label' => 'Qui contient',
+        'exemple' => 'thorium-reactor',
+        'filtrees' => 'Uniquement celles qui contiennent',
+        'enlever' => 'Enlever ce filtre',
+        'inconnu' => "Ce nom n'est pas un bloc du jeu, donc rien n'est filtre. Choisis dans
+            la liste proposee : elle ne contient que des noms qui existent.",
+    ],
+
     'creatif' => [
         'mises-a-part' => 'schematiques de bac a sable sont mises a part, parce qu elles ne
             se posent pas en partie normale.',
