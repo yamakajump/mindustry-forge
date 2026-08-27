@@ -31,6 +31,20 @@
   --radius: 8px;
   --font: "Forge", "Segoe UI", -apple-system, Roboto, sans-serif;
   --mono: "Forge Mono", ui-monospace, Consolas, monospace;
+
+  /* Colours that were written out in the body of this file, named where they should
+     have been. No new value: the rendering is identical, and that was measured rather
+     than assumed - full palette compared before and after on three pages, zero colour
+     added, zero removed, zero pixel moved. The point is that adjusting the amber one
+     day happens in one place instead of fourteen. */
+  --accent-strong: #e0b45f;   /* the border of a primary button */
+  --accent-soft:   #ffdd9c;   /* that same button, hovered */
+  --on-accent:     #241d0c;   /* text sitting on amber */
+  --accent-pressed:#2f2a1c;   /* the fill of a pressed control */
+  --raised-hover:  #2b323c;   /* something clickable, hovered */
+  --stage:         #0e1116;   /* the board the plan lives on */
+  --bad-panel:     #2a1c1c;   /* the ground of an error message */
+  --discord-hover: #6a76f5;   /* the Discord button, hovered */
 }
 
 * { box-sizing: border-box; }
@@ -150,12 +164,12 @@ a.discord {
   background: var(--discord); color: #fff; border-radius: 6px; padding: 9px 14px;
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
 }
-a.discord:hover { background: #6a76f5; text-decoration: none; }
+a.discord:hover { background: var(--discord-hover); text-decoration: none; }
 
 main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 .flash {
   max-width: 1120px; margin: 16px auto 0; padding: 12px 16px;
-  background: #2a1c1c; border: 2px solid var(--bad); border-radius: var(--radius);
+  background: var(--bad-panel); border: 2px solid var(--bad); border-radius: var(--radius);
   color: var(--bad);
 }
 
@@ -163,7 +177,7 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 @media (max-width: 860px) { .split { grid-template-columns: minmax(0, 1fr); } }
 
 .stage {
-  background: #0e1116; border: 2px solid var(--edge); border-radius: var(--radius);
+  background: var(--stage); border: 2px solid var(--edge); border-radius: var(--radius);
   padding: 16px; display: flex; align-items: flex-start; justify-content: center;
   overflow: auto;
 }
@@ -211,11 +225,11 @@ button, .button, label.file {
   background: var(--raised); color: var(--ink);
   transition: background .12s, border-color .12s;
 }
-button:hover, .button:hover, label.file:hover { background: #2b323c; text-decoration: none; }
+button:hover, .button:hover, label.file:hover { background: var(--raised-hover); text-decoration: none; }
 button.primary, .button.primary {
-  background: var(--accent); color: #241d0c; border-color: #e0b45f;
+  background: var(--accent); color: var(--on-accent); border-color: var(--accent-strong);
 }
-button.primary:hover, .button.primary:hover { background: #ffdd9c; }
+button.primary:hover, .button.primary:hover { background: var(--accent-soft); }
 button:disabled { opacity: .45; cursor: default; }
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible,
 label.file:focus-within {
@@ -240,7 +254,7 @@ textarea, input[type=text] {
 .tile a { color: var(--ink); }
 .tile img, .tile .noimg {
   display: block; width: 100%; height: 150px; object-fit: contain;
-  image-rendering: pixelated; background: #0e1116; border-radius: 4px;
+  image-rendering: pixelated; background: var(--stage); border-radius: 4px;
 }
 .tile .noimg { display: grid; place-items: center; color: var(--dim); font-size: 12px; }
 .tile h3 { margin: 8px 0 2px; font-size: 15px; font-weight: 400; }
@@ -328,7 +342,7 @@ select {
 .manage .seg button.on {
   background: var(--accent); border-color: var(--accent); color: #1a1d23;
 }
-.manage .seg button.on:hover { background: #ffdd9c; }
+.manage .seg button.on:hover { background: var(--accent-soft); }
 
 .manage .share { display: flex; gap: 6px; }
 .manage .share input {
@@ -471,7 +485,7 @@ select {
 .editor-modes button:first-child { border-radius: 6px 0 0 6px; }
 .editor-modes button:last-child { border-radius: 0 6px 6px 0; border-left-width: 1px; }
 .editor-modes button[aria-pressed="true"] {
-  background: var(--accent); color: #241d0c; border-color: #e0b45f;
+  background: var(--accent); color: var(--on-accent); border-color: var(--accent-strong);
 }
 
 /* La jauge de taille. Permanente, parce que la limite de 64 est dure et qu'on ne la
@@ -513,7 +527,7 @@ select {
   min-height: 38px; padding: 0; justify-content: center; border-radius: 4px;
   border-width: 1px;
 }
-.editor-grid button[aria-pressed="true"] { border-color: var(--accent); background: #2f2a1c; }
+.editor-grid button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-pressed); }
 .editor-grid img { width: 26px; height: 26px; image-rendering: pixelated; }
 
 /* Ce qui est en main. Le jeu le montre au curseur ; sur une page web il faut aussi le dire
@@ -538,7 +552,7 @@ select {
    pour un geste qui n'en est pas une. */
 .editor-why {
   position: absolute; pointer-events: none; z-index: 2;
-  background: #2a1c1c; border: 1px solid var(--bad); color: var(--bad);
+  background: var(--bad-panel); border: 1px solid var(--bad); color: var(--bad);
   border-radius: 5px; padding: 3px 8px; font-size: 12.5px; white-space: nowrap;
   transform: translate(14px, 14px);
 }
@@ -575,7 +589,7 @@ select {
   cursor: pointer; font-size: 11.5px; padding: 3px 8px; color: var(--dim);
 }
 .editor-filters .chip[aria-pressed="true"] {
-  color: #241d0c; background: var(--accent); border-color: #e0b45f;
+  color: var(--on-accent); background: var(--accent); border-color: var(--accent-strong);
 }
 .editor-grid .empty { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; padding: 8px; }
 
@@ -628,7 +642,7 @@ select {
 .editor-ground .tools { display: flex; flex-wrap: wrap; gap: 4px; }
 .editor-ground .tools .chip { cursor: pointer; font-size: 12px; padding: 4px 10px; }
 .editor-ground .tools .chip[aria-pressed="true"] {
-  color: #241d0c; background: var(--accent); border-color: #e0b45f;
+  color: var(--on-accent); background: var(--accent); border-color: var(--accent-strong);
 }
 .editor-ground label {
   display: block; margin: 12px 0 0; font-size: 12px; color: var(--dim);
@@ -646,7 +660,7 @@ select {
 }
 .editor-ground .chip.pick img { width: 14px; height: 14px; image-rendering: pixelated; }
 .editor-ground .chip.pick[aria-pressed="true"] {
-  color: var(--ink); border-color: var(--accent); background: #2f2a1c;
+  color: var(--ink); border-color: var(--accent); background: var(--accent-pressed);
 }
 .editor-ground .wipe { margin-top: 16px; width: 100%; min-height: 34px; font-size: 12.5px; }
 
@@ -661,7 +675,7 @@ select {
   min-height: 30px; width: 30px; padding: 0; justify-content: center; border-width: 1px;
   border-radius: 4px; font-size: 11px;
 }
-.editor-picker button[aria-pressed="true"] { border-color: var(--accent); background: #2f2a1c; }
+.editor-picker button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-pressed); }
 .editor-picker img { width: 20px; height: 20px; image-rendering: pixelated; }
 
 /* La reprise d'un brouillon, proposée en bas du plateau. Jamais imposée : ecraser d'office

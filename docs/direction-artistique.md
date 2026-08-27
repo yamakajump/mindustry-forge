@@ -20,9 +20,32 @@ site/public/brand/logo-mono.svg      le même, en currentColor
 ```
 
 **`mark-plain.svg` est le seul fichier de cette liste qu'on modifie.** Tout le reste, y
-compris `mark.svg`, est régénéré par `tools/build_brand.py` qui lit ses chemins. Recopier
-la géométrie ailleurs donnerait deux dessins à maintenir, et le second finirait par
-différer du premier sans que rien ne le signale.
+compris `mark.svg`, est régénéré par `tools/build_brand.py` qui lit ses chemins.
+
+### La géométrie est recopiée trois fois, et c'est un test qui la tient
+
+Cette page a d'abord **interdit** de recopier les chemins ailleurs. L'interdiction était
+mal placée, et la voie qui a posé le signe dans les entêtes l'a contournée pour une bonne
+raison : un `<img>` ne laisse pas passer `currentColor`, donc un signe posé en image ne
+suivrait ni la couleur ni la taille de son voisin, ce qui est exactement la propriété qu'on
+cherchait. Il faut du SVG en ligne, donc une copie par entête.
+
+Il y en a **trois**, et pas deux comme cette page le supposait :
+
+```
+site/resources/views/layout.blade.php        les pages rendues par Laravel
+site/public/index.html                       l'analyseur, statique
+site/public/forge/editor/mount.js            la barre de l'editeur, ecrite en JavaScript
+```
+
+La troisième est celle qu'on oublie, et c'est **précisément la surface pour laquelle la
+taille en `em` avait été conçue** : la barre de l'éditeur redéfinit `.brand` à 17px. La
+justification existait, la surface qu'elle protégeait n'était pas servie.
+
+`site/tests/Feature/NavigationTest.php` lit les quatre chemins de `brand/mark-plain.svg` et
+les compare aux trois copies. **Une règle qui interdit ce dont on a besoin se fait
+contourner ; une règle qui le vérifie tient.** La formule est de la voie qui a fait la
+correction, et elle vaut au-delà de ce cas.
 
 ### La règle de grille
 
@@ -75,7 +98,8 @@ le nom du site.
 Et le fichier porte **13 littéraux hexadécimaux répétés 22 fois hors du `:root`**. Le
 plus utilisé, `#e0b45f`, apparaît quatre fois. Le fichier contredit son propre principe.
 
-Proposition, **à appliquer par la voie qui possède `forge.css`, pas ici** :
+**Appliqué.** Le bloc ci-dessous est dans `forge.css`, et les dix-neuf littéraux
+correspondants ont été remplacés :
 
 ```css
 /* Ajouts au bloc :root existant. Aucune valeur nouvelle : ce sont les couleurs deja
