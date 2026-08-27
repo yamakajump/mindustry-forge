@@ -19,6 +19,7 @@ import { fromBase64 } from "./schematic.js";
 import { demand, requirements } from "./needs.js";
 import { candidates, feedFrom, markable, marksOf, readMarks } from "./marks.js";
 import { attributeOf, beamOf, dryTilesOf, wallSumOf, yieldOf } from "./ground.js";
+import { centre, footprint } from "./geometry.js";
 import { logicOf, readProgram } from "./logic.js";
 import { throughput } from "./maxflow.js";
 
@@ -66,21 +67,6 @@ const produces = (block, item) =>
   (block.output?.[item] || 0) * craftsPerSecond(block);
 const consumes = (block, item) =>
   (block.input?.[item] || 0) * craftsPerSecond(block);
-
-/**
- * The tiles a block covers, given the tile it is stored on.
- *
- * Mindustry stores a block by its centre and offsets by `-(size - 1) / 2`, truncating
- * towards zero. A two-wide drill stored at (4, 4) covers (4, 4) to (5, 5).
- */
-function footprint(x, y, size) {
-  const offset = Math.trunc(-(size - 1) / 2);
-  const out = [];
-  for (let dx = 0; dx < size; dx++) {
-    for (let dy = 0; dy < size; dy++) out.push([x + offset + dx, y + offset + dy]);
-  }
-  return out;
-}
 
 /** The tiles this block tries to hand items to. */
 function outputsOf(node) {
@@ -381,13 +367,6 @@ export function buildGraph(tiles) {
   for (const [a, b] of edges) { out[a].push(b); into[b].push(a); }
 
   return { nodes, edges, out, into };
-}
-
-/** The middle of a block, in tiles, which is what the game measures ranges between. */
-function centre(node) {
-  const size = node.block.size || 1;
-  const offset = Math.trunc(-(size - 1) / 2);
-  return [node.x + offset + size / 2, node.y + offset + size / 2];
 }
 
 /**

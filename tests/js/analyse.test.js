@@ -610,7 +610,7 @@ test("a schematic says which blocks its processors drive", async () => {
     [{ name: "conveyor1", dx: 2, dy: 0 }, { name: "vault1", dx: 4, dy: 0 }]));
 
   assert.deepEqual(logicOf(nodes), {
-    processors: 1, writing: 1, driven: ["conveyor", "vault"],
+    processors: 1, writing: 1, driven: ["conveyor", "vault"], unreachable: [],
   });
 });
 
@@ -622,5 +622,6 @@ test("processors that only watch are named as harmless", async () => {
   nodes[0].program = await readProgram(await processorConfig(
     "sensor x conveyor1 @enabled\n", [{ name: "conveyor1", dx: 2, dy: 0 }]));
 
-  assert.deepEqual(logicOf(nodes), { processors: 1, writing: 0, driven: [] });
+  assert.deepEqual(logicOf(nodes),
+                   { processors: 1, writing: 0, driven: [], unreachable: [] });
 });
