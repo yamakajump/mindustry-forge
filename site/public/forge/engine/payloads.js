@@ -41,7 +41,7 @@ function approachPoint(from, to, speed) {
 }
 
 /** `Angles.moveToward`, the short way round. */
-function turnToward(from, to, speed) {
+export function turnToward(from, to, speed) {
   let apart = ((to - from) % 360 + 540) % 360 - 180;
   if (Math.abs(apart) <= speed) return to;
   return from + Math.sign(apart) * speed;

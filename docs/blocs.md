@@ -172,7 +172,7 @@ second, c'est une intuition qui a l'air d'un portage.
       liquid-void
 - [ ] `LongPowerNode` - 1 bloc
       beam-link
-- [ ] `MassDriver` - 1 bloc
+- [x] `MassDriver` - 1 bloc - il ne passe pas ses objets, il les tire
       mass-driver
 - [x] `NuclearReactor` - 1 bloc - de l'energie, et une explosion si on la neglige
       thorium-reactor

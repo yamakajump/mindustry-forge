@@ -1,0 +1,107 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 2
+      }
+    },
+    {
+      "block": "router",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 1
+      }
+    },
+    {
+      "block": "mass-driver",
+      "x": 17,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "copper": 10
+      }
+    },
+    {
+      "block": "mass-driver",
+      "x": 27,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 30,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "copper": 88
+      }
+    },
+    {
+      "block": "vault",
+      "x": 14,
+      "y": 15,
+      "efficiency": 0,
+      "holds":{
+        "copper": 99
+      }
+    },
+    {
+      "block": "power-source",
+      "x": 17,
+      "y": 15,
+      "efficiency": 0
+    },
+    {
+      "block": "power-source",
+      "x": 27,
+      "y": 15,
+      "efficiency": 0
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 30,
+      "y": 13,
+      "items":{
+        "copper": 88
+      }
+    },
+    {
+      "block": "vault",
+      "x": 14,
+      "y": 15,
+      "items":{
+        "copper": 99
+      }
+    }
+  ],
+  "per_second":{
+    "copper": 6.233333
+  }
+}

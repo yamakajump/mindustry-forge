@@ -42,6 +42,15 @@ const unit = (name) => held(6, known.units[name].id);
 /** A block, which is what a constructor's recipe is. Content type one. */
 const blockOf = (name) => held(1, known.blocks[name].id);
 
+/** A relative point, which is how a bridge and a mass driver both keep their link. */
+const point = (dx, dy) => {
+  const out = new Uint8Array(9);
+  out[0] = 7;
+  new DataView(out.buffer).setInt32(1, dx);
+  new DataView(out.buffer).setInt32(5, dy);
+  return out;
+};
+
 /**
  * A power node's links, as the game writes them: a `Point2[]`, each packed into one int,
  * each an offset from the node itself.
@@ -1310,6 +1319,36 @@ const SCENARIOS = {
     { x: 1, y: 3, block: "conduit", rotation: 1 },
     { x: 1, y: 5, block: "liquid-tank", rotation: 0 },
   ],
+
+  /* A pair of mass drivers, which is the one carrier that does not hand items on: it
+     shoots them. Filed under `sink` for want of a branch of its own, the pair carried
+     nothing at all and the belt feeding it jammed on the first frame.
+
+     The router is the whole point of the shape. `acceptItem` is
+     `items.total() < itemCapacity && linkValid()`, so a driver that is not set to anything
+     refuses everything and the router sends the lot into the near vault instead. Measured
+     without it, both engines delivered nothing and agreed perfectly about a block neither
+     of them had modelled. */
+  "mass-driver-pair": () => [
+    { x: -1, y: 2, block: "item-source", rotation: 0, raw: item("copper") },
+    { x: 0, y: 2, block: "conveyor", rotation: 0 },
+    { x: 1, y: 2, block: "router", rotation: 0 },
+    { x: 2, y: 2, block: "conveyor", rotation: 0 },
+    // Covers 3..5 by 1..3, set to the driver ten tiles east.
+    { x: 4, y: 2, block: "mass-driver", rotation: 0, raw: point(10, 0) },
+    { x: 4, y: 4, block: "power-source", rotation: 0 },
+    // What the router could not push down the barrel, at 0..2 by 3..5.
+    { x: 1, y: 4, block: "vault", rotation: 0 },
+    // Covers 13..15 by 1..3, unset: a receiver needs no link of its own.
+    { x: 14, y: 2, block: "mass-driver", rotation: 0 },
+    { x: 14, y: 4, block: "power-source", rotation: 0 },
+    { x: 17, y: 2, block: "vault", rotation: 0 },
+  ],
+
+  /* And the same pair with the far end never set, which is the mistake a player makes:
+     nothing goes down the barrel and everything piles into the near vault. */
+  "mass-driver-unset": () => SCENARIOS["mass-driver-pair"]().map((tile) =>
+    (tile.block === "mass-driver" ? { ...tile, raw: undefined } : tile)),
 
   /* A bridge over a gap. Unmodelled, a line that jumps a wall reads as two dead ends. */
   "bridge-span": () => [

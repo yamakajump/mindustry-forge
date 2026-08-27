@@ -37,6 +37,7 @@ const MACHINE_ROLES = new Set([
   "crafter", "unit-factory", "generator", "drill", "separator",
   "mender", "projector", "shield", "turret-idle", "laser-turret",
   "beam-drill", "wall-crafter", "burst-drill", "reconstructor", "constructor",
+  "mass-driver",
 ]);
 
 export const known = useCatalogue(JSON.parse(

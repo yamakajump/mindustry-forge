@@ -17,6 +17,7 @@ import { MACHINES } from "./machines.js";
 import { LIQUIDS } from "./liquids.js";
 import { POWER } from "./power.js";
 import { PAYLOADS } from "./payloads.js";
+import { massDriver } from "./massdriver.js";
 
 /** `Conveyor.itemSpace` and `Conveyor.capacity`, both private constants in the game. */
 const ITEM_SPACE = 0.4;
@@ -1509,6 +1510,7 @@ const BY_ROLE = {
   junction,
   sorter,
   bridge,
+  "mass-driver": massDriver,
   store,
   unloader,
   sink,

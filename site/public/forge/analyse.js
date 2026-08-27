@@ -104,6 +104,11 @@ function outputsOf(node) {
     // is pushed.
     return DIRECTIONS.map(([dx, dy]) => [node.x + dx, node.y + dy]);
   }
+  if (node.role === "mass-driver") {
+    // Linked, everything it holds goes down the barrel and nowhere else.
+    if (node.link) return [node.link];
+    return DIRECTIONS.map(([dx, dy]) => [node.x + dx, node.y + dy]);
+  }
   if (node.role === "bridge") {
     // A bridge carries over a gap to the tile it remembers, and that memory is the whole
     // point of it: without reading the link, a line that jumps a wall reads as two
@@ -264,6 +269,14 @@ function bridgeLink(tile, block) {
   if (!config || config.type !== 7) return null;
   const { dx, dy } = config;
   if (!dx && !dy) return null;
+
+  /* A mass driver keeps the same kind of relative point and obeys neither of the two
+     rules: it shoots across open ground in any direction at all, and its reach is a
+     radius rather than a count of tiles. */
+  if (block.role === "mass-driver") {
+    return Math.hypot(dx, dy) <= (block.range || 0) ? [tile.x + dx, tile.y + dy] : null;
+  }
+
   if (dx !== 0 && dy !== 0) return null;
   const reach = Math.abs(dx) + Math.abs(dy);
   if (reach > (block.range || 4)) return null;
