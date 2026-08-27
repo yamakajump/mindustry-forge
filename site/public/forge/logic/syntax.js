@@ -232,7 +232,7 @@ export function parse(text, { links = [] } = {}) {
       const shape = known.operands[index];
       if (!shape) return;
       classify(token, shape, { entry, index, labels, linkNames, variables, problems,
-                               statements });
+                               statements, say });
     });
   }
 
@@ -251,7 +251,8 @@ export function parse(text, { links = [] } = {}) {
 
 /** Paint one operand, and say so when the game would refuse to make sense of it. */
 function classify(token, shape, context) {
-  const { entry, index, labels, linkNames, variables, problems, statements } = context;
+  const { entry, index, labels, linkNames, variables, problems, statements, say }
+    = context;
 
   if (token.kind === "chaine") return;
 
@@ -314,10 +315,15 @@ function classify(token, shape, context) {
   /* A name shaped like one of the game's own link names, never declared and never written
      to, is almost always a link the player forgot to add. Almost, hence a warning and not
      an error: nothing here can tell a forgotten link from a variable called `cell1`, and
-     the escape hatch is that anything the program assigns to is left alone. */
-  if (LOOKS_LINKED.test(token.text) && !variables.has(token.text)) {
-    problems.push({ key: "outils.logique.probleme.lien-inconnu", severity: "avertissement", line: token.line,
-                    start: token.start, end: token.end, params: { nom: token.text } });
+     the escape hatch is that anything the program assigns to is left alone.
+
+     Said only when the processor has been wired to something. A program written to be
+     pasted into a processor that already exists in the game declares no links here, and it
+     has none to declare: the wiring was done in the game, by clicking. Warning then would
+     put a line under every block name in the program and say nothing true about any of
+     them, which is how a whole column of warnings gets switched off. */
+  if (linkNames.size && LOOKS_LINKED.test(token.text) && !variables.has(token.text)) {
+    say("outils.logique.probleme.lien-inconnu", "avertissement", token, { nom: token.text });
   }
 }
 

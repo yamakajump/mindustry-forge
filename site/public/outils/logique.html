@@ -114,6 +114,19 @@
             <input type="file" id="fichier" name="fichier" accept=".msch" aria-label="Ouvrir une schematique">
           </label>
         </div>
+
+        <h3 data-i18n="outils.logique.liens">Liens</h3>
+        <p class="hint-line" data-i18n="outils.logique.liens-aide">
+          Ce que le processeur pose dans la schematique sera relie a ces blocs. Le nom est
+          celui que le programme emploie, et les deux nombres disent de combien de cases le
+          bloc est a droite et au-dessus du processeur.
+        </p>
+        <ul class="liens" id="liens"></ul>
+        <div class="row">
+          <button id="ajouter-lien" type="button" data-i18n="outils.logique.lien-ajouter">
+            Ajouter un lien
+          </button>
+        </div>
       </details>
       <p class="etat" id="etat" aria-live="polite"></p>
     </div>
@@ -124,22 +137,6 @@
         <select id="bloc" name="bloc" aria-label="Processeur"></select>
         <p class="mesures" id="mesures"></p>
         <p class="hint-line" id="rattrapage"></p>
-      </section>
-
-      <section class="card">
-        <h2 data-i18n="outils.logique.liens">Liens</h2>
-        <p class="hint-line" data-i18n="outils.logique.liens-aide">
-          Dans le jeu, tu cliques le bloc a relier. Ici, tu cliques sa case : le processeur
-          est au centre, et le nom est celui que le programme emploie.
-        </p>
-        <div class="plan" id="plan" role="application"
-             aria-label="Ou se trouve le bloc, par rapport au processeur"></div>
-        <ul class="liens" id="liens"></ul>
-        <div class="row">
-          <button id="ajouter-lien" type="button" data-i18n="outils.logique.lien-ajouter">
-            Ajouter un lien
-          </button>
-        </div>
       </section>
 
       <section class="card">
@@ -170,12 +167,6 @@ plein:
 control enabled conveyor1 0 0 0 0
 jump 0 always
 `;
-
-/* Jusqu'ou le plan des liens montre, en cases autour du processeur. Neuf sur neuf couvre
-   tout ce qu'un micro processeur peut atteindre, et un lien plus lointain se tape encore a
-   la main a cote. Declaree ici et pas au bord de son usage : le premier dessin arrive avant,
-   et une constante lue avant sa ligne ne fait pas une valeur vide, elle jette. */
-const PORTEE = 4;
 
 const LIENS_EXEMPLE = [{ name: "vault1", dx: 2, dy: 0 }, { name: "conveyor1", dx: -1, dy: 0 }];
 
@@ -299,64 +290,7 @@ function problemesDesLiens() {
 
 /* The links ------------------------------------------------------------------------------ */
 
-/**
- * Le plan, et la liste qui le suit.
- *
- * Dans le jeu, relier un bloc a un processeur se fait en le cliquant. Ici on demandait deux
- * entiers signes, « vers la droite » et « vers le haut », c'est-a-dire le calcul que la
- * machine aurait du faire. Le plan le fait faire au doigt : le processeur est au centre, on
- * clique la case, les deux nombres suivent.
- *
- * Ils restent modifiables a cote, parce qu'un lien peut viser plus loin que ce qu'un plan
- * de neuf cases sur neuf montre, et parce qu'une valeur tapee est parfois plus rapide qu'un
- * clic vise.
- */
-function dessinerPlan() {
-  const plan = $("plan");
-  plan.innerHTML = "";
-  plan.style.setProperty("--cases", 2 * PORTEE + 1);
-
-  const occupees = new Map();
-  liens.forEach((lien, index) => occupees.set(`${lien.dx},${lien.dy}`, { lien, index }));
-
-  for (let dy = PORTEE; dy >= -PORTEE; dy--) {
-    for (let dx = -PORTEE; dx <= PORTEE; dx++) {
-      const centre = dx === 0 && dy === 0;
-      const pose = occupees.get(`${dx},${dy}`);
-
-      const case_ = document.createElement("button");
-      case_.type = "button";
-      case_.className = `case${centre ? " processeur" : ""}${pose ? " prise" : ""}`;
-      case_.textContent = centre ? "" : (pose ? pose.lien.name.slice(0, 2) || "?" : "");
-      case_.setAttribute("aria-label", centre
-        ? t("outils.logique.plan-processeur")
-        : t("outils.logique.plan-case", { dx, dy }));
-
-      /* Le centre est le processeur lui-meme : rien a relier, et un lien sur sa propre case
-         est ce que le jeu refuse. Il reste dessine, parce que c'est lui qui donne son sens
-         a tout le reste du plan. */
-      if (centre) case_.disabled = true;
-      else case_.onclick = () => poserOuRetirer(dx, dy);
-
-      plan.append(case_);
-    }
-  }
-}
-
-/** Un clic pose un lien sur une case libre, et retire celui qui l'occupait sinon. */
-function poserOuRetirer(dx, dy) {
-  const at = liens.findIndex((lien) => lien.dx === dx && lien.dy === dy);
-  if (at >= 0) liens.splice(at, 1);
-  else liens.push({ name: "", dx, dy });
-
-  dessinerLiens();
-  majLiens();
-  if (at < 0) $("liens").querySelector("li:last-child input")?.focus();
-}
-
 function dessinerLiens() {
-  dessinerPlan();
-
   const liste = $("liens");
   liste.innerHTML = "";
 
@@ -373,13 +307,13 @@ function dessinerLiens() {
 
     const nom = champ("text", lien.name, t("outils.logique.lien-nom"), "", `lien-${index}-nom`);
     nom.placeholder = t("outils.logique.lien-nom");
-    nom.oninput = () => { lien.name = nom.value.trim(); dessinerPlan(); majLiens(); };
+    nom.oninput = () => { lien.name = nom.value.trim(); majLiens(); };
 
     const dx = champ("text", lien.dx, t("outils.logique.lien-dx"), "pos", `lien-${index}-dx`);
-    dx.oninput = () => { lien.dx = entier(dx.value); dessinerPlan(); majLiens(); };
+    dx.oninput = () => { lien.dx = entier(dx.value); majLiens(); };
 
     const dy = champ("text", lien.dy, t("outils.logique.lien-dy"), "pos", `lien-${index}-dy`);
-    dy.oninput = () => { lien.dy = entier(dy.value); dessinerPlan(); majLiens(); };
+    dy.oninput = () => { lien.dy = entier(dy.value); majLiens(); };
 
     const retirer = document.createElement("button");
     retirer.type = "button";

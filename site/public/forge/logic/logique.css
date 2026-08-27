@@ -272,55 +272,6 @@
 
 /* The plan, and the schematic folded away ------------------------------------------------ */
 
-/*
- * Linking a block is a click in the game, so it is a click here.
- *
- * The panel used to ask for two signed integers, "to the right" and "up", which is the
- * arithmetic the machine should have been doing. The processor sits at the centre, its own
- * square is drawn and disabled because a link to itself is what the game refuses, and the
- * two numbers stay editable beside the list: a link can reach further than nine squares,
- * and a typed value is sometimes faster than an aimed click.
- */
-.plan {
-  display: grid;
-  grid-template-columns: repeat(var(--cases, 9), 1fr);
-  gap: 2px;
-  margin: 0 0 12px;
-  max-width: 260px;
-}
-
-.plan .case {
-  aspect-ratio: 1;
-  min-height: 0;
-  padding: 0;
-  border-radius: 3px;
-  border: 1px solid var(--edge);
-  background: #171c22;
-  color: var(--dim);
-  font: 10px/1 var(--mono);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.plan .case:hover { border-color: var(--accent); background: #1f252d; }
-
-.plan .case.prise {
-  background: var(--k-lien, #86d7ff);
-  border-color: var(--k-lien, #86d7ff);
-  color: #10141a;
-  font-weight: 600;
-}
-
-/* Le processeur lui-meme : dessine, jamais cliquable. C'est lui qui donne son sens au
-   reste du plan, donc il reste visible au lieu d'etre un trou. */
-.plan .case.processeur {
-  background: var(--accent);
-  border-color: var(--accent);
-  opacity: 1;
-  cursor: default;
-}
-
 .par-schematique {
   margin-top: 12px;
   border: 2px solid var(--edge);
