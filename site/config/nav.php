@@ -28,7 +28,7 @@ return [
     ]],
 
     ['key' => 'nav.barre.outils', 'menu' => [
-        ['key' => 'nav.menu.logique', 'href' => '/outils/logique', 'ready' => false],
+        ['key' => 'nav.menu.logique', 'href' => '/outils/logique', 'ready' => true],
         ['key' => 'nav.menu.affichage', 'href' => '/outils/affichage', 'ready' => false],
         ['key' => 'nav.menu.toile', 'href' => '/outils/toile', 'ready' => false],
         ['key' => 'nav.menu.trieurs', 'href' => '/outils/trieurs', 'ready' => false],

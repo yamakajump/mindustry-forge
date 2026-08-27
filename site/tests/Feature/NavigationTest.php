@@ -153,9 +153,20 @@ it('ouvre `Les miennes` a qui est connecte, et a personne d autre', function () 
 });
 
 it('cache les entrees eteintes plutot que de les afficher mortes', function () {
+    /* Deduit de la configuration plutot que d une liste ecrite ici. Une liste nommee est
+       une liste qui perime le jour ou une voie allume son entree, et elle perime en
+       rougissant sur une entree devenue legitime : le prochain reflexe est de la retirer
+       de la liste, ce qui retire aussi la verification. */
     $rendered = $this->get('/schematiques')->getContent();
 
-    foreach (['/blocs', '/comparer', '/publier', '/outils/logique', '/outils/carte'] as $href) {
+    $eteintes = collect(config('nav'))
+        ->flatMap(fn ($entree) => $entree['menu'] ?? [$entree])
+        ->reject(fn ($entree) => $entree['ready'])
+        ->pluck('href');
+
+    expect($eteintes)->not->toBeEmpty('plus rien n est eteint, ce test ne verifie plus rien');
+
+    foreach ($eteintes as $href) {
         expect($rendered)->not->toContain($href);
     }
 });
