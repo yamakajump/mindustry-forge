@@ -76,6 +76,11 @@ function snapshot(world, tick) {
     if (build.state.ids) {
       held += ` ~${build.state.len}:${(build.state.minitem ?? 1).toFixed(3)}`;
     }
+    // A payload driver's barrel: charge, reload, how far the cargo has slid, and its aim.
+    if (build.state.charge !== undefined && build.state.length !== undefined) {
+      held += ` $${build.state.charge.toFixed(2)}/${build.state.reload.toFixed(3)}`
+        + `/${build.state.length.toFixed(2)}/${build.state.turn.toFixed(1)}`;
+    }
     // And what it is carrying, with whatever is inside that.
     if (build.state.payload) {
       held += ` %${build.state.payload.name}`;

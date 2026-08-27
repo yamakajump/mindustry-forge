@@ -788,6 +788,202 @@ const payloadDeconstructor = {
   },
 };
 
+
+/**
+ * A payload mass driver: the same idea as the item one, for a block carried whole.
+ *
+ * Both ends have to agree, again, and there is one more gate than the item driver has: the
+ * cargo has to have **slid to the end of the barrel** before anything can be fired, and the
+ * shot itself takes a hundred frames of charging on top of the thirty of reload. That is
+ * what its own card means by one payload every two and a bit seconds: the turning, the
+ * sliding and the charging are all real time and none of them is the reload.
+ *
+ * The charge is lost the instant the two fall out of alignment: `charge -= Time.delta * 10`
+ * every frame it is not charging, so ten frames of interruption cost a hundred of charge.
+ */
+const payloadDriver = {
+  begin(build) {
+    build.state.payload = null;
+    build.state.payVector = [0, 0];
+    build.state.payRotation = 0;
+    build.state.driver = "idle";
+    build.state.turn = 90;
+    build.state.reload = 0;
+    build.state.charge = 0;
+    build.state.length = 0;
+    build.state.loaded = false;
+    build.state.waiting = [];
+    build.state.arriving = 0;
+    build.state.charging = false;
+    build.state.wants = 1;
+  },
+
+  acceptPayload(build, source, payload) {
+    return build.state.payload === null;
+  },
+
+  handlePayload(build, source, payload) {
+    build.state.payload = payload;
+    build.state.payVector = offsetFrom(build, source);
+  },
+
+  update(build, world, step) {
+    const block = build.block;
+    const delta = build.delta(step);
+    const link = linkedDriver(build, world);
+
+    /* The charge drains on **last** frame's flag, because the game reads `charging` at the
+       top of the update and clears it a few lines later. One frame of lag, and the frame
+       after a shot is one of them. */
+    if (!build.state.charging) {
+      build.state.charge = Math.max(0, build.state.charge - build.delta(step) * 10);
+    }
+    build.state.charging = false;
+
+    // The transfer effect landing, which is what starts the receiver's own reload.
+    if (build.state.arriving > 0) {
+      build.state.arriving -= build.delta(step);
+      if (build.state.arriving <= 0) build.state.reload = 1;
+    }
+
+    // `reloadCounter -= edelta() / reload`, whatever state it is in.
+    const efficiency = block.power > 0 ? (build.state.power ?? 1) : 1;
+    build.state.reload = Math.max(0, Math.fround(
+      build.state.reload - Math.fround((delta * efficiency) / (block.reload || 30))));
+
+    const waiting = build.state.waiting;
+    if (waiting.length && !payloadShooterValid(build, waiting[0], world)) waiting.shift();
+
+    if (build.state.driver === "idle") {
+      if (waiting.length && !build.state.payload) build.state.driver = "accepting";
+      else if (link) build.state.driver = "shooting";
+    }
+
+    // Idle or receiving, it pushes whatever it holds out of the front like any other
+    // payload block, sliding it back down the barrel first if it was loaded.
+    if ((build.state.driver === "idle" || build.state.driver === "accepting")
+        && build.state.payload) {
+      if (build.state.loaded) {
+        // In float, like everything else the game adds up frame by frame.
+        build.state.length = Math.fround(build.state.length - speedOf(build) * delta);
+        if (build.state.length <= 0) {
+          build.state.loaded = false;
+          build.state.payVector = [0, 0];
+        }
+      } else {
+        moveOutPayload(build, world);
+      }
+    }
+
+    if (efficiency <= 0) return;
+    const turn = (block.rotate_speed ?? 5) * efficiency;
+
+    if (build.state.driver === "accepting") {
+      if (!waiting.length || build.state.payload) {
+        build.state.driver = "idle";
+        return;
+      }
+      build.state.turn = turnToward(build.state.turn,
+                                    angleBetween(build, waiting[0]), turn);
+      return;
+    }
+
+    if (build.state.driver !== "shooting") return;
+    if (!link || (waiting.length && !build.state.payload)) {
+      build.state.driver = "idle";
+      return;
+    }
+
+    const aim = angleBetween(build, link);
+    let out = false;
+    if (build.state.loaded) {
+      // The barrel shortens as the reload runs down, which is the recoil.
+      const reach = Math.fround((block.length ?? 11.125)
+        - build.state.reload * (block.knockback ?? 5));
+      build.state.length = Math.fround(build.state.length + speedOf(build) * delta);
+      if (build.state.length >= reach) {
+        build.state.length = reach;
+        out = true;
+      }
+    } else if (moveInPayload(build)) {
+      build.state.length = 0;
+      build.state.loaded = true;
+    }
+
+    if (!out || !build.state.payload || link.state.payload) return;
+
+    if (!link.state.waiting.includes(build)) link.state.waiting.push(build);
+    if (build.state.reload > 0) return;
+
+    build.state.turn = turnToward(build.state.turn, aim, turn);
+    const ready = link.state.waiting[0] === build
+      && link.state.driver === "accepting"
+      && link.state.reload <= 0
+      && nearAngle(build.state.turn, aim, 1)
+      && nearAngle(link.state.turn, aim + 180, 1);
+
+    if (!ready) return;
+
+    build.state.charging = true;
+    build.state.charge += delta * efficiency;
+    if (build.state.charge < (block.charge_time ?? 100)) return;
+
+    // And across it goes, whole, with whatever is inside it.
+    link.state.payload = build.state.payload;
+    link.state.payVector = [0, 0];
+    link.state.payRotation = build.state.turn;
+    link.state.length = block.length ?? 11.125;
+    link.state.loaded = true;
+    /* The receiver does not start reloading now: it starts when the transfer effect ends,
+       eleven frames later. `other.effectDelayTimer = transferEffect.lifetime`, and the
+       `reloadCounter = 1f` lives in the branch that watches that timer run out. */
+    link.state.arriving = block.transfer_time ?? 11;
+    const at = link.state.waiting.indexOf(build);
+    if (at >= 0) link.state.waiting.splice(at, 1);
+    link.state.driver = "idle";
+
+    build.state.payload = null;
+    build.state.length = 0;
+    build.state.loaded = false;
+    build.state.driver = "idle";
+    build.state.reload = 1;
+    /* And the charge is **not** reset: nothing in `updateTile` clears it after a shot, so
+       it sits at its full hundred and drains at ten a frame like any other idle frame. */
+  },
+};
+
+/** The far end, if it is one of these, set to nothing else, and in range. */
+function linkedDriver(build, world) {
+  const link = build.node.link;
+  if (!link) return null;
+  const other = world.at(link[0], link[1]);
+  if (!other || other === build || other.name !== build.name) return null;
+  return withinRange(build, other) ? other : null;
+}
+
+function payloadShooterValid(build, other, world) {
+  if (!other || other.name !== build.name) return false;
+  if ((other.block.power > 0 ? (other.state.power ?? 1) : 1) <= 0) return false;
+  return linkedDriver(other, world) === build;
+}
+
+/** `within(other, range)`, strictly, with the range in tiles rather than pixels. */
+function withinRange(build, other) {
+  const reach = (build.block.range || 0) * TILE;
+  const dx = (other.x - build.x) * TILE;
+  const dy = (other.y - build.y) * TILE;
+  return dx * dx + dy * dy < reach * reach;
+}
+
+function angleBetween(a, b) {
+  return (Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI + 360) % 360;
+}
+
+/** `Angles.within`, the short way round. */
+function nearAngle(a, b, within) {
+  return Math.abs(((b - a) % 360 + 540) % 360 - 180) <= within;
+}
+
 export const PAYLOADS = {
   constructor,
   "payload-conveyor": payloadConveyor,
@@ -797,5 +993,6 @@ export const PAYLOADS = {
   "payload-loader": payloadLoader,
   "payload-unloader": payloadUnloader,
   "payload-deconstructor": payloadDeconstructor,
+  "payload-driver": payloadDriver,
   reconstructor,
 };

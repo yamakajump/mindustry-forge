@@ -92,7 +92,7 @@ second, c'est une intuition qui a l'air d'un portage.
       payload-conveyor, reinforced-payload-conveyor
 - [x] `PayloadDeconstructor` - 2 blocs - rend un bloc sous forme de son cout
       deconstructor, small-deconstructor
-- [ ] `PayloadMassDriver` - 2 blocs
+- [x] `PayloadMassDriver` - 2 blocs - il faut que la cargaison ait glisse au bout du canon
       large-payload-mass-driver, payload-mass-driver
 - [x] `PayloadRouter` - 2 blocs
       payload-router, reinforced-payload-router
