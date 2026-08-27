@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Schematic;
 use App\Models\SchematicItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -64,7 +65,20 @@ class BrowseController extends Controller
             $order = 'new';
         }
 
+        /* Creative builds are set aside by default, and the page says so with a link that
+           brings them back. Corentin asked for "a part", not "dehors": a catalogue that
+           announces fifteen thousand schematics and quietly serves fourteen would be lying
+           about its own size, which is the fault this repository spent a day closing.
+
+           A schematic built for a sandbox server, or built to make one lag, is not a worse
+           design - it is an answer to another question, and it sat at the top of the energy
+           ranking ahead of every real factory. */
+        $creative = $request->query('creatif') === 'oui';
+
         $query = Schematic::query()->with('user')->listed();
+        if (! $creative) {
+            $query->ordinary();
+        }
 
         if ($makes !== '') {
             // A join on the index rather than a key in a JSON blob: "graphite" must not
@@ -106,6 +120,21 @@ class BrowseController extends Controller
             'schematics' => $query->paginate(24)->withQueryString(),
             'makes' => $makes,
             'order' => $order,
+            'creative' => $creative,
+            /* Counted rather than guessed: a page that says how many it is holding back is
+               a page a reader can disagree with.
+
+               Counted forwards rather than as a difference of two totals. Subtracting one
+               count from another means two passes over the whole listed catalogue, each
+               with an anti-join; asking `schematic_blocks` directly is an index range over
+               ten block names and a join back. The figure is the same and the first shape
+               would have been a query nobody measured on fifteen thousand rows. */
+            'setAside' => $creative ? 0 : DB::table('schematic_blocks')
+                ->join('schematics', 'schematics.id', '=', 'schematic_blocks.schematic_id')
+                ->where('schematics.visibility', Schematic::PUBLIC)
+                ->whereIn('schematic_blocks.block', Schematic::sandboxBlocks())
+                ->distinct()
+                ->count('schematic_blocks.schematic_id'),
             'orders' => self::ORDERS,
             // Offered rather than typed: the analysis already knows what exists, so a
             // player picks from what is actually there instead of guessing a spelling.
