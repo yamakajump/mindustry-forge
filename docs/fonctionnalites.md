@@ -113,11 +113,17 @@ d'écrire la migration**, parce que ça touche un schéma que d'autres chantiers
 
 ## A5. Le wiki des blocs
 
-`blocks.json` porte 253 blocs avec leurs vrais chiffres, extraits du jeu par le banc, pas
+`blocks.json` porte 395 blocs avec leurs vrais chiffres, extraits du jeu par le banc, pas
 recopiés d'un wiki. Une page par bloc : recette, débit, consommation, portée, ce qui
 l'alimente, ce qu'il alimente, et les schématiques du catalogue qui l'utilisent.
 
 Leur wiki est rédigé à la main. Celui-ci se régénère à chaque version du jeu.
+
+**254 pages, pas 395.** Sur les 395 entrées, 141 sont marquées `hidden` : des blocs
+internes, sols et superpositions, sans recette ni intérêt pour un joueur. Cent quarante et
+une pages vides seraient du contenu mince, que le référencement punit au lieu d'ignorer.
+Les 18 conditionnels (`sandboxOnly`, `debugOnly`, `campaignOnly`) sont publiés avec la
+mention de leur condition.
 
 - **Possède** : routes `/blocs`, ses vues, un service de lecture du catalogue.
 - **Dépend de** : rien.
@@ -129,6 +135,40 @@ coûtent pas la même chose à construire, et c'est ce qui décide en début de 
 
 - **Possède** : une migration (colonne de coût), `BrowseController`.
 - **Dépend de** : à séquencer après A4 pour ne pas croiser deux migrations sur la même table.
+
+## A8bis. Les liens d'un processeur qui ne portent pas
+
+Un processeur déclare les blocs qu'il pilote. Rien ne vérifie qu'il les atteint, donc une
+schématique peut être collée avec un lien mort sans que la page le dise, et le joueur
+découvre en jeu que sa tourelle n'a jamais reçu d'ordre.
+
+La règle du jeu est prouvée, lue dans le bytecode de `LogicBlock.validLink` en v159.7 :
+
+```
+dx² + dy²  <  (logic_range + taille_cible / 2)²
+```
+
+Euclidienne, **stricte** (un lien posé pile à la portée est refusé, même piège que le
+propulseur de masse), entre centres de bâtiments, et le rayon reçoit la demi-taille de la
+cible : un vault 3x3 est joignable une case et demie plus loin qu'un convoyeur.
+
+Tout est en place : `centre()` d'`analyse.js` calcule déjà le bon centre, recoupé contre
+`Block.offset` du jeu sur les tailles 1 à 5, et le catalogue porte `logic_range` en cases
+depuis la normalisation des unités. C'est du travail droit.
+
+**Ça vit dans l'analyse, pas dans l'éditeur de logique, et c'est mesuré.** Dans l'éditeur,
+un lien n'est qu'un nom et deux décalages : pas de bloc, donc pas de taille, donc la
+formule ne s'applique pas. Le nom vient de `LogicBlock.getLinkName`, qui coupe sur les
+tirets et garde le dernier morceau, et la transformation est destructrice. Passée sur les
+245 blocs constructibles : **32 des 114 noms de lien ne permettent pas de déduire la
+taille**. `additive-reconstructor` fait 3x3 et `tetrative-reconstructor` fait 9x9, même nom.
+
+Un avertissement de portée dans l'éditeur se tromperait donc sur les reconstructeurs, les
+foreuses et les réacteurs. N'en afficher aucun est le bon choix : un avertissement qui crie
+sur un montage qui marche, on l'éteint, et on éteint la colonne avec.
+
+- **Possède** : `site/public/forge/logic.js`, la partie liens d'`analyse.js`, ses tests.
+- **Dépend de** : rien, la normalisation des unités est faite.
 
 ## A7. Le vérificateur de tenue
 
@@ -243,6 +283,51 @@ téléphone en jouant, et une barre latérale mange la largeur qui sert à l'ape
 
 ---
 
+# Où on en est, au soir du 27/08
+
+Huit chantiers livrés dans la soirée, chacun vérifié vert sur le tronc avant que le suivant
+ne soit fusionné. Le site est passé de deux entrées de navigation à cinq.
+
+| Livré | Ce que ça change |
+|---|---|
+| **E** socle multilingue | huit domaines, français seul, deux tests qui refusent une clé absente ou un trou oublié |
+| **D** la nav | l'éditeur enfin visible, une barre qui tient à 320 px |
+| **A1** le collecteur | les deux catalogues, throttlé, reprise sans état |
+| **A8** le débit potentiel | ce qu'une schématique ferait nourrie à fond, sans rien deviner |
+| **A5** le wiki des blocs | 254 pages depuis les chiffres du jeu |
+| **B1** l'éditeur de logique | grammaire désassemblée du jeu, deux oracles |
+| **A8bis** les liens de processeur | ce qu'ils pilotent, et ce qu'ils ratent |
+| la direction artistique | logo, favicons, carte de partage 1200x630 |
+| le dumpeur | une seule unité de distance, et les compteurs de processeur |
+
+## Ce qui tourne maintenant
+
+| Voie | Chantier |
+|---|---|
+| `feat/dumpeur` | **la contradiction à l'écran** : brider au prorata de l'énergie, comme le jeu. Plus le `<=` de `speedUp`. |
+| `feat/wiki-blocs` | **A2**, le planificateur d'usine |
+| `feat/editeur-logique` | **B2**, image vers affichage logique |
+| `feat/collecteur` | **A4**, la recherche par ce dont on dispose, plus les deux règles du combustible |
+| `feat/i18n-nav` | les 91 chaînes en dur d'`index.html` |
+| `feat/direction-artistique` | le branchement `<head>` et `:root`, et le neuvième jeton |
+
+## Ce qui reste sans propriétaire
+
+**La passe de conversion en anglais**, environ 910 commentaires. À faire à froid, quand
+aucune voie n'écrit dans les fichiers concernés, ce qui n'est pas le cas ce soir. Attention :
+`analyse.js` est haché par `EngineVersion`, donc reformuler un commentaire dedans marque
+périmées toutes les analyses stockées.
+
+**Les deux fichiers de banc morts**, `bench/test_bench.py` et
+`bench/test_schematic_in_the_game.py`. Avant d'écrire une ligne, répondre à la vraie
+question : un chemin de re-mesure en Python apporte-t-il quelque chose que `npm run oracle`
+n'a pas ? Ce n'est pas évident.
+
+**A3** le comparateur, **A6** le classement par coût, **A7** la tenue au souffle, **B3**
+image vers toile, **B4** générateur de trieurs, **B5** générateur de carte, et tout **C**.
+
+**Les cartes de partage des 254 fiches de bloc**, qui n'en poussent aucune.
+
 # Ordre décidé le 27/08
 
 Premier lot, quatre voies en parallèle, une worktree chacune :
@@ -330,6 +415,11 @@ Relevé en demandant à chaque session, pas en devinant.
 | Moteur de simulation | la même, tant qu'elle porte des comportements | `site/public/forge/engine/**` |
 | Mode édition | terminé, plus personne | `site/public/forge/editor/`, `tests/js/editor/`, `docs/audit-pose.md`, `docs/plan-edition.md` |
 | Place de marché, Laravel, déploiement | le pilote | `site/app/**`, vues Blade, migrations, `deployment/` |
+| Socle multilingue puis nav | `feat/i18n-nav` | `site/lang/`, `i18n.js`, `layout.blade.php`, la nav de `index.html`, le header de `forge.css` |
+| Wiki des blocs | `feat/wiki-blocs` | routes `/blocs`, ses vues, son service de catalogue, `schematic_blocks` |
+| Éditeur de logique | `feat/editeur-logique` | `logic.js` et ses modules d'édition, sa page |
+| Collecteur | `feat/collecteur` | `site/app/Console/Commands/`, son script Node |
+| Direction artistique | `feat/direction-artistique` | logo, favicons, image OG, manifest. **Pas** `:root` ni le head tant que la nav est en cours |
 
 Deux règles nées de la journée :
 
@@ -337,11 +427,63 @@ Deux règles nées de la journée :
 sont des artefacts générés**, par `tools/build_catalogue.py` et `tools/build_sprites.py`.
 Personne ne les édite à la main. La session qui change un générateur régénère.
 
-**Deux pièges relevés par la voie édition**, qui coûteront une demi-journée à qui les
-redécouvre : MySQL réordonne les clés d'un objet JSON et SQLite non, donc un test qui
-compare un ordre passe en local et casse en CI ; et le serveur de développement doit
-envoyer `no-store`, sinon le navigateur sert un fichier périmé et on débogue du code déjà
-corrigé.
+## Les pièges déjà payés
+
+Chacun a coûté du temps à quelqu'un. Les relire vaut mieux que les redécouvrir.
+
+**MySQL réordonne les clés d'un objet JSON, SQLite non.** Un test qui compare un ordre
+passe en local et casse en CI.
+
+**Le serveur de développement doit envoyer `no-store`**, sinon le navigateur sert un
+fichier périmé et on débogue du code déjà corrigé.
+
+**Le répertoire du shell est réinitialisé après chaque commande** dans les sessions de
+travail. Préfixer chaque commande par son `cd`. Un `cd` fait une seule fois renvoie la
+commande suivante dans le répertoire principal partagé, ce qui est exactement ce que les
+worktrees existent pour empêcher. Les chaînes `cd X && a && b` restent sûres, c'est un seul
+shell.
+
+**`php artisan serve` annonce « Server running » même quand le port est déjà pris.** Une
+worktree isole le dépôt, pas la machine : les ports sont partagés par tout le monde. Une
+session qui démarre sur un port occupé lit tranquillement l'application d'une autre sans
+qu'aucun message ne l'en avertisse, et débogue un écran qui n'est pas le sien. Choisir un
+port à soi, et le vérifier avec une ressource qui n'existe que chez soi plutôt qu'avec la
+page d'accueil.
+
+**Le dump du catalogue n'est pas reproductible octet pour octet.** Deux lancements sans
+toucher au code donnent huit lignes de diff sur `wave` et `tsunami` : l'ordre de leurs
+`ammo_types` liquides vient de l'iteration d'une `ObjectMap` d'arc, qui depend du hachage
+et donc du lancement. Le contenu est identique apres parsing. Mais dans un diff de 457 ko,
+personne ne distingue un reordonnancement d'un vrai changement, et c'est comme ca qu'une
+regeneration cache une regression. Les sorties concernees sont triees a la source.
+
+**Pendant une fusion, `git diff` contre `origin/...` ment.** Le tronc bouge plus vite qu'un
+cycle fusion-tests-push, donc comparer contre la branche distante juste après une
+résolution compare contre une cible qui a déjà avancé, et affiche des suppressions qui
+n'existent pas. Une voie a cru supprimer trente-quatre lignes du travail d'une autre. La
+bonne référence pendant une fusion est `MERGE_HEAD`, pas `origin/<branche>`.
+
+**`consumes_power` peut valoir vrai sans aucune consommation.** La presse à graphite est
+mécanique dans le jeu. Se fier à la présence de `power` et `power_out`, jamais au booléen.
+
+**Le champ `range` de `blocks.json` mélange deux unités**, et rien ne le signale. Il est en
+cases pour les ponts, les nœuds à faisceau, les foreuses à plasma, les propulseurs de masse
+et les projecteurs de surcharge ; en unités monde, huit par case, pour toutes les tourelles,
+les répareurs et les tours de choc. `DumpBlocks.java` divise par huit à trois endroits et
+recopie le champ brut ailleurs, parce que dans le jeu `ItemBridge.range` est un entier de
+cases et `BaseTurret.range` un flottant de distance. Le nombre seul ne permet pas de
+trancher : le 4 d'un pont et le 40 d'un répareur sont plausibles dans les deux unités.
+
+Le vrai correctif est dans le dumper, qui doit écrire l'unité à côté de la valeur ou tout
+ramener en cases. **Personne ne tient le dumper depuis la fin de la voie rendu** : c'est un
+petit chantier à part, à prendre par qui régénérera le catalogue.
+
+**Le débit d'un bloc dans le catalogue est un plafond nominal, pas une mesure.** C'est ce
+qu'il ferait alimenté à fond, seul, sans goulot. Le chiffre que le reste du site présente
+comme mesuré vient du solveur, alimentation et boost compris, et il est souvent plus bas.
+Une page qui affiche les deux de la même façon reproduit exactement l'erreur du classement
+par énergie nette, corrigée le 27/08 : présenter comme une mesure ce qui n'en est pas une,
+sur le seul site qui vend des mesures.
 
 # L'état des branches
 

@@ -19,6 +19,7 @@ import { fromBase64 } from "./schematic.js";
 import { demand, requirements } from "./needs.js";
 import { candidates, feedFrom, markable, marksOf, readMarks } from "./marks.js";
 import { attributeOf, beamOf, dryTilesOf, wallSumOf, yieldOf } from "./ground.js";
+import { centre, footprint } from "./geometry.js";
 import { logicOf, readProgram } from "./logic.js";
 import { throughput } from "./maxflow.js";
 
@@ -66,21 +67,6 @@ const produces = (block, item) =>
   (block.output?.[item] || 0) * craftsPerSecond(block);
 const consumes = (block, item) =>
   (block.input?.[item] || 0) * craftsPerSecond(block);
-
-/**
- * The tiles a block covers, given the tile it is stored on.
- *
- * Mindustry stores a block by its centre and offsets by `-(size - 1) / 2`, truncating
- * towards zero. A two-wide drill stored at (4, 4) covers (4, 4) to (5, 5).
- */
-function footprint(x, y, size) {
-  const offset = Math.trunc(-(size - 1) / 2);
-  const out = [];
-  for (let dx = 0; dx < size; dx++) {
-    for (let dy = 0; dy < size; dy++) out.push([x + offset + dx, y + offset + dy]);
-  }
-  return out;
-}
 
 /** The tiles this block tries to hand items to. */
 function outputsOf(node) {
@@ -381,13 +367,6 @@ export function buildGraph(tiles) {
   for (const [a, b] of edges) { out[a].push(b); into[b].push(a); }
 
   return { nodes, edges, out, into };
-}
-
-/** The middle of a block, in tiles, which is what the game measures ranges between. */
-function centre(node) {
-  const size = node.block.size || 1;
-  const offset = Math.trunc(-(size - 1) / 2);
-  return [node.x + offset + size / 2, node.y + offset + size / 2];
 }
 
 /**
@@ -1025,7 +1004,7 @@ export async function analyse(text, supply = {}, chosen = null,
   // A belt that starts from nowhere is where something arrives, and the machines behind it
   // say what. Asking the player instead was asking them to state what the schematic
   // already says, and it meant a layout nobody had described analysed to nothing at all.
-  const { outside, wanted } = demand(graph);
+  const { outside, wanted, made: atFullSpeed } = demand(graph);
   const marks = readMarks(chosen);
   const marked = Object.keys(marks).length ? marks : null;
 
@@ -1113,6 +1092,70 @@ export async function analyse(text, supply = {}, chosen = null,
     if (rate * 60 >= 0.1) perMinute[item] = rate * 60;
   }
 
+  /**
+   * Ce qu'elle rendrait si tout ce qui lui manque arrivait : un plafond, pas une mesure.
+   *
+   * Le chiffre au-dessus est vide tant que personne n'a dit par ou la schematique se
+   * branche, et c'est la bonne reponse pour quelqu'un qui colle la sienne. Elle est fausse
+   * a l'echelle d'un catalogue de quinze mille conceptions que personne ne marquera jamais
+   * une par une : une usine a silicium parfaitement decrite y figure comme ne produisant
+   * rien, ce qui n'aide personne a la trouver.
+   *
+   * **Ceci n'est pas le retour de la devinette d'entrees.** `ports.js` a ete supprime pour
+   * une bonne raison : il choisissait le transporteur du bord le plus probable par
+   * ressource, toute la page decoulait de ce choix, et un choix rate donnait des debits qui
+   * avaient l'air calcules. Ici rien n'est choisi. Aucune arrivee n'est designee, aucun
+   * flux n'est route : c'est la soustraction de ce que les machines fabriquent a plein
+   * regime moins ce qu'elles se mangent entre elles. Il n'y a pas de coup de de parce qu'il
+   * n'y a pas de tirage.
+   *
+   * C'est aussi exactement la convention que ce fichier applique deja a l'energie deux
+   * lignes plus bas - `potential: powerBudget(graph, { fed: {} })`, toutes les machines a
+   * fond - et le miroir exact de `needs`, qui est la meme soustraction dans l'autre sens.
+   * Les deux ne peuvent pas se contredire : ils sont les deux signes d'une seule difference.
+   * Verifie contre le solveur : une presse a graphite marquee a la main rend 40 graphite/min,
+   * et ce plafond en annonce 40.
+   *
+   * Un plafond ne s'affiche jamais sans dire qu'il en est un, ni sans `needs` a cote pour
+   * dire a quelles conditions. Un debit sorti de son contrat finit cite comme une mesure.
+   */
+  const potentialPerMinute = {};
+  for (const [item, rate] of Object.entries(atFullSpeed)) {
+    // `*combustible` est un besoin qui n'a pas de nom, pas une matiere qui sort.
+    if (item.startsWith("*")) continue;
+    const spare = (rate - (wanted[item] || 0)) * 60;
+    if (spare >= 0.1) potentialPerMinute[item] = spare;
+  }
+
+  /* Un generateur qui brule n'importe quoi ne reclame aucune matiere nommee : `demand()`
+     compte sa faim sous `*combustible`, et rien ne l'a donc retiree de la boucle ci-dessus.
+     Sans cette deduction, une centrifugeuse qui alimente ses propres bruleurs figure au
+     plafond avec tout le charbon qu'ils avalent - mesure sur une centrifugeuse et deux
+     generateurs a combustion : 120 charbon/min annonces, 60 reellement disponibles.
+
+     Preleve sur ce qui brule vraiment, d'apres la flammabilite que le jeu declare, et pas
+     sur tout ce qui sort : personne ne chauffe une chaudiere au silicium. Reparti au
+     prorata parce que le carburant est fongible, ce qui est deja la convention de
+     `demand()` : elle ne demande pas du charbon, elle demande de quoi bruler. */
+  const fuel = (wanted["*combustible"] || 0) * 60;
+  const burnable = Object.keys(potentialPerMinute)
+    .filter((item) => (catalogue.items?.[item]?.flammability || 0) > 0.1);
+  const spareFuel = burnable.reduce((sum, item) => sum + potentialPerMinute[item], 0);
+
+  if (fuel > 0 && spareFuel > 0) {
+    // Ce qui manque au-dela de ce que la schematique brule elle-meme reste un besoin, et
+    // `needs` le porte deja. Ici on ne descend pas en dessous de zero.
+    const share = Math.min(spareFuel, fuel) / spareFuel;
+    for (const item of burnable) {
+      const left = potentialPerMinute[item] * (1 - share);
+      if (left >= 0.1) {
+        potentialPerMinute[item] = left;
+      } else {
+        delete potentialPerMinute[item];
+      }
+    }
+  }
+
   return {
     name: parsed.tags.name || "sans nom",
     width: parsed.width,
@@ -1157,8 +1200,10 @@ export async function analyse(text, supply = {}, chosen = null,
     // answer itself: a sandbox build feeds itself and nothing arrives from outside.
     selfFed,
     // What it would make if it were fed all of that, which is the number a player is
-    // really shopping for.
+    // really shopping for. `potentialPerMinute` is the same question asked about matter:
+    // one convention, two quantities, so a page never has to explain them twice.
     potential: powerBudget(graph, { fed: {} }),
+    potentialPerMinute,
     // The same sum done the game's way, so the two can be held side by side. It is what
     // `Schematic.powerProduction` and `powerConsumption` return, and the build cost above
     // is `Schematic.requirements`: on every schematic tried so far this matches the panel

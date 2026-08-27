@@ -6,13 +6,43 @@
 <title>Forge - analyser une schematique Mindustry</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314161c'/%3E%3Cpath d='M8 22V10h10M8 16h8' stroke='%23ffd37f' stroke-width='3' fill='none'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="./forge/forge.css">
+<script src="./forge/nav.js" type="module" defer></script>
 </head>
 <body>
 <header>
-  <a class="brand" href="/">Mindustry <span>Forge</span></a>
+  <a class="brand" href="/">
+    <svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>
+    Mindustry <span>Forge</span>
+  </a>
+  <!-- Le meme entete que `resources/views/partials/nav.blade.php`, ecrit a la main parce
+       que cette page est servie telle quelle et ne rencontre jamais PHP. Un test la compare
+       a `config/nav.php` : une entree qui atterrit la-bas et pas ici ne peut pas etre
+       fusionnee.
+
+       Le francais est ecrit en clair et `data-i18n` ne porte que la cle. Rien a remplacer
+       tant que le site parle la langue dans laquelle il est ecrit, donc pas de scintillement,
+       et un lecteur sans JavaScript lit des mots plutot que des cles. -->
+  <button class="deplier" type="button" aria-expanded="false" aria-controls="nav"
+          data-i18n-aria-label="nav.barre.deplier" aria-label="Ouvrir le menu" hidden>
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+
   <nav id="nav">
-    <a href="/">Analyser</a>
-    <a href="/schematiques">Parcourir</a>
+    <a href="/" data-i18n="nav.barre.analyser">Analyser</a>
+    <a href="/editer" data-i18n="nav.barre.editer">Editer</a>
+    <details class="menu">
+      <summary data-i18n="nav.barre.schematiques">Schematiques</summary>
+      <div class="menu-list">
+        <a href="/schematiques" data-i18n="nav.menu.parcourir">Parcourir</a>
+      </div>
+    </details>
+    <details class="menu">
+      <summary data-i18n="nav.barre.outils">Outils</summary>
+      <div class="menu-list">
+        <a href="/outils/logique" data-i18n="nav.menu.logique">Logique</a>
+      </div>
+    </details>
+    <a href="/blocs" data-i18n="nav.barre.blocs">Blocs</a>
   </nav>
 </header>
 
@@ -74,6 +104,7 @@ import { loadSprites, draw, itemIcon, bounds } from "./forge/render.js";
 import { Live } from "./forge/live.js";
 import { gridsOf } from "./forge/engine/power.js";
 import { mountEditor } from "./forge/editor/mount.js";
+import { ready as dictionary, t } from "./forge/i18n.js";
 
 const $ = (id) => document.getElementById(id);
 const text = $("text"), out = $("out"), drop = $("drop");
@@ -218,10 +249,28 @@ function render(report) {
       Sur une tache a moitie couverte il en faut deux fois plus.</p></div>`);
   }
 
-  /* And what it gives back once it has all that, which is what a player is shopping for. */
+  /* And what it gives back once it has all that, which is what a player is shopping for.
+
+     La carte se lit juste apres « Il lui faut », et ce n'est pas un hasard : le plafond
+     ci-dessous ne vaut qu'aux conditions que la carte du dessus enumere. Les separer, ou
+     mettre ce chiffre en haut de page, en ferait un debit qu'on citerait sans ses
+     conditions. Il est annonce « au mieux » pour la meme raison. */
   const full = report.potential || { made: 0, spent: 0 };
-  if (full.made > 0.01 || full.spent > 0.01) {
+  const ceiling = Object.entries(report.potentialPerMinute || {}).sort((a, b) => b[1] - a[1]);
+  if (full.made > 0.01 || full.spent > 0.01 || ceiling.length) {
     right.push(`<div class="card"><h2>Une fois nourrie a fond</h2>
+      ${ceiling.map(([item, n]) => `<div class="line"><span>Au mieux ${withIcon(item)}
+           ${escape(item)}</span>
+         <span class="num good">${rate(n)} / min</span></div>`).join("")}
+      ${ceiling.length && needs.length
+        ? `<p class="hint-line" style="margin:6px 0 10px">Plafond, pas mesure : ce que ses
+             machines sortiraient a plein regime si on lui amenait
+             ${needs.filter((n) => !n.resource.startsWith("*"))
+                .map((n) => escape(n.resource)).join(", ") || "ce qui lui manque"}.
+             ${answered
+               ? "Ce qu'elle fait branchee comme elle est se lit plus bas."
+               : "Marque ses entrees pour savoir ce qu'elle fait vraiment."}</p>`
+        : ""}
       ${full.made > 0.01
         ? `<div class="line"><span>Produit</span>
              <span class="num good">${rate(full.made)} energie / s</span></div>` : ""}
@@ -301,6 +350,46 @@ function render(report) {
           <span class="num bad">x${n}</span></div>`),
     ];
     right.push(`<div class="card"><h2>Gaspille</h2>${rows.join("")}</div>`);
+  }
+
+  /* What the processors amount to, which until now was computed on every analysis and
+     thrown away: `report.logic` had no reader anywhere on the site.
+
+     The reassuring line comes first on purpose. A report that mentions processors only to
+     scold them is a report a reader learns to skim, and "three processors, none of which
+     drives anything" is what gives the warning below it its weight when it does appear.
+
+     A link whose target was not copied with the schematic is not in `unreachable` and is
+     not shown: that is most real schematics, and flagging it would teach the reader to
+     ignore the card. */
+  const logic = report.logic;
+  if (logic) {
+    const lines = [`<div class="line"><span>${escape(t("analyse.logique.processeurs"))}</span>
+      <span class="num">${logic.processors}</span></div>`];
+
+    lines.push(logic.driven.length
+      ? `<div class="line"><span>${escape(t("analyse.logique.pilote"))}</span>
+          <span>${escape(logic.driven.join(", "))}</span></div>`
+      : `<div class="line"><span class="good">${
+          escape(t("analyse.logique.aucun-pilote"))}</span></div>`);
+
+    /* The two figures stay out of the sentence and the unit stays in the hint below.
+       `t()` returns the key itself when the dictionary lacks it, so a number written into
+       a placeholder is a number that disappears the day a translation is missing, and the
+       reader is left with a warning that names no distance at all. */
+    for (const link of logic.unreachable) {
+      lines.push(`<div class="line">
+        <span>${escape(link.from)} → ${escape(link.to)} (${link.target[0]}, ${
+          link.target[1]}), ${escape(t("analyse.logique.hors-portee"))}</span>
+        <span class="num bad">${rate(link.distance)}&nbsp;/&nbsp;${
+          rate(link.reach)}</span></div>`);
+    }
+
+    right.push(`<div class="card"><h2>${escape(t("analyse.logique.titre"))}</h2>
+      ${lines.join("")}
+      ${logic.unreachable.length
+        ? `<p class="hint-line">${escape(t("analyse.logique.hors-portee-aide"))}</p>` : ""}
+    </div>`);
   }
 
   /* The panel the game itself shows, reproduced from its own formulas, and the places
@@ -1070,14 +1159,23 @@ async function whoAmI() {
 
   const nav = $("nav");
   if (!nav) return;
+  await dictionary;
+
+  /* « Les miennes » va dans le menu des schematiques et pas au bout de la barre, pour que
+     l entete d un lecteur connecte soit celui de `partials/nav.blade.php` et pas un autre.
+     Le menu est dans la page depuis le debut, seule cette entree attendait la reponse. */
+  if (me) {
+    nav.querySelector("details.menu .menu-list")?.insertAdjacentHTML("beforeend",
+      `<a href="/mes-schematiques">${escape(t("nav.menu.les-miennes"))}</a>`);
+  }
+
   nav.insertAdjacentHTML("beforeend", me
-    ? `<a href="/mes-schematiques">Mes schematiques</a>
-       <span class="who">${me.avatar
+    ? `<span class="who">${me.avatar
          ? `<img src="${me.avatar}" alt="" width="24" height="24">` : ""}
          ${escape(me.name)}</span>`
     : `<a class="discord" href="/auth/discord">
          <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M20.3 4.4A19 19 0 0 0 15.6 3l-.2.5c1.6.4 2.4.9 3.2 1.5a11 11 0 0 0-9.2 0c.8-.6 1.7-1.1 3.2-1.5L12.4 3a19 19 0 0 0-4.7 1.4C4.7 8.8 3.9 13.1 4.3 17.3a19 19 0 0 0 5.7 2.9l.7-1.3c-.8-.3-1.5-.7-2.1-1.1l.4-.3a13 13 0 0 0 11.3 0l.4.3c-.6.4-1.3.8-2.1 1.1l.7 1.3c2-.6 4-1.6 5.7-2.9.5-4.9-.8-9.1-4.7-12.9ZM9.7 14.9c-1.1 0-2-1-2-2.3s.9-2.3 2-2.3 2 1 2 2.3-.9 2.3-2 2.3Zm4.6 0c-1.1 0-2-1-2-2.3s.9-2.3 2-2.3 2 1 2 2.3-.9 2.3-2 2.3Z"/></svg>
-         Se connecter avec Discord
+         ${escape(t("compte.barre.connexion"))}
        </a>`);
 }
 
@@ -1164,6 +1262,11 @@ function wireKeep(report) {
    rather than a beat later. */
 loadSprites().catch(() => {});
 whoAmI();
+
+/* `/editer` sert cette meme page, et la page lit son propre chemin. Une adresse plutot
+   qu un fragment : un fragment ne part pas au serveur, donc il ne se partage pas dans un
+   fil et ne s indexe pas. */
+if (location.pathname === "/editer") enterEditor([]);
 
 /* Arriving from a schematic's page, to look at it or to change it. */
 const asked = new URLSearchParams(location.search).get("s");

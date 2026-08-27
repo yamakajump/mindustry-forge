@@ -64,6 +64,10 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
         "consumes_power", "outputs_power_flag", "conductive_power", "power_node", "heat_warmup_rate",
         "laser_range", "max_nodes", "no_autolink", "no_connected_power", "no_update",
         "launch_time", "accept_multiple_items",
+        # Les processeurs, dont la vitesse est tout ce qui les distingue, et la portee de
+        # liaison, qui decide si un capteur est joignable depuis le processeur qui le lit.
+        "instructions_per_tick", "max_instruction_scale", "max_instructions_per_tick",
+        "logic_range",
         "load_time", "items_loaded", "liquids_loaded", "max_block_size",
         "offload_speed", "deconstruct_speed", "dump_rate", "max_payload_size",
         "charge_time", "length", "knockback", "transfer_time",

@@ -50,11 +50,94 @@ header {
   border-bottom: 2px solid var(--edge); background: var(--panel);
   padding: 12px 24px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
 }
-.brand { font-size: 19px; letter-spacing: .5px; color: var(--ink); }
+.brand {
+  font-size: 19px; letter-spacing: .5px; color: var(--ink);
+  display: inline-flex; align-items: center; gap: .5em;
+}
 .brand span { color: var(--accent); }
+
+/* Le signe, en ligne et dimensionne en `em`.
+
+   Pas en pixels : `.editor-bar .brand` retombe a 17px, et un signe fixe s y retrouverait
+   au mauvais rapport sans que rien ne le signale avant qu on ouvre l editeur. Pas en
+   image non plus, `currentColor` ne traverse pas un `<img>`. La geometrie est celle de
+   `brand/mark-plain.svg`, qui reste la source : un test compare les deux copies a elle. */
+.brand .signe { height: .95em; width: auto; color: var(--accent); flex: none; }
 header nav { margin-left: auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 header nav a { color: var(--dim); }
 header nav a:hover { color: var(--ink); }
+
+/* Les menus deroulants.
+
+   Des `<details>` plutot qu un bouton et un panneau : ca s ouvre au clavier, ca s ouvre
+   sans JavaScript, et le navigateur tient l etat ouvert-ferme tout seul. `nav.js` n ajoute
+   que ce qui manque, refermer sur Echap, sur un clic dehors, et n en laisser qu un ouvert.
+
+   Le triangle par defaut de `summary` est retire : il pointe vers le bas quand le menu est
+   ferme et vers la droite quand il est ouvert, l inverse de ce que fait une barre de
+   navigation partout ailleurs. Le chevron d en dessous, lui, tourne dans le bon sens. */
+.menu { position: relative; }
+.menu > summary {
+  color: var(--dim); cursor: pointer; list-style: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.menu > summary::-webkit-details-marker { display: none; }
+.menu > summary:hover { color: var(--ink); }
+.menu > summary::after {
+  content: ""; width: 6px; height: 6px; margin-top: -3px;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(45deg); transition: transform .12s;
+}
+.menu[open] > summary { color: var(--ink); }
+.menu[open] > summary::after { transform: rotate(-135deg); margin-top: 2px; }
+
+.menu-list {
+  position: absolute; top: calc(100% + 10px); right: 0; z-index: 50;
+  display: flex; flex-direction: column; min-width: 170px;
+  padding: 6px; gap: 2px;
+  background: var(--raised); border: 2px solid var(--edge); border-radius: var(--radius);
+  box-shadow: 0 8px 20px rgb(0 0 0 / .45);
+}
+.menu-list a { padding: 8px 10px; border-radius: 5px; white-space: nowrap; }
+.menu-list a:hover { background: var(--panel); color: var(--ink); text-decoration: none; }
+
+/* Le bouton qui deplie, sur telephone. Pose `hidden` dans le document et revele par
+   `nav.js` : sans script il n y a rien pour rouvrir la barre, donc elle reste depliee et
+   passe a la ligne, ce qu elle faisait deja avant qu il y ait des menus. */
+.deplier {
+  margin-left: auto; display: none; align-items: center; justify-content: center;
+  min-height: 44px; min-width: 44px; padding: 0;
+}
+.deplier svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+/* Sous 360 px la ligne ne tient plus.
+
+   Mesure avant d etre corrige : la marque passe de 185 a 216 px avec le signe, et l entete
+   demande `216 + 18 de gap + 44 de bouton + 48 de padding = 326 px`. A 320 px la barre se
+   replie sur deux lignes. Resserrer coute moins que masquer un mot : le signe et « Forge »
+   suffisent a identifier le site, mais tant que les deux tiennent, autant les garder. */
+@media (max-width: 360px) {
+  header { padding: 10px 12px; gap: 10px; }
+  .brand { font-size: 17px; }
+}
+
+@media (max-width: 700px) {
+  .deplier { display: inline-flex; }
+  header nav {
+    margin-left: 0; flex-basis: 100%; flex-direction: column; align-items: stretch;
+    gap: 2px; display: none;
+  }
+  header nav.open { display: flex; }
+
+  /* Deplie sur toute la largeur plutot qu en panneau flottant : sur un telephone un menu
+     qui se superpose recouvre la barre dont il sort. Pas de barre laterale non plus, le
+     site se lit en jouant et la largeur sert a l apercu. */
+  .menu-list {
+    position: static; min-width: 0; border: 0; box-shadow: none;
+    background: none; padding: 0 0 0 14px;
+  }
+  .menu > summary { padding: 8px 0; }
+}
 .who { display: inline-flex; align-items: center; gap: 7px; color: var(--dim); font-size: 13px; }
 .who img { border-radius: 50%; }
 .inline { display: inline; margin: 0; }
