@@ -36,5 +36,5 @@ return [
         ['key' => 'nav.menu.carte', 'href' => '/outils/carte', 'ready' => false],
     ]],
 
-    ['key' => 'nav.barre.blocs', 'href' => '/blocs', 'ready' => false],
+    ['key' => 'nav.barre.blocs', 'href' => '/blocs', 'ready' => true],
 ];
