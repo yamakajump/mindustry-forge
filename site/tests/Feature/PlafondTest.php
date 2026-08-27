@@ -154,6 +154,69 @@ it('cherche sur les plafonds, en disant que ce sont des plafonds', function () {
         ->assertSee('<option value="silicon"', escape: false);
 });
 
+it('nomme la grandeur qu une tuile montre, dans les deux sens', function () {
+    /*
+     * La vitrine classe sur les plafonds, donc une tuile montre un plafond. Restait le cas
+     * ou une schematique n en porte pas : la premiere version ne montrait rien, et l accueil
+     * lisait la mesure pendant que la vitrine se taisait -- deux surfaces, deux reponses,
+     * pour la meme schematique, sur un site dont l argument est que ses chiffres se prouvent.
+     *
+     * Le repli est un filet sous un vide : la production porte 419 mesures contre 14 847
+     * plafonds, sur cinq choses et aucun objet solide, et chacune accompagne un plafond. Il
+     * est garde quand meme, et garde bruyant. Une mesure muette se lirait comme le plafond
+     * de la tuile d a cote, et ce serait exactement la confusion que toute cette colonne
+     * `kind` existe pour empecher.
+     */
+    $ceiling = Schematic::factory()->for(User::factory())->create([
+        'visibility' => Schematic::PUBLIC, 'name' => 'Au plafond', 'blocks' => 30,
+        'analysis' => analyseAvecPlafond(['silicon' => 900.0]),
+    ]);
+
+    $measured = Schematic::factory()->for(User::factory())->create([
+        'visibility' => Schematic::PUBLIC, 'name' => 'A la mesure', 'blocks' => 30,
+    ]);
+    $measured->items()->delete();
+    $measured->items()->create([
+        'item' => 'water', 'sens' => SchematicItem::PRODUIT,
+        'kind' => SchematicItem::MESURE, 'rate' => 39700, 'rate_per_block' => 500,
+    ]);
+
+    $page = $this->get('/schematiques')->assertOk();
+
+    // Le plafond se voit, et se dit.
+    $page->assertSee('900');
+    $page->assertSee(__('schema.page.au-mieux'));
+
+    // La mesure aussi : ni muette, ni deguisee en plafond.
+    $page->assertSee('39 700');
+    $page->assertSee(__('schema.page.mesuree'), escape: false);
+
+    expect($ceiling->chiffresMontres()['silicon']['kind'])->toBe(SchematicItem::PLAFOND);
+    expect($measured->chiffresMontres()['water']['kind'])->toBe(SchematicItem::MESURE);
+});
+
+it('prefere le plafond quand une chose porte les deux', function () {
+    /* Une mesure vaut mieux qu un plafond, mais la liste a cote est classee sur les
+       plafonds : une tuile qui montrerait la mesure dirait un chiffre pendant que son
+       rang en dit un autre. La mesure se lit sur la fiche, ou les deux tiennent. */
+    $s = Schematic::factory()->for(User::factory())->create([
+        'visibility' => Schematic::PUBLIC, 'name' => 'Les deux', 'blocks' => 30,
+    ]);
+    $s->items()->delete();
+    foreach ([[SchematicItem::MESURE, 12.0], [SchematicItem::PLAFOND, 900.0]] as [$kind, $rate]) {
+        $s->items()->create([
+            'item' => 'silicon', 'sens' => SchematicItem::PRODUIT,
+            'kind' => $kind, 'rate' => $rate, 'rate_per_block' => $rate / 30,
+        ]);
+    }
+
+    $shown = $s->fresh()->chiffresMontres();
+
+    expect($shown)->toHaveCount(1);
+    expect($shown['silicon']['kind'])->toBe(SchematicItem::PLAFOND);
+    expect($shown['silicon']['rate'])->toBe(900.0);
+});
+
 /*
  * Colour markup in names.
  *

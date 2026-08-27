@@ -198,12 +198,18 @@
                  sans que son nom le dise : les objets y sont par minute, l'energie par
                  seconde. Ecrire « 60 energie/min » etait la faute exacte contre laquelle une
                  autre voie venait de me mettre en garde, et je l'ai faite quand meme. --}}
-            @foreach(array_slice($schematic->plafonds(), 0, 2, true) as $item => $itemRate)
-              {{ number_format($itemRate, 0, ',', ' ') }}
+            @foreach(array_slice($schematic->chiffresMontres(), 0, 2, true) as $item => $chiffre)
+              {{ number_format($chiffre['rate'], 0, ',', ' ') }}
               {{ $item === $powerKey
                   ? 'energie/s'
                   : \App\Support\Thing::name($item).'/min' }}
-              <span class="hint-line">{{ __('schema.page.au-mieux') }}</span> &middot;
+              {{-- Chacune des deux grandeurs se nomme. Laisser la mesure muette la ferait
+                   lire comme le plafond de la tuile d'a cote, sur une page qui classe sur
+                   les plafonds. --}}
+              <span class="hint-line">{{ $chiffre['kind'] === \App\Models\SchematicItem::PLAFOND
+                  ? __('schema.page.au-mieux')
+                  : __('schema.page.mesuree') }}</span>
+              &middot;
             @endforeach
           @endif
           {{ $schematic->blocks }} blocs &middot; {{ $schematic->credit() }}
