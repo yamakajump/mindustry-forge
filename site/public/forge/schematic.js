@@ -331,13 +331,36 @@ function writeConfig(writer, tile) {
   if (config.type === 5) {
     return writer.u8(5).u8(config.content).i16(config.id);
   }
+  /* Les liens d'un pylône : un octet de compte, puis une position empaquetée par lien.
+     `render.js` les dessine déjà en relisant ce type là, et l'éditeur ne savait pas les
+     écrire : un réseau électrique construit ici ressortait en pylônes qui ne se parlent
+     pas, ce qui à l'image ressemble à un réseau et n'alimente rien. */
+  if (config.type === 8) {
+    writer.u8(8).u8(Math.min(255, config.links.length));
+    for (const packed of config.links.slice(0, 255)) writer.i32(packed);
+    return writer;
+  }
   /* Un type qu'on ne sait pas écrire est écrit comme « rien », et pas au petit bonheur :
      inventer des octets décale tout ce qui suit et rend le fichier illisible par le jeu. */
   return writer.u8(0);
 }
 
-export async function write(tiles, { tags = {}, sizeOf = () => 1 } = {}) {
+export async function write(tiles, { tags = {}, sizeOf = () => 1,
+                                     priorityOf = () => 0 } = {}) {
   if (!tiles.length) throw new Error("une schematique vide ne se copie pas");
+
+  /* L'ordre d'écriture est l'ordre de construction, et le jeu s'en sert.
+     `Block.schematicPriority` va de +10 pour un mur de plastanium à -15 pour une tour de
+     surtension : ce qui protège se bâtit en premier, ce qui relie en dernier, une fois que
+     ce qu'il doit relier existe. Douze blocs du jeu en portent une, et écrire dans l'ordre
+     de pose fait poser un pylône avant les réacteurs qu'il devait alimenter.
+
+     Tri stable : à priorité égale, l'ordre d'origine est conservé, sinon deux exports de la
+     même schématique donneraient deux fichiers différents. */
+  tiles = tiles
+    .map((tile, at) => ({ tile, at }))
+    .sort((a, b) => (priorityOf(b.tile.block) - priorityOf(a.tile.block)) || (a.at - b.at))
+    .map((entry) => entry.tile);
 
   // The box, from what the blocks cover rather than from what they are stored at: a two
   // by two press stored at its centre reaches a tile further right and a tile up.

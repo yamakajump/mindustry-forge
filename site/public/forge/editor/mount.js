@@ -167,9 +167,12 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   /** La barre d'état dit les gestes du moment, pas tous les gestes possibles. */
   function say() {
     if (linking) {
-      hints.innerHTML = `<strong>${linking.block}</strong> armé ·
-        <kbd>clic</kbd> sur un pont vert pour le viser ·
-        <kbd>clic dessus</kbd> pour couper sa liaison · <kbd>échap</kbd> annuler`;
+      hints.innerHTML = isNode(linking)
+        ? `<strong>${linking.block}</strong> armé · <kbd>clic</kbd> sur un bloc vert pour
+           l'y relier, <kbd>reclic</kbd> pour couper · <kbd>échap</kbd> terminer`
+        : `<strong>${linking.block}</strong> armé ·
+           <kbd>clic</kbd> sur un pont vert pour le viser ·
+           <kbd>clic dessus</kbd> pour couper sa liaison · <kbd>échap</kbd> annuler`;
       return;
     }
     if (pasting) {
@@ -874,7 +877,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
        geste utilisateur, mais un refus qui ne vient jamais ne doit pas laisser le joueur
        devant une interface qui ne répond plus. */
     try {
-      const code = await toBase64(clipboard, { tags: { name: "selection" }, sizeOf });
+      const code = await toBase64(clipboard, {
+        tags: { name: "selection" },
+        sizeOf,
+        priorityOf: (name) => catalogue.blocks[name]?.schematic_priority || 0,
+      });
       await Promise.race([
         navigator.clipboard.writeText(code),
         new Promise((_, fail) => setTimeout(() => fail(new Error("trop long")), 1000)),
@@ -966,12 +973,36 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
      glissé était figée pour toujours.
      ---------------------------------------------------------------------------------- */
 
-  /** Les cases qu'un pont armé peut viser : même bloc, à portée, et pas lui-même. */
+  /** Un pylône, qui relie plusieurs voisins au lieu d'en viser un seul. */
+  const isNode = (tile) => {
+    const kind = catalogue.blocks[tile?.block]?.kind;
+    return kind === "PowerNode" || kind === "BeamNode";
+  };
+
+  /**
+   * Les cases qu'un bloc armé peut viser.
+   *
+   * Un pont vise un pont du même type ; un pylône vise **tout ce qui consomme ou produit du
+   * courant**, ce qui est la moitié du jeu. C'est la différence entre viser son jumeau et
+   * relier un réseau, et elle change ce qu'on propose au joueur.
+   */
   function targetsFor(tile) {
     const reach = reachOf(catalogue.blocks[tile.block]);
+    const near = (other) =>
+      Math.max(Math.abs(other.x - tile.x), Math.abs(other.y - tile.y)) <= reach;
+
+    if (isNode(tile)) {
+      return board.tiles.filter((other) => other !== tile && near(other)
+        && (catalogue.blocks[other.block]?.consumes_power
+            || catalogue.blocks[other.block]?.outputs_power_flag
+            || isNode(other)));
+    }
     return board.tiles.filter((other) => other !== tile && other.block === tile.block
-      && Math.max(Math.abs(other.x - tile.x), Math.abs(other.y - tile.y)) <= reach);
+      && near(other));
   }
+
+  /** Une position empaquetée comme le format la range : `(x << 16) | (y & 0xFFFF)`. */
+  const packed = (tile) => ((tile.x << 16) | (tile.y & 0xFFFF));
 
   /**
    * Régler ce qu'un bloc retient : l'objet d'un trieur, le liquide d'une source.
@@ -1028,7 +1059,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     const under = board.at(point.x, point.y);
     picker.hidden = true;
 
-    if (under && !linking && offerContent(under)) return;
+    if (under && !linking && !isNode(under) && !linksByConfig(catalogue.blocks[under.block])
+        && offerContent(under)) return;
 
     if (linking) {
       const armed = linking;
@@ -1044,9 +1076,29 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
         return;
       }
       if (targetsFor(armed).includes(under)) {
+        if (isNode(armed)) {
+          /* Un pylône garde une **liste** : cliquer un voisin l'ajoute, recliquer le même
+             le retire. Un réseau se construit voisin par voisin, pas en désignant un
+             unique élu comme le fait un pont. */
+          const links = [...(armed.config?.type === 8 ? armed.config.links : [])];
+          const at = links.indexOf(packed(under));
+          if (at >= 0) links.splice(at, 1);
+          else links.push(packed(under));
+          commit({
+            remove: [armed],
+            place: [{ ...armed, raw: undefined,
+                      config: links.length ? { type: 8, links } : null }],
+          });
+          /* On reste armé : relier un pylône à six machines demanderait six fois le geste
+             d'armement, ce qui est six fois trop. */
+          linking = board.at(armed.x, armed.y);
+          say();
+          paint();
+          return;
+        }
         commit({
           remove: [armed],
-          place: [{ ...armed, link: null,
+          place: [{ ...armed, link: null, raw: undefined,
                     config: { type: 7, dx: under.x - armed.x, dy: under.y - armed.y } }],
         });
       } else {
@@ -1057,7 +1109,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       return;
     }
 
-    if (under && linksByConfig(catalogue.blocks[under.block])) {
+    if (under && (linksByConfig(catalogue.blocks[under.block]) || isNode(under))) {
       linking = under;
       say();
       paint();

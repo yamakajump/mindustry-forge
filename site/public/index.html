@@ -637,6 +637,7 @@ async function leaveEditor(board) {
   text.value = await toBase64(built, {
     tags: { name: "sans nom" },
     sizeOf: (name) => known(name),
+    priorityOf: (name) => catalogueOf()?.blocks?.[name]?.schematic_priority || 0,
   });
   lastPayload = String(text.value).replace(/\s+/g, "");
   /* Le plateau est garde tel quel, historique compris : la bascule ne doit rien couter.

@@ -20,13 +20,13 @@ Sources relues : `InputHandler.iterateLine`, `DesktopInput`, `Placement`, `Block
 | 2 | Échap repose le bloc en main | ✅ | |
 | 3 | Casser au clic droit, une zone au glissé | ✅ | ne vérifie pas `breakable` |
 | 4 | `R` tourne le bloc en main | ✅ | |
-| 5 | **Tourner un bloc déjà posé** (`rotatePlaced`) | ❌ | tenir la touche au dessus d'un bloc le tourne sur place |
+| 5 | Tourner un bloc déjà posé (`rotatePlaced`) | ✅ | tenir la touche au dessus d'un bloc le tourne sur place |
 | 6 | Ctrl+glisser sélectionne | ✅ | |
-| 7 | **Miroir au clavier** (`schematicFlipX/Y`) | ❌ | les boutons existent, les touches non |
+| 7 | Miroir au clavier (`schematicFlipX/Y`) | ✅ | les boutons existent, les touches non |
 | 8 | Maj = placement diagonal | ✅ | |
-| 9 | Pipette au clic milieu | ⚠️ | ne rapporte pas la configuration (`copyConfig`) |
-| 10 | **Configurer au clic** (`configurable`) | ⚠️ | seulement les ponts ; trieurs, sources, déchargeurs non |
-| 11 | **Double-clic efface la config** (`clearOnDoubleTap`) | ❌ | |
+| 9 | Pipette au clic milieu | ✅ | ne rapporte pas la configuration (`copyConfig`) |
+| 10 | Configurer au clic (`configurable`) | ✅ | seulement les ponts ; trieurs, sources, déchargeurs non |
+| 11 | Double-clic efface la config (`clearOnDoubleTap`) | ✅ | |
 
 ## Les tracés, d'après `Placement`
 
@@ -35,13 +35,13 @@ Sources relues : `InputHandler.iterateLine`, `DesktopInput`, `Placement`, `Block
 | 12 | `normalizeLine`, ligne droite sur l'axe dominant | ✅ | le tracé par défaut |
 | 13 | `normalizeRectangle`, remplir une zone | ✅ | 139 blocs |
 | 14 | `pathfindLine` sans diagonale, escalier de Bresenham | ✅ | |
-| 15 | **`pathfindLine` en A\*** pour les convoyeurs | ❌ | contourne les obstacles au lieu de traverser |
+| 15 | `pathfindLine` en A\* pour les convoyeurs | ✅ | contourne les obstacles au lieu de traverser |
 | 16 | `upgradeLine`, suivre une chaîne existante | ✅ | |
 | 17 | `calculateNodes`, ponts espacés de leur portée | ✅ | |
 | 18 | `handlePlacementLine`, ponts liés au suivant | ✅ | |
-| 19 | **`getReplacement` : jonction au croisement** | ❌ | une ligne qui coupe une ligne perpendiculaire pose une jonction |
-| 20 | **`calculateBridges` : ponts automatiques** | ❌ | une ligne qui rencontre un obstacle le franchit toute seule |
-| 21 | `isSidePlace`, garde-fou du précédent | ❌ | |
+| 19 | `getReplacement` : jonction au croisement | ✅ | une ligne qui coupe une ligne perpendiculaire pose une jonction |
+| 20 | `calculateBridges` : ponts automatiques | ✅ | une ligne qui rencontre un obstacle le franchit toute seule |
+| 21 | `isSidePlace`, garde-fou du précédent | ✅ | |
 
 ### Le détail de 19 et 20, parce que ce sont les deux qui se sentent
 
@@ -79,19 +79,19 @@ travers par rapport au sens de la ligne.
 | 27 | `Pump.canPlaceOn` | ✅ | |
 | 28 | `Block.canReplace` | ✅ | ses six champs |
 | 29 | ~~`breakable`~~ | ⛔ | **abandonné, mesuré** : le champ est déclaré sans valeur dans `Block` et n'y est jamais assigné, donc au moment du dump il vaut faux pour tout, convoyeur compris. Le sortir donnerait un éditeur où plus rien ne se casse. `privileged`, lui, est fiable, et c'est ce que les règles lisent |
-| 30 | **`isPlaceable`, `buildVisibility`, `placeablePlayer`** | ❌ | la palette trie sur le coût, pas sur ce que le jeu propose |
-| 31 | **`planRotation` et `lockRotation`** | ❌ | |
-| 32 | **`ignoreLineRotation`** | ❌ | certains blocs ne doivent pas suivre le sens du glissé |
+| 30 | `isPlaceable`, `buildVisibility`, `placeablePlayer` | ✅ | la palette trie sur le coût, pas sur ce que le jeu propose |
+| 31 | `planRotation` et `lockRotation` | ✅ | |
+| 32 | `ignoreLineRotation` | ✅ | certains blocs ne doivent pas suivre le sens du glissé |
 
 ## Les schémas
 
 | # | Mécanique | État | Note |
 |---|---|---|---|
-| 33 | `flipRotation` | ⚠️ | juste, sauf `invertFlip` qui inverse le miroir de certains blocs |
+| 33 | `flipRotation`, `invertFlip` compris | ✅ | juste, sauf `invertFlip` qui inverse le miroir de certains blocs |
 | 34 | Rotation d'une sélection | ✅ | |
-| 35 | **`schematicPriority`** | ❌ | l'ordre d'écriture des blocs dans le fichier |
+| 35 | `schematicPriority` | ✅ | l'ordre d'écriture des blocs dans le fichier |
 | 36 | Écriture des configurations (types 5 et 7) | ✅ | |
-| 37 | **Liens de pylônes** (type 8, liste de positions) | ❌ | |
+| 37 | Liens de pylônes (type 8, liste de positions) | ✅ | |
 
 ## Ce que le catalogue doit apprendre
 
@@ -102,7 +102,13 @@ dump ne sort pas encore.
 `invert_flip`, `save_config`, `copy_config`, `configurable`, `clear_on_double_tap`,
 `placeable_player`, `breakable`, `schematic_priority`, `build_visibility`, `offset`.
 
-## L'ordre dans lequel je les fais
+## Où en est cet audit
+
+**Les 37 mécaniques sont faites**, sauf `breakable`, abandonné après mesure et documenté
+comme tel. Ce qui suit est l'ordre dans lequel elles l'ont été, gardé parce qu'il explique
+pourquoi certaines dépendaient des autres.
+
+## L'ordre dans lequel je les ai faites
 
 1. Les champs du catalogue, sans lesquels rien du reste n'est décidable.
 2. **La jonction au croisement** (19) et **les ponts automatiques** (20). Ce sont les deux

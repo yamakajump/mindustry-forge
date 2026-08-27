@@ -114,3 +114,33 @@ test("une configuration creee par l editeur survit a l ecriture", async () => {
   assert.deepEqual({ type: trieur.config.type, content: trieur.config.content, id: trieur.config.id },
                    { type: 5, content: 0, id: 1 });
 });
+
+test("l ordre d ecriture est l ordre de construction du jeu", async () => {
+  /* `Block.schematicPriority` va de +10 pour un mur de plastanium a -15 pour une tour de
+     surtension : ce qui protege se batit en premier, ce qui relie en dernier, une fois que
+     ce qu il doit relier existe. Ecrire dans l ordre de pose fait poser un pylone avant les
+     reacteurs qu il devait alimenter. */
+  const priorites = { "power-node": -10, "plastanium-wall": 10, conveyor: 0 };
+  const tiles = [
+    { x: 0, y: 0, block: "power-node", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+    { x: 4, y: 0, block: "plastanium-wall", rotation: 0 },
+  ];
+  const relu = await read(await write(tiles, {
+    sizeOf: () => 1,
+    priorityOf: (name) => priorites[name] ?? 0,
+  }));
+  assert.deepEqual(relu.tiles.map((t) => t.block),
+                   ["plastanium-wall", "conveyor", "power-node"]);
+});
+
+test("a priorite egale, l ordre d origine tient", async () => {
+  // Sinon deux exports de la meme schematique donneraient deux fichiers differents.
+  const tiles = [
+    { x: 0, y: 0, block: "conveyor", rotation: 0 },
+    { x: 1, y: 0, block: "router", rotation: 0 },
+    { x: 2, y: 0, block: "conveyor", rotation: 0 },
+  ];
+  const relu = await read(await write(tiles, { sizeOf: () => 1 }));
+  assert.deepEqual(relu.tiles.map((t) => t.x), [0, 1, 2]);
+});

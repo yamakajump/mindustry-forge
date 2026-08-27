@@ -255,3 +255,16 @@ test("une gaine a pont ne configure rien, elle regarde devant elle", () => {
   const ponts = line(at(0, 0), at(8, 0), "bridge-conveyor");
   assert.deepEqual(ponts[0].config, { type: 7, dx: 4, dy: 0 });
 });
+
+test("en mode diagonal, une bande contourne ce qui est deja la", () => {
+  /* `pathfindLine` du jeu : un A* pour les blocs a `conveyorPlacement`. Une usine au milieu
+     du passage se contourne au lieu de se faire ecraser, et c est ce qui permet de tirer une
+     bande d un bout a l autre d une base sans la demonter. */
+  const plateau = createBoard({ sizeOf, tiles: [
+    { x: 2, y: 0, block: "graphite-press", rotation: 0 },
+  ] });
+  const posee = line(at(0, 0), at(6, 0), "conveyor", 0, { diagonal: true, board: plateau });
+  const dessus = posee.filter((p) => p.x >= 2 && p.x <= 3 && p.y >= 0 && p.y <= 1);
+  assert.equal(dessus.length, 0, "la ligne passe au travers de la presse");
+  assert.deepEqual([posee[posee.length - 1].x, posee[posee.length - 1].y], [6, 0]);
+});

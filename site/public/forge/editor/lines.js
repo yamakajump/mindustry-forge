@@ -26,6 +26,7 @@
 
 import { DIRECTIONS } from "../engine/core.js";
 import { blockerOf, withBridges, withJunctions } from "./smart.js";
+import { astar } from "./astar.js";
 
 /** La rotation du jeu qui va de `a` vers `b`, ou `null` si les deux cases se confondent. */
 function facing(a, b) {
@@ -216,7 +217,12 @@ export function lineOf(from, to, block, catalogue, rotation = 0,
   let points;
   if (wants && known.allow_diagonal !== false) {
     const chain = board ? upgradeLine(from, to, board) : null;
-    points = chain || bresenham(from, to);
+    /* `pathfindLine` du jeu : un A* pour les blocs à `conveyorPlacement`, un escalier de
+       Bresenham pour les autres. L'A* contourne ce qui est déjà là, ce qui permet de tirer
+       une bande d'un bout à l'autre d'une base sans la démonter. */
+    points = chain
+      || (known.conveyor_placement && board ? pathfind(from, to, block, catalogue, board) : null)
+      || bresenham(from, to);
   } else if (known.allow_rectangle_placement) {
     points = normalizeRectangle(from, to, size);
   } else {
@@ -292,6 +298,27 @@ export function lineOf(from, to, block, catalogue, rotation = 0,
     }
   }
   return plans;
+}
+
+/**
+ * Le chemin qui contourne, borné à ce qui est raisonnable.
+ *
+ * La borne n'est pas dans le jeu et elle est indispensable ici : sa carte a des bords, notre
+ * terrain n'en a pas, et une recherche sans borne part explorer le vide à chaque mouvement
+ * de souris. Vingt cases autour de ce que le glissé demande suffisent largement à
+ * contourner une usine, et ne laissent pas le calcul divaguer.
+ */
+function pathfind(from, to, block, catalogue, board) {
+  const margin = 20;
+  return astar(from, to, {
+    blocked: blockerOf(board, catalogue, block),
+    bounds: {
+      left: Math.min(from.x, to.x) - margin,
+      right: Math.max(from.x, to.x) + margin,
+      bottom: Math.min(from.y, to.y) - margin,
+      top: Math.max(from.y, to.y) + margin,
+    },
+  });
 }
 
 /** Le cap du dernier bloc : celui du segment qui vient de l'amener là. */
