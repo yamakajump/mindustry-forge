@@ -887,3 +887,26 @@ select {
 @media (max-width: 520px) {
   .pages .page { min-width: 34px; min-height: 34px; padding: 0 7px; font-size: 12px; }
 }
+
+/*
+ * Les objets les plus produits, en pastilles cliquables au-dessus du filtre.
+ *
+ * Un `<select>` natif ne porte pas d'image dans ses `<option>` : c'est une limite du
+ * controle. Le remplacer par une liste dessinee aurait coute le clavier, la recherche par
+ * frappe, Echap, l'annonce au lecteur d'ecran et le selecteur natif du telephone, sur le
+ * controle de recherche principal du site. Ces pastilles donnent l'image sans rien retirer,
+ * et ce sont des liens : accessibles gratuitement, et chacune a son adresse.
+ */
+.vitrine-pastilles { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+
+.vitrine-pastille {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 38px; padding: 0 12px;
+  border: 2px solid var(--edge); border-radius: 6px;
+  background: var(--panel); color: var(--ink); font-size: 13.5px;
+  touch-action: manipulation;
+}
+.vitrine-pastille:hover { border-color: var(--accent); text-decoration: none; }
+.vitrine-pastille.on {
+  border-color: var(--accent); background: var(--raised); color: var(--accent);
+}

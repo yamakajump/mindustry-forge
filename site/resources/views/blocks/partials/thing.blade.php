@@ -10,12 +10,8 @@
 
      `alt` vide parce que le nom est ecrit juste a cote : un lecteur d'ecran qui annonce
      « sable sable » est pire qu'un qui ne dit rien. --}}
-@php
-  $famille = isset(\App\Services\BlockCatalogue::items()[$thing]) ? 'objet'
-    : (isset(\App\Services\BlockCatalogue::liquids()[$thing]) ? 'liquide' : 'bloc');
-@endphp
 <span class="bloc-thing">
-  <img class="icone" src="/icone/{{ $famille }}/{{ $thing }}.png?t=32"
+  <img class="icone" src="/icone/{{ \App\Support\Thing::family($thing) }}/{{ $thing }}.png?t=32"
        width="18" height="18" loading="lazy" decoding="async" alt="">
-  {{ $label ?? $thing }}
+  {{ $label ?? \App\Support\Thing::name($thing) }}
 </span>
