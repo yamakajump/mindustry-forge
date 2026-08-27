@@ -755,3 +755,30 @@ select {
   border-radius: 50%; font-size: 22px;
 }
 @media (hover: hover) and (pointer: fine) { .editor-turn { display: none !important; } }
+
+/* Pagination -----------------------------------------------------------------------
+   Words rather than arrows. Laravel's own view is written for Tailwind, which this site
+   does not have, so its chevron lost the `w-5 h-5` meant to constrain it and drew at the
+   width of the page. Sized here, in the one stylesheet the site actually loads. */
+
+.pages {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  margin: 22px 0 6px;
+}
+.pages .page {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 38px; min-height: 38px; padding: 0 10px;
+  background: var(--panel); border: 2px solid var(--edge); border-radius: 6px;
+  color: var(--ink); font: 13px/1 var(--mono); text-decoration: none;
+  transition: border-color .12s, background .12s;
+}
+.pages a.page:hover { border-color: var(--accent); }
+.pages .page.here { background: var(--accent-pressed); border-color: var(--accent); color: var(--accent); }
+.pages .page.off { color: var(--dim); opacity: .55; }
+.pages .page.gap { border-color: transparent; background: none; min-width: 0; padding: 0 2px; color: var(--dim); }
+
+.pages-count { margin: 0 0 24px; color: var(--dim); font-size: 12px; }
+
+@media (max-width: 520px) {
+  .pages .page { min-width: 34px; min-height: 34px; padding: 0 7px; font-size: 12px; }
+}
