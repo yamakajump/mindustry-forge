@@ -964,3 +964,104 @@ select {
 @media (max-width: 520px) {
   .plan-cadre { height: 170px; }
 }
+/* Le panneau de contraintes de la vitrine.
+
+   Replie mais jamais cache : il s'ouvre de lui-meme quand une contrainte est active, sinon
+   un lecteur arrivant par un lien partage verrait une liste filtree sans voir par quoi. */
+.contraintes { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 4px; }
+.contraintes summary { cursor: pointer; color: var(--dim); font-size: 13px; padding: 6px 0; }
+.contraintes summary:hover { color: var(--ink); }
+.contraintes .row { margin-top: 8px; }
+.contraintes .mini { width: 58px; text-align: center; }
+.contraintes .mini2 { width: 82px; text-align: center; }
+.contraintes .mini-x { color: var(--dim); margin: 0 -4px; }
+.contraintes .coche { display: flex; align-items: center; gap: 6px; color: var(--dim); font-size: 13px; }
+.contraintes .coche input { width: auto; min-height: 0; }
+
+/* Le choisisseur de produit : une seule commande, et c'est elle qui porte les images.
+
+   Un `<details>` de liens plutot qu'une liste dessinee. Le clavier, Echap et l'annonce au
+   lecteur d'ecran viennent du navigateur ; chaque choix garde une adresse partageable. */
+.choisisseur { margin: 0 0 12px; position: relative; }
+.choisisseur > summary {
+  list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 9px;
+  background: #191c22; border: 1px solid var(--accent); border-radius: 8px; padding: 6px 12px;
+}
+.choisisseur > summary::-webkit-details-marker { display: none; }
+.choisisseur > summary::marker { content: ""; }
+.choisisseur > summary:hover { background: #1e222a; }
+.ch-quoi { color: var(--dim); font-size: 12.5px; }
+.choisisseur > summary b { color: var(--accent); font-size: 16px; font-weight: 500; }
+.choisisseur > summary .icone { width: 22px; height: 22px; image-rendering: pixelated; }
+.ch-changer { color: var(--dim); font-size: 11.5px; border-left: 1px solid var(--line); padding-left: 9px; }
+.ch-grille {
+  position: absolute; z-index: 40; top: calc(100% + 5px); left: 0; width: min(460px, 94vw);
+  background: #14161b; border: 1px solid var(--line); border-radius: 10px; padding: 8px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; box-shadow: 0 14px 34px #0009;
+}
+.ch-case {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 4px;
+  border-radius: 7px; border: 1px solid transparent; font-size: 11.5px; color: var(--dim);
+  text-align: center; line-height: 1.3;
+}
+.ch-case:hover { border-color: var(--accent); text-decoration: none; color: var(--ink); }
+.ch-case.on { border-color: var(--accent); background: #1e222a; color: var(--ink); }
+.ch-case .icone { width: 24px; height: 24px; image-rendering: pixelated; }
+.ch-eclair { font-size: 18px; color: var(--warn); line-height: 24px; }
+.ch-tout { grid-column: span 4; flex-direction: row; justify-content: center; }
+
+/* Le classement en onglets : les six facons de classer se voient sans un clic, la ou un
+   deroulant demandait de l'ouvrir pour savoir ce qu'il offrait. */
+.tris { display: flex; flex-wrap: wrap; gap: 2px; margin: 0 0 14px; border-bottom: 1px solid var(--line); }
+.tris .tri { padding: 8px 12px; font-size: 13px; color: var(--dim); border-bottom: 2px solid transparent; }
+.tris .tri:hover { text-decoration: none; color: var(--ink); }
+.tris .tri.on { color: var(--accent); border-bottom-color: var(--accent); }
+/* Visible mais marque : un tri qui compare des productions n'a rien a comparer tant
+   qu'aucun objet n'est choisi. Le cacher ferait disparaitre la raison de son absence. */
+.tris .tri.gris { opacity: .45; }
+
+/* Lequel gagne sur quoi : quatre questions nommees, avant la grille. */
+.verdicts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 1px;
+  background: var(--line); border: 1px solid var(--line); border-radius: 8px;
+  overflow: hidden; margin: 0 0 16px;
+}
+.verdict { background: #14161b; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px; }
+.v-question { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+.v-nom { font-size: 14px; color: var(--ink); }
+.v-chiffre { color: var(--accent); font-size: 12.5px; }
+
+/* Les remarques d'une tuile : une conclusion, et le chiffre qui la fonde juste dessous. */
+.remarques { list-style: none; margin: 9px 0 0; padding: 8px 0 0; border-top: 1px solid var(--line); }
+.remarques li {
+  display: flex; flex-direction: column; gap: 1px; padding: 3px 0 3px 8px;
+  border-left: 2px solid var(--line); margin-bottom: 3px;
+}
+.remarques b { font-size: 11.5px; font-weight: 500; color: var(--ink); }
+.remarques span { font-size: 10.5px; color: var(--dim); line-height: 1.45; }
+.remarques .r-fort { border-left-color: var(--accent); }
+.remarques .r-petit, .remarques .r-tot, .remarques .r-autonome { border-left-color: var(--good); }
+.remarques .r-tard { border-left-color: var(--warn); }
+
+/* Les puces : ce que la recherche porte, et de quoi le retirer d'un clic. */
+.puces { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 14px; }
+.puces-t { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+.puce {
+  display: inline-flex; align-items: center; gap: 6px; background: #1e222a;
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px;
+  font-size: 12.5px; color: var(--ink);
+}
+.puce:hover { border-color: var(--bad); text-decoration: none; }
+.puce b { color: var(--dim); font-weight: 400; }
+.puce.vide { background: transparent; border-style: dashed; color: var(--dim); }
+
+/* L'encombrement dessine, a l'echelle commune de la page. */
+.silh {
+  display: inline-grid; place-items: center; width: 28px; height: 28px;
+  vertical-align: middle; background: #101216; border: 1px solid var(--line);
+  border-radius: 4px; margin-right: 2px;
+}
+.silh-r { display: block; background: #2e3a4d; border: 1px solid var(--accent); min-width: 1px; min-height: 1px; }
+/* Le dessin et son chiffre ne se separent jamais : une coupure de ligne entre les deux
+   collerait le rectangle au nombre de la ligne precedente. */
+.taille { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }

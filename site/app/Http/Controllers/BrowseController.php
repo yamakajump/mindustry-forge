@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Schematic;
 use App\Models\SchematicItem;
 use App\Services\BlockCatalogue;
+use App\Support\Remarks;
+use App\Support\Thing;
+use App\Support\Vitrine;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -37,15 +39,22 @@ class BrowseController extends Controller
 {
     /** How a listing can be ordered, and what each means. */
     private const ORDERS = [
-        'best' => 'Les mieux faits',
+        'best' => 'Les mieux faits (par bloc posé)',
+        'dense' => 'Les plus denses (par tuile de sol)',
         'output' => 'Ceux qui produisent le plus',
         'small' => 'Les plus compacts',
-        'new' => 'Les plus recents',
+        'new' => 'Les plus récents',
         'seen' => 'Les plus vus',
     ];
 
     /** The two that compare schematics on their output, so the two that need an item. */
-    private const NEEDS_AN_ITEM = ['best', 'output'];
+    private const NEEDS_AN_ITEM = ['best', 'dense', 'output'];
+
+    /** The two worlds, which do not share a build menu. */
+    private const PLANETS = ['serpulo', 'erekir'];
+
+    /** The widest a schematic can be, matching the column the analysis writes into. */
+    private const MAX_SIDE = 4096;
 
     /** What an item name is allowed to look like, so a filter cannot be a paragraph. */
     private const ITEM = '/^[a-z][a-z-]{0,39}$/';
@@ -88,6 +97,33 @@ class BrowseController extends Controller
             $holds = '';
         }
 
+        /* The constraints, which are the half of this page no other Mindustry site has.
+           "A hundred graphite a minute under thirty blocks" is the sentence this repository
+           opens with, and until now not one of its three clauses could be typed.
+
+           Every one is bounded rather than trusted: these arrive in a URL a stranger writes,
+           and a width of nine million would be a full scan answering nothing. What does not
+           parse is dropped rather than corrected, and the page then behaves as if it had not
+           been asked, which is the only honest thing to do with a filter nobody can read. */
+        $fitsWide = $this->positive($request->query('large'), self::MAX_SIDE);
+        $fitsTall = $this->positive($request->query('haut'), self::MAX_SIDE);
+        $atLeast = $this->positive($request->query('min'), 1_000_000_000);
+        $atMostBlocks = $this->positive($request->query('blocs'), 65535);
+
+        // Self sufficient in electricity. Both sides of this comparison come from
+        // `analysis['potential']`, so it is a ceiling against a ceiling: what the layout
+        // would make flat out against what it would then draw. Comparing a ceiling to a
+        // measurement is the fault this repository keeps paying for, and it is not made here.
+        $selfPowered = $request->query('autonome') === 'oui';
+
+        // Only what the bench re-measured on a real server. A hundred and seventeen rows
+        // carry a measurement against six thousand seven hundred carrying a ceiling, so this
+        // filter empties most of the catalogue. That is the point of it, and the page says so.
+        $measured = $request->query('verifie') === 'oui';
+
+        $planet = in_array($request->query('planete'), self::PLANETS, true)
+            ? $request->query('planete') : '';
+
         // `items` charge en une fois : chaque tuile lit son plafond, et sans ca une page de
         // vingt-quatre ferait vingt-quatre requetes de plus.
         $query = Schematic::query()->with(['user', 'items'])->listed();
@@ -97,6 +133,36 @@ class BrowseController extends Controller
                 ->from('schematic_blocks')
                 ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
                 ->where('schematic_blocks.block', $holds));
+        }
+
+        /* The footprint, and it is strict on purpose: no rotation, no swapping the two
+           sides. Checked in the game rather than assumed from a wiki - `Binding` exposes
+           `schematicFlipX` and `schematicFlipY` and no rotate at all, and
+           `Schematics.rotate()` is called only by `BaseBuilderAI` and `BaseGenerator`, the
+           enemy base builder. A mirror does not change a bounding box, so a plan of 20 by 15
+           never fits a gap of 15 by 20, and offering it would be an exact answer to a
+           question the player did not ask. */
+        if ($fitsWide > 0) {
+            $query->where('schematics.width', '<=', $fitsWide);
+        }
+        if ($fitsTall > 0) {
+            $query->where('schematics.height', '<=', $fitsTall);
+        }
+
+        if ($atMostBlocks > 0) {
+            $query->where('schematics.blocks', '<=', $atMostBlocks);
+        }
+
+        if ($selfPowered) {
+            $query->whereColumn('schematics.power_made', '>=', 'schematics.power_used');
+        }
+
+        if ($measured) {
+            $query->where('schematics.verified', true);
+        }
+
+        if ($planet !== '') {
+            $query->onPlanet($planet);
         }
 
         if ($makes !== '') {
@@ -127,8 +193,16 @@ class BrowseController extends Controller
                  * chaque tuile le repete a cote de son chiffre.
                  */
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
-                ->where('schematic_items.kind', SchematicItem::PLAFOND)
+                ->where('schematic_items.kind', Vitrine::NATURE)
                 ->select('schematics.*');
+
+            /* "At least a hundred a minute", which only means anything once a thing is
+               chosen. Applied here rather than beside the other constraints for that reason:
+               out here `schematic_items` is not joined, and a floor on a rate with nothing to
+               rate would silently filter on whatever row the database happened to reach. */
+            if ($atLeast > 0) {
+                $query->where('schematic_items.rate', '>=', $atLeast);
+            }
         }
 
         /* Counted on the list the reader is looking at, filters and all, and not on the
@@ -161,6 +235,10 @@ class BrowseController extends Controller
             // How much it makes for the room it takes, which is what "well made" means and
             // what a date-sorted list can never surface.
             'best' => $query->orderByDesc('schematic_items.rate_per_block'),
+            // What it makes for the ground it stands on, which is the question a player
+            // asks in front of a gap in their base. Not the same question as `best`: a
+            // layout spread wide with few blocks wins one and loses the other.
+            'dense' => $query->orderByDesc('schematic_items.rate_per_tile'),
             'output' => $query->orderByDesc('schematic_items.rate'),
             'small' => $query->orderBy('blocks'),
             'seen' => $query->orderByDesc('views'),
@@ -179,8 +257,81 @@ class BrowseController extends Controller
          */
         $query->orderByDesc('schematics.id');
 
+        $page = $query->paginate(24)->withQueryString();
+
+        /* Ce que la page dit, en plus de ce qu'elle classe.
+         *
+         * Calcule ici plutot que dans la vue, et une seule fois : chaque remarque compare une
+         * schematique aux autres de la meme page, donc la laisser a la vue voudrait dire
+         * passer la page entiere a chaque tuile.
+         *
+         * Aucune requete de plus : les plafonds sont deja charges par `with('items')`, et le
+         * cout de construction se lit dans `analysis`, deja sur la ligne. Le recalculer depuis
+         * `schematic_blocks` fois le catalogue serait la meme arithmetique ecrite une seconde
+         * fois, sur le chiffre qu'un joueur verifie contre son propre noyau avant de coller.
+         */
+        $shown = $page->getCollection();
+        $unit = $makes === '' ? '' : ($makes === SchematicItem::POWER
+            ? __('schema.unite.energie') : Thing::name($makes));
+
+        // L'unite suit la chose et non la colonne : `rate` porte des objets par minute et de
+        // l'energie par seconde sous le meme nom. Ecrire « 60 energie/min » serait juste
+        // arithmetiquement et faux partout ailleurs sur ce site.
+        $unitShort = $makes === '' ? '' : ($makes === SchematicItem::POWER
+            ? __('vitrine.note.energie-seconde')
+            : Thing::name($makes).__('schema.unite.par-minute'));
+
+        /* Ce que la recherche porte en ce moment, une puce par contrainte, chacune avec le
+           lien qui la retire.
+
+           Une page arrivee par un lien partage applique des filtres que son lecteur n'a pas
+           poses, et le panneau qui les contient est replie. Sans ces puces, la seule façon de
+           savoir pourquoi la liste est courte est d'ouvrir le panneau et de lire six champs.
+
+           Les nombres sont assembles ici et jamais passes a une cle de traduction : une cle
+           manquante rendrait la cle sans substituer, et « au moins 1 000 » deviendrait « au
+           moins », ce qui est la seule moitie de la phrase qui ne veut rien dire. */
+        $chips = [];
+        if ($fitsWide > 0 || $fitsTall > 0) {
+            $chips[] = [
+                'label' => __('vitrine.contraintes.tient-dans').' '
+                    .($fitsWide > 0 ? self::plain($fitsWide) : '?').' × '
+                    .($fitsTall > 0 ? self::plain($fitsTall) : '?'),
+                'clear' => ['large' => null, 'haut' => null],
+            ];
+        }
+        if ($atLeast > 0 && $makes !== '') {
+            $chips[] = [
+                'label' => __('vitrine.contraintes.au-moins').' '.self::plain($atLeast).' '.$unitShort,
+                'clear' => ['min' => null],
+            ];
+        }
+        if ($atMostBlocks > 0) {
+            $chips[] = [
+                'label' => __('vitrine.contraintes.au-plus').' '.self::plain($atMostBlocks).' '
+                    .__('vitrine.contraintes.unite.blocs'),
+                'clear' => ['blocs' => null],
+            ];
+        }
+        if ($planet !== '') {
+            $chips[] = ['label' => ucfirst($planet), 'clear' => ['planete' => null]];
+        }
+        if ($selfPowered) {
+            $chips[] = ['label' => __('vitrine.contraintes.autonome'), 'clear' => ['autonome' => null]];
+        }
+        if ($measured) {
+            $chips[] = ['label' => __('vitrine.contraintes.verifie'), 'clear' => ['verifie' => null]];
+        }
+        if ($holds !== '') {
+            $chips[] = ['label' => Thing::name($holds), 'clear' => ['bloc' => null]];
+        }
+
         return view('browse', [
-            'schematics' => $query->paginate(24)->withQueryString(),
+            'schematics' => $page,
+            'winners' => Remarks::winners($shown, $makes, $unit),
+            'notes' => $shown->mapWithKeys(
+                fn (Schematic $s) => [$s->id => Remarks::about($s, $shown, $makes, $unit)]
+            ),
             'makes' => $makes,
             'order' => $order,
             'creative' => $creative,
@@ -190,59 +341,50 @@ class BrowseController extends Controller
             'orders' => self::ORDERS,
             // Offered rather than typed: the analysis already knows what exists, so a
             // player picks from what is actually there instead of guessing a spelling.
-            'items' => $this->itemsOnOffer(),
+            'items' => Vitrine::itemsOnOffer(),
             'holds' => $holds,
             // Offered from what is actually in the catalogue, same reason as the items: a
             // player picks a name that exists instead of guessing how it is spelled.
-            'blocks' => $this->blocksOnOffer(),
+            'blocks' => Vitrine::blocksOnOffer(),
             'powerKey' => SchematicItem::POWER,
+            // Rendered back into the form so a search survives being shared, bookmarked or
+            // paged through. A field the page forgets is a filter the reader cannot see it
+            // is still applying.
+            'fitsWide' => $fitsWide,
+            'fitsTall' => $fitsTall,
+            'atLeast' => $atLeast,
+            'atMostBlocks' => $atMostBlocks,
+            'selfPowered' => $selfPowered,
+            'measured' => $measured,
+            'planet' => $planet,
+            'planets' => self::PLANETS,
+            'chips' => $chips,
         ]);
     }
 
     /**
-     * Everything any public schematic actually produces, commonest first.
+     * A number a stranger typed, or zero meaning "not asked".
      *
-     * A grouped count over an indexed table. It used to mean reading the `produces` blob of
-     * every public schematic and counting keys in PHP, which measured 141 ms over fifteen
-     * thousand rows, paid on every single view of the listing, to fill a dropdown of
-     * twenty. That was briefly patched with a ten minute cache; indexing what a schematic
-     * makes removed the reason for the cache along with the cost.
+     * Zero rather than null for absent, because every caller here treats "not asked" and
+     * "asked for nothing" the same way, and a null would make five call sites carry a check
+     * that means nothing. Anything that is not a positive number inside the bound is dropped
+     * rather than clamped: clamping nine million to four thousand would answer a question
+     * nobody asked, quietly, which is this repository's signature defect.
      */
-    /**
-     * Every block a public schematic is built from, commonest first.
-     *
-     * Capped at two hundred: the list goes into a `datalist` on every render of the page,
-     * and the whole catalogue would be four hundred names of markup nobody scrolls past
-     * the first dozen of. The cap is a display decision and it is stated rather than left
-     * to be discovered - a search for a block outside it still works, it simply is not
-     * suggested.
-     */
-    private function blocksOnOffer(): array
+    private function positive(mixed $raw, int $ceiling): float
     {
-        return DB::table('schematic_blocks')
-            ->join('schematics', 'schematics.id', '=', 'schematic_blocks.schematic_id')
-            ->where('schematics.visibility', Schematic::PUBLIC)
-            ->groupBy('schematic_blocks.block')
-            ->orderByRaw('count(*) desc')
-            ->limit(200)
-            ->pluck('schematic_blocks.block')
-            ->all();
+        if (! is_string($raw) && ! is_numeric($raw)) {
+            return 0;
+        }
+
+        $value = is_numeric($raw) ? (float) $raw : 0;
+
+        return $value > 0 && $value <= $ceiling ? $value : 0;
     }
 
-    private function itemsOnOffer(): array
+    /** A bound as the reader typed it: 16 and not 16,00, 0,5 kept as 0,5. */
+    private static function plain(float $value): string
     {
-        return SchematicItem::query()
-            ->join('schematics', 'schematics.id', '=', 'schematic_items.schematic_id')
-            ->where('schematics.visibility', Schematic::PUBLIC)
-            ->where('schematic_items.sens', SchematicItem::PRODUIT)
-            // La meme nature que le classement, sans quoi la liste proposerait du graphite
-            // et la page n'afficherait rien : un filtre qui offre ce qu'il ne sait pas
-            // rendre est pire qu'un filtre qui ne l'offre pas.
-            ->where('schematic_items.kind', SchematicItem::PLAFOND)
-            ->groupBy('schematic_items.item')
-            ->orderByRaw('count(*) desc')
-            ->limit(20)
-            ->pluck('schematic_items.item')
-            ->all();
+        return rtrim(rtrim(number_format($value, 2, ',', ' '), '0'), ',');
     }
 }
