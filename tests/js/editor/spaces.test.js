@@ -1,8 +1,8 @@
 /**
- * Le module des espaces de travail, cote navigateur.
+ * The workspaces module, browser side.
  *
- * Aucun vrai reseau ici : `fetch` est remplace par un double qui garde la derniere
- * requete, pour verifier ce que ce module envoie et non ce qu un serveur repond.
+ * No real network here: `fetch` is replaced with a double that keeps the last request, to
+ * check what this module sends rather than what a server answers.
  */
 
 import test from "node:test";
@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import { importLocalDraft } from "../../../site/public/forge/editor/spaces.js";
 import { keepDraft } from "../../../site/public/forge/editor/draft.js";
 
-/** Un `localStorage` de comptoir, comme celui de `draft.test.js`. */
+/** A mock `localStorage`, like the one in `draft.test.js`. */
 function comptoir() {
   const box = new Map();
   globalThis.localStorage = {
@@ -37,7 +37,7 @@ function fetchDouble(response = { slug: "abc1234567", name: "importe" }) {
 
 const cadre = { id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 8 };
 
-test("importer le brouillon local emporte aussi ses cadres, pas seulement les blocs", async () => {
+test("importing the local draft also carries its frames, not just the blocks", async () => {
   comptoir();
   const calls = fetchDouble();
   keepDraft({ tiles: [{ x: 0, y: 0, block: "conveyor", rotation: 0 }], ground: {}, frames: [cadre] }, Date.now());
@@ -48,7 +48,7 @@ test("importer le brouillon local emporte aussi ses cadres, pas seulement les bl
   assert.deepEqual(calls[0].body.board.frames, [cadre]);
 });
 
-test("importer un brouillon sans cadre envoie une liste de cadres vide, pas absente", async () => {
+test("importing a draft with no frame sends an empty frame list, not a missing one", async () => {
   comptoir();
   const calls = fetchDouble();
   keepDraft({ tiles: [{ x: 0, y: 0, block: "conveyor", rotation: 0 }], ground: {} }, Date.now());
@@ -58,7 +58,7 @@ test("importer un brouillon sans cadre envoie une liste de cadres vide, pas abse
   assert.deepEqual(calls[0].body.board.frames, []);
 });
 
-test("importer sans brouillon local refuse plutot que d envoyer un plateau vide", async () => {
+test("importing with no local draft refuses instead of sending an empty board", async () => {
   comptoir();
   fetchDouble();
   await assert.rejects(() => importLocalDraft("mon plan"));

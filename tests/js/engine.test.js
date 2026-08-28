@@ -20,7 +20,7 @@ import { loadCatalogue, paste } from "./helpers.js";
 
 const known = loadCatalogue();
 const near = (a, b, slack, why) =>
-  assert.ok(Math.abs(a - b) <= slack, `${why}: ${a} contre ${b}`);
+  assert.ok(Math.abs(a - b) <= slack, `${why}: ${a} vs ${b}`);
 
 const graphOf = async (tiles) => buildGraph((await fromBase64(paste(tiles))).tiles);
 
@@ -29,8 +29,8 @@ test("neighbours are visited in the game's order, not in mine", () => {
      decides which branch of a split gets served first, so getting it wrong shifts every
      round robin by one. */
   assert.deepEqual(edgesOf(1), [[1, 0], [0, 1], [-1, 0], [0, -1]],
-                   "est, nord, ouest, sud");
-  assert.equal(edgesOf(2).length, 8, "un bloc de deux a huit voisins");
+                   "east, north, west, south");
+  assert.equal(edgesOf(2).length, 8, "a two-wide block has eight neighbours");
   assert.equal(edgesOf(3).length, 12);
 });
 
@@ -44,7 +44,7 @@ test("a belt carries what the game says it carries", async () => {
 
   const out = simulate(graph, { feeds: { 0: { copper: 40 } }, seconds: 30, warmup: 6 });
   near(out.delivered.copper, known.blocks["conveyor"].items_per_second, 0.35,
-       "une bande porte 6,5 par seconde");
+       "a belt carries 6.5 a second");
 });
 
 test("a belt fed less than it can carry passes exactly that", async () => {
@@ -74,7 +74,7 @@ test("two belts facing each other do not pass one item back and forth", async ()
   for (let i = 0; i < 600; i++) world.step();
 
   const held = world.builds.reduce((sum, build) => sum + build.state.len, 0);
-  assert.equal(held, 1, "un objet reste un objet");
+  assert.equal(held, 1, "one item stays one item");
 });
 
 test("a router splits evenly without anything computing a half", async () => {
@@ -105,9 +105,9 @@ test("a router splits evenly without anything computing a half", async () => {
   }
 
   assert.equal(branches.length, 3);
-  assert.ok(got.every((n) => n > 0), `les trois branches recoivent : ${got}`);
+  assert.ok(got.every((n) => n > 0), `all three branches receive something: ${got}`);
   const spread = Math.max(...got) / Math.min(...got);
-  assert.ok(spread < 1.35, `et a peu pres a parts egales : ${got}`);
+  assert.ok(spread < 1.35, `and roughly evenly split: ${got}`);
 });
 
 test("a junction crosses two lines without mixing them", async () => {
@@ -130,9 +130,9 @@ test("a junction crosses two lines without mixing them", async () => {
   const east = world.builds[2];
   const north = world.builds[4];
   assert.ok(east.state.ids.every((item) => item === "copper"),
-            `l'est ne recoit que du cuivre : ${east.state.ids}`);
+            `east receives only copper: ${east.state.ids}`);
   assert.ok(north.state.ids.every((item) => item === "lead"),
-            `le nord ne recoit que du plomb : ${north.state.ids}`);
+            `north receives only lead: ${north.state.ids}`);
 });
 
 test("an overflow gate goes straight on first and sideways only when it cannot", async () => {
@@ -152,9 +152,9 @@ test("an overflow gate goes straight on first and sideways only when it cannot",
 
   const ahead = world.builds[2];
   const aside = world.builds[3];
-  assert.ok(ahead.state.len > 0, "tout droit d'abord");
+  assert.ok(ahead.state.len > 0, "straight on first");
   assert.ok(aside.state.len === 0 || ahead.state.len >= aside.state.len,
-            `et de cote seulement quand ca bouchonne : ${ahead.state.len} contre ${aside.state.len}`);
+            `and sideways only once it backs up: ${ahead.state.len} vs ${aside.state.len}`);
 });
 
 test("an unloader empties a container at eleven a second", async () => {
@@ -174,7 +174,7 @@ test("an unloader empties a container at eleven a second", async () => {
 
   /* Eleven a second offered, and a titanium belt behind it. The belt's own constants give
      12.02, so the unloader is the narrower of the two and this measures the unloader. */
-  near(out.delivered.copper, 11, 0.8, "onze par seconde, la ligne du jeu");
+  near(out.delivered.copper, 11, 0.8, "eleven a second, the game's own line");
 });
 
 test("the simulation and the maximum flow agree on a plain line", async () => {
@@ -185,5 +185,5 @@ test("the simulation and the maximum flow agree on a plain line", async () => {
   const out = simulate(await graphOf(tiles),
                        { feeds: { 0: { copper: 20 } }, seconds: 30, warmup: 6 });
 
-  near(out.delivered.copper, 6.5, 0.4, "le flot maximal dit 6,5, la simulation aussi");
+  near(out.delivered.copper, 6.5, 0.4, "the maximum flow says 6.5, and so does the simulation");
 });

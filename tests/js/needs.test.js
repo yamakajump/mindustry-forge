@@ -20,9 +20,9 @@ test("a press needs coal, stated as drills", async () => {
   const out = await analyse(paste([[0, 0, "graphite-press", 0]]));
   const coal = out.needs.find((n) => n.resource === "coal");
 
-  assert.ok(coal, "une presse mange du charbon");
-  close(coal.rate, 2 * 60 / 90, "deux charbons par craft, un craft par 90 ticks");
-  assert.ok(coal.options.length, "et ca se traduit en foreuses");
+  assert.ok(coal, "a press eats coal");
+  close(coal.rate, 2 * 60 / 90, "two coal per craft, one craft every 90 ticks");
+  assert.ok(coal.options.length, "and that translates into drills");
   assert.ok(coal.options[0].count >= 1);
 });
 
@@ -30,9 +30,9 @@ test("a drill too weak for the ore is not offered", () => {
   /* A mechanical drill cannot touch titanium, and telling a player to build eight of them
      would send them to build a factory that never starts. */
   const options = producers(known, "titanium", 5);
-  assert.ok(options.length, "quelque chose peut miner du titane");
+  assert.ok(options.length, "something can mine titanium");
   assert.ok(!options.some((o) => o.block === "mechanical-drill"),
-    "mais pas une foreuse mecanique");
+    "but not a mechanical drill");
 });
 
 test("a harder ore takes more drills than a soft one", () => {
@@ -40,7 +40,7 @@ test("a harder ore takes more drills than a soft one", () => {
   const copper = producers(known, "copper", 10).find((o) => o.block === "pneumatic-drill");
   const titanium = producers(known, "titanium", 10).find((o) => o.block === "pneumatic-drill");
   assert.ok(titanium.count > copper.count,
-    `${titanium.count} pour le titane contre ${copper.count} pour le cuivre`);
+    `${titanium.count} for titanium vs ${copper.count} for copper`);
 });
 
 test("a liquid is answered with pumps, not with drills", () => {
@@ -66,9 +66,9 @@ test("a chain does not ask for its own intermediates", () => {
     ],
   };
   const { outside } = demand(graph);
-  assert.ok(outside.oil, "la centrifugeuse veut du petrole");
+  assert.ok(outside.oil, "the centrifuge wants oil");
   assert.ok(!outside.coal || outside.coal < 2 * 60 / 90,
-    "et le charbon qu'elle fabrique couvre en partie celui de la presse");
+    "and the coal it makes covers part of the press's own");
 });
 
 /*
@@ -86,13 +86,13 @@ test("a chain does not ask for its own intermediates", () => {
 test("Erekir is offered Erekir drills and never Serpulo ones", () => {
   const offered = producers(known, "tungsten", 10, "erekir");
 
-  assert.ok(offered.length, "le tungstene d'Erekir a une source");
+  assert.ok(offered.length, "Erekir's tungsten has a source");
   for (const option of offered) {
     assert.notEqual(known.blocks[option.block].planet, "serpulo",
-      `${option.block} ne se pose pas sur Erekir`);
+      `${option.block} does not stand on Erekir`);
   }
   assert.ok(offered.some((o) => known.blocks[o.block].role === "beam-drill"),
-    "dont les foreuses a faisceau, que le role unique ratait");
+    "including beam drills, which the single-role match missed");
 });
 
 test("Serpulo keeps its own, which is how this could break unnoticed", () => {
@@ -110,7 +110,7 @@ test("without a world, the whole game is offered", () => {
   const worlds = new Set(both.map((o) => known.blocks[o.block].planet));
 
   assert.ok(worlds.has("serpulo") && worlds.has("erekir"),
-    "un appelant qui ne dit pas son monde les recoit tous");
+    "a caller that does not say its world receives all of them");
 });
 
 test("a burst drill pays no hardness, and a beam drill works its width", () => {
@@ -120,17 +120,17 @@ test("a burst drill pays no hardness, and a beam drill works its width", () => {
      across its face, so it works its width and not its area. */
   const impact = producers(known, "tungsten", 1, "erekir")
     .find((o) => o.block === "impact-drill");
-  // Le beryllium et pas le tungstene : une foreuse a plasma est de rang trois et ne touche
-  // pas un minerai de durete cinq. Le premier jet de ce test demandait l'impossible, et
-  // c'est la moitie du travail de `producers` que de refuser.
+  // Beryllium, not tungsten: a plasma bore is tier three and cannot touch an ore of
+  // hardness five. The first draft of this test asked for the impossible, and refusing
+  // that is half of what `producers` is for.
   const bore = producers(known, "beryllium", 1, "erekir")
     .find((o) => o.block === "plasma-bore");
 
   // Impact drill: four by four tiles, 720 ticks, no hardness term whatever the ore.
-  close(impact.each, (4 * 4 * 60) / 720, "une foreuse a percussion couvre son emprise");
+  close(impact.each, (4 * 4 * 60) / 720, "an impact drill covers its footprint");
 
   // Plasma bore: size two, so two beams and not four tiles, at 160 ticks.
-  close(bore.each, (2 * 60) / 160, "une foreuse a faisceau travaille sa largeur");
+  close(bore.each, (2 * 60) / 160, "a beam drill works its width");
 });
 
 test("a cliff crusher is not a drill, and is not offered as one", () => {
@@ -164,15 +164,15 @@ test("a schematic's own blocks say which world its shopping list is for", async 
   const erekir = await analyse(paste([[0, 0, "carbide-crucible", 0]]));
   const graphite = erekir.needs.find((n) => n.resource === "graphite");
 
-  assert.ok(graphite, "un creuset a carbure veut du graphite");
+  assert.ok(graphite, "a carbide crucible wants graphite");
   for (const option of graphite.options) {
     assert.notEqual(known.blocks[option.block].planet, "serpulo",
-      "et on ne lui propose pas une foreuse de Serpulo");
+      "and it is not offered a Serpulo drill");
   }
 
   const serpulo = await analyse(paste([[0, 0, "graphite-press", 0]]));
   assert.equal(planetOf(serpulo.graph), "serpulo");
-  assert.ok(buildGraph, "le graphe est bien celui de l'analyse");
+  assert.ok(buildGraph, "the graph is indeed the one from the analysis");
 });
 
 test("a silicon line that burns coal is told it needs coal", async () => {
@@ -189,8 +189,8 @@ test("a silicon line that burns coal is told it needs coal", async () => {
   ]));
 
   const fuel = out.needs.find((need) => need.resource === "*combustible");
-  assert.ok(fuel, "il faut lui amener de quoi bruler");
-  close(fuel.perMinute, 30, "un generateur a combustion, une fournee par 120 images");
+  assert.ok(fuel, "it needs something to burn brought to it");
+  close(fuel.perMinute, 30, "a combustion generator, one batch every 120 frames");
 });
 
 test("coal it makes itself does cover its burners", async () => {
@@ -203,7 +203,7 @@ test("coal it makes itself does cover its burners", async () => {
   ]));
 
   assert.ok(!out.needs.some((need) => need.resource === "*combustible"),
-    "son propre charbon suffit");
+    "its own coal is enough");
 });
 
 test("what covers a burner is the game's list, not a flammability threshold", async () => {
@@ -216,7 +216,7 @@ test("what covers a burner is the game's list, not a flammability threshold", as
   assert.deepEqual(known.blocks["rtg-generator"].accepts,
     ["thorium", "phase-fabric", "fissile-matter"]);
   for (const item of known.blocks["rtg-generator"].accepts) {
-    assert.equal(known.items[item].flammability, 0, `${item} ne brule pas, et le RTG le mange`);
+    assert.equal(known.items[item].flammability, 0, `${item} does not burn, and the RTG eats it`);
   }
 
   const graph = buildGraph((await fromBase64(paste([[0, 0, "rtg-generator", 0]]))).tiles);

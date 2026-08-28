@@ -222,12 +222,12 @@ test("no plan advises a block the chosen world cannot build", () => {
     for (const option of row.options) {
       const world = known.blocks[option.block]?.planet;
       assert.notEqual(world, "serpulo",
-        `${option.block} ne se pose pas sur Erekir et ne doit pas etre conseille`);
+        `${option.block} does not stand on Erekir and must not be advised`);
     }
   }
 
   // And the filter must not empty a Serpulo plan, which is the way this could go wrong
   // without anybody noticing.
   const serpulo = plan(known, { item: "silicon", perMinute: 100, planet: "serpulo" });
-  assert.ok(serpulo.raw.every((row) => row.options.length), "Serpulo garde ses foreuses");
+  assert.ok(serpulo.raw.every((row) => row.options.length), "Serpulo keeps its own drills");
 });

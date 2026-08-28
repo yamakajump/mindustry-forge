@@ -33,7 +33,7 @@ const beryllium = { content: 0, id: known.items["beryllium"].id };
  */
 const intoVault = (report, item) => {
   const vault = report.detail.find((one) => one.role === "store");
-  assert.ok(vault, "la disposition n'a pas de coffre");
+  assert.ok(vault, "the layout has no vault");
   return vault.through[item] || 0;
 };
 
@@ -48,7 +48,7 @@ test("a line of ducts carries, which is the whole of the defect", async () => {
     [1, 1, "duct", 0], [2, 1, "duct", 0], [3, 1, "duct", 0], [4, 1, "duct", 0],
     [6, 1, "vault", 0],
   ]));
-  close(intoVault(out, "beryllium"), 15, "quinze par seconde, le debit d'une gaine");
+  close(intoVault(out, "beryllium"), 15, "fifteen a second, a duct's own rate");
 });
 
 test("a duct refuses what is pushed against the way it points", async () => {
@@ -58,7 +58,7 @@ test("a duct refuses what is pushed against the way it points", async () => {
     [0, 1, "item-source", 0, beryllium],
     [1, 1, "duct", 0], [2, 1, "duct", 2], [4, 1, "vault", 0],
   ]));
-  assert.equal(intoVault(out, "beryllium"), 0, "la seconde gaine regarde la premiere");
+  assert.equal(intoVault(out, "beryllium"), 0, "the second duct faces the first");
 });
 
 test("an armoured duct takes from behind and from ducts, not from the side", async () => {
@@ -69,7 +69,7 @@ test("an armoured duct takes from behind and from ducts, not from the side", asy
     [0, 1, "item-source", 0, beryllium],
     [1, 1, "duct", 0], [2, 1, "armored-duct", 0], [4, 1, "vault", 0],
   ]));
-  close(intoVault(behind, "beryllium"), 15, "une gaine qui la vise passe");
+  close(intoVault(behind, "beryllium"), 15, "a duct aimed at it gets through");
 
   /* The same layout twice, with one block swapped, because "nothing arrives" is a weak
      assertion on its own: it is also what a mistyped position gives. The plain duct is what
@@ -79,13 +79,13 @@ test("an armoured duct takes from behind and from ducts, not from the side", asy
     [1, 1, "armored-duct", 0], [2, 1, "duct", 0], [3, 1, "duct", 0], [5, 1, "vault", 0],
   ]));
   assert.equal(intoVault(armoured, "beryllium"), 0,
-               "un routeur colle a son flanc ne passe pas");
+               "a router against its side does not get through");
 
   const plain = await analyse(paste([
     [0, 2, "item-source", 0, beryllium], [1, 2, "router", 0],
     [1, 1, "duct", 0], [2, 1, "duct", 0], [3, 1, "duct", 0], [5, 1, "vault", 0],
   ]));
-  close(intoVault(plain, "beryllium"), 15, "une gaine ordinaire, elle, prend de cote");
+  close(intoVault(plain, "beryllium"), 15, "a plain duct, on the other hand, takes from the side");
 });
 
 test("a duct bridge aims rather than remembers, and a duct between two does not stop it",
@@ -100,7 +100,7 @@ test("a duct bridge aims rather than remembers, and a duct between two does not 
     [3, 1, "duct", 0],
     [6, 1, "duct-bridge", 0], [7, 1, "duct", 0], [9, 1, "vault", 0],
   ]));
-  close(intoVault(out, "beryllium"), 15, "le pont enjambe la gaine posee entre les deux");
+  close(intoVault(out, "beryllium"), 15, "the bridge steps over the duct sitting between the two");
 });
 
 test("the face a bridge beam lands on is closed to everything else", async () => {
@@ -118,7 +118,7 @@ test("the face a bridge beam lands on is closed to everything else", async () =>
     [5, 2, "item-source", 0, beryllium], [5, 1, "duct", 0],
   ]));
   close(intoVault(out, "beryllium"), 15,
-        "une seule ligne passe, pas deux, parce que la face est prise");
+        "only one line gets through, not two, because the face is taken");
 });
 
 test("a duct is not an infinite pipe", async () => {
@@ -130,5 +130,5 @@ test("a duct is not an infinite pipe", async () => {
     [1, 1, "duct", 0], [2, 1, "duct", 0], [3, 1, "duct", 0], [5, 1, "vault", 0],
   ]));
   // Two sandbox taps pour a hundred a second each. One duct lets fifteen through.
-  close(intoVault(out, "beryllium"), 15, "quinze, pas deux cents");
+  close(intoVault(out, "beryllium"), 15, "fifteen, not two hundred");
 });
