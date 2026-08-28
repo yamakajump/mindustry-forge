@@ -65,3 +65,22 @@ it('does not hide anything by hiding nothing', function () {
     expect($schematic->hidden_at)->toBeNull()
         ->and($schematic->visibleTo(null))->toBeTrue();
 });
+
+it('does not let an author unhide their own schematic through the api', function () {
+    $author = User::factory()->create();
+    $schematic = hidden(['user_id' => $author->id]);
+
+    // hidden_at became mass assignable so a moderator decision could write it. The update
+    // endpoint takes a whitelist of three fields rather than the request, and this is the
+    // test that says so out loud: without it, the day somebody replaces that loop with a
+    // validated array, an author gets a switch that undoes moderation.
+    // assertOk, and not merely "it stayed hidden". The endpoint guards on ownership rather
+    // than on visibility, so the author does get through; without this line the test would
+    // pass just as happily against a 403, proving a refusal that is not the one claimed.
+    $this->actingAs($author)->patchJson("/api/schematiques/{$schematic->slug}", [
+        'hidden_at' => null,
+        'hidden_reason' => null,
+    ])->assertOk();
+
+    expect($schematic->fresh()->hidden_at)->not->toBeNull();
+});

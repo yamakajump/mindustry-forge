@@ -67,6 +67,7 @@ class Schematic extends Model
         'analysis', 'ground', 'width', 'height', 'blocks', 'power_made', 'power_used',
         'produces', 'needs',
         'source', 'source_id', 'author', 'fetched_at', 'source_meta',
+        'hidden_at', 'hidden_reason',
         'analysed_at', 'engine_version',
     ];
 
@@ -91,6 +92,7 @@ class Schematic extends Model
         'source_meta' => 'array',
         'fetched_at' => 'datetime',
         'analysed_at' => 'datetime',
+        'hidden_at' => 'datetime',
     ];
 
     /** In the public list. Unlisted schematics are reachable and not listed. */

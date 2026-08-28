@@ -9,6 +9,7 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IconController;
 use App\Http\Controllers\LikeController;
+use App\Http\Controllers\ModerationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SchematicSearchController;
@@ -186,6 +187,12 @@ Route::middleware('auth')->group(function () {
     /* Saying that something does not belong here. Signed in, because a report from nobody
        cannot be weighed, cannot be answered, and costs its author nothing to repeat. */
     Route::post('/api/signalements', [ReportController::class, 'store']);
+
+    /* The queue. Behind `auth` like everything else here, and it answers 404 rather than
+       403 to anybody who is not a moderator: a page that says "forbidden" tells a stranger
+       it exists. */
+    Route::get('/moderation', [ModerationController::class, 'index']);
+    Route::post('/moderation/decision', [ModerationController::class, 'decide']);
 });
 
 /*
