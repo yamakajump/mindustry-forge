@@ -14,7 +14,9 @@ This plan implements section 2 of `docs/plans/2026-08-28-mode-edition-refonte-de
 
 - Repository language: **English** for code, comments, commit subjects and PR text. French only in `site/lang/` and `site/public/forge/lang/`.
 - **No em dash (U+2014) anywhere.** Use a comma, a colon, a full stop or a short hyphen.
-- Commit subjects: conventional, imperative, 50 characters maximum. Body explains *why*.
+- Commit subjects: conventional, imperative, **50 characters maximum**. Body explains
+  *why*. Count it rather than eyeing it: every one of this plan's first six suggested
+  subjects was over, between 51 and 60. `git log -1 --pretty=%s | wc -c` before pushing.
 - Accented characters are written out in French strings. The font carries them.
 - **`site/public/forge/blocks.json` must come out of this plan byte-identical.** It is hashed by `EngineVersion` and fifteen thousand stored analyses depend on it. Task 3 verifies this with a checksum, and a mismatch stops the task.
 - Work happens in the worktree `C:/Users/coren/Projets/_worktrees/forge-editeur` on `feat/mode-edition`. Four other sessions are live on this repository.
@@ -269,7 +271,7 @@ tile for tile, and Step 3's comment says why.
 
 ```bash
 git add tools/build_sprites.py site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/render.js site/public/forge/atlas.png site/public/forge/atlas.json \
-  && git commit -m "feat(render): give a floor the variants the game ships
+  && git commit -m "feat(render): pick a variant per ground tile
 
 The atlas kept grass1 and dropped grass2 and grass3, so every tile of a
 painted patch carried the same 32 pixel image and its diagonal pattern
@@ -358,7 +360,7 @@ dump.
 
 ```bash
 git add bench/src/mindustryforge/DumpBlocks.java bench/data/blocks.json \
-  && git commit -m "feat(bench): dump what decides whether two floors blend
+  && git commit -m "feat(bench): dump what decides floor blending
 
 Floor.doEdge compares blendId across a boundary and drawEdges skips a
 neighbour whose drawEdgeOut is false. Neither is in the dump and neither
@@ -534,7 +536,7 @@ Expected: PASS. Record the new sprite count and file size beside the ones from T
 
 ```bash
 git add tools/build_sols.py tools/build_sprites.py site/public/forge/sols.json tests/js/sols.test.js site/public/forge/atlas.png site/public/forge/atlas.json \
-  && git commit -m "feat(sol): put blending data beside the catalogue, not in it
+  && git commit -m "feat(sol): keep blending data out of the catalogue
 
 How two patches of ground meet decides how a page looks and no figure the
 analyser reports, so it goes in sols.json. blocks.json is hashed by
@@ -786,7 +788,7 @@ straight line where the game has none, but it does not get written up as "verifi
 
 ```bash
 git add site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/render.js \
-  && git commit -m "feat(render): blend the boundary between two floors
+  && git commit -m "feat(render): blend the boundary between floors
 
 Two patches met on a straight line, which the game never draws. This
 follows Floor.drawEdges of v159.7, decompiled from server-release.jar:
@@ -830,7 +832,7 @@ sheets are what gets reconsidered, and that is a decision to take with the numbe
 
 ```bash
 git add docs/plans/2026-08-28-mode-edition-refonte-design.md \
-  && git commit -m "docs(sol): replace the atlas estimate with what it weighed
+  && git commit -m "docs(sol): record what the atlas actually weighed
 
 The design said the byte cost would be measured after the build rather
 than predicted from the pixel area. This is that measurement, written in
