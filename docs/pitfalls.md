@@ -1,6 +1,6 @@
-# Pitfalls already paid for
+# Pitfalls
 
-Each of these cost somebody time. Reading them beats rediscovering them.
+Traps a contributor to this codebase will hit, with the technical reason each one bites.
 
 ## Database
 
@@ -16,15 +16,9 @@ the deployment. The CI runs the migrations against MySQL for that reason.
 
 **`php artisan serve` prints "Server running" even when the port is already taken.** A
 worktree isolates the repository, not the machine, and ports are shared. A second server
-started on a busy port quietly reads somebody else's application, with no warning, and you
-debug a screen that is not yours.
-
-This is not theoretical. Four checkouts once had a server on port 8791, one held the
-listen, and it served an older tree. The root returned 200 and the page looked normal; only
-files that existed in the measuring checkout returned 404. Three diagnoses were written
-before the right one, including one asserted as established fact and wrong. What settled it
-was a single byte: the `favicon.ico` being served was zero bytes where both suspected trees
-have 2795.
+started on a busy port quietly reads a different checkout's application, with no warning,
+so a page can look normal while every request is answered by the wrong tree: the root
+returns 200, and only files that exist in one checkout and not the other return 404.
 
 The reflex, in both directions: request a resource that only exists in your own tree
 **before** measuring anything, and check a process's command line **before** killing a port.
@@ -49,10 +43,9 @@ with `@section` instead of appending.
 **`data-slug` is a contract, not a spare attribute.** `apercu.js` walks every
 `[data-slug]` in the document, fetches that schematic's code and replaces the element's
 content with a canvas. Putting the attribute on anything that is not a thumbnail panel
-therefore deletes whatever was inside it. It ate a pair of buttons on the schematic page
-while eleven tests stayed green, because the tests read what the server sent and the
-damage happens in the browser afterwards. Carry the slug under another name, and open the
-page.
+therefore deletes whatever was inside it, silently: a server-side test suite stays green
+because it reads what the server sent, and the damage only happens in the browser
+afterwards. Carry the slug under another name, and open the page to check.
 
 **An escaped apostrophe in a Blade directive stops the compiler mid-file**, and the page
 answers **200 while printing its own source**, `@stack` and `@include` included. No test
@@ -89,16 +82,15 @@ The affected outputs are sorted at the source.
 
 **During a merge, `git diff` against `origin/...` lies.** The trunk moves faster than a
 merge-test-push cycle, so comparing against the remote branch just after a resolution
-compares against a target that has already moved, and shows deletions that do not exist.
-Someone once believed they had deleted thirty-four lines of another person's work. The
-right reference during a merge is `MERGE_HEAD`, not `origin/<branch>`.
+compares against a target that has already moved, and shows deletions that do not exist:
+work that is actually still present reads as deleted. The right reference during a merge
+is `MERGE_HEAD`, not `origin/<branch>`.
 
-**A plain `diff` lies about two identical files on Windows.** A file written in the
-shared checkout keeps its CRLF line endings, git normalises them to LF on commit and says
-so, and comparing the working copy against the committed one then reports every single
-line as different. One such report was relayed as a risk of losing work; the whole
-difference was 1,099 carriage returns. Normalise before concluding that content diverged:
-`git show "origin/main:$f" | diff - <(tr -d '\r' < "$f")`.
+**A plain `diff` lies about two identical files on Windows.** A file written in a
+checkout with CRLF line endings gets normalised to LF by git on commit, and comparing the
+working copy against the committed one then reports every single line as different, even
+when the only difference is the carriage returns. Normalise before concluding that content
+diverged: `git show "origin/main:$f" | diff - <(tr -d '\r' < "$f")`.
 
 **Checking that a branch is clean does not keep it clean.** `git log --oneline
 origin/main..HEAD` being empty says nothing about the state a few minutes later if anything
