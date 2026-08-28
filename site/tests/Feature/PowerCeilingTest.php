@@ -74,12 +74,14 @@ it('leaves a genuinely fed power plant in the ranking', function () {
 
 it('keeps the fuel-less farm, because a ceiling says what it would make fed', function () {
     /*
-     * Ce test l en sortait, du temps ou la vitrine n acceptait que des mesures. Une ferme
-     * sans carburant a une mesure nulle et un plafond de neuf cents, et « ce qu elle ferait
-     * alimentee » est exactement la question que se pose quelqu un qui cherche une centrale.
+     * This test used to leave it out, back when the showcase took measurements only. The
+     * fuel-less farm here is POLAR STAR: it has no measurement row at all, and a ceiling of
+     * 1 513 826, which is the 1 950 000 it would make minus the 436 174 it would draw. What
+     * it would make if it were fed is exactly the question somebody looking for a power
+     * plant is asking.
      *
-     * Le plafond est dit comme tel a cote du chiffre, donc rien n est presente comme une
-     * mesure. C etait la seule condition.
+     * The ceiling is named as one beside the figure, so nothing is presented as a
+     * measurement. That was the only condition.
      */
     fermeSansCarburant()->indexWhatItMakes();
 
