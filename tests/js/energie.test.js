@@ -27,7 +27,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { analyse } from "../../site/public/forge/analyse.js";
+import { analyse, buildGraph } from "../../site/public/forge/analyse.js";
+import { fromBase64 } from "../../site/public/forge/schematic.js";
+import { TICKS, World } from "../../site/public/forge/engine/core.js";
+import { behaviourOf } from "../../site/public/forge/engine/carriers.js";
+import { gridsOf } from "../../site/public/forge/engine/power.js";
 import { loadCatalogue, paste } from "./helpers.js";
 
 const known = loadCatalogue();
@@ -160,4 +164,76 @@ test("a plan that powers its own drill settles rather than oscillating", async (
   assert.equal(out.settled, true, "the regime is stable");
   close(out.power.spent, 66, "the drill demands sixty-six");
   close(out.power.made, 60, "the generator gives back sixty");
+});
+
+/**
+ * One run of the ferry shape, with the grids worked out.
+ *
+ * `simulate` does not wire them, so a schematic run through it has no power at all and
+ * every consumer reads full coverage. The page does wire them, and so does the bench's
+ * comparison; this follows that path rather than the convenient one.
+ */
+const ferry = async (tiles, seconds) => {
+  const graph = buildGraph((await fromBase64(paste(tiles))).tiles);
+  const world = new World(graph, behaviourOf).wire(gridsOf);
+  world.catalogue = known;
+  for (let i = 0; i < seconds * TICKS; i++) world.step();
+  return world;
+};
+
+/** A payload source set to a battery, a loader, and two conveyors going nowhere. */
+const ferryLine = (feed) => [
+  [0, 0, "payload-source", 0, { content: 1, id: known.blocks["battery"].id }],
+  [4, 0, "payload-loader", 0],
+  ...(feed ? [[4, 2, feed, 0]] : []),
+  [7, 0, "payload-conveyor", 0],
+  [10, 0, "payload-conveyor", 0],
+];
+
+const cargoOf = (world, name) =>
+  world.builds.filter((build) => build.name === name).map((build) => build.state.payload);
+
+test("a loader fills a battery it carries, at the rate its grid allows", async () => {
+  /* `PayloadLoader.updateTile`, v159.7: `power.status * (basePowerUse +
+     maxPowerConsumption)` is what the grid handed over, `basePowerUse` comes back off the
+     top, and the rest goes into the battery over its capacity, times `edelta()`.
+
+     Forty a tick into four thousand is a hundredth of a battery a frame, so sixty frames
+     apart the charge is six tenths apart, and that is the figure below. It is not a rate
+     anybody can read off the block's own card: `consumePowerDynamic` states a usage of
+     zero, so the loader publishes no power draw at all. Measured end to end against a real
+     server in `payload-battery-ferry`. */
+  const after1s = cargoOf(await ferry(ferryLine("power-source"), 1), "payload-loader")[0];
+  const after2s = cargoOf(await ferry(ferryLine("power-source"), 2), "payload-loader")[0];
+
+  close(after1s.charge, 0.15, "fifteen frames in, and a hundredth a frame");
+  close(after2s.charge - after1s.charge, 0.6, "sixty frames at a hundredth each");
+});
+
+test("a loader on a dead grid fills nothing, and asks all the same", async () => {
+  /* The other half of the same line, and the reason the loader has to be on a grid at all.
+     Its own base draw comes off the top of what arrives, so a loader getting nothing puts
+     nothing in: `max(0 * 42 - 2, 0)` is zero, and it stays zero for ever rather than
+     charging slowly. */
+  const world = await ferry(ferryLine(null), 3);
+  const loader = world.builds.find((build) => build.name === "payload-loader");
+
+  assert.equal(loader.state.payload.charge, 0, "nothing went in");
+  assert.equal(loader.state.power, 0, "and the grid gave it nothing");
+  close(loader.behaviour.requestedPower(loader), 42, "while asking for two and forty");
+});
+
+test("a battery carried past a grid keeps what is in it", async () => {
+  /* The claim the payload family had no way to make: a carried building is on no grid.
+     `PowerGraph.add` files a lone battery under `batteries` with no producer and no
+     consumer beside it, so `update` balances nothing against nothing and `distributePower`
+     walks an empty list. Full when it left the loader, full two conveyors later. */
+  const world = await ferry(ferryLine("power-source"), 10);
+  const belts = cargoOf(world, "payload-conveyor");
+
+  assert.equal(belts.length, 2, "both conveyors are holding one");
+  for (const cargo of belts) {
+    assert.equal(cargo.name, "battery");
+    assert.equal(cargo.charge, 1, "neither drained nor topped up on the way");
+  }
 });
