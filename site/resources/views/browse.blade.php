@@ -184,6 +184,22 @@
     </div>
 
     <div class="row">
+      {{-- Ce qu'il faut lui amener, l'autre sens de la question du site.
+
+           Un `<select>` ici et une grille d'images pour « qui produit » : la difference n'est
+           pas un oubli. Le produit est la question principale de la page et se choisit avant
+           tout le reste ; celle-ci est une contrainte de second rang, dans un panneau replie,
+           et un deroulant natif y garde la frappe au clavier et le selecteur du telephone
+           pour un cout d'ecran nul. --}}
+      <label class="lead" for="consomme">{{ __('vitrine.contraintes.consomme') }}</label>
+      <select name="consomme" id="consomme">
+        <option value="">{{ __('vitrine.contraintes.consomme-rien') }}</option>
+        @foreach($eatsOnOffer as $need)
+          <option value="{{ $need }}" @selected($eats === $need)>{{
+            \App\Support\Thing::name($need) }}</option>
+        @endforeach
+      </select>
+
       <label class="lead" for="planete">{{ __('vitrine.contraintes.planete') }}</label>
       <select name="planete" id="planete">
         <option value="">{{ __('vitrine.contraintes.planete-peu-importe') }}</option>

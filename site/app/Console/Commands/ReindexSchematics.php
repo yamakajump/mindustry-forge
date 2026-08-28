@@ -55,6 +55,7 @@ class ReindexSchematics extends Command
                     $one->indexWhatItMakes();
                     $one->indexWhatItCouldMake();
                     $one->indexWhatItHolds();
+                    $one->indexWhatItNeeds();
 
                     $seen++;
                     if ($this->fingerprint($one->fresh()) !== $before) {

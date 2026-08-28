@@ -147,6 +147,17 @@ class BrowseController extends Controller
            qu'un filtre absent. Le controle est ici et pas seulement dans la vue : une
            adresse se tape, et `favoris=oui` sans session ne doit pas filtrer sur un
            identifiant nul. */
+        /* Ce qu'il faut lui amener : « j'ai du charbon, qu'est-ce que je peux faire tourner ».
+
+           Confronte a ce que le catalogue reclame vraiment plutot que pris pour argent
+           comptant, comme le filtre par bloc : un nom qui n'est demande par rien rendrait une
+           page vide sans que rien ne dise que la faute est dans le nom. */
+        $eats = (string) $request->query('consomme', '');
+        $eatsOnOffer = Vitrine::eatsOnOffer();
+        if ($eats !== '' && ! in_array($eats, $eatsOnOffer, true)) {
+            $eats = '';
+        }
+
         $me = $request->user();
         $favorites = $me !== null && $request->query('favoris') === 'oui';
         $liked = $me !== null && $request->query('aimes') === 'oui';
@@ -258,6 +269,19 @@ class BrowseController extends Controller
 
         if ($mine) {
             $query->where('schematics.user_id', $me->id);
+        }
+
+        /* Une existence et non une jointure : la jointure sur `schematic_items` est deja
+           prise par le produit, et une seconde sur la meme table multiplierait les lignes
+           sans que le compte affiche le dise. */
+        if ($eats !== '') {
+            $query->whereExists(fn ($sub) => $sub
+                ->selectRaw('1')
+                ->from('schematic_items as besoins')
+                ->whereColumn('besoins.schematic_id', 'schematics.id')
+                ->where('besoins.item', $eats)
+                ->where('besoins.sens', SchematicItem::CONSOMME)
+                ->where('besoins.kind', Vitrine::NATURE));
         }
 
         if ($makes !== '') {
@@ -422,6 +446,12 @@ class BrowseController extends Controller
         if ($holds !== '') {
             $chips[] = ['label' => Thing::name($holds), 'clear' => ['bloc' => null]];
         }
+        if ($eats !== '') {
+            $chips[] = [
+                'label' => __('vitrine.contraintes.consomme').' '.Thing::name($eats),
+                'clear' => ['consomme' => null],
+            ];
+        }
 
         return view('browse', [
             'schematics' => $page,
@@ -459,6 +489,8 @@ class BrowseController extends Controller
             'liked' => $liked,
             'mine' => $mine,
             'signedIn' => $me !== null,
+            'eats' => $eats,
+            'eatsOnOffer' => $eatsOnOffer,
             'chips' => $chips,
         ]);
     }

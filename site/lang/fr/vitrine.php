@@ -43,6 +43,14 @@ return [
         'tient-dans' => 'Tient dans',
         'au-moins' => 'Au moins',
         'au-plus' => 'Au plus',
+        /*
+         * L'autre sens de la question du site. « Qu'est-ce qui fait du graphite » est une
+         * liste de courses ; « qu'est-ce qui mange du charbon » est la reponse a « ma mine
+         * tourne, que puis-je construire maintenant », qui est la façon dont un joueur
+         * choisit sa prochaine usine.
+         */
+        'consomme' => 'Il faut lui amener',
+        'consomme-rien' => "peu importe ce qu'il faut lui amener",
         'planete' => 'Planète',
         'planete-peu-importe' => 'peu importe',
         'autonome' => 'autonome en énergie',
