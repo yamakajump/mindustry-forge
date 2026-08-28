@@ -2,7 +2,7 @@
 #######################################################################
 # Provisionnement de mindustry-forge sur un serveur nu.
 #
-#   ssh codwingz-apps "bash /chemin/vers/install-server.sh"
+#   ssh <serveur> "bash /chemin/vers/install-server.sh"
 #
 # Ce script existe pour une seule raison : que la machine soit
 # reconstruisible sans avoir a se souvenir de ce qui a ete tape a la

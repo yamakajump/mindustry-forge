@@ -10,13 +10,13 @@
 #
 # Le chiffrement se fait cote rclone, contenu ET noms de fichiers : le
 # depot distant ne voit que des octets sans structure. Les phrases de
-# passe ne sont ecrites nulle part sur cette machine en clair, et vivent
-# dans Claude\secrets\scaleway-backup-mindustry-forge.txt. Sans elles,
-# les sauvegardes distantes sont definitivement illisibles.
+# passe ne sont ecrites nulle part sur cette machine en clair : sans
+# elles, les sauvegardes distantes sont definitivement illisibles. Qui
+# deploie ce script les garde hors de la machine, et hors du depot.
 #
-# Le bucket a son propre projet Scaleway et sa propre cle API : une
-# compromission de ce serveur ne donne pas acces aux sauvegardes de
-# facturation de CodWingz, qui vivent ailleurs.
+# Le bucket a son propre projet et sa propre cle API : une compromission
+# de ce serveur ne donne pas acces aux autres sauvegardes de son
+# proprietaire.
 #######################################################################
 set -euo pipefail
 
