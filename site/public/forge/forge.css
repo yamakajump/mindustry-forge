@@ -641,8 +641,30 @@ select {
   color: var(--accent); background: var(--raised);
   box-shadow: inset 0 -2px 0 var(--accent);
 }
+/* La recherche : un champ nu sans icone ni bouton d'effacement avant ceci, et un texte de
+   remplacement pour seul signe qu'une frappe avait ete lue. `.field` porte l'icone et le
+   bouton en position absolue par-dessus le champ ; `.count` dit ce que le champ a trouve,
+   silencieuse tant que rien n'est cherche pour ne pas annoncer une evidence a chaque
+   ouverture du panneau. */
 .editor-rail .search { padding: 10px; border-bottom: 1px solid var(--edge); }
-.editor-rail .search input { width: 100%; }
+.editor-rail .search .field { position: relative; display: flex; }
+.editor-rail .search .field > .i {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; color: var(--dim); pointer-events: none;
+}
+.editor-rail .search input[type="search"] {
+  width: 100%; min-height: 36px; padding: 0 32px; font-size: 12.5px;
+}
+/* Le bouton d'effacement natif du champ, remplace par le notre juste apres : garder les
+   deux aurait mis deux croix l'une sur l'autre. */
+.editor-rail .search input[type="search"]::-webkit-search-cancel-button { display: none; }
+.editor-rail .search .clear {
+  position: absolute; right: 3px; top: 3px; min-height: 30px; min-width: 30px; padding: 0;
+  justify-content: center; border: 0; background: transparent; color: var(--dim);
+}
+.editor-rail .search .clear:hover { background: var(--raised-hover); color: var(--ink); }
+.editor-rail .search .clear .i { width: 13px; height: 13px; }
+.editor-rail .search .count { margin: 6px 2px 0; font-size: 11.5px; color: var(--dim); }
 
 /* La grille BÂTIR, rangee par categorie de jeu (voir `buildGroups` dans `ui.js`), de la
    meme facon que SOL range deja ses quatre familles : un `<h3>` par groupe, une grille de

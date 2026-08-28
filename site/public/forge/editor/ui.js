@@ -344,8 +344,16 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       <div class="swatches"></div>
     </div>
     <div class="search">
-      <input type="search" placeholder="Chercher dans ${all.length} blocs"
-             aria-label="Chercher un bloc">
+      <div class="field">
+        <svg class="i" aria-hidden="true" viewBox="0 0 24 24">
+          <circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
+        <input type="search" placeholder="Chercher dans ${all.length} blocs"
+               aria-label="Chercher un bloc">
+        <button type="button" class="clear" hidden aria-label="Effacer la recherche">
+          <svg class="i" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <p class="count" aria-live="polite" hidden></p>
     </div>
     <div class="editor-filters">
       <div class="chips planets">
@@ -355,7 +363,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       </div>
     </div>
     <div class="editor-grid" role="listbox" aria-label="Blocs">
-      <p class="empty grid-empty" hidden>Aucun bloc ne répond à ça.</p>
+      <p class="empty grid-empty" hidden></p>
       ${groups.map((group) => `<section data-category="${escape(group.key)}">
         <h3>${escape(group.label)} <span class="num">${group.blocks.length}</span></h3>
         <div class="swatches"></div>
@@ -383,8 +391,11 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     <div class="editor-held"><p class="empty">Rien en main. Choisis un bloc.</p></div>`;
 
   const grid = host.querySelector(".editor-grid");
+  const gridEmpty = grid.querySelector(".grid-empty");
   const held = host.querySelector(".editor-held");
   const search = host.querySelector(".search input");
+  const clearSearch = host.querySelector(".search .clear");
+  const searchCount = host.querySelector(".search .count");
   const groundPanel = host.querySelector(".editor-ground");
   const groundEmpty = groundPanel.querySelector(".ground-empty");
   const filters = host.querySelector(".editor-filters");
@@ -428,6 +439,19 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     box.innerHTML = group.blocks.map(({ name, block }) => blockSwatch(name, block)).join("");
   }
 
+  /**
+   * The search box's result count, shown once a query narrows the grid and silent while it
+   * does not: a count of everything is not a finding, and showing it either way would be
+   * noise on every keystroke rather than an answer to one. Hidden rather than merely empty
+   * while silent, so it costs no room either: a live region reserving a blank line above
+   * the palette would be the exact defect this pass was asked to fix, repeated in miniature.
+   */
+  function sayCount(n) {
+    searchCount.hidden = !needle;
+    if (!needle) return;
+    searchCount.textContent = n === 0 ? "Aucun résultat" : n === 1 ? "1 résultat" : `${n} résultats`;
+  }
+
   /** Redraw the recents row from `recents`, and decide whether it is worth showing at all:
       empty on a fresh visit, and hidden outside the ground tab regardless. */
   function paintRecents() {
@@ -449,7 +473,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
    * count.
    */
   function paintGround() {
-    let anyShown = false;
+    let shown = 0;
     for (const layer of layers) {
       const section = groundPanel.querySelector(`[data-layer="${layer.key}"]`);
       const box = section.querySelector(".swatches");
@@ -460,9 +484,12 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
         if (match) shownInLayer++;
       }
       section.hidden = shownInLayer === 0;
-      anyShown ||= shownInLayer > 0;
+      shown += shownInLayer;
     }
-    groundEmpty.hidden = anyShown;
+    groundEmpty.hidden = shown > 0;
+    groundEmpty.textContent = needle
+      ? `Aucun sol ne répond à « ${needle} ».` : "Aucun sol ne répond à ça.";
+    return shown;
   }
   paintGround();
 
@@ -488,10 +515,15 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       section.hidden = shownInGroup === 0;
       shown += shownInGroup;
     }
-    grid.querySelector(".grid-empty").hidden = shown > 0;
+    gridEmpty.hidden = shown > 0;
+    gridEmpty.textContent = needle
+      ? `Aucun bloc ne répond à « ${needle} ».` : "Aucun bloc ne répond à ça.";
+    return shown;
   };
 
-  /** A group of filters where only one choice holds at a time. */
+  /* A group of filters where only one choice holds at a time. The only one left is the
+     planet, and it only ever acts on BÂTIR: `.editor-filters` itself is hidden on SOL (see
+     `showTab`), so this never fires while `paintGround` is the one that would need calling. */
   const wireFilter = (selector, attribute, set) => {
     host.querySelector(selector).addEventListener("click", (event) => {
       const chip = event.target.closest(`[data-${attribute}]`);
@@ -500,7 +532,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       for (const other of host.querySelectorAll(`${selector} [data-${attribute}]`)) {
         other.setAttribute("aria-pressed", String(other === chip));
       }
-      paint();
+      sayCount(paint());
     });
   };
   wireFilter(".planets", "planet", (v) => { planet = v; });
@@ -539,11 +571,21 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
 
   search.addEventListener("input", (event) => {
     needle = event.target.value.trim().toLowerCase();
+    clearSearch.hidden = !search.value;
     /* Both tabs share one search box, so both are repainted: the one that is hidden costs
        nothing to keep correct, and it is what stays correct across a tab switch without a
-       second hook to remember. */
-    paint();
-    paintGround();
+       second hook to remember. The count said out loud is only ever the visible tab's. */
+    const built = paint();
+    const found = paintGround();
+    sayCount(onGroundTab ? found : built);
+  });
+
+  clearSearch.addEventListener("click", () => {
+    search.value = "";
+    needle = "";
+    clearSearch.hidden = true;
+    sayCount(onGroundTab ? paintGround() : paint());
+    search.focus();
   });
 
   /* ------------------------------------------------------------------------------------
@@ -574,6 +616,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     search.placeholder = onGround
       ? "Chercher un sol, un minerai ou un mur" : `Chercher dans ${all.length} blocs`;
     search.setAttribute("aria-label", onGround ? "Chercher dans le sol" : "Chercher un bloc");
+    sayCount(onGround ? paintGround() : paint());
     paintRecents();
     /* The status bar is shared too, and never hidden: BUILD writes it through `setHeld`,
        GROUND through `resetGroundInfo` below, each only while its own tab is open. Coming
