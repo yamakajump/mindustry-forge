@@ -27,7 +27,7 @@ return [
            cette route appartient a la voie qui refait la vitrine. `ready` reste faux
            jusqu'a ce qu'elle existe : une entree de menu qui pointe sur un 404 est pire
            qu'une entree absente. */
-        ['key' => 'nav.menu.favoris', 'href' => '/mes-favoris', 'ready' => false, 'auth' => true],
+        ['key' => 'nav.menu.favoris', 'href' => '/mes-favoris', 'ready' => true, 'auth' => true],
         ['key' => 'nav.menu.comparer', 'href' => '/comparer', 'ready' => true],
         ['key' => 'nav.menu.publier', 'href' => '/publier', 'ready' => false],
     ]],

@@ -152,6 +152,9 @@ class Schematic extends Model
             // Which blocks it is built from, for the wiki. A different table, so the two
             // rebuilds never touch each other's rows.
             $schematic->indexWhatItHolds();
+            // Et ce qu'il reclame de l'exterieur, qui est la question posee dans l'autre
+            // sens : « j'ai du charbon, qu'est-ce que je peux faire tourner ».
+            $schematic->indexWhatItNeeds();
         });
     }
 
@@ -249,6 +252,59 @@ class Schematic extends Model
                 ['item' => $item, 'sens' => SchematicItem::PRODUIT, 'kind' => SchematicItem::MESURE],
                 ['rate' => $rate, 'rate_per_block' => $rate / $blocks,
                     'rate_per_tile' => $rate / $tiles],
+            );
+        }
+    }
+
+    /**
+     * Ce qu'il faut lui amener, indexe comme ce qu'il rend.
+     *
+     * L'autre moitie de la promesse du site, et l'autre sens de la meme question. « Qu'est-ce
+     * qui fait du graphite » est une liste de courses ; « qu'est-ce qui mange du charbon » est
+     * la reponse a « j'ai une mine qui tourne, que puis-je construire maintenant », qui est la
+     * façon dont un joueur choisit sa prochaine usine.
+     *
+     * La colonne `needs` porte deja la reponse depuis le premier jour, ecrite par l'analyse :
+     * ce que le plan reclame de l'exterieur, par minute, une fois deduit ce qu'il produit
+     * lui-meme. Rien n'est recalcule ici, la ligne est seulement rendue interrogeable.
+     *
+     * Range en `plafond` et non en `mesure`, parce que c'est ce qu'elle est : la demande d'un
+     * plan tournant a plein regime, pas un releve. Melanger les deux natures dans une meme
+     * colonne est la faute que ce depot a passe une journee a defaire du cote production, et
+     * elle serait aussi silencieuse de ce cote-ci.
+     *
+     * Les cles categorielles sont ecartees. Un generateur qui brule « n'importe quoi » ne
+     * nomme pas de ressource et sort sous `*combustible` : 267 lignes sur 3 000 dans le
+     * catalogue actuel. Savoir si du charbon couvre cette faim demande la liste `accepts` que
+     * le jeu tient par bloc, et que `needs.js` lit deja dans le navigateur. La resoudre une
+     * seconde fois ici serait la deuxieme implementation que ce depot passe son temps a
+     * eviter ; et un nom qu'aucun joueur ne peut taper n'est de toute façon pas un filtre.
+     */
+    public function indexWhatItNeeds(): void
+    {
+        $rows = [];
+        foreach ((array) $this->needs as $item => $rate) {
+            if (! is_string($item) || $item === '' || $item[0] === '*') {
+                continue;
+            }
+            if (is_numeric($rate) && $rate > 0) {
+                $rows[substr($item, 0, 40)] = round((float) $rate, 2);
+            }
+        }
+
+        $blocks = max(1, (int) $this->blocks);
+        $tiles = $this->tiles();
+
+        $mine = $this->items()
+            ->where('sens', SchematicItem::CONSOMME)
+            ->where('kind', SchematicItem::PLAFOND);
+
+        (clone $mine)->whereNotIn('item', array_keys($rows) ?: [''])->delete();
+
+        foreach ($rows as $item => $rate) {
+            $this->items()->updateOrCreate(
+                ['item' => $item, 'sens' => SchematicItem::CONSOMME, 'kind' => SchematicItem::PLAFOND],
+                ['rate' => $rate, 'rate_per_block' => $rate / $blocks, 'rate_per_tile' => $rate / $tiles],
             );
         }
     }
