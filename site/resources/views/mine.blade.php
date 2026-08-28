@@ -36,7 +36,7 @@
         <p class="meta">
           {{ $schematic->blocks }} {{ __('schema.unite.blocs') }}
           @if($schematic->power_made > 0.5)
-            &middot; @if($schematic->fedBySandbox()){{ __('schema.page.bac-a-sable-court') }}@else{{ number_format($schematic->power_made - $schematic->power_used, 0, ',', ' ') }} {{ __('schema.unite.energie') }}{{ __('schema.unite.par-seconde') }}@endif
+            &middot; @if($schematic->fedBySandbox()){{ __('schema.page.bac-a-sable-court') }}@else{{ number_format($schematic->power_made - $schematic->power_used, 0, ',', ' ') }} {{ __('schema.unite.energie-seconde') }}@endif
           @endif
           {{-- The count is read from the column the list already selects: not a
                `withCount`, which would make one query per tile. And no button here, the

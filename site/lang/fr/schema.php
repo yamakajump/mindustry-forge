@@ -10,8 +10,22 @@
 
 return [
     'unite' => [
+        /*
+         * Le nom de la chose, pas l'unite. Il se pose la ou `Thing::name()` pose
+         * « Graphite » : `SchematicItem::nomAffiche()` renvoie l'un ou l'autre selon que
+         * la ligne porte de l'energie ou une ressource, d'ou la capitale.
+         */
         'energie' => 'Énergie',
         'par-seconde' => '/ s',
+        /*
+         * L'unite composee, en minuscule et sans espace, parce qu'elle se lit au milieu
+         * d'une phrase : « 400 energie/s » et non « 400 Énergie/ s ». Ecrite d'un seul
+         * tenant plutot qu'en collant `energie` et `par-seconde`, qui donnait les deux
+         * defauts a la fois. Meme valeur que `blocs.unite.energie-seconde` dans l'autre
+         * domaine, parce que la convention de cles est <domaine>.<ecran>.<element> et
+         * qu'une cle ne traverse pas un domaine.
+         */
+        'energie-seconde' => 'énergie/s',
         'par-minute' => '/ min',
         // Invariable au pluriel, d'ou une seule cle : « 1 j'aime », « 12 j'aime ».
         'jaime' => "j'aime",
