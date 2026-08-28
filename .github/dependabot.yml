@@ -25,3 +25,13 @@ updates:
           - "laravel/*"
       development-dependencies:
         dependency-type: "development"
+
+  # The workflows pin actions by tag, so nothing here reports a new release of one.
+  # Grouped, because an actions bump is never interesting on its own.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"]

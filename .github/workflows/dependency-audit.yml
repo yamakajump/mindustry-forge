@@ -9,6 +9,12 @@
 # exists only to carry the scripts. An npm job would have nothing to read.
 name: dependency audit
 
+# Reads the lock file and writes nothing. Declared here rather than inherited:
+# the repository's default token is write-scoped, and a job that only asks
+# packagist about advisories has no use for a token that can push.
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
