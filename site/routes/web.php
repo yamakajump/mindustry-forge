@@ -6,9 +6,13 @@ use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CompareController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\FolderController;
+use App\Http\Controllers\FolderItemController;
+use App\Http\Controllers\FolderLikeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IconController;
 use App\Http\Controllers\LikeController;
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SchematicSearchController;
 use App\Http\Controllers\SocialCardController;
@@ -145,7 +149,30 @@ Route::get('/api/schematiques/{schematic}/code', [SchematicController::class, 'c
    Stored from the first day and never read back. */
 Route::get('/api/schematiques/{schematic}', [SchematicController::class, 'read']);
 
+/* Un dossier, et ce qu'il contient. Adresse a lui, comme /s/ pour un schema, parce qu'un
+   dossier se donne par un lien et qu'un fragment ne se partage pas. */
+Route::get('/dossiers', [FolderController::class, 'index']);
+Route::get('/d/{folder}', [FolderController::class, 'show']);
+
 Route::middleware('auth')->group(function () {
+    Route::get('/mes-dossiers', [FolderController::class, 'mine']);
+    Route::post('/api/dossiers', [FolderController::class, 'store'])
+        ->middleware('throttle:30,1');
+    Route::patch('/api/dossiers/{folder}', [FolderController::class, 'update']);
+    Route::delete('/api/dossiers/{folder}', [FolderController::class, 'destroy']);
+
+    Route::post('/api/dossiers/{folder}/aime', [FolderLikeController::class, 'store'])
+        ->middleware('throttle:60,1');
+    Route::delete('/api/dossiers/{folder}/aime', [FolderLikeController::class, 'destroy'])
+        ->middleware('throttle:60,1');
+
+    Route::post('/api/dossiers/{folder}/schemas/{schematic}', [FolderItemController::class, 'store'])
+        ->middleware('throttle:60,1');
+    Route::patch('/api/dossiers/{folder}/schemas/{schematic}', [FolderItemController::class, 'update'])
+        ->middleware('throttle:60,1');
+    Route::delete('/api/dossiers/{folder}/schemas/{schematic}', [FolderItemController::class, 'destroy'])
+        ->middleware('throttle:60,1');
+
     Route::get('/mes-schemas', [SchematicController::class, 'mine']);
 
     /* Mes favoris : le catalogue avec le filtre deja arme, et non une seconde liste.
@@ -173,6 +200,9 @@ Route::middleware('auth')->group(function () {
      * The address keeps `schematiques` while the pages moved to `/schemas`, deliberately.
      * A machine address carries no word a player reads, and the model binding hangs off
      * this exact segment, so renaming it would buy a redirect and cost a binding. */
+    Route::put('/api/schematiques/{schematic}/note', [NoteController::class, 'put'])
+        ->middleware('throttle:60,1');
+
     Route::post('/api/schematiques/{schematic}/aime', [LikeController::class, 'store'])
         ->middleware('throttle:60,1');
     Route::delete('/api/schematiques/{schematic}/aime', [LikeController::class, 'destroy'])

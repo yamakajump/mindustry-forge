@@ -32,6 +32,19 @@ return [
         // dans public/forge/lang/fr.json, comme schema.gestion.refuse a cote.
     ],
 
+    /*
+     * La note privee.
+     *
+     * La page portera deux sortes de notes le jour ou les legendes de dossier arrivent,
+     * donc celle-ci dit au-dessus du champ qui la lira. « Note » tout court, sur une page
+     * qui en a deux, n'apprend rien au lecteur sur qui va la voir.
+     */
+    'note' => [
+        'titre' => 'Ma note',
+        'qui-la-voit' => "Personne d'autre que toi ne la voit.",
+        'enregistrer' => 'Enregistrer',
+    ],
+
     'favori' => [
         'ajouter' => 'Garder en favori',
         'retirer' => 'Retirer des favoris',
