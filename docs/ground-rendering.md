@@ -166,3 +166,12 @@ assertions against numbers that no longer describe the sheet.
   them there would mark every stored analysis stale for the sake of presentation.
 - `tools/build_sols.py`: turns the bench dump into `site/public/forge/sols.json`, resolving
   the blend-group lookup ahead of time.
+
+`sols.json` carries one thing that has nothing to do with drawing: `planets`, which says
+which planets the game puts each piece of ground down on, and which the editor's ground
+palette filters by. It is here because it is presentation data of the same kind, kept out
+of the hashed catalogue for the same reason, and because the file is already fetched
+beside the atlas. It is measured by `tools/dump_ground.py`, not read off the tech tree:
+terrain is on no tech tree, so the walk that gives a buildable block its planet gives a
+floor none. `bench/src/mindustryforge/DumpGround.java` says how, and why tiles are counted
+rather than names ticked off.
