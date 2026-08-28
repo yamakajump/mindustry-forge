@@ -122,9 +122,10 @@ it('garde les cadres d un plateau, y compris apres une relecture', function () {
 
     expect(settled(Space::first()->board))->toBe(settled($avecCadres));
 
-    $this->actingAs($user)->getJson("/api/espaces/{$slug}")
-        ->assertOk()
-        ->assertJsonPath('board.frames', $avecCadres['frames']);
+    /* `assertJsonPath` compares arrays with identity too, so it carries the same MySQL key
+       order that `settled` exists to ignore. Read the value and compare it settled. */
+    $lu = $this->actingAs($user)->getJson("/api/espaces/{$slug}")->assertOk();
+    expect(settled($lu->json('board.frames')))->toBe(settled($avecCadres['frames']));
 });
 
 it('garde les cadres d un plateau sauvegarde par dessus un espace existant', function () use ($board) {
@@ -257,8 +258,8 @@ it('laisse le proprietaire lire, renommer, sauvegarder et supprimer son espace',
     $user = User::factory()->create();
     $space = Space::factory()->create(['user_id' => $user->id, 'name' => 'Avant', 'board' => $board()]);
 
-    $this->actingAs($user)->getJson("/api/espaces/{$space->slug}")
-        ->assertOk()->assertJsonPath('board', $board());
+    $lu = $this->actingAs($user)->getJson("/api/espaces/{$space->slug}")->assertOk();
+    expect(settled($lu->json('board')))->toBe(settled($board()));
 
     $nouveau = ['tiles' => [], 'ground' => ['0,0' => 'sand']];
     $this->actingAs($user)->patchJson("/api/espaces/{$space->slug}", [
