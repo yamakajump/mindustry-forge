@@ -20,9 +20,9 @@
  *     cd _run && echo "measure <base64> 30 ../bench/data/<name>.json" | java -jar server-release.jar
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -132,8 +132,14 @@ function shifted(tiles, ground) {
  *
  * A drill on bare metal floor pulls up nothing, so a scenario that measures one has to say
  * what it stands on. The same patch is painted in both engines, from the same list.
+ *
+ * Exported so that `tests/js/oracle.test.js` can hold this list against the files under
+ * `bench/data/oracle/`. The two drifted apart in both directions at once and nothing said
+ * so: two scenarios that had left still had their recorded inputs sitting there, and two
+ * that had arrived had none, which the replay mentioned in a line of prose nobody fails a
+ * build over.
  */
-const SCENARIOS = {
+export const SCENARIOS = {
   /* What a burner will and will not swallow, which is a rule this repository got wrong
      twice in two different files.
 
@@ -149,9 +155,9 @@ const SCENARIOS = {
      generator takes it, and the vault is short by exactly what was burnt. Same shape, one
      item changed, so the difference between the two runs is the rule itself.
 
-     Not yet measured: it takes `npm run oracle:measure`, which needs a provisioned server,
-     and there is no jar on the machine this was written on. Until somebody runs it these
-     two sit outside the test, which only walks the scenarios that have a recorded answer. */
+     Measured, and the pair says it plainly: a hundred and ninety one silicon reach the
+     vault with the generator at zero efficiency holding nothing, against a hundred and
+     sixty six coal with the generator running and ten more inside it. */
   "burner-refuses-silicon": () => [
     { x: -2, y: 0, block: "item-source", rotation: 0, raw: item("silicon") },
     { x: -1, y: 0, block: "conveyor", rotation: 0 },
@@ -2349,11 +2355,21 @@ function lineUp(containers) {
 }
 
 const SECONDS = 30;
-const TICKS = SECONDS * 60;
 
-mkdirSync(KEPT, { recursive: true });
+/**
+ * Whether this file is the command being run, rather than a module somebody imported.
+ *
+ * The check in `tests/js/oracle.test.js` reads `SCENARIOS` from here. Without this guard
+ * that import would replay a hundred and sixty scenarios before the first assertion, and
+ * set the test runner's exit code from something that is not a test.
+ */
+const asked = Boolean(process.argv[1])
+  && pathToFileURL(process.argv[1]).href === import.meta.url;
+const measuring = process.argv.includes("--measure");
 
-if (process.argv.includes("--measure")) {
+if (asked) mkdirSync(KEPT, { recursive: true });
+
+if (asked && measuring) {
   const commands = [];
   for (const [name, build] of Object.entries(SCENARIOS)) {
     const { tiles, ground, stock } = shape(build());
@@ -2372,38 +2388,39 @@ if (process.argv.includes("--measure")) {
   console.log("To measure them in the real game:");
   console.log("  cd _run && (cat ../bench/data/oracle/commands.txt; sleep 20; echo exit)"
     + " | java -jar server-release.jar");
-  process.exit(0);
 }
 
-let worst = 0;
-let missing = 0;
-console.log(`scenario / place / what is there          port     game   gap`);
-console.log(`${"-".repeat(66)}`);
+if (asked && !measuring) {
+  let worst = 0;
+  let missing = 0;
+  console.log(`scenario / place / what is there          port     game   gap`);
+  console.log(`${"-".repeat(66)}`);
 
-for (const [name, build] of Object.entries(SCENARIOS)) {
-  const { tiles, ground, stock } = shape(build());
-  const code = await toBase64(check(name, tiles), { tags: { name }, sizeOf });
-  const theirs = measured(name);
+  for (const [name, build] of Object.entries(SCENARIOS)) {
+    const { tiles, ground, stock } = shape(build());
+    const code = await toBase64(check(name, tiles), { tags: { name }, sizeOf });
+    const theirs = measured(name);
 
-  if (!theirs) {
-    missing++;
-    console.log(`${name.padEnd(28)} not measured yet`);
-    continue;
+    if (!theirs) {
+      missing++;
+      console.log(`${name.padEnd(28)} not measured yet`);
+      continue;
+    }
+
+    const mine = await ported(code, theirs.ticks,
+                              shifted(tiles, ground), shifted(tiles, stock));
+    for (const gap of differences(mine, theirs)) {
+      worst = Math.max(worst, gap.gap);
+      console.log(`${`${name} ${gap.what}`.padEnd(38)}`
+        + `${String(gap.mine).padStart(8)} ${String(gap.theirs).padStart(8)}`
+        + `   ${gap.gap < 0.0001 ? "exact" : `${(gap.gap * 100).toFixed(1)}%`}`);
+    }
   }
 
-  const mine = await ported(code, theirs.ticks,
-                            shifted(tiles, ground), shifted(tiles, stock));
-  for (const gap of differences(mine, theirs)) {
-    worst = Math.max(worst, gap.gap);
-    console.log(`${`${name} ${gap.what}`.padEnd(38)}`
-      + `${String(gap.mine).padStart(8)} ${String(gap.theirs).padStart(8)}`
-      + `   ${gap.gap < 0.0001 ? "exact" : `${(gap.gap * 100).toFixed(1)}%`}`);
+  console.log(`${"-".repeat(66)}`);
+  if (missing) {
+    console.log(`${missing} scenario(s) never measured: run again with --measure`);
   }
+  console.log(`worst gap: ${(worst * 100).toFixed(2)}%`);
+  process.exitCode = worst > 0.02 ? 1 : 0;
 }
-
-console.log(`${"-".repeat(66)}`);
-if (missing) {
-  console.log(`${missing} scenario(s) never measured: run again with --measure`);
-}
-console.log(`worst gap: ${(worst * 100).toFixed(2)}%`);
-process.exitCode = worst > 0.02 ? 1 : 0;

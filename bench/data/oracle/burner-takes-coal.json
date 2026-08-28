@@ -1,0 +1,132 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 2
+      }
+    },
+    {
+      "block": "router",
+      "x": 14,
+      "y": 13,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 2
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 3
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 17,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 2
+      }
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "coal": 166
+      }
+    },
+    {
+      "block": "combustion-generator",
+      "x": 14,
+      "y": 14,
+      "efficiency": 1,
+      "holds":{
+        "coal": 10
+      }
+    }
+  ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "router",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 16,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 17,
+      "y": 13
+    },
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13
+    },
+    {
+      "block": "combustion-generator",
+      "x": 14,
+      "y": 14
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 19,
+      "y": 13,
+      "items":{
+        "coal": 166
+      }
+    }
+  ],
+  "per_second":{
+    "coal": 5.5333333
+  }
+}

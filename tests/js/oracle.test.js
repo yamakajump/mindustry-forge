@@ -19,11 +19,12 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const { differences, KEPT, measured, paintedFor, ported, stockedFor } = await import(
   new URL("../../tools/compare.mjs", import.meta.url));
+const { SCENARIOS } = await import(new URL("../../tools/oracle.mjs", import.meta.url));
 
 /**
  * What does not match yet, and by how much.
@@ -76,6 +77,59 @@ const scenarios = readdirSync(KEPT)
 
 test("there are scenarios to check against", () => {
   assert.ok(scenarios.length >= 15, `${scenarios.length} scenarios measured`);
+});
+
+/**
+ * The list of scenarios and the files recorded for them, held against each other.
+ *
+ * A scenario is two halves kept apart: its shape, in `SCENARIOS`, and what the game
+ * answered, in `bench/data/oracle/`. Nothing joined them, so either half could go missing
+ * while the other stayed, and both did. Two scenarios were renamed or set aside and left
+ * their inputs behind, where a `.txt` measured for a shape that no longer exists waits to
+ * be compared against today's analysis the moment somebody reuses the name. Two others
+ * were added and never measured, and the only thing that knew was a line the replay
+ * printed, which is prose rather than a barrier.
+ *
+ * The loop below cannot catch either, because it walks the recorded measurements: a
+ * scenario with no measurement is a scenario it never hears of.
+ */
+const INPUTS = [".txt", ".sol", ".stock"];
+
+/** Every scenario written in the file that decides what a measurement run asks for. */
+const named = new Set(Object.keys(SCENARIOS));
+
+/** And every name the directory carries, whichever of the four files it comes from. */
+const recorded = new Set(readdirSync(KEPT)
+  // The one file in there that belongs to the run rather than to a scenario.
+  .filter((file) => file !== "commands.txt")
+  .map((file) => file.replace(/\.[^.]+$/, "")));
+
+test("nothing is recorded for a scenario that no longer exists", () => {
+  const orphans = [...recorded].filter((name) => !named.has(name)).sort();
+  assert.deepEqual(orphans, [], `${orphans.join(", ")}: files under bench/data/oracle `
+    + "with no scenario in tools/oracle.mjs. Delete them, or put the scenario back.");
+});
+
+test("every scenario has been put to the game", () => {
+  const unmeasured = [...named].filter((name) => !existsSync(join(KEPT, `${name}.json`)));
+  assert.deepEqual(unmeasured, [], `${unmeasured.join(", ")}: in SCENARIOS and never `
+    + "measured. A scenario nothing has answered is a question, not a check.");
+});
+
+test("every scenario keeps the input it was measured from", () => {
+  const partial = [...named]
+    .flatMap((name) => INPUTS.map((kind) => `${name}${kind}`))
+    .filter((file) => !existsSync(join(KEPT, file)))
+    .sort();
+  assert.deepEqual(partial, [], `${partial.join(", ")}: missing. The measurement is only `
+    + "reproducible beside the schematic, the ground and the stock it was taken from.");
+});
+
+test("commands.txt asks for exactly the scenarios there are", () => {
+  const lines = readFileSync(join(KEPT, "commands.txt"), "utf8").trim().split("\n");
+  const asked = lines.map((line) => /oracle\/(\S+)\.json/.exec(line)?.[1]).sort();
+  assert.deepEqual(asked, [...named].sort(), "commands.txt is what a reader takes for the "
+    + "record of what the server was asked. Re-run npm run oracle:measure to rewrite it.");
 });
 
 for (const name of scenarios) {

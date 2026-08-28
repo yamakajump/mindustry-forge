@@ -73,7 +73,8 @@ picked up when tiers one and two hold.
   branch is writing in the files concerned. `analyse.js` is hashed by `EngineVersion`, so
   rewording a comment there marks every stored analysis stale and triggers a full
   re-measurement of the catalogue.
-- **Two dead bench files**, `bench/test_bench.py` and `bench/test_schematic_in_the_game.py`.
-  Before writing a line, answer the real question: does a Python re-measurement path give
-  anything `npm run oracle` does not? It is not obvious that it does.
+- **`bench/bench.py`**, which imports `forge.bridge`, `forge.spec` and `forge.layout`, none
+  of which survived the restart. It drives a search over candidate designs, which is not
+  what this repository does now: the bench measures one given schematic, and the analysis
+  is the browser's. Nothing imports it, so it fails no test and is found by reading only.
 Known engine gaps have their own page: [`known-gaps.md`](known-gaps.md).

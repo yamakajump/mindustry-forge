@@ -1,3 +1,5 @@
+measure bXNjaAF4nCXHUQqDMBBF0Rs1rdLf0l1kURqmJaAZmCRCd19ieR/nXRZGx5TXQ3htzbJYMHm3IiWUtKeo2fNIVY5QtFkU5qj5lK8aN9NWxXhGPbZWatIcPpLF1qqGP9e2V2AGcB4W3DUGhs54HRxjL8f0x3cm7p0fY0ggAA== 30 ../bench/data/oracle/burner-refuses-silicon.json
+measure bXNjaAF4nCXKUQqDMBCE4T/GtJY+FXqNHCqGpUg1C2si9PYSyzx8MzA88I6xpE14zc2KWKzpK3vMmtbAc6myxV2bZWHKWg75qXEzbVWMd9ZtbntdtMSPFLFU1QhHamsFJgAXIOCuMDB0/FVw+L4c459+Y+TeOQEbER3A 30 ../bench/data/oracle/burner-takes-coal.json
 measure bXNjaAF4nCXFUQqAIBAA0TGzorpKhyrZjyA1zIJuH7kMzGPGGtq4BmHa5CiLT+cp2TLtRcJypTt7YfApPvKmjHvW+yjACGBcfQ1Do1ilVZzSKb0y/DSMPx95axCY 30 ../bench/data/oracle/belt-copper.json
 measure bXNjaAF4nDXIUQqDMBBF0Rtj2mLtRxeSRaUyHwGTgE6E7r7oUB7cA48Z7xhrKsLrI6tGzZpq7sXzzCol7q1vi/D+/3Fp9ZBv2whH6qsCE4ALV6/hGAxvjEYwbsbdeJwMTCc/sH0VHQ== 30 ../bench/data/oracle/belt-titanium.json
 measure bXNjaAF4nEXJTQqDMBRF4RNjtNhCB11HFpXKGwj5KZoI7r7oG8iF8w0uL6yhzyEJ76/E6n8xbDXkpSXLc6mS/FbaOguf+/FzybscZcXtocUKTADGXb2GoVOs0itOGZRReZx0TCd/jyQWxw== 30 ../bench/data/oracle/belt-plastanium.json
