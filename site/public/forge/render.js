@@ -309,7 +309,7 @@ function blender(tiles, sizeOf, roleOf) {
  * Everything downstream is written against this box, so making the editor work is a matter
  * of handing `draw` a different box rather than a second `draw`. That mattered: this
  * repository has already paid for a second implementation of one question, deleted
- * `simulate.js` over it, and said so in `docs/todo.md`.
+ * `simulate.js` over it, and said so in `docs/known-gaps.md`.
  *
  * The camera box is deliberately fractional. Rounding it to whole tiles would leave the
  * canvas a few pixels short of its own frame, which reads as a thin dead border that moves

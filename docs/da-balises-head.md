@@ -105,7 +105,7 @@ iOS 8.
 
 ## Two traps that cost time here
 
-Both are written up in full in `docs/fonctionnalites.md`, under the traps already paid for.
+Both are written up in full in [`pitfalls.md`](pitfalls.md).
 They are only named here because this is the work that hit them.
 
 **A dev server can be serving someone else's tree.** `php artisan serve` says "Server

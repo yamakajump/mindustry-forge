@@ -4,7 +4,7 @@
  * Ce depot a deja supprime une fonctionnalite qui ressemblait a celle-ci, et il a eu
  * raison : `ports.js` choisissait le transporteur d'arrivee le plus probable, toute la page
  * decoulait de ce choix, et un choix rate rendait des debits qui avaient l'air calcules.
- * `docs/todo.md` : « la devinette des entrees est supprimee, pas amelioree ».
+ * La decision : la devinette des entrees est supprimee, pas amelioree.
  *
  * Ce qui est teste ici doit donc prouver deux choses, et la seconde est la plus importante.
  * D'abord que le chiffre est bon. Ensuite **qu'aucun choix n'est fait pour l'obtenir** : le

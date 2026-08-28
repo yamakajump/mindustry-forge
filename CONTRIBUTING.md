@@ -21,7 +21,8 @@ would be a second thing to be wrong.
 This is why the ingestion pass runs `analyse.js` under Node rather than reimplementing it
 in PHP, and why the schematic renderer is not redrawn server-side. When you find yourself
 about to compute a game figure in a second place, stop and read
-[`docs/todo.md`](docs/todo.md) first: the answer is usually already written somewhere.
+[`docs/known-gaps.md`](docs/known-gaps.md) first: the answer is usually already written
+somewhere.
 
 There is an honest exception, and it is documented in the README rather than hidden: there
 are currently **two models in JavaScript** that do not agree on the same physics. Closing
@@ -96,8 +97,8 @@ missing test or, more often, a design problem. Both are worth knowing before mer
 
 ## Some things this repository has learned the hard way
 
-They are collected in [`docs/fonctionnalites.md`](docs/fonctionnalites.md) under *les
-pièges déjà payés*, and reading them will save you an afternoon. A few examples:
+They are collected in [`docs/pitfalls.md`](docs/pitfalls.md), and reading them will save you
+an afternoon. A few examples:
 
 - MySQL reorders the keys of a JSON object and SQLite does not, so an ordering assertion
   passes locally and fails in CI.

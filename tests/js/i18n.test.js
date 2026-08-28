@@ -35,7 +35,7 @@ const read = (path) => readFileSync(at(path), "utf8");
 
 const DICTIONARY = JSON.parse(read("public/forge/lang/fr.json"));
 
-/* The domains the naming convention allows, from docs/fonctionnalites.md. A key outside
+/* The domains the naming convention allows, from the conventions in CLAUDE.md. A key outside
    them is a typo or an invention, and both are worth failing on. */
 const DOMAINS = ["nav", "vitrine", "schema", "analyse", "edition", "outils", "blocs", "compte"];
 const DOMAIN = "(?:" + DOMAINS.join("|") + ")";

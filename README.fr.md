@@ -82,7 +82,8 @@ node tools/gap.mjs
 ```
 
 Poser le rapport sur le moteur change tous les chiffres du site d'un coup, donc c'est du
-travail annoncé plutôt que du travail silencieux. `docs/todo.md` le porte.
+travail annoncé plutôt que du travail silencieux. [`docs/known-gaps.md`](docs/known-gaps.md)
+le porte, en anglais comme le reste du dépôt.
 
 ## Ça tourne sur ta machine
 
@@ -196,7 +197,7 @@ Utilise `npm test` plutôt qu'un motif à toi. `node --test "tests/js/*.test.js"
 | `bench/` | fait tourner le vrai jeu et mesure la même schématique |
 | `tests/js/` | l'analyse, lancée exactement comme la page la lance |
 | `tools/` | l'oracle, l'écart, et les générateurs du catalogue et des sprites |
-| `docs/` | le plan, ce qui est fait, ce qui reste, et les défauts qu'on connaît par leur nom |
+| `docs/` | la feuille de route, les manques qu'on connaît par leur nom, et les pièges déjà payés |
 
 ## Le format `.msch` n'est pas deviné
 
@@ -212,8 +213,10 @@ décider avant d'écrire du code si les règles te conviennent. La conduite est 
 [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), et les vulnérabilités passent par le signalement
 privé de GitHub plutôt que par une issue : [`SECURITY.md`](SECURITY.md).
 
-`docs/fonctionnalites.md` est le plan : ce qui existe, ce qui se construit, et qui tient quoi.
-`docs/todo.md` nomme les défauts connus, y compris celui du dessus.
+[`docs/roadmap.md`](docs/roadmap.md) est le plan : ce qui existe, ce qui se construit, et
+dans quel ordre. [`docs/known-gaps.md`](docs/known-gaps.md) nomme ce que le moteur ne
+modélise pas et ce que le banc ne prouve pas, y compris le point du dessus. Ces documents
+sont en anglais : le site parle français, le dépôt parle anglais.
 
 Deux règles gouvernent le dépôt, et les deux sont dans `CLAUDE.md` :
 
