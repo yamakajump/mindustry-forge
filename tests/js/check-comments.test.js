@@ -78,6 +78,21 @@ test("an English comment quoting a French label is not reported", () => {
   assert.equal(readsFrench(quoting), false);
 });
 
+test("a config file with no extension is read for hash comments", () => {
+  for (const name of [".gitattributes", ".gitignore", ".editorconfig"]) {
+    assert.equal(commentsOf("# why\n* text=auto\n", grammarOf(name)).length, 1, name);
+  }
+});
+
+test("a file with no extension that is not config is left alone", () => {
+  assert.equal(grammarOf("LICENSE"), null);
+  assert.equal(grammarOf("Makefile"), null);
+});
+
+test("a config file is recognised through a directory path", () => {
+  assert.notEqual(grammarOf("site/.gitignore"), null);
+});
+
 test("a file the check does not know is skipped rather than guessed at", () => {
   assert.equal(grammarOf("notes.md"), null);
   assert.deepEqual(frenchComments("notes.md", "Ce qui est dans une usine, et pourquoi"), []);
