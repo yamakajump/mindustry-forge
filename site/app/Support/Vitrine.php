@@ -50,6 +50,10 @@ class Vitrine
         return DB::table('schematic_blocks')
             ->join('schematics', 'schematics.id', '=', 'schematic_blocks.schematic_id')
             ->where('schematics.visibility', Schematic::PUBLIC)
+            // Masquee veut dire hors circulation, y compris hors des listes de choix :
+            // proposer un objet ou un bloc qui ne vient que d'un plan retire ferait
+            // repondre vide a un filtre que la page a offert elle-meme.
+            ->whereNull('schematics.hidden_at')
             ->groupBy('schematic_blocks.block')
             ->orderByRaw('count(*) desc')
             ->limit($limit)
@@ -82,6 +86,10 @@ class Vitrine
         return DB::table('schematic_items')
             ->join('schematics', 'schematics.id', '=', 'schematic_items.schematic_id')
             ->where('schematics.visibility', Schematic::PUBLIC)
+            // Masquee veut dire hors circulation, y compris hors des listes de choix :
+            // proposer un objet ou un bloc qui ne vient que d'un plan retire ferait
+            // repondre vide a un filtre que la page a offert elle-meme.
+            ->whereNull('schematics.hidden_at')
             ->where('schematic_items.sens', SchematicItem::CONSOMME)
             ->where('schematic_items.kind', self::NATURE)
             ->groupBy('schematic_items.item')
@@ -96,6 +104,10 @@ class Vitrine
         return SchematicItem::query()
             ->join('schematics', 'schematics.id', '=', 'schematic_items.schematic_id')
             ->where('schematics.visibility', Schematic::PUBLIC)
+            // Masquee veut dire hors circulation, y compris hors des listes de choix :
+            // proposer un objet ou un bloc qui ne vient que d'un plan retire ferait
+            // repondre vide a un filtre que la page a offert elle-meme.
+            ->whereNull('schematics.hidden_at')
             ->where('schematic_items.sens', SchematicItem::PRODUIT)
             ->where('schematic_items.kind', self::NATURE)
             ->groupBy('schematic_items.item')

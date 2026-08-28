@@ -96,7 +96,12 @@ class Schematic extends Model
     /** In the public list. Unlisted schematics are reachable and not listed. */
     public function scopeListed($query)
     {
-        return $query->where('visibility', self::PUBLIC);
+        // Hidden goes here rather than at each of the ten call sites, because that is the
+        // property this scope exists to hold: everything that shows a schematic to somebody
+        // who did not ask for it by name goes through here, and a hiding that covered only
+        // the listing would leave the picture reachable from the home page, the block pages
+        // and the comparison.
+        return $query->where('visibility', self::PUBLIC)->whereNull('hidden_at');
     }
 
     /**
@@ -110,6 +115,21 @@ class Schematic extends Model
      */
     public function visibleTo(?User $user): bool
     {
+        /*
+         * Hidden outranks everything, including being your own.
+         *
+         * The author keeping access would be kinder, and it would also mean the address
+         * they pasted into a Discord thread still answers for the one person most likely
+         * to paste it again. A hiding that the author can route around is a hiding that
+         * only stops strangers, and strangers are not the problem.
+         *
+         * The moderator sees it, because somebody has to look at what was reported before
+         * deciding, and half of what gets reported is fine.
+         */
+        if ($this->hidden_at !== null) {
+            return (bool) $user?->moderator;
+        }
+
         return $this->visibility !== self::PRIVATE
             || ($this->user_id !== null && $this->user_id === $user?->id)
             || (bool) $user?->moderator;
