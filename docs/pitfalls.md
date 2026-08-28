@@ -98,7 +98,7 @@ shared checkout keeps its CRLF line endings, git normalises them to LF on commit
 so, and comparing the working copy against the committed one then reports every single
 line as different. One such report was relayed as a risk of losing work; the whole
 difference was 1,099 carriage returns. Normalise before concluding that content diverged:
-`git show "origin/main:$f" | diff - <(tr -d '' < "$f")`.
+`git show "origin/main:$f" | diff - <(tr -d '\r' < "$f")`.
 
 **Checking that a branch is clean does not keep it clean.** `git log --oneline
 origin/main..HEAD` being empty says nothing about the state a few minutes later if anything
