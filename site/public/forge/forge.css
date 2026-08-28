@@ -1138,3 +1138,8 @@ select {
   border-color: var(--accent); background: var(--accent-pressed);
 }
 .editor-recents .swatch img { width: 26px; height: 26px; image-rendering: pixelated; }
+
+/* The ground half of the status bar: the same visual weight as `.editor-held .cost` above,
+   a new selector rather than reusing that one, since a rule is not a cost and the two tabs
+   should not have to agree on what a second line under a name means. */
+.editor-held .rule { color: var(--dim); font-size: 12.5px; margin-top: 4px; }

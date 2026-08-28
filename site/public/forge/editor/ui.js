@@ -10,6 +10,7 @@
  */
 
 import { itemIcon } from "../render.js";
+import { loadNames, nameOf } from "../noms.js";
 
 /** A block's sprite, cached: the same chip is redrawn on every search. */
 const icons = new Map();
@@ -89,6 +90,22 @@ const LAYERS = [
   { key: "wall", label: "Murs", of: (block) => block.wall },
 ];
 
+/**
+ * Where a family's picks actually land on the board.
+ *
+ * The grid above sorts a solid floor and a liquid one into two families so a search can
+ * scan them apart, but the board keeps one ground slot per stacked layer, three of them
+ * (`floor`, `overlay`, `wall`), not four: a liquid floor still paints into `floor`, the
+ * same slot a solid one does. Nothing else in this repository ever reads a `floor-liquid`
+ * key: not `rules.js`'s deep-liquid refusal, not its pump eligibility, not `ground.js`'s
+ * yield, not `render.js`'s draw. Painting a lake through the family grid, before this,
+ * wrote a key none of them looked at, so the lake did not render, could not be pumped, and
+ * never refused a non-floating block standing on it.
+ */
+export function storageLayerOf(familyKey) {
+  return familyKey === "floor-liquid" ? "floor" : familyKey;
+}
+
 /** The brush tools, the ones from the game's own map editor. */
 const TOOLS = [
   { key: "pencil", label: "Crayon", hint: "peindre à la main, taille réglable" },
@@ -160,6 +177,81 @@ export function grounds(catalogue) {
 }
 
 /**
+ * The article an item or a liquid needs mid-sentence, since the catalogue states no
+ * gender and the game's own French names are nouns, not phrases. Bounded to what a floor
+ * can actually give a drill or a pump today (ten items, five liquids); a floor giving a
+ * new one falls back to "du ", which is wrong roughly as often as a guess would be.
+ */
+const ARTICLE_OF = {
+  water: "de l'", oil: "du ", cryofluid: "du ", slag: "des ", arkycite: "de l'",
+  sand: "du ", copper: "du ", lead: "du ", scrap: "de la ", coal: "du ",
+  titanium: "du ", thorium: "du ", beryllium: "du ", tungsten: "du ", graphite: "du ",
+};
+
+/**
+ * What `Block.sumAttribute` reads off a floor or a wall, named the way a player would ask
+ * for it. Six keys, the whole set: five read off a floor (`spores`, `heat`, `water`,
+ * `oil`, `steam`) and one off a wall (`sand`, for a cliff crusher), and nothing in the
+ * shipped catalogue reads a seventh.
+ */
+const ATTRIBUTE_LABEL = {
+  spores: "spores", heat: "chaleur", water: "eau", oil: "pétrole", steam: "vapeur",
+  sand: "sable",
+};
+
+const frenchNumber = (n) => (Math.round(n * 100) / 100).toString().replace(".", ",");
+
+/**
+ * The one-line rule a ground swatch is worth, read off the same catalogue fields
+ * `rules.js` reads a placement against. Where the palette and a refusal talk about the
+ * same constraint, they say it the same way: `canPlace` refuses a non-floating block on a
+ * deep floor with the exact sentence reused below.
+ *
+ * Fewer, truer sentences beat one per field. Two of the nine fields this repository
+ * catalogues for the ground are deliberately left unsaid:
+ *
+ * - `unmineable`: `DumpBlocks.java` writes it from `floor.playerUnmineable`, which gates a
+ *   unit's own hand-mining. Neither `Drill.canMine` in the game nor `minable()` in
+ *   `rules.js` reads it, so a drill still works on sand despite the name; saying "can't be
+ *   mined" here would be false for the one reason the field sounds like it should be true.
+ * - `wall_ore`: it says how an ore is drawn (out of a wall rather than a floor), not what
+ *   changes for a player choosing a floor. The `drops` sentence below already says what
+ *   comes out, regardless of which way the game draws it.
+ */
+export function groundRule(name, catalogue) {
+  const block = catalogue.blocks[name];
+  if (!block) return "";
+
+  const clauses = [];
+
+  if (block.wall) {
+    clauses.push("rien ne se construit sur un mur");
+  } else if (block.drops_liquid) {
+    const liquid = `${ARTICLE_OF[block.drops_liquid] || "du "}${
+      nameOf("liquid", block.drops_liquid).toLowerCase()}`;
+    const rate = block.liquid_multiplier && block.liquid_multiplier !== 1
+      ? ` (x${frenchNumber(block.liquid_multiplier)})` : "";
+    clauses.push(block.deep
+      ? `un liquide profond ne porte que ce qui flotte : ${liquid}${rate}`
+      : `une pompe y tire ${liquid}${rate}`);
+  } else if (block.drops) {
+    const item = `${ARTICLE_OF[block.drops] || "du "}${nameOf("item", block.drops).toLowerCase()}`;
+    clauses.push(`une foreuse peut y creuser ${item}, si elle sait le faire`);
+  }
+
+  const attrs = Object.entries(block.attributes || {});
+  if (attrs.length) {
+    const said = attrs
+      .map(([key, value]) =>
+        `${ATTRIBUTE_LABEL[key] || key} ${value > 0 ? "+" : ""}${frenchNumber(value)}`)
+      .join(", ");
+    clauses.push(`attributs : ${said}`);
+  }
+
+  return clauses.join(" ; ");
+}
+
+/**
  * Mount the rail and return the handles that keep it up to date.
  *
  * `onPick` receives the name of the chosen block, or `null` when what was held is put down.
@@ -167,6 +259,12 @@ export function grounds(catalogue) {
 export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   const all = buildables(catalogue);
   const layers = grounds(catalogue);
+
+  /* Fetched once, here, so it has the best chance of being answered by the time anything
+     asks for a name: the status bar reads it on a hover or a pick, never at mount, and
+     both are gestures a page just drawn has not had time to receive yet. `nameOf` never
+     leaves a caller waiting either way, an unanswered fetch degrades to the identifier. */
+  loadNames();
 
   /* The categories and worlds that are actually present, taken from the catalogue rather
      than written here. A hand-kept list starts lying the day the game adds one. */
@@ -270,10 +368,10 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   /**
    * Filter the ground swatches by the search box, matched on the block's own game name.
    *
-   * A floor's French name, once one exists, belongs in this match too, so that both
-   * spellings find it. None do yet: the catalogue carries no French floor names at the
-   * time of this pass, so there is nothing to look up. This only needs to keep reading
-   * `name`, unmodified, when that lookup arrives.
+   * A floor's French name does exist, in `noms/fr.json`, and belongs in this match too, so
+   * that both spellings find a floor: that is left to whoever wires up the rest of this
+   * tab's search to match the build side's own filters, since matching on `name` alone is
+   * what this pass found already working here and changing it is not this pass's task.
    *
    * A swatch hides rather than leaves the grid, so nothing is redrawn on every keystroke,
    * and a family with no match left hides its own heading rather than showing an empty
@@ -403,7 +501,6 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     groundPanel.hidden = !onGround;
     grid.hidden = onGround;
     filters.hidden = onGround;
-    held.hidden = onGround;
     /* The search box is shared: only what it searches, and what it says while empty,
        changes with the tab. There is no world filter on the ground side (see the plan for
        this branch), so the search is the only narrowing tool it has. */
@@ -411,6 +508,12 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       ? "Chercher un sol, un minerai ou un mur" : `Chercher dans ${all.length} blocs`;
     search.setAttribute("aria-label", onGround ? "Chercher dans le sol" : "Chercher un bloc");
     paintRecents();
+    /* The status bar is shared too, and never hidden: BUILD writes it through `setHeld`,
+       GROUND through `resetGroundInfo` below, each only while its own tab is open. Coming
+       back to BUILD needs no call of its own here, `onTab`'s own caller already put the
+       status bar back to "nothing in hand" the moment it left BUILD, by putting the held
+       block down (see `mount.js`'s own `onTab`), and that is still what it says. */
+    if (onGround) resetGroundInfo();
     /* The fade switches on its own: moving to the ground tab melts the blocks so that what
        is being painted can be seen, and coming back makes them solid again. That is what
        removes painting blind without asking for one more gesture, and it was the main defect
@@ -435,24 +538,71 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   });
 
   /**
-   * Pick (or put down) a ground swatch, wherever it was clicked from: a family section or
-   * the recents row draw the same buttons, so one function decides for both. Every copy of
-   * the picked name, in either place, is kept in sync by value rather than by node, because
-   * a floor just painted can be showing in both places at once.
+   * The status bar's ground half: the swatch's own name, and its rule if it has one.
+   *
+   * `nameOf` reads whatever `loadNames` has answered by the time this runs, which is a
+   * hover or a pick, never mount: both happen well after the fetch this file kicked off
+   * at the top of `mountRail`, so this is where the French name that does not exist for
+   * `groundSwatch`'s own `title` (baked in before the fetch can possibly have answered)
+   * actually reaches the player.
    */
-  function pickGround(name, layerKey) {
-    const same = brush.block === name;
-    brush.block = same ? null : name;
-    brush.layer = layerKey;
+  function groundStatusMarkup(name) {
+    const src = iconOf(name, 22);
+    const rule = groundRule(name, catalogue);
+    return `
+      <div class="name">${src ? `<img src="${src}" alt="">` : ""}
+        <span>${escape(nameOf("block", name))}</span></div>
+      ${rule ? `<div class="rule">${escape(rule)}</div>` : ""}`;
+  }
+
+  /** What the status bar falls back to once nothing is hovered: what is picked, if anything. */
+  function resetGroundInfo() {
+    held.innerHTML = brush.block
+      ? groundStatusMarkup(brush.block)
+      : `<p class="empty">Rien en main. Survole ou choisis un sol.</p>`;
+  }
+
+  /**
+   * Select `name` from `layerKey`'s family into the brush, unconditionally: every swatch
+   * showing it is marked pressed, the recents row remembers it, and the status bar updates
+   * right away rather than waiting on a hover that may never come.
+   *
+   * `layerKey` is the family a swatch was drawn under ("floor", "floor-liquid", "overlay",
+   * "wall"), kept as-is wherever it is remembered for redraw. `storageLayerOf` narrows it
+   * to the three slots the board itself keeps, only where the brush paints.
+   */
+  function selectGround(name, layerKey) {
+    brush.block = name;
+    brush.layer = storageLayerOf(layerKey);
     for (const chip of host.querySelectorAll("[data-ground]")) {
       chip.setAttribute("aria-pressed", String(chip.dataset.ground === brush.block));
     }
-    if (!same) {
-      recents = pushRecent(recents, { name, layer: layerKey }, RECENTS_CAP);
-      writeRecents(recents);
-      paintRecents();
-    }
+    recents = pushRecent(recents, { name, layer: layerKey }, RECENTS_CAP);
+    writeRecents(recents);
+    paintRecents();
+    resetGroundInfo();
     onBrush?.(brush);
+  }
+
+  /**
+   * Pick (or put down) a ground swatch, wherever it was clicked from: a family section or
+   * the recents row draw the same buttons, so one function decides for both.
+   *
+   * Clicking the swatch already in hand puts it down, the same courtesy the build grid
+   * gives; a pipette landing on the floor already in hand is not that gesture; it goes
+   * straight through `selectGround`, in `pipetteGround` below.
+   */
+  function pickGround(name, layerKey) {
+    if (brush.block === name) {
+      brush.block = null;
+      for (const chip of host.querySelectorAll("[data-ground]")) {
+        chip.setAttribute("aria-pressed", "false");
+      }
+      resetGroundInfo();
+      onBrush?.(brush);
+      return;
+    }
+    selectGround(name, layerKey);
   }
 
   for (const zone of [groundPanel, recentsBox]) {
@@ -462,6 +612,33 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       pickGround(chip.dataset.ground, chip.dataset.of);
     });
   }
+
+  /* The name and the rule under the cursor: hover and focus both update the status bar,
+     so a keyboard user reaches the same information a mouse gets from lingering. Delegated
+     on `host` rather than on each swatch, since the grid is redrawn by search and the
+     recents row is redrawn on every pick; a listener on a node that gets replaced is a
+     listener that silently stops firing. */
+  host.addEventListener("mouseover", (event) => {
+    if (!onGroundTab) return;
+    const chip = event.target.closest("[data-ground]");
+    if (chip) held.innerHTML = groundStatusMarkup(chip.dataset.ground);
+  });
+  host.addEventListener("mouseout", (event) => {
+    if (!onGroundTab) return;
+    const chip = event.target.closest("[data-ground]");
+    if (!chip) return;
+    const to = event.relatedTarget?.closest?.("[data-ground]");
+    if (chip !== to) resetGroundInfo();
+  });
+  host.addEventListener("focusin", (event) => {
+    if (!onGroundTab) return;
+    const chip = event.target.closest("[data-ground]");
+    if (chip) held.innerHTML = groundStatusMarkup(chip.dataset.ground);
+  });
+  host.addEventListener("focusout", (event) => {
+    if (!onGroundTab) return;
+    if (event.target.closest("[data-ground]")) resetGroundInfo();
+  });
 
   sizeRange.addEventListener("input", () => {
     brush.size = Number(sizeRange.value);
@@ -547,8 +724,10 @@ const DIVERGENCES = [
   ["La molette zoome aussi", "le jeu la réserve à la rotation et suit le joueur du regard ; "
     + "ici il n'y a personne à suivre, donc elle zoome dès qu'on n'a rien en main"],
   ["Déplacer la vue", "le jeu n'en a pas besoin, sa caméra suit le joueur"],
-  ["Q ne fait rien", "le jeu s'en sert pour vider la file de construction, et il n'y a "
-    + "pas de file ici"],
+  ["Q reprend le sol survolé", "le jeu s'en sert pour vider une file de construction "
+    + "absente ici ; sur l'onglet sol, la touche recharge plutôt le pinceau avec la case "
+    + "survolée (mur, sinon minerai, sinon sol), ce que fait le pick de l'éditeur du jeu, "
+    + "lui sur la touche I"],
 ];
 
 export function showHelp(host) {
