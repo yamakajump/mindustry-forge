@@ -151,7 +151,9 @@ it('cherche sur les plafonds, en disant que ce sont des plafonds', function () {
     // autre, et c'etait celle-la.
     $this->get('/schemas')
         ->assertOk()
-        ->assertSee('<option value="silicon"', escape: false);
+        // Le controle est une grille de liens depuis que le doublon avec la rangee de
+        // pastilles a ete supprime : ce qui est offert est un lien, plus une `<option>`.
+        ->assertSee('?produit=silicon', escape: false);
 });
 
 it('nomme la grandeur qu une tuile montre, dans les deux sens', function () {

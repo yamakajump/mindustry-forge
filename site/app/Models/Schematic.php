@@ -167,9 +167,22 @@ class Schematic extends Model
      * something a base already has, so it is a prerequisite the page states, never a debt
      * that pushes a working factory down a ranking.
      */
+    /**
+     * The ground it stands on, which is not the number of blocks it is made of.
+     *
+     * The bounding box rather than the count of occupied tiles, and deliberately: a
+     * schematic is pasted as a rectangle, so a hole inside it is still ground the player
+     * cannot use for anything else. Floored at one so a malformed row divides by something.
+     */
+    public function tiles(): int
+    {
+        return max(1, (int) $this->width * (int) $this->height);
+    }
+
     public function indexWhatItMakes(): void
     {
         $blocks = max(1, (int) $this->blocks);
+        $tiles = $this->tiles();
 
         /* Nothing at all is indexed for a schematic fed by a sandbox tap, and that is the
            narrow claim: it is not that such a layout is uninteresting, it is that whatever
@@ -234,7 +247,8 @@ class Schematic extends Model
         foreach ($rows as $item => $rate) {
             $this->items()->updateOrCreate(
                 ['item' => $item, 'sens' => SchematicItem::PRODUIT, 'kind' => SchematicItem::MESURE],
-                ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
+                ['rate' => $rate, 'rate_per_block' => $rate / $blocks,
+                    'rate_per_tile' => $rate / $tiles],
             );
         }
     }
@@ -267,6 +281,7 @@ class Schematic extends Model
         }
 
         $blocks = max(1, (int) $this->blocks);
+        $tiles = $this->tiles();
 
         // The ceiling is a tap's ceiling too, and just as meaningless. Same rule as above.
         if ($this->fedBySandbox()) {
@@ -303,7 +318,8 @@ class Schematic extends Model
         foreach ($rows as $item => $rate) {
             $this->items()->updateOrCreate(
                 ['item' => $item, 'sens' => SchematicItem::PRODUIT, 'kind' => SchematicItem::PLAFOND],
-                ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
+                ['rate' => $rate, 'rate_per_block' => $rate / $blocks,
+                    'rate_per_tile' => $rate / $tiles],
             );
         }
     }
@@ -570,6 +586,47 @@ class Schematic extends Model
         }
 
         return $names;
+    }
+
+    /**
+     * Every block the game only offers on one of its two worlds.
+     *
+     * Serpulo and Erekir share almost nothing, and a plan built from one cannot be pasted on
+     * the other: the blocks are simply not in the player's build menu there. So this is not a
+     * matter of taste like the sandbox rule, it is the difference between a result a player
+     * can use and one they cannot place at all.
+     *
+     * Read off the catalogue the bench printed out of a running game, never a hand-kept list:
+     * the day the game adds a block, a typed list starts lying and nothing says so.
+     */
+    public static function blocksAwayFrom(string $planet): array
+    {
+        static $cache = [];
+        if (isset($cache[$planet])) {
+            return $cache[$planet];
+        }
+
+        $names = [];
+        foreach (BlockCatalogue::all() as $name => $block) {
+            $its = $block->planet();
+            // A block belonging to no tree at all - a floor, a sandbox block - excludes
+            // nobody. Treating "unknown" as "the other world" would empty every result.
+            if ($its !== null && $its !== $planet) {
+                $names[] = $name;
+            }
+        }
+
+        return $cache[$planet] = $names;
+    }
+
+    /** Only what can actually be pasted on that world, said in SQL. */
+    public function scopeOnPlanet($query, string $planet)
+    {
+        return $query->whereNotExists(fn ($sub) => $sub
+            ->selectRaw('1')
+            ->from('schematic_blocks')
+            ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
+            ->whereIn('schematic_blocks.block', self::blocksAwayFrom($planet)));
     }
 
     /**

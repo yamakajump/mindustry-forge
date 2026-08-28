@@ -87,7 +87,8 @@ class SchematicItem extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['schematic_id', 'item', 'sens', 'kind', 'rate', 'rate_per_block'];
+    protected $fillable = ['schematic_id', 'item', 'sens', 'kind', 'rate', 'rate_per_block',
+        'rate_per_tile'];
 
     /** Les valeurs par défaut de la colonne, là où le modèle peut les voir. */
     protected $attributes = [
@@ -98,6 +99,7 @@ class SchematicItem extends Model
     protected $casts = [
         'rate' => 'float',
         'rate_per_block' => 'float',
+        'rate_per_tile' => 'float',
     ];
 
     public function schematic(): BelongsTo
