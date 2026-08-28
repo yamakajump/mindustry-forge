@@ -171,8 +171,13 @@ of CSS, since the mark itself does not move.
 | `brand/discord-icon.png` | 512 | the server icon |
 | `brand/discord-banniere.jpg` | 960 × 540 | the server banner |
 | `brand/apercu-produit.png` | 2144 × 1420 | the product shot, for a landing page or an article |
-| `brand/depot-apercu.jpg` | 1280 × 640 | GitHub's social preview, uploaded in the repository settings |
+| `brand/depot-apercu.jpg` | 1280 × 640 | GitHub's social preview, set by hand under Settings |
 | `brand/depot-entete.jpg` | 1280 × 360 | the README header |
+
+`depot-apercu.jpg` is the one entry in that table no script can put in place. GitHub exposes
+the social preview nowhere in its REST or GraphQL API: the file is uploaded once, under
+Settings, General, Social preview. `gh api repos/OWNER/REPO --jq .open_graph_image_url`
+reports whether it is set, and returns null until somebody has done it.
 
 Three different framings of one mark, because the systems do not crop alike:
 
