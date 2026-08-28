@@ -28,24 +28,19 @@ it('still builds an http og:url without the forwarded proto header', function ()
 });
 
 /*
- * The property that would silently disappear if the trusted header set were ever widened
- * to include X-Forwarded-For. Whether port 80 answers a request that skips the Cloudflare
- * Tunnel is unmeasured, not ruled out, so trusting '*' must not also hand a visiting
- * request control over what the application believes its own client IP is: that would
- * poison rate limiting and anything that logs the IP with a spoofable one, on the strength
- * of a header anyone reaching the port directly can set.
- *
- * This is a deliberate current limit, not a permanent one: a feature that needs a real
- * client IP (a moderation feature hashing them is already planned) can widen the trusted
- * headers to include HEADER_X_FORWARDED_FOR once that port-80 reachability question has
- * actually been checked on the server, and this test should be updated alongside that,
- * not treated as a rule that forbids it.
+ * Measured, not assumed: the origin only answers through the Cloudflare Tunnel (ufw
+ * denies everything inbound except 22/tcp, and a direct curl to the origin's IP on 80
+ * and 443 times out from outside, see bootstrap/app.php for the exact commands and
+ * their output). That means the '*' peer trustProxies sees is always cloudflared, so
+ * trusting X-Forwarded-For from it is safe, and a real client IP is exactly what a
+ * moderation feature hashing IPs to spot rings of fake accounts needs. A build that
+ * left X-Forwarded-For untrusted would have every request in the country resolve to
+ * 127.0.0.1: a table that fills with identical hashes and looks like it is working.
  */
-it('does not let a forwarded-for header change the client ip the app sees', function () {
+it('uses the forwarded-for header as the client ip from a trusted proxy', function () {
     Route::get('/__test/client-ip', fn () => request()->ip());
 
-    $real = $this->get('/__test/client-ip')->getContent();
-    $spoofed = $this->get('/__test/client-ip', ['X-Forwarded-For' => '203.0.113.9'])->getContent();
+    $seen = $this->get('/__test/client-ip', ['X-Forwarded-For' => '203.0.113.9'])->getContent();
 
-    expect($spoofed)->toBe($real)->not->toBe('203.0.113.9');
+    expect($seen)->toBe('203.0.113.9');
 });
