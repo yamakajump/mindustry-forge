@@ -496,7 +496,7 @@
               <strong>{{ $schematic->width }}&times;{{ $schematic->height }}</strong>
             </span> &middot;
           @endif
-          {{ $schematic->blocks }} blocs &middot; {{ $schematic->credit() }}
+          {{ $schematic->blocks }} {{ __('schema.unite.blocs') }} &middot; {{ $schematic->credit() }}
           {{-- Said in the list too, not only on the page. Somebody scrolling a hundred
                tiles should be able to tell what this site collected from what its members
                made, without opening anything. --}}
