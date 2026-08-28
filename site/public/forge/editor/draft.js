@@ -58,6 +58,40 @@ export function dropDraft() {
   } catch { /* see above */ }
 }
 
+/** One counted French part: "3 blocs", "1 cadre", never with the count itself missing. */
+function partOf(count, singular, plural = `${singular}s`) {
+  return `${count} ${count > 1 ? plural : singular}`;
+}
+
+/** French list punctuation: "A", "A et B", "A, B et C". Never an Oxford comma before "et". */
+function joinFr(parts) {
+  if (parts.length < 2) return parts[0] || "";
+  return `${parts.slice(0, -1).join(", ")} et ${parts[parts.length - 1]}`;
+}
+
+/**
+ * What a kept draft actually holds, said in French, naming only the parts that are not
+ * zero.
+ *
+ * A draft is kept when it has blocks, painted ground or frames - see `keepDraft` above -
+ * and any one of those alone is enough. Saying "un brouillon de 0 blocs" for a draft that
+ * is all painted ground is an exact number answering a question nobody asked: this
+ * repository's own name for that defect. Say what is there instead, and leave out what
+ * is not.
+ */
+export function describeDraft(kept) {
+  const blocks = kept.tiles?.length || 0;
+  const ground = Object.keys(kept.ground || {}).length;
+  const frames = kept.frames?.length || 0;
+
+  const parts = [];
+  if (blocks) parts.push(partOf(blocks, "bloc"));
+  if (ground) parts.push(partOf(ground, "case de sol peinte", "cases de sol peintes"));
+  if (frames) parts.push(partOf(frames, "cadre"));
+
+  return joinFr(parts);
+}
+
 /** How long ago, said the way somebody would say it out loud. */
 export function ageOf(at, now) {
   /* Under a minute is not counted: `Math.round` on thirty seconds announced "one minute

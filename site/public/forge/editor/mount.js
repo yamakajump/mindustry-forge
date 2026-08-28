@@ -26,7 +26,7 @@ import { fromBase64, toBase64 } from "../schematic.js";
 import { createCamera } from "./camera.js";
 import { mountRail, showHelp, sizeGauge } from "./ui.js";
 import { choicesFor, configFor, readsAs } from "./configure.js";
-import { ageOf, dropDraft, keepDraft, readDraft } from "./draft.js";
+import { ageOf, describeDraft, dropDraft, keepDraft, readDraft } from "./draft.js";
 
 const SHELL = `
   <div class="editor-bar">
@@ -1662,7 +1662,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
     const bar = document.createElement("div");
     bar.className = "editor-draft";
-    bar.innerHTML = `<span>Un brouillon de <strong>${kept.tiles.length} blocs</strong>
+    bar.innerHTML = `<span>Un brouillon de <strong>${describeDraft(kept)}</strong>
       attend, gardé ${ageOf(kept.at, Date.now())}.</span>
       <button type="button" class="primary" data-draft="take">Le reprendre</button>
       <button type="button" data-draft="drop">Repartir de zéro</button>`;

@@ -9,7 +9,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { ageOf, dropDraft, keepDraft, readDraft }
+import { ageOf, describeDraft, dropDraft, keepDraft, readDraft }
   from "../../../site/public/forge/editor/draft.js";
 
 /** Un `localStorage` de comptoir, puisque Node n en a pas. */
@@ -121,4 +121,59 @@ test("un brouillon d hier, sans cle frames, se relit quand meme : la liste est v
   const kept = readDraft(2000);
   assert.deepEqual(kept.tiles, [bande]);
   assert.deepEqual(kept.frames ?? [], []);
+});
+
+/* --------------------------------------------------------------------------------------
+   Dire ce qu un brouillon garde, pas un chiffre qui repond a une autre question.
+
+   Un brouillon se garde des qu une seule de ses trois parts n est pas vide (voir plus
+   haut). "Un brouillon de 0 blocs" pour un brouillon qui n a que du sol peint est le
+   defaut que ce depot debusque par son nom : un chiffre exact, a cote de sa question.
+   -------------------------------------------------------------------------------------- */
+
+test("un seul bloc se dit au singulier", () => {
+  assert.equal(describeDraft({ tiles: [bande], ground: {}, frames: [] }), "1 bloc");
+});
+
+test("plusieurs blocs se disent au pluriel", () => {
+  assert.equal(describeDraft({ tiles: [bande, bande], ground: {}, frames: [] }), "2 blocs");
+});
+
+test("du sol peint sans aucun bloc se dit pour ce qu il est, pas 0 blocs", () => {
+  const dit = describeDraft({ tiles: [], ground: { "0,0": { floor: "stone" } }, frames: [] });
+  assert.equal(dit, "1 case de sol peinte");
+});
+
+test("plusieurs cases de sol peintes se disent au pluriel", () => {
+  const dit = describeDraft({
+    tiles: [], ground: { "0,0": { floor: "stone" }, "1,0": { floor: "sand" } }, frames: [],
+  });
+  assert.equal(dit, "2 cases de sol peintes");
+});
+
+test("un seul cadre, sans bloc ni sol, se dit pour ce qu il est", () => {
+  assert.equal(describeDraft({ tiles: [], ground: {}, frames: [cadre] }), "1 cadre");
+});
+
+test("plusieurs cadres se disent au pluriel", () => {
+  assert.equal(describeDraft({ tiles: [], ground: {}, frames: [cadre, { ...cadre, id: "b" }] }),
+    "2 cadres");
+});
+
+test("deux parts se joignent par et, sans virgule avant", () => {
+  const dit = describeDraft({ tiles: [bande], ground: {}, frames: [cadre] });
+  assert.equal(dit, "1 bloc et 1 cadre");
+});
+
+test("les trois parts ensemble se disent virgule, virgule, et", () => {
+  const dit = describeDraft({
+    tiles: [bande, bande, bande],
+    ground: { "0,0": { floor: "stone" } },
+    frames: [cadre],
+  });
+  assert.equal(dit, "3 blocs, 1 case de sol peinte et 1 cadre");
+});
+
+test("un brouillon d hier sans cle frames ne dit pas de cadre", () => {
+  assert.equal(describeDraft({ tiles: [bande], ground: {} }), "1 bloc");
 });
