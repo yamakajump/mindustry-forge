@@ -80,26 +80,45 @@ test("the variant is not constant along a diagonal either", () => {
 import { blendersAt, D8 } from "../../site/public/forge/tiling.js";
 
 /* Two floors, one that blends over the other. Written here rather than read out of
-   sols.json so the test says what it depends on. */
+   sols.json so the test says what it depends on.
+
+   The ids and blend ids are invented, small and readable; the shapes they stand for are
+   real, and each is named where it is used. `id` and `blend` are separate fields in the
+   game and are not in step, which is why `char` below shares stone's blend id and keeps
+   an id of its own. */
 const floors = {
-  stone: { blend: 10, out: true, variants: 3, sheet: "stone" },
-  grass: { blend: 20, out: true, variants: 3, sheet: "grass" },
+  stone: { id: 33, blend: 10, in: true, out: true, layer: "normal", variants: 3, sheet: "stone" },
+  grass: { id: 71, blend: 20, in: true, out: true, layer: "normal", variants: 3, sheet: "grass" },
+  // A floor sharing stone's blend id and keeping its own, which is what a blend group does:
+  // `stone`, `char` and `stone-vent` all carry blend id 33 in the real catalogue.
+  char: { id: 35, blend: 10, in: true, out: true, layer: "normal", variants: 1, sheet: "stone" },
   // A floor the game tells not to bleed outwards, which is the one case where a higher
   // blend id still draws nothing.
-  shale: { blend: 30, out: false, variants: 1, sheet: "shale" },
+  shale: { id: 30, blend: 30, in: false, out: false, variants: 1, layer: "normal", sheet: "shale" },
+  // A floor nothing bleeds onto: `drawBase` reaches `drawEdges` only when `drawEdgeIn` is
+  // set, and 14 floors clear it, `colored-floor` and every `metal-tiles-*`.
+  "metal-tiles-4": { id: 146, blend: 146, in: false, out: false, layer: "normal",
+                     variants: 1, sheet: null },
+  // A liquid, drawn in a pass of its own. Its blend id is deliberately the LOWEST here, so
+  // that the ordinary comparison lets every land floor bleed onto it and only the cache
+  // layer gate stops them: that is the real shape, deep water at 21 beside stone at 33.
+  "deep-water": { id: 21, blend: 5, in: true, out: true, layer: "water",
+                  variants: 1, sheet: "deep-water" },
   // A floor with no sheet anywhere, neither its own nor its group's: it cannot bleed, and
   // anything bleeds onto it. Its blend id (40) is deliberately higher than every sheeted
   // floor below, so a test using it exercises the sheetless clause of doEdge rather than
   // the ordinary id comparison, which a lower id would have satisfied on its own and hidden
   // the clause's absence.
-  sand: { blend: 40, out: true, variants: 3, sheet: null },
+  sand: { id: 40, blend: 40, in: true, out: true, layer: "normal", variants: 3, sheet: null },
   // A vent, which ships no sheet and borrows its group's. Fourteen real floors are shaped
   // like this, and reading `<name>-edge` alone drops every one of them.
-  "stone-vent": { blend: 12, out: true, variants: 3, sheet: "stone" },
+  "stone-vent": { id: 67, blend: 12, in: true, out: true, layer: "normal", variants: 3,
+                  sheet: "stone" },
   // An ore overlay. Its blend id (45) beats every floor here and it is given a sheet it does
   // not really have, so that a test which mistakenly let an overlay contribute would show it
   // by name rather than by an empty result that half a dozen other faults also produce.
-  "ore-copper": { blend: 45, out: true, variants: 1, sheet: "ore-copper" },
+  "ore-copper": { id: 90, blend: 45, in: true, out: true, layer: "normal", variants: 1,
+                  sheet: "ore-copper" },
 };
 
 const ground = (cells) => Object.fromEntries(
@@ -175,6 +194,39 @@ test("a neighbour's overlay changes nothing about which floor bleeds", () => {
   assert.deepEqual(blendersAt(bare, 0, 0, floors).map((b) => b.name), ["stone"]);
   assert.deepEqual(blendersAt(ored, 0, 0, floors), blendersAt(bare, 0, 0, floors),
     "an ore patch on the neighbour changed which floor bleeds");
+});
+
+test("a floor with drawEdgeIn false receives nothing, whatever borders it", () => {
+  /* `Floor.drawBase` is `drawMain; if(drawEdgeIn) drawEdges; drawOverlay`, so a floor that
+     clears the flag never enters `drawEdges` at all. Fourteen floors clear it. The tile here
+     has no sheet either, which is the case that would otherwise let anything bleed onto it. */
+  const board = ground({ "0,0": "metal-tiles-4", "1,0": "grass", "0,1": "stone" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
+
+test("nothing bleeds onto a liquid from the land beside it", () => {
+  /* `drawEdges` skips a neighbour whose floor sits on another `cacheLayer`. Deep water's
+     blend id is lower than stone's, so the ordinary comparison happily draws a sliver of
+     stone onto the water; the game draws none, because the liquid layers are a separate
+     pass. */
+  const board = ground({ "0,0": "deep-water", "1,0": "stone" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
+
+test("and nothing bleeds onto land from the liquid beside it", () => {
+  /* The same gate read from the other side. Sand has no sheet, so the sheetless half of
+     `doEdge` would otherwise let deep water bleed onto it despite the lower blend id. */
+  const board = ground({ "0,0": "sand", "1,0": "deep-water" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
+
+test("two floors sharing a blend id are ordered by block id, as the game orders them", () => {
+  /* `drawBlended` sorts on `floor.id`, not on `blendId`. A blend group hands one blend id to
+     several floors that keep their own ids, so sorting on the blend id leaves this pair tied
+     and settles it by whichever of the eight directions was walked first. `char` sits east
+     and is met first; `stone` has the lower id and must come out first anyway. */
+  const board = ground({ "0,0": "sand", "1,0": "char", "0,1": "stone" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors).map((b) => b.name), ["stone", "char"]);
 });
 
 test("one neighbour contributes once, with every direction it came from", () => {

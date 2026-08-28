@@ -81,13 +81,22 @@ function contributorAt(ground, x, y) {
  * of a sheetless floor reads as a cut-out with hard borders, which is the state this replaces
  * rather than an improvement on it.
  *
- * Returns one entry per distinct floor, sorted by blend id ascending so that two of them stack
- * the same way on every frame, each carrying the directions it came from.
+ * Returns one entry per distinct floor, each carrying the directions it came from, sorted by
+ * **block id** ascending. That is the game's own key: `drawBlended` sorts on
+ * `floor.id + (this != tile.floor() && floor == tile.floor() ? 99999 : 0)`, and the bump can
+ * only fire on the overlay pass, so on this pass the key is the id alone. Blend id is a
+ * different field and sorting on it leaves ties, because a blend group hands one blend id to
+ * several floors that keep their own ids.
  */
 export function blendersAt(ground, x, y, floors) {
   const mine = ground[`${x},${y}`]?.floor;
   const here = mine ? floors[mine] : null;
   const found = new Map();
+
+  // `drawBase` reaches `drawEdges` only when the tile's own floor has `drawEdgeIn`. Fourteen
+  // floors say no, `colored-floor` and every `metal-tiles-*`, and they receive no boundary at
+  // all whatever surrounds them.
+  if (here?.in === false) return [];
 
   for (const [index, [dx, dy]] of D8.entries()) {
     const name = contributorAt(ground, x + dx, y + dy);
@@ -95,6 +104,10 @@ export function blendersAt(ground, x, y, floors) {
 
     const other = floors[name];
     if (!other?.out || !other.sheet) continue;
+    // `drawEdges` skips a neighbour whose floor sits on another `cacheLayer`, because the game
+    // draws those in a pass of their own. Without it `deep-water` collects a sliver of the
+    // `stone` beside it, since stone's blend id is the higher of the two.
+    if ((other.layer ?? "normal") !== (here?.layer ?? "normal")) continue;
     // `doEdge`: a higher id wins, and a floor whose group has no sheet loses to everything.
     if (here?.sheet && other.blend <= (here.blend ?? 0)) continue;
 
@@ -103,7 +116,7 @@ export function blendersAt(ground, x, y, floors) {
     else found.set(name, { name, sheet: other.sheet, dirs: [index] });
   }
 
-  return [...found.values()].sort((a, b) => floors[a.name].blend - floors[b.name].blend);
+  return [...found.values()].sort((a, b) => floors[a.name].id - floors[b.name].id);
 }
 
 /**

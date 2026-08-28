@@ -52,9 +52,20 @@ def main() -> None:
         # whose group has no sheet either.
         sheet = entry.get("blend_group", name)
         floors[name] = {
+            # The block id, which is what the game sorts blenders by. Not the blend id: a
+            # blend group hands one blend id to several floors that keep their own ids, so
+            # sorting on it leaves ties the game itself breaks.
+            "id": entry["id"],
             "blend": entry.get("blend_id", 0),
             # Absent means true in the dump, which is how the game's own default reads.
+            # `in` is whether anything bleeds onto this floor, `out` whether it bleeds
+            # outwards, and the two sets are not the same set: `empty` and `space` refuse to
+            # bleed out and still receive edges.
+            "in": entry.get("draw_edge_in", True),
             "out": entry.get("draw_edge_out", True),
+            # Which pass the game draws this floor in. `drawEdges` skips a neighbour on
+            # another layer, which is what keeps water from blending into land.
+            "layer": entry.get("cache_layer", "normal"),
             "variants": variants,
             "sheet": sheet if f"{sheet}-edge" in art else None,
         }
