@@ -20,7 +20,6 @@
  *     cd _run && echo "measure <base64> 30 ../bench/data/<name>.json" | java -jar server-release.jar
  */
 
-import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
