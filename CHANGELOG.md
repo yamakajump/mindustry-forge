@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.1](https://github.com/yamakajump/mindustry-forge/compare/v0.3.0...v0.3.1) (2026-08-28)
+
+
+### Bug Fixes
+
+* check the config files the guard could not see ([#149](https://github.com/yamakajump/mindustry-forge/issues/149)) ([61037e8](https://github.com/yamakajump/mindustry-forge/commit/61037e893a98352b64e837e133591c71c880617e))
+* correct a false figure in a test comment ([#137](https://github.com/yamakajump/mindustry-forge/issues/137)) ([a75cc1a](https://github.com/yamakajump/mindustry-forge/commit/a75cc1ae1c736b893757e6aab3de1e93804fab94))
+* correct six comments that describe other code ([#143](https://github.com/yamakajump/mindustry-forge/issues/143)) ([e08f0d9](https://github.com/yamakajump/mindustry-forge/commit/e08f0d986f864c988c3e5f5f4123a8509f855ea3))
+* label the issues the templates said they would ([#147](https://github.com/yamakajump/mindustry-forge/issues/147)) ([c48aa77](https://github.com/yamakajump/mindustry-forge/commit/c48aa77f5c6a09e081b61eb3c9b59279727da2ab))
+* **render:** give the atlas a name that changes ([#112](https://github.com/yamakajump/mindustry-forge/issues/112)) ([334a33d](https://github.com/yamakajump/mindustry-forge/commit/334a33d73f1fb29a529dfd653154a4a532aa8095))
+* stop CI from ignoring a drifting lock file ([#151](https://github.com/yamakajump/mindustry-forge/issues/151)) ([ed4651c](https://github.com/yamakajump/mindustry-forge/commit/ed4651c170df9cf8dd08608f10d785ff187d26fd))
+
 ## [0.3.0](https://github.com/yamakajump/mindustry-forge/compare/v0.2.0...v0.3.0) (2026-08-28)
 
 
