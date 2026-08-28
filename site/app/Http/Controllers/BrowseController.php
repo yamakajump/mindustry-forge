@@ -45,10 +45,27 @@ class BrowseController extends Controller
         'small' => 'Les plus compacts',
         'new' => 'Les plus récents',
         'seen' => 'Les plus vus',
+        // Une grandeur unique, comparable entre deux schemas quels qu'ils soient : un
+        // j'aime vaut un j'aime. C'est pourquoi ce tri n'exige pas d'objet choisi la ou
+        // les trois qui comparent des productions l'exigent.
+        'aimes' => 'Les plus aimés',
+        // N'a de sens que sous le filtre des favoris, et n'est offert que la : ailleurs il
+        // classerait sur une date que la liste ne porte pas. Asymetrie assumee.
+        'garde' => 'Dans l ordre ou je les ai gardés',
     ];
 
     /** The two that compare schematics on their output, so the two that need an item. */
     private const NEEDS_AN_ITEM = ['best', 'dense', 'output'];
+
+    /**
+     * How many fit on one page, and the size of the crowd a leaderboard needs.
+     *
+     * One constant rather than two, because the second is the first: a ranking that cannot
+     * fill its own first screen is not a ranking. Written as a derivation rather than as a
+     * second literal, so that raising the page size cannot leave a comment behind saying
+     * twenty-four for a reason that stopped being true.
+     */
+    private const PER_PAGE = 24;
 
     /** The two worlds, which do not share a build menu. */
     private const PLANETS = ['serpulo', 'erekir'];
@@ -124,6 +141,61 @@ class BrowseController extends Controller
         $planet = in_array($request->query('planete'), self::PLANETS, true)
             ? $request->query('planete') : '';
 
+        /* Ce qui est a moi : mes favoris, ce que j'ai aime, ce que j'ai publie.
+
+           Offerts aux seuls connectes, parce qu'un filtre qui rend toujours vide est pire
+           qu'un filtre absent. Le controle est ici et pas seulement dans la vue : une
+           adresse se tape, et `favoris=oui` sans session ne doit pas filtrer sur un
+           identifiant nul. */
+        $me = $request->user();
+        $favorites = $me !== null && $request->query('favoris') === 'oui';
+        $liked = $me !== null && $request->query('aimes') === 'oui';
+        $mine = $me !== null && $request->query('miens') === 'oui';
+
+        /* Une liste personnelle n'est pas le catalogue, et ne suit donc pas sa regle.
+
+           `ordinary()` met de cote ce qui ne se pose pas en partie normale, ce qui est juste
+           pour « qu'est-ce qui existe et qui marche ». Ma liste de favoris repond a « qu'est-ce
+           que j'ai garde », et la reponse ne se discute pas : je l'ai garde, je le revois.
+           Vaut pour les trois, y compris ce que j'ai publie : un auteur doit retrouver son
+           propre plan de bac a sable dans sa propre liste.
+
+           Ecrit ici plutot que laisse a deduire, parce que la prochaine personne qui verra
+           un scope manquant sous un filtre le remettra par coherence. */
+        $personal = $favorites || $liked || $mine;
+
+        /* Quels classements cette page a le droit d'offrir, et lesquels elle retire.
+
+           « Les plus aimés » n'apparait pas tant que moins d'une page entiere de schemas
+           porte au moins un j'aime. En dessous, le palmares ne remplit pas son premier ecran
+           et classe des schemas dont la plupart valent zero : un chiffre exact, affiche a
+           l'endroit qui pose une autre question, ce que ce depot a paye six fois en une
+           journee. Le seuil EST la taille d'une page, derive d'elle et non recopie a cote,
+           pour qu'en la changeant la raison reste vraie.
+
+           « Dans l'ordre ou je les ai gardes » ne vit que sous les favoris : ailleurs la
+           table de liaison n'est pas jointe et la colonne n'existe pas dans la requete. */
+        $leaderboard = Schematic::query()->listed()->where('likes', '>', 0)->count()
+            >= self::PER_PAGE;
+
+        $offered = self::ORDERS;
+        if (! $leaderboard) {
+            unset($offered['aimes']);
+        }
+        if (! $favorites) {
+            unset($offered['garde']);
+        }
+
+        if (! array_key_exists($order, $offered)) {
+            // Retombe sur ce que la page sait faire, et le dit, plutot que de rendre une
+            // liste classee autrement que ce que son onglet actif annonce.
+            $order = $favorites ? 'garde' : 'new';
+        } elseif ($favorites && $request->query('tri') === null) {
+            // Ce que je viens de garder en premier : c'est la question que pose une liste
+            // personnelle, et elle n'est pas celle du catalogue.
+            $order = 'garde';
+        }
+
         // `items` charge en une fois : chaque tuile lit son plafond, et sans ca une page de
         // vingt-quatre ferait vingt-quatre requetes de plus.
         $query = Schematic::query()->with(['user', 'items'])->listed();
@@ -163,6 +235,29 @@ class BrowseController extends Controller
 
         if ($planet !== '') {
             $query->onPlanet($planet);
+        }
+
+        /* Une jointure plutot qu'un `whereExists` pour les favoris : l'ordre « dans l'ordre
+           ou je les ai gardes » a besoin de la colonne `created_at` de la table de liaison,
+           qu'un `exists` ne rend pas. Les deux autres n'ont rien a lire, donc ils restent
+           des existences. */
+        if ($favorites) {
+            $query->join('favorites', function ($join) use ($me) {
+                $join->on('favorites.schematic_id', '=', 'schematics.id')
+                    ->where('favorites.user_id', $me->id);
+            })->select('schematics.*');
+        }
+
+        if ($liked) {
+            $query->whereExists(fn ($sub) => $sub
+                ->selectRaw('1')
+                ->from('schematic_likes')
+                ->whereColumn('schematic_likes.schematic_id', 'schematics.id')
+                ->where('schematic_likes.user_id', $me->id));
+        }
+
+        if ($mine) {
+            $query->where('schematics.user_id', $me->id);
         }
 
         if ($makes !== '') {
@@ -218,7 +313,7 @@ class BrowseController extends Controller
            Counted before the exclusion is applied rather than as the difference of two
            totals, and forwards through the block index, for the reason written where that
            first count was: a difference means two passes over the whole filtered set. */
-        $setAside = $creative ? 0 : (clone $query)
+        $setAside = ($creative || $personal) ? 0 : (clone $query)
             ->whereExists(fn ($sub) => $sub
                 ->selectRaw('1')
                 ->from('schematic_blocks')
@@ -227,7 +322,7 @@ class BrowseController extends Controller
             ->distinct()
             ->count('schematics.id');
 
-        if (! $creative) {
+        if (! $creative && ! $personal) {
             $query->ordinary();
         }
 
@@ -242,6 +337,8 @@ class BrowseController extends Controller
             'output' => $query->orderByDesc('schematic_items.rate'),
             'small' => $query->orderBy('blocks'),
             'seen' => $query->orderByDesc('views'),
+            'aimes' => $query->orderByDesc('schematics.likes'),
+            'garde' => $query->orderByDesc('favorites.created_at'),
             default => $query->orderByDesc('schematics.created_at'),
         };
 
@@ -257,7 +354,7 @@ class BrowseController extends Controller
          */
         $query->orderByDesc('schematics.id');
 
-        $page = $query->paginate(24)->withQueryString();
+        $page = $query->paginate(self::PER_PAGE)->withQueryString();
 
         /* Ce que la page dit, en plus de ce qu'elle classe.
          *
@@ -338,7 +435,7 @@ class BrowseController extends Controller
             // A page that says how many it is holding back is a page a reader can
             // disagree with - as long as the figure is this page's and not the catalogue's.
             'setAside' => $setAside,
-            'orders' => self::ORDERS,
+            'orders' => $offered,
             // Offered rather than typed: the analysis already knows what exists, so a
             // player picks from what is actually there instead of guessing a spelling.
             'items' => Vitrine::itemsOnOffer(),
@@ -358,6 +455,10 @@ class BrowseController extends Controller
             'measured' => $measured,
             'planet' => $planet,
             'planets' => self::PLANETS,
+            'favorites' => $favorites,
+            'liked' => $liked,
+            'mine' => $mine,
+            'signedIn' => $me !== null,
             'chips' => $chips,
         ]);
     }

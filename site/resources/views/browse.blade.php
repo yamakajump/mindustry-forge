@@ -200,6 +200,29 @@
       <button class="primary" type="submit">{{ __('vitrine.contraintes.chercher') }}</button>
     </div>
 
+    {{-- Ce qui est a moi, offert aux seuls connectes : un filtre qui rend toujours vide
+         est pire qu'un filtre absent.
+
+         Trois cases dans le meme panneau que le reste, et c'est tout l'interet : « mes
+         favoris qui tiennent dans 12x12 et sortent du silicium » est une recherche comme
+         une autre. Une page de favoris a part n'aurait su filtrer sur rien. --}}
+    @if($signedIn)
+      <div class="row">
+        <span class="lead">{{ __('vitrine.a-moi.titre') }}</span>
+        <label class="coche"><input type="checkbox" name="favoris" value="oui"
+          @checked($favorites)> {{ __('vitrine.a-moi.favoris') }}</label>
+        <label class="coche"><input type="checkbox" name="aimes" value="oui"
+          @checked($liked)> {{ __('vitrine.a-moi.aimes') }}</label>
+        <label class="coche"><input type="checkbox" name="miens" value="oui"
+          @checked($mine)> {{ __('vitrine.a-moi.miens') }}</label>
+      </div>
+      @if($favorites || $liked || $mine)
+        {{-- Dit, et pas seulement fait : sans cette phrase, un joueur qui retrouve dans ses
+             favoris un plan de bac a sable croirait que le filtre du catalogue est casse. --}}
+        <p class="hint-line">{{ __('vitrine.a-moi.tout-garde') }}</p>
+      @endif
+    @endif
+
     @if($fitsWide || $fitsTall)
       <p class="hint-line">{{ __('vitrine.contraintes.sans-rotation') }}</p>
     @endif

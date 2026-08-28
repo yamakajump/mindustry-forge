@@ -88,6 +88,23 @@ return [
      * assembles par le controleur, parce qu'une cle manquante rendrait « au moins » sans son
      * millier, et le millier est toute la phrase.
      */
+    /*
+     * Les trois listes personnelles, et la phrase qui dit ce qu'elles ne filtrent pas.
+     *
+     * `ordinary()` est une regle du CATALOGUE et pas une regle de LISTE. Le catalogue met de
+     * cote ce qui ne se pose pas en partie normale, parce qu'il repond a « qu'est-ce qui
+     * existe et qui marche ». Une liste personnelle repond a « qu'est-ce que j'ai garde », et
+     * la reponse ne se discute pas.
+     */
+    'a-moi' => [
+        'titre' => 'À moi',
+        'favoris' => 'mes favoris',
+        'aimes' => "ceux que j'ai aimés",
+        'miens' => "ceux que j'ai publiés",
+        'tout-garde' => "Dans une liste à moi, rien n'est mis de côté : un schéma de bac à
+            sable que j'ai gardé, je le revois.",
+    ],
+
     'puces' => [
         'titre' => 'Recherche en cours',
         'retirer' => 'Retirer cette contrainte',
