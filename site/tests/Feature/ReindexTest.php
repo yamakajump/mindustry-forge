@@ -8,25 +8,24 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 /*
- * Une correction qui ne s'applique a rien.
+ * A fix that applies to nothing.
  *
- * Le robinet de bac a sable est reconnu, dit plutot que chiffre, et retire de l'index des
- * producteurs. Tout cela est vrai du code, et faux des mille deux cent quarante-six lignes
- * pour lesquelles il a ete ecrit.
+ * The sandbox tap is recognised, stated rather than quantified, and taken out of the
+ * producer index. All of that is true of the code, and false of the one thousand two
+ * hundred and forty-six rows it was written for.
  *
- * `schematic_items` est reconstruit par le crochet `saved`, et le seul chemin qui sauve une
- * ligne en masse est `forge:analyser`, qui ne prend que ce que `stale()` designe. `stale()`
- * compare `engine_version` au hache du moteur, et ce hache ne couvre que des fichiers
- * JavaScript et le catalogue. Une correction ecrite entierement en PHP ne le change donc
- * pas : la file reste vide, les lignes ne sont jamais reprises, et l'index garde ce qu'il
- * avait.
+ * `schematic_items` is rebuilt by the `saved` hook, and the only path that saves a row in
+ * bulk is `forge:analyser`, which takes only what `stale()` designates. `stale()` compares
+ * `engine_version` against the engine hash, and that hash covers JavaScript files and the
+ * catalogue only. A fix written entirely in PHP therefore does not change it: the queue
+ * stays empty, the rows are never picked up again, and the index keeps what it had.
  *
- * Deployer ne suffit pas non plus : le deploiement change le code, pas les lignes deja
- * ecrites. Ces tests tiennent les deux moities, celle qui marche et celle qui n'atteint
- * personne.
+ * Deploying is not enough either: a deployment changes the code, not the rows already
+ * written. These tests hold both halves, the one that works and the one that reaches
+ * nobody.
  */
 
-/** Une analyse comme le navigateur la rend, avec un robinet d'energie dedans. */
+/** An analysis as the browser renders it, with a power tap inside. */
 function analyseAvecRobinet(): array
 {
     return [
@@ -39,13 +38,13 @@ function analyseAvecRobinet(): array
     ];
 }
 
-it('reconstruit bien l index quand la ligne est sauvee', function () {
+it('rebuilds the index when the row is saved', function () {
     $one = Schematic::factory()->imported()->create([
         'analysis' => analyseAvecRobinet(),
         'engine_version' => EngineVersion::current(),
     ]);
 
-    // Ce que l'ancien code avait ecrit, et que la production porte encore.
+    // What the old code had written, and what production still carries.
     SchematicItem::create([
         'schematic_id' => $one->id,
         'item' => SchematicItem::POWER,
@@ -58,23 +57,23 @@ it('reconstruit bien l index quand la ligne est sauvee', function () {
     $one->touch();
 
     expect($one->items()->where('kind', SchematicItem::MESURE)->count())->toBe(0,
-        'une sauvegarde reconstruit l index et jette le plafond du robinet');
+        'a save rebuilds the index and throws out the tap ceiling');
 });
 
-it('mais rien ne sauve jamais ces lignes, parce que le moteur n a pas bouge', function () {
+it('but nothing ever saves those rows, because the engine has not moved', function () {
     $one = Schematic::factory()->imported()->create([
         'analysis' => analyseAvecRobinet(),
         'engine_version' => EngineVersion::current(),
     ]);
 
-    /* Le seul chemin de masse est `forge:analyser`, et il ne prend que `stale()`. Une
-       correction ecrite en PHP ne change pas le hache du moteur, donc cette ligne n'y est
-       pas, donc elle ne sera jamais reprise et son index ne sera jamais reconstruit. */
+    /* The only bulk path is `forge:analyser`, and it takes only `stale()`. A fix written in
+       PHP does not change the engine hash, so this row is not in there, so it will never be
+       picked up again and its index will never be rebuilt. */
     expect(Schematic::stale()->pluck('id'))->not->toContain($one->id,
-        'si cette ligne devenait perimee, le reste de ce test n a plus lieu d etre');
+        'if this row went stale, the rest of this test would have no reason to exist');
 });
 
-it('donc une ligne deja indexee garde son plafond, deploiement ou pas', function () {
+it('so a row already indexed keeps its ceiling, deployment or not', function () {
     $one = Schematic::factory()->imported()->create([
         'analysis' => analyseAvecRobinet(),
         'engine_version' => EngineVersion::current(),
@@ -89,16 +88,16 @@ it('donc une ligne deja indexee garde son plafond, deploiement ou pas', function
         'rate_per_block' => 499_985.47,
     ]);
 
-    // Personne ne la touche : c'est exactement l'etat de la production apres un deploiement.
+    // Nobody touches it: this is exactly what production looks like after a deployment.
     expect(SchematicItem::query()
         ->where('sens', SchematicItem::PRODUIT)
         ->where('kind', SchematicItem::MESURE)
         ->where('rate', '>', 100_000)
         ->count())->toBe(1,
-            'le classement par energie reste mene par un chiffre qu aucun joueur ne suit');
+            'the power ranking is still led by a figure no player can match');
 });
 
-it('et forge:indexer est ce qui la reprend', function () {
+it('and forge:indexer is what picks it up again', function () {
     $one = Schematic::factory()->imported()->create([
         'analysis' => analyseAvecRobinet(),
         'engine_version' => EngineVersion::current(),
@@ -116,13 +115,13 @@ it('et forge:indexer est ce qui la reprend', function () {
     $this->artisan('forge:indexer')->assertSuccessful();
 
     expect($one->items()->where('kind', SchematicItem::MESURE)->count())->toBe(0,
-        'le plafond du robinet doit avoir quitte le classement des producteurs');
+        'the tap ceiling must have left the producer ranking');
 });
 
-it('ne touche pas une vraie usine, ni sa date', function () {
-    /* Le test qui compte le plus ici. Une passe de menage qui vide le catalogue n'est pas
-       une correction, et une qui remonte quinze mille lignes en tete de « recemment
-       modifiees » se voit par tout le monde pour un travail que personne n'a demande. */
+it('does not touch a real factory, nor its date', function () {
+    /* The test that matters most here. A clean-up pass that empties the catalogue is not a
+       fix, and one that lifts fifteen thousand rows to the top of "recently modified" is
+       seen by everybody, for work nobody asked for. */
     $real = Schematic::factory()->imported()->create([
         'analysis' => [
             'width' => 10, 'height' => 10, 'blocks' => 2,
@@ -139,7 +138,7 @@ it('ne touche pas une vraie usine, ni sa date', function () {
     $this->artisan('forge:indexer')->assertSuccessful();
 
     expect($real->items()->where('item', 'silicon')->count())->toBe(1,
-        'une usine reelle reste indexee sous ce qu elle produit');
+        'a real factory stays indexed under what it produces');
     expect($real->fresh()->updated_at->equalTo($before))->toBeTrue(
-        'reclasser n est pas modifier');
+        'reindexing is not modifying');
 });

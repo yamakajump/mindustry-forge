@@ -9,23 +9,22 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 /*
- * Les trois listes personnelles, et le palmares qui attend d'avoir du monde.
+ * The three personal lists, and the ranking that waits for a crowd.
  *
- * Ce fichier existe pour deux regles qu'aucun test de valeur ne verrait.
+ * This file exists for two rules no test of a value would see.
  *
- * La premiere : `ordinary()` est une regle du CATALOGUE et pas une regle de LISTE. Le
- * catalogue met de cote ce qui ne se pose pas en partie normale, parce qu'il repond a
- * « qu'est-ce qui existe et qui marche ». Une liste personnelle repond a « qu'est-ce que
- * j'ai garde », et la reponse ne se discute pas. Appliquer la premiere regle a la seconde
- * ferait disparaitre un favori sans un mot, ce qui se lit comme un site qui perd des
- * choses.
+ * The first: `ordinary()` is a rule of the CATALOGUE and not a rule of a LIST. The
+ * catalogue sets aside what cannot be placed in a normal game, because it answers "what
+ * exists and what works". A personal list answers "what did I keep", and that answer is
+ * not up for debate. Applying the first rule to the second would make a favorite
+ * disappear without a word, which reads as a site that loses things.
  *
- * La seconde : un classement qui ne peut pas remplir son premier ecran n'est pas un
- * classement. « Les plus aimés » ouvert le premier jour sur quinze mille schemas a zero
- * serait un chiffre exact affiche a l'endroit qui pose une autre question.
+ * The second: a ranking that cannot fill its first screen is not a ranking. "The most
+ * liked" opened on day one over fifteen thousand schematics at zero would be an exact
+ * figure shown in the place that asks another question.
  */
 
-/** Un schema publie, avec de quoi le distinguer des autres. */
+/** A published schematic, with enough on it to tell it from the others. */
 function publie(string $name, array $held = []): Schematic
 {
     return Schematic::factory()->create([
@@ -39,30 +38,30 @@ function publie(string $name, array $held = []): Schematic
 }
 
 /*
- * Le seuil du palmares.
+ * The threshold of the ranking.
  *
- * Vingt-trois contre vingt-quatre, et la valeur n'est pas recopiee ici : elle est celle
- * d'une page. Si la pagination change, ce test change avec elle plutot que de garder une
- * raison qui a cesse d'etre vraie.
+ * Twenty-three against twenty-four, and the value is not copied out here: it is a page's
+ * own. If the pagination changes, this test changes with it rather than keeping a reason
+ * that has stopped being true.
  */
-it('n offre pas les plus aimés tant qu une page entière ne tient pas', function () {
+it('never offers the most liked until a whole page of them exists', function () {
     $liked = collect(range(1, 23))->map(fn ($n) => publie("Aime {$n}"));
     Schematic::whereIn('id', $liked->pluck('id'))->update(['likes' => 3]);
 
     $this->get('/schemas')->assertOk()->assertDontSee('Les plus aimés');
 });
 
-it('offre les plus aimés dès qu une page entière en porte', function () {
+it('offers the most liked as soon as a whole page carries them', function () {
     $liked = collect(range(1, 24))->map(fn ($n) => publie("Aime {$n}"));
-    // Par le constructeur de requetes et non par la factory : `likes` n'est pas dans
-    // `$fillable`, deliberement, comme `views`. Un compteur ne se remplit pas en masse, et
-    // une factory qui l'essaie est ignoree en silence et rend zero.
+    // Through the query builder and not through the factory: `likes` is not in
+    // `$fillable`, deliberately, like `views`. A counter is not mass assigned, and a
+    // factory that tries is ignored in silence and yields zero.
     Schematic::whereIn('id', $liked->pluck('id'))->update(['likes' => 3]);
 
     $this->get('/schemas')->assertOk()->assertSee('Les plus aimés');
 });
 
-it('retombe sur la date quand on demande les plus aimés sous le seuil', function () {
+it('falls back to the date when the most liked is asked for below the threshold', function () {
     publie('Le seul');
 
     $this->get('/schemas?tri=aimes')
@@ -71,7 +70,7 @@ it('retombe sur la date quand on demande les plus aimés sous le seuil', functio
         ->assertDontSee('Les plus aimés');
 });
 
-it('classe sur le compte de j aime au-delà du seuil', function () {
+it('sorts on the like count above the threshold', function () {
     $rows = collect(range(1, 24))->map(fn ($n) => publie("Plan {$n}"));
     Schematic::whereIn('id', $rows->pluck('id'))->update(['likes' => 1]);
     Schematic::whereKey($rows->last()->id)->update(['likes' => 99]);
@@ -83,9 +82,9 @@ it('classe sur le compte de j aime au-delà du seuil', function () {
 });
 
 /*
- * Mes favoris, qui ne sont pas le catalogue.
+ * My favorites, which are not the catalogue.
  */
-it('ne montre que ce que j ai gardé', function () {
+it('shows only what I have kept', function () {
     $me = User::factory()->create();
     $kept = publie('Garde');
     publie('Pas garde');
@@ -98,25 +97,25 @@ it('ne montre que ce que j ai gardé', function () {
 });
 
 /*
- * Le test qui justifie ce fichier.
+ * The test that justifies this file.
  *
- * Un plan de bac a sable garde en favori doit revenir. La version fausse aurait ete
- * silencieuse : la liste aurait simplement ete plus courte, sans erreur nulle part, et le
- * joueur aurait conclu que le site avait perdu son favori.
+ * A sandbox schematic kept as a favorite has to come back. The wrong version would have
+ * been silent: the list would simply have been shorter, with no error anywhere, and the
+ * player would have concluded the site had lost their favorite.
  */
-it('rend un favori de bac à sable, que le catalogue met pourtant de côté', function () {
+it('returns a sandbox favorite even though the catalogue sets it aside', function () {
     $me = User::factory()->create();
     $sandbox = publie('Bac a sable garde', ['item-source' => 2, 'conveyor' => 8]);
     Favorite::create(['user_id' => $me->id, 'schematic_id' => $sandbox->id]);
 
-    // Le catalogue l'ecarte, et il a raison de le faire.
+    // The catalogue leaves it out, and it is right to do so.
     $this->actingAs($me)->get('/schemas')->assertDontSee('Bac a sable garde');
 
-    // Ma liste le rend, et elle a raison aussi. Les deux repondent a deux questions.
+    // My list returns it, and it is right too. The two answer two questions.
     $this->actingAs($me)->get('/schemas?favoris=oui')->assertSee('Bac a sable garde');
 });
 
-it('vaut aussi pour ce que j ai publié', function () {
+it('holds for what I have published too', function () {
     $me = User::factory()->create();
     $sandbox = publie('Mon bac a sable', ['power-source' => 1, 'conveyor' => 6]);
     $sandbox->update(['user_id' => $me->id]);
@@ -124,7 +123,7 @@ it('vaut aussi pour ce que j ai publié', function () {
     $this->actingAs($me)->get('/schemas?miens=oui')->assertSee('Mon bac a sable');
 });
 
-it('classe mes favoris dans l ordre où je les ai gardés', function () {
+it('orders my favorites the way I kept them', function () {
     $me = User::factory()->create();
     $vieux = publie('Garde en premier');
     $neuf = publie('Garde en dernier');
@@ -140,7 +139,7 @@ it('classe mes favoris dans l ordre où je les ai gardés', function () {
     expect(strpos($grid, 'Garde en dernier'))->toBeLessThan(strpos($grid, 'Garde en premier'));
 });
 
-it('ne montre que ce que j ai aimé', function () {
+it('shows only what I have liked', function () {
     $me = User::factory()->create();
     $liked = publie('Aime');
     publie('Pas aime');
@@ -153,13 +152,13 @@ it('ne montre que ce que j ai aimé', function () {
 });
 
 /*
- * Le visiteur sans compte.
+ * The visitor with no account.
  *
- * Une adresse se tape et se partage : `favoris=oui` peut arriver sans session. Filtrer sur
- * un identifiant nul rendrait une page vide sans dire pourquoi, ce qui se lit comme un
- * catalogue vide plutot que comme un filtre inapplicable.
+ * An address gets typed and shared: `favoris=oui` can arrive with no session. Filtering on
+ * a null identifier would return an empty page without saying why, which reads as an empty
+ * catalogue rather than as a filter that cannot apply.
  */
-it('ignore les filtres personnels pour qui n est pas connecté', function () {
+it('ignores the personal filters for whoever is not signed in', function () {
     publie('Visible');
 
     $this->get('/schemas?favoris=oui&aimes=oui&miens=oui')
@@ -167,20 +166,20 @@ it('ignore les filtres personnels pour qui n est pas connecté', function () {
         ->assertSee('Visible');
 });
 
-it('n offre pas les cases personnelles à un visiteur sans compte', function () {
+it('never offers the personal checkboxes to a visitor with no account', function () {
     publie('Visible');
 
     $this->get('/schemas')->assertOk()->assertDontSee('mes favoris');
 });
 
 /*
- * L'adresse dediee, qui est la meme page avec le filtre deja arme.
+ * The dedicated address, which is the same page with the filter already set.
  *
- * Une page a part aurait eu sa propre requete, donc une deuxieme implementation de « lister
- * des schemas ». Le cout se voit le jour ou la vitrine sait filtrer par encombrement et par
- * planete et que la liste de favoris ne sait rien faire de tout ca.
+ * A page of its own would have had its own query, so a second implementation of "list
+ * schematics". The cost shows up the day the catalogue can filter by footprint and by
+ * planet and the favorites list can do none of it.
  */
-it('sert mes favoris à leur propre adresse, avec les mêmes filtres', function () {
+it('serves my favorites at their own address, with the same filters', function () {
     $me = User::factory()->create();
     $kept = publie('Garde');
     publie('Pas garde');
@@ -192,7 +191,7 @@ it('sert mes favoris à leur propre adresse, avec les mêmes filtres', function 
         ->assertDontSee('Pas garde');
 });
 
-it('laisse mes favoris se filtrer comme le reste du catalogue', function () {
+it('lets my favorites be filtered like the rest of the catalogue', function () {
     $me = User::factory()->create();
     $grand = publie('Trop grand');
     $petit = publie('Rentre');
@@ -209,44 +208,45 @@ it('laisse mes favoris se filtrer comme le reste du catalogue', function () {
         ->assertDontSee('Trop grand');
 });
 
-it('envoie un visiteur sans compte se connecter plutôt que sur une liste vide', function () {
+it('sends a visitor with no account to sign in rather than to an empty list', function () {
     $this->get('/mes-favoris')->assertRedirect('/auth/discord');
 });
 
 /*
- * Ce que la page dit quand la liste personnelle est vide, et quand elle est filtree.
+ * What the page says when the personal list is empty, and when it is filtered.
  *
- * Deux phrases exactes posees la ou on demandait autre chose, trouvees en ouvrant la page
- * et non en lisant une sortie de commande.
+ * Two exact sentences placed where something else was asked for, found by opening the page
+ * and not by reading the output of a command.
  */
-it('dit que je n ai rien gardé, plutôt que de m envoyer publier', function () {
+it('says I have kept nothing, rather than sending me off to publish', function () {
     $me = User::factory()->create();
     publie('Existe ailleurs');
 
     $page = $this->actingAs($me)->get('/mes-favoris')->assertOk();
 
-    // Sans l'apostrophe : Blade la rend en `&#039;`, donc une assertion qui la porte
-    // echouerait sur l'echappement et non sur la phrase.
+    // Without the apostrophe: Blade renders it as `&#039;`, so an assertion carrying it
+    // would fail on the escaping and not on the sentence.
     $page->assertSee('encore rien gardé')
-        // La phrase du catalogue serait exacte et hors sujet : il n'y a rien a publier, il
-        // n'y a rien de garde, et elle envoyait analyser un plan pour resoudre ca.
+        // The catalogue sentence would be exact and beside the point: there is nothing to
+        // publish, there is nothing kept, and it sent the reader off to analyse a
+        // schematic to fix that.
         ->assertDontSee('Rien de publié qui corresponde');
 });
 
-it('dit dans une puce que la liste est filtrée sur mes favoris', function () {
+it('says in a chip that the list is filtered on my favorites', function () {
     $me = User::factory()->create();
     $kept = publie('Garde');
     Favorite::create(['user_id' => $me->id, 'schematic_id' => $kept->id]);
 
-    // Sans cette puce, le panneau qui porte les cases est replie et le titre est celui du
-    // catalogue : un lecteur voit une vitrine anormalement courte, pas ses favoris.
+    // Without this chip, the panel that carries the checkboxes is folded shut and the title
+    // is the catalogue's: a reader sees an oddly short catalogue, not their favorites.
     $this->actingAs($me)->get('/mes-favoris')
         ->assertOk()
         ->assertSee('Recherche en cours')
         ->assertSee('mes favoris');
 });
 
-it('garde la phrase du catalogue quand la recherche est celle du catalogue', function () {
+it('keeps the catalogue sentence when the search is the catalogue search', function () {
     $this->get('/schemas?produit=silicon')
         ->assertOk()
         ->assertSee('Rien de publié qui corresponde');

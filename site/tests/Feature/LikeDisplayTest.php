@@ -14,11 +14,11 @@ uses(RefreshDatabase::class);
  * those: it answers "how many people liked it" on a page where the reader is asking whether
  * it is any good, and it reads as a verdict.
  */
-/* Les assertions laissent Laravel echapper la chaine attendue plutot que de passer
-   `false`. « j'aime » brut n'apparait jamais dans du HTML, l'apostrophe y est `&#039;`,
-   donc un `assertDontSee("j'aime", false)` ne trouve rien quoi qu'il arrive : il passait
-   sans rien prouver, y compris quand le compteur etait bien affiche. */
-it('n affiche pas un compteur a zero', function () {
+/* The assertions let Laravel escape the expected string rather than passing `false`. A
+   raw "j'aime" never appears in HTML, where the apostrophe is `&#039;`, so an
+   `assertDontSee("j'aime", false)` finds nothing whatever happens: it passed without
+   proving anything, including when the counter was on screen. */
+it('does not show a counter at zero', function () {
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
 
     $this->get("/s/{$schema->slug}")
@@ -26,7 +26,7 @@ it('n affiche pas un compteur a zero', function () {
         ->assertDontSee(__('schema.unite.jaime'));
 });
 
-it('affiche le compteur des qu il vaut quelque chose', function () {
+it('shows the counter as soon as it is worth something', function () {
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
     Schematic::whereKey($schema->id)->update(['likes' => 12]);
 
@@ -36,18 +36,18 @@ it('affiche le compteur des qu il vaut quelque chose', function () {
         ->assertSee(__('schema.unite.jaime'));
 });
 
-it('envoie un visiteur non connecte se connecter plutot que de cacher le bouton', function () {
+it('sends a signed-out visitor to sign in rather than hiding the button', function () {
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
 
-    /* Montre plutot que cache : un bouton qu'un visiteur ne voit pas est une
-       fonctionnalite dont il n'apprend jamais l'existence. */
+    /* Shown rather than hidden: a button a visitor never sees is a feature they never
+       learn exists. */
     $this->get("/s/{$schema->slug}")
         ->assertOk()
         ->assertSee('/auth/discord', false)
         ->assertSee(__('schema.aime.bouton'));
 });
 
-it('montre le bouton presse a qui a deja aime', function () {
+it('shows the button pressed to somebody who already liked', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
     $this->actingAs($user)->postJson("/api/schematiques/{$schema->slug}/aime");
@@ -57,7 +57,7 @@ it('montre le bouton presse a qui a deja aime', function () {
         ->assertSee('data-aime aria-pressed="true"', false);
 });
 
-it('montre le bouton relache a qui n a pas aime', function () {
+it('shows the button released to somebody who has not liked', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
 
@@ -66,7 +66,7 @@ it('montre le bouton relache a qui n a pas aime', function () {
         ->assertSee('data-aime aria-pressed="false"', false);
 });
 
-it('montre le favori presse a qui l a garde', function () {
+it('shows the favorite pressed to somebody who kept it', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
     $this->actingAs($user)->postJson("/api/schematiques/{$schema->slug}/favori");
@@ -76,7 +76,7 @@ it('montre le favori presse a qui l a garde', function () {
         ->assertSee('data-favori aria-pressed="true"', false);
 });
 
-it('ne prend pas l etat de quelqu un d autre pour le sien', function () {
+it('never gives one member the button state of another', function () {
     $theirs = User::factory()->create();
     $mine = User::factory()->create();
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
@@ -84,12 +84,12 @@ it('ne prend pas l etat de quelqu un d autre pour le sien', function () {
 
     $this->actingAs($mine)->get("/s/{$schema->slug}")
         ->assertOk()
-        // Le compteur est public et vaut un pour tout le monde ; le bouton, lui, est le mien.
+        // The counter is public and reads one for everybody; the button is mine alone.
         ->assertSee('data-aime aria-pressed="false"', false)
         ->assertSee('1');
 });
 
-it('affiche le compte sur la tuile de mes schemas', function () {
+it('shows the count on the tile in my schematics', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create(['user_id' => $user->id]);
     Schematic::whereKey($schema->id)->update(['likes' => 7]);
@@ -100,13 +100,13 @@ it('affiche le compte sur la tuile de mes schemas', function () {
         ->assertSee(__('schema.unite.jaime'));
 });
 
-it('ne compte aucune requete de plus par tuile', function () {
+it('adds not one query per tile', function () {
     $user = User::factory()->create();
     Schematic::factory()->count(10)->create(['user_id' => $user->id]);
 
-    /* Le compte se lit sur la colonne que la liste selectionne deja. Un `withCount` ou une
-       lecture par tuile ferait dix requetes de plus, ce que BrowsePerformanceTest existe
-       pour attraper sur le catalogue et que rien ne surveille ici. */
+    /* The count is read from the column the listing already selects. A `withCount` or a read
+       per tile would add ten queries, which BrowsePerformanceTest exists to catch on the
+       catalogue and which nothing watches here. */
     DB::enableQueryLog();
     $this->actingAs($user)->get('/mes-schemas')->assertOk();
     $queries = count(DB::getQueryLog());
@@ -115,19 +115,20 @@ it('ne compte aucune requete de plus par tuile', function () {
     expect($queries)->toBeLessThan(15);
 });
 
-it('cache le compteur a zero pour qui est connecte, sans le retirer du document', function () {
+it('keeps a zero counter hidden, not absent, for a signed-in reader', function () {
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
 
-    /* Connecte, le compteur est dans la page mais `hidden` : keep.js le devoile au premier
-       j'aime sans avoir a fabriquer l'element. Le rendre visible a zero serait la faute
-       que ce fichier surveille, le retirer du document obligerait le module a le creer. */
+    /* Signed in, the counter is in the page but `hidden`: keep.js reveals it on the first
+       like without having to build the element. Showing it at zero would be the fault this
+       file watches for, and taking it out of the document would force the module to create
+       it. */
     $this->actingAs(User::factory()->create())
         ->get("/s/{$schema->slug}")
         ->assertOk()
         ->assertSee('class="compte" hidden', false);
 });
 
-it('devoile le compteur des qu il vaut quelque chose, pour qui est connecte', function () {
+it('reveals the counter as soon as it is worth something, for a signed-in reader', function () {
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
     Schematic::whereKey($schema->id)->update(['likes' => 3]);
 

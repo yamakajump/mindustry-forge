@@ -11,23 +11,23 @@ use Illuminate\Support\Facades\Http;
 uses(RefreshDatabase::class);
 
 /*
- * Ramener quinze mille schematiques de chez les autres, et les mesurer.
+ * Bringing fifteen thousand schematics back from other people's sites, and measuring them.
  *
- * Deux choses sont testees ici et une seule est du code : la deuxieme est une promesse
- * faite au serveur d'en face. Un collecteur qui redemande ce qu'il tient deja, qui tourne
- * en rond sur une derniere page, ou qui se fait passer pour un navigateur, est un
- * collecteur qui se fait couper - et il n'y aura pas de deuxieme chance, parce que ces
- * deux catalogues sont tenus par des gens seuls qui verront le trafic.
+ * Two things are tested here and only one of them is code: the second is a promise made to
+ * the server on the other end. A collector that asks again for what it already holds, that
+ * loops forever on a last page, or that passes itself off as a browser, is a collector that
+ * gets cut off, and there will be no second chance, because these two catalogues are run by
+ * lone maintainers who will see the traffic.
  *
- * Les tests d'analyse font tourner le vrai Node sur le vrai `analyse.js`. C'est le but :
- * ce depot n'a qu'une implementation de l'analyse, donc la seule chose qui vaille d'etre
- * verifiee est que la commande la fait tourner telle quelle.
+ * The analysis tests run the real Node on the real `analyse.js`. That is the point: this
+ * repository has one implementation of the analysis, so the only thing worth checking is
+ * that the command runs it as it stands.
  */
 
-/** Quatre panneaux solaires, ecrits par `tests/js/helpers.js`. Deux sur deux, 28,8 d'energie. */
+/** Four solar panels, written by `tests/js/helpers.js`. Two by two, 28.8 power. */
 const PANNEAUX = 'bXNjaAF4nGNgYmBiZGDJS8xNZeAvLE0sKUpVKEjMy0tNLK1gZOAuzs9JLNItSMxLzWFgYGBhgAFGFAYjiAIAYa8MPg==';
 
-/** Le catalogue mindustry-tool, reduit a ce que le collecteur en lit vraiment. */
+/** The mindustry-tool catalogue, cut down to what the collector actually reads from it. */
 function toolFake(array $ids = ['aaa', 'bbb']): void
 {
     $listing = array_map(fn ($id) => ['id' => $id, 'name' => "listee {$id}"], $ids);
@@ -54,13 +54,13 @@ function toolFake(array $ids = ['aaa', 'bbb']): void
     Http::fake($routes);
 }
 
-/** Le catalogue mindustryschematics, dont le listing porte deja le base64. */
+/** The mindustryschematics catalogue, whose listing already carries the base64. */
 function otherFake(int $pages = 1, int $perPage = 2): void
 {
     Http::fake([
         'mindustryschematics.com/schematics.json*' => function ($request) use ($pages, $perPage) {
-            // Comme le vrai : un numero de page au-dela du dernier est **borne**, pas
-            // refuse. C'est le piege que `pages()` doit contourner.
+            // Like the real one: a page number past the last one is **clamped**, not
+            // refused. That is the trap `pages()` has to work around.
             $asked = min($pages, max(1, (int) ($request->data()['page'] ?? 1)));
 
             return Http::response([
@@ -84,7 +84,7 @@ function collecte(array $options = []): void
     test()->artisan('forge:collecter', ['--pause' => 0] + $options)->assertSuccessful();
 }
 
-it('ingere en prive, sans proprietaire, et dit d ou ca vient', function () {
+it('ingests as private, with no owner, and says where it came from', function () {
     toolFake(['aaa']);
 
     collecte(['source' => Schematic::MINDUSTRY_TOOL]);
@@ -92,8 +92,9 @@ it('ingere en prive, sans proprietaire, et dit d ou ca vient', function () {
     $kept = Schematic::sole();
 
     expect($kept->visibility)->toBe(Schematic::PRIVATE)
-        // Collecter et publier sont deux gestes distincts. Le second attend un message au
-        // mainteneur d'en face, et cette ligne est ce qui l'empeche de partir tout seul.
+        // Collecting and publishing are two separate gestures. The second waits on a message
+        // to the maintainer on the other end, and this line is what keeps it from going out
+        // on its own.
         ->and($kept->user_id)->toBeNull()
         ->and($kept->source)->toBe(Schematic::MINDUSTRY_TOOL)
         ->and($kept->source_id)->toBe('aaa')
@@ -101,20 +102,20 @@ it('ingere en prive, sans proprietaire, et dit d ou ca vient', function () {
         ->and($kept->name)->toBe('Ligne aaa')
         ->and($kept->code)->toBe(PANNEAUX)
         ->and($kept->fetched_at)->not->toBeNull()
-        // Leur reponse entiere, y compris leurs propres chiffres de puissance : partout ou
-        // les deux moteurs divergent, l'un des deux a tort, et ce depot peut dire lequel.
+        // Their whole response, including their own power figures: wherever the two engines
+        // disagree, one of them is wrong, and this repository can say which.
         ->and($kept->source_meta['meta']['powerProduction'])->toBe(15)
-        // Rien n'est analyse par la collecte, donc la ligne est perimee par construction.
+        // The collection analyses nothing, so the row is stale by construction.
         ->and($kept->engine_version)->toBeNull()
         ->and($kept->analysisIsStale())->toBeTrue();
 });
 
-it('ne redemande pas ce qu il tient deja', function () {
+it('does not ask again for what it already holds', function () {
     /*
-     * La reprise entiere du collecteur tient dans ce test. Il n'y a pas de curseur ni de
-     * fichier de position : la question posee avant de payer les deux appels que coute une
-     * entree est "est-ce que la base la tient ?". Si ce test tombe, relancer une collecte
-     * coupee au dixieme mille recommence dix mille fois deux appels chez quelqu'un d'autre.
+     * The whole of the collector's resuming is in this test. There is no cursor and no
+     * position file: the question asked before paying the two calls an entry costs is "does
+     * the database hold it?". If this test falls, restarting a collection cut off at the ten
+     * thousandth entry makes ten thousand times two calls on somebody else's server.
      */
     toolFake(['aaa', 'bbb']);
 
@@ -127,7 +128,7 @@ it('ne redemande pas ce qu il tient deja', function () {
         ->and($details)->toHaveCount(1);
 });
 
-it('reprend une collecte coupee au milieu', function () {
+it('resumes a collection cut off halfway', function () {
     toolFake(['aaa', 'bbb']);
 
     collecte(['source' => Schematic::MINDUSTRY_TOOL, '--limite' => 1]);
@@ -138,11 +139,11 @@ it('reprend une collecte coupee au milieu', function () {
     expect(Schematic::pluck('source_id')->sort()->values()->all())->toBe(['aaa', 'bbb']);
 });
 
-it('s annonce sous son propre nom plutot que sous celui d un navigateur', function () {
+it('announces itself under its own name, not under a browser name', function () {
     /*
-     * Se deguiser en Chrome marcherait mieux et vaudrait exactement ce que ca a l'air de
-     * valoir le jour ou on ecrit au mainteneur d'en face. Un agent nommable est aussi un
-     * agent qu'ils peuvent bloquer proprement, ce qui est leur droit.
+     * Dressing up as Chrome would work better, and would be worth exactly what it looks like
+     * it is worth the day we write to the maintainer on the other end. An agent that can be
+     * named is also an agent they can block cleanly, which is their right.
      */
     toolFake(['aaa']);
 
@@ -152,12 +153,12 @@ it('s annonce sous son propre nom plutot que sous celui d un navigateur', functi
     Http::assertNotSent(fn ($request) => str_contains($request->header('User-Agent')[0] ?? '', 'Chrome'));
 });
 
-it('ne tourne pas en rond sur une derniere page qui se repete', function () {
+it('does not loop forever on a last page that repeats itself', function () {
     /*
-     * mindustryschematics borne le numero de page au lieu de le refuser : demander la page
-     * deux cents rend la page cent quarante-huit, avec un HTTP 200 et vingt entrees
-     * parfaitement valables. Un collecteur qui attendrait une page vide tournerait pour
-     * toujours sans qu'aucune erreur ne le signale.
+     * mindustryschematics clamps the page number instead of refusing it: asking for page two
+     * hundred returns page one hundred and forty-eight, with an HTTP 200 and twenty
+     * perfectly valid entries. A collector waiting for an empty page would spin forever
+     * without a single error to report it.
      */
     otherFake(pages: 2, perPage: 2);
 
@@ -167,9 +168,9 @@ it('ne tourne pas en rond sur une derniere page qui se repete', function () {
     Http::assertNotSent(fn ($request) => ($request->data()['page'] ?? null) == 3);
 });
 
-it('ne gonfle pas le compteur de telechargements de la source', function () {
-    // La page du site appelle son propre detail avec `?increment=true`. Le collecteur lit
-    // la meme adresse ; il n'a aucune raison de faire monter leurs statistiques pour ca.
+it('does not inflate the download counter of the source', function () {
+    // Their own page calls its detail endpoint with `?increment=true`. The collector reads
+    // the same address; it has no reason to push their statistics up for that.
     otherFake();
 
     collecte(['source' => Schematic::MINDUSTRY_SCHEMATICS]);
@@ -177,7 +178,7 @@ it('ne gonfle pas le compteur de telechargements de la source', function () {
     Http::assertNotSent(fn ($request) => str_contains($request->url(), 'increment'));
 });
 
-it('garde le base64 du listing et jette le doublon dans les metadonnees', function () {
+it('keeps the base64 from the listing and drops the duplicate in the metadata', function () {
     otherFake();
 
     collecte(['source' => Schematic::MINDUSTRY_SCHEMATICS]);
@@ -188,13 +189,13 @@ it('garde le base64 du listing et jette le doublon dans les metadonnees', functi
         ->and($kept->description)->toBe('ce que fait le truc')
         ->and($kept->author)->toBe('klim')
         ->and($kept->source_meta)->toHaveKey('powerConsumption')
-        // Deja entier dans `code` : le garder deux fois est de la place perdue en double.
+        // Already whole in `code`: keeping it twice is the same space wasted twice over.
         ->and($kept->source_meta)->not->toHaveKey('text');
 });
 
-it('attend et recommence quand la source demande de ralentir', function () {
-    // Un 429 se soigne en attendant, pas en abandonnant l'entree : la lacher ferait un
-    // trou dans le catalogue qu'aucun passage suivant ne viendrait combler.
+it('waits and tries again when the source asks it to slow down', function () {
+    // A 429 is cured by waiting, not by giving up on the entry: dropping it would leave a
+    // hole in the catalogue that no later pass would come and fill.
     Http::fake([
         'api.mindustry-tool.com/api/v4/schematics/count' => Http::response('1'),
         'api.mindustry-tool.com/api/v4/schematics?page=0*' => Http::response([['id' => 'aaa']]),
@@ -211,7 +212,7 @@ it('attend et recommence quand la source demande de ralentir', function () {
     expect(Schematic::sole()->name)->toBe('Enfin');
 });
 
-it('refuse une source qui n existe pas plutot que de ne rien faire', function () {
+it('refuses a source that does not exist rather than doing nothing', function () {
     Http::fake();
 
     $this->artisan('forge:collecter', ['source' => 'wikipedia', '--pause' => 0])
@@ -221,11 +222,11 @@ it('refuse une source qui n existe pas plutot que de ne rien faire', function ()
     Http::assertNothingSent();
 });
 
-it('analyse ce qui a ete collecte avec le moteur du navigateur', function () {
+it('analyses what was collected with the browser engine', function () {
     /*
-     * Le vrai Node sur le vrai `analyse.js`. Ce depot n'a qu'une implementation de
-     * l'analyse et la commande ne fait que la lancer : simuler Node ici ne testerait plus
-     * rien du tout, sinon que la commande sait parler a un fantome.
+     * The real Node on the real `analyse.js`. This repository has one implementation of the
+     * analysis and the command does nothing but launch it: faking Node here would no longer
+     * test anything at all, beyond the command knowing how to talk to a ghost.
      */
     $imported = Schematic::factory()->imported()->create(['code' => PANNEAUX]);
 
@@ -239,15 +240,14 @@ it('analyse ce qui a ete collecte avec le moteur du navigateur', function () {
         ->and($imported->height)->toBe(2)
         ->and($imported->blocks)->toBe(4)
         ->and($imported->power_made)->toBe(28.8)
-        // Ce que le hook `saved` reconstruit derriere : quatre panneaux sont une centrale,
-        // donc la schematique est trouvable sous l'energie comme une autre l'est sous le
-        // graphite.
+        // What the `saved` hook rebuilds behind it: four panels are a power plant, so the
+        // schematic is findable under power the way another one is findable under graphite.
         ->and($imported->items()->where('item', SchematicItem::POWER)->exists())->toBeTrue();
 });
 
-it('ne garde de l analyse que ce qui se relit', function () {
-    // La reponse de `analyse()` porte le graphe, ou les noeuds se pointent les uns les
-    // autres. Tout garder ne serait pas seulement enorme : ce n'est pas serialisable.
+it('keeps from the analysis only what can be read back', function () {
+    // The answer from `analyse()` carries the graph, where the nodes point at one another.
+    // Keeping all of it would not merely be huge: it is not serialisable.
     $imported = Schematic::factory()->imported()->create(['code' => PANNEAUX]);
 
     $this->artisan('forge:analyser')->assertSuccessful();
@@ -259,12 +259,12 @@ it('ne garde de l analyse que ce qui se relit', function () {
         ->not->toHaveKey('detail');
 });
 
-it('estampille quand meme une schematique que le moteur ne sait pas lire', function () {
+it('stamps a schematic the engine cannot read all the same', function () {
     /*
-     * Sinon la file ne se vide jamais. Une ligne illisible reste perimee, la commande la
-     * reprend au tour suivant, et une collecte de quinze mille avec cinquante `.msch`
-     * tordus tourne en rond pour toujours. Elle **a** ete analysee : la reponse est que ce
-     * moteur-la n'y arrive pas, et c'est une reponse qu'il faut garder.
+     * Otherwise the queue never empties. An unreadable row stays stale, the command picks it
+     * up again on the next pass, and a collection of fifteen thousand holding fifty twisted
+     * `.msch` files spins forever. It **has** been analysed: the answer is that this engine
+     * cannot manage it, and that is an answer worth keeping.
      */
     $broken = Schematic::factory()->imported()->create(['code' => 'ceci n est pas du base64']);
 
@@ -277,7 +277,7 @@ it('estampille quand meme une schematique que le moteur ne sait pas lire', funct
         ->and(Schematic::stale()->count())->toBe(0);
 });
 
-it('ne reprend pas ce que le moteur courant a deja mesure', function () {
+it('does not pick up again what the current engine has already measured', function () {
     Schematic::factory()->imported()->create([
         'code' => PANNEAUX, 'engine_version' => EngineVersion::current(), 'analysed_at' => now(),
     ]);

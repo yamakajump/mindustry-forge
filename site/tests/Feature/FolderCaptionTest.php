@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
  * It is the one place in this work where user content is shown to other people, so the
  * escaping is tested rather than assumed.
  */
-it('montre la legende a qui voit le dossier', function () {
+it('shows the caption to whoever sees the folder', function () {
     $owner = User::factory()->create();
     $folder = Folder::factory()->create(['user_id' => $owner->id, 'visibility' => Schematic::PUBLIC]);
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
@@ -28,7 +28,7 @@ it('montre la legende a qui voit le dossier', function () {
     $this->get("/d/{$folder->slug}")->assertOk()->assertSee('Commence par celui-la');
 });
 
-it('n autorise que le proprietaire du dossier a legender', function () {
+it('lets only the folder owner write a caption', function () {
     $folder = Folder::factory()->create(['visibility' => Schematic::PUBLIC]);
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
     $folder->schematics()->attach($schema->id);
@@ -39,7 +39,7 @@ it('n autorise que le proprietaire du dossier a legender', function () {
     )->assertForbidden();
 });
 
-it('refuse deux cent quatre vingt un caracteres', function () {
+it('refuses two hundred and eighty-one characters', function () {
     $owner = User::factory()->create();
     $folder = Folder::factory()->create(['user_id' => $owner->id]);
     $schema = Schematic::factory()->create();
@@ -51,7 +51,7 @@ it('refuse deux cent quatre vingt un caracteres', function () {
     )->assertStatus(422);
 });
 
-it('echappe une legende qui contient du html', function () {
+it('escapes a caption that contains html', function () {
     $owner = User::factory()->create();
     $folder = Folder::factory()->create(['user_id' => $owner->id, 'visibility' => Schematic::PUBLIC]);
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
@@ -68,7 +68,7 @@ it('echappe une legende qui contient du html', function () {
         ->assertSee('&lt;script&gt;', false);
 });
 
-it('oublie la legende quand le schema sort du dossier, et garde la note privee', function () {
+it('forgets the caption when the schematic leaves the folder, and keeps the private note', function () {
     $owner = User::factory()->create();
     $folder = Folder::factory()->create(['user_id' => $owner->id]);
     $schema = Schematic::factory()->create();
@@ -81,7 +81,7 @@ it('oublie la legende quand le schema sort du dossier, et garde la note privee',
         ->and($folder->refresh()->schematics)->toHaveCount(0);
 });
 
-it('efface la legende quand on l envoie vide', function () {
+it('clears the caption when it is sent empty', function () {
     $owner = User::factory()->create();
     $folder = Folder::factory()->create(['user_id' => $owner->id]);
     $schema = Schematic::factory()->create();

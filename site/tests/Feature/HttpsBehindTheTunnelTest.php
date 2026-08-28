@@ -30,51 +30,51 @@ function depuis(string $ip, array $entetes = []): Request
     );
 }
 
-/** Une adresse de chaque famille, prise dans les plages du fichier de configuration. */
-it('croit le tunnel sur le schema', function (string $ip) {
+/** One address of each family, taken from the ranges in the configuration file. */
+it('believes the tunnel about the scheme', function (string $ip) {
     $request = depuis($ip, ['X-Forwarded-Proto' => 'https']);
     app()->handle($request);
 
     expect($request->isSecure())->toBeTrue()
         ->and($request->getSchemeAndHttpHost())->toStartWith('https://');
 })->with([
-    'boucle locale v4' => '127.0.0.1',
-    'boucle locale v6' => '::1',
+    'loopback v4' => '127.0.0.1',
+    'loopback v6' => '::1',
 ]);
 
 /*
- * Le test qui justifie la liste.
+ * The test that justifies the list.
  *
- * Avec `at: '*'`, celui-ci passerait aussi, et n'importe qui atteignant l'origine
- * choisirait le schema, l'hote et le port que le site croit avoir. Ce n'est pas une
- * question de cosmetique : c'est ce qui empoisonne un cache et ce qui fabrique un lien de
- * reinitialisation vers un domaine que l'attaquant a choisi.
+ * With `at: '*'`, this one would pass as well, and anyone reaching the origin would pick
+ * the scheme, the host and the port the site believes it has. This is not a matter of
+ * cosmetics: it is what poisons a cache and what builds a password reset link pointing at
+ * a domain the attacker chose.
  */
-it('ne croit personne d autre', function (string $ip) {
+it('believes nobody else', function (string $ip) {
     $request = depuis($ip, ['X-Forwarded-Proto' => 'https']);
     app()->handle($request);
 
     expect($request->isSecure())->toBeFalse();
 })->with([
-    'une adresse publique quelconque' => '8.8.8.8',
-    /* Les plages de Cloudflare elles-memes, parce que la premiere version leur faisait
-       confiance : si elles revenaient dans la liste, ce serait sans mesure derriere. */
-    'une adresse de Cloudflare' => '162.158.1.1',
-    'le reseau prive de la machine' => '10.0.0.4',
+    'any public address' => '8.8.8.8',
+    /* Cloudflare's own ranges, because the first version trusted them: were they to come
+       back into the list, it would be with no measurement behind them. */
+    'a Cloudflare address' => '162.158.1.1',
+    'the machine private network' => '10.0.0.4',
 ]);
 
-/* Sans l'en-tete, meme venant de Cloudflare, rien n'est suppose : une requete en clair
-   reste en clair. */
-it('ne devine pas le schema quand l en-tete est absent', function () {
+/* Without the header, even coming from Cloudflare, nothing is assumed: a request in the
+   clear stays in the clear. */
+it('does not guess the scheme when the header is absent', function () {
     $request = depuis('::1');
     app()->handle($request);
 
     expect($request->isSecure())->toBeFalse();
 });
 
-/* La liste elle-meme, parce qu'une plage mal recopiee ne se voit pas : elle retire
-   silencieusement des visiteurs de la confiance, et leurs pages repartent en http. */
-it('ne porte que des adresses bien formees', function () {
+/* The list itself, because a range copied wrong is invisible: it silently takes visitors
+   out of the trusted set, and their pages go back out in http. */
+it('carries only well formed addresses', function () {
     $plages = (require __DIR__.'/../../config/proxies.php')['trusted'];
 
     expect($plages)->not->toBeEmpty();
@@ -82,10 +82,10 @@ it('ne porte que des adresses bien formees', function () {
     foreach ($plages as $plage) {
         [$adresse, $masque] = array_pad(explode('/', $plage, 2), 2, null);
 
-        expect(filter_var($adresse, FILTER_VALIDATE_IP))->not->toBeFalse("adresse : {$plage}");
+        expect(filter_var($adresse, FILTER_VALIDATE_IP))->not->toBeFalse("address: {$plage}");
 
         if ($masque !== null) {
-            expect($masque)->toMatch('/^\d{1,3}$/', "masque : {$plage}");
+            expect($masque)->toMatch('/^\d{1,3}$/', "mask: {$plage}");
         }
     }
 });

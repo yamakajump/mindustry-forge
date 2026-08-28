@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
  * implementation of "list some schematics". What is tested here is filling and emptying it,
  * and that neither reaches into somebody else's.
  */
-it('garde un schema en favori une seule fois', function () {
+it('keeps a schematic as a favorite only once', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
 
@@ -24,7 +24,7 @@ it('garde un schema en favori une seule fois', function () {
     expect(Favorite::count())->toBe(1);
 });
 
-it('retire un favori', function () {
+it('removes a favorite', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
 
@@ -34,7 +34,7 @@ it('retire un favori', function () {
     expect(Favorite::count())->toBe(0);
 });
 
-it('refuse un visiteur qui n est pas connecte', function () {
+it('refuses a visitor who is not signed in', function () {
     $schema = Schematic::factory()->create();
 
     $this->postJson("/api/schematiques/{$schema->slug}/favori")->assertUnauthorized();
@@ -42,22 +42,22 @@ it('refuse un visiteur qui n est pas connecte', function () {
     expect(Favorite::count())->toBe(0);
 });
 
-it('garde chaque favori a son proprietaire', function () {
+it('keeps each favorite to its owner', function () {
     $mine = User::factory()->create();
     $theirs = User::factory()->create();
     $schema = Schematic::factory()->create();
 
     $this->actingAs($theirs)->postJson("/api/schematiques/{$schema->slug}/favori");
 
-    /* Retirer ce qui n'est pas a soi ne retire rien, et ne se plaint pas non plus :
-       l'absence d'un favori et l'absence du droit de le retirer sont le meme etat, et
-       distinguer les deux dirait a qui demande que quelqu'un d'autre l'a garde. */
+    /* Removing what is not yours removes nothing, and does not complain either: a favorite
+       that is absent and a favorite you have no right to remove are the same state, and
+       telling the two apart would tell whoever asks that somebody else kept it. */
     $this->actingAs($mine)->deleteJson("/api/schematiques/{$schema->slug}/favori")->assertOk();
 
     expect(Favorite::where('user_id', $theirs->id)->count())->toBe(1);
 });
 
-it('laisse deux personnes garder le meme schema', function () {
+it('lets two people keep the same schematic', function () {
     $schema = Schematic::factory()->create();
 
     foreach (User::factory()->count(2)->create() as $user) {
@@ -67,7 +67,7 @@ it('laisse deux personnes garder le meme schema', function () {
     expect(Favorite::count())->toBe(2);
 });
 
-it('emporte les favoris quand le schema disparait', function () {
+it('takes the favorites with it when the schematic disappears', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
 
@@ -77,7 +77,7 @@ it('emporte les favoris quand le schema disparait', function () {
     expect(Favorite::count())->toBe(0);
 });
 
-it('emporte les favoris quand la personne disparait', function () {
+it('takes the favorites with it when the person disappears', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
 

@@ -54,7 +54,7 @@ function ligne(string $name, array $makes, float $powerUsed = 0, float $powerMad
     ]);
 }
 
-it('ne penalise pas une usine parce qu elle consomme du courant', function () {
+it('does not penalise a factory for drawing power', function () {
     /*
      * The bug this whole design turns on. Ranking on `power_made - power_used` meant a
      * silicon smelter, which eats power and makes none, scored negative, so it sorted
@@ -72,7 +72,7 @@ it('ne penalise pas une usine parce qu elle consomme du courant', function () {
         ->assertDontSee('Presse a graphite');
 });
 
-it('classe sur ce qui sort, rapporte a la place occupee', function () {
+it('ranks on what comes out, relative to the space taken', function () {
     ligne('Grosse et molle', ['graphite' => 100.0], blocks: 200);
     ligne('Petite et vive', ['graphite' => 60.0], blocks: 10);
 
@@ -81,7 +81,7 @@ it('classe sur ce qui sort, rapporte a la place occupee', function () {
     expect(strpos($page, 'Petite et vive'))->toBeLessThan(strpos($page, 'Grosse et molle'));
 });
 
-it('traite l energie comme une production, donc comme un item cherchable', function () {
+it('treats power as a product, so as a searchable item', function () {
     // A reactor makes energy the way a press makes graphite, so it is found the same way.
     ligne('Reacteur compact', [], powerUsed: 40, powerMade: 900, blocks: 30);
     ligne('Four a silicium', ['silicon' => 90.0], powerUsed: 600);
@@ -92,7 +92,7 @@ it('traite l energie comme une production, donc comme un item cherchable', funct
         ->assertDontSee('Four a silicium');
 });
 
-it('classe une centrale sur ce qu elle laisse, pas sur ce qu elle brule', function () {
+it('ranks a power plant on what it leaves, not on what it burns', function () {
     /*
      * A plant making six thousand and burning thirteen hundred on its own pumps hands the
      * base four thousand seven hundred, and that is what somebody comparing two reactors
@@ -112,7 +112,7 @@ it('classe une centrale sur ce qu elle laisse, pas sur ce qu elle brule', functi
     expect(strpos($page, 'Petite et sobre'))->toBeLessThan(strpos($page, 'Grosse et gourmande'));
 });
 
-it('ne repertorie pas comme centrale ce qui consomme plus qu il ne produit', function () {
+it('does not list as a power plant what consumes more than it makes', function () {
     // A factory with a few solar panels on it is not a power plant, and must not turn up
     // under "produit de l'energie" ahead of something that actually supplies any.
     $usine = ligne('Usine avec panneaux', ['silicon' => 90.0], powerUsed: 600, powerMade: 100);
@@ -121,7 +121,7 @@ it('ne repertorie pas comme centrale ce qui consomme plus qu il ne produit', fun
         ->toBe(['silicon']);
 });
 
-it('ne pretend pas classer un rendement sans savoir de quoi on parle', function () {
+it('never ranks a yield without knowing what it is a yield of', function () {
     /*
      * Ranking forty graphite a minute against twenty-five silicon a minute would declare
      * one graphite worth one silicon. It is false, and it would be invisible. So with no
@@ -135,7 +135,7 @@ it('ne pretend pas classer un rendement sans savoir de quoi on parle', function 
     $page->assertSee('Classés par date, faute de mieux');
 });
 
-it('dit sur la page qu il faudra l alimenter', function () {
+it('says on the page that it will need to be powered', function () {
     // The page used to mention power only when there was a surplus, so a silicon line
     // asking for six hundred energy a second said nothing at all about needing any.
     $usine = ligne('Four a silicium', ['silicon' => 90.0], powerUsed: 600);
@@ -150,7 +150,7 @@ it('dit sur la page qu il faudra l alimenter', function () {
         ->assertSee('Ce n\'est pas compte contre lui', escape: false);
 });
 
-it('dit au contraire ce qu une centrale laisse au reste de la base', function () {
+it('says instead what a power plant leaves to the rest of the base', function () {
     $centrale = ligne('Reacteur compact', [], powerUsed: 40, powerMade: 900, blocks: 30);
 
     $this->get("/s/{$centrale->slug}")
@@ -159,7 +159,7 @@ it('dit au contraire ce qu une centrale laisse au reste de la base', function ()
         ->assertSee('860');
 });
 
-it('tient l index de ce qu elle produit a jour a chaque ecriture', function () {
+it('keeps the index of what it makes up to date on every write', function () {
     $schematic = ligne('Chaine', ['graphite' => 40.0], powerMade: 300, blocks: 20);
 
     expect($schematic->items()->where('kind', SchematicItem::MESURE)
@@ -181,7 +181,7 @@ it('tient l index de ce qu elle produit a jour a chaque ecriture', function () {
         ->toBe(['silicon']);
 });
 
-it('ne relit pas tout le catalogue a chaque affichage de la liste', function () {
+it('does not reread the whole catalogue on every view of the listing', function () {
     // The 141 ms: filling the dropdown meant pulling every public row's `produces` into
     // PHP and counting keys, on every single view, for twenty entries.
     Schematic::factory()->count(30)->create([
@@ -198,7 +198,7 @@ it('ne relit pas tout le catalogue a chaque affichage de la liste', function () 
     expect($lourdes->all())->toBeEmpty();
 });
 
-it('propose les items reellement produits, l energie comprise', function () {
+it('offers the items actually produced, power included', function () {
     ligne('Chaine a graphite', ['graphite' => 40.0]);
     ligne('Reacteur', [], powerMade: 900);
     Schematic::factory()->create(['visibility' => 'private', 'produces' => ['thorium' => 5.0]]);
@@ -210,7 +210,7 @@ it('propose les items reellement produits, l energie comprise', function () {
         ->and($page->viewData('items'))->not->toContain('thorium');
 });
 
-it('ne construit pas une requete avec ce que le visiteur tape', function () {
+it('does not build a query out of what the visitor types', function () {
     ligne('Presse a graphite', ['graphite' => 40.0]);
 
     foreach (["graphite' or '1'='1", str_repeat('x', 300), 'GRAPHITE"', '../etc'] as $bidon) {
@@ -221,14 +221,14 @@ it('ne construit pas une requete avec ce que le visiteur tape', function () {
     }
 });
 
-it('donne un ordre total, pour que la pagination ne perde rien', function () {
+it('gives a total order, so that pagination loses nothing', function () {
     /*
      * Every sort here has ties, and rows that compare equal come back in whatever order
      * the database found convenient, which it has no reason to repeat between two pages.
      * The result would be a schematic shown twice while another is never shown at all.
      */
-    // Le plafond autant que la mesure, comme toute schematique reelle en porte : c est sur
-    // le plafond que la vitrine classe, faute d une mesure dans le catalogue importe.
+    // The ceiling as much as the measurement, as every real schematic carries both: the
+    // catalogue ranks on the ceiling, for want of a measurement in the imported catalogue.
     Schematic::factory()->count(50)->create([
         'visibility' => 'public', 'produces' => ['graphite' => 40.0], 'blocks' => 10,
         'analysis' => ['potentialPerMinute' => ['graphite' => 40.0]],
@@ -246,18 +246,18 @@ it('donne un ordre total, pour que la pagination ne perde rien', function () {
         ->and(array_unique($vus))->toHaveCount(50);
 });
 
-it('sait dire quatre choses differentes du meme objet', function () {
+it('can say four different things about the same item', function () {
     /*
-     * Deux axes independants, poses ensemble parce que trois chantiers arrivaient sur
-     * cette table en meme temps. Ce qui sort et ce qui entre sont des questions opposees ;
-     * un debit constate et un plafond sont deux reponses a la meme question, et melanger
-     * les deux dans un classement est le mensonge qu on a passe la journee a reparer.
+     * Two independent axes, laid down together because three pieces of work landed on this
+     * table at the same time. What comes out and what goes in are opposite questions; an
+     * observed rate and a ceiling are two answers to the same question, and mixing the two
+     * in one ranking is the lie the day was spent repairing.
      */
     $schematic = ligne('Four a silicium', ['silicon' => 90.0], powerUsed: 600);
 
-    /* Le plafond produit est deja ecrit par la fixture, comme l analyse l ecrit pour toute
-       schematique reelle : `updateOrCreate` plutot que `create`, sinon la contrainte
-       d unicite refuse la ligne et le test echoue sur sa propre mise en place. */
+    /* The produced ceiling is already written by the fixture, as the analysis writes it
+       for every real schematic: `updateOrCreate` rather than `create`, otherwise the unique
+       constraint refuses the row and the test fails on its own setup. */
     foreach ([
         [SchematicItem::PRODUIT, SchematicItem::PLAFOND, 240.0],
         [SchematicItem::CONSOMME, SchematicItem::MESURE, 120.0],
@@ -272,21 +272,21 @@ it('sait dire quatre choses differentes du meme objet', function () {
     expect($schematic->items()->where('item', 'silicon')->count())->toBe(4);
 });
 
-it('classe sur le plafond, qui est la seule nature que tout le catalogue porte', function () {
+it('ranks on the ceiling, the only kind the whole catalogue carries', function () {
     /*
-     * Cette regle disait l inverse jusqu ici : seule une mesure etait cherchable, et un
-     * plafond etait ecarte du classement comme de la liste. C etait defendable et ca rendait
-     * le catalogue muet.
+     * This rule said the opposite until now: only a measurement was searchable, and a
+     * ceiling was kept out of the ranking as well as out of the list. It was defensible and
+     * it left the catalogue silent.
      *
-     * Mesure en production : 117 schematiques portent une mesure contre 6 775 un plafond, et
-     * ni le graphite ni le silicium n avaient un seul resultat alors que 844 et 1 700 plans
-     * en produisent. Ce n est pas un retard qui se resorbe : une schematique arrachee d une
-     * base n a pas la foreuse qui l alimentait, donc sa mesure vaut zero et le restera.
+     * Measured in production: 117 schematics carry a measurement against 6 775 a ceiling,
+     * and neither graphite nor silicon had a single result while 844 and 1 700 plans make
+     * them. This is not a backlog that clears: a schematic torn out of a base no longer has
+     * the drill that fed it, so its measurement is zero and will stay there.
      *
-     * Le plafond seul, et non « plafond ou mesure », parce qu un classement qui melange deux
-     * natures est la faute reparee sur l energie nette. Et il n exclut personne : le plafond
-     * se calcule avec une alimentation infinie, donc il est toujours superieur ou egal a la
-     * mesure. Une seule nature dans un seul ordre, sans rien perdre.
+     * The ceiling alone, and not "ceiling or measurement", because a ranking that mixes two
+     * kinds is the fault repaired on net power. And it excludes nobody: the ceiling is
+     * computed with an infinite supply, so it is always greater than or equal to the
+     * measurement. One kind in one order, losing nothing.
      */
     $mesuree = ligne('Constatee', ['graphite' => 30.0], blocks: 10);
 
@@ -296,13 +296,13 @@ it('classe sur le plafond, qui est la seule nature que tout le catalogue porte',
         'kind' => SchematicItem::PLAFOND, 'rate' => 900.0, 'rate_per_block' => 90.0,
     ]);
 
-    // Les deux sont la, et celle qui promet le plus passe devant.
+    // Both are there, and the one promising the most comes first.
     $this->get('/schemas?produit=graphite&tri=best')
         ->assertOk()
         ->assertSee('Au mieux')
         ->assertSee('Constatee');
 
-    // Et un plafond peuple la liste deroulante, sans quoi le catalogue reste incherchable.
+    // And a ceiling populates the dropdown, without which the catalogue stays unsearchable.
     $vide = ligne('Sans rien', [], blocks: 10);
     $vide->items()->create([
         'item' => 'thorium', 'sens' => SchematicItem::PRODUIT,
@@ -312,16 +312,16 @@ it('classe sur le plafond, qui est la seule nature que tout le catalogue porte',
     expect($this->get('/schemas')->assertOk()->viewData('items'))
         ->toContain('graphite')->toContain('thorium');
 
-    // La mesure n est pas perdue pour autant : elle reste ecrite a cote de son plafond.
+    // The measurement is not lost for all that: it stays written beside its ceiling.
     expect($mesuree->items()->where('kind', SchematicItem::MESURE)->count())->toBe(1)
         ->and($mesuree->items()->where('kind', SchematicItem::PLAFOND)->count())->toBe(1);
 });
 
-it('ne jette pas le travail d une autre passe en enregistrant', function () {
+it('discards no work from another pass when saving', function () {
     /*
-     * Renommer une schematique reconstruit son index de production mesuree. Si cette
-     * reconstruction balayait toute la table, elle emporterait les plafonds et les
-     * consommations etablis ailleurs, et personne ne verrait qu ils ont disparu.
+     * Renaming a schematic rebuilds its index of measured production. If that rebuild swept
+     * the whole table, it would carry off the ceilings and the consumptions established
+     * elsewhere, and nobody would see that they had gone.
      */
     $schematic = ligne('Chaine', ['graphite' => 40.0], blocks: 20);
     $schematic->items()->create([

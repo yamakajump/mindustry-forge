@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
  * visitor cannot see: listing them leaks names and figures, hiding them silently makes a
  * folder of twelve read as a folder of four with no explanation.
  */
-it('cache un schema prive et dit combien il en a retire', function () {
+it('hides a private schematic and says how many it withheld', function () {
     $owner = User::factory()->create();
     $folder = Folder::factory()->create([
         'user_id' => $owner->id, 'visibility' => Schematic::PUBLIC,
@@ -30,7 +30,7 @@ it('cache un schema prive et dit combien il en a retire', function () {
     expect($page->viewData('withheld'))->toBe(1);
 });
 
-it('previent le proprietaire que son dossier partage est en partie invisible', function () {
+it('warns the owner that part of their shared folder is invisible', function () {
     $owner = User::factory()->create();
     $folder = Folder::factory()->create([
         'user_id' => $owner->id, 'visibility' => Schematic::PUBLIC,
@@ -44,7 +44,7 @@ it('previent le proprietaire que son dossier partage est en partie invisible', f
         ->assertSee(trans_choice('dossiers.page.retires-proprietaire', 1));
 });
 
-it('dit au visiteur autre chose qu au proprietaire', function () {
+it('tells a visitor something other than what it tells the owner', function () {
     $folder = Folder::factory()->create(['visibility' => Schematic::PUBLIC]);
     $folder->schematics()->attach(
         Schematic::factory()->create(['visibility' => Schematic::PRIVATE])->id
@@ -56,7 +56,7 @@ it('dit au visiteur autre chose qu au proprietaire', function () {
         ->assertDontSee(trans_choice('dossiers.page.retires-proprietaire', 1));
 });
 
-it('ne dit rien quand il n y a rien a cacher', function () {
+it('says nothing when there is nothing to hide', function () {
     $folder = Folder::factory()->create(['visibility' => Schematic::PUBLIC]);
     $folder->schematics()->attach(
         Schematic::factory()->create(['visibility' => Schematic::PUBLIC])->id
@@ -67,7 +67,7 @@ it('ne dit rien quand il n y a rien a cacher', function () {
         ->assertDontSee(trans_choice('dossiers.page.retires-visiteur', 1));
 });
 
-it('refuse un dossier prive a tout le monde sauf son proprietaire', function () {
+it('refuses a private folder to everybody but its owner', function () {
     $folder = Folder::factory()->create(['visibility' => Schematic::PRIVATE]);
 
     $this->get("/d/{$folder->slug}")->assertNotFound();
@@ -75,27 +75,27 @@ it('refuse un dossier prive a tout le monde sauf son proprietaire', function () 
     $this->actingAs($folder->user)->get("/d/{$folder->slug}")->assertOk();
 });
 
-it('sert un dossier par lien a qui a l adresse', function () {
+it('serves an unlisted folder to whoever has the address', function () {
     $folder = Folder::factory()->create(['visibility' => Schematic::UNLISTED]);
 
     $this->get("/d/{$folder->slug}")->assertOk();
 });
 
-it('ne fait pas dependre un dossier public de la visibilite de son parent', function () {
+it('never makes a public folder depend on the visibility of its parent', function () {
     $owner = User::factory()->create();
     $prive = Folder::factory()->create(['user_id' => $owner->id, 'visibility' => Schematic::PRIVATE]);
     $public = Folder::factory()->create([
         'user_id' => $owner->id, 'parent_id' => $prive->id, 'visibility' => Schematic::PUBLIC,
     ]);
 
-    /* Chaque dossier repond de lui-meme. Heriter du parent creerait une regle que personne
-       ne peut deviner depuis l'ecran : « ton pack public ne marche pas, a cause d'un
-       dossier que tu ne regardes pas ». */
+    /* Each folder answers for itself. Inheriting from the parent would create a rule nobody
+       can guess from the screen: "your public pack does not work, because of a folder you
+       are not looking at". */
     $this->get("/d/{$public->slug}")->assertOk();
     $this->get("/d/{$prive->slug}")->assertNotFound();
 });
 
-it('ne montre pas les sous-dossiers prives a un visiteur', function () {
+it('never shows private subfolders to a visitor', function () {
     $owner = User::factory()->create();
     $parent = Folder::factory()->create(['user_id' => $owner->id, 'visibility' => Schematic::PUBLIC]);
     Folder::factory()->create([
@@ -107,7 +107,7 @@ it('ne montre pas les sous-dossiers prives a un visiteur', function () {
     $this->actingAs($owner)->get("/d/{$parent->slug}")->assertOk()->assertSee('Brouillon');
 });
 
-it('met un schema dans deux dossiers a la fois', function () {
+it('puts a schematic in two folders at once', function () {
     $user = User::factory()->create();
     $one = Folder::factory()->create(['user_id' => $user->id]);
     $two = Folder::factory()->create(['user_id' => $user->id]);
@@ -125,7 +125,7 @@ it('met un schema dans deux dossiers a la fois', function () {
         ->and($two->refresh()->schematics)->toHaveCount(1);
 });
 
-it('ne met pas deux fois le meme schema', function () {
+it('never puts the same schematic in twice', function () {
     $user = User::factory()->create();
     $folder = Folder::factory()->create(['user_id' => $user->id]);
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
@@ -136,7 +136,7 @@ it('ne met pas deux fois le meme schema', function () {
     expect($folder->refresh()->schematics)->toHaveCount(1);
 });
 
-it('ne laisse personne remplir le dossier d un autre', function () {
+it('lets nobody fill a folder that is not theirs', function () {
     $folder = Folder::factory()->create();
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
 
@@ -145,18 +145,18 @@ it('ne laisse personne remplir le dossier d un autre', function () {
         ->assertForbidden();
 });
 
-it('refuse d y ranger le schema prive de quelqu un d autre', function () {
+it('refuses to file a private schematic belonging to somebody else', function () {
     $user = User::factory()->create();
     $folder = Folder::factory()->create(['user_id' => $user->id]);
     $secret = Schematic::factory()->create(['visibility' => Schematic::PRIVATE]);
 
-    // Un 404 et non un 403 : un 403 confirmerait que la schematique existe.
+    // A 404 and not a 403: a 403 would confirm that the schematic exists.
     $this->actingAs($user)
         ->postJson("/api/dossiers/{$folder->slug}/schemas/{$secret->slug}")
         ->assertNotFound();
 });
 
-it('emporte le contenu quand le dossier disparait', function () {
+it('takes the contents with it when the folder disappears', function () {
     $user = User::factory()->create();
     $folder = Folder::factory()->create(['user_id' => $user->id]);
     $schema = Schematic::factory()->create();

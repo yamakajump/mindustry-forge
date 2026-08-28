@@ -33,17 +33,17 @@ it('carries the code each panel needs to draw its plan', function () {
 
     $this->get("/comparer?a={$left->slug}&b={$right->slug}")
         ->assertOk()
-        // Le script qui dessine, et pas `apercu.js` : la page charge `comparer.js`, qui
-        // importe le dessinateur. Un seul module a la ligne, et c'est celui-la que la page
-        // perdrait si quelqu'un retirait le `@push`.
+        // The script that draws, and not `apercu.js`: the page loads `comparer.js`, which
+        // imports the drawer. A single module on that line, and it is the one the page
+        // would lose if somebody removed the `@push`.
         ->assertSee('/forge/comparer.js', escape: false)
         ->assertSee('data-code="bXNjaAF4nGAUCHE"', escape: false)
         ->assertSee('data-code="bXNjaAF4nDROITE"', escape: false);
 });
 
 it('carries a plan for each schematic it offers, not only for the two chosen', function () {
-    // Huit lignes de texte appelees « Silicon » sont huit lignes identiques, et c'est le
-    // plan qui les distingue. Une liste de propositions sans image est la page d'avant.
+    // Eight lines of text all called "Silicon" are eight identical lines, and it is the
+    // plan that tells them apart. A list of suggestions with no image is the page before.
     drawable('Une recente', 'bXNjaAF4nOFFERTE');
 
     $this->get('/comparer')
@@ -52,7 +52,7 @@ it('carries a plan for each schematic it offers, not only for the two chosen', f
 });
 
 it('carries a plan for each search result the server rendered', function () {
-    // Sans JavaScript, c'est cette liste-la qui repond, et elle doit montrer la meme chose.
+    // Without JavaScript, this is the list that answers, and it has to show the same thing.
     drawable('Ligne a graphite', 'bXNjaAF4nCHERCHEE');
 
     $this->get('/comparer?a=graphite')
@@ -62,10 +62,10 @@ it('carries a plan for each search result the server rendered', function () {
 
 it('has a big schematic ask for its own code rather than carrying it', function () {
     /*
-     * Le code voyage dans la page tant qu'il est petit. Un seul schema de 512 ko dans une
-     * page qui en montre dix la rendrait plus lourde que ce qu'elle sert, pour un visiteur
-     * qui n'a demande aucun des dix. Au-dela du seuil le panneau le demande lui-meme, et
-     * seulement quand il approche de l'ecran.
+     * The code travels inside the page as long as it is small. A single 512 kB schematic
+     * in a page that shows ten of them would make it heavier than what it serves, for a
+     * visitor who asked for none of the ten. Past the threshold the panel asks for it
+     * itself, and only when it comes near the screen.
      */
     $big = drawable('Enorme', 'bXNjaAF4n'.str_repeat('A', 20000));
     $small = drawable('Petite', 'bXNjaAF4nPETITE');
@@ -77,11 +77,11 @@ it('has a big schematic ask for its own code rather than carrying it', function 
 });
 
 /*
- * Chercher pendant qu'on tape, qui est l'autre moitie du geste.
+ * Searching while typing, which is the other half of the gesture.
  *
- * Remplir les deux cotes demandait deux chargements de page complets, et la page ne montrait
- * ni l'un ni l'autre tant que les deux n'etaient pas choisis. L'endpoint porte le code avec
- * le resultat, ce qui est toute sa raison d'etre : une liste de noms se choisit au hasard.
+ * Filling both sides took two full page loads, and the page showed neither one until both
+ * had been chosen. The endpoint carries the code along with the result, which is its whole
+ * reason to exist: a list of names is picked at random.
  */
 
 it('answers a name with what it found, plan included', function () {
@@ -107,9 +107,9 @@ it('answers an address as itself, because links get pasted into the box too', fu
 });
 
 it('never hands back something nobody else can see', function () {
-    // Une comparaison est une page publique dont tout le contenu est le travail de deux
-    // autres personnes. Un schema par lien est joignable par son adresse a lui, ce qui
-    // n'est pas la meme chose qu'etre propose dans une boite de recherche.
+    // A comparison is a public page whose whole content is the work of two other people. A
+    // schematic shared by link is reachable at its own address, which is not the same
+    // thing as being offered in a search box.
     Schematic::factory()->create(['visibility' => Schematic::UNLISTED, 'name' => 'Par lien']);
     Schematic::factory()->create(['visibility' => Schematic::PRIVATE, 'name' => 'Par lien aussi']);
 
@@ -119,8 +119,8 @@ it('never hands back something nobody else can see', function () {
 it('leaves a big code out of the answer rather than sending it eight times', function () {
     drawable('Enorme', 'bXNjaAF4n'.str_repeat('A', 20000));
 
-    // Nul, et pas absent : le champ existe toujours, donc la page sait qu'il faut aller le
-    // demander plutot que d'avoir a deviner pourquoi il manque.
+    // Null, and not absent: the field is still there, so the page knows it has to go and
+    // ask for it rather than having to guess why it is missing.
     expect($this->getJson('/api/schematiques/recherche?q=Enorme')->json('results.0.code'))
         ->toBeNull();
 });
@@ -130,18 +130,18 @@ it('answers nothing to nothing, without going to look', function () {
 
     expect($this->getJson('/api/schematiques/recherche')->json('results'))->toBe([]);
     expect($this->getJson('/api/schematiques/recherche?q=')->json('results'))->toBe([]);
-    // `?q[]=1` rend un tableau, et le convertir en chaine est une erreur fatale et non un
-    // champ vide. Un parametre de requete est ce que l'appelant a bien voulu envoyer.
+    // `?q[]=1` gives an array, and casting it to a string is a fatal error and not an empty
+    // field. A query parameter is whatever the caller felt like sending.
     $this->getJson('/api/schematiques/recherche?q[]=1')->assertOk();
 });
 
 it('reads the box as text here too, on the characters that broke production', function () {
     /*
-     * Le meme escape que la page, parce que c'est litteralement le meme code : les deux
-     * passent par `NameSearch`. Un antislash dans ce champ a rendu un 500 en production en
-     * passant tous les tests locaux, la base locale etant SQLite et la vraie MySQL. Deux
-     * copies d'un escape, ce sont deux chances de se tromper d'escape, et c'est pour ca que
-     * la requete a ete sortie du controleur le jour ou un deuxieme appelant est apparu.
+     * The same escaping as the page, because it is literally the same code: both go through
+     * `NameSearch`. A backslash in this field returned a 500 in production while passing
+     * every local test, the local database being SQLite and the real one MySQL. Two copies
+     * of an escape are two chances to get the escaping wrong, and that is why the query was
+     * moved out of the controller the day a second caller appeared.
      */
     drawable('Rendement 100%', 'bXNjaAF4nCENT');
     drawable('Autre chose', 'bXNjaAF4nAUTRE');
@@ -156,8 +156,8 @@ it('reads the box as text here too, on the characters that broke production', fu
 });
 
 it('refuses to be a list of the whole catalogue', function () {
-    // Quinze mille options ne sont pas un choix, ce sont des kilometres. Une liste sous un
-    // champ se lit d'un coup d'oeil ou ne se lit pas.
+    // Fifteen thousand options are not a choice, they are kilometres. A list under a field
+    // is read at a glance or it is not read at all.
     for ($i = 0; $i < 20; $i++) {
         drawable("Ligne {$i}", 'bXNjaAF4nLIGNE');
     }

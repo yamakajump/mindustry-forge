@@ -8,12 +8,11 @@ use Illuminate\Support\Facades\Storage;
 uses(RefreshDatabase::class);
 
 /**
- * La vignette qu'un lien vers une schematique affiche quand on le colle quelque part.
+ * The thumbnail a link to a schematic shows once it is pasted somewhere.
  *
- * Ce qui est verifie ici est ce qui casse en silence : une carte qui fuit une schematique
- * privee, une carte qui garde l'ancien nom apres un renommage, et une carte qui n'est
- * simplement pas une image. Aucun de ces trois defauts ne leve d'erreur ; on les decouvre
- * dans un fil Discord.
+ * What is checked here is what breaks in silence: a card that leaks a private schematic, a
+ * card that keeps the old name after a rename, and a card that is simply not an image. None
+ * of those three defects raises an error; they are found in a Discord thread.
  */
 function schematique(array $extra = []): Schematic
 {
@@ -32,7 +31,7 @@ function schematique(array $extra = []): Schematic
     ], $extra));
 }
 
-it('compose une carte au format que les deplieurs attendent', function () {
+it('composes a card in the format the unfurlers expect', function () {
     Storage::fake('public');
     $schematic = schematique();
 
@@ -46,35 +45,35 @@ it('compose une carte au format que les deplieurs attendent', function () {
     expect(imagesy($image))->toBe(630);
 });
 
-it('compose sans apercu quand la schematique n en a pas', function () {
+it('composes without a preview when the schematic has none', function () {
     Storage::fake('public');
     $schematic = schematique();
 
-    /* Le cas ordinaire, pas le cas rare : une schematique importee d'un autre catalogue
-       arrive sans image, et c'est justement celle dont le lien doit quand meme montrer
-       quelque chose. */
+    /* The ordinary case, not the rare one: a schematic imported from another catalogue
+       arrives with no image, and it is exactly the one whose link still has to show
+       something. */
     expect(Storage::disk('public')->exists("apercus/{$schematic->slug}.png"))->toBeFalse();
 
     $this->get("/s/{$schematic->slug}/carte.jpg")->assertOk();
 });
 
-it('refuse la carte d une schematique privee', function () {
+it('refuses the card of a private schematic', function () {
     Storage::fake('public');
     $schematic = schematique(['visibility' => Schematic::PRIVATE]);
 
     $this->get("/s/{$schematic->slug}/carte.jpg")->assertNotFound();
 });
 
-it('sert la carte d une schematique non listee', function () {
+it('serves the card of an unlisted schematic', function () {
     Storage::fake('public');
     $schematic = schematique(['visibility' => Schematic::UNLISTED]);
 
-    /* Non listee veut dire « qui a le lien le voit ». Un deplieur arrive avec le lien et
-       sans compte : lui refuser la vignette viderait le partage par lien de son sens. */
+    /* Unlisted means "whoever has the link sees it". An unfurler arrives with the link and
+       no account: refusing it the thumbnail would empty link sharing of its point. */
     $this->get("/s/{$schematic->slug}/carte.jpg")->assertOk();
 });
 
-it('refait la carte quand la schematique a change', function () {
+it('redraws the card when the schematic has changed', function () {
     Storage::fake('public');
     $schematic = schematique();
 

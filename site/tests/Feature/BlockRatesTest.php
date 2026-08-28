@@ -19,7 +19,7 @@ use App\Support\Block;
  * The whole catalogue, never a sample: a sample is what lets through the one block whose
  * shape is unusual, which is the only block this test would ever have caught.
  */
-it('donne exactement les memes chiffres que le moteur', function () {
+it('gives exactly the same figures as the engine', function () {
     $command = sprintf(
         'node %s %s %s %s',
         escapeshellarg(base_path('tests/Fixtures/engine-figures.mjs')),
@@ -36,8 +36,7 @@ it('donne exactement les memes chiffres que le moteur', function () {
 
     // Not skipped when node is missing. A guard that quietly stops running is worse than no
     // guard, because the reason it exists is that nobody would otherwise notice.
-    expect($status)->toBe(0, "le moteur n'a pas pu etre execute :
-".$printed);
+    expect($status)->toBe(0, "the engine could not be run:\n".$printed);
 
     $engine = json_decode($printed, true);
     expect($engine)->toBeArray()
@@ -67,7 +66,7 @@ it('donne exactement les memes chiffres que le moteur', function () {
         }
     }
 
-    expect($disagreements)->toBe([], 'Block a diverge du moteur');
+    expect($disagreements)->toBe([], 'Block diverged from the engine');
 })->group('engine');
 
 /**
@@ -81,7 +80,7 @@ it('donne exactement les memes chiffres que le moteur', function () {
  * `hardnessDrillMultiplier` to zero, so hardness costs them nothing, and they halve their
  * time on beryllium. A single formula would be wrong for one family or the other.
  */
-it('compte la durete du minerai, sauf la ou le jeu ne la compte pas', function () {
+it('counts ore hardness, except where the game does not count it', function () {
     $mechanical = BlockCatalogue::find('mechanical-drill');
 
     expect($mechanical->drillTicksFor('sand', 0))->toBe(600.0)
@@ -114,7 +113,7 @@ it('compte la durete du minerai, sauf la ou le jeu ne la compte pas', function (
  *
  * They stay for the next such change, whichever direction it comes from.
  */
-it('donne les portees en cases', function () {
+it('gives ranges in tiles', function () {
     expect(BlockCatalogue::find('wave')->rangeInTiles())->toBe(13.75)
         ->and(BlockCatalogue::find('mender')->rangeInTiles())->toBe(5.0)
         ->and(BlockCatalogue::find('bridge-conveyor')->rangeInTiles())->toBe(4.0)
@@ -129,7 +128,7 @@ it('donne les portees en cases', function () {
  * because a missing field prints nothing rather than something wrong, which is the failure
  * mode this repository keeps finding. They are pinned here so the hole cannot reopen.
  */
-it('donne une portee a toutes les tourelles', function () {
+it('gives every turret a range', function () {
     $turrets = array_filter(
         BlockCatalogue::all(),
         fn ($block) => $block->category() === 'turret',
@@ -149,7 +148,7 @@ it('donne une portee a toutes les tourelles', function () {
  * it: the game sets it from whether the block could have a power consumer. A page trusting
  * it would announce that a dozen blocks consume zero electricity per second.
  */
-it('ne se fie pas au drapeau consumes_power', function () {
+it('never trusts the consumes_power flag', function () {
     $press = BlockCatalogue::find('graphite-press');
 
     expect($press->get('consumes_power'))->toBeTrue()
@@ -166,7 +165,7 @@ it('ne se fie pas au drapeau consumes_power', function () {
  * ground itself; a block card wants the printed one. Getting these the wrong way round on
  * a vent condenser would be a page describing a block nobody can build.
  */
-it('annonce l energie produite comme la carte du jeu', function () {
+it('states the power produced the way the game card does', function () {
     expect(BlockCatalogue::find('thermal-generator')->powerOut())->toBe(108.0);
 
     $condenser = BlockCatalogue::find('vent-condenser');

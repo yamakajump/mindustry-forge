@@ -13,7 +13,7 @@ uses(RefreshDatabase::class);
  * So the test that matters is not that it saves, it is that somebody else's note is
  * invisible on the same page.
  */
-it('ecrit une note et la remplace au lieu d en empiler deux', function () {
+it('writes a note and replaces it instead of stacking two', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
 
@@ -29,18 +29,18 @@ it('ecrit une note et la remplace au lieu d en empiler deux', function () {
         ->and(SchematicNote::first()->body)->toBe('Remplace les convoyeurs par des titanes');
 });
 
-it('supprime la note quand le corps est vide', function () {
+it('deletes the note when the body is empty', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
 
     $this->actingAs($user)->putJson("/api/schematiques/{$schema->slug}/note", ['body' => 'Quelque chose']);
     $this->actingAs($user)->putJson("/api/schematiques/{$schema->slug}/note", ['body' => '   '])->assertOk();
 
-    // Vide veut dire pas de note, pas une note vide : sinon « a une note » a deux reponses.
+    // Empty means no note, not an empty note: otherwise "has a note" has two answers.
     expect(SchematicNote::count())->toBe(0);
 });
 
-it('refuse mille un caracteres et accepte mille', function () {
+it('refuses a thousand and one characters and accepts a thousand', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
 
@@ -53,7 +53,7 @@ it('refuse mille un caracteres et accepte mille', function () {
         ->assertOk();
 });
 
-it('ne montre pas la note d un autre sur la meme page', function () {
+it('never shows one reader the note of another, on the same page', function () {
     $author = User::factory()->create();
     $other = User::factory()->create();
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
@@ -67,7 +67,7 @@ it('ne montre pas la note d un autre sur la meme page', function () {
         ->assertDontSee('Secret de fabrication');
 });
 
-it('remontre sa note a qui l a ecrite', function () {
+it('shows the note again to whoever wrote it', function () {
     $author = User::factory()->create();
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
 
@@ -78,13 +78,13 @@ it('remontre sa note a qui l a ecrite', function () {
     $this->actingAs($author)->get("/s/{$schema->slug}")->assertOk()->assertSee('Mon aide-memoire');
 });
 
-it('ne propose aucun champ a un visiteur qui n est pas connecte', function () {
+it('offers no field to a visitor who is not signed in', function () {
     $schema = Schematic::factory()->create(['visibility' => Schematic::PUBLIC]);
 
     $this->get("/s/{$schema->slug}")->assertOk()->assertDontSee(__('schema.note.titre'));
 });
 
-it('emporte les notes quand le schema disparait', function () {
+it('takes the notes away when the schematic disappears', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
     $this->actingAs($user)->putJson("/api/schematiques/{$schema->slug}/note", ['body' => 'Note']);
@@ -94,7 +94,7 @@ it('emporte les notes quand le schema disparait', function () {
     expect(SchematicNote::count())->toBe(0);
 });
 
-it('refuse un visiteur qui n est pas connecte', function () {
+it('refuses a visitor who is not signed in', function () {
     $schema = Schematic::factory()->create();
 
     $this->putJson("/api/schematiques/{$schema->slug}/note", ['body' => 'Note'])

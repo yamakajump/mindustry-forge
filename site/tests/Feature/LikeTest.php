@@ -13,7 +13,7 @@ uses(RefreshDatabase::class);
  * The counter is denormalised, so every test here is about the two never disagreeing:
  * a double click, a removal that would go below zero, and a row deleted underneath.
  */
-it('ne compte qu un seul j aime quand on clique deux fois', function () {
+it('counts a single like when the button is clicked twice', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
 
@@ -24,7 +24,7 @@ it('ne compte qu un seul j aime quand on clique deux fois', function () {
         ->and($schema->refresh()->likes)->toBe(1);
 });
 
-it('compte une fois par personne', function () {
+it('counts once per person', function () {
     $schema = Schematic::factory()->create();
 
     foreach (User::factory()->count(3)->create() as $user) {
@@ -34,7 +34,7 @@ it('compte une fois par personne', function () {
     expect($schema->refresh()->likes)->toBe(3);
 });
 
-it('retire le j aime et ne descend jamais sous zero', function () {
+it('removes the like and never goes below zero', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
 
@@ -46,7 +46,7 @@ it('retire le j aime et ne descend jamais sous zero', function () {
         ->and($schema->refresh()->likes)->toBe(0);
 });
 
-it('refuse un visiteur qui n est pas connecte', function () {
+it('refuses a visitor who is not signed in', function () {
     $schema = Schematic::factory()->create();
 
     $this->postJson("/api/schematiques/{$schema->slug}/aime")->assertUnauthorized();
@@ -54,7 +54,7 @@ it('refuse un visiteur qui n est pas connecte', function () {
     expect(SchematicLike::count())->toBe(0);
 });
 
-it('emporte les j aime quand le schema disparait', function () {
+it('takes the likes away when the schematic disappears', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
 
@@ -64,7 +64,7 @@ it('emporte les j aime quand le schema disparait', function () {
     expect(SchematicLike::count())->toBe(0);
 });
 
-it('aime une schematique importee, qui n a pas de proprietaire', function () {
+it('likes an imported schematic, which has no owner', function () {
     /* Ninety-nine percent of this catalogue was collected elsewhere and has a null
        `user_id`. A like that only worked on schematics somebody uploaded here would be a
        feature nobody could use. */
@@ -77,13 +77,13 @@ it('aime une schematique importee, qui n a pas de proprietaire', function () {
     expect($schema->refresh()->likes)->toBe(1);
 });
 
-it('repare un compteur qui a derive', function () {
+it('repairs a counter that has drifted', function () {
     $user = User::factory()->create();
     $schema = Schematic::factory()->create();
     $this->actingAs($user)->postJson("/api/schematiques/{$schema->slug}/aime");
 
-    // Ce qu'une panne entre l'insertion et l'increment laisse derriere elle : la ligne
-    // existe, le cache ment.
+    // What a failure between the insert and the increment leaves behind: the row exists,
+    // the cache lies.
     Schematic::whereKey($schema->id)->update(['likes' => 47]);
 
     $this->artisan('forge:recount-likes')->assertSuccessful();
@@ -91,7 +91,7 @@ it('repare un compteur qui a derive', function () {
     expect($schema->refresh()->likes)->toBe(1);
 });
 
-it('remet a zero un compteur dont les lignes ont disparu', function () {
+it('resets to zero a counter whose rows are gone', function () {
     $schema = Schematic::factory()->create();
     Schematic::whereKey($schema->id)->update(['likes' => 12]);
 

@@ -7,30 +7,30 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 /*
- * Un plafond ne descend jamais dans une ligne « mesure ».
+ * A ceiling never comes down into a `mesure` row.
  *
- * `power_made` est rempli depuis `analysis['potential']`, qui est le plafond : ce que la
- * disposition ferait alimentee a fond. Indexee telle quelle, cette valeur devenait une
- * ligne `mesure`, et la vitrine filtre exactement sur ce genre-la - avec un commentaire
- * disant que melanger un plafond a une mesure serait mentir sans que rien ne le dise.
+ * `power_made` is filled from `analysis['potential']`, which is the ceiling: what the
+ * layout would make fed to the full. Indexed as it stood, that value became a `mesure`
+ * row, and the catalogue filters on exactly that kind - with a comment saying that mixing
+ * a ceiling into a measurement would be lying without anything saying so.
  *
- * C'est ce qui arrivait. Sur POLAR STAR, 110x110 et 2 508 blocs, le meme 1 513 826 etait
- * classe deux fois : honnetement en plafond, faussement en mesure. **195 lignes** dans ce
- * cas, et « celles qui produisent le plus » classait sur des plafonds en croyant classer
- * sur des mesures.
+ * That is what was happening. On POLAR STAR, 110x110 and 2 508 blocks, the same 1 513 826
+ * was ranked twice: honestly as a ceiling, falsely as a measurement. **195 rows** in that
+ * case, and "the ones that produce the most" ranked on ceilings while believing it ranked
+ * on measurements.
  *
- * La ligne existait deja, c'est une valeur qui l'a traversee. Chaque genre porte donc
- * desormais le chiffre qui lui appartient : la mesure vient de `analysis['power']`, le
- * plafond de `analysis['potential']`.
+ * The row already existed, it is a value that went through it. So each kind now carries
+ * the figure that belongs to it: the measurement comes from `analysis['power']`, the
+ * ceiling from `analysis['potential']`.
  */
 
-/** Une ferme de reacteurs sans carburant declare : enorme en plafond, nulle en mesure. */
+/** A reactor farm with no fuel declared: enormous as a ceiling, zero as a measurement. */
 function fermeSansCarburant(): Schematic
 {
     return Schematic::factory()->create([
         'visibility' => 'public', 'name' => 'POLAR STAR', 'blocks' => 2508,
         'produces' => [],
-        // Ce que la colonne porte, et qui vient du plafond.
+        // What the column carries, and it comes from the ceiling.
         'power_made' => 1_950_000.0, 'power_used' => 436_174.0,
         'analysis' => [
             'power' => ['made' => 0, 'spent' => 0],
@@ -39,7 +39,7 @@ function fermeSansCarburant(): Schematic
     ]);
 }
 
-it('ne classe pas un plafond parmi les mesures', function () {
+it('never ranks a ceiling among the measurements', function () {
     $ferme = fermeSansCarburant();
     $ferme->indexWhatItMakes();
     $ferme->indexWhatItCouldMake();
@@ -49,13 +49,13 @@ it('ne classe pas un plafond parmi les mesures', function () {
     $plafond = $ferme->items()
         ->where('item', SchematicItem::POWER)->where('kind', SchematicItem::PLAFOND)->first();
 
-    expect($mesure)->toBeNull('rien ne tourne, donc rien n\'est mesure');
-    expect((float) $plafond?->rate)->toBe(1_513_826.0, 'et le plafond dit ce qu\'il est');
+    expect($mesure)->toBeNull('nothing runs, so nothing is measured');
+    expect((float) $plafond?->rate)->toBe(1_513_826.0, 'and the ceiling says what it is');
 });
 
-it('laisse une centrale reellement alimentee dans le classement', function () {
-    /* Le controle qui compte : la regle ne doit pas vider le classement. Une centrale dont
-       l'analyse porte une mesure garde sa ligne, et c'est elle que la vitrine sert. */
+it('leaves a genuinely fed power plant in the ranking', function () {
+    /* The check that matters: the rule must not empty the ranking. A power plant whose
+       analysis carries a measurement keeps its row, and that is what the catalogue serves. */
     $vraie = Schematic::factory()->create([
         'visibility' => 'public', 'name' => 'Reacteur nourri', 'blocks' => 30,
         'produces' => [],
@@ -72,7 +72,7 @@ it('laisse une centrale reellement alimentee dans le classement', function () {
         ->value('rate'))->toBe(860.0);
 });
 
-it('garde la ferme sans carburant, parce qu un plafond dit ce qu elle ferait nourrie', function () {
+it('keeps the fuel-less farm, because a ceiling says what it would make fed', function () {
     /*
      * Ce test l en sortait, du temps ou la vitrine n acceptait que des mesures. Une ferme
      * sans carburant a une mesure nulle et un plafond de neuf cents, et « ce qu elle ferait
@@ -83,8 +83,8 @@ it('garde la ferme sans carburant, parce qu un plafond dit ce qu elle ferait nou
      */
     fermeSansCarburant()->indexWhatItMakes();
 
-    // `potential` autant que `power` : l analyse rend toujours les deux, et une fixture qui
-    // n ecrivait que la mesure decrivait une schematique qui ne peut pas exister.
+    // `potential` as much as `power`: the analysis always returns both, and a fixture that
+    // wrote only the measurement described a schematic that cannot exist.
     Schematic::factory()->create([
         'visibility' => 'public', 'name' => 'Reacteur nourri', 'blocks' => 30,
         'produces' => [],

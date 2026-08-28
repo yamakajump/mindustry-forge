@@ -24,7 +24,7 @@ function aPageOfSchematics(int $howMany): void
     }
 }
 
-it('ne rend aucune cle de traduction brute', function () {
+it('renders no raw translation key', function () {
     aPageOfSchematics(30);
 
     $html = $this->get('/schemas')->assertOk()->getContent();
@@ -33,7 +33,7 @@ it('ne rend aucune cle de traduction brute', function () {
     expect($html)->not->toContain('vitrine.pagination');
 });
 
-it('ne parle pas anglais', function () {
+it('does not speak English', function () {
     aPageOfSchematics(30);
 
     $html = $this->get('/schemas')->assertOk()->getContent();
@@ -45,7 +45,7 @@ it('ne parle pas anglais', function () {
 
 /* The one that would have caught the page-wide chevron. An icon whose size lives in a
    stylesheet the site does not load has no size at all, so the bar carries no icon. */
-it('ne pose pas d icone dans la barre de pages', function () {
+it('puts no icon in the pagination bar', function () {
     aPageOfSchematics(30);
 
     $html = $this->get('/schemas')->assertOk()->getContent();
@@ -57,7 +57,7 @@ it('ne pose pas d icone dans la barre de pages', function () {
 
 /* The three numbers are written outside the translation, so a missing key loses a word
    and never a count. On a site that sells nothing but figures, that is the line. */
-it('garde ses nombres quand la traduction manque', function () {
+it('keeps its numbers when the translation is missing', function () {
     aPageOfSchematics(30);
 
     app()->setLocale('xx');

@@ -30,9 +30,9 @@ it('carries no mis-encoded accent anywhere in the file', function () {
     expect($names)->toHaveCount(411);
 
     foreach ($names as $key => $name) {
-        expect($name)->not->toContain('Ã', "{$key} est mal encode : {$name}");
-        expect($name)->not->toContain("\u{FFFD}", "{$key} porte un caractere de remplacement");
-        expect($name)->not->toMatch('/\\\\u[0-9a-fA-F]{4}/', "{$key} porte un echappement brut");
+        expect($name)->not->toContain('Ã', "{$key} is mis-encoded: {$name}");
+        expect($name)->not->toContain("\u{FFFD}", "{$key} carries a replacement character");
+        expect($name)->not->toMatch('/\\\\u[0-9a-fA-F]{4}/', "{$key} carries a raw escape");
     }
 
     $accented = array_filter($names, fn ($n) => preg_match('/[À-ÿ]/u', $n));

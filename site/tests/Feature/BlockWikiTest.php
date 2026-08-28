@@ -15,14 +15,14 @@ uses(RefreshDatabase::class);
  * reason that has nothing to do with what it is testing.
  */
 
-it('liste les blocs et les groupe par categorie', function () {
+it('lists the blocks and groups them by category', function () {
     $this->get('/blocs')
         ->assertOk()
         ->assertSee('silicon-smelter')
         ->assertSee('conveyor');
 });
 
-it('donne une page a chaque bloc que le jeu propose', function () {
+it('gives a page to every block the game offers', function () {
     // The whole catalogue, not a sample. Two hundred and fifty-four renders cost under a
     // second, and a sample is exactly what lets the one block with an odd shape through:
     // the page has to survive a turret with no recipe and a floor with no cost alike.
@@ -40,7 +40,7 @@ it('donne une page a chaque bloc que le jeu propose', function () {
     expect($broken)->toBe([]);
 });
 
-it('ne donne pas de page a un bloc cache', function () {
+it('gives no page to a hidden block', function () {
     // `air` exists in the game and in the catalogue, and is furniture. A page for it would
     // be a page with nothing on it, so there is none, and asking for one is a miss.
     expect(BlockCatalogue::raw()['blocks']['air'] ?? null)->not->toBeNull();
@@ -48,12 +48,12 @@ it('ne donne pas de page a un bloc cache', function () {
     $this->get('/blocs/air')->assertNotFound();
 });
 
-it('refuse un nom qui ne ressemble pas a un bloc', function () {
+it('refuses a name that does not look like a block', function () {
     $this->get('/blocs/'.urlencode('../../etc/passwd'))->assertNotFound();
     $this->get('/blocs/Silicon-Smelter')->assertNotFound();
 });
 
-it('affiche la recette et le plafond de production', function () {
+it('shows the recipe and the production ceiling', function () {
     // The locale is pinned here rather than left to the environment. `.env` is not
     // versioned, so a machine set to `fr` and a CI set to `en` render different pages, and a
     // test that passes on one and fails on the other is testing the environment instead of
@@ -74,7 +74,7 @@ it('affiche la recette et le plafond de production', function () {
     $page->assertSee('au mieux');
 });
 
-it('dit ou trouver ce que le bloc consomme, y compris au sol', function () {
+it('says where to find what the block consumes, the ground included', function () {
     $page = $this->get('/blocs/silicon-smelter')->assertOk();
 
     // Sand is both made in a pulveriser and picked up off the ground, and the ground is
@@ -94,7 +94,7 @@ it('dit ou trouver ce que le bloc consomme, y compris au sol', function () {
         ->assertDontSee('/blocs/sand-floor');
 });
 
-it('lie le bloc aux schematiques publiques qui en contiennent', function () {
+it('links the block to the public schematics that hold it', function () {
     $held = Schematic::factory()->create([
         'visibility' => Schematic::PUBLIC,
         'name' => 'Ligne de silicium',
@@ -118,7 +118,7 @@ it('lie le bloc aux schematiques publiques qui en contiennent', function () {
     expect($held->blocksHeld()->where('block', 'silicon-smelter')->value('count'))->toBe(2);
 });
 
-it('ne montre pas une schematique privee sur la page d un bloc', function () {
+it('never shows a private schematic on a block page', function () {
     Schematic::factory()->create([
         'visibility' => Schematic::PRIVATE,
         'name' => 'Brouillon secret',
@@ -130,7 +130,7 @@ it('ne montre pas une schematique privee sur la page d un bloc', function () {
         ->assertDontSee('Brouillon secret');
 });
 
-it('refait l index quand la schematique change', function () {
+it('rebuilds the index when the schematic changes', function () {
     $schematic = Schematic::factory()->create([
         'analysis' => ['detail' => [['name' => 'silicon-smelter']]],
     ]);
@@ -144,7 +144,7 @@ it('refait l index quand la schematique change', function () {
     expect($schematic->blocksHeld()->pluck('block')->all())->toBe(['graphite-press']);
 });
 
-it('ne se laisse pas empoisonner par une analyse envoyee a la main', function () {
+it('never lets a hand-sent analysis poison it', function () {
     // The analysis arrives from a browser, so it is not to be trusted. A name too long for
     // the column and a payload of the wrong shape both have to land as data, never as a
     // database error on a page somebody is looking at.
@@ -164,7 +164,7 @@ it('ne se laisse pas empoisonner par une analyse envoyee a la main', function ()
         ->and(array_key_first($rows))->toBe(str_repeat('a', 40));
 });
 
-it('filtre par categorie et par planete', function () {
+it('filters by category and by planet', function () {
     $this->get('/blocs?categorie=crafting')
         ->assertOk()
         ->assertSee('silicon-smelter')
@@ -181,36 +181,36 @@ it('filtre par categorie et par planete', function () {
         ->assertSee('silicon-smelter');
 });
 
-it('choisit un monde par defaut plutot que de melanger les deux', function () {
-    /* On joue Serpulo ou Erekir, jamais les deux a la fois, et les deux arbres ne partagent
-       presque rien : melanges, les 254 blocs mettaient un convoyeur a cote d une gaine
-       renforcee, que le meme joueur ne posera jamais dans la meme partie. Mesure sur le
-       catalogue : 139 blocs Serpulo, 102 Erekir, 13 communs. */
+it('picks a default world rather than mixing the two', function () {
+    /* You play Serpulo or Erekir, never both at once, and the two trees share almost
+       nothing: mixed together, the 254 blocks put a conveyor next to a reinforced conduit,
+       which the same player will never place in the same game. Measured on the catalogue:
+       139 Serpulo blocks, 102 Erekir, 13 shared. */
     $page = $this->get('/blocs')->assertOk();
 
     $page->assertSee('silicon-smelter')          // Serpulo
         ->assertDontSee('silicon-arc-furnace');  // Erekir
 
-    // Un convoyeur n appartient a aucun des deux mondes, donc il appartient aux deux : le
-    // retirer des deux listes le rendrait introuvable partout.
+    // A conveyor belongs to neither of the two worlds, so it belongs to both: taking it out
+    // of both lists would make it findable nowhere.
     $page->assertSee('conveyor');
 });
 
-it('laisse demander les deux mondes, et dit combien chacun en porte', function () {
+it('lets both worlds be asked for, and says how many each holds', function () {
     $tout = $this->get('/blocs?planete=tout')->assertOk();
 
     $tout->assertSee('silicon-smelter')
         ->assertSee('silicon-arc-furnace');
 
-    /* Les comptes a cote de chaque monde. Un choix qui retire une centaine de blocs doit
-       annoncer combien il retire, sinon c est un filtre qui se fait passer pour un
-       catalogue complet. */
-    $tout->assertSee('254')   // les deux
-        ->assertSee('152')    // Serpulo, communs compris
-        ->assertSee('115');   // Erekir, communs compris
+    /* The counts beside each world. A choice that removes a hundred-odd blocks has to
+       announce how many it removes, otherwise it is a filter passing itself off as a
+       complete catalogue. */
+    $tout->assertSee('254')   // both
+        ->assertSee('152')    // Serpulo, shared included
+        ->assertSee('115');   // Erekir, shared included
 });
 
-it('retombe sur le monde par defaut plutot que de refuser une planete inventee', function () {
+it('falls back to the default world rather than refusing an invented planet', function () {
     $this->get('/blocs?planete=mars')
         ->assertOk()
         ->assertSee('silicon-smelter')
