@@ -10,8 +10,8 @@ on:
   pull_request:
 
 jobs:
-  analyseur:
-    name: Analyseur (JavaScript)
+  analyser:
+    name: Analyser (JavaScript)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -82,7 +82,7 @@ jobs:
   # deployment. A migration that passes on SQLite and breaks on MySQL is the
   # site in maintenance for as long as it takes to work out why.
   migrations:
-    name: Migrations (MySQL, comme en production)
+    name: Migrations (MySQL, as in production)
     runs-on: ubuntu-latest
     defaults:
       run:
