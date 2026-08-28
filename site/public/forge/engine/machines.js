@@ -82,13 +82,13 @@ function shouldConsume(build) {
   for (const [item, amount] of Object.entries(build.block.output || {})) {
     if (build.items.get(item) + amount > build.itemCapacity) return false;
   }
-  /* Un seul reservoir de sortie plein n'arrete pas la machine.
+  /* One full output tank does not stop the machine.
 
-     `dumpExtraLiquid` vaut vrai par defaut : le bloc tourne tant qu'**un** de ses liquides
-     a de la place, et le surplus des autres est perdu. Un seul bloc du jeu sort deux
-     liquides, l'electrolyseur, et c'est le montage courant de ne taper que l'ozone : son
-     hydrogene sature en huit secondes, apres quoi le jeu continue a quatre ozone la seconde
-     pour toujours et le portage tombait a zero en bloquant tout l'aval. */
+     `dumpExtraLiquid` defaults to true: the block runs for as long as **one** of its
+     liquids has room, and the surplus of the others is lost. Exactly one block in the game
+     outputs two liquids, the electrolyser, and tapping only the ozone is the usual build:
+     its hydrogen fills in eight seconds, after which the game keeps going at four ozone a
+     second forever, while this port fell to zero and stalled everything downstream. */
   const outputs = Object.keys(build.block.output_liquid || {});
   if (outputs.length && !build.block.ignore_liquid_fullness) {
     let allFull = true;
@@ -175,10 +175,10 @@ const crafter = {
     if (block.heat_requirement) build.state.heat = heatReaching(build);
 
     const efficiency = efficiencyOf(build, step);
-    /* Retenu, pas seulement calcule. Rien dans le moteur ne le relit - une usine avance sur
-       `edelta` et pas sur son regime - mais le rendu en a besoin : `warmup` monte vers lui,
-       et c est `warmup` qui allume la lueur d un four. Un enregistrement, pas un
-       comportement. */
+    /* Kept, not merely computed. Nothing in the engine reads it back, since a factory
+       advances on `edelta` rather than on its rate, but the rendering needs it: `warmup`
+       climbs towards it, and `warmup` is what lights the glow of a smelter. A record, not
+       a behaviour. */
     build.state.efficiency = efficiency;
 
     if (efficiency > 0) {
@@ -340,9 +340,9 @@ function dumpOutputs(build, step) {
   build.state.dumpTimer = 0;
 
   for (const item of Object.keys(build.block.output || {})) build.dump(item);
-  /* Chaque liquide par sa face, quand le bloc les nomme : l'ozone de l'electrolyseur sort
-     par la face relative 1 et l'hydrogene par la 3. Verses partout, un plan qui separe
-     correctement les deux gaz les melange. */
+  /* Each liquid through its own face, when the block names them: the electrolyser's ozone
+     leaves through relative face 1 and its hydrogen through face 3. Poured out everywhere,
+     a schematic that correctly separates the two gases mixes them. */
   const faces = build.block.liquid_output_directions || [];
   Object.keys(build.block.output_liquid || {}).forEach((liquid, at) => {
     build.dumpLiquid(liquid, 2, faces.length > at ? faces[at] : -1);
@@ -884,11 +884,11 @@ const burstDrill = {
     efficiency = Math.max(0, Math.min(1, efficiency));
     if (efficiency <= 0) return;
 
-    /* Plafonne par ce que la moitie obligatoire vaut deja, et pas seulement par le reseau.
-       Une foreuse a impact tourne sur de l eau **obligatoire** et de l ozone en bonus : a
-       sept dixiemes de son eau, le jeu lui donne sept dixiemes de son bonus, et le portage
-       lui donnait le bonus entier. Une rafale de plus toutes les trente secondes, et
-       quarante-trois pour cent d ozone bu qui n existe pas. */
+    /* Capped by what the mandatory half is already worth, and not by the network alone.
+       An impact drill runs on **mandatory** water and bonus ozone: at seven tenths of its
+       water the game gives it seven tenths of its bonus, and this port gave it the whole
+       bonus. One extra burst every thirty seconds, and forty-three per cent of the ozone
+       drunk that does not exist. */
     const wet = boostShare(build, step, efficiency);
     const speed = (1 + ((block.liquid_boost ?? 1) - 1) * wet) * efficiency;
 

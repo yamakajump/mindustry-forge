@@ -241,8 +241,8 @@ export function yieldOf(node, ground, catalogue) {
     resource: best.item,
     rate: (60 * best.covered) / time,
     covered: best.covered,
-    // Le temps d'un lot, que la simulation refait sinon a partir du debit et du nombre de
-    // cases, ce qui perd le multiplicateur en route.
+    // The time one batch takes. Without it the simulation rebuilds that time from the rate
+    // and the tile count, which loses the multiplier on the way.
     each: time,
     of: (node.block.size || 1) ** 2,
   };

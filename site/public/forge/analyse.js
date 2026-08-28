@@ -1332,31 +1332,31 @@ export async function analyse(text, supply = {}, chosen = null,
   }
 
   /**
-   * Ce qu'elle rendrait si tout ce qui lui manque arrivait : un plafond, pas une mesure.
+   * What it would return if everything it lacks arrived: a ceiling, not a measurement.
    *
-   * Le chiffre au-dessus est vide tant que personne n'a dit par ou la schematique se
-   * branche, et c'est la bonne reponse pour quelqu'un qui colle la sienne. Elle est fausse
-   * a l'echelle d'un catalogue de quinze mille conceptions que personne ne marquera jamais
-   * une par une : une usine a silicium parfaitement decrite y figure comme ne produisant
-   * rien, ce qui n'aide personne a la trouver.
+   * The figure above is empty until somebody says where the schematic plugs in, and that
+   * is the right answer for a player pasting their own. It is the wrong one across a
+   * catalogue of fifteen thousand designs nobody will ever mark up one by one: a
+   * perfectly described silicon factory appears there as producing nothing, which helps
+   * nobody find it.
    *
-   * **Ceci n'est pas le retour de la devinette d'entrees.** `ports.js` a ete supprime pour
-   * une bonne raison : il choisissait le transporteur du bord le plus probable par
-   * ressource, toute la page decoulait de ce choix, et un choix rate donnait des debits qui
-   * avaient l'air calcules. Ici rien n'est choisi. Aucune arrivee n'est designee, aucun
-   * flux n'est route : c'est la soustraction de ce que les machines fabriquent a plein
-   * regime moins ce qu'elles se mangent entre elles. Il n'y a pas de coup de de parce qu'il
-   * n'y a pas de tirage.
+   * **This is not the input guesswork coming back.** `ports.js` was deleted for a good
+   * reason: it picked the most likely edge carrier per resource, the whole page followed
+   * from that pick, and a wrong pick produced rates that looked calculated. Nothing is
+   * picked here. No inlet is designated and no flow is routed: this is what the machines
+   * build at full speed, minus what they eat from each other. There is no roll of the
+   * dice because there is no draw.
    *
-   * C'est aussi exactement la convention que ce fichier applique deja a l'energie deux
-   * lignes plus bas - `potential: powerBudget(graph, { fed: {} })`, toutes les machines a
-   * fond - et le miroir exact de `needs`, qui est la meme soustraction dans l'autre sens.
-   * Les deux ne peuvent pas se contredire : ils sont les deux signes d'une seule difference.
-   * Verifie contre le solveur : une presse a graphite marquee a la main rend 40 graphite/min,
-   * et ce plafond en annonce 40.
+   * It is also exactly the convention this file already applies to power two lines below,
+   * `potential: powerBudget(graph, { fed: {} })`, every machine flat out, and the exact
+   * mirror of `needs`, which is the same subtraction the other way round. The two cannot
+   * contradict each other: they are the two signs of one difference. Checked against the
+   * solver: a graphite press marked up by hand returns 40 graphite a minute, and this
+   * ceiling announces 40.
    *
-   * Un plafond ne s'affiche jamais sans dire qu'il en est un, ni sans `needs` a cote pour
-   * dire a quelles conditions. Un debit sorti de son contrat finit cite comme une mesure.
+   * A ceiling is never displayed without saying that it is one, nor without `needs` beside
+   * it to say under what conditions. A rate taken out of its contract ends up quoted as a
+   * measurement.
    */
   const potentialPerMinute = {};
   for (const [item, rate] of Object.entries(atFullSpeed)) {
