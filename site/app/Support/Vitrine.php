@@ -64,6 +64,33 @@ class Vitrine
      * answers "what is there to look at", not "what is the site best at". The two differ
      * sharply here, because a handful of reactors out-produce eight hundred graphite lines.
      */
+    /**
+     * Everything any public schematic asks for from outside, commonest first.
+     *
+     * The mirror of `itemsOnOffer`, and a separate method rather than a flag on it: the two
+     * lists overlap without being the same. Water is produced by 2 579 schematics and
+     * demanded by 2 548 others, and a caller that offered one list for both questions would
+     * propose sand as something to search production on, where almost nothing makes it.
+     *
+     * Same nature as the other side, and for the same reason: what a layout demands running
+     * flat out is a ceiling, and a list built on one nature must not be filtered on another.
+     *
+     * @return list<string>
+     */
+    public static function eatsOnOffer(int $limit = self::ITEMS): array
+    {
+        return DB::table('schematic_items')
+            ->join('schematics', 'schematics.id', '=', 'schematic_items.schematic_id')
+            ->where('schematics.visibility', Schematic::PUBLIC)
+            ->where('schematic_items.sens', SchematicItem::CONSOMME)
+            ->where('schematic_items.kind', self::NATURE)
+            ->groupBy('schematic_items.item')
+            ->orderByRaw('count(*) desc')
+            ->limit($limit)
+            ->pluck('schematic_items.item')
+            ->all();
+    }
+
     public static function itemsOnOffer(int $limit = self::ITEMS): array
     {
         return SchematicItem::query()

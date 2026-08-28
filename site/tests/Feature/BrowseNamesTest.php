@@ -40,21 +40,30 @@ it('range chaque chose dans la famille que l adresse d icone attend', function (
         ->and(Thing::family('silicon-smelter'))->toBe('bloc');
 });
 
-it('offre les objets en pastilles, avec leur icone et leur nom francais', function () {
+it('offre les objets en images, avec leur nom francais', function () {
     produces('Fonte', 'silicon');
 
     $page = $this->get('/schemas')->assertOk();
 
-    /* Des liens et non un controle dessine : un `<select>` natif ne porte pas d image, et le
-       remplacer aurait coute le clavier, la recherche par frappe, Echap, l annonce au lecteur
-       d ecran et le selecteur natif du telephone, sur le controle de recherche principal du
-       site. La rangee ajoute l image sans rien retirer. */
-    $page->assertSee('vitrine-pastille', false)
+    /* Des liens dans un `<details>`, et non un controle dessine. C'est ce qui a permis de
+       supprimer le doublon : la rangee de pastilles et le deroulant posaient la meme question
+       deux fois, et le deroulant n'existait que parce qu'un `<option>` natif ne porte pas
+       d'image. Une grille de liens porte l'image et garde le clavier, Echap, l'annonce au
+       lecteur d'ecran et une adresse par choix, puisque tout cela vient du navigateur. */
+    $page->assertSee('ch-case', false)
         ->assertSee('/icone/objet/silicon.png', false)
         ->assertSee('Silicium');
 });
 
-it('marque la pastille choisie plutot que de laisser deviner', function () {
+/* Le deroulant a disparu, et rien ne doit le ramener sans qu'on le remarque : deux commandes
+   pour la meme question, c'est le doublon que cette page vient de perdre. */
+it('ne pose plus la question du produit deux fois', function () {
+    produces('Fonte', 'silicon');
+
+    $this->get('/schemas')->assertOk()->assertDontSee('<select name="produit"', false);
+});
+
+it('marque le choix courant plutot que de laisser deviner', function () {
     produces('Fonte', 'silicon');
 
     $this->get('/schemas?produit=silicon')

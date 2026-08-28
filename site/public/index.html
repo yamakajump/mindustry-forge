@@ -1396,7 +1396,8 @@ async function whoAmI() {
      Le menu est dans la page depuis le debut, seule cette entree attendait la reponse. */
   if (me) {
     nav.querySelector("details.menu .menu-list")?.insertAdjacentHTML("beforeend",
-      `<a href="/mes-schemas">${escape(t("nav.menu.les-miennes"))}</a>`);
+      `<a href="/mes-schemas">${escape(t("nav.menu.les-miennes"))}</a>`
+      + `<a href="/mes-favoris">${escape(t("nav.menu.favoris"))}</a>`);
   }
 
   nav.insertAdjacentHTML("beforeend", me

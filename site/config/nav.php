@@ -23,11 +23,11 @@ return [
     ['key' => 'nav.barre.schematiques', 'menu' => [
         ['key' => 'nav.menu.parcourir', 'href' => '/schemas', 'ready' => true],
         ['key' => 'nav.menu.les-miennes', 'href' => '/mes-schemas', 'ready' => true, 'auth' => true],
-        /* La page est rendue par le catalogue avec le filtre `favoris` deja arme, et
-           cette route appartient a la voie qui refait la vitrine. `ready` reste faux
-           jusqu'a ce qu'elle existe : une entree de menu qui pointe sur un 404 est pire
-           qu'une entree absente. */
-        ['key' => 'nav.menu.favoris', 'href' => '/mes-favoris', 'ready' => false, 'auth' => true],
+        /* La page est rendue par le catalogue avec le filtre `favoris` deja arme. L'entree
+           a vecu avec `ready` a faux le temps que cette route existe, et la voie qui l'a
+           creee l'a passee a vrai dans le meme commit : une entree de menu qui pointe sur
+           un 404 est pire qu'une entree absente. */
+        ['key' => 'nav.menu.favoris', 'href' => '/mes-favoris', 'ready' => true, 'auth' => true],
         ['key' => 'nav.menu.dossiers', 'href' => '/mes-dossiers', 'ready' => true, 'auth' => true],
         ['key' => 'nav.menu.comparer', 'href' => '/comparer', 'ready' => true],
         ['key' => 'nav.menu.publier', 'href' => '/publier', 'ready' => false],

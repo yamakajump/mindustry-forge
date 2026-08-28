@@ -174,6 +174,20 @@ Route::middleware('auth')->group(function () {
         ->middleware('throttle:60,1');
 
     Route::get('/mes-schemas', [SchematicController::class, 'mine']);
+
+    /* Mes favoris : le catalogue avec le filtre deja arme, et non une seconde liste.
+     *
+     * Une page a part aurait eu sa propre requete, donc une deuxieme implementation de
+     * « lister des schemas », ce que la premiere regle du depot interdit. Le cout ne se voit
+     * pas le premier jour : il se voit quand la vitrine sait filtrer par encombrement, par
+     * planete et par debit minimum, et qu'une liste de quatre-vingts favoris ne sait rien
+     * faire de tout ca. Ici elle herite de tout, y compris de ce que personne n'a encore
+     * imagine.
+     *
+     * L'adresse est `/mes-favoris` et non `/favoris`, par parite avec `/mes-schemas` : le
+     * « mes » dit que la liste est personnelle avant meme qu'elle s'affiche. */
+    Route::get('/mes-favoris', fn (Request $request) => app(BrowseController::class)
+        ->index($request->merge(['favoris' => 'oui'])));
     Route::post('/api/schematiques', [SchematicController::class, 'store']);
     Route::patch('/api/schematiques/{schematic}', [SchematicController::class, 'update']);
     Route::delete('/api/schematiques/{schematic}', [SchematicController::class, 'destroy']);

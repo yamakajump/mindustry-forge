@@ -152,6 +152,9 @@ class Schematic extends Model
             // Which blocks it is built from, for the wiki. A different table, so the two
             // rebuilds never touch each other's rows.
             $schematic->indexWhatItHolds();
+            // Et ce qu'il reclame de l'exterieur, qui est la question posee dans l'autre
+            // sens : « j'ai du charbon, qu'est-ce que je peux faire tourner ».
+            $schematic->indexWhatItNeeds();
         });
     }
 
@@ -167,9 +170,22 @@ class Schematic extends Model
      * something a base already has, so it is a prerequisite the page states, never a debt
      * that pushes a working factory down a ranking.
      */
+    /**
+     * The ground it stands on, which is not the number of blocks it is made of.
+     *
+     * The bounding box rather than the count of occupied tiles, and deliberately: a
+     * schematic is pasted as a rectangle, so a hole inside it is still ground the player
+     * cannot use for anything else. Floored at one so a malformed row divides by something.
+     */
+    public function tiles(): int
+    {
+        return max(1, (int) $this->width * (int) $this->height);
+    }
+
     public function indexWhatItMakes(): void
     {
         $blocks = max(1, (int) $this->blocks);
+        $tiles = $this->tiles();
 
         /* Nothing at all is indexed for a schematic fed by a sandbox tap, and that is the
            narrow claim: it is not that such a layout is uninteresting, it is that whatever
@@ -234,7 +250,61 @@ class Schematic extends Model
         foreach ($rows as $item => $rate) {
             $this->items()->updateOrCreate(
                 ['item' => $item, 'sens' => SchematicItem::PRODUIT, 'kind' => SchematicItem::MESURE],
-                ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
+                ['rate' => $rate, 'rate_per_block' => $rate / $blocks,
+                    'rate_per_tile' => $rate / $tiles],
+            );
+        }
+    }
+
+    /**
+     * Ce qu'il faut lui amener, indexe comme ce qu'il rend.
+     *
+     * L'autre moitie de la promesse du site, et l'autre sens de la meme question. « Qu'est-ce
+     * qui fait du graphite » est une liste de courses ; « qu'est-ce qui mange du charbon » est
+     * la reponse a « j'ai une mine qui tourne, que puis-je construire maintenant », qui est la
+     * façon dont un joueur choisit sa prochaine usine.
+     *
+     * La colonne `needs` porte deja la reponse depuis le premier jour, ecrite par l'analyse :
+     * ce que le plan reclame de l'exterieur, par minute, une fois deduit ce qu'il produit
+     * lui-meme. Rien n'est recalcule ici, la ligne est seulement rendue interrogeable.
+     *
+     * Range en `plafond` et non en `mesure`, parce que c'est ce qu'elle est : la demande d'un
+     * plan tournant a plein regime, pas un releve. Melanger les deux natures dans une meme
+     * colonne est la faute que ce depot a passe une journee a defaire du cote production, et
+     * elle serait aussi silencieuse de ce cote-ci.
+     *
+     * Les cles categorielles sont ecartees. Un generateur qui brule « n'importe quoi » ne
+     * nomme pas de ressource et sort sous `*combustible` : 267 lignes sur 3 000 dans le
+     * catalogue actuel. Savoir si du charbon couvre cette faim demande la liste `accepts` que
+     * le jeu tient par bloc, et que `needs.js` lit deja dans le navigateur. La resoudre une
+     * seconde fois ici serait la deuxieme implementation que ce depot passe son temps a
+     * eviter ; et un nom qu'aucun joueur ne peut taper n'est de toute façon pas un filtre.
+     */
+    public function indexWhatItNeeds(): void
+    {
+        $rows = [];
+        foreach ((array) $this->needs as $item => $rate) {
+            if (! is_string($item) || $item === '' || $item[0] === '*') {
+                continue;
+            }
+            if (is_numeric($rate) && $rate > 0) {
+                $rows[substr($item, 0, 40)] = round((float) $rate, 2);
+            }
+        }
+
+        $blocks = max(1, (int) $this->blocks);
+        $tiles = $this->tiles();
+
+        $mine = $this->items()
+            ->where('sens', SchematicItem::CONSOMME)
+            ->where('kind', SchematicItem::PLAFOND);
+
+        (clone $mine)->whereNotIn('item', array_keys($rows) ?: [''])->delete();
+
+        foreach ($rows as $item => $rate) {
+            $this->items()->updateOrCreate(
+                ['item' => $item, 'sens' => SchematicItem::CONSOMME, 'kind' => SchematicItem::PLAFOND],
+                ['rate' => $rate, 'rate_per_block' => $rate / $blocks, 'rate_per_tile' => $rate / $tiles],
             );
         }
     }
@@ -267,6 +337,7 @@ class Schematic extends Model
         }
 
         $blocks = max(1, (int) $this->blocks);
+        $tiles = $this->tiles();
 
         // The ceiling is a tap's ceiling too, and just as meaningless. Same rule as above.
         if ($this->fedBySandbox()) {
@@ -303,7 +374,8 @@ class Schematic extends Model
         foreach ($rows as $item => $rate) {
             $this->items()->updateOrCreate(
                 ['item' => $item, 'sens' => SchematicItem::PRODUIT, 'kind' => SchematicItem::PLAFOND],
-                ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
+                ['rate' => $rate, 'rate_per_block' => $rate / $blocks,
+                    'rate_per_tile' => $rate / $tiles],
             );
         }
     }
@@ -570,6 +642,47 @@ class Schematic extends Model
         }
 
         return $names;
+    }
+
+    /**
+     * Every block the game only offers on one of its two worlds.
+     *
+     * Serpulo and Erekir share almost nothing, and a plan built from one cannot be pasted on
+     * the other: the blocks are simply not in the player's build menu there. So this is not a
+     * matter of taste like the sandbox rule, it is the difference between a result a player
+     * can use and one they cannot place at all.
+     *
+     * Read off the catalogue the bench printed out of a running game, never a hand-kept list:
+     * the day the game adds a block, a typed list starts lying and nothing says so.
+     */
+    public static function blocksAwayFrom(string $planet): array
+    {
+        static $cache = [];
+        if (isset($cache[$planet])) {
+            return $cache[$planet];
+        }
+
+        $names = [];
+        foreach (BlockCatalogue::all() as $name => $block) {
+            $its = $block->planet();
+            // A block belonging to no tree at all - a floor, a sandbox block - excludes
+            // nobody. Treating "unknown" as "the other world" would empty every result.
+            if ($its !== null && $its !== $planet) {
+                $names[] = $name;
+            }
+        }
+
+        return $cache[$planet] = $names;
+    }
+
+    /** Only what can actually be pasted on that world, said in SQL. */
+    public function scopeOnPlanet($query, string $planet)
+    {
+        return $query->whereNotExists(fn ($sub) => $sub
+            ->selectRaw('1')
+            ->from('schematic_blocks')
+            ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
+            ->whereIn('schematic_blocks.block', self::blocksAwayFrom($planet)));
     }
 
     /**
