@@ -39,7 +39,7 @@ document.addEventListener("click", async (event) => {
   if (!button) return;
 
   const box = button.closest(".keep");
-  const slug = box?.dataset.slug;
+  const slug = box?.dataset.schema;
   if (!slug) return;
 
   const liking = button.hasAttribute("data-aime");

@@ -81,15 +81,22 @@
          Le compte ne s'affiche qu'au-dessus de zero. « 0 j'aime » sous une schematique que
          personne n'a encore ouverte repond a « combien de gens l'ont aimee » sur une page
          ou le lecteur demande si elle est bonne, et se lit comme un verdict. --}}
-    <div class="keep" data-slug="{{ $schematic->slug }}">
+    {{-- `data-schema` et non `data-slug` : dans ce depot, `data-slug` est le contrat
+         d'apercu.js, qui prend tout element qui en porte un pour une tuile dont il doit
+         aller chercher le code et dessiner le plan. Il a remplace ces deux boutons par un
+         canvas, sur la vraie page, pendant que les onze tests passaient au vert. --}}
+    <div class="keep" data-schema="{{ $schematic->slug }}">
       @auth
         <button type="button" data-aime aria-pressed="{{ $aime ? 'true' : 'false' }}">
           <span class="mot">{{ __($aime ? 'schema.aime.retirer' : 'schema.aime.bouton') }}</span>
-          <span class="compte"{{ $schematic->likes > 0 ? '' : ' hidden' }}>{{ $schematic->likes }} {{ __('schema.unite.jaime') }}</span>
         </button>
         <button type="button" data-favori aria-pressed="{{ $favori ? 'true' : 'false' }}">
           <span class="mot">{{ __($favori ? 'schema.favori.retirer' : 'schema.favori.ajouter') }}</span>
         </button>
+        {{-- A cote des boutons et non dedans : dans le bouton, la page affichait
+             « J'aime  3 j'aime », le meme mot deux fois a trois pixels d'intervalle. Ca ne
+             se voit dans aucun test, seulement en ouvrant la page. --}}
+        <span class="compte"{{ $schematic->likes > 0 ? '' : ' hidden' }}>{{ $schematic->likes }} {{ __('schema.unite.jaime') }}</span>
       @else
         {{-- Montre plutot que cache, et comme lien plutot que comme bouton : un bouton
              qu'un visiteur ne voit pas est une fonctionnalite dont il n'apprend jamais

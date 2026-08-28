@@ -480,7 +480,7 @@ select {
    L'etat presse reprend les couleurs de `.seg button.on` plutot que d'en choisir de
    nouvelles : deux facons de dire « ce bouton est actif » sur la meme page, c'est une de
    trop, et la couleur vit dans son propre fichier a cote. */
-.keep { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.keep { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
 .keep button { display: inline-flex; align-items: center; gap: 6px; }
 .keep button[aria-pressed="true"] {
   background: var(--accent); border-color: var(--accent); color: #1a1d23;
