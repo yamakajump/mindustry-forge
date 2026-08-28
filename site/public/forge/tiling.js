@@ -153,3 +153,35 @@ export function blendersAt(ground, x, y, floors) {
 export function edgeCell(dx, dy) {
   return { col: 1 - dx, row: 1 + dy };
 }
+
+/**
+ * The alpha a liquid floor is drawn back at over its own overlay, or 0 when it is not.
+ *
+ * `Floor.drawBase`'s fourth statement, decompiled from the pinned jar at v159.7:
+ *
+ *     if(tile.overlay() != Blocks.air && tile.floor() == this && isLiquid){
+ *         Draw.alpha(1f - overlayAlpha);
+ *         drawMain(tile);
+ *         Draw.color();
+ *     }
+ *
+ * Three conditions, and the middle one costs nothing here: `render.js` reaches this only
+ * while drawing a tile's own floor, so `tile.floor() == this` holds by construction. What is
+ * left is a tile carrying an overlay whose floor is a liquid, and eleven floors in the
+ * catalogue are liquids.
+ *
+ * The alpha is the floor's own, not one number for all eleven, which is why it is looked up
+ * rather than written here. `Floor`'s constructor sets `overlayAlpha` to 0.65, so ten of them
+ * come back over their ore at 0.35; `pooled-cryofluid` overrides it to 0.35 and comes back at
+ * 0.65, hiding more of what lies in it than any of the others. `build_sols.py` records the
+ * subtraction already done, per floor, as `veil`.
+ *
+ * What is redrawn is `drawMain` again, the same call the first statement makes, so the same
+ * variant of the same floor comes back over the ore. Picking a variant a second time would
+ * make a tile flicker between two pictures of itself.
+ */
+export function veilAt(ground, x, y, floors) {
+  const layers = ground[`${x},${y}`];
+  if (!layers?.floor || !layers.overlay) return 0;
+  return floors?.[layers.floor]?.veil || 0;
+}
