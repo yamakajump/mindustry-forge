@@ -298,6 +298,7 @@ that and proves it with a checksum.
 
 **Files:**
 - Modify: `bench/src/mindustryforge/DumpBlocks.java:1711-1738`
+- Create: `tools/dump_blocks.py`
 - Regenerate: `bench/data/blocks.json`
 - Verify unchanged: `site/public/forge/blocks.json`
 
@@ -333,13 +334,84 @@ floor))` branch that starts at line 1711, after `entry.put("floor", true);`:
         if (floor.blendGroup != floor) entry.put("blend_group", floor.blendGroup.name);
 ```
 
-- [ ] **Step 3: Rebuild the dump**
+- [ ] **Step 3: Write the script that actually runs the dump**
 
-Run: `cd bench && ./gradlew dumpBlocks` (check the task name with `./gradlew tasks` first;
-the plugin exposes `dump-blocks` as noted in `CLAUDE.md`).
+`dump-blocks` is a **console command of the bench plugin, not a Gradle task**. An earlier
+draft of this plan said `./gradlew dumpBlocks` and that target does not exist. Running the
+dump means four things nobody remembers a week later: build the plugin jar, drop it into a
+provisioned server's mod directory, start the headless server, and type the command at its
+stdin. `bench/server.py` already has the pieces; nothing ties them together.
 
-Expected: `bench/data/blocks.json` is rewritten and now contains `blend_id` on floors. Check
-one: `python -c "import json;print(json.load(open('bench/data/blocks.json'))['blocks']['grass'])"`.
+Create `tools/dump_blocks.py`:
+
+```python
+"""Re-dump the game's block data by running the pinned headless server.
+
+    python tools/dump_blocks.py
+
+`dump-blocks` is a console command of the bench plugin rather than a Gradle target, so
+getting block data out of the game means building the plugin, installing it, booting a
+server and talking to it. Written down as a script because a plan that guessed it was a
+Gradle task has already been written once, and because the four steps are the kind that
+get half-remembered.
+
+The plugin's own `DumpBlocks.defaultOut()` still points at `analyser/data/blocks.json`,
+a path from before the repository was restarted, so the destination is always passed
+explicitly.
+"""
+
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from bench.server import ServerProcess, install_plugin
+from bench.server_setup import setup_server
+
+RUN = ROOT / "_run"
+JAR = ROOT / "bench" / "build" / "libs" / "mindustry-forge-bench.jar"
+OUT = ROOT / "bench" / "data" / "blocks.json"
+
+
+def main() -> None:
+    gradlew = "gradlew.bat" if sys.platform == "win32" else "./gradlew"
+    subprocess.run([gradlew, "jar"], cwd=ROOT / "bench", check=True)
+
+    server_dir = setup_server(RUN)
+    install_plugin(server_dir, JAR)
+
+    with ServerProcess(server_dir) as server:
+        # An absolute path: the server's working directory is the run directory, not the
+        # repository, so a relative one writes the catalogue somewhere nobody looks.
+        server.command(f"dump-blocks {OUT}", r"\[forge\] wrote", timeout=120)
+
+    print(f"wrote {OUT}, {OUT.stat().st_size} bytes")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+- [ ] **Step 3b: Run it**
+
+Run: `python tools/dump_blocks.py`
+
+Expected: Gradle builds, the server boots, and the script prints the path and size.
+Then check the new field arrived:
+
+```bash
+python -c "import json;print(json.load(open('bench/data/blocks.json'))['blocks']['grass'])"
+```
+
+Expected: the printed entry contains `blend_id`.
+
+If Gradle cannot reach the network to fetch the Mindustry dependency jar, or the server
+refuses to boot, **stop and report it** rather than hand-editing `bench/data/blocks.json`.
+A catalogue typed by hand is exactly the thing this repository refuses to trust.
 
 - [ ] **Step 4: Rebuild the catalogue and prove it did not move**
 
@@ -359,7 +431,7 @@ dump.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add bench/src/mindustryforge/DumpBlocks.java bench/data/blocks.json \
+git add bench/src/mindustryforge/DumpBlocks.java bench/data/blocks.json tools/dump_blocks.py \
   && git commit -m "feat(bench): dump what decides floor blending
 
 Floor.doEdge compares blendId across a boundary and drawEdges skips a
