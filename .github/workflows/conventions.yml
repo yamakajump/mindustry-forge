@@ -16,6 +16,8 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  # For the label list the issue-template check compares against.
+  issues: read
 
 jobs:
   check:
@@ -72,3 +74,13 @@ jobs:
       # under a second on 377 files and states the rule as it is written.
       - name: Comments, in English
         run: node tools/check-comments.mjs
+
+      # An issue template naming a label that does not exist applies nothing, and says
+      # nothing. Two of the three templates here shipped that way, so every idea and
+      # every measurement report arrived unlabelled until somebody noticed by hand.
+      - name: Labels the issue templates ask for
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label list --limit 100 --json name > labels.json
+          node tools/check-labels.mjs --labels-file labels.json

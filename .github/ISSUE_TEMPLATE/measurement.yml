@@ -1,4 +1,4 @@
-name: Wrong measurement
+name: 📏 Wrong measurement
 description: The bench and the analysis disagree, or a figure cannot be reproduced.
 labels: ["measurement"]
 body:

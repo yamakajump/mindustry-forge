@@ -1,6 +1,6 @@
-name: Idea
+name: 💡 Idea
 description: Something the site could do and does not.
-labels: ["idea"]
+labels: ["enhancement"]
 body:
   - type: markdown
     attributes:

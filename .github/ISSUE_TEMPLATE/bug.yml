@@ -1,4 +1,4 @@
-name: Bug report
+name: 🐛 Bug report
 description: Something behaves differently from the game, or from what the page says.
 labels: ["bug"]
 body:
