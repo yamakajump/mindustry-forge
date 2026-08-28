@@ -18,7 +18,7 @@
  */
 
 import { draw, itemIcon, spriteOf } from "../render.js";
-import { createBoard, footprint, legalFrame, MAX_SIZE } from "./state.js";
+import { createBoard, footprint, frameBoard, legalFrame, MAX_SIZE } from "./state.js";
 import { lineOf, linksByConfig, reachOf } from "./lines.js";
 import { canPlace } from "./rules.js";
 import { flip, inBox, rotateBy, translate } from "./selection.js";
@@ -1394,12 +1394,14 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * Analysing a frame goes through a fresh board, made only of what that frame holds:
    * `onAnalyse` has only ever known a whole board, and a fresh board, valid the same way
    * as the editor's own, is what lets it go on not knowing.
+   *
+   * `frameBoard` rather than `createBoard` for one reason: the board it hands over knows
+   * the workbench it was cut from. The page sets aside whatever it is given, so a board
+   * that cannot name its workbench is a board the player finds again holding this one
+   * frame and nothing else.
    */
   function analyseFrame(frame) {
-    const scoped = createBoard({
-      tiles: board.tilesIn(frame), ground: board.ground, frames: [{ ...frame }], sizeOf,
-    });
-    onAnalyse(scoped);
+    onAnalyse(frameBoard({ board, frame, sizeOf }));
   }
 
   function renameFrame(frame) {
