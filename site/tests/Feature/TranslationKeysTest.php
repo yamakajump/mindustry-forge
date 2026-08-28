@@ -108,17 +108,17 @@ function localeGaps(array $reference, array $other): array
     $gaps = [];
     foreach ($reference as $key => $line) {
         if (! array_key_exists($key, $other)) {
-            $gaps[] = "{$key} : absente";
+            $gaps[] = "{$key} : missing";
 
             continue;
         }
         if (placeholdersIn($line) !== placeholdersIn($other[$key])) {
-            $gaps[] = "{$key} : trous differents, ".implode(' ', placeholdersIn($line))
-                .' contre '.implode(' ', placeholdersIn($other[$key]));
+            $gaps[] = "{$key} : different holes, ".implode(' ', placeholdersIn($line))
+                .' against '.implode(' ', placeholdersIn($other[$key]));
         }
     }
     foreach (array_diff_key($other, $reference) as $key => $line) {
-        $gaps[] = "{$key} : en trop";
+        $gaps[] = "{$key} : extra";
     }
 
     return $gaps;
@@ -144,7 +144,7 @@ function keysOf(string $locale): array
     return $flat;
 }
 
-it('a une cle pour chaque chaine que les vues demandent', function () {
+it('has a key for every string the views ask for', function () {
     $defined = definedKeys();
 
     $missing = [];
@@ -154,20 +154,20 @@ it('a une cle pour chaque chaine que les vues demandent', function () {
         }
     }
 
-    expect($missing)->toBe([], 'ces cles seraient imprimees telles quelles sur la page');
+    expect($missing)->toBe([], 'these keys would be printed as they are on the page');
 });
 
-it('ne garde aucune cle que plus personne ne demande', function () {
+it('keeps no key nobody asks for any more', function () {
     $asked = askedKeys();
     $orphans = array_values(array_filter(
         array_keys(definedKeys()),
         fn ($key) => ! array_key_exists($key, $asked),
     ));
 
-    expect($orphans)->toBe([], 'une ligne a faire traduire pour un ecran qui n existe plus');
+    expect($orphans)->toBe([], 'a line to have translated for a screen that no longer exists');
 });
 
-it('refuse une cle assemblee a l execution, que rien ne peut verifier', function () {
+it('refuses a key assembled at runtime, which nothing can check', function () {
     $domains = implode('|', DOMAINS);
     $pattern = "~(?:{$domains})(?:[.][a-z0-9-]*)+(?:[{][$]|[$][a-z_])~";
 
@@ -178,10 +178,10 @@ it('refuse une cle assemblee a l execution, que rien ne peut verifier', function
         }
     }
 
-    expect($built)->toBe([], 'une cle construite au vol echappe a tous les controles');
+    expect($built)->toBe([], 'a key built on the fly escapes every check');
 });
 
-it('nomme ses cles <domaine>.<ecran>.<element>', function () {
+it('names its keys <domain>.<screen>.<element>', function () {
     $domains = implode('|', DOMAINS);
     $shape = "~^(?:{$domains})(?:[.][a-z0-9-]+){2,}$~";
 
@@ -190,41 +190,41 @@ it('nomme ses cles <domaine>.<ecran>.<element>', function () {
         fn ($key) => ! preg_match($shape, $key),
     ));
 
-    expect($wrong)->toBe([], 'la convention est publiee aux quatre voies, elle vaut aussi ici');
+    expect($wrong)->toBe([], 'the convention is published for everyone to read, it holds here too');
 });
 
-it('dit la meme chose que le dictionnaire du navigateur la ou les deux parlent', function () {
+it('says the same thing as the browser dictionary wherever both speak', function () {
     $browser = json_decode(File::get(public_path('forge/lang/fr.json')), true);
     expect($browser)->toBeArray();
 
     $server = definedKeys();
     $shared = array_intersect_key($server, $browser);
 
-    /* Verifie qu il y a bien un recouvrement : le jour ou la derniere cle partagee
-       disparait, ce test cesserait de prouver quoi que ce soit en silence. */
-    expect($shared)->not->toBeEmpty('plus aucune cle partagee, ce test ne verifie plus rien');
+    /* Check that there is an overlap at all: the day the last shared key disappears, this
+       test would silently stop proving anything. */
+    expect($shared)->not->toBeEmpty('no shared key left, this test checks nothing any more');
 
     foreach ($shared as $key => $value) {
-        expect($browser[$key])->toBe($value, "{$key} ne dit pas la meme chose des deux cotes");
+        expect($browser[$key])->toBe($value, "{$key} does not say the same thing on both sides");
     }
 });
 
-it('tourne en francais ici et maintenant', function () {
-    /* La valeur effective, celle qui decide de ce qu un lecteur voit. Elle a deja servi :
-       le script qui monte les worktrees recopiait un `.env` anterieur au socle, et les sept
-       dossiers travaillaient en `en` sans que personne le sache. */
+it('runs in French here and now', function () {
+    /* The effective value, the one that decides what a reader sees. It has already earned
+       its keep: the script that sets the worktrees up was copying a `.env` older than the
+       foundation, and the seven directories were working in `en` with nobody the wiser. */
     expect(config('app.locale'))->toBe('fr');
     expect(config('app.fallback_locale'))->toBe('fr');
 });
 
-it('tomberait sur le francais meme sans fichier .env', function () {
-    /* L autre moitie, et celle que le nom du test ci-dessus promettait sans la tenir. Un
-       `.env` present impose sa valeur, donc lire `config()` ne dit rien du defaut ecrit
-       dans le fichier. Or c est ce defaut, et lui seul, qui protege la CI et le serveur de
-       production, ou aucun `.env` de developpement ne traine.
+it('would fall back to French even without a .env file', function () {
+    /* The other half, and the one the test above promised by its name without keeping it.
+       A `.env` that is present imposes its value, so reading `config()` says nothing about
+       the default written in the file. And that default, alone, is what protects CI and the
+       production server, where no development `.env` is lying around.
 
-       La variable est donc retiree des trois endroits ou `env()` va la chercher, le temps
-       de relire le fichier de configuration. */
+       So the variable is taken out of the three places `env()` looks for it, long enough to
+       read the configuration file again. */
     $before = [$_ENV['APP_LOCALE'] ?? null, $_SERVER['APP_LOCALE'] ?? null, getenv('APP_LOCALE')];
     unset($_ENV['APP_LOCALE'], $_SERVER['APP_LOCALE']);
     putenv('APP_LOCALE');
@@ -244,27 +244,27 @@ it('tomberait sur le francais meme sans fichier .env', function () {
         }
     }
 
-    expect($bare['locale'])->toBe('fr', 'config/app.php doit porter le francais lui-meme');
+    expect($bare['locale'])->toBe('fr', 'config/app.php must carry French itself');
     expect($bare['fallback_locale'])->toBe('fr');
 });
 
-it('remet la variable d environnement comme elle etait', function () {
-    /* Le test precedent demonte l environnement du processus. S il le remontait mal, il
-       laisserait les tests suivants dans une autre langue, et le rapport designerait
-       n importe qui sauf lui. */
+it('puts the environment variable back the way it was', function () {
+    /* The test above takes the process environment apart. If it put it back wrong, it would
+       leave the tests after it in another language, and the report would point at anybody
+       but itself. */
     expect(config('app.locale'))->toBe('fr');
 });
 
-it('garde les unites en mots nus, pour qu un chiffre ne disparaisse jamais', function () {
-    /* Une cle manquante rend la cle, sans rien substituer. Une unite ecrite `:n cases`
-       ferait donc disparaitre le 160, pas le mot : la page dirait `blocs.unite.cases` et
-       le lecteur aurait perdu la seule chose qu il etait venu chercher. Ecrites en mots
-       nus et accolees au nombre par la vue, la page degradee dit `160 blocs.unite.cases`,
-       ce qui est illisible mais pas faux.
+it('keeps units as bare words, so that a number never disappears', function () {
+    /* A missing key renders the key, substituting nothing. A unit written `:n cases` would
+       therefore make the 160 disappear, not the word: the page would say
+       `blocs.unite.cases` and the reader would have lost the one thing he came for. Written
+       as bare words and put against the number by the view, the degraded page says
+       `160 blocs.unite.cases`, which is unreadable but not wrong.
 
-       La regle vaut pour les quantites, pas pour toute interpolation : `{{ $n }} {{ __() }}`
-       fige l ordre nombre-puis-mot, ce qui est faux dans beaucoup de langues. Ce sont les
-       unites qui sont des suffixes, et elles vivent sous l ecran `unite`. */
+       The rule holds for quantities, not for every interpolation: `{{ $n }} {{ __() }}`
+       freezes the number-then-word order, which is wrong in many languages. It is units
+       that are suffixes, and they live under the `unite` screen. */
     $wrong = [];
     foreach (definedKeys() as $key => $line) {
         if (str_contains($key, '.unite.') && placeholdersIn($line) !== []) {
@@ -272,25 +272,25 @@ it('garde les unites en mots nus, pour qu un chiffre ne disparaisse jamais', fun
         }
     }
 
-    expect($wrong)->toBe([], 'une unite est un mot nu que la vue accole au nombre');
+    expect($wrong)->toBe([], 'a unit is a bare word the view puts against the number');
 });
 
-it('sait reconnaitre une traduction trouee, sur un exemple fabrique', function () {
-    /* Le test ci-dessous ne peut rien prouver tant qu une seule langue est livree. Celui-ci
-       montre que la comparaison mord, pour que le jour ou une deuxieme arrive on sache
-       qu elle est surveillee par autre chose qu une boucle vide. */
+it('recognises a translation whose holes were dropped, on a made-up example', function () {
+    /* The test below can prove nothing while a single language is shipped. This one shows
+       that the comparison bites, so that the day a second one arrives we know it is watched
+       by something other than an empty loop. */
     $reference = ['blocs.page.debit' => ':n par seconde', 'blocs.page.cout' => 'Cout'];
 
     expect(localeGaps($reference, $reference))->toBe([]);
     expect(localeGaps($reference, ['blocs.page.cout' => 'Cost']))
-        ->toBe(['blocs.page.debit : absente']);
+        ->toBe(['blocs.page.debit : missing']);
     expect(localeGaps($reference, ['blocs.page.debit' => 'per second', 'blocs.page.cout' => 'Cost']))
-        ->toBe(['blocs.page.debit : trous differents, :n contre ']);
+        ->toBe(['blocs.page.debit : different holes, :n against ']);
     expect(localeGaps($reference, $reference + ['blocs.page.orpheline' => 'x']))
-        ->toBe(['blocs.page.orpheline : en trop']);
+        ->toBe(['blocs.page.orpheline : extra']);
 });
 
-it('livre chaque langue avec les memes cles et les memes trous que le francais', function () {
+it('ships every language with the same keys and the same holes as French', function () {
     $reference = keysOf('fr');
     expect($reference)->not->toBeEmpty();
 
@@ -299,7 +299,7 @@ it('livre chaque langue avec les memes cles et les memes trous que le francais',
         ->reject(fn ($locale) => $locale === 'fr');
 
     foreach ($others as $locale) {
-        expect(localeGaps($reference, keysOf($locale)))->toBe([], "la langue {$locale} a derive");
+        expect(localeGaps($reference, keysOf($locale)))->toBe([], "the {$locale} language has drifted");
     }
 })->skip(fn () => count(File::directories(lang_path())) < 2,
-    'une seule langue livree, il n y a rien a comparer');
+    'only one language shipped, there is nothing to compare');

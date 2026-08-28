@@ -8,12 +8,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 /*
- * Chercher par ce qu'un schema reclame, qui est l'autre sens de la question du site.
+ * Searching by what a schematic needs, which is the site's own question asked backwards.
  *
- * « Qu'est-ce qui fait du graphite » est une liste de courses. « Qu'est-ce qui mange du
- * charbon » est la reponse a « ma mine tourne, que puis-je construire maintenant », et c'est
- * ainsi qu'un joueur choisit sa prochaine usine. La colonne qui repondait dormait depuis le
- * premier jour : `schematics.needs` etait ecrite par l'analyse et lue par personne.
+ * "What makes graphite" is a shopping list. "What eats coal" is the answer to "my mine is
+ * running, what can I build now", and that is how a player picks their next factory. The
+ * column that answered it had been asleep since the first day: `schematics.needs` was written
+ * by the analysis and read by nobody.
  */
 
 function reclame(string $name, array $needs, int $blocks = 20): Schematic
@@ -26,27 +26,27 @@ function reclame(string $name, array $needs, int $blocks = 20): Schematic
     ]);
 }
 
-it('indexe ce qu un schema reclame de l exterieur', function () {
+it('indexes what a schematic needs from outside', function () {
     $kept = reclame('Fonderie', ['sand' => 120.0, 'coal' => 60.0]);
 
     $rows = $kept->items()->where('sens', SchematicItem::CONSOMME)->get();
 
     expect($rows)->toHaveCount(2)
         ->and($rows->firstWhere('item', 'sand')->rate)->toBe(120.0)
-        // Range en plafond, parce que c'est ce que c'est : l'appetit d'un plan tournant a
-        // plein regime, jamais un releve. Melanger les deux natures est la faute que ce
-        // depot a defaite du cote production, et elle serait aussi silencieuse ici.
+        // Stored as a ceiling, because that is what it is: the appetite of a schematic
+        // running at full tilt, never a measurement. Mixing the two kinds is the fault this
+        // repository defeated on the production side, and it would be just as silent here.
         ->and($rows->firstWhere('item', 'sand')->kind)->toBe(SchematicItem::PLAFOND);
 });
 
 /*
- * Le besoin et la production ne se confondent pas.
+ * A need and a production are not the same thing.
  *
- * Sans ce test, un filtre qui oublierait `sens` rendrait les usines a silicium quand on
- * cherche ce qui MANGE du silicium. Le resultat aurait l'air d'un resultat : plein de
- * schemas, tous lies au silicium, tous faux.
+ * Without this test, a filter that forgot `sens` would return the silicon factories when the
+ * search is for what EATS silicon. The result would look like a result: plenty of schematics,
+ * all of them about silicon, all of them wrong.
  */
-it('ne confond pas ce qu il mange avec ce qu il fait', function () {
+it('never confuses what it eats with what it makes', function () {
     $mangeur = reclame('Mangeur', ['silicon' => 90.0]);
     $faiseur = Schematic::factory()->create([
         'name' => 'Faiseur', 'visibility' => Schematic::PUBLIC,
@@ -59,7 +59,7 @@ it('ne confond pas ce qu il mange avec ce qu il fait', function () {
         ->assertSee('Mangeur')
         ->assertDontSee('Faiseur');
 
-    // Et le jumeau, sans lequel le test ci-dessus passerait au vert sur une page cassee.
+    // And the twin, without which the test above would go green on a broken page.
     $this->get('/schemas?produit=silicon')
         ->assertOk()
         ->assertSee('Faiseur')
@@ -68,7 +68,7 @@ it('ne confond pas ce qu il mange avec ce qu il fait', function () {
     expect($faiseur->fresh()->items()->where('sens', SchematicItem::CONSOMME)->count())->toBe(0);
 });
 
-it('ne garde que ceux qui reclament la chose demandee', function () {
+it('keeps only the ones that need the thing asked for', function () {
     reclame('Au charbon', ['coal' => 60.0]);
     reclame('Au sable', ['sand' => 60.0]);
 
@@ -79,15 +79,14 @@ it('ne garde que ceux qui reclament la chose demandee', function () {
 });
 
 /*
- * Les cles categorielles restent dehors.
+ * Category keys stay out.
  *
- * Un generateur qui brule « n'importe quoi » ne nomme pas de ressource et sort sous
- * `*combustible`. Savoir si du charbon couvre cette faim demande la liste `accepts` que le
- * jeu tient par bloc et que le navigateur lit deja ; la resoudre une seconde fois ici serait
- * la duplication que ce depot refuse. Et un nom qu'aucun joueur ne peut taper n'est pas un
- * filtre.
+ * A generator that burns "anything" names no resource and comes out under `*combustible`.
+ * Knowing whether coal covers that hunger takes the `accepts` list the game keeps per block
+ * and the browser already reads; resolving it a second time here would be the duplication
+ * this repository refuses. And a name no player can type is not a filter.
  */
-it('n indexe pas une catégorie comme si c était une ressource', function () {
+it('does not index a category as if it were a resource', function () {
     $kept = reclame('Bruleur', ['*combustible' => 30.0, 'water' => 10.0]);
 
     $names = $kept->items()->where('sens', SchematicItem::CONSOMME)->pluck('item')->all();
@@ -95,15 +94,15 @@ it('n indexe pas une catégorie comme si c était une ressource', function () {
     expect($names)->toBe(['water']);
 });
 
-it('ignore un besoin que le catalogue ne réclame nulle part', function () {
+it('ignores a need the catalogue asks for nowhere', function () {
     reclame('Visible', ['coal' => 60.0]);
 
-    // Un nom hors de ce qui est offert ne filtre rien plutot que de vider la page : une
-    // liste vide se lirait comme un catalogue vide et non comme un nom qui n'existe pas.
+    // A name outside what is on offer filters nothing rather than emptying the page: an
+    // empty list would read as an empty catalogue and not as a name that does not exist.
     $this->get('/schemas?consomme=surge-alloy')->assertOk()->assertSee('Visible');
 });
 
-it('offre ce que le catalogue réclame vraiment', function () {
+it('offers what the catalogue actually needs', function () {
     reclame('Un', ['coal' => 60.0]);
     reclame('Deux', ['coal' => 30.0]);
     reclame('Trois', ['sand' => 30.0]);
@@ -111,7 +110,7 @@ it('offre ce que le catalogue réclame vraiment', function () {
     expect(Vitrine::eatsOnOffer())->toBe(['coal', 'sand']);
 });
 
-it('efface un besoin qui a disparu de l analyse', function () {
+it('erases a need that vanished from the analysis', function () {
     $kept = reclame('Change', ['coal' => 60.0]);
 
     $kept->update(['needs' => ['sand' => 60.0]]);
@@ -120,7 +119,7 @@ it('efface un besoin qui a disparu de l analyse', function () {
         ->toBe(['sand']);
 });
 
-it('combine ce qu il mange avec ce qu il rend', function () {
+it('combines what it eats with what it gives back', function () {
     Schematic::factory()->create([
         'name' => 'Celui qui repond', 'visibility' => Schematic::PUBLIC,
         'width' => 10, 'height' => 10, 'blocks' => 20,

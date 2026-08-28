@@ -8,21 +8,20 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 /*
- * Le plafond en base : ce qu'une schematique pourrait faire, range a cote de ce qu'elle
- * fait, et jamais confondu avec.
+ * The ceiling in the database: what a schematic could do, stored beside what it does, and
+ * never confused with it.
  *
- * Deux lignes pour une meme schematique et un meme objet, distinguees par `kind`. C'est la
- * moitie qui rend le catalogue collecte utile : quinze mille conceptions que personne ne
- * marquera une par une n'ont pas de mesure, donc sans plafond « trouve-moi une usine a
- * silicium » ne les trouve pas.
+ * Two rows for one schematic and one item, told apart by `kind`. This is the half that
+ * makes the collected catalogue useful: fifteen thousand designs nobody will mark up one by
+ * one carry no measurement, so without a ceiling "find me a silicon plant" does not find
+ * them.
  *
- * Et c'est aussi la moitie la plus facile a rendre malhonnete. Toute la journee du 27 aout
- * a servi a defaire un classement qui presentait comme une mesure ce qui n'en etait pas
- * une ; les tests ci-dessous existent pour que ca ne se reproduise pas a quinze mille
- * exemplaires.
+ * It is also the half that is easiest to make dishonest. The whole day of 27 August went
+ * into undoing a ranking that presented as a measurement something that was not one; the
+ * tests below exist so that it does not happen again fifteen thousand times over.
  */
 
-/** Ce que le navigateur renvoie pour une usine que rien n'alimente : un plafond, pas une mesure. */
+/** What the browser returns for a plant nothing feeds: a ceiling, not a measurement. */
 function analyseAvecPlafond(array $ceiling = ['silicon' => 90.0], array $power = ['made' => 0, 'spent' => 0]): array
 {
     return [
@@ -34,7 +33,7 @@ function analyseAvecPlafond(array $ceiling = ['silicon' => 90.0], array $power =
     ];
 }
 
-it('indexe le plafond sans le confondre avec une mesure', function () {
+it('indexes the ceiling without confusing it with a measurement', function () {
     $kept = Schematic::factory()->imported()->create([
         'blocks' => 30, 'analysis' => analyseAvecPlafond(),
     ]);
@@ -45,13 +44,13 @@ it('indexe le plafond sans le confondre avec une mesure', function () {
         ->and($ceiling->sens)->toBe(SchematicItem::PRODUIT)
         ->and($ceiling->rate)->toBe(90.0)
         ->and($ceiling->rate_per_block)->toBe(3.0)
-        // Et surtout : rien ne s'est glisse du cote mesure.
+        // And above all: nothing slipped over to the measurement side.
         ->and($kept->items()->where('kind', SchematicItem::MESURE)->count())->toBe(0);
 });
 
-it('laisse coexister la mesure et le plafond du meme objet', function () {
-    // Une schematique marquee par son auteur a les deux, et ils ne disent pas la meme
-    // chose : ce qu'elle rend branchee comme elle est, et ce qu'elle rendrait nourrie.
+it('lets the measurement and the ceiling of the same item coexist', function () {
+    // A schematic marked up by its author has both, and they do not say the same thing:
+    // what it yields wired the way it is, and what it would yield fully fed.
     $kept = Schematic::factory()->create([
         'blocks' => 30,
         'produces' => ['silicon' => 45.0],
@@ -65,11 +64,11 @@ it('laisse coexister la mesure et le plafond du meme objet', function () {
         ->and($rows[SchematicItem::PLAFOND]->rate)->toBe(90.0);
 });
 
-it('n efface pas le plafond quand un moderateur corrige un nom', function () {
+it('does not erase the ceiling when a moderator fixes a name', function () {
     /*
-     * Le piege que le pilote vient de reparer dans l'autre sens, et qui existe des deux
-     * cotes. Une sauvegarde qui ne touche pas a l'analyse ne doit pas conclure que le
-     * plafond est vide : elle n'en sait rien, elle ne l'a pas calcule.
+     * The trap that was just repaired in the other direction, and that exists on both
+     * sides. A save that does not touch the analysis must not conclude the ceiling is
+     * empty: it knows nothing about it, it did not compute it.
      */
     $kept = Schematic::factory()->imported()->create([
         'blocks' => 30, 'analysis' => analyseAvecPlafond(),
@@ -80,9 +79,9 @@ it('n efface pas le plafond quand un moderateur corrige un nom', function () {
     expect($kept->items()->where('kind', SchematicItem::PLAFOND)->count())->toBe(1);
 });
 
-it('ne laisse pas trainer un plafond que la schematique n atteint plus', function () {
-    // Une schematique corrigee qui ne peut plus faire de silicium doit cesser de figurer
-    // sous silicium, plafond comme mesure.
+it('leaves behind no ceiling the schematic no longer reaches', function () {
+    // A corrected schematic that can no longer make silicon must stop appearing under
+    // silicon, ceiling as much as measurement.
     $kept = Schematic::factory()->imported()->create([
         'blocks' => 30, 'analysis' => analyseAvecPlafond(['silicon' => 90.0]),
     ]);
@@ -93,11 +92,11 @@ it('ne laisse pas trainer un plafond que la schematique n atteint plus', functio
         ->toBe(['graphite']);
 });
 
-it('indexe l energie au plafond sur ce qui reste, pas sur ce qui sort des generateurs', function () {
+it('indexes ceiling power on what is left, not on what the generators put out', function () {
     /*
-     * Meme regle que du cote mesure. Une centrale qui produit six mille et en brule treize
-     * cents sur ses propres pompes en rend quatre mille sept cents a la base, et c'est ce
-     * chiffre-la que quelqu'un qui compare deux reacteurs compare.
+     * Same rule as on the measurement side. A plant making six thousand and burning
+     * thirteen hundred on its own pumps hands the base four thousand seven hundred, and
+     * that is the figure somebody comparing two reactors is comparing.
      */
     $kept = Schematic::factory()->imported()->create([
         'blocks' => 10,
@@ -113,26 +112,26 @@ it('indexe l energie au plafond sur ce qui reste, pas sur ce qui sort des genera
         ->and($power->rate_per_block)->toBe(470.0);
 });
 
-it('n invente pas de plafond pour une schematique qui n en a pas', function () {
+it('invents no ceiling for a schematic that has none', function () {
     $kept = Schematic::factory()->create(['analysis' => ['width' => 4, 'blocks' => 2]]);
 
     expect($kept->items()->where('kind', SchematicItem::PLAFOND)->count())->toBe(0);
 });
 
-it('cherche sur les plafonds, en disant que ce sont des plafonds', function () {
+it('searches on ceilings, and says they are ceilings', function () {
     /*
-     * Ce test disait l inverse, et sa condition etait dans son titre : « tant que personne
-     * n a dit comment les montrer ». Quelqu un l a dit, et la page le dit maintenant.
+     * This test said the opposite, and its condition was in its own title: "as long as
+     * nobody has said how to show them". Somebody has, and the page says it now.
      *
-     * Mesure en production : 117 schematiques portent une mesure contre 6 775 un plafond,
-     * et ni le graphite ni le silicium n avaient un seul resultat alors que 844 et 1 700
-     * plans en produisent. Ce n est pas un retard : une schematique arrachee d une base n a
-     * pas la foreuse qui l alimentait, donc sa mesure vaut zero et le restera. Exiger une
-     * mesure condamnait le catalogue importe a rester muet pour toujours.
+     * Measured in production: 117 schematics carry a measurement against 6 775 a ceiling,
+     * and neither graphite nor silicon had a single result while 844 and 1 700 plans make
+     * them. This is not a backlog that clears: a schematic torn out of a base no longer has
+     * the drill that fed it, so its measurement is zero and will stay there. Requiring a
+     * measurement condemned the imported catalogue to stay silent forever.
      *
-     * La regle n est pas assouplie, elle est appliquee : un plafond ne s affiche jamais sans
-     * dire qu il en est un. Ce qui etait interdit, c est de le melanger a une mesure sans
-     * que rien ne le dise ; le nommer n est pas le melanger.
+     * The rule is not relaxed, it is applied: a ceiling is never shown without saying it is
+     * one. What was forbidden is mixing it in with a measurement with nothing saying so;
+     * naming it is not mixing it.
      */
     $ceilingOnly = Schematic::factory()->for(User::factory())->create([
         'visibility' => Schematic::PUBLIC, 'name' => 'Plafond seul', 'blocks' => 30,
@@ -141,33 +140,33 @@ it('cherche sur les plafonds, en disant que ce sont des plafonds', function () {
 
     expect($ceilingOnly->items()->where('kind', SchematicItem::PLAFOND)->count())->toBe(1);
 
-    // Elle se trouve par ce qu'elle pourrait produire...
+    // It is found by what it could produce...
     $this->get('/schemas?produit=silicon')
         ->assertOk()
         ->assertSee('Plafond seul');
 
-    // ...et elle peuple la liste, qui offre exactement ce qui rend des resultats. Une entree
-    // qui ne rend rien serait une impasse ; une entree absente pour 1 700 plans en est une
-    // autre, et c'etait celle-la.
+    // ...and it populates the list, which offers exactly what returns results. An entry
+    // that returns nothing would be a dead end; an entry missing for 1 700 plans is another
+    // one, and that was the one we had.
     $this->get('/schemas')
         ->assertOk()
-        // Le controle est une grille de liens depuis que le doublon avec la rangee de
-        // pastilles a ete supprime : ce qui est offert est un lien, plus une `<option>`.
+        // The control has been a grid of links since the duplicate with the row of pills
+        // was removed: what is offered is a link, no longer an `<option>`.
         ->assertSee('?produit=silicon', escape: false);
 });
 
-it('nomme la grandeur qu une tuile montre, dans les deux sens', function () {
+it('names the quantity a tile shows, both ways round', function () {
     /*
-     * La vitrine classe sur les plafonds, donc une tuile montre un plafond. Restait le cas
-     * ou une schematique n en porte pas : la premiere version ne montrait rien, et l accueil
-     * lisait la mesure pendant que la vitrine se taisait -- deux surfaces, deux reponses,
-     * pour la meme schematique, sur un site dont l argument est que ses chiffres se prouvent.
+     * The catalogue ranks on ceilings, so a tile shows a ceiling. That left the case of a
+     * schematic carrying none: the first version showed nothing, and the home page read the
+     * measurement while the catalogue stayed silent, two surfaces, two answers, for the
+     * same schematic, on a site whose argument is that its figures are provable.
      *
-     * Le repli est un filet sous un vide : la production porte 419 mesures contre 14 847
-     * plafonds, sur cinq choses et aucun objet solide, et chacune accompagne un plafond. Il
-     * est garde quand meme, et garde bruyant. Une mesure muette se lirait comme le plafond
-     * de la tuile d a cote, et ce serait exactement la confusion que toute cette colonne
-     * `kind` existe pour empecher.
+     * The fallback is a net under an empty space: production carries 419 measurements
+     * against 14 847 ceilings, over five things and no solid item, and each one accompanies
+     * a ceiling. It is kept anyway, and kept loud. A silent measurement would read as the
+     * ceiling of the tile next to it, and that would be exactly the confusion this whole
+     * `kind` column exists to prevent.
      */
     $ceiling = Schematic::factory()->for(User::factory())->create([
         'visibility' => Schematic::PUBLIC, 'name' => 'Au plafond', 'blocks' => 30,
@@ -185,11 +184,11 @@ it('nomme la grandeur qu une tuile montre, dans les deux sens', function () {
 
     $page = $this->get('/schemas')->assertOk();
 
-    // Le plafond se voit, et se dit.
+    // The ceiling is shown, and named.
     $page->assertSee('900');
     $page->assertSee(__('schema.page.au-mieux'));
 
-    // La mesure aussi : ni muette, ni deguisee en plafond.
+    // The measurement too: neither silent, nor disguised as a ceiling.
     $page->assertSee('39 700');
     $page->assertSee(__('schema.page.mesuree'), escape: false);
 
@@ -197,10 +196,10 @@ it('nomme la grandeur qu une tuile montre, dans les deux sens', function () {
     expect($measured->chiffresMontres()['water']['kind'])->toBe(SchematicItem::MESURE);
 });
 
-it('prefere le plafond quand une chose porte les deux', function () {
-    /* Une mesure vaut mieux qu un plafond, mais la liste a cote est classee sur les
-       plafonds : une tuile qui montrerait la mesure dirait un chiffre pendant que son
-       rang en dit un autre. La mesure se lit sur la fiche, ou les deux tiennent. */
+it('prefers the ceiling when a thing carries both', function () {
+    /* A measurement is worth more than a ceiling, but the list beside it is ranked on
+       ceilings: a tile showing the measurement would state one figure while its rank
+       states another. The measurement is read on the schematic page, where both fit. */
     $s = Schematic::factory()->for(User::factory())->create([
         'visibility' => Schematic::PUBLIC, 'name' => 'Les deux', 'blocks' => 30,
     ]);

@@ -78,7 +78,7 @@ it('never lets a quantity travel through a translation placeholder', function ()
     foreach (['silicon-smelter', 'titanium-conveyor', 'thermal-generator'] as $name) {
         [$lines] = $card->figures(BlockCatalogue::find($name));
         foreach ($lines as [$text]) {
-            expect($text)->toMatch('/^[+\-]?[0-9]/', "{$name} : « {$text} » ne commence pas par un chiffre");
+            expect($text)->toMatch('/^[+\-]?[0-9]/', "{$name}: \"{$text}\" does not start with a digit");
         }
     }
 });
@@ -123,7 +123,7 @@ it('puts exactly one og:image in the head, and it is the block one', function ()
     expect($html)->not->toContain('content="'.asset('og.jpg').'"');
 
     foreach (['og:title', 'og:description', 'og:type', 'og:url', 'og:image:alt'] as $tag) {
-        expect(substr_count($html, 'property="'.$tag.'"'))->toBe(1, "{$tag} apparait plusieurs fois");
+        expect(substr_count($html, 'property="'.$tag.'"'))->toBe(1, "{$tag} appears more than once");
     }
 });
 

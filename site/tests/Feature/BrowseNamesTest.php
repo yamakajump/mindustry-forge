@@ -23,47 +23,48 @@ function produces(string $name, string $item, float $rate = 100): Schematic
     return $schematic;
 }
 
-it('nomme les choses comme le jeu les nomme', function () {
-    /* Le deroulant affichait `blast-compound` et `phase-fabric` a un joueur francophone,
-       sur une page dont les blocs etaient deja nommes en francais : « Pulverisateur » pour
-       un bloc et « silicon » pour ce qu il produit, cote a cote. */
+it('names things the way the game names them', function () {
+    /* The dropdown showed `blast-compound` and `phase-fabric` to a French-speaking player,
+       on a page whose blocks were already named in French: "Pulverisateur" for a block and
+       "silicon" for what it produces, side by side. */
     expect(Thing::name('silicon'))->toBe('Silicium')
         ->and(Thing::name('water'))->toBe('Eau')
         ->and(Thing::name('blast-compound'))->toBe('Mélange Explosif')
         ->and(Thing::name('silicon-smelter'))->toBe('Fonderie de Silicium');
 });
 
-it('range chaque chose dans la famille que l adresse d icone attend', function () {
-    // Demande au catalogue et non a une liste : `items` puis `liquids`, le reste est un bloc.
+it('files each thing in the family the icon address expects', function () {
+    // Asks the catalogue rather than a list: `items` then `liquids`, everything else is a block.
     expect(Thing::family('silicon'))->toBe('objet')
         ->and(Thing::family('water'))->toBe('liquide')
         ->and(Thing::family('silicon-smelter'))->toBe('bloc');
 });
 
-it('offre les objets en images, avec leur nom francais', function () {
+it('offers the items as images, with their French name', function () {
     produces('Fonte', 'silicon');
 
     $page = $this->get('/schemas')->assertOk();
 
-    /* Des liens dans un `<details>`, et non un controle dessine. C'est ce qui a permis de
-       supprimer le doublon : la rangee de pastilles et le deroulant posaient la meme question
-       deux fois, et le deroulant n'existait que parce qu'un `<option>` natif ne porte pas
-       d'image. Une grille de liens porte l'image et garde le clavier, Echap, l'annonce au
-       lecteur d'ecran et une adresse par choix, puisque tout cela vient du navigateur. */
+    /* Links inside a `<details>`, and not a control drawn by hand. That is what made it
+       possible to drop the duplicate: the row of pills and the dropdown asked the same
+       question twice, and the dropdown only existed because a native `<option>` carries no
+       image. A grid of links carries the image and keeps the keyboard, Escape, the screen
+       reader announcement and one address per choice, since all of that comes from the
+       browser. */
     $page->assertSee('ch-case', false)
         ->assertSee('/icone/objet/silicon.png', false)
         ->assertSee('Silicium');
 });
 
-/* Le deroulant a disparu, et rien ne doit le ramener sans qu'on le remarque : deux commandes
-   pour la meme question, c'est le doublon que cette page vient de perdre. */
-it('ne pose plus la question du produit deux fois', function () {
+/* The dropdown is gone, and nothing should bring it back unnoticed: two controls for the
+   same question is the duplicate this page has just lost. */
+it('no longer asks the product question twice', function () {
     produces('Fonte', 'silicon');
 
     $this->get('/schemas')->assertOk()->assertDontSee('<select name="produit"', false);
 });
 
-it('marque le choix courant plutot que de laisser deviner', function () {
+it('marks the current choice rather than leaving it to be guessed', function () {
     produces('Fonte', 'silicon');
 
     $this->get('/schemas?produit=silicon')

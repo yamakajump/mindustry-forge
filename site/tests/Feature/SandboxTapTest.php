@@ -7,23 +7,23 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 /*
- * Un robinet de bac a sable se dit, il ne se chiffre pas.
+ * A sandbox tap is stated, it is not quantified.
  *
- * `power-source` rend 999 999,94 energie par seconde, ce qui est la facon dont le jeu ecrit
- * « autant que tu veux ». La consommation soustraite correctement, la page affichait
- * 479 999 971 en vert, presente comme ce qu'il restait pour le reste de la base. Le calcul
- * etait juste ; la phrase etait fausse.
+ * `power-source` gives 999 999.94 power per second, which is how the game writes "as much
+ * as you want". With consumption correctly subtracted, the page showed 479 999 971 in
+ * green, presented as what was left for the rest of the base. The arithmetic was right;
+ * the sentence was wrong.
  *
- * Mille deux cent quarante-six pages sur quinze mille, soit huit pour cent du catalogue,
- * et elles occupaient le haut du classement « qui produit de l'energie » avec un plafond
- * qu'aucun joueur ne peut suivre.
+ * One thousand two hundred and forty-six pages out of fifteen thousand, eight per cent of
+ * the catalogue, and they held the top of the "who produces power" ranking with a ceiling
+ * no player can match.
  *
- * Le bloc est reconnu par `build_visibility`, que le jeu ecrit lui-meme, plutot que par une
- * liste de noms tapee ici : une liste serait juste jusqu'a la prochaine version qui ajoute
- * un bloc au bac a sable, et fausse en silence ensuite.
+ * The block is recognised through `build_visibility`, which the game writes itself, rather
+ * than through a list of names typed here: a list would be right until the next version
+ * adds a block to the sandbox, and silently wrong after that.
  */
 
-/** Une analyse comme le navigateur la rend, avec les blocs qu'on lui donne. */
+/** An analysis as the browser renders it, with whatever blocks it is given. */
 function analyseAvecBlocs(array $names, array $produces = ['silicon' => 90.0]): array
 {
     return [
@@ -36,7 +36,7 @@ function analyseAvecBlocs(array $names, array $produces = ['silicon' => 90.0]): 
     ];
 }
 
-it('reconnait une source de bac a sable et la nomme', function () {
+it('recognises a sandbox source and names it', function () {
     $kept = Schematic::factory()->imported()->create([
         'blocks' => 3,
         'analysis' => analyseAvecBlocs(['power-source', 'silicon-smelter', 'conveyor']),
@@ -46,11 +46,10 @@ it('reconnait une source de bac a sable et la nomme', function () {
     expect($kept->sandboxTaps())->toBe(['power-source']);
 });
 
-it('ne compte pas un puits comme une source', function () {
-    /* Un `power-void` est un bloc de bac a sable lui aussi, et il avale au lieu de verser :
-       il gonfle ce qu'une schematique parait *demander*, ce qui est une autre phrase sur
-       une autre carte, et il ne met jamais une schematique en tete d'un classement de
-       productrices. */
+it('does not count a void as a source', function () {
+    /* A `power-void` is a sandbox block too, and it swallows instead of pouring: it inflates
+       what a schematic appears to *ask for*, which is another sentence on another card, and
+       it never puts a schematic at the top of a ranking of producers. */
     $kept = Schematic::factory()->imported()->create([
         'blocks' => 2,
         'analysis' => analyseAvecBlocs(['power-void', 'conveyor']),
@@ -59,15 +58,15 @@ it('ne compte pas un puits comme une source', function () {
     expect($kept->fedBySandbox())->toBeFalse();
 });
 
-it('n indexe rien comme produit quand un robinet alimente la schematique', function () {
-    /* Ni mesure ni plafond. Ce n'est pas que la disposition soit sans interet : c'est que
-       ce qu'elle rend vient d'un robinet et non de ses blocs, donc elle n'est pas une
-       mesure de production et n'est pas rangee comme telle. */
+it('indexes nothing as produced when a tap feeds the schematic', function () {
+    /* Neither measurement nor ceiling. It is not that the layout is uninteresting: it is
+       that what it gives comes from a tap and not from its blocks, so it is not a
+       production measurement and is not filed as one. */
     $kept = Schematic::factory()->imported()->create([
         'blocks' => 3,
         'analysis' => analyseAvecBlocs(['power-source', 'silicon-smelter', 'conveyor']),
-        // Renseigne expres : sans ca, « rien n'est indexe » serait vrai pour la mauvaise
-        // raison, et le test passerait le jour ou la regle disparaitrait.
+        // Filled in on purpose: without it, "nothing is indexed" would be true for the
+        // wrong reason, and the test would pass the day the rule disappeared.
         'produces' => ['silicon' => 90.0],
         'power_made' => 999_999.94, 'power_used' => 29.0,
     ]);
@@ -78,9 +77,9 @@ it('n indexe rien comme produit quand un robinet alimente la schematique', funct
     expect($kept->items()->where('sens', SchematicItem::PRODUIT)->count())->toBe(0);
 });
 
-it('laisse une vraie usine tranquille', function () {
-    /* Le controle qui compte : la correction ne doit pas vider le catalogue. La meme
-       schematique sans le robinet est indexee exactement comme avant. */
+it('leaves a real factory alone', function () {
+    /* The check that matters: the fix must not empty the catalogue. The same schematic
+       without the tap is indexed exactly as before. */
     $kept = Schematic::factory()->imported()->create([
         'blocks' => 3,
         'analysis' => analyseAvecBlocs(['combustion-generator', 'silicon-smelter', 'conveyor']),
@@ -98,10 +97,10 @@ it('laisse une vraie usine tranquille', function () {
         ->toHaveKey('silicon');
 });
 
-it('ne cite pas le chiffre dans la vitrine non plus', function () {
-    /* La vignette et la balise `description` portent le meme chiffre que la page, en plus
-       court et vues par plus de monde : une vignette qui annonce 999 971 energie/s est la
-       meme phrase fausse. */
+it('does not quote the figure in the catalogue either', function () {
+    /* The thumbnail and the `description` tag carry the same figure as the page, shorter
+       and seen by more people: a thumbnail announcing 999 971 energie/s is the same wrong
+       sentence. */
     Schematic::factory()->imported()->create([
         'name' => 'Banc a robinet', 'blocks' => 3, 'visibility' => 'public',
         'analysis' => analyseAvecBlocs(['power-source', 'silicon-smelter', 'conveyor']),
@@ -109,9 +108,9 @@ it('ne cite pas le chiffre dans la vitrine non plus', function () {
         'power_made' => 999_999.94, 'power_used' => 29.0,
     ]);
 
-    /* Vue creative demandee explicitement : une schematique qui tient un bloc de bac a
-       sable est mise a part de la liste par defaut depuis, et c'est une autre regle. Celle
-       testee ici est que la vignette, quand elle s'affiche, ne cite pas le chiffre. */
+    /* The creative view asked for explicitly: a schematic holding a sandbox block has since
+       been set apart from the default listing, and that is another rule. The one tested
+       here is that the thumbnail, when it does show, does not quote the figure. */
     $liste = $this->get('/schemas?creatif=oui');
 
     $liste->assertOk();
@@ -120,7 +119,7 @@ it('ne cite pas le chiffre dans la vitrine non plus', function () {
     $liste->assertDontSee('999 971 energie/s');
 });
 
-it('dit le robinet sur la page au lieu d en citer la valeur', function () {
+it('states the tap on the page instead of quoting its value', function () {
     $kept = Schematic::factory()->imported()->create([
         'blocks' => 3, 'visibility' => 'public',
         'analysis' => analyseAvecBlocs(['power-source', 'silicon-smelter', 'conveyor']),
@@ -132,9 +131,9 @@ it('dit le robinet sur la page au lieu d en citer la valeur', function () {
     $page->assertOk();
     $page->assertSee('Alimenté par une source de bac a sable');
     $page->assertSee('power-source');
-    // Le chiffre qui a tout declenche, sous les deux formes que la page peut en donner.
+    // The figure that started all this, in both forms the page can give it.
     $page->assertDontSee('479 999');
     $page->assertDontSee('999 999');
-    // La forme qui voyage le plus loin : ce que les reseaux sociaux et les moteurs lisent.
+    // The form that travels furthest: what social networks and search engines read.
     $page->assertSee('content="source de bac a sable - 3 blocs"', false);
 });

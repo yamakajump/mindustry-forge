@@ -6,15 +6,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 /*
- * Chercher une schematique par un bloc qu'elle contient.
+ * Searching for a schematic by a block it contains.
  *
- * « Montre-moi ce qu'on construit avec un reacteur au thorium » est la question qu'un
- * joueur pose vraiment, et le site ne savait pas y repondre : `schematic_blocks` etait vide
- * sur les 15 533 lignes, faute d'inventaire dans l'analyse.
+ * "Show me what people build with a thorium reactor" is the question a player actually
+ * asks, and the site had no way to answer it: `schematic_blocks` was empty across all
+ * 15 533 rows, for want of an inventory in the analysis.
  *
- * Le nom cherche est confronte au catalogue plutot que pris pour argent comptant. Un `LIKE`
- * sur du texte libre aurait rendu une liste plausible et fausse pour une faute de frappe,
- * ce qui est la forme d'erreur que ce depot passe ses journees a fermer.
+ * The name searched for is checked against the catalogue rather than taken at face value. A
+ * `LIKE` over free text would have returned a plausible and wrong list for a typo, which is
+ * the kind of error this repository spends its days closing.
  */
 
 function batie(string $name, array $held): Schematic
@@ -25,7 +25,7 @@ function batie(string $name, array $held): Schematic
     ]);
 }
 
-it('ne rend que celles qui contiennent le bloc demande', function () {
+it('returns only the ones that contain the block asked for', function () {
     batie('Ferme a thorium', ['thorium-reactor' => 4, 'conveyor' => 30]);
     batie('Presse a graphite', ['graphite-press' => 2, 'conveyor' => 12]);
 
@@ -35,7 +35,7 @@ it('ne rend que celles qui contiennent le bloc demande', function () {
     $page->assertDontSee('Presse a graphite');
 });
 
-it('dit quel bloc filtre, et offre d enlever le filtre', function () {
+it('says which block is filtering, and offers to remove the filter', function () {
     batie('Ferme a thorium', ['thorium-reactor' => 4]);
 
     $page = $this->get('/schemas?bloc=thorium-reactor')->assertOk();
@@ -44,20 +44,20 @@ it('dit quel bloc filtre, et offre d enlever le filtre', function () {
     $page->assertSee('Enlever ce filtre');
 });
 
-it('dit qu un nom inconnu ne filtre rien plutot que de rendre tout', function () {
-    /* Une faute de frappe qui rend la liste entiere est une page plausible et fausse : le
-       lecteur croit avoir cherche et n'a rien cherche. */
+it('says an unknown name filters nothing rather than returning everything', function () {
+    /* A typo that returns the whole list is a plausible and wrong page: the reader believes
+       they searched and searched for nothing. */
     batie('Ferme a thorium', ['thorium-reactor' => 4]);
 
     $page = $this->get('/schemas?bloc=reacteur-au-thorium')->assertOk();
 
-    // Sans l'apostrophe : Blade l'echappe en `&#039;`, et l'assertion la chercherait
-    // telle quelle.
+    // Without the apostrophe: Blade escapes it into `&#039;`, and the assertion would look
+    // for it as written.
     $page->assertSee('est pas un bloc du jeu');
     $page->assertSee('Ferme a thorium');
 });
 
-it('propose des noms qui existent vraiment dans le catalogue', function () {
+it('offers names that really exist in the catalogue', function () {
     batie('Ferme a thorium', ['thorium-reactor' => 4, 'conveyor' => 30]);
 
     $page = $this->get('/schemas')->assertOk();
@@ -66,9 +66,9 @@ it('propose des noms qui existent vraiment dans le catalogue', function () {
     $page->assertSee('<option value="conveyor"></option>', escape: false);
 });
 
-it('se combine avec la mise a part du creatif', function () {
-    /* Les deux filtres sont independants et doivent le rester : chercher un convoyeur ne
-       doit pas ramener les bacs a sable par la bande. */
+it('combines with setting the creative ones apart', function () {
+    /* The two filters are independent and have to stay that way: searching for a conveyor
+       must not bring the sandboxes back in on the side. */
     batie('Usine normale', ['conveyor' => 30]);
     batie('Bac a sable', ['conveyor' => 30, 'power-source' => 1]);
 

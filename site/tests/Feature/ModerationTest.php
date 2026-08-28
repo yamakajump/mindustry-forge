@@ -152,8 +152,8 @@ it('hands somebody the keys to the queue', function () {
 
     $this->artisan('forge:moderateur', ['who' => 'yamakajump'])->assertSuccessful();
 
-    // La preuve qui compte n'est pas la colonne, c'est la page : le flag est un moyen, et
-    // c'est l'acces a la file qui est la chose demandee.
+    // The proof that counts is not the column, it is the page: the flag is a means, and
+    // access to the queue is the thing that was asked for.
     expect($corentin->fresh()->moderator)->toBeTrue();
     $this->actingAs($corentin->fresh())->get('/moderation')->assertOk();
 });

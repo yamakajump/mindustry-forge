@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-it('cree un dossier avec un nom et une icone du catalogue', function () {
+it('creates a folder with a name and an icon from the catalogue', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)->postJson('/api/dossiers', [
@@ -17,7 +17,7 @@ it('cree un dossier avec un nom et une icone du catalogue', function () {
     expect(Folder::first()->icon)->toBe('objet/silicon');
 });
 
-it('refuse une icone qui n est pas au catalogue', function () {
+it('refuses an icon that is not in the catalogue', function () {
     $this->actingAs(User::factory()->create())
         ->postJson('/api/dossiers', ['name' => 'Truc', 'icon' => 'objet/inexistant'])
         ->assertStatus(422);
@@ -25,7 +25,7 @@ it('refuse une icone qui n est pas au catalogue', function () {
     expect(Folder::count())->toBe(0);
 });
 
-it('accepte un dossier sans icone', function () {
+it('accepts a folder with no icon', function () {
     $this->actingAs(User::factory()->create())
         ->postJson('/api/dossiers', ['name' => 'Sans image'])
         ->assertCreated();
@@ -33,7 +33,7 @@ it('accepte un dossier sans icone', function () {
     expect(Folder::first()->icon)->toBeNull();
 });
 
-it('refuse de depasser la profondeur maximale', function () {
+it('refuses to go past the maximum depth', function () {
     $user = User::factory()->create();
     $parent = null;
     foreach (range(1, Folder::MAX_DEPTH) as $ignored) {
@@ -45,7 +45,7 @@ it('refuse de depasser la profondeur maximale', function () {
         ->assertStatus(422);
 });
 
-it('refuse un deplacement qui ferait une boucle', function () {
+it('refuses a move that would make a ring', function () {
     $user = User::factory()->create();
     $root = Folder::factory()->create(['user_id' => $user->id]);
     $child = Folder::factory()->create(['user_id' => $user->id, 'parent_id' => $root->id]);
@@ -57,7 +57,7 @@ it('refuse un deplacement qui ferait une boucle', function () {
     expect($root->refresh()->parent_id)->toBeNull();
 });
 
-it('renomme un dossier', function () {
+it('renames a folder', function () {
     $user = User::factory()->create();
     $folder = Folder::factory()->create(['user_id' => $user->id, 'name' => 'Avant']);
 
@@ -68,7 +68,7 @@ it('renomme un dossier', function () {
     expect($folder->refresh()->name)->toBe('Apres');
 });
 
-it('ne laisse personne toucher au dossier d un autre', function () {
+it('lets nobody touch a folder that belongs to somebody else', function () {
     $folder = Folder::factory()->create();
 
     $this->actingAs(User::factory()->create())
@@ -78,7 +78,7 @@ it('ne laisse personne toucher au dossier d un autre', function () {
     expect($folder->refresh()->name)->not->toBe('Vole');
 });
 
-it('promeut les enfants au lieu de les supprimer', function () {
+it('promotes the children instead of deleting them', function () {
     $user = User::factory()->create();
     $grandparent = Folder::factory()->create(['user_id' => $user->id]);
     $parent = Folder::factory()->create(['user_id' => $user->id, 'parent_id' => $grandparent->id]);
@@ -90,7 +90,7 @@ it('promeut les enfants au lieu de les supprimer', function () {
         ->and(Folder::find($parent->id))->toBeNull();
 });
 
-it('promeut a la racine quand le dossier supprime y etait', function () {
+it('promotes to the root when the deleted folder was there', function () {
     $user = User::factory()->create();
     $parent = Folder::factory()->create(['user_id' => $user->id]);
     $child = Folder::factory()->create(['user_id' => $user->id, 'parent_id' => $parent->id]);
@@ -100,7 +100,7 @@ it('promeut a la racine quand le dossier supprime y etait', function () {
     expect(Folder::find($child->id)->parent_id)->toBeNull();
 });
 
-it('montre a chacun ses dossiers racine et pas ceux des autres', function () {
+it('shows each member their root folders and not those of others', function () {
     $mine = User::factory()->create();
     Folder::factory()->create(['user_id' => $mine->id, 'name' => 'Le mien']);
     Folder::factory()->create(['name' => 'Celui d un autre']);
@@ -111,6 +111,6 @@ it('montre a chacun ses dossiers racine et pas ceux des autres', function () {
         ->assertDontSee('Celui d un autre');
 });
 
-it('refuse la page a un visiteur qui n est pas connecte', function () {
+it('refuses the page to a visitor who is not signed in', function () {
     $this->get('/mes-dossiers')->assertRedirect('/auth/discord');
 });

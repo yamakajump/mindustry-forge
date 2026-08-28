@@ -42,7 +42,7 @@ function settled(array $value): array
     return $value;
 }
 
-it('cree un espace de travail avec un nom et un plateau', function () use ($board) {
+it('creates a work space with a name and a board', function () use ($board) {
     $user = User::factory()->create();
 
     $this->actingAs($user)->postJson('/api/espaces', [
@@ -56,7 +56,7 @@ it('cree un espace de travail avec un nom et un plateau', function () use ($boar
     expect(settled(Space::first()->board))->toBe(settled($board()));
 });
 
-it('refuse un espace sans nom ni plateau', function () {
+it('refuses a space with neither name nor board', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)->postJson('/api/espaces', [])->assertStatus(422);
@@ -64,14 +64,14 @@ it('refuse un espace sans nom ni plateau', function () {
     expect(Space::count())->toBe(0);
 });
 
-it('refuse la creation a un visiteur non connecte', function () use ($board) {
+it('refuses creation to a visitor who is not signed in', function () use ($board) {
     $this->postJson('/api/espaces', ['name' => 'X', 'board' => $board()])
         ->assertUnauthorized();
 });
 
 // --- Quota -------------------------------------------------------------------------
 
-it('refuse de depasser le quota d espaces de travail', function () use ($board) {
+it('refuses to go past the work space quota', function () use ($board) {
     $user = User::factory()->create();
     Space::factory()->count(Space::MAX_SPACES)->create(['user_id' => $user->id]);
 
@@ -83,7 +83,7 @@ it('refuse de depasser le quota d espaces de travail', function () use ($board) 
     expect(Space::where('user_id', $user->id)->count())->toBe(Space::MAX_SPACES);
 });
 
-it('laisse creer tant que le quota n est pas atteint', function () use ($board) {
+it('allows creating as long as the quota is not reached', function () use ($board) {
     $user = User::factory()->create();
     Space::factory()->count(Space::MAX_SPACES - 1)->create(['user_id' => $user->id]);
 
@@ -95,7 +95,7 @@ it('laisse creer tant que le quota n est pas atteint', function () use ($board) 
     expect(Space::where('user_id', $user->id)->count())->toBe(Space::MAX_SPACES);
 });
 
-it('ne compte que les espaces de ce compte pour le quota', function () use ($board) {
+it('counts only the spaces of this account towards the quota', function () use ($board) {
     $user = User::factory()->create();
     Space::factory()->count(Space::MAX_SPACES)->create();
 
@@ -105,9 +105,9 @@ it('ne compte que les espaces de ce compte pour le quota', function () use ($boa
     ])->assertCreated();
 });
 
-// --- Cadres ----------------------------------------------------------------------------
+// --- Frames ----------------------------------------------------------------------------
 
-it('garde les cadres d un plateau, y compris apres une relecture', function () {
+it('keeps the frames of a board, including after reading it back', function () {
     $user = User::factory()->create();
     $avecCadres = [
         'tiles' => [['x' => 0, 'y' => 0, 'block' => 'conveyor', 'rotation' => 0]],
@@ -128,7 +128,7 @@ it('garde les cadres d un plateau, y compris apres une relecture', function () {
     expect(settled($lu->json('board.frames')))->toBe(settled($avecCadres['frames']));
 });
 
-it('garde les cadres d un plateau sauvegarde par dessus un espace existant', function () use ($board) {
+it('keeps the frames of a board saved over an existing space', function () use ($board) {
     $user = User::factory()->create();
     $space = Space::factory()->create(['user_id' => $user->id, 'board' => $board()]);
     $avecCadres = [
@@ -143,12 +143,12 @@ it('garde les cadres d un plateau sauvegarde par dessus un espace existant', fun
     expect(settled($space->refresh()->board))->toBe(settled($avecCadres));
 });
 
-// --- Taille --------------------------------------------------------------------------
+// --- Size ----------------------------------------------------------------------------
 
-it('refuse un plateau plus gros que la limite', function () {
+it('refuses a board bigger than the limit', function () {
     $user = User::factory()->create();
-    // Une chaine largement au dela de Space::MAX_BOARD_BYTES, plutot qu un vrai plateau :
-    // c est la taille encodee qui compte, pas sa forme.
+    // A string well past Space::MAX_BOARD_BYTES rather than a real board: what counts is
+    // the encoded size, not its shape.
     $trop = ['tiles' => [], 'ground' => ['bourrage' => str_repeat('x', Space::MAX_BOARD_BYTES + 1)]];
 
     $this->actingAs($user)->postJson('/api/espaces', [
@@ -159,9 +159,9 @@ it('refuse un plateau plus gros que la limite', function () {
     expect(Space::count())->toBe(0);
 });
 
-it('accepte un plateau juste sous la limite', function () {
+it('accepts a board just under the limit', function () {
     $user = User::factory()->create();
-    // On vise juste en dessous : le reste du payload JSON (accolades, cles) compte aussi.
+    // Aiming just below it: the rest of the JSON payload (braces, keys) counts too.
     $ok = ['tiles' => [], 'ground' => ['x' => str_repeat('x', Space::MAX_BOARD_BYTES - 200)]];
 
     $this->actingAs($user)->postJson('/api/espaces', [
@@ -170,10 +170,10 @@ it('accepte un plateau juste sous la limite', function () {
     ])->assertCreated();
 });
 
-it('accepte un plateau avec cadres plus gros que l ancienne limite de 2 Mio', function () {
-    // Les cadres font grandir un plateau reel de 64x64 (quelques centaines de kilo-octets)
-    // jusqu a 256x256 rempli (environ 4,8 Mo mesures) : l ancienne limite de 2 Mio aurait
-    // refuse un chantier multi-cadres pourtant legitime.
+it('accepts a board with frames bigger than the old 2 MiB limit', function () {
+    // Frames grow a real 64x64 board (a few hundred kilobytes) up to a filled 256x256
+    // (about 4.8 MB measured): the old 2 MiB limit would have refused a multi frame build
+    // that was perfectly legitimate.
     $user = User::factory()->create();
     $ancienneLimite = 2 * 1024 * 1024;
     $grosChantier = [
@@ -191,7 +191,7 @@ it('accepte un plateau avec cadres plus gros que l ancienne limite de 2 Mio', fu
     ])->assertCreated();
 });
 
-it('refuse une sauvegarde qui ferait deborder la limite', function () use ($board) {
+it('refuses a save that would overflow the limit', function () use ($board) {
     $user = User::factory()->create();
     $space = Space::factory()->create(['user_id' => $user->id, 'board' => $board()]);
     $trop = ['tiles' => [], 'ground' => ['bourrage' => str_repeat('x', Space::MAX_BOARD_BYTES + 1)]];
@@ -202,9 +202,9 @@ it('refuse une sauvegarde qui ferait deborder la limite', function () use ($boar
     expect(settled($space->refresh()->board))->toBe(settled($board()));
 });
 
-// --- Proprietaire, le morceau qui compte ----------------------------------------------
+// --- Ownership, the part that matters -------------------------------------------------
 
-it('ne laisse personne lire l espace de travail d un autre', function () use ($board) {
+it('never lets anyone read the work space of another account', function () use ($board) {
     $space = Space::factory()->create(['board' => $board()]);
 
     $this->actingAs(User::factory()->create())
@@ -212,7 +212,7 @@ it('ne laisse personne lire l espace de travail d un autre', function () use ($b
         ->assertNotFound();
 });
 
-it('ne laisse personne renommer l espace de travail d un autre', function () {
+it('never lets anyone rename the work space of another account', function () {
     $space = Space::factory()->create(['name' => 'Original']);
 
     $this->actingAs(User::factory()->create())
@@ -222,7 +222,7 @@ it('ne laisse personne renommer l espace de travail d un autre', function () {
     expect($space->refresh()->name)->toBe('Original');
 });
 
-it('ne laisse personne ecraser le plateau d un autre', function () use ($board) {
+it('never lets anyone overwrite the board of another account', function () use ($board) {
     $space = Space::factory()->create(['board' => $board()]);
     $autre = ['tiles' => [['x' => 9, 'y' => 9, 'block' => 'wall', 'rotation' => 0]], 'ground' => []];
 
@@ -233,7 +233,7 @@ it('ne laisse personne ecraser le plateau d un autre', function () use ($board) 
     expect(settled($space->refresh()->board))->toBe(settled($board()));
 });
 
-it('ne laisse personne supprimer l espace de travail d un autre', function () {
+it('never lets anyone delete the work space of another account', function () {
     $space = Space::factory()->create();
 
     $this->actingAs(User::factory()->create())
@@ -243,7 +243,7 @@ it('ne laisse personne supprimer l espace de travail d un autre', function () {
     expect(Space::find($space->id))->not->toBeNull();
 });
 
-it('refuse a un visiteur non connecte de lister, lire, modifier ou supprimer', function () {
+it('refuses listing, reading, changing and deleting to a signed out visitor', function () {
     $space = Space::factory()->create();
 
     $this->getJson('/api/espaces')->assertUnauthorized();
@@ -252,9 +252,9 @@ it('refuse a un visiteur non connecte de lister, lire, modifier ou supprimer', f
     $this->deleteJson("/api/espaces/{$space->slug}")->assertUnauthorized();
 });
 
-// --- Le proprietaire peut tout faire chez lui -----------------------------------------
+// --- The owner can do anything in their own space -------------------------------------
 
-it('laisse le proprietaire lire, renommer, sauvegarder et supprimer son espace', function () use ($board) {
+it('lets the owner read, rename, save and delete their own space', function () use ($board) {
     $user = User::factory()->create();
     $space = Space::factory()->create(['user_id' => $user->id, 'name' => 'Avant', 'board' => $board()]);
 
@@ -272,9 +272,9 @@ it('laisse le proprietaire lire, renommer, sauvegarder et supprimer son espace',
     expect(Space::find($space->id))->toBeNull();
 });
 
-// --- Le tri « mes plans » --------------------------------------------------------------
+// --- The order of the list of spaces ---------------------------------------------------
 
-it('liste les espaces du compte, les plus recemment ouverts en tete', function () {
+it('lists the spaces of the account, most recently opened first', function () {
     $user = User::factory()->create();
     $vieux = Space::factory()->create(['user_id' => $user->id, 'name' => 'Vieux', 'opened_at' => now()->subDays(3)]);
     $recent = Space::factory()->create(['user_id' => $user->id, 'name' => 'Recent', 'opened_at' => now()]);
@@ -285,7 +285,7 @@ it('liste les espaces du compte, les plus recemment ouverts en tete', function (
     expect(array_column($reponse, 'name'))->toBe(['Recent', 'Vieux']);
 });
 
-it('remonte un espace en tete de liste quand on le rouvre', function () {
+it('moves a space back to the top of the list when it is reopened', function () {
     $user = User::factory()->create();
     $ancien = Space::factory()->create(['user_id' => $user->id, 'name' => 'Ancien', 'opened_at' => now()->subDays(5)]);
     Space::factory()->create(['user_id' => $user->id, 'name' => 'Autre', 'opened_at' => now()->subDay()]);
@@ -296,7 +296,7 @@ it('remonte un espace en tete de liste quand on le rouvre', function () {
     expect($reponse[0]['name'])->toBe('Ancien');
 });
 
-it('remonte un espace en tete de liste quand on le sauvegarde', function () use ($board) {
+it('moves a space back to the top of the list when it is saved', function () use ($board) {
     $user = User::factory()->create();
     $ancien = Space::factory()->create(['user_id' => $user->id, 'name' => 'Ancien', 'board' => $board(), 'opened_at' => now()->subDays(5)]);
     Space::factory()->create(['user_id' => $user->id, 'name' => 'Autre', 'opened_at' => now()->subDay()]);
