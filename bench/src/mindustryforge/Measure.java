@@ -303,18 +303,17 @@ public class Measure implements ApplicationListener {
                     }
                 }
             }
-            /* Ce qu'un tapis tient vraiment, qui n'est pas dans son module d'objets : le
-               nombre en vol et la position du plus en retard. Les deux moteurs ont mis
-               neuf images a se rejoindre sur un seul charbon, et un total ne sait pas dire
-               laquelle. */
-            /* Et le compteur d'une source, qui decide si elle verse une fois ou deux
-               dans la meme image : cent objets par seconde pour soixante images. */
+            /* What a belt is really holding, which is not in its item module: how many are
+               in flight and where the one furthest back has got to. The two engines took
+               nine frames to agree on a single coal, and a total cannot say which one. */
+            /* And the counter of a source, which decides whether it pours once or twice in
+               the same frame: a hundred items a second over sixty frames. */
             if (build instanceof mindustry.world.blocks.sandbox.ItemSource
                     .ItemSourceBuild tap) {
                 held.append(" ~").append(
                     String.format(java.util.Locale.ROOT, "%.3f", tap.counter));
             }
-            // Le compteur d'une plateforme de lancement, et son efficacite.
+            // A launch pad's counter, and its efficiency.
             if (build instanceof mindustry.world.blocks.campaign.LaunchPad
                     .LaunchPadBuild pad) {
                 held.append(" ~").append(
@@ -322,7 +321,7 @@ public class Measure implements ApplicationListener {
                     .append('/').append(
                     String.format(java.util.Locale.ROOT, "%.3f", pad.efficiency));
             }
-            // Et l'avancement d'une machine, qui dit a quelle image tombe la fournee.
+            // And a machine's progress, which says which frame the batch lands on.
             if (build instanceof mindustry.world.blocks.production.GenericCrafter
                     .GenericCrafterBuild machine) {
                 held.append(" ~").append(
@@ -335,7 +334,7 @@ public class Measure implements ApplicationListener {
                 held.append(" ~").append(belt.len).append(':')
                     .append(String.format(java.util.Locale.ROOT, "%.3f", belt.minitem));
             }
-            // Un chargeur de fret : ou est son unite, ce qu'elle porte, et combien.
+            // A cargo loader: where its unit is, what it is carrying, and how much of it.
             if (build instanceof mindustry.world.blocks.units.UnitCargoLoader
                     .UnitTransportSourceBuild tether) {
                 held.append(" ^");
@@ -343,28 +342,28 @@ public class Measure implements ApplicationListener {
                     held.append(String.format(java.util.Locale.ROOT, "-/%.4f",
                         tether.buildProgress));
                 } else {
-                    // En coordonnees de schema, comme tout le reste de la ligne.
+                    // In schematic coordinates, like the rest of the line.
                     held.append(String.format(java.util.Locale.ROOT, "%.2f,%.2f/%s:%d",
                         tether.unit.x - MARGIN * 8, tether.unit.y - MARGIN * 8,
                         tether.unit.stack.amount > 0 ? tether.unit.item().name : "-",
                         tether.unit.stack.amount));
                 }
             }
-            // Un assembleur : ses drones, leur avancement, et le courant qu'il recoit.
+            // An assembler: its drones, how far the next one is, and the power it is getting.
             if (build instanceof mindustry.world.blocks.units.UnitAssembler
                     .UnitAssemblerBuild made) {
                 held.append(" &").append(made.units.size).append('/').append(
                     String.format(java.util.Locale.ROOT, "%.4f/%.3f",
                         made.droneProgress, made.power == null ? 1f : made.power.status));
             }
-            // Le canon d'un mass driver a cargaison : charge, rechargement, glissement.
+            // A payload driver's barrel: charge, reload, how far the cargo has slid.
             if (build instanceof mindustry.world.blocks.payloads.PayloadMassDriver
                     .PayloadDriverBuild gun) {
                 held.append(" $").append(
                     String.format(java.util.Locale.ROOT, "%.2f/%.3f/%.2f/%.1f",
                         gun.charge, gun.reloadCounter, gun.payLength, gun.turretRotation));
             }
-            // Et ce qu'il porte, avec ce qu'il y a dedans.
+            // And what it is carrying, with whatever is inside that.
             mindustry.world.blocks.payloads.Payload cargo = build.getPayload();
             if (cargo != null) {
                 held.append(" %").append(cargo.content().name);
@@ -377,8 +376,8 @@ public class Measure implements ApplicationListener {
                     }
                 }
             }
-            /* Et sa place dans la liste de mise a jour, parce qu'un bloc qui s'endort en
-               sort et que se reveiller le remet a la fin. Moins un veut dire qu'il dort. */
+            /* And its place in the update list, because a block that falls asleep leaves it
+               and waking up puts it back at the end. Minus one means it is asleep. */
             held.append(" @").append(order.indexOf(build, true));
             if (held.length() == 0) continue;
             line.append(" | ").append(tile.x - MARGIN).append(',').append(tile.y - MARGIN)
@@ -483,10 +482,10 @@ public class Measure implements ApplicationListener {
             one.put("x", tile.x);
             one.put("y", tile.y);
             one.put("payload", held.content().name);
-            /* Et ce qu'il y a **dedans**, parce qu'une charge utile est un batiment entier
-               et que trois blocs ne s'interessent qu'a ca : un chargeur remplit le coffre
-               qu'il porte, un dechargeur le vide. Sans son contenu, la moitie de la famille
-               se mesure a rien du tout. */
+            /* And what is **inside** it, because a payload is a whole building and three
+               blocks care about nothing else: a loader fills the container it carries, an
+               unloader empties it. Without its contents, half the family measures nothing
+               at all. */
             if (held instanceof mindustry.world.blocks.payloads.BuildPayload inside) {
                 Jval stock = Jval.newObject();
                 if (inside.build.items != null) {
@@ -530,9 +529,9 @@ public class Measure implements ApplicationListener {
             one.put("block", tile.block().name);
             one.put("x", tile.x);
             one.put("y", tile.y);
-            /* Zero plutot que `NaN`, qui n'est pas du JSON et faisait planter le lecteur.
-               Un incinerateur a scories a vide en produit un : sa recette demande zero
-               scorie par image, donc son efficacite est zero divise par zero. */
+            /* Zero rather than `NaN`, which is not JSON and used to crash the reader. An
+               empty slag incinerator produces one: its recipe asks for zero slag per frame,
+               so its efficiency is zero divided by zero. */
             one.put("efficiency", Float.isFinite(tile.build.efficiency)
                 ? tile.build.efficiency : 0f);
             if (tile.build instanceof mindustry.world.blocks.units.UnitFactory.UnitFactoryBuild f) {
@@ -558,11 +557,11 @@ public class Measure implements ApplicationListener {
         }
         root.put("running", running);
 
-        /* Ce qui est encore debout, et ce qui ne l'est plus.
+        /* What is still standing, and what is not.
 
-           Un reacteur qui surchauffe emporte ses voisins, et sans cette liste le portage
-           declarait sain un schema qui se detruit lui-meme : les compteurs d'un bloc mort
-           sont a zero des deux cotes, ce qui se lit comme un accord. */
+           A reactor that overheats takes its neighbours with it, and without this list the
+           port declared a schematic that destroys itself perfectly sound: the counters of a
+           dead block are zero on both sides, which reads as agreement. */
         Jval standing = Jval.newArray();
         for (Tile tile : Vars.world.tiles) {
             if (tile.build == null || tile.build.tile != tile) continue;

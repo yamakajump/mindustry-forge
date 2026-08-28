@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 #######################################################################
-# Provisionnement de mindustry-forge sur un serveur nu.
+# Provisioning of mindustry-forge on a bare server.
 #
-#   ssh <serveur> "bash /chemin/vers/install-server.sh"
+#   ssh <server> "bash /path/to/install-server.sh"
 #
-# Ce script existe pour une seule raison : que la machine soit
-# reconstruisible sans avoir a se souvenir de ce qui a ete tape a la
-# main le jour de la mise en ligne. Il est idempotent, on peut donc le
-# relancer sur un serveur deja installe sans rien casser.
+# This script exists for one reason: so that the machine can be rebuilt
+# without having to remember what was typed by hand on the day the site
+# went up. It is idempotent, so it can be run again on an already
+# installed server without breaking anything.
 #
-# Ce qu'il NE fait pas, et qui reste manuel :
-#   - le nom d'hote public dans le tunnel Cloudflare (dashboard) ;
-#   - les identifiants Discord dans le .env (voir a la fin) ;
-#   - la regle de redirection www -> apex (dashboard Cloudflare).
+# What it does NOT do, and what stays manual:
+#   - the public hostname in the Cloudflare tunnel (dashboard);
+#   - the Discord credentials in the .env (see the end);
+#   - the www -> apex redirect rule (Cloudflare dashboard).
 #
-# Prerequis sur la machine : nginx, php8.3-fpm, mariadb, composer, git.
+# Prerequisites on the machine: nginx, php8.3-fpm, mariadb, composer,
+# git.
 #######################################################################
 set -euo pipefail
 
@@ -28,17 +29,17 @@ DB_USER="mforge"
 DB_PASS_FILE="/root/.mforge-db-pass"
 PHP_FPM="php8.3-fpm"
 
-[ "$(id -u)" -eq 0 ] || { echo "❌ Ce script doit tourner en root."; exit 1; }
+[ "$(id -u)" -eq 0 ] || { echo "❌ This script has to run as root."; exit 1; }
 
-echo "→ Compte systeme ${APP_USER}..."
+echo "→ System account ${APP_USER}..."
 if ! id "$APP_USER" >/dev/null 2>&1; then
     adduser --system --group --home "$APP_DIR" --shell /usr/sbin/nologin "$APP_USER"
 fi
 usermod -a -G www-data "$APP_USER"
 
-echo "→ Base ${DB_NAME}..."
-# Le mot de passe n'est genere qu'a la premiere installation : le
-# regenerer a chaque passage invaliderait le .env d'un site en place.
+echo "→ Database ${DB_NAME}..."
+# The password is only generated at the first installation: regenerating
+# it on every pass would invalidate the .env of a site already running.
 if [ ! -s "$DB_PASS_FILE" ]; then
     openssl rand -base64 24 | tr -d '/+=' | head -c 28 > "$DB_PASS_FILE"
     chmod 600 "$DB_PASS_FILE"
@@ -49,33 +50,33 @@ mysql -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB
 mysql -e "ALTER USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
 mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost'; FLUSH PRIVILEGES;"
 
-echo "→ Code source..."
+echo "→ Source code..."
 if [ ! -d "${APP_DIR}/.git" ]; then
     rm -rf "$APP_DIR"
     git clone --branch "$BRANCH" "$REPO" "$APP_DIR"
 fi
-# Le depot appartient a mforge et les deploiements tournent en root :
-# sans cette exception, git refuse de travailler dessus.
+# The repository belongs to mforge and deployments run as root: without
+# this exception, git refuses to work on it.
 git config --global --add safe.directory "$APP_DIR" 2>/dev/null || true
 
 echo "→ Pool PHP-FPM..."
 install -m 644 "${APP_DIR}/deployment/php-fpm/mforge.conf" /etc/php/8.3/fpm/pool.d/mforge.conf
-# restart et pas reload : voir l'avertissement en tete de mforge.conf.
+# restart rather than reload: see the warning at the top of mforge.conf.
 systemctl restart "$PHP_FPM"
 
-echo "→ Vhost nginx..."
+echo "→ nginx vhost..."
 install -m 644 "${APP_DIR}/deployment/nginx/mindustryforge.conf" /etc/nginx/sites-available/mindustryforge
 ln -sf /etc/nginx/sites-available/mindustryforge /etc/nginx/sites-enabled/mindustryforge
 nginx -t
 systemctl reload nginx
 
-echo "→ Sauvegarde automatique..."
+echo "→ Automatic backup..."
 install -m 644 "${APP_DIR}/deployment/systemd/mforge-backup.service" /etc/systemd/system/
 install -m 644 "${APP_DIR}/deployment/systemd/mforge-backup.timer" /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now mforge-backup.timer
 
-echo "→ Environnement applicatif..."
+echo "→ Application environment..."
 cd "$SITE_DIR"
 if [ ! -f .env ]; then
     cat > .env <<EOF
@@ -133,11 +134,11 @@ chmod 600 "${SITE_DIR}/.env"
 chmod -R 775 "${SITE_DIR}/storage" "${SITE_DIR}/bootstrap/cache"
 
 echo
-echo "✅ Serveur provisionne."
+echo "✅ Server provisioned."
 if [ "${NOUVEAU_ENV:-0}" = "1" ]; then
     echo
-    echo "⚠️  Il reste trois choses qu'aucun script ne peut deviner :"
-    echo "   1. DISCORD_CLIENT_ID et DISCORD_CLIENT_SECRET dans ${SITE_DIR}/.env"
-    echo "   2. le nom d'hote public dans le tunnel Cloudflare (-> http://localhost)"
-    echo "   3. la regle Cloudflare qui redirige www vers l'apex"
+    echo "⚠️  Three things are left that no script can guess:"
+    echo "   1. DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET in ${SITE_DIR}/.env"
+    echo "   2. the public hostname in the Cloudflare tunnel (-> http://localhost)"
+    echo "   3. the Cloudflare rule that redirects www to the apex"
 fi

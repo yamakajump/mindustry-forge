@@ -38,8 +38,8 @@ const MACHINE_ROLES = new Set([
   "mender", "projector", "shield", "turret-idle", "laser-turret",
   "beam-drill", "wall-crafter", "burst-drill", "reconstructor", "constructor",
   "mass-driver",
-  /* Une plateforme de lancement et un accelerateur retiennent, eux : ce qu'ils tiennent a
-     la fin est la mesure, parce que rien de ce qu'ils avalent ne ressort. */
+  /* A launch pad and an accelerator do hold on to things: what they are holding at the end
+     is the measurement, because nothing they swallow ever comes back out. */
   "launch-pad", "sink",
 ]);
 
@@ -287,7 +287,7 @@ export function differences(mine, theirs) {
   const out = [];
 
   if (mine.containers.length !== theirs.containers.length) {
-    out.push({ what: "coffres", mine: mine.containers.length,
+    out.push({ what: "containers", mine: mine.containers.length,
                theirs: theirs.containers.length, gap: 1 });
   } else {
     for (let i = 0; i < mine.containers.length; i++) {
@@ -304,7 +304,7 @@ export function differences(mine, theirs) {
   }
 
   if (mine.pools.length !== theirs.pools.length) {
-    out.push({ what: "flaques", mine: mine.pools.length,
+    out.push({ what: "pools", mine: mine.pools.length,
                theirs: theirs.pools.length, gap: 1 });
   } else {
     for (let i = 0; i < mine.pools.length; i++) {
@@ -341,12 +341,12 @@ export function differences(mine, theirs) {
     const a = sum(mine.pools);
     const b = sum(theirs.pools);
     const apart = Math.abs(a - b);
-    out.push({ what: `${liquid} en tout`, mine: a.toFixed(2), theirs: b.toFixed(2),
+    out.push({ what: `${liquid} in total`, mine: a.toFixed(2), theirs: b.toFixed(2),
                gap: apart <= 0.01 ? 0 : apart / Math.max(b, 1) });
   }
 
   if (mine.stocks.length !== theirs.stocks.length) {
-    out.push({ what: "machines qui retiennent", mine: mine.stocks.length,
+    out.push({ what: "machines holding stock", mine: mine.stocks.length,
                theirs: theirs.stocks.length, gap: 1 });
   } else {
     for (let i = 0; i < mine.stocks.length; i++) {
@@ -356,20 +356,21 @@ export function differences(mine, theirs) {
       for (const item of items) {
         const a = here.items[item] || 0;
         const b = there.items[item] || 0;
-        out.push({ what: `${here.at} retient ${item}`, mine: a, theirs: b,
+        out.push({ what: `${here.at} holds ${item}`, mine: a, theirs: b,
                    gap: b ? Math.abs(a - b) / b : (a ? 1 : 0) });
       }
     }
   }
 
-  /* Ce qui reste debout. Compare avant tout le reste, parce qu'un bloc qui a saute rend
-     toutes les autres lignes muettes. */
-  /* Le compte n'est une mesure que si quelque chose est tombe : sur un schema ou tout tient,
-     la ligne ne dirait rien et masquerait un scenario qui ne mesure rien du tout. */
+  /* What is still standing. Compared before anything else, because a block that blew up
+     leaves every other line saying nothing. */
+  /* The count is a measurement only if something fell: on a schematic where everything
+     holds, the line would say nothing and would hide a scenario that measures nothing at
+     all. */
   const placed = mine.placed ?? mine.standing.length;
   if (mine.standing.length !== theirs.standing.length
       || placed !== theirs.standing.length) {
-    out.push({ what: "blocs encore debout", mine: mine.standing.length,
+    out.push({ what: "blocks still standing", mine: mine.standing.length,
                theirs: theirs.standing.length,
                gap: theirs.standing.length
                  ? Math.abs(mine.standing.length - theirs.standing.length)
@@ -380,25 +381,25 @@ export function differences(mine, theirs) {
       const a = mine.standing[i];
       const b = theirs.standing[i];
       if (a.block === b.block && a.at === b.at) continue;
-      out.push({ what: `${a.at} debout`, mine: a.block, theirs: b.block, gap: 1 });
+      out.push({ what: `${a.at} standing`, mine: a.block, theirs: b.block, gap: 1 });
     }
   }
 
   if (mine.payloads.length !== theirs.payloads.length) {
-    out.push({ what: "charges portees", mine: mine.payloads.length,
+    out.push({ what: "payloads carried", mine: mine.payloads.length,
                theirs: theirs.payloads.length, gap: 1 });
   } else {
     for (let i = 0; i < mine.payloads.length; i++) {
       const a = mine.payloads[i];
       const b = theirs.payloads[i];
-      out.push({ what: `${a.at} porte`, mine: a.payload, theirs: b.payload,
+      out.push({ what: `${a.at} carries`, mine: a.payload, theirs: b.payload,
                  gap: a.payload === b.payload ? 0 : 1 });
 
-      // Et ce que la charge tient elle-meme, qui est tout ce que font un chargeur et un
-      // dechargeur : sans ca, la moitie de la famille se mesure a rien.
+      // And what the payload is itself holding, which is the whole of what a loader and an
+      // unloader do: without it, half the family measures nothing.
       for (const [what, mineSide, theirsSide] of [
-        ["porte dedans", a.payload_items || {}, b.payload_items || {}],
-        ["porte en liquide", a.payload_liquids || {}, b.payload_liquids || {}],
+        ["carries inside", a.payload_items || {}, b.payload_items || {}],
+        ["carries as liquid", a.payload_liquids || {}, b.payload_liquids || {}],
       ]) {
         for (const key of new Set([...Object.keys(mineSide), ...Object.keys(theirsSide)])) {
           const here = mineSide[key] || 0;
@@ -411,13 +412,13 @@ export function differences(mine, theirs) {
   }
 
   if (mine.ammo.length !== theirs.ammo.length) {
-    out.push({ what: "tourelles chargees", mine: mine.ammo.length,
+    out.push({ what: "turrets loaded", mine: mine.ammo.length,
                theirs: theirs.ammo.length, gap: 1 });
   } else {
     for (let i = 0; i < mine.ammo.length; i++) {
       const a = mine.ammo[i].ammo;
       const b = theirs.ammo[i].ammo;
-      out.push({ what: `${mine.ammo[i].at} munitions`, mine: a, theirs: b,
+      out.push({ what: `${mine.ammo[i].at} ammo`, mine: a, theirs: b,
                  gap: b ? Math.abs(a - b) / b : (a ? 1 : 0) });
     }
   }
@@ -426,7 +427,7 @@ export function differences(mine, theirs) {
   for (const unit of madeUnits) {
     const a = mine.units[unit] || 0;
     const b = theirs.units[unit] || 0;
-    out.push({ what: `${unit} sortis`, mine: a, theirs: b,
+    out.push({ what: `${unit} made`, mine: a, theirs: b,
                gap: b ? Math.abs(a - b) / b : (a ? 1 : 0) });
   }
 

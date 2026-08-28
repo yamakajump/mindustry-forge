@@ -37,18 +37,18 @@ def main() -> None:
     args = parser.parse_args()
 
     if not args.classes.exists():
-        raise SystemExit(f"introuvable : {args.classes}")
+        raise SystemExit(f"not found: {args.classes}")
 
     built = subprocess.run(["node", str(BUILDER)], capture_output=True, text=True,
                            encoding="utf-8")
     if built.returncode or not built.stdout.strip():
-        raise SystemExit(built.stderr.strip() or "node n'a rien ecrit")
+        raise SystemExit(built.stderr.strip() or "node wrote nothing")
 
     seen = subprocess.run(["java", "-cp", str(args.classes), str(PASTE)],
                           input=built.stdout, capture_output=True, text=True,
                           encoding="utf-8")
     if seen.returncode:
-        raise SystemExit(seen.stderr.strip() or "java a echoue")
+        raise SystemExit(seen.stderr.strip() or "java failed")
 
     # The game chatters about its sectors while loading content; only the last line is the
     # answer.
@@ -58,8 +58,8 @@ def main() -> None:
 
     processors = verdict.get("processors", [])
     same = all(entry.get("matches_game_writer") for entry in processors)
-    print(f"{args.target} : {len(processors)} processeur(s) relu(s) par le jeu, "
-          f"octets identiques a son propre ecrivain : {'oui' if same else 'NON'}")
+    print(f"{args.target}: {len(processors)} processor(s) read back by the game, "
+          f"bytes identical to its own writer: {'yes' if same else 'NO'}")
 
 
 if __name__ == "__main__":
