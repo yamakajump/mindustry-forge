@@ -174,9 +174,26 @@ stockées, et déclenche une re-mesure du catalogue entier.
 Les accents s'écrivent, dans les deux langues. La police les porte, c'est vérifié, et du
 français sans accents est du français mal écrit.
 
+**La règle a été écrite, puis ignorée le lendemain.** Le 28/08/2026, la page des commits de
+`main` montrait quinze sujets d'affilée en français, dont `fix(vitrine): dire dans le
+sous-titre que ce sont des plafonds`, posté après la décision. Personne n'avait décidé de
+passer outre : les règles globales de la machine disent d'écrire les commits en français, et
+c'est cette phrase-là qui a été suivie, parce qu'elle arrive dans le contexte avant celle-ci.
+
+D'où la formulation qui suit, à lire au moment où on tape le message, pas au moment où on
+lit la section sur la langue : **la langue d'un commit se choisit sur le public du dépôt, pas
+sur la langue de la conversation en cours.** Ce dépôt est public, donc anglais, y compris
+quand tout le reste de la session se passe en français. Une session qui hésite regarde
+`git log --oneline -20` : si les sujets récents sont en français, ils datent d'avant la
+décision et ne servent pas de modèle.
+
+L'historique déjà écrit ne se réécrit pas : `main` est publique, et les 88 pull requests
+fusionnées sont des permaliens que rien ne justifie de casser pour de la cosmétique.
+
 ### Le reste
 
-- Commits conventionnels, sujet à l'impératif, 50 caractères max.
+- Commits conventionnels, **en anglais**, sujet à l'impératif, 50 caractères max. Idem pour
+  le titre et la description de la pull request.
 - Le corps du commit explique *pourquoi*, pas *quoi* : le diff dit déjà quoi.
 - Pas de tiret cadratin (—), nulle part.
 - Les clés de traduction s'écrivent `<domaine>.<écran>.<élément>`, en kebab-case, **jamais
