@@ -19,7 +19,8 @@ return [
     ],
     'menu' => [
         'parcourir' => 'Parcourir',
-        'les-miennes' => 'Les miennes',
+        'les-miennes' => 'Les miens',
+        'favoris' => 'Mes favoris',
         'comparer' => 'Comparer',
         'publier' => 'Publier',
         'logique' => 'Logique',

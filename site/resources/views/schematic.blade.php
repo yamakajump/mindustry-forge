@@ -37,6 +37,12 @@
   @unless($preview)
     <script src="/forge/apercu.js" type="module" defer></script>
   @endunless
+  {{-- Ici plutot que dans le gabarit : les deux boutons n'existent que sur cette page, et
+       seulement pour qui est connecte. Un visiteur anonyme a un lien vers Discord, qui n'a
+       besoin d'aucun script. --}}
+  @auth
+    <script src="/forge/keep.js" type="module" defer></script>
+  @endauth
 @endpush
 
 @section('body')
@@ -67,6 +73,40 @@
         sur un vrai serveur">chiffres non verifies</span>
       @endunless
     </p>
+
+    {{-- Les deux gestes, nommes plutot que laisses a deux icones : un coeur plein contre
+         un coeur vide ne dit pas la difference entre « c'est bien » et « je veux le
+         retrouver » a quelqu'un a qui personne ne l'a expliquee.
+
+         Le compte ne s'affiche qu'au-dessus de zero. « 0 j'aime » sous une schematique que
+         personne n'a encore ouverte repond a « combien de gens l'ont aimee » sur une page
+         ou le lecteur demande si elle est bonne, et se lit comme un verdict. --}}
+    {{-- `data-schema` et non `data-slug` : dans ce depot, `data-slug` est le contrat
+         d'apercu.js, qui prend tout element qui en porte un pour une tuile dont il doit
+         aller chercher le code et dessiner le plan. Il a remplace ces deux boutons par un
+         canvas, sur la vraie page, pendant que les onze tests passaient au vert. --}}
+    <div class="keep" data-schema="{{ $schematic->slug }}">
+      @auth
+        <button type="button" data-aime aria-pressed="{{ $aime ? 'true' : 'false' }}">
+          <span class="mot">{{ __($aime ? 'schema.aime.retirer' : 'schema.aime.bouton') }}</span>
+        </button>
+        <button type="button" data-favori aria-pressed="{{ $favori ? 'true' : 'false' }}">
+          <span class="mot">{{ __($favori ? 'schema.favori.retirer' : 'schema.favori.ajouter') }}</span>
+        </button>
+        {{-- A cote des boutons et non dedans : dans le bouton, la page affichait
+             « J'aime  3 j'aime », le meme mot deux fois a trois pixels d'intervalle. Ca ne
+             se voit dans aucun test, seulement en ouvrant la page. --}}
+        <span class="compte"{{ $schematic->likes > 0 ? '' : ' hidden' }}>{{ $schematic->likes }} {{ __('schema.unite.jaime') }}</span>
+      @else
+        {{-- Montre plutot que cache, et comme lien plutot que comme bouton : un bouton
+             qu'un visiteur ne voit pas est une fonctionnalite dont il n'apprend jamais
+             l'existence, et un lien marche sans une ligne de JavaScript. --}}
+        <a class="bouton" href="/auth/discord">{{ __('schema.aime.bouton') }}</a>
+        @if($schematic->likes > 0)
+          <span class="compte">{{ $schematic->likes }} {{ __('schema.unite.jaime') }}</span>
+        @endif
+      @endauth
+    </div>
 
     {{-- Where it came from, said plainly on the page rather than kept in the database.
          Most of this catalogue was posted somewhere else by somebody else, and a site that
