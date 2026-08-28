@@ -1,3 +1,7 @@
+{{-- One block's page: what feeds it, what it feeds, and which public schematics on this
+     site actually use it. Route GET /blocs/{name}, fed by BlockController::show.
+
+     Scope: block, sources, destinations, schematics, schematicCount, ores, gameVersion. --}}
 @extends('layout')
 @section('title', $block->title().' - Mindustry Forge')
 

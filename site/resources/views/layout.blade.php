@@ -1,3 +1,9 @@
+{{-- The shared shell every screen in this app extends with `@extends('layout')`. No
+     controller renders it on its own; it is not a screen, it is what wraps one.
+
+     Sections a view may fill: title, og-type, og-title, og-description, og-image, og-alt,
+     body. All optional, each defaults to a site-wide value below. The `head` stack takes a
+     view's own <link>/<script> tags; the header itself is `@include('partials.nav')`. --}}
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
 <head>

@@ -1,3 +1,7 @@
+{{-- The block wiki's front page: every block in the game, grouped and filterable by
+     planet. Route GET /blocs, fed by BlockController::index.
+
+     Scope: categories, chosen, planet, counts, allCategories, total, gameVersion. --}}
 @extends('layout')
 @section('title', __('blocs.index.titre').' - Mindustry Forge')
 
