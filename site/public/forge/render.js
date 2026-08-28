@@ -429,6 +429,25 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
      floor rather than instead of it, exactly as the game stacks them. */
   const ground = options.ground || null;
   const painted = new Set();
+
+  /* One layer of ground on one tile, floor or overlay, with the variant this position takes.
+     Hoisted out of the loop rather than written inline twice: a 64 by 64 board runs it 8192
+     times a frame and it is the same six lines either way. */
+  const paintLayer = (name, x, y, px, py) => {
+    if (!name) return;
+    /* How many sprites this floor has, counted once per floor rather than per tile. */
+    let count = variantCounts.get(name);
+    if (count === undefined) {
+      count = 0;
+      while (atlas?.sprites?.[`floor/${name}#${count + 1}`]) count++;
+      variantCounts.set(name, count);
+    }
+    const art = count > 1
+      ? atlas.sprites[`floor/${name}#${variantOf(x, y, count) + 1}`]
+      : atlas?.sprites?.[`floor/${name}`];
+    if (art) context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
+  };
+
   if (ground && sheet) {
     for (const [at, layers] of Object.entries(ground)) {
       const [x, y] = at.split(",").map(Number);
@@ -438,27 +457,20 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
 
       const px = (x - box.left) * scale;
       const py = (box.height - (y - box.bottom) - 1) * scale;
-      for (const name of [layers.floor, layers.overlay]) {
-        if (!name) continue;
-        /* How many sprites this floor has, counted once per floor rather than per tile: a
-           64 by 64 board asks this 4096 times a frame. */
-        let count = variantCounts.get(name);
-        if (count === undefined) {
-          count = 0;
-          while (atlas?.sprites?.[`floor/${name}#${count + 1}`]) count++;
-          variantCounts.set(name, count);
-        }
-        const art = count > 1
-          ? atlas.sprites[`floor/${name}#${variantOf(x, y, count) + 1}`]
-          : atlas?.sprites?.[`floor/${name}`];
-        if (art) {
-          context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
-        }
-      }
+
+      /* `Floor.drawBase` is `drawMain; drawEdges; drawOverlay`, in that order, so the floor
+         goes down first, the boundary over it, and the tile's own overlay over both. Drawing
+         the overlay before the boundary put a neighbour's material on top of an ore patch
+         instead of underneath it, which is the one place a player is looking. */
+      paintLayer(layers.floor, x, y, px, py);
 
       /* The boundary, drawn over this tile rather than over its neighbour: the game bleeds
-         inwards, so a patch of grass beside stone has grass creeping onto the stone tile. */
-      if (soils) {
+         inwards, so a patch of grass beside stone has grass creeping onto the stone tile.
+
+         `soils?.floors` rather than a truth test on `soils`: a sols.json that parses as `{}`
+         would otherwise throw here and take the whole drawing down with it, when the only
+         thing that should be lost is the blending. */
+      if (soils?.floors) {
         for (const blender of blendersAt(ground, x, y, soils.floors)) {
           const edgeArt = atlas?.sprites?.[`floor/${blender.sheet}#edge`];
           if (!edgeArt) continue;
@@ -474,6 +486,8 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
           }
         }
       }
+
+      paintLayer(layers.overlay, x, y, px, py);
     }
   }
 
