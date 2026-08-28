@@ -198,6 +198,12 @@ def main() -> None:
             wanted.append((f"floor/{name}#{n}", variant))
             n += 1
 
+        # The 96 by 96 sheet the game blends a boundary with: nine 32 pixel cells, which
+        # `Floor.edge(x, y, i, j)` reads as `edges[i][2 - j]`. 55 of the 107 floors ship
+        # one; the rest do not blend, and a hard edge decided in code beats a guess.
+        if f"{name}-edge" in sprites:
+            wanted.append((f"floor/{name}#edge", sprites[f"{name}-edge"]))
+
     # The frame of a block that gets configured, without the composite's contents.
     #
     # The game fills the whole tile with the colour of what a sorter passes or a source
