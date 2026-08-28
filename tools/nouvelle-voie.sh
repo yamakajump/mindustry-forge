@@ -21,7 +21,10 @@ set -euo pipefail
 
 NOM="${1:-}"
 BRANCHE="${2:-}"
-DEPUIS="${3:-origin/restart/place-de-marche}"
+# `origin/main` et non `main` : la branche locale est souvent en retard, et une voie
+# coupee dessus repart d un etat que personne n a plus. La valeur etait
+# `origin/restart/place-de-marche`, supprimee le 27/08/2026, donc le script echouait.
+DEPUIS="${3:-origin/main}"
 
 if [ -z "$NOM" ] || [ -z "$BRANCHE" ]; then
     echo "usage: tools/nouvelle-voie.sh <nom-court> <branche> [branche-de-depart]" >&2
