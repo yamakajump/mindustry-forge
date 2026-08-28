@@ -1,11 +1,23 @@
 name: release-please
 
-# Ne tourne que sur la branche par defaut. Tant que le site vit sur
-# restart/place-de-marche, c'est elle qu'il faut viser : release-please
-# refuse de travailler sur une branche qui n'est pas celle configuree ici.
+# WHAT THIS FILE IS FOR, and how it came to do nothing.
+#
+# It only ever ran on `restart/place-de-marche`, the branch the work lived on before the
+# restart was merged back. That branch was deleted on 27/08/2026, and `git ls-remote --heads
+# origin restart/place-de-marche` returns nothing: since the merge, no push has matched this
+# trigger, so release-please has not run once. There is no tag and no release in the
+# repository, and 242 commits have landed on `main` behind that silence.
+#
+# Nothing failed. A workflow that never triggers is green by never being red, which is why
+# this went unnoticed: the version automation was not broken, it was absent, and absence has
+# no red cross next to it.
+#
+# `main` is the only branch now, and it is hardcoded in both places below. `on.push.branches`
+# does not accept expressions, so `github.event.repository.default_branch` cannot be used
+# here; if the default branch is ever renamed, both lines have to move together.
 on:
   push:
-    branches: ["restart/place-de-marche"]
+    branches: ["main"]
 
 permissions:
   contents: write
@@ -19,4 +31,4 @@ jobs:
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-          target-branch: restart/place-de-marche
+          target-branch: main

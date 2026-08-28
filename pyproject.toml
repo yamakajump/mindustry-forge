@@ -9,7 +9,11 @@ description = "The bench: run the real game and measure what a schematic produce
 requires-python = ">=3.11"
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+# `pyyaml` sert a `tests/test_workflows.py`, qui lit les fichiers de
+# `.github/workflows/`. Lire du YAML a la regex marche jusqu au jour ou ca ne marche
+# plus en silence : une cle `on:` nue se parse en booleen `True` en YAML 1.1, et un
+# controle qui rate cette subtilite passe au vert sans rien avoir verifie.
+dev = ["pytest>=8", "pyyaml>=6"]
 
 # Named rather than discovered. The repository root also holds bench/ (Java and Python) and
 # site/ (Laravel), and setuptools refuses to guess which of those is the package.
