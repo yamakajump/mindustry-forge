@@ -10,6 +10,7 @@ use App\Http\Controllers\IconController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SchematicSearchController;
 use App\Http\Controllers\SocialCardController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -60,7 +61,30 @@ Route::get('/auth/discord', [AuthController::class, 'start'])->name('login');
 Route::get('/auth/discord/callback', [AuthController::class, 'callback']);
 Route::post('/deconnexion', [AuthController::class, 'logout']);
 
-Route::get('/schematiques', [BrowseController::class, 'index']);
+/*
+ * The catalogue.
+ *
+ * `/schemas` and not `/schematiques`, because the game's own French bundle says `Schema`
+ * and a player never meets the other word in their game.
+ *
+ * The old address answers a permanent redirect that CARRIES THE QUERY STRING. Laravel's
+ * `Route::redirect` would not: its `RedirectController` rebuilds the target from the route
+ * parameters and drops everything after the `?`. A shared link to
+ * `/schematiques?produit=silicon&tri=best&page=3` would then land on an unfiltered first
+ * page, answering 200 with a plausible result to a question nobody asked, which is the
+ * defect this repository has logged six times. `SchemaRedirectTest` asserts the target and
+ * not merely the status, because a redirect that loses its filters still redirects.
+ */
+Route::get('/schemas', [BrowseController::class, 'index']);
+Route::get('/schematiques', fn (Request $request) => redirect(
+    '/schemas'.($request->getQueryString() ? '?'.$request->getQueryString() : ''), 301
+));
+
+/* The same move for the member's own list, and outside the `auth` group on purpose: a
+   redirect has nothing to authenticate. Inside it, a signed-out visitor following an old
+   link would be sent to Discord and land on the login's own destination, losing the address
+   they asked for. */
+Route::get('/mes-schematiques', fn () => redirect('/mes-schemas', 301));
 Route::get('/s/{schematic}', [SchematicController::class, 'show']);
 
 /*
@@ -120,7 +144,7 @@ Route::get('/api/schematiques/{schematic}/code', [SchematicController::class, 'c
 Route::get('/api/schematiques/{schematic}', [SchematicController::class, 'read']);
 
 Route::middleware('auth')->group(function () {
-    Route::get('/mes-schematiques', [SchematicController::class, 'mine']);
+    Route::get('/mes-schemas', [SchematicController::class, 'mine']);
     Route::post('/api/schematiques', [SchematicController::class, 'store']);
     Route::patch('/api/schematiques/{schematic}', [SchematicController::class, 'update']);
     Route::delete('/api/schematiques/{schematic}', [SchematicController::class, 'destroy']);

@@ -65,7 +65,7 @@ it('ne penalise pas une usine parce qu elle consomme du courant', function () {
     ligne('Presse a graphite', ['graphite' => 30.0]);
     Schematic::factory()->create(['visibility' => 'public', 'name' => 'Plaque vide', 'blocks' => 40]);
 
-    $page = $this->get('/schematiques?produit=silicon&tri=best')->assertOk();
+    $page = $this->get('/schemas?produit=silicon&tri=best')->assertOk();
 
     $page->assertSee('Four a silicium')
         ->assertDontSee('Plaque vide')
@@ -76,7 +76,7 @@ it('classe sur ce qui sort, rapporte a la place occupee', function () {
     ligne('Grosse et molle', ['graphite' => 100.0], blocks: 200);
     ligne('Petite et vive', ['graphite' => 60.0], blocks: 10);
 
-    $page = $this->get('/schematiques?produit=graphite&tri=best')->assertOk()->getContent();
+    $page = $this->get('/schemas?produit=graphite&tri=best')->assertOk()->getContent();
 
     expect(strpos($page, 'Petite et vive'))->toBeLessThan(strpos($page, 'Grosse et molle'));
 });
@@ -86,7 +86,7 @@ it('traite l energie comme une production, donc comme un item cherchable', funct
     ligne('Reacteur compact', [], powerUsed: 40, powerMade: 900, blocks: 30);
     ligne('Four a silicium', ['silicon' => 90.0], powerUsed: 600);
 
-    $this->get('/schematiques?produit='.SchematicItem::POWER.'&tri=best')
+    $this->get('/schemas?produit='.SchematicItem::POWER.'&tri=best')
         ->assertOk()
         ->assertSee('Reacteur compact')
         ->assertDontSee('Four a silicium');
@@ -106,7 +106,7 @@ it('classe une centrale sur ce qu elle laisse, pas sur ce qu elle brule', functi
     expect($gourmande->items()->where('item', SchematicItem::POWER)->value('rate'))->toBe(4700.0)
         ->and($sobre->items()->where('item', SchematicItem::POWER)->value('rate'))->toBe(5000.0);
 
-    $page = $this->get('/schematiques?produit='.SchematicItem::POWER.'&tri=best')
+    $page = $this->get('/schemas?produit='.SchematicItem::POWER.'&tri=best')
         ->assertOk()->getContent();
 
     expect(strpos($page, 'Petite et sobre'))->toBeLessThan(strpos($page, 'Grosse et gourmande'));
@@ -129,10 +129,10 @@ it('ne pretend pas classer un rendement sans savoir de quoi on parle', function 
      */
     ligne('Une schematique', ['graphite' => 40.0]);
 
-    $page = $this->get('/schematiques?tri=best')->assertOk();
+    $page = $this->get('/schemas?tri=best')->assertOk();
 
     expect($page->viewData('order'))->toBe('new');
-    $page->assertSee('Classees par date, faute de mieux');
+    $page->assertSee('Classés par date, faute de mieux');
 });
 
 it('dit sur la page qu il faudra l alimenter', function () {
@@ -145,9 +145,9 @@ it('dit sur la page qu il faudra l alimenter', function () {
         ->assertSee('Il lui faut')
         ->assertSee('electricite')
         ->assertSee('600')
-        ->assertSee('il faudra la brancher sur ton reseau', escape: false)
+        ->assertSee('il faudra le brancher sur ton reseau', escape: false)
         // And it must be clear this is not held against it.
-        ->assertSee('Ce n\'est pas compte contre elle', escape: false);
+        ->assertSee('Ce n\'est pas compte contre lui', escape: false);
 });
 
 it('dit au contraire ce qu une centrale laisse au reste de la base', function () {
@@ -155,7 +155,7 @@ it('dit au contraire ce qu une centrale laisse au reste de la base', function ()
 
     $this->get("/s/{$centrale->slug}")
         ->assertOk()
-        ->assertSee('elle s\'alimente', escape: false)
+        ->assertSee('il s\'alimente', escape: false)
         ->assertSee('860');
 });
 
@@ -190,7 +190,7 @@ it('ne relit pas tout le catalogue a chaque affichage de la liste', function () 
 
     DB::flushQueryLog();
     DB::enableQueryLog();
-    $this->get('/schematiques')->assertOk();
+    $this->get('/schemas')->assertOk();
 
     $lourdes = collect(DB::getQueryLog())->pluck('query')
         ->filter(fn ($sql) => str_contains($sql, 'produces') && ! str_contains($sql, 'limit'));
@@ -203,7 +203,7 @@ it('propose les items reellement produits, l energie comprise', function () {
     ligne('Reacteur', [], powerMade: 900);
     Schematic::factory()->create(['visibility' => 'private', 'produces' => ['thorium' => 5.0]]);
 
-    $page = $this->get('/schematiques')->assertOk();
+    $page = $this->get('/schemas')->assertOk();
 
     expect($page->viewData('items'))->toContain('graphite', SchematicItem::POWER)
         // Nothing private leaks into the dropdown.
@@ -214,7 +214,7 @@ it('ne construit pas une requete avec ce que le visiteur tape', function () {
     ligne('Presse a graphite', ['graphite' => 40.0]);
 
     foreach (["graphite' or '1'='1", str_repeat('x', 300), 'GRAPHITE"', '../etc'] as $bidon) {
-        $this->get('/schematiques?produit='.urlencode($bidon))
+        $this->get('/schemas?produit='.urlencode($bidon))
             ->assertOk()
             // Rejected, so the filter falls away and the listing is simply unfiltered.
             ->assertSee('Presse a graphite');
@@ -236,7 +236,7 @@ it('donne un ordre total, pour que la pagination ne perde rien', function () {
 
     $vus = [];
     foreach (range(1, 3) as $page) {
-        foreach ($this->get("/schematiques?produit=graphite&tri=best&page={$page}")
+        foreach ($this->get("/schemas?produit=graphite&tri=best&page={$page}")
             ->assertOk()->viewData('schematics')->items() as $row) {
             $vus[] = $row->id;
         }
@@ -297,7 +297,7 @@ it('classe sur le plafond, qui est la seule nature que tout le catalogue porte',
     ]);
 
     // Les deux sont la, et celle qui promet le plus passe devant.
-    $this->get('/schematiques?produit=graphite&tri=best')
+    $this->get('/schemas?produit=graphite&tri=best')
         ->assertOk()
         ->assertSee('Au mieux')
         ->assertSee('Constatee');
@@ -309,7 +309,7 @@ it('classe sur le plafond, qui est la seule nature que tout le catalogue porte',
         'kind' => SchematicItem::PLAFOND, 'rate' => 5.0, 'rate_per_block' => 0.5,
     ]);
 
-    expect($this->get('/schematiques')->assertOk()->viewData('items'))
+    expect($this->get('/schemas')->assertOk()->viewData('items'))
         ->toContain('graphite')->toContain('thorium');
 
     // La mesure n est pas perdue pour autant : elle reste ecrite a cote de son plafond.

@@ -6,7 +6,7 @@ return [
     /*
      * Le creatif, mis a part et jamais escamote.
      *
-     * Dix blocs valent `sandboxOnly` dans le catalogue du jeu, et une schematique qui en
+     * Dix blocs valent `sandboxOnly` dans le catalogue du jeu, et un schéma qui en
      * tient un ne se pose pas en partie normale. Ce n'est pas un jugement de gout : c'est
      * le jeu qui le dit, et c'est pourquoi la detection porte sur les blocs et jamais sur
      * le nom. `Def Mega Base (sandbox)` se trahit, `useless box` et `Server lagger` non,
@@ -23,20 +23,20 @@ return [
     'bloc' => [
         'label' => 'Qui contient',
         'exemple' => 'thorium-reactor',
-        'filtrees' => 'Uniquement celles qui contiennent',
+        'filtrees' => 'Uniquement ceux qui contiennent',
         'enlever' => 'Enlever ce filtre',
         'inconnu' => "Ce nom n'est pas un bloc du jeu, donc rien n'est filtre. Choisis dans
             la liste proposee : elle ne contient que des noms qui existent.",
     ],
 
     'creatif' => [
-        'mise-a-part' => 'schematique de bac a sable est mise a part, parce qu elle ne
+        'mise-a-part' => 'schéma de bac a sable est mis à part, parce qu il ne
             se pose pas en partie normale.',
-        'mises-a-part' => 'schematiques de bac a sable sont mises a part, parce qu elles ne
+        'mises-a-part' => 'schémas de bac a sable sont mis à part, parce qu ils ne
             se posent pas en partie normale.',
         'montrer' => 'Les afficher quand meme',
-        'affichees' => 'Les schematiques de bac a sable sont affichees.',
-        'remettre' => 'Revenir a celles qui se posent en partie',
+        'affichees' => 'Les schémas de bac a sable sont affichés.',
+        'remettre' => 'Revenir a ceux qui se posent en partie',
         'etiquette' => 'bac a sable',
     ],
 
@@ -48,6 +48,6 @@ return [
         'precedent' => 'Precedente',
         'suivant' => 'Suivante',
         'sur' => 'sur',
-        'schematiques' => 'schematiques',
+        'schematiques' => 'schémas',
     ],
 ];

@@ -1,7 +1,7 @@
 {
   "name": "Mindustry Forge",
   "short_name": "Forge",
-  "description": "Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.",
+  "description": "Colle un schéma Mindustry, sache ce qu'il produit vraiment et ou il coince.",
   "lang": "fr",
   "dir": "ltr",
   "id": "/",
@@ -34,15 +34,15 @@
   ],
   "shortcuts": [
     {
-      "name": "Analyser une schematique",
+      "name": "Analyser un schéma",
       "short_name": "Analyser",
       "url": "/",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Parcourir les schematiques",
+      "name": "Parcourir les schémas",
       "short_name": "Parcourir",
-      "url": "/schematiques",
+      "url": "/schemas",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]

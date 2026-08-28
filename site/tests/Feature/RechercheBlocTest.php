@@ -29,7 +29,7 @@ it('ne rend que celles qui contiennent le bloc demande', function () {
     batie('Ferme a thorium', ['thorium-reactor' => 4, 'conveyor' => 30]);
     batie('Presse a graphite', ['graphite-press' => 2, 'conveyor' => 12]);
 
-    $page = $this->get('/schematiques?bloc=thorium-reactor')->assertOk();
+    $page = $this->get('/schemas?bloc=thorium-reactor')->assertOk();
 
     $page->assertSee('Ferme a thorium');
     $page->assertDontSee('Presse a graphite');
@@ -38,9 +38,9 @@ it('ne rend que celles qui contiennent le bloc demande', function () {
 it('dit quel bloc filtre, et offre d enlever le filtre', function () {
     batie('Ferme a thorium', ['thorium-reactor' => 4]);
 
-    $page = $this->get('/schematiques?bloc=thorium-reactor')->assertOk();
+    $page = $this->get('/schemas?bloc=thorium-reactor')->assertOk();
 
-    $page->assertSee('Uniquement celles qui contiennent');
+    $page->assertSee('Uniquement ceux qui contiennent');
     $page->assertSee('Enlever ce filtre');
 });
 
@@ -49,7 +49,7 @@ it('dit qu un nom inconnu ne filtre rien plutot que de rendre tout', function ()
        lecteur croit avoir cherche et n'a rien cherche. */
     batie('Ferme a thorium', ['thorium-reactor' => 4]);
 
-    $page = $this->get('/schematiques?bloc=reacteur-au-thorium')->assertOk();
+    $page = $this->get('/schemas?bloc=reacteur-au-thorium')->assertOk();
 
     // Sans l'apostrophe : Blade l'echappe en `&#039;`, et l'assertion la chercherait
     // telle quelle.
@@ -60,7 +60,7 @@ it('dit qu un nom inconnu ne filtre rien plutot que de rendre tout', function ()
 it('propose des noms qui existent vraiment dans le catalogue', function () {
     batie('Ferme a thorium', ['thorium-reactor' => 4, 'conveyor' => 30]);
 
-    $page = $this->get('/schematiques')->assertOk();
+    $page = $this->get('/schemas')->assertOk();
 
     $page->assertSee('<option value="thorium-reactor"></option>', escape: false);
     $page->assertSee('<option value="conveyor"></option>', escape: false);
@@ -72,11 +72,11 @@ it('se combine avec la mise a part du creatif', function () {
     batie('Usine normale', ['conveyor' => 30]);
     batie('Bac a sable', ['conveyor' => 30, 'power-source' => 1]);
 
-    $this->get('/schematiques?bloc=conveyor')->assertOk()
+    $this->get('/schemas?bloc=conveyor')->assertOk()
         ->assertSee('Usine normale')
         ->assertDontSee('Bac a sable');
 
-    $this->get('/schematiques?bloc=conveyor&creatif=oui')->assertOk()
+    $this->get('/schemas?bloc=conveyor&creatif=oui')->assertOk()
         ->assertSee('Usine normale')
         ->assertSee('Bac a sable');
 });
