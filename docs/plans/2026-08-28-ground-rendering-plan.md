@@ -870,12 +870,16 @@ Then, in the ground loop, after the floor and overlay are drawn for this tile:
           if (!edgeArt) continue;
           // Nine cells in a 96 pixel sheet, so a cell is a third of its width.
           const cell = edgeArt.w / 3;
+          /* Which cell goes on which side is `edgeCell`, in tiling.js, because it is a
+             decision and decisions get tested. This plan first wrote it inline here as
+             `col = dx + 1, row = 2 - (dy + 1)`, transcribed from the game's
+             `edges[i][2 - j]` without noticing that a canvas already counts its rows
+             downwards, so the conversion was applied twice and both axes came out
+             mirrored. It shipped, passed nine tests and a review, and drew green lines
+             floating a tile away from the grass. Nothing could catch it while it lived
+             inside a drawImage call. */
           for (const dir of blender.dirs) {
-            const [dx, dy] = D8[dir];
-            // `Floor.edge(x, y, i, j)` is `edges[i][2 - j]`: column from dx, row flipped
-            // because the board's y grows upwards and the sheet's grows downwards.
-            const col = dx + 1;
-            const row = 2 - (dy + 1);
+            const { col, row } = edgeCell(...D8[dir]);
             context.drawImage(sheet,
               edgeArt.x + col * cell, edgeArt.y + row * cell, cell, cell,
               px, py, scale, scale);
@@ -906,7 +910,7 @@ git add site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/re
 Two patches met on a straight line, which the game never draws. This
 follows Floor.drawEdges of v159.7, decompiled from server-release.jar:
 eight neighbours in Geometry.d8 order, a neighbour bleeds when its blend
-id is higher, and the sheet is nine cells read as edges[i][2 - j].
+id is higher, and the sheet is nine cells whose side was measured, not derived.
 
 The clause that is easy to drop is the second half of doEdge, where a
 floor with no sheet of its own is bled onto by everything. Without it a
