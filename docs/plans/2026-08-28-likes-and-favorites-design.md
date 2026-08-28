@@ -91,7 +91,7 @@ Two buttons, worded, not two bare icons. The like carries its count when it is a
 Pressing either is optimistic: the button moves at once and moves back if the request
 fails, which is what `manage.js` already does for visibility.
 
-### The catalogue tiles, `/schematiques`
+### The catalogue tiles, `/schemas`
 
 The count only, and only when it is above zero. No button on the tiles: forty-eight
 controls on a page of twenty-four schematics is noise, and the gesture belongs where the
@@ -127,6 +127,10 @@ POST   /api/schematiques/{schematic}/favori    auth
 DELETE /api/schematiques/{schematic}/favori    auth
 GET    /mes-favoris                            auth
 ```
+
+The player-facing address is renamed to `/schemas` by session `mindustry-forge-7b`, with a
+301 from the old one. The API keeps `schematiques`: a machine address carries no word a
+player reads, and the Laravel model binding hangs off that exact segment.
 
 French, like every other address on the site. `LikeController` and `FavoriteController`,
 English, like every other class.
