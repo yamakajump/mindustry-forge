@@ -168,15 +168,22 @@ def main() -> None:
         if (turning or block + "-rotator" in sprites or block + "-spinner" in sprites)                 and block in sprites:
             wanted.append((f"{block}#base", sprites[block]))
 
-    # The ground. One sprite each, no edge variants for now: a painted patch of copper ore
-    # reads as copper ore without them, and the blending rules are a day's work on their
-    # own.
+    # The ground. Every variant the game ships, not just the first: `grass1`, `grass2` and
+    # `grass3` exist, the game picks one per tile, and packing only `grass1` made a painted
+    # patch line its diagonal pattern up from tile to tile into stripes.
+    #
+    # The bare `floor/<name>` key stays, and stays first: it is what a caller with no
+    # position to hash asks for, and what a floor with a single sprite has.
     for name, entry in catalogue["blocks"].items():
         if not entry.get("floor"):
             continue
         path = sprites.get(name) or sprites.get(f"{name}1")
         if path:
             wanted.append((f"floor/{name}", path))
+        for n in range(1, 10):
+            variant = sprites.get(f"{name}{n}")
+            if variant:
+                wanted.append((f"floor/{name}#{n}", variant))
 
     # The frame of a block that gets configured, without the composite's contents.
     #

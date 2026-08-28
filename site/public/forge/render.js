@@ -14,12 +14,15 @@
 import {
   beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
 } from "./live.js";
+import { variantOf } from "./tiling.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
 let atlas = null;
 let sheet = null;
+/** How many sprites each floor has, filled on first sight and kept for the page's life. */
+const variantCounts = new Map();
 
 export async function loadSprites(base = "./forge/") {
   if (atlas && sheet) return { atlas, sheet };
@@ -429,8 +432,21 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
       const px = (x - box.left) * scale;
       const py = (box.height - (y - box.bottom) - 1) * scale;
       for (const name of [layers.floor, layers.overlay]) {
-        const art = name && atlas?.sprites?.[`floor/${name}`];
-        if (art) context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
+        if (!name) continue;
+        /* How many sprites this floor has, counted once per floor rather than per tile: a
+           64 by 64 board asks this 4096 times a frame. */
+        let count = variantCounts.get(name);
+        if (count === undefined) {
+          count = 0;
+          while (atlas?.sprites?.[`floor/${name}#${count + 1}`]) count++;
+          variantCounts.set(name, count);
+        }
+        const art = count > 1
+          ? atlas.sprites[`floor/${name}#${variantOf(x, y, count) + 1}`]
+          : atlas?.sprites?.[`floor/${name}`];
+        if (art) {
+          context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
+        }
       }
     }
   }
