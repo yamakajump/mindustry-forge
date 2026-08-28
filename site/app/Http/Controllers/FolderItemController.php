@@ -24,6 +24,27 @@ class FolderItemController extends Controller
         return response()->json(['dans' => true], $done['attached'] !== [] ? 201 : 200);
     }
 
+    /**
+     * Why this one is in this folder, in at most 280 characters.
+     *
+     * Shorter than the private note on purpose: this is a caption under a tile, in a grid
+     * of tiles. Let it grow and the grid stops being a grid.
+     */
+    public function update(Request $request, Folder $folder, Schematic $schematic): JsonResponse
+    {
+        $this->owned($request, $folder);
+
+        $note = trim((string) $request->validate([
+            'note' => ['present', 'nullable', 'string', 'max:280'],
+        ])['note']);
+
+        $folder->schematics()->updateExistingPivot($schematic->id, [
+            'note' => $note === '' ? null : $note,
+        ]);
+
+        return response()->json(['note' => $note === '' ? null : $note]);
+    }
+
     public function destroy(Request $request, Folder $folder, Schematic $schematic): JsonResponse
     {
         $this->owned($request, $folder);

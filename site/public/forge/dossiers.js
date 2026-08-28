@@ -84,7 +84,7 @@ document.addEventListener("change", async (event) => {
 });
 
 document.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-renommer], [data-supprimer], [data-retirer]");
+  const button = event.target.closest("[data-renommer], [data-supprimer], [data-retirer], [data-legender]");
   if (!button) return;
 
   await ready;
@@ -103,6 +103,10 @@ document.addEventListener("click", async (event) => {
          qu'on croit recursive est celle qu'on regrette. */
       if (!confirm(t("dossiers.gestion.supprimer-confirme"))) return;
       await send(`/api/dossiers/${slug}`, "DELETE");
+    } else if (button.hasAttribute("data-legender")) {
+      const note = prompt(t("dossiers.gestion.legender"), button.dataset.note || "");
+      if (note === null) return;
+      await send(`/api/dossiers/${button.dataset.dossier}/schemas/${button.dataset.schema}`, "PATCH", { note });
     } else {
       await send(`/api/dossiers/${slug}/schemas/${button.dataset.schema}`, "DELETE");
     }

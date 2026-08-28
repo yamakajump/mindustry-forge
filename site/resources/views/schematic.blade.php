@@ -43,6 +43,7 @@
   @auth
     <script src="/forge/keep.js" type="module" defer></script>
     <script src="/forge/dossiers.js" type="module" defer></script>
+    <script src="/forge/notes.js" type="module" defer></script>
   @endauth
 @endpush
 
@@ -127,6 +128,10 @@
         @endif
       @endauth
     </div>
+
+    @auth
+      @include('partials.note')
+    @endauth
 
     {{-- Where it came from, said plainly on the page rather than kept in the database.
          Most of this catalogue was posted somewhere else by somebody else, and a site that

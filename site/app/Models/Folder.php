@@ -66,7 +66,7 @@ class Folder extends Model
     public function schematics(): BelongsToMany
     {
         return $this->belongsToMany(Schematic::class, 'folder_items')
-            ->withPivot(['created_at']);
+            ->withPivot(['created_at', 'note']);
     }
 
     /**

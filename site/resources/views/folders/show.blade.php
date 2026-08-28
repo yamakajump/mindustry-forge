@@ -69,7 +69,16 @@
               &middot; {{ $schematic->likes }} {{ __('schema.unite.jaime') }}
             @endif
           </p>
+          @if($schematic->pivot->note)
+            {{-- Avec {{ }} et jamais {!! !!} : c'est le seul endroit de ce chantier ou du
+                 contenu ecrit par quelqu'un est montre a quelqu'un d'autre. --}}
+            <p class="legende">{{ $schematic->pivot->note }}</p>
+          @endif
           @if($mine)
+            <button type="button" class="link" data-legender
+                    data-dossier="{{ $folder->slug }}"
+                    data-schema="{{ $schematic->slug }}"
+                    data-note="{{ $schematic->pivot->note }}">{{ __('dossiers.gestion.legender') }}</button>
             <button type="button" class="link" data-retirer
                     data-dossier="{{ $folder->slug }}"
                     data-schema="{{ $schematic->slug }}">{{ __('dossiers.gestion.retirer-dici') }}</button>

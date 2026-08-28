@@ -33,6 +33,7 @@ return [
         // `supprimer-confirme` n'est pas ici : seul dossiers.js la prononce, et une cle que
         // le PHP ne demande jamais est une orpheline. Elle vit dans forge/lang/fr.json.
         'ajouter-ici' => 'Mettre dans ce dossier',
+        'legender' => 'Dire pourquoi il est la',
         'retirer-dici' => 'Retirer de ce dossier',
     ],
 
