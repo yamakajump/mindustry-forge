@@ -42,22 +42,6 @@ const ALLOWED = new Map([
    "quotes the repository owner verbatim; translating somebody's own words misreports them"],
 ]);
 
-/**
- * Files whose French comments are already translated in an open pull request.
- *
- * Separate from `ALLOWED` because these are debt and not exceptions: they are the sources
- * `EngineVersion` hashes, so translating a comment in them marks every stored analysis
- * stale, and that is a decision with a cost rather than a detail to slip into a sweep.
- * Delete this map when that pull request lands. Until then the check still guards every
- * other file, which is the whole point of adding it before the last one is clean.
- */
-const PENDING = new Map([
-  ["site/public/forge/analyse.js", "translated in the hashed-engine pull request"],
-  ["site/public/forge/schematic.js", "translated in the hashed-engine pull request"],
-  ["site/public/forge/engine/machines.js", "translated in the hashed-engine pull request"],
-  ["tools/ingest.mjs", "translated in the hashed-engine pull request"],
-]);
-
 /** How French a piece of text reads, as the count of its French function words. */
 export function frenchScore(text) {
   return (text.match(FRENCH) || []).length;
@@ -77,7 +61,7 @@ export function readsFrench(text) {
 /** Every French comment in one file, as `{ path, line, text, score }`. */
 export function frenchComments(path, source) {
   const grammar = grammarOf(path);
-  if (!grammar || ALLOWED.has(path) || PENDING.has(path)) return [];
+  if (!grammar || ALLOWED.has(path)) return [];
   return commentsOf(source, grammar)
     .filter((comment) => readsFrench(comment.text))
     .map((comment) => ({ path, line: comment.line, text: comment.text, score: frenchScore(comment.text) }));
