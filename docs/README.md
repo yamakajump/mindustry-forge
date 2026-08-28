@@ -10,6 +10,8 @@ all of them.
 | [`two-models.md`](two-models.md) | How far the JavaScript solve drifts from a real headless game, measured |
 | [`known-gaps.md`](known-gaps.md) | What the engine does not model, to read before trusting a figure |
 | [`pitfalls.md`](pitfalls.md) | Traps a contributor will hit, and the technical reason each one bites |
+| [`bench-scenarios.md`](bench-scenarios.md) | How to add a scenario to the bench, and what to do without a game jar |
+| [`releasing.md`](releasing.md) | From a merged commit to a deployed tag: what each step writes, and what it does not |
 | [`da-balises-head.md`](da-balises-head.md) | What is in the `<head>` of the two pages, and what the server still owes it |
 | [`direction-artistique.md`](direction-artistique.md) | The brand: which file answers which system, and what not to do with it |
 | [`ground-rendering.md`](ground-rendering.md) | How the site draws the boundary between two patches of ground |

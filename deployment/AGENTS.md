@@ -4,6 +4,9 @@
 ssh <server> "bash /var/www/mindustry-forge/deployment/deploy.sh"
 ```
 
+Publishing a version and deploying it are two separate acts, and `../docs/releasing.md` is
+the runbook for both.
+
 ## The repository is the truth
 
 This directory holds the nginx vhost, the PHP-FPM pool and the systemd units, and
