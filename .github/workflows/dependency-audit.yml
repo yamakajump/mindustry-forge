@@ -35,5 +35,18 @@ jobs:
 
       # --no-dev: a hole in Pint or Pest never runs in production. Reporting
       # them here would drown the ones that actually matter.
+      #
+      # Tried three times, because this job is a required check and the advisory
+      # database is fetched over the network: a ten-second timeout at packagist
+      # blocked a merge here on 28 August 2026, and the same run passed on a
+      # retry a minute later. The retry answers a connection that did not open;
+      # a real advisory fails all three attempts and still stops the merge.
       - name: Known vulnerabilities
-        run: composer audit --no-dev
+        run: |
+          for attempt in 1 2 3; do
+            if composer audit --no-dev; then exit 0; fi
+            code=$?
+            if [ "$attempt" = 3 ]; then exit "$code"; fi
+            echo "attempt $attempt failed with $code, retrying in 15 s" >&2
+            sleep 15
+          done
