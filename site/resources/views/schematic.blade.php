@@ -77,7 +77,7 @@
          discovered in-game. --}}
     @if($schematic->imported())
       <div class="card notice">
-        <h2>Schematique importee</h2>
+        <h2>Schéma importé</h2>
         <p>
           Recuperee sur
           @if($schematic->sourceUrl())
@@ -168,7 +168,7 @@
          ne parlait d'energie que lorsqu'il y en avait en trop, donc une chaine a silicium
          qui reclame six cents energie/s n'en disait pas un mot. Un joueur qui la colle
          dans un coin non alimente la regardait ne rien faire sans savoir pourquoi.
-         Ce n'est pas un defaut de la schematique : une base a du courant, ou on tire un
+         Ce n'est pas un defaut du schéma : une base a du courant, ou on tire un
          fil. C'est un prerequis, et il se dit. --}}
     @if($schematic->needs || $schematic->powerNeeded() > 0.5)
       <div class="card"><h2>Il lui faut</h2>
@@ -202,11 +202,11 @@
 
     @if($schematic->managedBy(auth()->user()))
       <div class="card"><h2>Gerer</h2>
-        @include('partials.manage', ['gone' => '/mes-schematiques'])
+        @include('partials.manage', ['gone' => '/mes-schemas'])
         <p class="hint-line">
           @if($schematic->user_id !== auth()->id())
             Tu vois ces boutons parce que tu tiens la vitrine, pas parce que la
-            schematique est a toi.
+            schéma est a toi.
           @else
             Privee, personne d'autre ne la voit. Par lien, elle marche pour qui l'a et
             reste hors de la vitrine. Publique, elle est dans la vitrine et classee avec
@@ -216,7 +216,7 @@
       </div>
     @endif
 
-    <div class="card"><h2>Prendre la schematique</h2>
+    <div class="card"><h2>Prendre le schéma</h2>
       <textarea id="code" readonly rows="3">{{ $schematic->code }}</textarea>
       <div class="row">
         <button class="primary" id="copy" type="button">Copier</button>
@@ -224,7 +224,7 @@
           $schematic->managedBy(auth()->user()) ? 'Modifier' : 'Analyser chez moi' }}</a>
 
         {{-- Le geste part d'ici, pas d'une page vide. Personne n'arrive au comparateur avec
-             deux identifiants en tete : on est sur une schematique et on se demande comment
+             deux identifiants en tete : on est sur un schéma et on se demande comment
              elle se situe. Un cote est donc deja rempli et il n'en reste qu'un a choisir. --}}
         @if($schematic->visibility === \App\Models\Schematic::PUBLIC)
           <a class="button" href="/comparer?a={{ $schematic->slug }}">{{
@@ -233,7 +233,7 @@
 
         {{-- Vers l'editeur de logique, et seulement quand il y a quelque chose a y ouvrir.
              Le compte vient de l'analyse deja stockee, donc la page ne decode rien pour le
-             savoir : sur les quatre-vingt-seize schematiques mesurees dans la vitrine, six
+             savoir : sur les quatre-vingt-seize schémas mesurés dans la vitrine, six
              sur dix n'ont aucun processeur, et un bouton mort sur six pages sur dix apprend
              au lecteur a ne plus lire cette rangee. --}}
         @if (data_get($schematic->analysis, 'logic.processors', 0) > 0)

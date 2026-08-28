@@ -1,18 +1,18 @@
 @extends('layout')
-@section('title', 'Schematiques - Mindustry Forge')
+@section('title', 'Schémas - Mindustry Forge')
 
 @push('head')
   <script src="/forge/apercu.js" type="module" defer></script>
 @endpush
 
 @section('body')
-<h1 class="title">Schematiques</h1>
+<h1 class="title">Schémas</h1>
 {{-- Le sous-titre a promis pendant des heures ce que la page ne tient pas. « Chaque
      chiffre vient de l'analyse » restait vrai et laissait croire a un releve, au-dessus de
      vingt-quatre tuiles qui portent toutes « au mieux ». Un plafond ne s'affiche jamais
      sans dire qu'il en est un, et cette regle vaut pour la phrase qui coiffe la liste
      autant que pour la ligne d'une tuile. --}}
-<p class="sub">Chaque chiffre vient de l'analyse de la schematique elle-meme, pas d'une
+<p class="sub">Chaque chiffre vient de l'analyse du schéma lui-meme, pas d'une
   etiquette tapee a la main. Ce sont des plafonds : ce que le plan sortirait alimente a
   fond, et non ce qu'il a ete mesure faisant.</p>
 
@@ -59,7 +59,7 @@
     <select name="produit" id="produit">
       <option value="">n'importe quoi</option>
       @foreach($items as $item)
-        {{-- L'energie est une production comme une autre : chercher une schematique qui
+        {{-- L'energie est une production comme une autre : chercher un schéma qui
              produit de l'energie, c'est chercher une centrale.
 
              Le nom vient du jeu et non de l'identifiant : ce deroulant affichait
@@ -110,7 +110,7 @@
        seul geste qui rend le classement possible. --}}
   @if($makes === '')
     <p class="hint-line">Classees par date, faute de mieux. Choisis ce que tu cherches
-      ci-dessus et le classement devient un vrai rendement&nbsp;: combien la schematique
+      ci-dessus et le classement devient un vrai rendement&nbsp;: combien le schéma
       en sort, pour la place qu'elle prend.</p>
   @else
     {{-- La nature du chiffre est dite avec le chiffre, jamais apres. C'est la condition a
@@ -119,14 +119,14 @@
     <p class="hint-line">Classees sur ce qu'elles pourraient sortir en
       <strong>{{ $makes === $powerKey ? 'energie' : \App\Support\Thing::name($makes) }}</strong>,
       alimentees a fond, rapporte a leur taille. Un plafond et non un releve&nbsp;: une
-      schematique arrachee d'une base n'a pas la foreuse qui l'alimentait, donc ce qu'elle
+      schéma arraché d'une base n'a pas la foreuse qui l'alimentait, donc ce qu'il
       fait vraiment depend de la votre. L'electricite qu'elle consomme ne la penalise
       pas&nbsp;: c'est un prerequis, indique sur sa page.</p>
   @endif
 
   {{-- Ce qui est mis a part, dit avec son compte et un lien pour le voir.
 
-       Un catalogue qui annonce quinze mille schematiques et en sert quatorze mille sans un
+       Un catalogue qui annonce quinze mille schémas et en sert quatorze mille sans un
        mot mentirait sur sa propre taille, ce qui est exactement la faute que ce depot a
        passe la journee a fermer. Le compte est donc affiche, et le lien defait le filtre :
        un lecteur peut etre en desaccord avec la regle et la contourner en un clic. --}}
@@ -147,8 +147,8 @@
 
 @if($schematics->isEmpty())
   <div class="card">
-    <p class="empty">Rien de publie qui corresponde. Analyse une schematique et publie-la.</p>
-    <p class="row"><a class="button primary" href="/">Analyser une schematique</a></p>
+    <p class="empty">Rien de publie qui corresponde. Analyse un schéma et publie-le.</p>
+    <p class="row"><a class="button primary" href="/">Analyser un schéma</a></p>
   </div>
 @else
   <div class="grid">
