@@ -76,6 +76,4 @@ picked up when tiers one and two hold.
 - **Two dead bench files**, `bench/test_bench.py` and `bench/test_schematic_in_the_game.py`.
   Before writing a line, answer the real question: does a Python re-measurement path give
   anything `npm run oracle` does not? It is not obvious that it does.
-- **Share cards for the 254 block pages**, none of which push one today.
-
 Known engine gaps have their own page: [`known-gaps.md`](known-gaps.md).
