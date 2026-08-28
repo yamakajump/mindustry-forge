@@ -1,0 +1,7 @@
+# Everything here is meant to be found: the catalogue is the site.
+User-agent: *
+Allow: /
+
+# The pages a crawler would otherwise reach only by walking every page of /schemas and
+# following each tile, which is around five thousand pages down the slowest path it has.
+Sitemap: https://mindustryforge.com/sitemap.xml

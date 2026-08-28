@@ -19,6 +19,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SchematicSearchController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SocialCardController;
 use App\Http\Controllers\SpaceController;
 use Illuminate\Http\Request;
@@ -126,6 +127,11 @@ Route::get('/s/{schematic}/carte.jpg', [SocialCardController::class, 'show']);
  * the prefix goes on the whole site at once, with redirects, as a job of its own. Decided
  * with the pilot on 27/08 rather than left to whichever route was written first.
  */
+/* Where the roughly five thousand pages of this site are listed for a crawler. Nothing
+   else points at a schematic page except the paginated listing, which is the slowest path
+   a crawler has and the first one it abandons. */
+Route::get('/sitemap.xml', [SitemapController::class, 'show']);
+
 Route::get('/blocs', [BlockController::class, 'index']);
 Route::get('/blocs/{name}', [BlockController::class, 'show']);
 
