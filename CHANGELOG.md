@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/yamakajump/mindustry-forge/compare/v0.2.0...v0.3.0) (2026-08-28)
+
+
+### Features
+
+* **editeur:** the editor rebuild, in one branch ([#111](https://github.com/yamakajump/mindustry-forge/issues/111)) ([0a2cf9e](https://github.com/yamakajump/mindustry-forge/commit/0a2cf9e6e8834f4bdd7c1503df24a94290610313))
+* **moderation:** community moderation, contributed markings and member pages ([#106](https://github.com/yamakajump/mindustry-forge/issues/106)) ([b44c01a](https://github.com/yamakajump/mindustry-forge/commit/b44c01aa63f769f878ef1b2b7ee11120100dafc1))
+
 ## [0.2.0](https://github.com/yamakajump/mindustry-forge/compare/v0.1.0...v0.2.0) (2026-08-28)
 
 
