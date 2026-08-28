@@ -118,7 +118,7 @@
          les melanger a des mesures. --}}
     <p class="hint-line">Classés sur ce qu'ils pourraient sortir en
       <strong>{{ $makes === $powerKey ? 'energie' : \App\Support\Thing::name($makes) }}</strong>,
-      alimentés a fond, rapporte a leur taille. Un plafond et non un releve&nbsp;: un
+      alimentés à fond, rapporté à leur taille. Un plafond et non un relevé&nbsp;: un
       schéma arraché d'une base n'a pas la foreuse qui l'alimentait, donc ce qu'il
       fait vraiment depend de la votre. L'electricite qu'il consomme ne le penalise
       pas&nbsp;: c'est un prerequis, indique sur sa page.</p>
