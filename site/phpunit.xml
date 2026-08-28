@@ -21,8 +21,15 @@
         <!-- The work space size tests deliberately push payloads near Space::MAX_BOARD_BYTES
              (16 MiB since frames grew a board's realistic ceiling from 64x64 to 256x256);
              PHP's usual 128M CLI default is not enough headroom for that string plus the
-             copies validation and json_encode make of it in the same process. -->
-        <ini name="memory_limit" value="256M"/>
+             copies validation and json_encode make of it in the same process.
+
+             It was 256M, and the suite outgrew it without anybody noticing, because CI's
+             Linux PHP stays under that ceiling where a Windows build does not: `php artisan
+             test` died on `SpaceController::assertBoardFits` while every pull request
+             stayed green. Measured at 530 tests, 384M is enough and 256M is not; 512M is
+             chosen so that the next few dozen tests do not silently reach it again. The
+             suite runs in one process, so this grows with the suite. -->
+        <ini name="memory_limit" value="512M"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
