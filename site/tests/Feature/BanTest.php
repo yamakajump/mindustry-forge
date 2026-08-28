@@ -105,3 +105,39 @@ it('leaves an unbanned session alone', function () {
 
     $this->actingAs($user)->get('/mes-schemas')->assertOk();
 });
+
+it('bans by name, because that is what a moderator has in front of them', function () {
+    User::factory()->create(['discord_id' => '4242', 'name' => 'Vandale']);
+
+    $this->artisan('forge:bannir', ['who' => 'Vandale', '--raison' => 'murs obscenes'])
+        ->assertSuccessful();
+
+    expect(Ban::refuses('4242'))->toBeTrue();
+});
+
+it('bans by discord id, for an account that no longer exists', function () {
+    $this->artisan('forge:bannir', ['who' => '4242'])->assertSuccessful();
+
+    expect(Ban::refuses('4242'))->toBeTrue();
+});
+
+it('keeps the account and its schematics, because a ban is not a deletion', function () {
+    $user = User::factory()->create(['discord_id' => '4242', 'name' => 'Vandale']);
+
+    $this->artisan('forge:bannir', ['who' => 'Vandale'])->assertSuccessful();
+
+    expect(User::find($user->id))->not->toBeNull();
+});
+
+it('refuses a name it cannot find rather than banning a typo', function () {
+    $this->artisan('forge:bannir', ['who' => 'Personne'])->assertFailed();
+
+    expect(Ban::count())->toBe(0);
+});
+
+it('lifts a temporary ban on its own', function () {
+    $this->artisan('forge:bannir', ['who' => '4242', '--jusqu-au' => '2026-08-27'])
+        ->assertSuccessful();
+
+    expect(Ban::refuses('4242'))->toBeFalse();
+});
