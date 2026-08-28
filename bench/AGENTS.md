@@ -12,6 +12,8 @@ of opinion. **Never adjust a constant to make a test pass** without checking wha
 says. If a figure cannot be explained by reading the game's own source or bytecode, say so
 in the pull request rather than shipping it.
 
+Adding a scenario of your own is `../docs/bench-scenarios.md`.
+
 ## The oracle
 
 ```bash
