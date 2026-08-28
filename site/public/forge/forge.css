@@ -207,32 +207,11 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 }
 .accroche .lede { margin: 0; max-width: 62ch; color: var(--dim); font-size: 16px; }
 
-.accueil {
-  margin-top: 28px; padding-top: 24px; border-top: 2px solid var(--edge);
-  display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 28px;
-  align-items: start;
-}
-
-/* La capture est une preuve, pas une decoration : c'est un vrai rapport avec de vrais
-   chiffres. D'ou le cadre du site autour d'elle plutot qu'une ombre portee. */
-.apercu { margin: 0; }
-.apercu img {
-  display: block; width: 100%; height: auto;
-  border: 2px solid var(--edge); border-radius: var(--radius); background: var(--stage);
-}
-
-.accueil-mots h2 { margin: 0 0 10px; font-size: 19px; }
-.accueil-mots p { margin: 0 0 12px; color: var(--dim); }
-
 .porte { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .porte .dim { color: var(--dim); }
 .porte .button { text-decoration: none; }
 
 @media (max-width: 860px) {
-  /* Une colonne, et la capture passe en second : sur un telephone, la phrase qui dit
-     quoi faire vaut mieux en premier qu'une image qu'il faut agrandir pour lire. */
-  .accueil { grid-template-columns: minmax(0, 1fr); gap: 20px; }
-  .apercu { order: 2; }
   .accroche h1 { font-size: 24px; }
   .accroche .lede { font-size: 15px; }
 }
@@ -940,25 +919,34 @@ select {
 .outils-liste {
   list-style: none; margin: 0; padding: 0;
   display: grid; gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
+/* Le sprite au-dessus du texte, pas a cote.
+
+   A cote, en 32 px dans une colonne de 32, il laissait 130 px a la phrase : chaque carte
+   devenait six lignes de deux mots, et le sprite lui-meme etait trop petit pour qu'on
+   reconnaisse le bloc. Or c'est lui qui dit de quoi l'outil parle, avant le nom.
+
+   Empile, il double de taille et la phrase recupere toute la largeur de la carte. */
 .outils-liste a {
-  display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 4px 12px;
-  align-items: center;
-  height: 100%; padding: 12px; border-radius: var(--radius);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  height: 100%; padding: 14px; border-radius: var(--radius);
   background: var(--panel); border: 1px solid var(--edge); color: var(--ink);
 }
 .outils-liste a:hover {
   background: var(--raised-hover); border-color: var(--accent); text-decoration: none;
 }
-.outils-liste img { grid-row: span 2; image-rendering: pixelated; }
+/* `pixelated` parce que ce sont des sprites de jeu : lisses, ils bavent au lieu de grandir.
+   Le fond leur donne la meme assise que sur le plateau d'un plan. */
+.outils-liste img {
+  image-rendering: pixelated;
+  background: var(--stage); border-radius: 6px; padding: 4px;
+}
 .outils-liste strong { font-weight: normal; font-size: 16px; }
 .outils-liste span { color: var(--dim); font-size: 13px; line-height: 1.45; }
 
 /* Sous 520 px le sprite passe au-dessus du texte plutot que de lui voler 44 px de largeur
    sur les 390 que le telephone donne. */
 @media (max-width: 520px) {
-  .outils-liste a { grid-template-columns: minmax(0, 1fr); }
-  .outils-liste img { grid-row: auto; }
   .plan-cadre { height: 170px; }
 }

@@ -25,9 +25,21 @@ uses(RefreshDatabase::class);
  * decrivait un catalogue qui n'existe pas, et il a rendu vert un code qui, en production,
  * ne pouvait montrer que de l'energie et des gaz sur quinze mille schematiques.
  */
-function produisant(string $nom, float $debit, string $item = 'silicon', ?float $mesure = null): Schematic
+function produisant(string $nom, float $debit, string $item = 'silicon', ?float $mesure = null, ?int $blocs = null): Schematic
 {
-    $s = Schematic::factory()->create(['visibility' => 'public', 'name' => $nom]);
+    /*
+     * `blocs` est fixe des qu'un test compare deux schematiques entre elles.
+     *
+     * La vitrine classe sur `rate_per_block`, pas sur `rate`, et la factory tire un nombre
+     * de blocs au hasard. Un test qui donne 900 a l'une et 100 a l'autre affirme donc un
+     * classement au debit sous un code qui classe au rendement : 100 sur 5 blocs bat 900 sur
+     * 60. Il passe la plupart du temps et tombe sans prevenir, ce qui est arrive.
+     */
+    $s = Schematic::factory()->create(array_filter([
+        'visibility' => 'public',
+        'name' => $nom,
+        'blocks' => $blocs,
+    ], fn ($v) => $v !== null));
     $s->items()->delete();
     $s->items()->create([
         'item' => $item,
@@ -227,8 +239,10 @@ it('dit que ce qu il montre est un plafond, chaque fois', function () {
  * appear.
  */
 it('montre un schema par produit, pas six fois le meilleur', function () {
-    produisant('Silicium fort', 900, 'silicon');
-    produisant('Silicium faible', 100, 'silicon');
+    /* Meme taille pour les deux silicium, sinon c'est le rendement qui tranche et le test
+       dirait autre chose que ce qu'il annonce. */
+    produisant('Silicium fort', 900, 'silicon', null, 40);
+    produisant('Silicium faible', 100, 'silicon', null, 40);
     produisant('Graphite', 400, 'graphite');
     produisant('Plastanium', 200, 'plastanium');
 

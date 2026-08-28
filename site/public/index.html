@@ -171,35 +171,35 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
     <h2 data-i18n="vitrine.accueil.outils-titre">Cinq outils autour de l'analyse</h2>
     <ul class="outils-liste">
       <li><a href="/editer">
-        <img src="/icone/bloc/router.png?t=64" width="32" height="32" alt=""
+        <img src="/icone/bloc/router.png?t=64" width="48" height="48" alt=""
              loading="lazy" decoding="async" onerror="this.remove()">
         <strong data-i18n="nav.barre.editer">Editer</strong>
         <span data-i18n="vitrine.accueil.outil-editer">Construis ou retouche un plan dans le
           navigateur, avec les regles de pose du jeu.</span>
       </a></li>
       <li><a href="/comparer">
-        <img src="/icone/bloc/container.png?t=64" width="32" height="32" alt=""
+        <img src="/icone/bloc/container.png?t=64" width="48" height="48" alt=""
              loading="lazy" decoding="async" onerror="this.remove()">
         <strong data-i18n="nav.menu.comparer">Comparer</strong>
         <span data-i18n="vitrine.accueil.outil-comparer">Deux plans cote a cote, chiffre
           contre chiffre, sur ce qu'ils produisent vraiment.</span>
       </a></li>
       <li><a href="/outils/logique">
-        <img src="/icone/bloc/micro-processor.png?t=64" width="32" height="32" alt=""
+        <img src="/icone/bloc/micro-processor.png?t=64" width="48" height="48" alt=""
              loading="lazy" decoding="async" onerror="this.remove()">
         <strong data-i18n="nav.menu.logique">Logique</strong>
         <span data-i18n="vitrine.accueil.outil-logique">Ecris et verifie du mlog sans lancer
           le jeu, et repars avec le processeur pose.</span>
       </a></li>
       <li><a href="/outils/planificateur">
-        <img src="/icone/bloc/silicon-smelter.png?t=64" width="32" height="32" alt=""
+        <img src="/icone/bloc/silicon-smelter.png?t=64" width="48" height="48" alt=""
              loading="lazy" decoding="async" onerror="this.remove()">
         <strong data-i18n="nav.menu.planificateur">Planificateur</strong>
         <span data-i18n="vitrine.accueil.outil-planificateur">L'analyse a l'envers : combien
           de blocs pour sortir tant par minute.</span>
       </a></li>
       <li><a href="/blocs">
-        <img src="/icone/bloc/core-shard.png?t=64" width="32" height="32" alt=""
+        <img src="/icone/bloc/core-shard.png?t=64" width="48" height="48" alt=""
              loading="lazy" decoding="async" onerror="this.remove()">
         <strong data-i18n="nav.barre.blocs">Blocs</strong>
         <span data-i18n="vitrine.accueil.outil-blocs">Les blocs du jeu avec les chiffres que
@@ -208,37 +208,6 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
     </ul>
   </section>
 
-  <!-- La preuve, en dernier. Elle repond a « pourquoi je te croirais », ce qui n'est pas la
-       premiere chose a dire a quelqu'un qui vient d'arriver. -->
-  <section class="accueil" id="accueil">
-    <!-- Une capture reelle du site en train d'analyser, pas une illustration : les chiffres
-         dessus sont ceux que l'analyse calcule.
-
-         Elle n'est produite par rien. Ce commentaire disait « Produite par
-         tools/build_brand.py » ; ce script ecrit les logos, les icones et trois JPEG, et
-         jamais ce fichier. `docs/direction-artistique.md` le dit correctement, en la
-         nommant comme une exception au rebuild ; c'est ici que l'intention s'etait
-         transformee en mesure.
-
-         Consequence a savoir avant de s'y fier : l'image montre encore « Editer cette
-         schematique », l'ancien mot, parce que personne ne peut la regenerer depuis le
-         depot. Elle a besoin d'une capture refaite a la main. -->
-    <figure class="apercu">
-      <img src="./brand/apercu-produit.png" width="1072" height="710" loading="lazy"
-           data-i18n-alt="vitrine.accueil.apercu-alt"
-           alt="Un rapport d'analyse : les debits, le goulot, ce qui est gaspille">
-    </figure>
-
-    <div class="accueil-mots">
-      <h2 data-i18n="vitrine.accueil.preuve-titre">Pourquoi ces chiffres plutot que d'autres</h2>
-      <p data-i18n="vitrine.accueil.preuve">Un banc fait tourner le vrai jeu sur un monde
-        fige, y pose le schéma, et compte ce qui sort. L'analyse est confrontee a cette
-        mesure a chaque changement du code.</p>
-      <p class="hint-line" data-i18n="vitrine.accueil.sans-compte">Tout se passe dans ton
-        navigateur. Rien n'est envoye, rien n'est garde, et il n'y a pas de compte a creer
-        pour analyser.</p>
-    </div>
-  </section>
 </main>
 
 <!-- L'editeur vit hors de <main>, qui est borne a 1120 pixels de large : le plateau prend
@@ -903,7 +872,7 @@ async function peuplerVitrine() {
  * pousse le resultat vers le bas au moment ou c'est lui qu'on est venu lire.
  */
 function montrerAccueil(oui) {
-  for (const id of ["accueil", "accroche", "vitrine-accueil", "outils"]) {
+  for (const id of ["accroche", "vitrine-accueil", "outils"]) {
     const bloc = $(id);
     if (bloc) bloc.hidden = !oui;
   }
