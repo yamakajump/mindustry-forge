@@ -1,10 +1,10 @@
 /**
- * Le plateau : ce qui est pose, ce qui est peint, et ce qu on peut defaire.
+ * The board: what is placed, what is painted, and what can be undone.
  *
- * La limite de 64 vient de `Vars.maxSchematicSize` de la v159.7. Elle porte sur la boite
- * englobante, murs des gros blocs compris, et pas sur le nombre de blocs : une ligne de
- * mille convoyeurs enroulee sur elle-meme est acceptee, deux blocs distants de soixante
- * cinq ne le sont pas.
+ * The limit of 64 comes from `Vars.maxSchematicSize` in v159.7. It bears on the bounding
+ * box, edges of large blocks included, and not on the number of blocks: a thousand-tile
+ * conveyor line coiled up on itself is accepted, two blocks sixty-five tiles apart are
+ * not.
  */
 
 import test from "node:test";
@@ -18,45 +18,45 @@ const known = loadCatalogue();
 const sizeOf = (name) => known.blocks[name]?.size || 1;
 const board = (tiles = [], ground = {}) => createBoard({ tiles, ground, sizeOf });
 
-test("la limite est celle du jeu", () => {
+test("the limit is the game's own", () => {
   assert.equal(MAX_SIZE, 64);
 });
 
-test("la boite se mesure sur ce que les blocs couvrent", () => {
-  // Une foreuse mecanique fait deux de cote et se range par son centre, donc posee en
-  // (5, 5) elle couvre jusqu a (6, 6).
+test("the box is measured off what the blocks cover", () => {
+  // A mechanical drill is two tiles to a side and is placed by its center, so placed at
+  // (5, 5) it covers up to (6, 6).
   const plateau = board([{ x: 5, y: 5, block: "mechanical-drill", rotation: 0 }]);
   assert.deepEqual(plateau.box(), { left: 5, bottom: 5, width: 2, height: 2 });
 });
 
-test("un plateau vide a une boite vide plutot que des infinis", () => {
+test("an empty board has an empty box rather than infinities", () => {
   assert.deepEqual(board().box(), { left: 0, bottom: 0, width: 0, height: 0 });
 });
 
-test("un bloc qui ferait deborder de 64 ne rentre pas", () => {
+test("a block that would spill past 64 does not fit", () => {
   const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }]);
   assert.equal(plateau.fits({ x: 63, y: 0, block: "conveyor", rotation: 0 }), true);
   assert.equal(plateau.fits({ x: 64, y: 0, block: "conveyor", rotation: 0 }), false);
 });
 
-test("un gros bloc compte par ce qu il couvre, pas par son centre", () => {
+test("a large block counts by what it covers, not by its center", () => {
   const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }]);
-  // La foreuse posee en (62, 0) couvre (62, 0) a (63, 1) : la boite fait 64 de large.
+  // The drill placed at (62, 0) covers (62, 0) to (63, 1): the box is 64 wide.
   assert.equal(plateau.fits({ x: 62, y: 0, block: "mechanical-drill", rotation: 0 }), true);
   assert.equal(plateau.fits({ x: 63, y: 0, block: "mechanical-drill", rotation: 0 }), false);
 });
 
-test("un plateau vide accepte n importe quel premier bloc", () => {
+test("an empty board accepts any first block", () => {
   assert.equal(board().fits({ x: 900, y: -400, block: "conveyor", rotation: 0 }), true);
 });
 
-test("ce qui couvre une case se retrouve par cette case", () => {
+test("whatever covers a tile is found back through that tile", () => {
   const plateau = board([{ x: 5, y: 5, block: "mechanical-drill", rotation: 0 }]);
   assert.equal(plateau.at(6, 6)?.block, "mechanical-drill");
   assert.equal(plateau.at(7, 7), null);
 });
 
-test("un geste s annule d un coup, meme s il a pose trente blocs", () => {
+test("a move undoes in one step, even if it placed thirty blocks", () => {
   const plateau = board();
   const ligne = Array.from({ length: 30 },
     (_, i) => ({ x: i, y: 0, block: "conveyor", rotation: 0 }));
@@ -68,13 +68,13 @@ test("un geste s annule d un coup, meme s il a pose trente blocs", () => {
   assert.equal(plateau.tiles.length, 30);
 });
 
-test("annuler sans rien a annuler ne casse rien", () => {
+test("undoing with nothing to undo breaks nothing", () => {
   const plateau = board();
   assert.equal(plateau.undo(), false);
   assert.equal(plateau.redo(), false);
 });
 
-test("un nouveau geste jette ce qui avait ete defait", () => {
+test("a new move drops what had been undone", () => {
   const plateau = board();
   plateau.apply({ place: [{ x: 0, y: 0, block: "conveyor", rotation: 0 }] });
   plateau.undo();
@@ -84,7 +84,7 @@ test("un nouveau geste jette ce qui avait ete defait", () => {
   assert.equal(plateau.tiles[0].block, "router");
 });
 
-test("le sol s annule comme le reste", () => {
+test("ground undoes like everything else", () => {
   const plateau = board();
   plateau.apply({ paint: { "3,4": { floor: "sand" } } });
   assert.equal(plateau.ground["3,4"].floor, "sand");
@@ -92,7 +92,7 @@ test("le sol s annule comme le reste", () => {
   assert.equal(plateau.ground["3,4"], undefined);
 });
 
-test("repeindre par dessus se defait vers l ancien sol, pas vers rien", () => {
+test("repainting over ground undoes to the old ground, not to nothing", () => {
   const plateau = board([], { "3,4": { floor: "stone" } });
   plateau.apply({ paint: { "3,4": { floor: "sand" } } });
   assert.equal(plateau.ground["3,4"].floor, "sand");
@@ -100,13 +100,13 @@ test("repeindre par dessus se defait vers l ancien sol, pas vers rien", () => {
   assert.equal(plateau.ground["3,4"].floor, "stone");
 });
 
-test("un minerai se pose par dessus le sol au lieu de le remplacer", () => {
+test("ore is placed on top of the ground instead of replacing it", () => {
   const plateau = board([], { "0,0": { floor: "stone" } });
   plateau.apply({ paint: { "0,0": { overlay: "ore-copper" } } });
   assert.deepEqual(plateau.ground["0,0"], { floor: "stone", overlay: "ore-copper" });
 });
 
-test("effacer une case la retire au lieu de la vider", () => {
+test("erasing a tile removes it instead of emptying it", () => {
   const plateau = board([], { "0,0": { floor: "stone" } });
   plateau.apply({ paint: { "0,0": null } });
   assert.equal(plateau.ground["0,0"], undefined);
@@ -114,7 +114,7 @@ test("effacer une case la retire au lieu de la vider", () => {
   assert.deepEqual(plateau.ground["0,0"], { floor: "stone" });
 });
 
-test("poser sur une case occupee remplace au lieu d empiler", () => {
+test("placing on an occupied tile replaces instead of stacking", () => {
   const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }]);
   plateau.apply({ place: [{ x: 0, y: 0, block: "titanium-conveyor", rotation: 1 }] });
   assert.equal(plateau.tiles.length, 1);
@@ -122,7 +122,7 @@ test("poser sur une case occupee remplace au lieu d empiler", () => {
   assert.equal(plateau.tiles[0].rotation, 1);
 });
 
-test("un gros bloc chasse tout ce qu il recouvre, pas seulement son centre", () => {
+test("a large block clears everything it covers, not just its center", () => {
   const plateau = board([
     { x: 0, y: 0, block: "conveyor", rotation: 0 },
     { x: 1, y: 1, block: "conveyor", rotation: 0 },
@@ -133,7 +133,7 @@ test("un gros bloc chasse tout ce qu il recouvre, pas seulement son centre", () 
   assert.equal(plateau.at(5, 5)?.block, "conveyor");
 });
 
-test("annuler une pose qui a recouvert rend ce qui etait dessous", () => {
+test("undoing a placement that covered something brings back what was underneath", () => {
   const plateau = board([{ x: 1, y: 1, block: "conveyor", rotation: 0 }]);
   plateau.apply({ place: [{ x: 0, y: 0, block: "mechanical-drill", rotation: 0 }] });
   assert.equal(plateau.tiles.length, 1);
@@ -142,7 +142,7 @@ test("annuler une pose qui a recouvert rend ce qui etait dessous", () => {
   assert.equal(plateau.tiles[0].block, "conveyor");
 });
 
-test("retirer un bloc se defait aussi", () => {
+test("removing a block also undoes", () => {
   const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 2 }]);
   plateau.apply({ remove: [plateau.at(0, 0)] });
   assert.equal(plateau.tiles.length, 0);
@@ -150,66 +150,66 @@ test("retirer un bloc se defait aussi", () => {
   assert.equal(plateau.tiles[0].rotation, 2);
 });
 
-test("un geste vide ne remplit pas l historique", () => {
+test("an empty move does not fill up the history", () => {
   const plateau = board();
   assert.equal(plateau.apply({ place: [] }), false);
   assert.equal(plateau.undo(), false);
 });
 
-test("une fournee entiere est jugee ensemble, pas bloc par bloc", () => {
-  /* Cent convoyeurs sur un plateau vide : chacun mesure une case de large et tient donc
-     tout seul dans les 64. C est ensemble qu ils debordent, et c est ensemble qu il faut
-     les juger, sinon un glisse assez long fabrique une schematique que le jeu refuse. */
+test("a whole batch is judged together, not block by block", () => {
+  /* A hundred conveyors on an empty board: each is one tile wide and so fits alone within
+     64 on its own. It is together that they overflow, and it is together that they must
+     be judged, otherwise a long enough drag produces a schematic the game refuses. */
   const plateau = board();
   const ligne = Array.from({ length: 100 },
     (_, i) => ({ x: i, y: 0, block: "conveyor", rotation: 0 }));
-  assert.equal(plateau.fits(ligne[99]), true, "un bloc seul tient toujours");
-  assert.equal(plateau.fits(ligne), false, "la ligne entiere devrait deborder");
+  assert.equal(plateau.fits(ligne[99]), true, "a single block always fits");
+  assert.equal(plateau.fits(ligne), false, "the whole line should overflow");
   assert.equal(plateau.fits(ligne.slice(0, 64)), true);
   assert.equal(plateau.fits(ligne.slice(0, 65)), false);
 });
 
 /* --------------------------------------------------------------------------------------
-   Les cadres.
+   Frames.
 
-   Un cadre est un rectangle nomme, dessine a la main, d au plus 64 par 64 : c est
-   `Vars.maxSchematicSize`, un refus dur et pas un avertissement. Sans aucun cadre, le
-   plateau entier en tient lieu, plafonne a 64 exactement comme avant : c est la regle qui
-   protege le cas simple, et les tests ci dessus la couvrent deja.
+   A frame is a named rectangle, drawn by hand, at most 64 by 64: this is
+   `Vars.maxSchematicSize`, a hard refusal and not a warning. With no frame at all, the
+   whole board stands in for it, capped at 64 exactly as before: this is the rule that
+   protects the simple case, and the tests above already cover it.
 
-   Des qu un cadre existe, poser un bloc n est plus borne a 64 : le plateau lui meme
-   devient l unite bornee, a 256, pour laisser plusieurs chantiers cote a cote. Le 64 se
-   deplace sur le cadre, pas sur la pose.
+   As soon as a frame exists, placing a block is no longer bounded by 64: the board itself
+   becomes the bounded unit, at 256, to let several sites sit side by side. The 64 moves
+   onto the frame, not onto the placement.
    -------------------------------------------------------------------------------------- */
 
-test("le plateau est fixe a 256, pas a grandir", () => {
+test("the board is fixed at 256, it does not grow", () => {
   assert.equal(BOARD_SIZE, 256);
 });
 
-test("un cadre tient dans 64 par 64, jamais plus : refus dur, pas avertissement", () => {
+test("a frame fits within 64 by 64, never more: hard refusal, not a warning", () => {
   assert.equal(legalFrame({ width: 64, height: 64 }), true);
   assert.equal(legalFrame({ width: 65, height: 64 }), false);
   assert.equal(legalFrame({ width: 64, height: 65 }), false);
   assert.equal(legalFrame({ width: 1, height: 1 }), true);
 });
 
-test("un cadre nul ou negatif n est pas legal", () => {
+test("a zero or negative frame is not legal", () => {
   assert.equal(legalFrame({ width: 0, height: 5 }), false);
   assert.equal(legalFrame({ width: -1, height: 5 }), false);
 });
 
-test("des que des cadres existent, le plafond de pose porte sur le plateau entier, a 256", () => {
+test("as soon as frames exist, the placement cap covers the whole board, at 256", () => {
   const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }]);
   plateau.apply({
     addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 10 }],
   });
   assert.equal(plateau.fits({ x: 64, y: 0, block: "conveyor", rotation: 0 }), true,
-    "un cadre autorise a depasser 64, tant que le plateau tient dans 256");
+    "a frame allows going past 64, as long as the board fits within 256");
   assert.equal(plateau.fits({ x: 255, y: 0, block: "conveyor", rotation: 0 }), true);
   assert.equal(plateau.fits({ x: 256, y: 0, block: "conveyor", rotation: 0 }), false);
 });
 
-test("dessiner un cadre s annule comme le reste", () => {
+test("drawing a frame undoes like everything else", () => {
   const plateau = board();
   const cadre = { id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 8 };
   plateau.apply({ addFrames: [cadre] });
@@ -221,7 +221,7 @@ test("dessiner un cadre s annule comme le reste", () => {
   assert.equal(plateau.frames[0].name, "fonderie");
 });
 
-test("renommer, deplacer ou redimensionner un cadre passe par retirer puis reposer", () => {
+test("renaming, moving or resizing a frame goes through removing then re-adding", () => {
   const plateau = board();
   const cadre = { id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 8 };
   plateau.apply({ addFrames: [cadre] });
@@ -233,7 +233,7 @@ test("renommer, deplacer ou redimensionner un cadre passe par retirer puis repos
   assert.equal(plateau.frames[0].name, "fonderie");
 });
 
-test("supprimer un cadre laisse ses blocs en place", () => {
+test("deleting a frame leaves its blocks in place", () => {
   const plateau = board([{ x: 1, y: 1, block: "conveyor", rotation: 0 }]);
   plateau.apply({
     addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 5, height: 5 }],
@@ -243,17 +243,17 @@ test("supprimer un cadre laisse ses blocs en place", () => {
   assert.equal(plateau.tiles.length, 1);
 });
 
-test("un point tombe dans le cadre qui le couvre, borne comme une boite normale", () => {
+test("a point falls into the frame that covers it, bounded like a normal box", () => {
   const plateau = board();
   plateau.apply({
     addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 10 }],
   });
   assert.equal(plateau.frameAt(5, 5)?.id, "a");
-  assert.equal(plateau.frameAt(10, 5), null, "le bord haut est exclu, comme une boite normale");
+  assert.equal(plateau.frameAt(10, 5), null, "the top edge is excluded, like a normal box");
   assert.equal(plateau.frameAt(-1, 5), null);
 });
 
-test("un bloc entierement dans le cadre lui appartient", () => {
+test("a block entirely inside the frame belongs to it", () => {
   const plateau = board([{ x: 5, y: 5, block: "conveyor", rotation: 0 }]);
   plateau.apply({
     addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 10 }],
@@ -263,9 +263,9 @@ test("un bloc entierement dans le cadre lui appartient", () => {
   assert.deepEqual(plateau.orphans(), []);
 });
 
-test("un bloc qui deborde du cadre d une seule case n y appartient pas", () => {
-  // Une foreuse mecanique posee en (9, 9) couvre (9, 9) a (10, 10) : elle deborde d une
-  // case d un cadre de 10 par 10 pose en (0, 0). Un cadre ne se prouve qu entier.
+test("a block that spills out of the frame by a single tile does not belong to it", () => {
+  // A mechanical drill placed at (9, 9) covers (9, 9) to (10, 10): it spills one tile past
+  // a 10 by 10 frame placed at (0, 0). A frame only proves what fits entirely inside it.
   const plateau = board([{ x: 9, y: 9, block: "mechanical-drill", rotation: 0 }]);
   plateau.apply({
     addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 10 }],
@@ -275,12 +275,12 @@ test("un bloc qui deborde du cadre d une seule case n y appartient pas", () => {
   assert.equal(plateau.orphans().length, 1);
 });
 
-test("sans aucun cadre, rien n est orphelin : le plateau entier en tient lieu", () => {
+test("with no frame at all, nothing is orphaned: the whole board stands in for it", () => {
   const plateau = board([{ x: 900, y: -400, block: "conveyor", rotation: 0 }]);
   assert.deepEqual(plateau.orphans(), []);
 });
 
-test("la taille utilisee d un cadre est la boite de ce qu il contient, pas sa taille dessinee", () => {
+test("a frame's used size is the box of what it holds, not its drawn size", () => {
   const plateau = board([{ x: 1, y: 1, block: "conveyor", rotation: 0 }]);
   plateau.apply({
     addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 20, height: 20 }],
@@ -288,7 +288,7 @@ test("la taille utilisee d un cadre est la boite de ce qu il contient, pas sa ta
   assert.deepEqual(plateau.frameBox(plateau.frames[0]), { left: 1, bottom: 1, width: 1, height: 1 });
 });
 
-test("un cadre vide a une boite utilisee vide", () => {
+test("an empty frame has an empty used box", () => {
   const plateau = board();
   plateau.apply({
     addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 20, height: 20 }],
@@ -296,13 +296,13 @@ test("un cadre vide a une boite utilisee vide", () => {
   assert.deepEqual(plateau.frameBox(plateau.frames[0]), { left: 0, bottom: 0, width: 0, height: 0 });
 });
 
-test("un plateau reconstruit sans cle frames part avec une liste vide", () => {
-  // Le cas d un brouillon d hier, qui n a jamais entendu parler de cadres.
+test("a board rebuilt with no frames key starts with an empty list", () => {
+  // The case of a draft from yesterday, which has never heard of frames.
   const plateau = createBoard({ tiles: [], ground: {}, sizeOf });
   assert.deepEqual(plateau.frames, []);
 });
 
-test("la boite de tous les cadres sert a cadrer le chantier entier d un coup", () => {
+test("the box of all frames is used to frame the whole site in one go", () => {
   const plateau = board();
   plateau.apply({
     addFrames: [
@@ -313,19 +313,19 @@ test("la boite de tous les cadres sert a cadrer le chantier entier d un coup", (
   assert.deepEqual(plateau.framesBox(), { left: 0, bottom: -5, width: 48, height: 15 });
 });
 
-test("sans aucun cadre, la boite des cadres est vide plutot que des infinis", () => {
+test("with no frame at all, the frames box is empty rather than infinite", () => {
   assert.deepEqual(board().framesBox(), { left: 0, bottom: 0, width: 0, height: 0 });
 });
 
 /* ----------------------------------------------------------------------------------------
-   L instantane : ce qu un brouillon ou un espace de travail sauvegardent vraiment.
+   The snapshot: what a draft or a workspace actually saves.
 
-   Le brouillon local et un espace de travail sauvegardent tous les deux la meme forme, et
-   c est cet instantane qui la fixe une bonne fois : un cadre absent ici serait un cadre
-   perdu partout ou cette forme sert.
+   A local draft and a workspace both save the same shape, and it is this snapshot that
+   fixes it once and for all: a frame missing here would be a frame lost everywhere this
+   shape is used.
    ---------------------------------------------------------------------------------------- */
 
-test("l instantane porte les tuiles, le sol et les cadres ensemble", () => {
+test("the snapshot carries the tiles, the ground and the frames together", () => {
   const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }], { "0,0": { floor: "stone" } });
   plateau.apply({ addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 8 }] });
 
@@ -335,20 +335,20 @@ test("l instantane porte les tuiles, le sol et les cadres ensemble", () => {
   assert.deepEqual(photo.frames, [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 8 }]);
 });
 
-test("l instantane ne garde pas les champs de calcul comme link", () => {
+test("the snapshot does not keep computed fields like link", () => {
   const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }]);
-  // Ce que `relink()` de mount.js ecrit sur une tuile a chaque image, jamais sauve.
+  // What `relink()` in mount.js writes onto a tile every frame, never saved.
   plateau.tiles[0].link = [1, 1];
 
   const photo = plateau.snapshot();
   assert.deepEqual(photo.tiles[0], { x: 0, y: 0, block: "conveyor", rotation: 0, config: undefined });
 });
 
-test("l instantane d un plateau vide n a ni tuile ni cadre", () => {
+test("the snapshot of an empty board has neither tile nor frame", () => {
   assert.deepEqual(board().snapshot(), { tiles: [], ground: {}, frames: [] });
 });
 
-test("charger un instantane remplace le plateau, et vide l historique", () => {
+test("loading a snapshot replaces the board, and clears the history", () => {
   const plateau = board([{ x: 5, y: 5, block: "conveyor", rotation: 0 }]);
   plateau.apply({ place: [{ x: 6, y: 6, block: "conveyor", rotation: 0 }] });
   assert.equal(plateau.done.length, 1);
@@ -367,7 +367,7 @@ test("charger un instantane remplace le plateau, et vide l historique", () => {
   assert.equal(plateau.undone.length, 0);
 });
 
-test("charger un instantane sans cadre ni sol part avec des listes vides, pas des trous", () => {
+test("loading a snapshot with no frame or ground starts with empty lists, not gaps", () => {
   const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }]);
   plateau.load({ tiles: [] });
   assert.deepEqual(plateau.tiles, []);

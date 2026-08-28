@@ -35,7 +35,7 @@ test("the inventory agrees with the count the report already gave", async () => 
     [0, 3, "conveyor", 0], [1, 3, "conveyor", 0], [6, 0, "vault", 0],
   ]));
   const total = Object.values(out.held).reduce((sum, n) => sum + n, 0);
-  assert.equal(total, out.blocks, `${total} contre ${out.blocks}`);
+  assert.equal(total, out.blocks, `${total} vs ${out.blocks}`);
 });
 
 test("a block the catalogue has never seen is still inventoried", async () => {

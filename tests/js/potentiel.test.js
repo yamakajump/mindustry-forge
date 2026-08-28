@@ -1,17 +1,17 @@
 /**
- * Le plafond : ce qu'une schematique rendrait si on lui amenait ce qui lui manque.
+ * The ceiling: what a schematic would yield if it were handed what it is missing.
  *
- * Ce depot a deja supprime une fonctionnalite qui ressemblait a celle-ci, et il a eu
- * raison : `ports.js` choisissait le transporteur d'arrivee le plus probable, toute la page
- * decoulait de ce choix, et un choix rate rendait des debits qui avaient l'air calcules.
- * La decision : la devinette des entrees est supprimee, pas amelioree.
+ * This repository has already removed a feature that looked like this one, and it was
+ * right to: `ports.js` used to pick the likeliest arrival carrier, the whole page followed
+ * from that choice, and a bad choice produced rates that looked calculated. The decision
+ * was that guessing at inputs is removed, not improved.
  *
- * Ce qui est teste ici doit donc prouver deux choses, et la seconde est la plus importante.
- * D'abord que le chiffre est bon. Ensuite **qu'aucun choix n'est fait pour l'obtenir** : le
- * plafond ne designe aucune arrivee et ne route aucun flux, c'est la soustraction de ce que
- * les machines font a plein regime moins ce qu'elles se mangent entre elles. Et il ne
- * remplace jamais la mesure : un joueur qui colle sa schematique doit continuer a voir zero
- * quand c'est zero, et l'invitation a marquer ses entrees.
+ * What is tested here therefore has to prove two things, and the second matters more. First
+ * that the figure is right. Then **that no choice is made to get it**: the ceiling names no
+ * arrival and routes no flow, it is the subtraction of what the machines make flat out minus
+ * what they eat off each other. And it never stands in for the measurement: a player who
+ * pastes their schematic must still see zero when it is zero, and the invitation to mark
+ * their inputs.
  */
 
 import test from "node:test";
@@ -24,24 +24,24 @@ loadCatalogue();
 
 const close = (a, b, why) => assert.ok(Math.abs(a - b) < 1e-3, `${why}: ${a} vs ${b}`);
 
-test("une presse que rien n'alimente annonce ce qu'elle ferait, sans rien mesurer", async () => {
+test("a press nothing feeds announces what it would do, without measuring anything", async () => {
   const out = await analyse(paste([[0, 0, "graphite-press", 0]]));
 
-  /* Le defaut ne bouge pas. C'est la moitie du contrat : la page continue de dire qu'elle
-     ne sait pas ou ca se branche, et de le demander. */
-  assert.deepEqual(out.perMinute, {}, "rien de mesure tant que rien n'est marque");
-  assert.equal(out.awaiting, true, "et elle attend toujours la reponse");
+  /* The default does not move. That is half of the contract: the page keeps saying it
+     does not know where this plugs in, and keeps asking. */
+  assert.deepEqual(out.perMinute, {}, "nothing measured while nothing is marked");
+  assert.equal(out.awaiting, true, "and it still waits for the answer");
 
-  // Deux charbons par fournee, une fournee toutes les 90 images : 40 graphite la minute.
-  close(out.potentialPerMinute.graphite, 40, "le plafond, lui, est calculable");
+  // Two coal per batch, a batch every 90 frames: 40 graphite a minute.
+  close(out.potentialPerMinute.graphite, 40, "the ceiling, on the other hand, is computable");
 });
 
-test("le plafond tombe sur ce que le solveur rend quand on marque l'entree a la main", async () => {
+test("the ceiling lands on what the solver returns when the input is marked by hand", async () => {
   /*
-   * Le test qui autorise a appeler ca un plafond plutot qu'une estimation. Les deux
-   * chemins n'ont rien en commun : celui du haut resout un probleme de flot a partir d'une
-   * arrivee designee, celui du bas soustrait deux totaux. S'ils divergent, l'un des deux
-   * ment, et ce ne sera pas celui que le banc corrobore.
+   * The test that earns this the right to be called a ceiling rather than an estimate. The
+   * two paths share nothing: the one above solves a flow problem from a named arrival, the
+   * one below subtracts two totals. If they diverge, one of them is lying, and it will not
+   * be the one the bench backs up.
    */
   const code = paste([[0, 0, "graphite-press", 0]]);
   const bare = await analyse(code);
@@ -51,28 +51,28 @@ test("le plafond tombe sur ce que le solveur rend quand on marque l'entree a la 
   const fed = await analyse(code, {}, marked);
 
   close(fed.perMinute.graphite, bare.potentialPerMinute.graphite,
-    "mesure alimentee et plafond disent le meme nombre");
+    "the fed measurement and the ceiling give the same number");
 });
 
-test("ce qu'elle se mange elle-meme ne compte pas comme sortie", async () => {
-  // Une presse mange le charbon qu'une centrifugeuse fait : ce charbon-la ne sort pas, et
-  // l'annoncer ferait chercher une source de charbon a qui n'en a pas besoin.
+test("what it eats off itself does not count as output", async () => {
+  // A press eats the coal a centrifuge makes: that coal does not come out, and reporting
+  // it would send somebody looking for a coal source they do not need.
   const out = await analyse(paste([
     [0, 0, "coal-centrifuge", 0],
     [4, 0, "graphite-press", 0],
   ]));
 
-  // La centrifugeuse fait 2 charbon/s, la presse en mange 1,33 : il en reste 40 la minute.
-  close(out.potentialPerMinute.coal, 40, "seul le surplus de charbon sort");
-  close(out.potentialPerMinute.graphite, 40, "et le graphite qui en decoule");
+  // The centrifuge makes 2 coal/s, the press eats 1.33: 40 a minute is left over.
+  close(out.potentialPerMinute.coal, 40, "only the surplus coal comes out");
+  close(out.potentialPerMinute.graphite, 40, "and the graphite that follows from it");
 });
 
-test("le combustible d'un bruleur est deduit, meme s'il n'a pas de recette", async () => {
+test("a burner's fuel is deducted, even without a named recipe", async () => {
   /*
-   * Un generateur a combustion brule « n'importe quoi » : il ne reclame aucune matiere
-   * nommee, donc rien ne l'a retiree du total des sorties. Sans deduction, une
-   * centrifugeuse qui alimente ses propres bruleurs figurait avec la totalite du charbon
-   * qu'ils avalent - le plafond annoncait 120 la minute la ou il y en a 60.
+   * A combustion generator burns "anything at all": it names no material, so nothing
+   * removed it from the output total. Without the deduction, a centrifuge feeding its own
+   * burners was listed with the full amount of coal they swallow, and the ceiling reported
+   * 120 a minute where there is really 60.
    */
   const seule = await analyse(paste([[0, 0, "coal-centrifuge", 0]]));
   const avecDeux = await analyse(paste([
@@ -81,45 +81,45 @@ test("le combustible d'un bruleur est deduit, meme s'il n'a pas de recette", asy
     [6, 0, "combustion-generator", 0],
   ]));
 
-  close(seule.potentialPerMinute.coal, 120, "la centrifugeuse seule");
-  close(avecDeux.potentialPerMinute.coal, 60, "moins ce que deux bruleurs avalent");
+  close(seule.potentialPerMinute.coal, 120, "the centrifuge alone");
+  close(avecDeux.potentialPerMinute.coal, 60, "minus what two burners swallow");
 });
 
-test("un bruleur qui mange plus que la schematique ne fait laisse un besoin, pas un negatif", async () => {
+test("a burner eating more than the schematic makes leaves a need, not a negative", async () => {
   const out = await analyse(paste([
     [0, 0, "coal-centrifuge", 0],
     ...Array.from({ length: 8 }, (_, i) => [4 + i * 2, 0, "combustion-generator", 0]),
   ]));
 
-  assert.equal(out.potentialPerMinute.coal, undefined, "il ne reste pas de charbon a sortir");
-  // Et les deux moitiés se recoupent : 240 brulés, 120 faits, 120 réclamés.
+  assert.equal(out.potentialPerMinute.coal, undefined, "no coal is left over to output");
+  // And the two halves match up: 240 burned, 120 made, 120 asked for.
   const fuel = out.needs.find((need) => need.resource === "*combustible");
-  close(fuel.perMinute, 120, "ce qui manque est demande, pas escamote");
+  close(fuel.perMinute, 120, "what is missing is asked for, not hidden");
 });
 
-test("aucun besoin sans nom ne se retrouve annonce comme une sortie", async () => {
-  // `*combustible` est un trou dans une liste de courses, pas une matiere.
+test("no nameless need ever shows up reported as an output", async () => {
+  // `*combustible` is a hole in a shopping list, not a material.
   const out = await analyse(paste([[0, 0, "combustion-generator", 0]]));
 
   for (const item of Object.keys(out.potentialPerMinute)) {
-    assert.ok(!item.startsWith("*"), `${item} n'est pas quelque chose qui sort`);
+    assert.ok(!item.startsWith("*"), `${item} is not something that comes out`);
   }
 });
 
-test("une schematique qui ne fabrique rien n'a pas de plafond a annoncer", async () => {
-  // Une bande n'est pas une usine. Elle porte, elle ne fait pas, et un plafond a zero
-  // affiche serait une ligne de plus a lire pour rien.
+test("a schematic that makes nothing has no ceiling to report", async () => {
+  // A belt is not a factory. It carries, it does not make, and a ceiling of zero shown
+  // would be one more line to read for nothing.
   const out = await analyse(paste([[0, 0, "conveyor", 0], [1, 0, "conveyor", 0]]));
 
   assert.deepEqual(out.potentialPerMinute, {});
 });
 
-test("le plafond ne depend d'aucune arrivee designee", async () => {
+test("the ceiling depends on no named arrival", async () => {
   /*
-   * La garantie qui distingue ceci de `ports.js`. La meme usine, decrite deux fois avec des
-   * bordures differentes - une bande d'arrivee de plus d'un cote - rend le meme plafond,
-   * parce que rien dans le calcul ne regarde par ou ca entre. Un chiffre qui bougerait
-   * selon la bande choisie serait une devinette, quel que soit son nom.
+   * The guarantee that sets this apart from `ports.js`. The same factory, described twice
+   * with different borders, one more arrival belt on one side, yields the same ceiling,
+   * because nothing in the computation looks at where things come in. A figure that moved
+   * with the chosen belt would be a guess, whatever its name.
    */
   const nue = await analyse(paste([[0, 0, "graphite-press", 0]]));
   const avecBandes = await analyse(paste([

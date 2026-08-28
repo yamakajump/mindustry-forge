@@ -29,8 +29,8 @@ test("what goes in comes out when nothing narrows", () => {
     capacity: () => Infinity,
     wants: (i) => (i === 3 ? 100 : 0),
   });
-  close(out.total, 5, "cinq entrent, cinq sortent");
-  close(out.received[3], 5, "et la machine les recoit");
+  close(out.total, 5, "five in, five out");
+  close(out.received[3], 5, "and the machine receives them");
 });
 
 test("the narrowest carrier sets the rate", () => {
@@ -41,7 +41,7 @@ test("the narrowest carrier sets the rate", () => {
     capacity: (i) => (i === 2 ? 6.5 : Infinity),
     wants: (i) => (i === 3 ? 100 : 0),
   });
-  close(out.total, 6.5, "une bande porte 6,5 par seconde quoi qu il arrive");
+  close(out.total, 6.5, "a belt carries 6.5 a second no matter what");
 });
 
 test("two branches carry more than one", () => {
@@ -56,7 +56,7 @@ test("two branches carry more than one", () => {
     capacity: (i) => (i === 1 || i === 2 ? 6.5 : Infinity),
     wants: (i) => (i === 3 ? 100 : 0),
   });
-  close(out.total, 13, "deux bandes portent treize");
+  close(out.total, 13, "two belts carry thirteen");
 });
 
 test("a dead branch takes nothing instead of half", () => {
@@ -73,8 +73,8 @@ test("a dead branch takes nothing instead of half", () => {
     // Node 2 is a pipe that ends in the air, so it wants nothing.
     wants: (i) => (i === 1 ? 10 : 0),
   });
-  close(out.total, 10, "tout va vers la machine, rien dans le cul-de-sac");
-  close(out.received[1], 10, "la machine est servie a plein");
+  close(out.total, 10, "everything goes to the machine, nothing into the dead end");
+  close(out.received[1], 10, "the machine is served in full");
 });
 
 test("a loop does not decay the answer", () => {
@@ -89,7 +89,7 @@ test("a loop does not decay the answer", () => {
     capacity: () => 20,
     wants: (i) => (i === 2 ? 50 : 0),
   });
-  close(out.total, 7, "une boucle ne mange pas le debit");
+  close(out.total, 7, "a loop does not eat the throughput");
 });
 
 test("nothing is invented when demand exceeds supply", () => {
@@ -99,7 +99,7 @@ test("nothing is invented when demand exceeds supply", () => {
     capacity: () => Infinity,
     wants: (i) => (i === 2 ? 1000 : 0),
   });
-  close(out.total, 2, "on ne rend pas plus que ce qui entre");
+  close(out.total, 2, "no more comes out than went in");
 });
 
 test("a block's capacity belongs to the block, not to its ways in", () => {
@@ -114,5 +114,5 @@ test("a block's capacity belongs to the block, not to its ways in", () => {
     capacity: (i) => (i === 3 ? 6.5 : Infinity),
     wants: (i) => (i === 4 ? 100 : 0),
   });
-  close(out.total, 6.5, "la bande porte toujours 6,5");
+  close(out.total, 6.5, "the belt still carries 6.5");
 });

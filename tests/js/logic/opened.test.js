@@ -1,19 +1,19 @@
 /**
- * Ouvrir l'editeur sur un processeur qui existe deja quelque part.
+ * Opening the editor on a processor that already exists somewhere.
  *
- * Ce que ce mode apporte tient en une phrase : les liens arrivent remplis, avec les noms que
- * le programme emploie vraiment, pris dans la configuration que le jeu a ecrite. L'editeur
- * seul ne peut pas les connaitre, parce qu'il n'y a pas encore de blocs.
+ * What this mode brings fits in one sentence: the links arrive already filled in, with the
+ * names the program actually uses, taken from the configuration the game wrote. The editor
+ * alone cannot know them, because there are no blocks yet.
  *
- * Trois chiffres decident de sa forme, mesures sur quatre-vingt-seize schematiques prises
- * dans la vitrine et decodees avec le lecteur de ce depot :
+ * Three numbers decide its shape, measured across ninety-six schematics taken from the
+ * showcase and decoded with this repository's own reader:
  *
- *   * 40 % portent au moins un processeur ;
- *   * 45 % de celles-la en portent plusieurs, et l'une des quatre-vingt-seize en porte 22 ;
- *   * 96 % des 507 liens tombent sur un bloc present dans la schematique.
+ *   * 40% carry at least one processor;
+ *   * 45% of those carry several, and one of the ninety-six carries 22;
+ *   * 96% of the 507 links land on a block present in the schematic.
  *
- * Le deuxieme est la raison d'etre du choix, et le troisieme est ce qui rendra le clic sur
- * le bloc possible quand il viendra.
+ * The second is the reason for the choice, and the third is what will make clicking the
+ * block possible when that comes.
  */
 
 import test from "node:test";
@@ -27,11 +27,11 @@ import { processorsIn } from "../../../site/public/forge/logic/opened.js";
 useCatalogue(JSON.parse(readFileSync(
   new URL("../../../site/public/forge/logic/instructions.json", import.meta.url), "utf8")));
 
-/** Une schematique d'un processeur, fabriquee par le meme code que la page emploie. */
+/** A processor's schematic, built by the same code the page uses. */
 const unProcesseur = (programme, block = "micro-processor") =>
   programme.toSchematic({ block });
 
-test("un processeur rend son code, ses liens et de quoi le reconnaitre", async () => {
+test("a processor returns its code, its links, and enough to recognize it", async () => {
   const pasted = await unProcesseur(new Program()
     .comment("deux lignes de commentaire")
     .comment("qui ne comptent pas comme des lignes de code")
@@ -49,41 +49,42 @@ test("un processeur rend son code, ses liens et de quoi le reconnaitre", async (
   assert.match(un.code, /sensor chaud reactor1 @heat/);
 });
 
-test("le compte de lignes ignore les vides, parce qu'il sert a reconnaitre un processeur", () => {
-  /* « Processeur 3 sur 22 » ne dit rien a personne ; « un micro processeur en 14, 6,
-     quarante lignes » dit lequel on visait. Ce compte est donc une etiquette, et compter les
-     lignes vides le rendrait faux sur exactement les programmes espaces. */
+test("the line count ignores blanks, because it serves to recognize a processor", () => {
+  /* "Processor 3 of 22" tells nobody anything; "a micro processor at 14, 6, forty lines"
+     says which one was meant. This count is therefore a label, and counting blank lines
+     would make it wrong on exactly the spaced-out programs. */
   return unProcesseur(new Program().line("end")).then(async (pasted) => {
     const [un] = await processorsIn(pasted);
     assert.equal(un.lines, 1);
   });
 });
 
-test("un commentaire compte comme une ligne, parce que le jeu le garde", async () => {
-  /* La configuration stocke le texte que le joueur a ecrit, commentaires compris : les
-     ecarter du compte ferait dire a l'etiquette moins que ce que le processeur porte. */
+test("a comment counts as a line, because the game keeps it", async () => {
+  /* The configuration stores the text the player wrote, comments included: leaving them
+     out of the count would make the label say less than what the processor actually
+     carries. */
   const pasted = await unProcesseur(new Program().comment("une note").line("end"));
   const [un] = await processorsIn(pasted);
   assert.equal(un.lines, 2);
 });
 
-test("une schematique sans processeur ne rend rien plutot que d'inventer", async () => {
+test("a schematic without a processor returns nothing rather than inventing one", async () => {
   const { toBase64 } = await import("../../../site/public/forge/schematic.js");
   const pasted = await toBase64([{ block: "router", x: 0, y: 0 }], { sizeOf: () => 1 });
   assert.deepEqual(await processorsIn(pasted), []);
 });
 
-test("un accent survit au voyage jusqu'a la liste", async () => {
+test("an accent survives the trip to the list", async () => {
   const pasted = await unProcesseur(new Program()
     .line("print", quote("il y en a deja trop")).comment("déjà"));
   const [un] = await processorsIn(pasted);
   assert.match(un.code, /déjà/);
 });
 
-test("les processeurs gardent l'ordre de la schematique", async () => {
-  /* L'ordre du fichier est l'ordre de construction du jeu, et c'est le seul ordre stable
-     qu'on puisse offrir : trier par position ferait bouger la liste au moindre deplacement
-     d'un bloc, et l'index qu'on montre ne designerait plus la meme chose. */
+test("processors keep the schematic's order", async () => {
+  /* The file's order is the game's build order, and it is the only stable order we can
+     offer: sorting by position would move the list at the slightest block displacement,
+     and the index we show would no longer point to the same thing. */
   const { write, read } = await import("../../../site/public/forge/schematic.js");
   const un = await toSchematic({ code: "end\n", block: "micro-processor" });
   const { tiles } = await read(

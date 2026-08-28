@@ -21,7 +21,7 @@ import { readProgram, writeProgram } from "../../../site/public/forge/logic.js";
 const catalogue = useCatalogue(JSON.parse(readFileSync(
   new URL("../../../site/public/forge/logic/instructions.json", import.meta.url), "utf8")));
 
-test("un programme construit se lit comme il s'ecrit", () => {
+test("a built program reads back the way it was written", () => {
   const program = new Program()
     .comment("deux lignes\net la suite")
     .label("debut")
@@ -32,35 +32,35 @@ test("un programme construit se lit comme il s'ecrit", () => {
     "# deux lignes\n# et la suite\ndebut:\nset x 1\njump debut always\n");
 });
 
-test("un programme vide est une chaine vide, pas un saut de ligne", () => {
+test("an empty program is an empty string, not a line break", () => {
   assert.equal(new Program().text(), "");
 });
 
-test("une chaine perd ce que le jeu ne sait pas lire", () => {
+test("a string loses what the game cannot read", () => {
   /* `LParser.string` has no escapes at all: it runs to the next quote. A quote kept inside
      a string does not produce odd text, it refuses the whole program. */
   assert.equal(quote('dit "bonjour"'), '"dit bonjour"');
   assert.equal(quote("deux\nlignes"), '"deuxlignes"');
 });
 
-test("la configuration d'un processeur fait l'aller-retour", async () => {
+test("a processor's configuration makes the round trip", async () => {
   const wanted = { code: "set x 1\nprint x\n",
                    links: [{ name: "message1", dx: -2, dy: 3 }] };
   assert.deepEqual(await readProgram(await writeProgram(wanted)), wanted);
 });
 
-test("un lien negatif garde son signe", async () => {
+test("a negative link keeps its sign", async () => {
   const links = [{ name: "cell1", dx: -32768, dy: 32767 }];
   const back = await readProgram(await writeProgram({ code: "", links }));
   assert.deepEqual(back.links, links);
 });
 
-test("les accents survivent au voyage", async () => {
+test("accents survive the trip", async () => {
   const code = 'print "il y en a déjà trop"\n';
   assert.equal((await readProgram(await writeProgram({ code, links: [] }))).code, code);
 });
 
-test("la schematique produite se relit toute seule", async () => {
+test("the produced schematic reads itself back", async () => {
   const program = new Program().line("end").link("cell1", 1, 1);
   const [processor] = await fromSchematic(
     await program.toSchematic({ block: "hyper-processor" }));
@@ -71,23 +71,23 @@ test("la schematique produite se relit toute seule", async () => {
   assert.equal(processor.unreadable, false);
 });
 
-test("la taille de la schematique vient du bloc choisi", async () => {
+test("the schematic's size comes from the chosen block", async () => {
   const { read } = await import("../../../site/public/forge/schematic.js");
 
   for (const name of ["micro-processor", "logic-processor", "hyper-processor"]) {
     const schematic = await read(await toSchematicBytes({ code: "end\n", block: name }));
     const size = catalogue.processors.find((entry) => entry.name === name).size;
-    assert.equal(schematic.width, size, `${name} : la largeur`);
-    assert.equal(schematic.height, size, `${name} : la hauteur`);
+    assert.equal(schematic.width, size, `${name}: the width`);
+    assert.equal(schematic.height, size, `${name}: the height`);
   }
 });
 
-test("un bloc qui n'est pas un processeur est refuse plutot qu'ecrit", async () => {
+test("a block that is not a processor is refused rather than written", async () => {
   await assert.rejects(() => toSchematic({ code: "end\n", block: "router" }),
     /is not a processor/);
 });
 
-test("un programme trop gros pour la configuration est refuse avant d'etre ecrit", async () => {
+test("a program too big for the configuration is refused before being written", async () => {
   /* Text the compressor cannot crush, or a hundred kilobytes of the same letter fit in two
      hundred and the test tests nothing. */
   let code = "";
@@ -97,7 +97,7 @@ test("un programme trop gros pour la configuration est refuse avant d'etre ecrit
   await assert.rejects(() => toSchematic({ code }), /le jeu en accepte/);
 });
 
-test("une schematique sans processeur ne rend rien plutot que d'inventer", async () => {
+test("a schematic without a processor returns nothing rather than inventing one", async () => {
   const { toBase64 } = await import("../../../site/public/forge/schematic.js");
   const pasted = await toBase64([{ block: "router", x: 0, y: 0 }], { sizeOf: () => 1 });
   assert.deepEqual(await fromSchematic(pasted), []);

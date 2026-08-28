@@ -86,7 +86,7 @@ test("a stranded belt is not fed and does not count as output", async () => {
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [9, 9, "conveyor", 0]];
   const out = await analyse(paste(tiles), { coal: 4 }, inAt([0, 0, "coal"]));
   assert.deepEqual(out.idle, { conveyor: 1 });
-  assert.ok(!out.produced.coal, "ce qui entre et ressort n'est pas une production");
+  assert.ok(!out.produced.coal, "what goes in and comes back out is not production");
 });
 
 test("oversupply is reported rather than swallowed", async () => {
@@ -108,8 +108,8 @@ test("a smelter declares its power draw", async () => {
     [0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [2, 0, "silicon-smelter", 0],
     [0, 1, "conveyor", 3], [1, 1, "conveyor", 3],
   ]), { coal: 4, sand: 8 }, inAt([0, 0, "coal"], [0, 1, "sand"]));
-  assert.ok(running.power.spent > 0, `${running.power.spent} energie consommee`);
-  assert.equal(running.power.made, 0, "un four ne produit pas d'energie");
+  assert.ok(running.power.spent > 0, `${running.power.spent} power drawn`);
+  assert.equal(running.power.made, 0, "a smelter does not produce power");
 });
 
 test("an unknown block blocks its tile rather than vanishing", async () => {
@@ -141,7 +141,7 @@ test("a bridge keeps its link instead of breaking the read", async () => {
   const { fromBase64 } = await import("../../site/public/forge/schematic.js");
   const parsed = await fromBase64(REAL);
   assert.equal(parsed.tags.name, "Water power 2306 energy");
-  assert.ok(parsed.tiles.length >= 90, `${parsed.tiles.length} tuiles lues`);
+  assert.ok(parsed.tiles.length >= 90, `${parsed.tiles.length} tiles read`);
 
   const bridges = parsed.tiles.filter((t) => t.block === "bridge-conveyor");
   assert.ok(bridges.length > 0);
@@ -185,10 +185,10 @@ test("a water to power schematic reports power, not the coal it makes on the way
      a sink that swallowed coal without consuming it. */
   const out = await analyse(REAL, { water: 120 }, EAU);
 
-  assert.ok(out.power.made > 1000, `${out.power.made} energie produite`);
-  assert.ok(out.power.net > 0, "un groupe electrogene produit plus qu il ne consomme");
+  assert.ok(out.power.made > 1000, `${out.power.made} power made`);
+  assert.ok(out.power.net > 0, "a generator produces more than it consumes");
   assert.ok(!out.perMinute.coal || out.perMinute.coal < 1,
-    "le charbon est un intermediaire, pas une sortie");
+    "coal is an intermediate, not an output");
 });
 
 test("more water means more power", async () => {
@@ -197,14 +197,14 @@ test("more water means more power", async () => {
   const little = await analyse(REAL, { water: 30 }, EAU);
   const plenty = await analyse(REAL, { water: 120 }, EAU);
   assert.ok(plenty.power.made > little.power.made * 1.3,
-    `${little.power.made} contre ${plenty.power.made}`);
+    `${little.power.made} vs ${plenty.power.made}`);
 });
 
 test("what was handed in is not counted as what came out", async () => {
   /* Fed at every edge pipe and counted on the way out, one schematic reported fifteen
      thousand water a minute of production, which buried the number that mattered. */
   const out = await analyse(REAL, { water: 100 }, EAU);
-  assert.ok(!out.perMinute.water, "l'eau fournie n'est pas une production");
+  assert.ok(!out.perMinute.water, "the water supplied is not production");
 });
 
 test("a belt will not carry a liquid", async () => {
@@ -222,21 +222,21 @@ test("a battery neither takes nor hands on anything", async () => {
     { x: 0, y: 0, block: "conveyor", rotation: 0 },
     { x: 1, y: 0, block: "battery", rotation: 0 },
   ]);
-  assert.deepEqual(graph.edges, [], "rien n'entre dans une batterie et rien n'en sort");
+  assert.deepEqual(graph.edges, [], "nothing goes into a battery and nothing comes out of it");
 });
 
 test("a block on the power grid is not a block somebody forgot to connect", async () => {
   /* Batteries and nodes carry nothing on the item network by design. Calling twenty-one
      of them "connected to nothing" buried the two bridges that really were. */
   const out = await analyse(REAL, { water: 120 }, EAU);
-  assert.ok(!out.idle.battery, "une batterie fait son travail sur le reseau electrique");
+  assert.ok(!out.idle.battery, "a battery does its job on the power grid");
   assert.ok(!out.idle["power-node-large"]);
 });
 
 test("a rate that rounds to zero is not reported as a product", async () => {
   const out = await analyse(REAL, { water: 120 }, EAU);
   for (const [item, n] of Object.entries(out.perMinute)) {
-    assert.ok(n >= 0.1, `${item} affiche ${n} par minute`);
+    assert.ok(n >= 0.1, `${item} shows ${n} per minute`);
   }
 });
 
@@ -253,11 +253,11 @@ test("a bridge that claims to reach three hundred tiles is not linked", async ()
     if (!bridge.link) continue;
     const dx = bridge.link[0] - bridge.x;
     const dy = bridge.link[1] - bridge.y;
-    assert.ok(dx === 0 || dy === 0, `${bridge.name} porte en diagonale (${dx},${dy})`);
+    assert.ok(dx === 0 || dy === 0, `${bridge.name} reaches diagonally (${dx},${dy})`);
     assert.ok(Math.abs(dx) + Math.abs(dy) <= (bridge.block.range || 4),
-      `${bridge.name} porte a ${Math.abs(dx) + Math.abs(dy)} tuiles`);
+      `${bridge.name} reaches ${Math.abs(dx) + Math.abs(dy)} tiles`);
   }
-  assert.ok(bridges.some((b) => b.link), "et les ponts valides gardent leur liaison");
+  assert.ok(bridges.some((b) => b.link), "and the valid bridges keep their link");
 });
 
 test("a pipe carries one liquid at a time", async () => {
@@ -272,7 +272,7 @@ test("a pipe carries one liquid at a time", async () => {
     && Object.values(tile.through || {}).filter((v) => v > 0.001).length > 1);
 
   assert.deepEqual(mixing.map((t) => `${t.name} (${t.x},${t.y})`), [],
-    "aucun tuyau ne porte deux liquides");
+    "no pipe carries two liquids");
 });
 
 test("a junction crosses two lines without merging them", async () => {
@@ -284,9 +284,9 @@ test("a junction crosses two lines without merging them", async () => {
   ];
   const out = await analyse(paste(tiles), { copper: 4 });
   const junction = out.detail.find((t) => t.name === "junction");
-  assert.ok(junction, "la jonction est la");
+  assert.ok(junction, "the junction is there");
   assert.ok(out.produced.copper === undefined || out.produced.copper <= 4.001,
-    "rien n'est duplique en traversant");
+    "nothing is duplicated crossing through");
 });
 
 test("a turret eats what it is loaded with", async () => {
@@ -297,15 +297,15 @@ test("a turret eats what it is loaded with", async () => {
 
   const turret = out.detail.find((t) => t.name === "duo");
   assert.equal(turret.role, "turret");
-  assert.ok(!out.idle.duo, "une tourelle nourrie n'est pas du gaspillage");
-  assert.ok(!out.produced.copper, "le cuivre entre dedans, il ne ressort pas");
+  assert.ok(!out.idle.duo, "a fed turret is not waste");
+  assert.ok(!out.produced.copper, "the copper goes in, it does not come back out");
 });
 
 test("a vault is somewhere a line delivers to", async () => {
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [3, 0, "vault", 0]];
   const out = await analyse(paste(tiles), { copper: 5 });
   assert.ok(!out.produced.copper || out.produced.copper <= 5.001);
-  assert.ok(!out.idle.vault, "un coffre au bout d'une ligne n'est pas relie a rien");
+  assert.ok(!out.idle.vault, "a vault at the end of a line is not connected to nothing");
 });
 
 test("an unloader beside a container is where a line starts", async () => {
@@ -316,7 +316,7 @@ test("an unloader beside a container is where a line starts", async () => {
 
   const unloader = out.detail.find((t) => t.name === "unloader");
   assert.equal(unloader.role, "unloader");
-  assert.ok(!out.idle.unloader, "un deverseur colle a un coffre fait quelque chose");
+  assert.ok(!out.idle.unloader, "an unloader against a vault does something");
 });
 
 /* What the game itself puts in a schematic's info panel, and where Forge parts with it.
@@ -332,18 +332,18 @@ test("power is counted on every block, not only on the power blocks", async () =
 
 test("an overdrive projector speeds up what stands under it", async () => {
   const alone = await analyse(paste([[0, 0, "steam-generator", 0]]));
-  close(alone.potential.made, 330, "un generateur a vapeur vaut 330");
+  close(alone.potential.made, 330, "a steam generator is worth 330");
 
   const boosted = await analyse(paste([
     [0, 0, "steam-generator", 0], [3, 0, "overdrive-projector", 0]]));
-  close(boosted.potential.made, 495, "sous un accelerateur il en vaut la moitie de plus");
+  close(boosted.potential.made, 495, "under an accelerator it is worth half again");
   close(boosted.potential.spent, 210, "et l'accelerateur se paie 210");
 });
 
 test("an overdrive projector reaches ten tiles and no further", async () => {
   const far = await analyse(paste([
     [0, 0, "steam-generator", 0], [30, 0, "overdrive-projector", 0]]));
-  close(far.potential.made, 330, "hors de portee, rien n'accelere");
+  close(far.potential.made, 330, "out of range, nothing accelerates");
 });
 
 test("a block exactly on the projector's circle is left alone", async () => {
@@ -356,11 +356,11 @@ test("a block exactly on the projector's circle is left alone", async () => {
      rather than an off-by-one somewhere else. */
   const on = await analyse(paste([
     [0, 0, "steam-generator", 0], [11, 0, "overdrive-projector", 0]]));
-  close(on.potential.made, 330, "11 n'est pas strictement inferieur a 11");
+  close(on.potential.made, 330, "11 is not strictly less than 11");
 
   const inside = await analyse(paste([
     [0, 0, "steam-generator", 0], [10, 0, "overdrive-projector", 0]]));
-  close(inside.potential.made, 495, "une case plus pres, il accelere");
+  close(inside.potential.made, 495, "one tile closer, it accelerates");
 });
 
 test("a projector does not speed up another projector", async () => {
@@ -368,7 +368,7 @@ test("a projector does not speed up another projector", async () => {
      game rather than listed here, so a balance patch cannot make this quietly wrong. */
   const out = await analyse(paste([
     [0, 0, "overdrive-projector", 0], [3, 0, "overdrive-projector", 0]]));
-  close(out.potential.spent, 420, "deux accelerateurs, 210 chacun et pas un de plus");
+  close(out.potential.spent, 420, "two accelerators, 210 each and not one more");
 });
 
 test("a sandbox source pours what it was configured with", async () => {
@@ -382,15 +382,15 @@ test("a sandbox source pours what it was configured with", async () => {
      to produce, because a tap the builder put inside it is something handed in, not
      something made: a layout fed coal and returning coal has made nothing. */
   const last = out.detail.filter((d) => d.name === "conveyor").pop();
-  close(last.through.coal, 6.5, "le charbon sort au debit de la bande");
-  assert.ok(!out.idle["item-source"], "une source alimente, elle n'est pas oubliee");
+  close(last.through.coal, 6.5, "the coal comes out at the belt's rate");
+  assert.ok(!out.idle["item-source"], "a source feeds, it is not forgotten");
 });
 
 test("a liquid source is recognised even when nothing in the layout drinks it", async () => {
   const water = { content: 4, id: known.liquids["water"].id };
   const out = await analyse(paste([[0, 0, "liquid-source", 0, water], [1, 0, "conduit", 0]]));
   const pipe = out.detail.find((d) => d.name === "conduit");
-  assert.ok(pipe.through.water > 0, "l'eau passe dans le tuyau");
+  assert.ok(pipe.through.water > 0, "the water goes through the pipe");
 });
 
 test("what arrives is spread over the machines waiting for it", async () => {
@@ -404,9 +404,9 @@ test("what arrives is spread over the machines waiting for it", async () => {
 
   const presses = out.detail.filter((t) => t.name === "graphite-press");
   assert.equal(presses.length, 2);
-  close(presses[0].fed, presses[1].fed, "les deux presses tournent pareil");
-  assert.ok(presses[0].fed > 0.01, "aucune des deux n'est laissee a zero");
-  assert.ok(presses[0].fed < 0.99, "et aucune ne tourne a plein sur la moitie du charbon");
+  close(presses[0].fed, presses[1].fed, "both presses run the same");
+  assert.ok(presses[0].fed > 0.01, "neither of the two is left at zero");
+  assert.ok(presses[0].fed < 0.99, "and neither runs flat out on half the coal");
 });
 
 test("a machine nothing feeds stays at nothing", async () => {
@@ -418,8 +418,8 @@ test("a machine nothing feeds stays at nothing", async () => {
 
   const presses = out.detail.filter((t) => t.name === "graphite-press")
     .sort((a, b) => b.fed - a.fed);
-  assert.ok(presses[0].fed > 0.5, "celle qui est branchee tourne");
-  close(presses[1].fed, 0, "celle qui n'est reliee a rien ne tourne pas");
+  assert.ok(presses[0].fed > 0.5, "the one that is connected runs");
+  close(presses[1].fed, 0, "the one connected to nothing does not run");
 });
 
 test("a sandbox source gives the factory what it asks for, not a flood", async () => {
@@ -433,7 +433,7 @@ test("a sandbox source gives the factory what it asks for, not a flood", async (
 
   const carried = out.detail.find((d) => d.name === "conduit").through.water;
   assert.ok(carried > 0 && carried < 1300,
-            `un tuyau ne deverse pas un ocean : ${carried}`);
+            `a pipe does not pour out an ocean: ${carried}`);
 });
 
 test("a container is a buffer an unloader draws from, not a hole", async () => {
@@ -445,22 +445,22 @@ test("a container is a buffer an unloader draws from, not a hole", async () => {
   const out = await analyse(paste(tiles), { copper: 4 }, inAt([0, 0, "copper"]));
 
   const last = out.detail.filter((d) => d.name === "conveyor").pop();
-  close(last.through.copper, 4, "ce qui est entre dans le coffre ressort du deverseur");
+  close(last.through.copper, 4, "what went into the vault comes back out of the unloader");
 });
 
 test("an unloader hands on eleven items a second, not three hundred", async () => {
   /* `60 / speed`, which is the game's own stat line. Written as `speed * 60` it came out
      thirty times too fast and a container behind one looked like a mine. */
-  close(known.blocks["unloader"].items_per_second, 11, "onze par seconde");
+  close(known.blocks["unloader"].items_per_second, 11, "eleven a second");
 
   /* Fed straight into the container, so the belt in front is not what limits it: the
      unloader offers eleven a second and the titanium belt behind it takes ten. */
   const tiles = [[1, 0, "container", 0], [3, 0, "unloader", 0],
                  [4, 0, "titanium-conveyor", 0]];
-  // Le collage recadre sur la boite : le coffre retombe en (0, 0).
+  // The paste recentres on the bounding box: the vault lands back at (0, 0).
   const out = await analyse(paste(tiles), { copper: 40 }, inAt([0, 0, "copper"]));
   const belt = out.detail.find((d) => d.name === "titanium-conveyor");
-  close(belt.through.copper, 10, "la bande en titane porte dix, le deverseur en offre onze");
+  close(belt.through.copper, 10, "the titanium belt carries ten, the unloader offers eleven");
 });
 
 test("a sandbox source is not credited with what runs straight through", async () => {
@@ -469,7 +469,7 @@ test("a sandbox source is not credited with what runs straight through", async (
      nearest open pipe. */
   const water = { content: 4, id: known.liquids["water"].id };
   const out = await analyse(paste([[0, 0, "liquid-source", 0, water], [1, 0, "conduit", 0]]));
-  assert.ok(!out.produced.water, "une source n'est pas une production");
+  assert.ok(!out.produced.water, "a source is not production");
 });
 
 test("a liquid a machine drinks is not reported as wasted", async () => {
@@ -478,16 +478,16 @@ test("a liquid a machine drinks is not reported as wasted", async () => {
      same page that said the cultivators were running flat out. */
   const out = await analyse(REAL, {}, EAU);
   assert.ok(!out.surplus.water,
-            `l'eau bue n'est pas gaspillee : ${JSON.stringify(out.surplus)}`);
+            `water drunk is not wasted: ${JSON.stringify(out.surplus)}`);
 });
 
 test("a build standing on its own sources is not asked where it plugs in", async () => {
   const coal = { content: 0, id: known.items["coal"].id };
   const out = await analyse(paste([[0, 0, "item-source", 0, coal], [1, 0, "conveyor", 0]]));
-  assert.equal(out.selfFed, true, "elle a ses propres robinets");
+  assert.equal(out.selfFed, true, "it has its own taps");
 
   const plain = await analyse(paste([[0, 0, "conveyor", 0], [1, 0, "conveyor", 0]]));
-  assert.equal(plain.selfFed, false, "une bande toute seule attend qu'on la branche");
+  assert.equal(plain.selfFed, false, "a belt on its own waits to be connected");
 });
 
 test("sealed means nothing arrives from outside", async () => {
@@ -496,9 +496,9 @@ test("sealed means nothing arrives from outside", async () => {
   const shut = await analyse(paste(tiles), {}, inAt([0, 0, "coal"]), { sealed: true });
 
   const press = (report) => report.detail.find((d) => d.name === "graphite-press");
-  assert.ok(press(marked).fed > 0, "marquee, la presse est alimentee");
-  close(press(shut).fed, 0, "scellee, rien n'arrive et rien ne tourne");
-  assert.equal(shut.awaiting, false, "scellee est une reponse, pas une absence de reponse");
+  assert.ok(press(marked).fed > 0, "marked, the press is fed");
+  close(press(shut).fed, 0, "sealed, nothing arrives and nothing runs");
+  assert.equal(shut.awaiting, false, "sealed is an answer, not the absence of one");
 });
 
 /**

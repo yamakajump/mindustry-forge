@@ -37,10 +37,10 @@ useCatalogue(JSON.parse(read("site/public/forge/logic/instructions.json")));
 const verdicts = JSON.parse(read("bench/data/logique-oracle.json"));
 const corpus = new URL("bench/data/logique/", root);
 
-test("le corpus et l'oracle parlent des memes programmes", () => {
+test("the corpus and the oracle talk about the same programs", () => {
   const files = readdirSync(corpus).filter((name) => name.endsWith(".mlog")).sort();
   assert.deepEqual(files, Object.keys(verdicts).sort(),
-    "un programme ajoute sans relancer tools/build_logic_oracle.py");
+    "a program was added without rerunning tools/build_logic_oracle.py");
 });
 
 /** The instruction each statement really is, once the game has had its way with it. */
@@ -52,26 +52,26 @@ const written = (text) => text.split("\n").filter(Boolean)
   .map((line) => line.split(" ")[0]);
 
 for (const [name, verdict] of Object.entries(verdicts)) {
-  test(`${name} se lit comme le jeu le lit`, () => {
+  test(`${name} reads the way the game reads it`, () => {
     const report = parse(read(`bench/data/logique/${name}`));
 
     if (verdict.refused) {
       assert.ok(refused(report),
-        `le jeu refuse ce programme (${verdict.refused}) et pas nous`);
+        `the game refuses this program (${verdict.refused}) and we do not`);
       return;
     }
 
     assert.ok(!refused(report),
-      `nous refusons un programme que le jeu accepte : ${
+      `we refuse a program the game accepts: ${
         report.problems.filter((p) => p.severity === "refus")
-          .map((p) => `${p.key} ligne ${p.line + 1}`).join(", ")}`);
+          .map((p) => `${p.key} line ${p.line + 1}`).join(", ")}`);
 
-    assert.equal(report.statements.length, verdict.statements, "nombre d'instructions");
-    assert.deepEqual(asGame(report), written(verdict.written), "la suite des instructions");
+    assert.equal(report.statements.length, verdict.statements, "instruction count");
+    assert.deepEqual(asGame(report), written(verdict.written), "the sequence of instructions");
   });
 }
 
-test("les sauts atterrissent la ou le jeu les fait atterrir", () => {
+test("jumps land where the game makes them land", () => {
   for (const [name, verdict] of Object.entries(verdicts)) {
     if (verdict.refused) continue;
 
@@ -86,6 +86,6 @@ test("les sauts atterrissent la ou le jeu les fait atterrir", () => {
         return /^[+-]?\d+$/.test(target) ? Number(target) : report.labels.get(target);
       });
 
-    assert.deepEqual(ours, theirs, `${name} : les cibles de saut`);
+    assert.deepEqual(ours, theirs, `${name}: the jump targets`);
   }
 });

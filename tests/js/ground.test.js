@@ -29,14 +29,14 @@ test("a drill's rate is the game's formula, not a best case", async () => {
   const out = await analyse(paste([[0, 0, "mechanical-drill", 0]]), {}, null, { ground });
 
   const drill = out.detail.find((t) => t.role === "drill");
-  close(drill.dug.rate, 60 * 4 / 650, "quatre cases de cuivre");
+  close(drill.dug.rate, 60 * 4 / 650, "four tiles of copper");
   assert.equal(drill.dug.covered, 4);
 });
 
 test("a drill half on the patch is half as fast", async () => {
   const ground = patch("ore-copper", [0, 0], [1, 0]);
   const out = await analyse(paste([[0, 0, "mechanical-drill", 0]]), {}, null, { ground });
-  close(out.detail[0].dug.rate, 60 * 2 / 650, "deux cases sur quatre");
+  close(out.detail[0].dug.rate, 60 * 2 / 650, "two tiles out of four");
 });
 
 test("a drill too weak for the ore digs nothing", async () => {
@@ -47,7 +47,7 @@ test("a drill too weak for the ore digs nothing", async () => {
   assert.equal(weak.detail[0].dug, null);
 
   const able = await analyse(paste([[0, 0, "laser-drill", 0]]), {}, null, { ground });
-  assert.ok(able.detail[0].dug.rate > 0, "une foreuse laser y arrive");
+  assert.ok(able.detail[0].dug.rate > 0, "a laser drill manages it");
 });
 
 test("a pump sums the tiles under it, and deep water counts for more", async () => {
@@ -58,8 +58,8 @@ test("a pump sums the tiles under it, and deep water counts for more", async () 
     return out.detail[0].dug?.rate || 0;
   };
 
-  close(await rate(shallow), 7, "sept eau par seconde");
-  close(await rate(deep), 10.5, "l'eau profonde compte une fois et demie");
+  close(await rate(shallow), 7, "seven water a second");
+  close(await rate(deep), 10.5, "deep water counts one and a half times over");
 });
 
 test("a pump on two different liquids pumps neither", async () => {
@@ -88,12 +88,12 @@ test("a drill on ore feeds the layout instead of being asked to be fed", async (
 
   const bare = await analyse(paste(tiles));
   assert.ok(bare.needs.some((n) => n.resource === "coal"),
-            "sans sol, il faut trouver du charbon");
+            "with no ground, coal has to be found");
 
   const dug = await analyse(paste(tiles), {}, null, { ground });
   assert.ok(!dug.needs.some((n) => n.resource === "coal"),
-            "avec le charbon dessous, il n'y a plus rien a aller chercher");
-  assert.ok(dug.perMinute.graphite > 0, "et la presse tourne");
+            "with the coal underneath, there is nothing left to go and find");
+  assert.ok(dug.perMinute.graphite > 0, "and the press runs");
 });
 
 test("a drill that does not cover the demand says how much is missing", async () => {
@@ -105,11 +105,11 @@ test("a drill that does not cover the demand says how much is missing", async ()
   ]), {}, null, { ground });
 
   const coal = out.needs.find((n) => n.resource === "coal");
-  close(coal.perMinute, 80 - 60 * 4 / 700 * 60, "ce qui manque, pas ce qu'il faut en tout");
+  close(coal.perMinute, 80 - 60 * 4 / 700 * 60, "what is missing, not the whole demand");
 });
 
 test("nothing under it means nothing out of it", () => {
   const drill = { x: 0, y: 0, role: "drill", block: { size: 2, tier: 2, drill_time: 600 } };
   assert.equal(yieldOf(drill, {}, known), null);
-  assert.equal(yieldOf(drill, null, known), null, "et pas de sol du tout non plus");
+  assert.equal(yieldOf(drill, null, known), null, "and no ground at all either");
 });

@@ -21,13 +21,13 @@ test("nothing is fed until somebody says where from", async () => {
   const tiles = [[0, 0, "conveyor", 0], [1, 0, "conveyor", 0], [2, 0, "graphite-press", 0]];
 
   const silent = await analyse(paste(tiles), { coal: 4 });
-  assert.equal(silent.awaiting, true, "la question n'a pas de reponse");
+  assert.equal(silent.awaiting, true, "the question has no answer");
   assert.equal(silent.detail.find((d) => d.name === "graphite-press").fed, 0);
-  assert.equal(Object.keys(silent.perMinute).length, 0, "et donc aucun debit annonce");
+  assert.equal(Object.keys(silent.perMinute).length, 0, "and so no rate is reported");
 
   const said = await analyse(paste(tiles), { coal: 4 }, inAt([0, 0, "coal"]));
   assert.equal(said.awaiting, false);
-  close(said.perMinute.graphite, 40, "marquee, elle tourne");
+  close(said.perMinute.graphite, 40, "marked, it runs");
 });
 
 test("a marked tile says what it has to carry", async () => {
@@ -37,7 +37,7 @@ test("a marked tile says what it has to carry", async () => {
   assert.equal(out.ports.inputs.length, 1);
   const [port] = out.ports.inputs;
   assert.equal(port.resource, "coal");
-  close(port.rate, 2 * 60 / 90, "une presse mange 1,33 charbon par seconde");
+  close(port.rate, 2 * 60 / 90, "a press eats 1.33 coal a second");
 });
 
 test("two tiles marked for the same thing share the demand", async () => {
@@ -48,7 +48,7 @@ test("two tiles marked for the same thing share the demand", async () => {
 
   assert.equal(out.ports.inputs.length, 2);
   for (const port of out.ports.inputs) {
-    close(port.rate, 2 * 60 / 90, "chacune amene de quoi nourrir sa presse");
+    close(port.rate, 2 * 60 / 90, "each one brings enough to feed its press");
   }
 });
 
@@ -61,7 +61,7 @@ test("what comes out is read, not chosen", async () => {
   });
 
   const [exit] = out.ports.outputs;
-  assert.equal(exit.resource, "graphite", "la schematique dit quoi, le joueur dit ou");
+  assert.equal(exit.resource, "graphite", "the schematic says what, the player says where");
   assert.ok(exit.rate > 0);
 });
 
@@ -72,16 +72,16 @@ test("a pipe is never offered coal", async () => {
   ]));
 
   const offered = out.offers["0,0"] || [];
-  assert.ok(offered.includes("water"), `un tuyau se voit proposer de l'eau : ${offered}`);
-  assert.ok(!offered.includes("coal"), "et jamais du charbon");
+  assert.ok(offered.includes("water"), `a pipe should be offered water: ${offered}`);
+  assert.ok(!offered.includes("coal"), "and never coal");
 });
 
 test("a fuel wildcard is offered as the things that actually burn", () => {
   const pipe = { block: { carries: "item" }, role: "conveyor" };
   const offered = candidates(pipe, { "*combustible": 1 }, {}, known, () => false);
 
-  assert.ok(offered.includes("coal"), `le charbon brule : ${offered}`);
-  assert.ok(!offered.includes("copper"), "le cuivre non");
+  assert.ok(offered.includes("coal"), `coal burns: ${offered}`);
+  assert.ok(!offered.includes("copper"), "copper does not");
 });
 
 test("an old save with a bare side still reads", () => {
@@ -89,7 +89,7 @@ test("an old save with a bare side still reads", () => {
   assert.deepEqual(readMarks({ "3,7": "in" }), { "3,7": { side: "in", resource: null } });
   assert.deepEqual(readMarks({ "3,7": { side: "out", resource: "coal" } }),
                    { "3,7": { side: "out", resource: "coal" } });
-  assert.deepEqual(readMarks({ "3,7": "peut-etre" }), {}, "et rien d'autre ne passe");
+  assert.deepEqual(readMarks({ "3,7": "peut-etre" }), {}, "and nothing else gets through");
 });
 
 test("a mark goes on anything that can be plugged into", () => {
@@ -97,21 +97,21 @@ test("a mark goes on anything that can be plugged into", () => {
      outside ends on a press as happily as on another belt. */
   const node = (block, role) => ({ block, role });
   assert.equal(markable(node({ carries: "item" }, "conveyor")), true);
-  assert.equal(markable(node({}, "crafter")), true, "une bande peut finir sur une usine");
-  assert.equal(markable(node({}, "turret")), true, "et sur une tourelle");
-  assert.equal(markable(node({}, "store")), true, "et dans un coffre");
+  assert.equal(markable(node({}, "crafter")), true, "a belt can end on a factory");
+  assert.equal(markable(node({}, "turret")), true, "and on a turret");
+  assert.equal(markable(node({}, "store")), true, "and into a vault");
 
-  assert.equal(markable(node({}, "power")), false, "on ne branche pas une bande sur une pile");
+  assert.equal(markable(node({}, "power")), false, "a belt is not plugged into a battery");
   assert.equal(markable(node({}, "unknown")), false);
   assert.equal(markable(node({ carries: "item" }, "source")), false,
-               "une source de bac a sable verse deja toute seule");
+               "a sandbox source already pours by itself");
 });
 
 test("a machine is offered its own recipe, not the whole shortfall", async () => {
   const out = await analyse(paste([[0, 0, "graphite-press", 0], [4, 0, "duo", 0]]));
-  assert.deepEqual(out.offers["0,0"], ["coal"], "une presse mange du charbon");
-  assert.ok(out.offers["4,0"].includes("graphite"), "une tourelle mange ses munitions");
-  assert.ok(!out.offers["4,0"].includes("coal"), "et pas du charbon");
+  assert.deepEqual(out.offers["0,0"], ["coal"], "a press eats coal");
+  assert.ok(out.offers["4,0"].includes("graphite"), "a turret eats its ammunition");
+  assert.ok(!out.offers["4,0"].includes("coal"), "and not coal");
 });
 
 test("an arrival can land straight on a machine", async () => {
@@ -119,8 +119,8 @@ test("an arrival can land straight on a machine", async () => {
      from a base that was not copied. */
   const out = await analyse(paste([[0, 0, "graphite-press", 0]]), {},
                             inAt([0, 0, "coal"]));
-  close(out.detail[0].fed, 1, "la presse tourne");
-  close(out.perMinute.graphite, 40, "et sort son graphite");
+  close(out.detail[0].fed, 1, "the press runs");
+  close(out.perMinute.graphite, 40, "and outputs its graphite");
 });
 
 test("a marked tile with nothing picked takes what fits", () => {
@@ -130,5 +130,5 @@ test("a marked tile with nothing picked takes what fits", () => {
   const feeds = feedFrom(graph, { "0,0": { side: "in", resource: null } },
                          { water: 12, coal: 3 }, (name) => name === "water");
 
-  assert.deepEqual(feeds, { 0: { water: 12 } }, "l'eau oui, le charbon non");
+  assert.deepEqual(feeds, { 0: { water: 12 } }, "water yes, coal no");
 });
