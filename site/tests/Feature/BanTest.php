@@ -88,3 +88,20 @@ it('still signs in an account that is not banned', function () {
     expect(auth()->check())->toBeTrue()
         ->and(auth()->user()->discord_id)->toBe('777');
 });
+
+it('ends a session that was already open when the ban landed', function () {
+    $user = User::factory()->create(['discord_id' => '4242']);
+
+    $this->actingAs($user)->get('/mes-schemas')->assertOk();
+
+    Ban::place('4242', 'vandalism');
+
+    $this->actingAs($user)->get('/mes-schemas')->assertRedirect('/');
+    expect(auth()->check())->toBeFalse();
+});
+
+it('leaves an unbanned session alone', function () {
+    $user = User::factory()->create(['discord_id' => '777']);
+
+    $this->actingAs($user)->get('/mes-schemas')->assertOk();
+});
