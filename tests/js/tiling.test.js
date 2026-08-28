@@ -59,3 +59,20 @@ test("neighbours usually differ, which is what kills the stripes", () => {
   // A third of neighbours matching is what three variants picked independently gives.
   assert.ok(same < 63 * 64 * 0.45, `${same} of ${63 * 64} horizontal neighbours matched`);
 });
+
+test("the variant is not constant along a diagonal either", () => {
+  /* (x + y) % count and (x - y) % count both pass every test above this one: they vary
+     along x, they vary along y, they're stable across calls, roughly balanced, and mostly
+     differ from an east or north neighbour. What they don't do is vary along their own
+     diagonal, since that is exactly the axis a sum or difference hash holds constant. A
+     hash that only clears the row and column checks can still stripe the board on the
+     diagonal, which is the same defect the rest of this file exists to catch. */
+  const alongSum = new Set();
+  const alongDiff = new Set();
+  for (let x = 0; x < 40; x++) {
+    alongSum.add(variantOf(x, 20 - x, 3));
+    alongDiff.add(variantOf(x, x - 20, 3));
+  }
+  assert.ok(alongSum.size > 1, "a whole x + y diagonal took the same variant");
+  assert.ok(alongDiff.size > 1, "a whole x - y diagonal took the same variant");
+});

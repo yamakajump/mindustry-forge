@@ -36,6 +36,14 @@ INDEX = Path("site/public/forge/atlas.json")
 #: so the canvas can decide how big a tile is and a zoomed-in view still looks sharp.
 TILE = 32
 
+#: Floor kinds whose numbered sprites are not texture variants of one picture. A
+#: `RuneOverlay` or `CharacterOverlay` tile has one glyph per number, picked by the block's
+#: configuration rather than by the game at random, and the game draws the same glyph on
+#: every tile of a given configuration. Packing all of them as `floor/<name>#<n>` and then
+#: choosing among them per tile with a position hash, the way `grass1..3` are chosen, would
+#: scatter unrelated glyphs across a painted patch instead of drawing the one configured.
+NOT_TEXTURE_VARIANTS = {"RuneOverlay", "CharacterOverlay"}
+
 
 def sprite_names(archive: zipfile.ZipFile) -> dict[str, str]:
     """Every sprite in the jar, by its bare file name."""
@@ -180,10 +188,15 @@ def main() -> None:
         path = sprites.get(name) or sprites.get(f"{name}1")
         if path:
             wanted.append((f"floor/{name}", path))
-        for n in range(1, 10):
+        if entry.get("kind") in NOT_TEXTURE_VARIANTS:
+            continue
+        n = 1
+        while True:
             variant = sprites.get(f"{name}{n}")
-            if variant:
-                wanted.append((f"floor/{name}#{n}", variant))
+            if not variant:
+                break
+            wanted.append((f"floor/{name}#{n}", variant))
+            n += 1
 
     # The frame of a block that gets configured, without the composite's contents.
     #
