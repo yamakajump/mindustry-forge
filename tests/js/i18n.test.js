@@ -37,7 +37,7 @@ const DICTIONARY = JSON.parse(read("public/forge/lang/fr.json"));
 
 /* The domains the naming convention allows, from the conventions in CLAUDE.md. A key outside
    them is a typo or an invention, and both are worth failing on. */
-const DOMAINS = ["nav", "vitrine", "schema", "analyse", "edition", "outils", "blocs", "compte"];
+const DOMAINS = ["nav", "vitrine", "schema", "analyse", "edition", "outils", "blocs", "compte", "dossiers"];
 const DOMAIN = "(?:" + DOMAINS.join("|") + ")";
 
 /* `<domaine>.<ecran>.<element>`, in a quote. Three segments at least: two would be a key

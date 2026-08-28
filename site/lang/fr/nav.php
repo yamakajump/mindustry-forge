@@ -22,6 +22,7 @@ return [
         'les-miennes' => 'Les miens',
         'favoris' => 'Mes favoris',
         'comparer' => 'Comparer',
+        'dossiers' => 'Mes dossiers',
         'publier' => 'Publier',
         'logique' => 'Logique',
         'affichage' => 'Affichage',

@@ -45,6 +45,25 @@ class IconController extends Controller
      */
     private const FAMILIES = ['bloc' => '', 'objet' => 'item/', 'liquide' => 'item/'];
 
+    /**
+     * Can this address be drawn, as `bloc/thorium-reactor` or `objet/silicon`?
+     *
+     * Public because a folder stores one of these names and has to refuse the ones that
+     * would render as a broken image. Asked here rather than reimplemented there: two
+     * readings of "does this icon exist" that can disagree is a name that validates and
+     * then 404s.
+     */
+    public static function draws(string $address): bool
+    {
+        [$family, $name] = array_pad(explode('/', $address, 2), 2, null);
+
+        if ($name === null || ! isset(self::FAMILIES[$family]) || ! preg_match(self::NAME, $name)) {
+            return false;
+        }
+
+        return Sprites::find(self::FAMILIES[$family].$name) !== null;
+    }
+
     public function show(string $family, string $name): Response
     {
         $size = (int) request()->query('t', '32');
