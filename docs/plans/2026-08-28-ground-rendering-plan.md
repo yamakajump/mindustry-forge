@@ -40,182 +40,23 @@ worktree root before starting Task 2.
 
 ---
 
-### Task 1: Tiles that meet with no joint
+### Task 1: WITHDRAWN - the seam it fixed does not exist
 
-Today `site/public/forge/render.js:429` computes `const px = (x - box.left) * scale` and
-draws `scale` wide. At a fractional zoom two neighbours land either side of a half pixel
-and the background shows through the seam. This is the grid of dark lines visible on a
-solid patch of grass, and it is separate from the variant problem: fixing variants without
-this leaves the grid.
+Kept numbered rather than removed, so that the numbers in the ledger and in the commit
+history still line up with this file.
 
-**Files:**
-- Create: `site/public/forge/tiling.js`
-- Create: `tests/js/tiling.test.js`
-- Modify: `site/public/forge/render.js:419-435`
+This task rounded both edges of a ground tile so that neighbours would meet on the same
+pixel. It was written, reviewed, committed as `bb84ec3` and reverted in `560781e` once
+somebody measured instead of reading: `editor/camera.js:20` clamps the editor's zoom with
+`Math.round` and `render.js:364` derives the report's with `Math.floor`, so the scale is
+always whole, and `devicePixelRatio` is 1 on the machine the complaint came from. A probe
+drawing eight tiles at scales 13, 24 and 31, with and without the rounding, counted zero
+background columns in all six cases.
 
-**Interfaces:**
-- Consumes: nothing.
-- Produces: `tileRect(x, y, box, scale) -> {x, y, w, h}`, all four integers. `box` is the
-  object `bounds()` already returns: `{left, bottom, width, height}`.
+`tileRect` is gone with it. Tasks 2 and 5 draw at the existing `px` and `py`, which were
+never wrong.
 
-- [ ] **Step 1: Write the failing test**
-
-Create `tests/js/tiling.test.js`:
-
-```js
-/**
- * Where a tile lands on the canvas, which is a question about the joint between two of
- * them rather than about either one.
- */
-
-import test from "node:test";
-import assert from "node:assert/strict";
-
-import { tileRect } from "../../site/public/forge/tiling.js";
-
-const box = { left: 0, bottom: 0, width: 8, height: 8 };
-
-test("neighbouring tiles share an edge exactly, at a fractional scale", () => {
-  /* The defect this replaces: `x * scale` for both, drawn `scale` wide. At 13.7 pixels a
-     tile the right edge of one landed 0.7 of a pixel short of its neighbour's left edge,
-     and with smoothing off the canvas rounded the two apart. */
-  const scale = 13.7;
-  for (let x = 0; x < 7; x++) {
-    const here = tileRect(x, 0, box, scale);
-    const next = tileRect(x + 1, 0, box, scale);
-    assert.equal(here.x + here.w, next.x, `joint after column ${x}`);
-  }
-});
-
-test("stacked tiles share an edge exactly too", () => {
-  const scale = 13.7;
-  for (let y = 0; y < 7; y++) {
-    const lower = tileRect(0, y, box, scale);
-    const upper = tileRect(0, y + 1, box, scale);
-    assert.equal(upper.y + upper.h, lower.y, `joint above row ${y}`);
-  }
-});
-
-test("every rectangle is whole pixels", () => {
-  const rect = tileRect(3, 5, box, 13.7);
-  for (const side of ["x", "y", "w", "h"]) {
-    assert.equal(rect[side], Math.trunc(rect[side]), `${side} is not an integer`);
-  }
-});
-
-test("a tile is never zero wide, however small the zoom", () => {
-  /* A schematic zoomed out to fit a thumbnail still has to show its ground. Rounding two
-     boundaries independently can collapse a tile to nothing; the game shows a pixel. */
-  for (const scale of [0.4, 0.7, 1, 1.3]) {
-    const rect = tileRect(2, 2, box, scale);
-    assert.ok(rect.w >= 1 && rect.h >= 1, `${scale} gave ${rect.w}x${rect.h}`);
-  }
-});
-
-test("y is measured downwards, because a canvas is", () => {
-  /* The board's y grows upwards and the canvas's grows downwards. Getting this backwards
-     draws the ground mirrored under a schematic that is not, which reads as a rendering
-     bug nobody can name. */
-  const bottom = tileRect(0, 0, box, 10);
-  const top = tileRect(0, 7, box, 10);
-  assert.equal(bottom.y, 70);
-  assert.equal(top.y, 0);
-});
-```
-
-- [ ] **Step 2: Run it and watch it fail**
-
-Run: `npm test`
-Expected: FAIL, `Cannot find module '.../site/public/forge/tiling.js'`.
-
-- [ ] **Step 3: Write `tiling.js`**
-
-Create `site/public/forge/tiling.js`:
-
-```js
-/**
- * The three decisions behind drawing the ground, kept out of the canvas so they can be
- * tested.
- *
- * `render.js` owns the `drawImage` calls and nothing else. What is here is arithmetic: a
- * canvas is not needed to be sure two tiles meet, and a test that needs one would not have
- * been written.
- */
-
-/**
- * Where one tile lands, in whole pixels, with its neighbours.
- *
- * Both edges are rounded from the same expression, so tile `x`'s right edge is computed as
- * `round((x + 1) * scale)` and tile `x + 1`'s left edge is the same number. Rounding a
- * position and then adding a rounded width does not have that property, and that is the
- * defect this replaces: a one pixel gap between every pair of tiles at any zoom that was
- * not a whole number of pixels.
- */
-export function tileRect(x, y, box, scale) {
-  const left = Math.round((x - box.left) * scale);
-  const right = Math.round((x - box.left + 1) * scale);
-  const top = Math.round((box.height - (y - box.bottom) - 1) * scale);
-  const bottom = Math.round((box.height - (y - box.bottom)) * scale);
-  return {
-    x: left,
-    y: top,
-    // A tile rounded out of existence is a hole in the ground. One pixel is the least a
-    // canvas can show, and a thumbnail is exactly where this happens.
-    w: Math.max(1, right - left),
-    h: Math.max(1, bottom - top),
-  };
-}
-```
-
-- [ ] **Step 4: Run the tests**
-
-Run: `npm test`
-Expected: PASS, the five new tests included.
-
-- [ ] **Step 5: Use it in `render.js`**
-
-In `site/public/forge/render.js`, add to the imports at the top:
-
-```js
-import { tileRect } from "./tiling.js";
-```
-
-Replace the body of the ground loop (currently lines 426-434, from `const px =` through the
-closing brace of the `for (const name of ...)` loop) with:
-
-```js
-      const rect = tileRect(x, y, box, scale);
-      for (const name of [layers.floor, layers.overlay]) {
-        const art = name && atlas?.sprites?.[`floor/${name}`];
-        if (art) {
-          context.drawImage(sheet, art.x, art.y, art.w, art.h,
-                            rect.x, rect.y, rect.w, rect.h);
-        }
-      }
-```
-
-- [ ] **Step 6: Look at it**
-
-Run: `cd site && php artisan serve --port=8770`, open `http://localhost:8770/editer`, paint
-a patch of grass 20 tiles wide, and zoom with the wheel through several non-integer steps.
-
-Expected: no dark grid between tiles at any zoom. The diagonal streaks are still there:
-that is Task 2, and seeing them now is the point of doing this task on its own.
-
-- [ ] **Step 7: Commit**
-
-```bash
-git add site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/render.js \
-  && git commit -m "fix(render): make two ground tiles meet on the same pixel
-
-A tile was placed at x * scale and drawn scale wide, so at any zoom that
-was not a whole number of pixels its right edge and its neighbour's left
-edge rounded to different columns, and the background showed through the
-gap. On a solid patch of one floor that reads as a grid nobody drew.
-
-Both edges now come from the same rounded expression, which is what makes
-them equal rather than merely close."
-```
+**Start at Task 2.**
 
 ---
 
@@ -227,20 +68,23 @@ tile into stripes. 67 of the catalogue's 107 floors have unused variants in the 
 
 **Files:**
 - Modify: `tools/build_sprites.py:170-178`
-- Modify: `site/public/forge/tiling.js`
-- Modify: `tests/js/tiling.test.js`
-- Modify: `site/public/forge/render.js` (the ground loop from Task 1)
+- Create: `site/public/forge/tiling.js`
+- Create: `tests/js/tiling.test.js`
+- Modify: `site/public/forge/render.js:419-435` (the ground loop)
 
 **Interfaces:**
-- Consumes: `tileRect` from Task 1.
+- Consumes: nothing.
 - Produces: `variantOf(x, y, count) -> integer in [0, count)`. Atlas keys gain
   `floor/<name>#<n>` for n from 1, alongside the existing `floor/<name>`.
 
 - [ ] **Step 1: Write the failing test**
 
-Append to `tests/js/tiling.test.js`:
+Create `tests/js/tiling.test.js`:
 
 ```js
+import test from "node:test";
+import assert from "node:assert/strict";
+
 import { variantOf } from "../../site/public/forge/tiling.js";
 
 test("a floor with one sprite always takes it", () => {
@@ -308,7 +152,18 @@ Expected: FAIL, `variantOf is not a function`.
 
 - [ ] **Step 3: Write `variantOf`**
 
-Append to `site/public/forge/tiling.js`:
+Create `site/public/forge/tiling.js`:
+
+```js
+/**
+ * The decisions behind drawing the ground, kept out of the canvas so they can be tested.
+ *
+ * `render.js` owns the `drawImage` calls and nothing else. What is here is arithmetic, and
+ * a canvas is not needed to check arithmetic.
+ */
+```
+
+then append to it:
 
 ```js
 /**
@@ -373,10 +228,9 @@ estimate by the time anybody asks.
 
 - [ ] **Step 7: Draw the variant in `render.js`**
 
-Import `variantOf` beside `tileRect`, and replace the ground loop body from Task 1 with:
+Import `variantOf` from `./tiling.js`, and replace the ground loop body with:
 
 ```js
-      const rect = tileRect(x, y, box, scale);
       for (const name of [layers.floor, layers.overlay]) {
         if (!name) continue;
         /* How many sprites this floor has, counted once per floor rather than per tile: a
@@ -391,8 +245,7 @@ Import `variantOf` beside `tileRect`, and replace the ground loop body from Task
           ? atlas.sprites[`floor/${name}#${variantOf(x, y, count) + 1}`]
           : atlas?.sprites?.[`floor/${name}`];
         if (art) {
-          context.drawImage(sheet, art.x, art.y, art.w, art.h,
-                            rect.x, rect.y, rect.w, rect.h);
+          context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
         }
       }
 ```
@@ -727,7 +580,7 @@ What it does, for one tile:
 - Modify: `site/public/forge/render.js`
 
 **Interfaces:**
-- Consumes: `sols.json` shape from Task 4, `tileRect` and `variantOf` from Tasks 1 and 2.
+- Consumes: `sols.json` shape from Task 4, and `variantOf` from Task 2.
 - Produces: `blendersAt(ground, x, y, floors) -> [{name, dirs}]`, sorted, where `dirs` is an
   array of indices into `D8`. Also exports `D8`, the eight offsets in the game's order.
 
@@ -881,10 +734,10 @@ Expected: PASS, all nine new tests.
 
 - [ ] **Step 5: Draw the edges in `render.js`**
 
-Extend the import line added in Task 1, which now reads:
+Extend the import line added in Task 2, which now reads:
 
 ```js
-import { tileRect, variantOf, blendersAt, D8 } from "./tiling.js";
+import { variantOf, blendersAt, D8 } from "./tiling.js";
 ```
 
 `sols.json` has to be loaded beside the atlas. In `render.js`, extend the existing
@@ -910,7 +763,7 @@ Then, in the ground loop, after the floor and overlay are drawn for this tile:
             const row = 2 - (dy + 1);
             context.drawImage(sheet,
               edgeArt.x + col * cell, edgeArt.y + row * cell, cell, cell,
-              rect.x, rect.y, rect.w, rect.h);
+              px, py, scale, scale);
           }
         }
       }
@@ -960,11 +813,11 @@ paying for.
 - [ ] **Step 1: Measure**
 
 ```bash
-git show HEAD~4:site/public/forge/atlas.png | wc -c    # before Task 2
+git show <commit before Task 2>:site/public/forge/atlas.png | wc -c    # before Task 2
 ls -l site/public/forge/atlas.png                       # now
 ```
 
-Adjust `HEAD~4` to whichever commit precedes Task 2's.
+Find that commit with `git log --oneline -- site/public/forge/atlas.png`.
 
 - [ ] **Step 2: Write the number into the design, replacing the estimate**
 

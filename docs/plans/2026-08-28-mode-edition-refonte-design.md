@@ -23,17 +23,30 @@ enterEditor([])`, and it is the last statement of the module. The browser paints
 analyser home page, then the editor mounts full screen over it. Nothing is broken; the
 page just does two things when one was asked.
 
-**The streaks on the ground.** Two defects stacked, and fixing either alone leaves the
-other visible.
+**The streaks on the ground.** One defect, and this paragraph first claimed two.
 
-- `tools/build_sprites.py:171` says it outright: *"One sprite each, no edge variants for
-  now"*. The game ships `grass1`, `grass2`, `grass3` and picks one per tile; the atlas
-  carries `grass1` only, so the diagonal pattern lines up from tile to tile and reads as
-  corduroy. 67 of the 107 floors in the catalogue have unused variants sitting in the jar.
-- `site/public/forge/render.js:429` draws each tile at `px = (x - box.left) * scale` with
-  no rounding. At a non-integer zoom, with smoothing off, two neighbouring tiles land
-  either side of a half pixel and the background shows through the joint. That is the grid
-  of dark lines visible on a solid patch of grass.
+`tools/build_sprites.py:171` says it outright: *"One sprite each, no edge variants for
+now"*. The game ships `grass1`, `grass2`, `grass3` and picks one per tile; the atlas
+carries `grass1` only, so the motif lines up from tile to tile and reads as corduroy. 67 of
+the 107 floors in the catalogue have unused variants sitting in the jar. Confirmed by
+drawing 16 by 16 tiles of `floor/grass` in a browser: the result reproduces the complaint,
+and carries no grid at all.
+
+**The second cause was invented, and the correction is worth more than the fact.** This
+document originally blamed `render.js:429` as well, for drawing at `px = (x - box.left) *
+scale` with no rounding, which at a fractional zoom would let the background through the
+joint. The code says that; the conclusion does not follow. `editor/camera.js:20` clamps the
+zoom with `Math.round` and `render.js:364` derives the report's with `Math.floor`, so the
+scale is always a whole number of pixels, and `devicePixelRatio` is 1 on the machine the
+complaint came from. A probe drawing eight tiles side by side at scales 13, 24 and 31, with
+and without rounding, counted zero background columns in all six cases. The sprites also
+tile perfectly against themselves: edge delta 0.0, alpha 255.
+
+A fix for it was written, reviewed, committed as `bb84ec3` and reverted in `560781e`. It
+was read out of the code, not measured, and its commit message stated the gap in the past
+tense as though somebody had seen it. That is the defect this repository already tracks,
+one step further along: not a right number beside the wrong question on a page, but a right
+number about a question nobody had asked, written into the history as an observation.
 
 **The palette.** `site/public/forge/editor/ui.js:285` is `searchRow.hidden = onGround`.
 The BUILD tab has a search box, a world filter and categories; the GROUND tab has none of
@@ -66,11 +79,7 @@ still looks like a button and does nothing is worse than no button.
 
 ### 2. The ground, drawn the way the game draws it
 
-Three corrections, in this order, because the third is invisible until the first two land.
-
-**Rounding.** Each tile is drawn from `Math.round(x * scale)` to `Math.round((x + 1) *
-scale)`, so one tile's right edge is exactly its neighbour's left edge. No joints at any
-zoom.
+Two corrections, in this order, because the second is invisible until the first lands.
 
 **Variants.** `build_sprites.py` takes `grass1..grass3` rather than `grass1`, and the
 renderer picks one per tile from a stable hash of the tile position.
