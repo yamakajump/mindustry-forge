@@ -1,5 +1,11 @@
 name: tests
 
+# Reads the code and writes nothing. Declared here rather than inherited: the
+# repository's default token is write-scoped, and a job that only runs tests has
+# no use for a token that can push.
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
