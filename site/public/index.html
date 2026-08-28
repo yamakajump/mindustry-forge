@@ -414,10 +414,10 @@ function render(report) {
 
   /* And what it gives back once it has all that, which is what a player is shopping for.
 
-     La carte se lit juste apres « Il lui faut », et ce n'est pas un hasard : le plafond
-     ci-dessous ne vaut qu'aux conditions que la carte du dessus enumere. Les separer, ou
-     mettre ce chiffre en haut de page, en ferait un debit qu'on citerait sans ses
-     conditions. Il est annonce « au mieux » pour la meme raison. */
+     The card reads straight after "Il lui faut", and that is not an accident: the ceiling
+     below only holds under the conditions the card above enumerates. Separating them, or
+     putting this figure at the top of the page, would turn it into a rate quoted without
+     its conditions. It is announced "au mieux" for the same reason. */
   const full = report.potential || { made: 0, spent: 0 };
   const ceiling = Object.entries(report.potentialPerMinute || {}).sort((a, b) => b[1] - a[1]);
   if (full.made > 0.01 || full.spent > 0.01 || ceiling.length) {
