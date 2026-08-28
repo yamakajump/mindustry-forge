@@ -62,7 +62,7 @@ class BrowseController extends Controller
         'aimes' => 'Les plus aimés',
         // N'a de sens que sous le filtre des favoris, et n'est offert que la : ailleurs il
         // classerait sur une date que la liste ne porte pas. Asymetrie assumee.
-        'garde' => 'Dans l ordre ou je les ai gardés',
+        'garde' => "Dans l'ordre où je les ai gardés",
     ];
 
     /** The four that compare schematics on their output, so the four that need an item. */
@@ -495,6 +495,21 @@ class BrowseController extends Controller
         if ($holds !== '') {
             $chips[] = ['label' => Thing::name($holds), 'clear' => ['bloc' => null]];
         }
+        /* Les trois listes personnelles ont leur puce comme le reste.
+
+           Sans elle, `/mes-favoris` rendait une liste sans rien dire qu'elle etait filtree :
+           le panneau qui porte les cases est replie, et le titre de la page est celui du
+           catalogue. Un lecteur voyait une vitrine anormalement courte, pas ses favoris. */
+        if ($favorites) {
+            $chips[] = ['label' => __('vitrine.a-moi.favoris'), 'clear' => ['favoris' => null]];
+        }
+        if ($liked) {
+            $chips[] = ['label' => __('vitrine.a-moi.aimes'), 'clear' => ['aimes' => null]];
+        }
+        if ($mine) {
+            $chips[] = ['label' => __('vitrine.a-moi.miens'), 'clear' => ['miens' => null]];
+        }
+
         if ($eats !== '') {
             $chips[] = [
                 'label' => __('vitrine.contraintes.consomme').' '.Thing::name($eats),

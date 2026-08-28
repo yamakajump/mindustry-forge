@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Folder;
+use App\Models\FolderLike;
 use App\Models\Schematic;
 use App\Models\SchematicLike;
 use Illuminate\Console\Command;
@@ -43,7 +45,30 @@ class RecountLikes extends Command
             }
         });
 
-        $this->info("{$repaired} compteurs repares.");
+        $this->info("{$repaired} compteurs de schemas repares.");
+
+        /* Une seconde passe et non une seconde commande : deux commandes qui font la meme
+           reparation sur deux tables, c'est une commande que quelqu'un oublie de lancer.
+           Les deux chiffres sont dits separement, parce qu'un total qui melange deux tables
+           ne dit pas ou est la derive. */
+        $folderCounts = FolderLike::query()
+            ->selectRaw('folder_id, count(*) as n')
+            ->groupBy('folder_id')
+            ->pluck('n', 'folder_id');
+
+        $folders = 0;
+        Folder::query()->select(['id', 'likes'])->chunkById(500, function ($rows) use ($folderCounts, &$folders) {
+            foreach ($rows as $row) {
+                $true = (int) ($folderCounts[$row->id] ?? 0);
+
+                if ($true !== (int) $row->likes) {
+                    Folder::whereKey($row->id)->update(['likes' => $true]);
+                    $folders++;
+                }
+            }
+        });
+
+        $this->info("{$folders} compteurs de dossiers repares.");
 
         return self::SUCCESS;
     }
