@@ -83,6 +83,17 @@ return [
      * Aucune quantite ne passe par un placeholder, ici moins qu'ailleurs : ces phrases ne sont
      * QUE des chiffres, et une cle manquante les viderait de tout ce qu'elles apportent.
      */
+    /*
+     * Les puces de filtres actifs. Aucun nombre n'y passe par un placeholder : ils sont
+     * assembles par le controleur, parce qu'une cle manquante rendrait « au moins » sans son
+     * millier, et le millier est toute la phrase.
+     */
+    'puces' => [
+        'titre' => 'Recherche en cours',
+        'retirer' => 'Retirer cette contrainte',
+        'tout-effacer' => 'tout effacer',
+    ],
+
     'verdict' => [
         'rendement' => 'Le meilleur rendement pour sa taille',
         'production' => 'Le plus productif',

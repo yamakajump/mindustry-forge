@@ -95,6 +95,25 @@
   @endforeach
 </nav>
 
+{{-- Ce que la recherche porte, et de quoi le retirer d'un clic.
+
+     Une page ouverte depuis un lien partage applique des contraintes que son lecteur n'a pas
+     posees, dans un panneau qui est replie. Sans ces puces, savoir pourquoi la liste est
+     courte demande d'ouvrir le panneau et de lire six champs. --}}
+@if($chips !== [])
+  <div class="puces">
+    <span class="puces-t">{{ __('vitrine.puces.titre') }}</span>
+    @foreach($chips as $chip)
+      <a class="puce" href="{{ request()->fullUrlWithQuery($chip['clear'] + ['page' => null]) }}"
+         title="{{ __('vitrine.puces.retirer') }}">{{ $chip['label'] }} <b>&times;</b></a>
+    @endforeach
+    <a class="puce vide" href="{{ request()->fullUrlWithQuery([
+        'large' => null, 'haut' => null, 'min' => null, 'blocs' => null,
+        'planete' => null, 'autonome' => null, 'verifie' => null, 'bloc' => null,
+        'page' => null]) }}">{{ __('vitrine.puces.tout-effacer') }}</a>
+  </div>
+@endif
+
 <form method="get" class="card">
   {{-- Le produit et le classement sont choisis par des liens, au-dessus. Reportes ici pour
        qu'appliquer une contrainte ne les efface pas : un formulaire ne renvoie que ses
@@ -268,6 +287,12 @@
     </div>
   @endif
 
+  @php
+    // L'echelle est celle de la page, pas celle de la tuile : deux silhouettes ne se
+    // comparent que si elles partagent leur facteur. Le plus grand cote affiche vaut 26 px.
+    $widest = max(1, $schematics->max(fn ($s) => max($s->width, $s->height)) ?? 1);
+    $scale = 26 / $widest;
+  @endphp
   <div class="grid">
     @foreach($schematics as $schematic)
       @php
@@ -342,7 +367,23 @@
                analysee par un moteur trop ancien n'a pas de largeur, et « 0x0 » se lit comme
                une mesure alors que c'est une absence. --}}
           @if($schematic->width > 0 && $schematic->height > 0)
-            <strong>{{ $schematic->width }}&times;{{ $schematic->height }}</strong> &middot;
+            {{-- L'encombrement dessine a cote de son chiffre, a une echelle commune a la
+                 page : deux plans se comparent alors a l'oeil, ce qu'un couple de nombres ne
+                 permet pas. Le rapport est respecte au pixel pres, largeur et hauteur
+                 multipliees par le meme facteur : un rectangle dessine en carre serait un
+                 dessin qui contredit le nombre pose juste a cote. --}}
+            {{-- Le dessin et son chiffre dans une seule boite insecable.
+
+                 Separes, la ligne se coupait entre les deux : le rectangle finissait colle au
+                 debit de la ligne du dessus et le « 14x7 » partait a la suivante. Un dessin
+                 juste, pose a cote d'un autre nombre que le sien, ce qui est la faute de ce
+                 depot dans sa version graphique. --}}
+            <span class="taille">
+              <span class="silh" aria-hidden="true"><span class="silh-r" style="width:{{
+                round($schematic->width * $scale, 1) }}px;height:{{
+                round($schematic->height * $scale, 1) }}px"></span></span>
+              <strong>{{ $schematic->width }}&times;{{ $schematic->height }}</strong>
+            </span> &middot;
           @endif
           {{ $schematic->blocks }} blocs &middot; {{ $schematic->credit() }}
           {{-- Said in the list too, not only on the page. Somebody scrolling a hundred

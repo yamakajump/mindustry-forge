@@ -274,6 +274,58 @@ class BrowseController extends Controller
         $unit = $makes === '' ? '' : ($makes === SchematicItem::POWER
             ? __('schema.unite.energie') : Thing::name($makes));
 
+        // L'unite suit la chose et non la colonne : `rate` porte des objets par minute et de
+        // l'energie par seconde sous le meme nom. Ecrire « 60 energie/min » serait juste
+        // arithmetiquement et faux partout ailleurs sur ce site.
+        $unitShort = $makes === '' ? '' : ($makes === SchematicItem::POWER
+            ? __('vitrine.note.energie-seconde')
+            : Thing::name($makes).__('schema.unite.par-minute'));
+
+        /* Ce que la recherche porte en ce moment, une puce par contrainte, chacune avec le
+           lien qui la retire.
+        
+           Une page arrivee par un lien partage applique des filtres que son lecteur n'a pas
+           poses, et le panneau qui les contient est replie. Sans ces puces, la seule façon de
+           savoir pourquoi la liste est courte est d'ouvrir le panneau et de lire six champs.
+        
+           Les nombres sont assembles ici et jamais passes a une cle de traduction : une cle
+           manquante rendrait la cle sans substituer, et « au moins 1 000 » deviendrait « au
+           moins », ce qui est la seule moitie de la phrase qui ne veut rien dire. */
+        $chips = [];
+        if ($fitsWide > 0 || $fitsTall > 0) {
+            $chips[] = [
+                'label' => __('vitrine.contraintes.tient-dans').' '
+                    .($fitsWide > 0 ? self::plain($fitsWide) : '?').' × '
+                    .($fitsTall > 0 ? self::plain($fitsTall) : '?'),
+                'clear' => ['large' => null, 'haut' => null],
+            ];
+        }
+        if ($atLeast > 0 && $makes !== '') {
+            $chips[] = [
+                'label' => __('vitrine.contraintes.au-moins').' '.self::plain($atLeast).' '.$unitShort,
+                'clear' => ['min' => null],
+            ];
+        }
+        if ($atMostBlocks > 0) {
+            $chips[] = [
+                'label' => __('vitrine.contraintes.au-plus').' '.self::plain($atMostBlocks).' '
+                    .__('vitrine.contraintes.unite.blocs'),
+                'clear' => ['blocs' => null],
+            ];
+        }
+        if ($planet !== '') {
+            $chips[] = ['label' => ucfirst($planet), 'clear' => ['planete' => null]];
+        }
+        if ($selfPowered) {
+            $chips[] = ['label' => __('vitrine.contraintes.autonome'), 'clear' => ['autonome' => null]];
+        }
+        if ($measured) {
+            $chips[] = ['label' => __('vitrine.contraintes.verifie'), 'clear' => ['verifie' => null]];
+        }
+        if ($holds !== '') {
+            $chips[] = ['label' => Thing::name($holds), 'clear' => ['bloc' => null]];
+        }
+
         return view('browse', [
             'schematics' => $page,
             'winners' => Remarks::winners($shown, $makes, $unit),
@@ -306,6 +358,7 @@ class BrowseController extends Controller
             'measured' => $measured,
             'planet' => $planet,
             'planets' => self::PLANETS,
+            'chips' => $chips,
         ]);
     }
 
@@ -327,6 +380,12 @@ class BrowseController extends Controller
         $value = is_numeric($raw) ? (float) $raw : 0;
 
         return $value > 0 && $value <= $ceiling ? $value : 0;
+    }
+
+    /** A bound as the reader typed it: 16 and not 16,00, 0,5 kept as 0,5. */
+    private static function plain(float $value): string
+    {
+        return rtrim(rtrim(number_format($value, 2, ',', ' '), '0'), ',');
     }
 
     /**

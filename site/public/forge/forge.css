@@ -1040,3 +1040,26 @@ select {
 .remarques .r-fort { border-left-color: var(--accent); }
 .remarques .r-petit, .remarques .r-tot, .remarques .r-autonome { border-left-color: var(--good); }
 .remarques .r-tard { border-left-color: var(--warn); }
+
+/* Les puces : ce que la recherche porte, et de quoi le retirer d'un clic. */
+.puces { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 14px; }
+.puces-t { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+.puce {
+  display: inline-flex; align-items: center; gap: 6px; background: #1e222a;
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px;
+  font-size: 12.5px; color: var(--ink);
+}
+.puce:hover { border-color: var(--bad); text-decoration: none; }
+.puce b { color: var(--dim); font-weight: 400; }
+.puce.vide { background: transparent; border-style: dashed; color: var(--dim); }
+
+/* L'encombrement dessine, a l'echelle commune de la page. */
+.silh {
+  display: inline-grid; place-items: center; width: 28px; height: 28px;
+  vertical-align: middle; background: #101216; border: 1px solid var(--line);
+  border-radius: 4px; margin-right: 2px;
+}
+.silh-r { display: block; background: #2e3a4d; border: 1px solid var(--accent); min-width: 1px; min-height: 1px; }
+/* Le dessin et son chiffre ne se separent jamais : une coupure de ligne entre les deux
+   collerait le rectangle au nombre de la ligne precedente. */
+.taille { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
