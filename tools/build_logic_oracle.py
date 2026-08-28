@@ -46,20 +46,20 @@ def main() -> None:
     args = parser.parse_args()
 
     if not args.classes.exists():
-        raise SystemExit(f"introuvable : {args.classes}")
+        raise SystemExit(f"not found: {args.classes}")
 
     result = subprocess.run(
         ["java", "-cp", str(args.classes), str(ORACLE), str(args.corpus)],
         capture_output=True, text=True, encoding="utf-8")
     if result.returncode:
-        raise SystemExit(result.stderr.strip() or "java a echoue")
+        raise SystemExit(result.stderr.strip() or "java failed")
 
     verdicts = json.loads(result.stdout)
     args.target.write_text(
         json.dumps(verdicts, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
     refused = sum(1 for entry in verdicts.values() if "refused" in entry)
-    print(f"{args.target} : {len(verdicts)} programmes, {refused} refuses par le jeu")
+    print(f"{args.target}: {len(verdicts)} programs, {refused} refused by the game")
 
 
 if __name__ == "__main__":

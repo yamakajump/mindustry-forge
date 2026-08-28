@@ -18,27 +18,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      # L'analyse tourne dans le navigateur du visiteur : ces tests sont
-      # la seule chose qui garantit qu'une schematique lue chez lui donne
-      # le meme resultat qu'ici.
+      # The analysis runs in the visitor's browser: these tests are the only
+      # thing that guarantees a schematic read on their machine gives the
+      # same result as here.
       - run: npm test
 
-      # Le controle que le README presente comme l'argument du projet : les
-      # chiffres se prouvent contre le jeu. Il ne tournait nulle part.
+      # The check the README presents as the project's whole argument: the
+      # numbers are proven against the game. It ran nowhere.
       #
-      # Le rejeu ne demande ni serveur ni jeu, seulement les mesures deja
-      # enregistrees sous bench/data/oracle/, et il sort en erreur au-dela
-      # de deux pour cent d'ecart. Il n'y avait donc aucune raison de ne
-      # pas l'avoir ici, et le README affirmait qu'il y etait.
-      - name: L'ecart contre le jeu
+      # The replay needs neither a server nor the game, only the
+      # measurements already recorded under bench/data/oracle/, and it exits
+      # in error past two per cent of gap. There was therefore no reason not
+      # to have it here, and the README claimed it was.
+      - name: The gap against the game
         run: npm run oracle
 
-      # Informatif : de combien le solveur d'etat stationnaire s'ecarte du
-      # moteur a tics, sur les memes scenarios. Ce n'est pas une barriere,
-      # les deux modeles sont connus pour diverger et le README le dit ;
-      # c'est pour que le chiffre soit dans le journal de chaque passage
-      # plutot que dans la memoire de quelqu'un.
-      - name: L'ecart entre les deux modeles
+      # Informative: how far the steady-state solve is from the tick engine,
+      # on the same scenarios. It is not a barrier, the two models are known
+      # to diverge and the README says so; it is here so that the figure is
+      # in the log of every run rather than in somebody's memory.
+      - name: The gap between the two models
         run: node tools/gap.mjs | tail -6
 
   application:
@@ -53,13 +52,13 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.3"
-          # sqlite : les tests tournent sur une base en memoire, pas sur MySQL.
+          # sqlite: the tests run on an in-memory database, not on MySQL.
           extensions: mbstring, sqlite3, pdo_sqlite, zip, gd
           coverage: none
 
       - run: composer validate --no-check-publish --no-check-lock
 
-      - name: Cache des dependances Composer
+      - name: Cache the Composer dependencies
         uses: actions/cache@v4
         with:
           path: site/vendor
@@ -67,21 +66,21 @@ jobs:
 
       - run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Style du code
+      - name: Code style
         run: vendor/bin/pint --test
 
-      - name: Preparer l'environnement de test
+      - name: Prepare the test environment
         run: |
           cp .env.example .env
           php artisan key:generate
 
       - run: php artisan test
 
-  # Les tests tournent sur SQLite en memoire, la production sur MySQL. Les
-  # migrations n'etaient donc verifiees sur aucune machine contre le moteur
-  # qui les jouera vraiment, alors que `deploy.sh` les passe en prod a chaque
-  # deploiement. Une migration qui passe sur SQLite et casse sur MySQL, c'est
-  # le site en maintenance le temps de comprendre.
+  # The tests run on in-memory SQLite, production runs on MySQL. So the
+  # migrations were checked on no machine at all against the engine that will
+  # really run them, while `deploy.sh` puts them into production on every
+  # deployment. A migration that passes on SQLite and breaks on MySQL is the
+  # site in maintenance for as long as it takes to work out why.
   migrations:
     name: Migrations (MySQL, comme en production)
     runs-on: ubuntu-latest
@@ -116,7 +115,7 @@ jobs:
           extensions: mbstring, pdo_mysql, zip, gd
           coverage: none
 
-      - name: Cache des dependances Composer
+      - name: Cache the Composer dependencies
         uses: actions/cache@v4
         with:
           path: site/vendor
@@ -124,39 +123,39 @@ jobs:
 
       - run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Preparer l'environnement
+      - name: Prepare the environment
         run: |
           cp .env.example .env
           php artisan key:generate
 
-      # Sans ca, une variable ignoree ferait tourner la suite sur SQLite et le
-      # job passerait au vert en n'ayant rien verifie du tout.
-      - name: Verifier qu'on parle bien a MySQL
+      # Without this, an ignored variable would run the suite on SQLite and
+      # the job would go green having checked nothing at all.
+      - name: Check that this really talks to MySQL
         run: |
-          php artisan tinker --execute='$d = DB::connection()->getDriverName(); if ($d !== "mysql") { fwrite(STDERR, "connexion $d, pas mysql"); exit(1); } echo "connecte a ".DB::selectOne("select version() v")->v;'
+          php artisan tinker --execute='$d = DB::connection()->getDriverName(); if ($d !== "mysql") { fwrite(STDERR, "connection $d, not mysql"); exit(1); } echo "connected to ".DB::selectOne("select version() v")->v;'
 
-      - name: Monter la base, la demonter, la remonter
+      - name: Build the schema, tear it down, build it again
         run: |
           php artisan migrate --force
           php artisan migrate:reset --force
           php artisan migrate --force
 
-      # Le schema tient debout ; reste a savoir si les requetes de la vitrine
-      # tiennent aussi. Elles joignent et regroupent, et MySQL applique par
-      # defaut un ONLY_FULL_GROUP_BY que SQLite ignore : un regroupement
-      # accepte ici peut etre refuse la-bas.
-      # Le classement est borne a 24, il n en rend donc jamais plus : exiger
-      # exactement 24 revient a exiger que la graine aleatoire ait produit au
-      # moins 24 schematiques au graphite sur 400, ce qui est un tirage. Mesure
-      # sur le tronc : deux echecs d affilee a 23 sur 400. Ce qu on veut verifier
-      # est que la requete rend bien ce qu elle a trouve, pas qu elle a eu de la
-      # chance.
-      - name: Passer les requetes de la vitrine sur MySQL
+      # The schema stands up; whether the catalogue's queries stand up too is
+      # another question. They join and they group, and MySQL applies an
+      # ONLY_FULL_GROUP_BY by default that SQLite ignores: a grouping accepted
+      # here can be refused there.
+      # The ranking is capped at 24, so it never returns more than that:
+      # demanding exactly 24 amounts to demanding that the random seed produced
+      # at least 24 graphite schematics out of 400, which is a draw. Measured on
+      # the trunk: two failures in a row at 23 out of 400. What is worth
+      # checking is that the query returns what it found, not that it got
+      # lucky.
+      - name: Run the catalogue's queries on MySQL
         env:
           CATALOGUE_SEED_COUNT: "400"
         run: |
           php artisan db:seed --class=CatalogueSeeder --force
-          php artisan tinker --execute='$s = \App\Models\Schematic::class; $q = $s::listed()->join("schematic_items", "schematic_items.schematic_id", "=", "schematics.id")->where("schematic_items.item", "graphite")->select("schematics.*"); $n = (clone $q)->count(); $best = $q->orderByDesc("schematic_items.rate_per_block")->orderByDesc("schematics.id")->limit(24)->pluck("id"); $items = \App\Models\SchematicItem::count(); if ($n < 1 || $best->count() !== min(24, $n) || $items < 1) { fwrite(STDERR, "requetes vides: filtre $n, index $items"); exit(1); } echo "filtre: $n, classement: ".$best->count().", lignes d index: $items";'
+          php artisan tinker --execute='$s = \App\Models\Schematic::class; $q = $s::listed()->join("schematic_items", "schematic_items.schematic_id", "=", "schematics.id")->where("schematic_items.item", "graphite")->select("schematics.*"); $n = (clone $q)->count(); $best = $q->orderByDesc("schematic_items.rate_per_block")->orderByDesc("schematics.id")->limit(24)->pluck("id"); $items = \App\Models\SchematicItem::count(); if ($n < 1 || $best->count() !== min(24, $n) || $items < 1) { fwrite(STDERR, "empty queries: filter $n, index $items"); exit(1); } echo "filter: $n, ranking: ".$best->count().", index rows: $items";'
 
-      - name: La suite complete, sur MySQL
+      - name: The full suite, on MySQL
         run: php artisan test

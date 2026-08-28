@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-"""Derive tout le jeu d'assets de marque a partir de deux fichiers sources.
+"""Derive the whole set of brand assets from two source files.
 
     python tools/build_brand.py
 
-Ce qui est ecrit a la main, et qu'on modifie : `site/public/brand/mark.svg` et
-`mark-plain.svg`. Tout le reste - le logotype, les favicons, les icones d'application,
-l'image OG, les visuels Discord - est genere ici. Un asset genere qu'on retouche a la main
-est un asset qui divergera de sa source des la prochaine regeneration, sans que rien ne le
-signale.
+What is written by hand, and what gets edited: `site/public/brand/mark.svg` and
+`mark-plain.svg`. Everything else - the logotype, the favicons, the application icons, the
+OG image, the Discord artwork - is generated here. A generated asset retouched by hand is
+an asset that will diverge from its source at the next regeneration, with nothing to
+report it.
 
-Le texte du logotype est converti en contours plutot que laisse en <text> : un SVG affiche
-dans une balise <img> ne charge pas les polices de la page, donc un logotype en <text>
-tombe sur la police systeme partout ou il compte, a commencer par l'apercu d'un lien.
+The logotype's text is converted to outlines rather than left as <text>: an SVG displayed
+in an <img> tag does not load the page's fonts, so a logotype in <text> falls back to the
+system font everywhere it matters, starting with the preview of a shared link.
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BRAND = ROOT / "site/public/brand"
 PUBLIC = ROOT / "site/public"
 FONT = PUBLIC / "forge/fonts/forge.woff2"
-#: Les rendus intermediaires du .ico, qui n'ont rien a faire dans le depot.
+#: The intermediate renders of the .ico, which have no business in the repository.
 TMP = Path(tempfile.gettempdir()) / "forge-brand"
 
 BG = "#12161b"
@@ -42,29 +42,29 @@ SOURCE = BRAND / "mark-plain.svg"
 
 
 def mark_paths() -> tuple[str, ...]:
-    """Les chemins du signe, lus dans l'unique fichier ou ils sont dessines.
+    """The mark's paths, read from the one file where they are drawn.
 
-    Recopier ces quatre chemins dans le script aurait donne deux geometries a maintenir, et
-    la deuxieme aurait fini par differer de la premiere sans que rien ne le dise. Le SVG
-    source est la verite ; tout le reste en decoule.
+    Copying those four paths into the script would have given two geometries to maintain,
+    and the second would have ended up differing from the first with nothing to say so. The
+    source SVG is the truth; everything else follows from it.
     """
     return tuple(re.findall(r'<path d="([^"]+)"', SOURCE.read_text(encoding="utf-8")))
 
 
 def mark_group(fill: str, x: float = 0, y: float = 0, scale: float = 1) -> str:
-    """Le signe pose a (x, y) et mis a l'echelle, prêt a etre insere dans un plus grand SVG."""
+    """The mark placed at (x, y) and scaled, ready to drop into a larger SVG."""
     paths = "".join(f'<path d="{d}"/>' for d in mark_paths())
     return (f'<g fill="{fill}" transform="translate({x} {y}) scale({scale})">'
             f"{paths}</g>")
 
 
-# --------------------------------------------------------------------------- typographie
+# --------------------------------------------------------------------------- typography
 
 def text_paths(font: TTFont, text: str, size: float) -> tuple[str, float]:
-    """Le texte en contours SVG, et la largeur qu'il occupe.
+    """The text as SVG outlines, and the width it takes up.
 
-    Rendu dans le repere du SVG, donc l'axe des y descend : la police, elle, monte. D'ou
-    l'echelle negative en y, appliquee une fois ici plutot que par l'appelant.
+    Drawn in the SVG's own frame, so the y axis points down: a font's points up. Hence the
+    negative y scale, applied once here rather than by the caller.
     """
     upem = font["head"].unitsPerEm
     scale = size / upem
@@ -76,7 +76,7 @@ def text_paths(font: TTFont, text: str, size: float) -> tuple[str, float]:
     for char in text:
         name = cmap.get(ord(char))
         if name is None:
-            raise SystemExit(f"la police ne couvre pas {char!r} : le logotype serait faux")
+            raise SystemExit(f"the font does not cover {char!r}: the logotype would be wrong")
         if previous is not None:
             pen_x += kern.get((previous, name), 0)
         pen = SVGPathPen(glyphs)
@@ -91,11 +91,11 @@ def text_paths(font: TTFont, text: str, size: float) -> tuple[str, float]:
 
 
 def _kern_table(font: TTFont) -> dict[tuple[str, str], int]:
-    """Le crenage par paires du GPOS, aplati.
+    """The GPOS pair kerning, flattened.
 
-    Sans lui, « Mindustry Forge » compose avec des trous : la police du jeu crene, et un
-    logotype qui ignore le crenage se voit tout de suite a cote du meme texte rendu par le
-    navigateur dans l'en-tete.
+    Without it, "Mindustry Forge" sets with holes in it: the game's font kerns, and a
+    logotype that ignores kerning shows at once beside the same text rendered by the
+    browser in the header.
     """
     pairs: dict[tuple[str, str], int] = {}
     if "GPOS" not in font:
@@ -117,11 +117,11 @@ def _kern_table(font: TTFont) -> dict[tuple[str, str], int]:
 # ------------------------------------------------------------------------------ logotypes
 
 def run_bounds(font: TTFont, text: str, size: float) -> tuple[float, float, float]:
-    """L'etendue reelle de l'encre d'une ligne : depart, arrivee, et le bas des jambages.
+    """Where a line's ink really runs: its start, its end, and the bottom of its descenders.
 
-    La chasse d'un glyphe deborde de son dessin des deux cotes. Caler une boite sur la
-    chasse laisse un blanc a droite du « e » de Forge que personne n'a demande, et qui se
-    voit des qu'on centre le logotype dans quoi que ce soit.
+    A glyph's advance overhangs its drawing on both sides. Fitting a box to the advance
+    leaves a gap to the right of the "e" in Forge that nobody asked for, and that shows the
+    moment the logotype is centred in anything.
     """
     from fontTools.pens.boundsPen import BoundsPen
 
@@ -151,15 +151,14 @@ def run_bounds(font: TTFont, text: str, size: float) -> tuple[float, float, floa
 
 
 def build_truetype() -> None:
-    """La meme police, en TrueType, pour la bibliotheque d'images de PHP.
+    """The same font, in TrueType, for PHP's image library.
 
-    GD dessine du texte avec FreeType, qui lit du TrueType et de l'OpenType et pas du
-    WOFF2. Le fichier n'est donc pas une deuxieme police : c'est le meme sous-ensemble,
-    sorti de son enveloppe web, et il se regenere ici pour qu'il ne puisse pas diverger de
-    celui que le navigateur charge.
+    GD draws text with FreeType, which reads TrueType and OpenType and not WOFF2. So the
+    file is not a second font: it is the same subset, taken out of its web wrapper, and it
+    is regenerated here so that it cannot diverge from the one the browser loads.
 
-    Il vit dans resources/ et pas dans public/ : personne ne doit le telecharger, il ne
-    sert qu'au serveur qui compose les cartes de partage.
+    It lives in resources/ rather than public/: nobody is meant to download it, it only
+    serves the server that composes the share cards.
     """
     #: `recalcTimestamp=False` matters more than it looks. fontTools rewrites `head.modified`
     #: **on save**, not on load, so without it the same input produced a different file on
@@ -172,22 +171,22 @@ def build_truetype() -> None:
     out = ROOT / "site/resources/fonts/forge.ttf"
     out.parent.mkdir(parents=True, exist_ok=True)
     face.save(out)
-    print("  ", out.relative_to(ROOT), "%.0f ko" % (out.stat().st_size / 1024))
+    print("  ", out.relative_to(ROOT), "%.0f kB" % (out.stat().st_size / 1024))
 
 
 def build_logos(font: TTFont) -> None:
-    """Le lock-up horizontal, en deux teintes puis en une seule.
+    """The horizontal lock-up, in two shades and then in one.
 
-    « Mindustry » en encre et « Forge » en ambre, comme l'en-tete du site les ecrit deja :
-    un logotype qui contredit la barre de navigation juste au-dessus de lui donne
-    l'impression de deux marques.
+    "Mindustry" in ink and "Forge" in amber, exactly as the site's header already writes
+    them: a logotype that contradicts the navigation bar right above it reads as two
+    brands.
     """
     size = 32
     cap = font["OS/2"].sCapHeight * size / font["head"].unitsPerEm
 
-    #: Le signe est mis a l'echelle pour que sa hampe fasse exactement une hauteur de
-    #: capitale. Sa pointe deborde alors de deux unites au-dessus du M, ce qui est voulu :
-    #: un debord optique empeche le signe de paraitre plus petit que le texte.
+    #: The mark is scaled so that its stem is exactly one cap height. Its tip then
+    #: overshoots the M by two units, which is deliberate: an optical overshoot keeps the
+    #: mark from looking smaller than the text.
     stem_units = 20
     scale = cap / stem_units
 
@@ -198,8 +197,8 @@ def build_logos(font: TTFont) -> None:
     ink_start, ink_end, descent = run_bounds(font, "Mindustry Forge", size)
 
     pad = 4.0
-    mark_w = 27 * scale          # du bord gauche de la hampe a la pointe
-    gap = round(cap * 0.62, 2)   # respiration entre le signe et le mot
+    mark_w = 27 * scale          # from the left edge of the stem to the tip
+    gap = round(cap * 0.62, 2)   # breathing room between the mark and the word
     text_x = pad + mark_w + gap - ink_start
     baseline = pad + cap
     width = round(text_x + ink_end + pad, 1)
@@ -220,7 +219,7 @@ def build_logos(font: TTFont) -> None:
 
 
 def _advance(font: TTFont, text: str, size: float) -> float:
-    """La chasse totale d'une chaine, crenage compris : ou commence le mot suivant."""
+    """A string's total advance, kerning included: where the next word starts."""
     scale = size / font["head"].unitsPerEm
     cmap, kern = font.getBestCmap(), _kern_table(font)
     total, previous = 0.0, None
@@ -236,10 +235,10 @@ def _advance(font: TTFont, text: str, size: float) -> float:
 # --------------------------------------------------------------------------- rasterisation
 
 def rasterise(svg_source: str, out: Path, width: int, height: int) -> None:
-    """Un SVG rendu par un vrai moteur de navigateur, a la taille exacte demandee.
+    """An SVG rendered by a real browser engine, at exactly the size asked for.
 
-    Passe par Chromium plutot que par une bibliotheque de rendu : c'est le moteur qui
-    affichera ces fichiers, et deux moteurs n'arrondissent pas les bords de la meme facon.
+    Through Chromium rather than a rendering library: that is the engine that will display
+    these files, and two engines do not round an edge the same way.
     """
     _RASTER.append((svg_source, out, width, height))
 
@@ -281,18 +280,18 @@ def _write(path: Path, text: str) -> None:
 
 
 
-# ----------------------------------------------------------------------------- les icones
+# ------------------------------------------------------------------------------- the icons
 
 def plate(size: int, mark_ratio: float, radius_ratio: float, *,
           relief: bool = True, plate_fill: str = PANEL) -> str:
-    """Une plaque carree avec le signe pose au centre optique.
+    """A square plate with the mark placed at the optical centre.
 
-    `mark_ratio` est la part de la largeur que prend le signe. Il varie d'une cible a
-    l'autre parce que les systemes ne rognent pas pareil : Android decoupe un cercle dans
-    l'icone masquable, iOS arrondit les coins lui-meme, un onglet ne rogne rien.
+    `mark_ratio` is the share of the width the mark takes. It varies from one target to
+    the next because systems do not crop alike: Android cuts a circle out of the maskable
+    icon, iOS rounds the corners itself, a browser tab crops nothing.
     """
     unit = size / 32
-    span_x, span_y = 21, 22          # l'etendue du dessin : x de 6 a 27, y de 4 a 26
+    span_x, span_y = 21, 22          # the drawing's extent: x from 6 to 27, y from 4 to 26
     scale = size * mark_ratio / span_x
     x = (size - span_x * scale) / 2 - 6 * scale
     y = (size - span_y * scale) / 2 - 4 * scale
@@ -307,54 +306,54 @@ def plate(size: int, mark_ratio: float, radius_ratio: float, *,
 
 
 def build_icons() -> None:
-    """Le jeu complet, une entree par facon dont une plateforme affichera la marque."""
+    """The full set, one entry per way a platform will display the brand."""
 
-    #: Le signe sur sa plaque, cadrage genereux : c'est la version qu'on pose dans un
-    #: document, un README ou une presentation, jamais celle d'un onglet.
+    #: The mark on its plate, generously framed: this is the version that goes into a
+    #: document, a README or a presentation, never into a browser tab.
     _write(BRAND / "mark.svg", plate(32, 0.66, 0.22, relief=False, plate_fill=BG))
 
-    #: L'icone d'onglet, cadree plus serre. A 16 pixels le signe n'a que huit pixels de
-    #: haut : chaque point rendu au dessin est un point gagne sur la lisibilite. Pas de
-    #: relief non plus, un lisere de deux unites y mangerait le contraste.
+    #: The tab icon, framed tighter. At 16 pixels the mark is only eight pixels tall: every
+    #: point handed back to the drawing is a point gained in legibility. No relief either,
+    #: a two unit border would eat the contrast there.
     favicon = plate(32, 0.76, 0.20, relief=False, plate_fill=BG)
     _write(PUBLIC / "favicon.svg", favicon)
     flat = favicon
 
-    #: Le .ico, pour les navigateurs et les agregateurs qui demandent encore /favicon.ico
-    #: sans regarder le <head>. Trois tailles dans un seul fichier.
+    #: The .ico, for the browsers and aggregators that still ask for /favicon.ico without
+    #: looking at the <head>. Three sizes in one file.
     for s in (16, 32, 48):
         rasterise(flat, TMP / f"ico-{s}.png", s, s)
 
-    #: iOS arrondit lui-meme les coins et ignore la transparence. Donc coins carres, fond
-    #: plein : une icone deja arrondie ressort avec un double arrondi et un liseré noir.
+    #: iOS rounds the corners itself and ignores transparency. So square corners and a
+    #: solid background: an already rounded icon comes out doubly rounded with a black rim.
     rasterise(plate(180, 0.60, 0.0, relief=False), PUBLIC / "apple-touch-icon.png",
               180, 180)
 
-    #: Les deux tailles que reclame un manifest, en `purpose: any`.
+    #: The two sizes a manifest asks for, as `purpose: any`.
     for s in (192, 512):
         rasterise(plate(s, 0.60, 0.22), PUBLIC / f"icon-{s}.png", s, s)
 
-    #: L'icone masquable. Android y decoupe la forme de son choix, et ne garantit que les
-    #: 80 pour cent du centre. Le signe descend donc a 46 pour cent de la largeur, ce qui
-    #: le laisse entier meme dans le cercle le plus serré.
+    #: The maskable icon. Android cuts whatever shape it likes out of it, and guarantees
+    #: only the middle 80 per cent. So the mark goes down to 46 per cent of the width,
+    #: which leaves it whole even inside the tightest circle.
     rasterise(plate(512, 0.46, 0.0, relief=False, plate_fill=BG),
               PUBLIC / "icon-maskable-512.png", 512, 512)
 
-    #: Le signe seul, sur fond transparent, pour le serveur qui compose les cartes de
-    #: partage. PHP le colle tel quel plutot que de redessiner ses quatre chemins : une
-    #: deuxieme geometrie ecrite dans un autre langage est une deuxieme geometrie a avoir
-    #: tort, et celle-la aurait diverge sans que personne ne regarde.
+    #: The mark alone, on a transparent background, for the server that composes the share
+    #: cards. PHP pastes it as it is rather than redrawing its four paths: a second geometry
+    #: written in another language is a second geometry that can be wrong, and that one
+    #: would have diverged with nobody looking.
     transparent = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
                    f"{mark_group(ACCENT)}</svg>")
     rasterise(transparent, ROOT / "site/resources/brand/mark-96.png", 96, 96)
 
-    #: L'icone de serveur Discord, affichee en rond et souvent en 32 pixels dans une liste.
+    #: The Discord server icon, shown as a circle and often at 32 pixels in a list.
     rasterise(plate(512, 0.62, 0.5, relief=False, plate_fill=BG),
               BRAND / "discord-icon.png", 512, 512)
 
 
 def build_ico() -> None:
-    """Les trois tailles reunies dans un seul .ico, apres rasterisation."""
+    """The three sizes gathered into one .ico, after rasterisation."""
     TMP.mkdir(exist_ok=True)
     frames = [Image.open(TMP / f"ico-{s}.png").convert("RGBA") for s in (16, 32, 48)]
     frames[2].save(PUBLIC / "favicon.ico", format="ICO",
@@ -365,27 +364,27 @@ def build_ico() -> None:
 
 
 
-# ------------------------------------------------------------------- les images partagees
+# ---------------------------------------------------------------------- the shared images
 
-#: Le visuel de fond, produit une fois par un modele et versionne tel quel. Il n'est pas
-#: regenere a chaque passage : une sortie de modele n'est pas reproductible, et une marque
-#: dont l'illustration change a chaque build n'est pas une marque.
+#: The backdrop artwork, produced once by a model and versioned as it came out. It is not
+#: regenerated on every pass: a model's output is not reproducible, and a brand whose
+#: illustration changes with every build is not a brand.
 BACKDROP = BRAND / "fond-usine.png"
 
 
 def tritone(image: "Image.Image") -> "Image.Image":
-    """Ramener une image quelconque dans les trois tons du site.
+    """Bring any image back into the site's three tones.
 
-    Le modele a rendu une usine bleu marine et orange. Elle est juste de forme et fausse de
-    couleur, et poser un accent ambre sur un fond marine donne deux jaunes qui se disputent.
-    On lit donc la luminance seule, et on la rejoue sur la rampe fond -> panneau -> accent :
-    le dessin reste, la palette part.
+    The model rendered a navy and orange factory. It is right in shape and wrong in colour,
+    and laying an amber accent over a navy background gives two yellows fighting each other.
+    So only the luminance is read, and it is replayed on the background -> panel -> accent
+    ramp: the drawing stays, the palette goes.
 
-    La rampe est d'abord etiree sur la plage reellement occupee, et pas sur 0-255. Une
-    image de nuit tient toute entiere dans le bas de l'echelle : mesure sur celle-ci, 99
-    pour cent des pixels sont sous 79. Une rampe etalee sur toute l'echelle envoyait donc
-    l'usine complete dans les deux tons les plus sombres, l'ambre n'etait jamais atteint, et
-    le resultat ressemblait a du bruit de compression plutot qu'a une usine.
+    The ramp is first stretched over the range actually occupied, rather than over 0-255. A
+    night image sits entirely in the bottom of the scale: measured on this one, 99 per cent
+    of the pixels are below 79. A ramp spread over the whole scale therefore sent the entire
+    factory into the two darkest tones, the amber was never reached, and the result looked
+    like compression noise rather than a factory.
     """
     stops = ((0.00, (0x0b, 0x0e, 0x12)), (0.30, (0x1b, 0x21, 0x29)),
              (0.55, (0x39, 0x42, 0x50)), (0.78, (0xc2, 0x92, 0x4e)),
@@ -405,19 +404,19 @@ def tritone(image: "Image.Image") -> "Image.Image":
         else:
             ramp.append(stops[-1][1])
 
-    #: La rampe est posee comme une palette plutot que pixel par pixel : une image d'un
-    #: million de points traversee en Python coute une seconde et une deprecation Pillow,
-    #: alors qu'une palette est exactement ce qu'une table de correspondance est.
+    #: The ramp is applied as a palette rather than pixel by pixel: a million point image
+    #: walked in Python costs a second and a Pillow deprecation, where a palette is exactly
+    #: what a lookup table is.
     out = Image.frombytes("P", grey.size, grey.tobytes())
     out.putpalette([canal for couleur in ramp for canal in couleur])
     return out.convert("RGB")
 
 
 def _plage(grey: "Image.Image", bas: float, haut: float) -> tuple[int, int]:
-    """Les deux niveaux entre lesquels l'image vit vraiment, en ecartant les extremes.
+    """The two levels the image really lives between, setting the extremes aside.
 
-    Prendre le minimum et le maximum bruts aurait suffi a un pixel isole pour decider de
-    l'etirement de toute l'image.
+    Taking the raw minimum and maximum would have let one stray pixel decide how the whole
+    image is stretched.
     """
     histogram = grey.histogram()
     total = sum(histogram)
@@ -432,14 +431,14 @@ def _plage(grey: "Image.Image", bas: float, haut: float) -> tuple[int, int]:
 
 
 def backdrop_uri(width: int, height: int, darken: float) -> str:
-    """Le fond etalonne, recadre au format demande puis assombri, en data-URI."""
+    """The graded backdrop, cropped to the size asked for then darkened, as a data URI."""
     import base64
     from io import BytesIO
 
     graded = tritone(Image.open(BACKDROP).convert("RGB"))
 
-    #: Recadrage par remplissage : on couvre la boite sans jamais deformer l'usine, dont la
-    #: grille carree se verrait tordue au premier etirement.
+    #: Crop by filling: cover the box without ever distorting the factory, whose square
+    #: grid would show as bent at the first stretch.
     ratio = max(width / graded.width, height / graded.height)
     resized = graded.resize((round(graded.width * ratio), round(graded.height * ratio)),
                             Image.LANCZOS)
@@ -454,18 +453,18 @@ def backdrop_uri(width: int, height: int, darken: float) -> str:
 
 
 def font_uri() -> str:
-    """La police du site, embarquee : le rendu ne doit dependre d'aucun reseau."""
+    """The site's font, embedded: the render must not depend on any network."""
     import base64
 
     return "data:font/woff2;base64," + base64.b64encode(FONT.read_bytes()).decode()
 
 
 def social_html(width, height, *, lines, kicker, scale, darken, safe=0, foot=None):
-    """La carte sociale, en HTML plutot qu'en SVG.
+    """The social card, in HTML rather than SVG.
 
-    Le SVG aurait demande de convertir chaque ligne en contours. Le HTML rend le texte avec
-    la vraie police et les vrais reglages d'interlettrage, et c'est Chromium qui rasterise,
-    donc exactement le moteur qui affiche deja le site.
+    SVG would have meant converting every line to outlines. HTML renders the text with the
+    real font and the real letter-spacing settings, and Chromium does the rasterising, so
+    it is exactly the engine that already displays the site.
     """
     logo = (BRAND / "logo.svg").read_text(encoding="utf-8")
     foot = "mindustryforge.com" if foot is None else foot
@@ -478,9 +477,9 @@ body { width: %(w)dpx; height: %(h)dpx; overflow: hidden;
   font-family: "Forge", sans-serif; color: %(ink)s; background: %(bg)s; }
 .carte { position: relative; width: 100%%; height: 100%%; }
 .fond { position: absolute; inset: 0; width: 100%%; height: 100%%; object-fit: cover; }
-/* Un voile qui part du bord ou vit le texte. Sans lui, une machine ambre passant sous une
-   lettre ambre fait disparaitre la lettre, et on ne le decouvre qu'une fois le lien
-   partage. */
+/* A veil starting from the edge where the text lives. Without it, an amber machine passing
+   under an amber letter makes the letter disappear, and that is only discovered once the
+   link has been shared. */
 .voile { position: absolute; inset: 0;
   background: linear-gradient(100deg, %(bg)sfa 0%%, %(bg)sf0 40%%, %(bg)s99 62%%,
     %(bg)s3d 82%%, %(bg)s1a 100%%); }
@@ -490,9 +489,9 @@ body { width: %(w)dpx; height: %(h)dpx; overflow: hidden;
 .logo img { height: %(logoh)dpx; display: block; }
 h1 { font-size: %(h1)dpx; line-height: 1.18; font-weight: 400;
   display: flex; flex-direction: column; }
-/* Chaque ligne du titre est une decision, pas un repli calcule par le navigateur : une
-   ligne qui se coupe toute seule coupe au mauvais endroit, et personne ne le voit avant
-   que le lien soit partage. */
+/* Every line of the title is a decision, not a wrap computed by the browser: a line that
+   breaks on its own breaks in the wrong place, and nobody sees it before the link is
+   shared. */
 h1 span { white-space: nowrap; }
 h1 em { font-style: normal; color: %(accent)s; }
 .regle { width: %(rulew)dpx; height: %(ruleh)dpx; background: %(accent)s; }
@@ -523,32 +522,32 @@ h1 em { font-style: normal; color: %(accent)s; }
 
 
 def _jpeg(page, out: Path, width: int, height: int) -> None:
-    """Photographier la page, puis ecrire en JPEG plutot qu'en PNG.
+    """Photograph the page, then write JPEG rather than PNG.
 
-    Un PNG de cette carte pese 538 ko, parce que le fond d'usine est photographique et
-    qu'aucune quantification ne le rattrape : sans tramage il reste a 280 ko, avec tramage
-    le bruit ajoute annule le gain. Le meme visuel en JPEG de qualite 88 pese 69 ko, et le
-    texte ambre sur fond sombre n'y montre aucun artefact visible.
+    A PNG of this card weighs 538 kB, because the factory backdrop is photographic and no
+    quantisation catches up with it: without dithering it stays at 280 kB, and with
+    dithering the added noise cancels the gain. The same artwork as JPEG at quality 88
+    weighs 69 kB, and amber text on a dark background shows no visible artefact in it.
 
-    Ce n'est pas une coquetterie de poids : une image de partage est retelechargee par
-    chaque service qui deplie le lien, a chaque fois qu'il le deplie.
+    This is not fussing over bytes: a share image is re-downloaded by every service that
+    unfurls the link, every time it unfurls it.
     """
     from io import BytesIO
 
     shot = Image.open(BytesIO(page.screenshot())).convert("RGB")
     shot.save(out, format="JPEG", quality=88, optimize=True, progressive=True)
     print("  ", out.relative_to(ROOT), "%dx%d" % (width, height),
-          "%.0f ko" % (out.stat().st_size / 1024))
+          "%.0f kB" % (out.stat().st_size / 1024))
 
 
 def build_social() -> None:
-    """Les images qu'on ne choisit pas de montrer : elles arrivent avec le lien."""
+    """The images nobody chooses to show: they arrive with the link."""
     from playwright.sync_api import sync_playwright
 
-    #: Ici le texte porte ses accents, alors que le reste du site n'en met pas. C'est
-    #: assume : la police les couvre toutes, verifie glyphe par glyphe, et « schematique »
-    #: sans accent dans la vignette d'un lien partage sur Discord se lit comme un encodage
-    #: casse. Une incoherence se rattrape, une premiere impression non.
+    #: Here the text carries its accents, where the rest of the site leaves them off. That
+    #: is deliberate: the font covers all of them, verified glyph by glyph, and
+    #: "schematique" without accents in the thumbnail of a link shared on Discord reads as
+    #: a broken encoding. An inconsistency can be fixed later, a first impression cannot.
     cartes = (
         ("og.jpg", 1200, 630, 1.0, 0.22,
          ["Colle une schématique.", "<em>Sache où elle coince.</em>"],
@@ -567,7 +566,7 @@ def build_social() -> None:
             _jpeg(page, PUBLIC / name, w, h)
             page.close()
 
-        #: La banniere Discord, au format que le serveur affiche en tete de liste.
+        #: The Discord banner, at the size the server displays at the top of a list.
         page = browser.new_page(viewport={"width": 960, "height": 540})
         page.set_content(social_html(
             960, 540, scale=0.86, darken=0.20,
@@ -580,7 +579,7 @@ def build_social() -> None:
 
 
 
-# ------------------------------------------------------------------- les visuels du depot
+# --------------------------------------------------------------- the repository's artwork
 
 def build_repo() -> None:
     """What GitHub shows before anyone has read a line.
@@ -635,13 +634,13 @@ if __name__ == "__main__":
     font = TTFont(FONT)
     print("logotypes")
     build_logos(font)
-    print("police pour le serveur")
+    print("font for the server")
     build_truetype()
-    print("icones")
+    print("icons")
     build_icons()
     flush_raster()
     build_ico()
-    print("images partagees")
+    print("shared images")
     build_social()
-    print("visuels du depot")
+    print("repository artwork")
     build_repo()

@@ -43,7 +43,7 @@ public class BenchPlugin extends Plugin {
         /* The oracle. The browser carries a transcription of the game's update loop, and a
            transcription is worth nothing unless something can tell it apart from a
            plausible invention. The only thing that can is the engine it came from. */
-        handler.register("measure", "<schematique> [secondes] [chemin] [peinture...]",
+        handler.register("measure", "<schematic> [seconds] [path] [painting...]",
                 "Run a schematic in the real engine and write down what came out.", args -> {
             float seconds = args.length > 1 ? Float.parseFloat(args[1]) : 30f;
             Path out = args.length > 2 ? Paths.get(args[2]) : Paths.get("bench", "data", "mesure.json");
@@ -65,11 +65,11 @@ public class BenchPlugin extends Plugin {
                 stock.toArray(String.class));
         });
 
-        /* Le meme scenario, mais une ligne par image plutot qu'un total a la fin.
-           Un total apres mille huit cents images ne sait pas dire laquelle a diverge ; le
-           portage ecrit la meme forme, et la premiere ligne ou les deux different nomme le
-           bloc et l'image. */
-        handler.register("trace", "<schematique> <secondes> <chemin> [peinture...]",
+        /* The same scenario, but one line per frame rather than a total at the end.
+           A total after eighteen hundred frames cannot say which one diverged; the port
+           writes the same shape, and the first line where the two differ names the block
+           and the frame. */
+        handler.register("trace", "<schematic> <seconds> <path> [painting...]",
                 "Run a schematic and write one line per frame.", args -> {
             float seconds = Float.parseFloat(args[1]);
             Path out = Paths.get(args[2]);

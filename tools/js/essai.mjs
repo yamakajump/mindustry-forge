@@ -11,17 +11,17 @@ for (const pair of process.argv.slice(3)) {
 try {
   const out = await analyse(process.argv[2], supply);
   console.log(JSON.stringify({
-    name: out.name, taille: `${out.width}x${out.height}`, blocs: out.blocks,
-    parMinute: out.perMinute, goulot: out.bottleneck, inutilises: out.idle,
-    inconnus: out.unknown, cout: out.cost, energie: out.power,
-    intermediaires: out.internal, stable: out.settled,
+    name: out.name, size: `${out.width}x${out.height}`, blocks: out.blocks,
+    perMinute: out.perMinute, bottleneck: out.bottleneck, idle: out.idle,
+    unknown: out.unknown, cost: out.cost, power: out.power,
+    internal: out.internal, settled: out.settled,
   }, null, 2));
   const roles = {};
   for (const n of out.graph.nodes) {
-    const key = `${n.name} (${n.role || "sans role"})`;
+    const key = `${n.name} (${n.role || "no role"})`;
     roles[key] = (roles[key] || 0) + 1;
   }
-  console.log("\nblocs :", roles);
+  console.log("\nblocks:", roles);
 } catch (e) {
-  console.log("ERREUR:", e.message);
+  console.log("ERROR:", e.message);
 }

@@ -1,14 +1,13 @@
-# Surveille les vulnerabilites connues des dependances.
+# Watches for known vulnerabilities in the dependencies.
 #
-# Tourne aussi une fois par semaine, et pas seulement aux commits : une CVE
-# est publiee quand elle est publiee, pas quand on touche au code. Un depot
-# calme est justement celui ou une faille reste le plus longtemps sans etre
-# vue.
+# It also runs once a week, and not only on commits: a CVE is published when
+# it is published, not when somebody touches the code. A quiet repository is
+# exactly the one where a hole stays longest without being seen.
 #
-# Seul Laravel est audite ici, et c'est voulu : l'analyseur est du JavaScript
-# ecrit a la main, `package.json` ne declare aucune dependance et ne sert qu'a
-# porter les scripts. Un job npm n'aurait rien a lire.
-name: audit des dependances
+# Only Laravel is audited here, and that is deliberate: the analyser is
+# hand-written JavaScript, `package.json` declares no dependency at all and
+# exists only to carry the scripts. An npm job would have nothing to read.
+name: dependency audit
 
 on:
   push:
@@ -34,7 +33,7 @@ jobs:
 
       - run: composer install --no-interaction --prefer-dist --no-progress
 
-      # --no-dev : une faille dans Pint ou Pest ne tourne jamais en production.
-      # Les signaler ici noierait celles qui comptent vraiment.
-      - name: Vulnerabilites connues
+      # --no-dev: a hole in Pint or Pest never runs in production. Reporting
+      # them here would drown the ones that actually matter.
+      - name: Known vulnerabilities
         run: composer audit --no-dev

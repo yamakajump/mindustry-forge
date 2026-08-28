@@ -1,4 +1,4 @@
-/** Suivre une ressource de sa source a la machine qui la mange. */
+/** Follow a resource from its source to the machine that eats it. */
 import { buildGraph } from "../../site/public/forge/analyse.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { loadCatalogue } from "../../tests/js/helpers.js";
@@ -12,8 +12,8 @@ const named = (i) => `${g.nodes[i].name}(${g.nodes[i].x},${g.nodes[i].y})`;
 for (let i = 0; i < g.nodes.length; i++) {
   const n = g.nodes[i];
   if (n.name !== "cultivator" && n.name !== "spore-press") continue;
-  console.log(`${named(i).padEnd(24)} sorties -> ${g.out[i].map(named).join(", ") || "AUCUNE"}`);
+  console.log(`${named(i).padEnd(24)} outputs -> ${g.out[i].map(named).join(", ") || "NONE"}`);
   if (n.name === "spore-press") {
-    console.log(`  ${" ".repeat(22)} entrees <- ${g.into[i].map(named).join(", ") || "AUCUNE"}`);
+    console.log(`  ${" ".repeat(22)} inputs <- ${g.into[i].map(named).join(", ") || "NONE"}`);
   }
 }

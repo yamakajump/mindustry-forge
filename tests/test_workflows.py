@@ -47,7 +47,7 @@ def _branches(document: dict) -> list[tuple[str, str]]:
     return found
 
 
-assert WORKFLOWS, "aucun workflow trouve : le chemin est faux, pas le depot vide"
+assert WORKFLOWS, "no workflow found: the path is wrong, not the repository empty"
 
 
 @pytest.mark.parametrize("path", WORKFLOWS, ids=lambda p: p.name)
@@ -56,8 +56,8 @@ def test_a_workflow_only_names_the_trunk(path: pathlib.Path):
 
     for trigger, branch in _branches(document):
         assert branch == TRUNK, (
-            f"{path.name} declenche sur `{branch}` via `{trigger}`, qui n'existe pas. "
-            f"Un workflow qui vise une branche absente ne tourne jamais et ne rougit jamais."
+            f"{path.name} triggers on `{branch}` through `{trigger}`, which does not exist. "
+            f"A workflow aimed at an absent branch never runs and never goes red."
         )
 
 
@@ -79,5 +79,5 @@ def test_release_please_targets_the_branch_it_triggers_on(path: pathlib.Path):
 
             triggers = [branch for _, branch in _branches(document)]
             assert target in triggers, (
-                f"{path.name} publie sur `{target}` mais ne se declenche que sur {triggers}."
+                f"{path.name} releases on `{target}` but only triggers on {triggers}."
             )

@@ -306,12 +306,12 @@ def main() -> None:
         "sprites": index,
     }, separators=(",", ":")), encoding="utf-8")
 
-    print(f"{len(index)} sprites dans {atlas.width}x{atlas.height}, "
-          f"{ATLAS.stat().st_size // 1024} ko")
+    print(f"{len(index)} sprites in {atlas.width}x{atlas.height}, "
+          f"{ATLAS.stat().st_size // 1024} kB")
     if missing:
         # Named rather than swallowed. A block drawn as a blank square is a picture that
         # lies quietly, and the renderer needs to know to draw a placeholder instead.
-        print(f"{len(missing)} blocs sans sprite : {', '.join(sorted(missing))}")
+        print(f"{len(missing)} blocks with no sprite: {', '.join(sorted(missing))}")
 
 
 if __name__ == "__main__":

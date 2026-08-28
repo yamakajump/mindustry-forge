@@ -10,16 +10,16 @@ for (const pair of process.argv.slice(3)) {
 }
 const out = await analyse(process.argv[2], supply);
 const g = out.graph;
-console.log(`${g.nodes.length} blocs, ${g.edges.length} liaisons`);
+console.log(`${g.nodes.length} blocks, ${g.edges.length} links`);
 
 const entrances = [];
 for (let i = 0; i < g.nodes.length; i++) {
   if (!g.into[i].length && g.out[i].length && g.nodes[i].role !== "drill") entrances.push(i);
 }
-console.log(`entrees (recoivent l'exterieur) : ${entrances.length}`);
+console.log(`inputs (fed from outside): ${entrances.length}`);
 for (const i of entrances.slice(0, 8)) {
   const n = g.nodes[i];
-  console.log(`  #${i} ${n.name} (${n.role}) en (${n.x},${n.y}) -> ${g.out[i].length} sorties`);
+  console.log(`  #${i} ${n.name} (${n.role}) at (${n.x},${n.y}) -> ${g.out[i].length} outputs`);
 }
 
 const byRole = {};
@@ -31,7 +31,7 @@ for (let i = 0; i < g.nodes.length; i++) {
   byRole[k].in += g.into[i].length;
   byRole[k].out += g.out[i].length;
 }
-console.log("\nbloc                  n   liaisons entrantes  sortantes");
+console.log("\nblock                 n   links in   links out");
 for (const [k, v] of Object.entries(byRole)) {
   console.log(`  ${k.padEnd(20)} ${String(v.n).padStart(2)}   ${String(v.in).padStart(4)}   ${String(v.out).padStart(4)}`);
 }

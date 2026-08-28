@@ -1,34 +1,33 @@
 #!/usr/bin/env bash
 #
-# Monter une voie de travail isolée, pour une session.
+# Set up an isolated lane of work, for one session.
 #
 #     tools/nouvelle-voie.sh nav feat/nav
 #
-# Plusieurs sessions travaillent sur ce dépôt en même temps. Tant qu'elles partagent un
-# seul répertoire, elles partagent aussi un seul index git et un seul HEAD : un `git
-# checkout` de l'une change la branche des autres, et un `git add` d'un fichier précis
-# indexe quand même ce qu'une voisine y a écrit entre-temps. Deux commits du 27 août ont
-# embarqué le travail d'une autre session pour cette raison, et aucune discipline de
-# nommage ne l'aurait évité.
+# Several sessions work on this repository at the same time. As long as they share one
+# directory, they also share one git index and one HEAD: a `git checkout` in one changes
+# the branch of the others, and a `git add` of a precise file stages what a neighbour wrote
+# there in the meantime all the same. Two commits on 27 August carried another session's
+# work for that reason, and no naming discipline would have avoided it.
 #
-# Un worktree par voie fait disparaître le problème au lieu de le surveiller.
+# One worktree per lane makes the problem disappear instead of watching for it.
 #
-# Ce que le script recopie est ce que git ne suit pas et dont l'application a besoin :
-# le `.env`, `vendor/` (quatre-vingt-douze mégaoctets, une copie coûte moins qu'un
-# `composer install`) et une base SQLite neuve à elle. Sans ça, la voie ne démarre pas et
-# la session passe son premier quart d'heure à le découvrir.
+# What the script copies is what git does not track and the application needs: the `.env`,
+# `vendor/` (ninety-two megabytes, a copy costs less than a `composer install`) and a fresh
+# SQLite database of its own. Without those the lane does not start, and the session spends
+# its first quarter of an hour finding that out.
 set -euo pipefail
 
 NOM="${1:-}"
 BRANCHE="${2:-}"
-# `origin/main` et non `main` : la branche locale est souvent en retard, et une voie
-# coupee dessus repart d un etat que personne n a plus. La valeur etait
-# `origin/restart/place-de-marche`, supprimee le 27/08/2026, donc le script echouait.
+# `origin/main` rather than `main`: the local branch is often behind, and a lane cut from
+# it starts again from a state nobody has any more. The value used to be
+# `origin/restart/place-de-marche`, deleted on 27/08/2026, so the script failed.
 DEPUIS="${3:-origin/main}"
 
 if [ -z "$NOM" ] || [ -z "$BRANCHE" ]; then
-    echo "usage: tools/nouvelle-voie.sh <nom-court> <branche> [branche-de-depart]" >&2
-    echo "exemple: tools/nouvelle-voie.sh nav feat/nav" >&2
+    echo "usage: tools/nouvelle-voie.sh <short-name> <branch> [starting-branch]" >&2
+    echo "example: tools/nouvelle-voie.sh nav feat/nav" >&2
     exit 1
 fi
 
@@ -36,48 +35,47 @@ RACINE="$(cd "$(dirname "$0")/.." && pwd)"
 CIBLE="$(dirname "$RACINE")/mindustry-forge-$NOM"
 
 if [ -e "$CIBLE" ]; then
-    echo "erreur : $CIBLE existe deja" >&2
+    echo "error: $CIBLE already exists" >&2
     exit 1
 fi
 
-echo "==> depart depuis $DEPUIS"
+echo "==> starting from $DEPUIS"
 git -C "$RACINE" fetch --quiet origin
 
-echo "==> worktree $CIBLE sur $BRANCHE"
+echo "==> worktree $CIBLE on $BRANCHE"
 git -C "$RACINE" worktree add --quiet -b "$BRANCHE" "$CIBLE" "$DEPUIS"
 
-echo "==> ce que git ne suit pas"
+echo "==> what git does not track"
 cp "$RACINE/site/.env" "$CIBLE/site/.env"
 cp -r "$RACINE/site/vendor" "$CIBLE/site/vendor"
 
-# Une base par voie. Partager celle de la racine ferait qu'une migration essayée dans une
-# voie casserait le site de toutes les autres, ce qui est exactement le genre de couplage
-# qu'on est en train de supprimer.
+# One database per lane. Sharing the root's would mean a migration tried in one lane broke
+# the site in every other one, which is exactly the coupling being removed here.
 : > "$CIBLE/site/database/database.sqlite"
 
-echo "==> migrations et lien de stockage"
+echo "==> migrations and storage link"
 ( cd "$CIBLE/site" \
     && php artisan migrate --force --no-interaction >/dev/null \
     && php artisan storage:link --quiet >/dev/null 2>&1 || true )
 
-echo "==> verification"
+echo "==> check"
 ( cd "$CIBLE/site" && php artisan test --quiet >/dev/null 2>&1 \
-    && echo "    les tests passent" \
-    || echo "    ATTENTION : les tests ne passent pas dans la voie neuve" )
+    && echo "    the tests pass" \
+    || echo "    WARNING: the tests do not pass in the fresh lane" )
 
 cat <<FIN
 
-Voie prete.
+Lane ready.
 
-  dossier : $CIBLE
-  branche : $BRANCHE (partie de $DEPUIS)
+  directory: $CIBLE
+  branch:    $BRANCHE (cut from $DEPUIS)
 
-Ouvrir un terminal dedans, et y travailler comme dans un depot normal. Au bout :
+Open a terminal in it, and work there as in an ordinary checkout. At the end:
 
   git push -u origin $BRANCHE
   gh pr create --fill
 
-Quand la voie est fermee, la retirer depuis la racine :
+Once the lane is closed, remove it from the root:
 
   git worktree remove $CIBLE
 FIN

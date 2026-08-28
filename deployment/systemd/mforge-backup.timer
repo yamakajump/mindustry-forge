@@ -1,9 +1,9 @@
 [Unit]
-Description=Declenche la sauvegarde de mindustry-forge
+Description=Triggers the mindustry-forge backup
 
 [Timer]
-# 03h15 : apres celle du panel (03h00) et avant celle de delicieux (03h32),
-# pour que les trois dumps ne se marchent pas dessus sur le meme disque.
+# 03:15: after the panel's (03:00) and before delicieux's (03:32), so
+# that the three dumps do not tread on each other on the same disk.
 OnCalendar=*-*-* 03:15:00
 RandomizedDelaySec=300
 Persistent=true
