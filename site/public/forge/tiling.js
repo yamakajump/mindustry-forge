@@ -51,9 +51,10 @@ export const D8 = [
  * : other.floor()`. The tempting misreading is that `this` is the neighbour, making the clause
  * "prefer the layer on top". It is not: `this` is the block whose `drawEdges` is running and
  * `tile` is the tile being drawn, so `this != tile.floor()` is a property of the tile at the
- * centre. It is true only on the overlay pass described beside `blendersAt`. On the floor pass,
- * the one modelled here, it is false on every tile, and the neighbour's own overlay never
- * enters the choice.
+ * centre. And it is never true, for the reason set out beside `blendersAt`: `drawEdges` runs
+ * only from `Floor.drawBase`, and no block that can be an overlay ever gets there. The
+ * neighbour's own overlay does not enter this choice on any tile, in any version of it that
+ * is faithful to the game.
  *
  * Getting this wrong does not swap one sheet for another. Every overlay in the catalogue has
  * `sheet: null`, so returning one drops the neighbour at the sheet guard below: painting copper
@@ -67,16 +68,28 @@ function contributorAt(ground, x, y) {
 /**
  * Which neighbouring floors bleed onto this tile, and from which sides.
  *
- * The floor pass of `Floor.drawEdges` in v159.7, decompiled from `server-release.jar` rather
- * than read off a wiki. Two departures, named rather than left for a reader to discover:
+ * `Floor.drawEdges` of v159.7, decompiled from `server-release.jar` rather than read off a
+ * wiki. It is the whole of the game's edge behaviour, not a pass of it, and that is worth
+ * setting out because the obvious reading says otherwise.
  *
- * - `drawBase` runs `drawMain; if(drawEdgeIn) drawEdges; drawOverlay`, and `drawOverlay` calls
- *   `drawBase` again on the tile's own overlay block. That re-entry runs `drawEdges` a second
- *   time with `this` set to the overlay, so it uses the overlay's blend id and its `edges`, and
- *   it is where the neighbour's overlay clause finally applies. It is not implemented here: a
- *   tile's overlay bleeds onto nothing.
- * - `doEdge` compares `realBlendId`, which for a liquid floor under a non-ore overlay composes
- *   a negative value rather than returning `blendId`. This compares `blendId` alone.
+ * `Floor.drawBase` has four statements: `drawMain`, then `drawEdges` when `drawEdgeIn` is set,
+ * then `drawOverlay`, then a redraw of `drawMain` at `1 - overlayAlpha` when this floor is a
+ * liquid carrying an overlay. `drawOverlay` calls `drawBase` again on the tile's own overlay
+ * block, and that re-entry looks like a second edge pass, the one where `this != tile.floor()`
+ * would finally be true.
+ *
+ * It is not one, and it stops one `extends` further down than a reader expects.
+ * `OverlayFloor.drawBase` **overrides** its parent's with a single `Draw.rect` and a return:
+ * no `drawMain`, no `drawEdges`, no `drawOverlay`. Every block that can be a tile's overlay
+ * extends it. `OreBlock` and `RemoveOre` inherit that override untouched, `SpawnBlock` reaches
+ * it through `super`, and `RuneOverlay` and `CharacterOverlay` draw one sprite of their own
+ * without calling up at all. None of the five reaches `Floor.drawBase`, so none reaches
+ * `drawEdges`, so `this != tile.floor()` is never true inside it. All 21 overlays in the
+ * catalogue are one of those five.
+ *
+ * That leaves one real departure, named rather than left for a reader to discover: `doEdge`
+ * compares `realBlendId`, which for a liquid floor under a non-ore overlay composes a negative
+ * value rather than returning `blendId`. This compares `blendId` alone.
  *
  * The clause worth naming inside `doEdge` is the second half: a neighbour bleeds when its blend
  * id is higher **or when this tile's floor has no edge sheet at all**. Drop it and every patch
@@ -85,8 +98,9 @@ function contributorAt(ground, x, y) {
  *
  * Returns one entry per distinct floor, each carrying the directions it came from, sorted by
  * **block id** ascending. That is the game's own key: `drawBlended` sorts on
- * `floor.id + (this != tile.floor() && floor == tile.floor() ? 99999 : 0)`, and the bump can
- * only fire on the overlay pass, so on this pass the key is the id alone. Blend id is a
+ * `floor.id + (this != tile.floor() && floor == tile.floor() ? 99999 : 0)`. The bump needs
+ * `this != tile.floor()`, the same condition shown above never to hold inside `drawEdges`, so
+ * the key is the block id alone. Blend id is a
  * different field and sorting on it leaves ties, because a blend group hands one blend id to
  * several floors that keep their own ids.
  */

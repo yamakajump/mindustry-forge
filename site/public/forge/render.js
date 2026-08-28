@@ -458,10 +458,19 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
       const px = (x - box.left) * scale;
       const py = (box.height - (y - box.bottom) - 1) * scale;
 
-      /* `Floor.drawBase` is `drawMain; drawEdges; drawOverlay`, in that order, so the floor
-         goes down first, the boundary over it, and the tile's own overlay over both. Drawing
-         the overlay before the boundary put a neighbour's material on top of an ore patch
-         instead of underneath it, which is the one place a player is looking. */
+      /* `Floor.drawBase` has four statements: `drawMain`, then `drawEdges` when `drawEdgeIn`
+         is set, then `drawOverlay`, then a redraw of `drawMain` at `1 - overlayAlpha` when
+         this floor is a liquid carrying an overlay. The first three are the order used here:
+         the floor goes down first, the boundary over it, the tile's own overlay over both.
+         Drawing the overlay before the boundary put a neighbour's material on top of an ore
+         patch instead of underneath it, which is the one place a player is looking.
+
+         The fourth is NOT implemented, and the gap is visible. `overlayAlpha` is 0.65 by
+         default, so the game drapes a liquid floor back over its own overlay at 0.35 alpha,
+         which is what makes ore on water read as lying under the water. Here the same tile
+         is drawn crisp, the ore sitting on top of the liquid instead of beneath it. Eleven
+         floors in the catalogue are liquids. Closing this is its own piece of work, because
+         it is a change nobody can accept without looking at the result. */
       paintLayer(layers.floor, x, y, px, py);
 
       /* The boundary, drawn over this tile rather than over its neighbour: the game bleeds

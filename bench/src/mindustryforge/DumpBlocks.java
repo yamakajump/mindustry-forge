@@ -1742,10 +1742,12 @@ public class DumpBlocks {
         /* What decides whether two floors bleed into each other, read from the game rather
            than inferred.
 
-           `Floor.drawBase` is `drawMain(tile); if(drawEdgeIn) drawEdges(tile); drawOverlay
-           (tile);`, so a floor with `drawEdgeIn` false receives no boundary at all, and the
-           two flags are separate questions: one is whether this floor spills outwards, the
-           other whether anything spills onto it.
+           `Floor.drawBase` has four statements: `drawMain(tile)`, then `drawEdges(tile)`
+           when `drawEdgeIn` is set, then `drawOverlay(tile)`, then a redraw of
+           `drawMain(tile)` at `1 - overlayAlpha` when this floor is a liquid carrying an
+           overlay. Only the second is gated, so a floor with `drawEdgeIn` false receives no
+           boundary at all, and the two flags are separate questions: one is whether this
+           floor spills outwards, the other whether anything spills onto it.
 
            Inside `drawEdges`, `doEdge` compares `realBlendId` on both sides and the higher
            one wins, a neighbour whose `drawEdgeOut` is false is skipped, and so is one whose
