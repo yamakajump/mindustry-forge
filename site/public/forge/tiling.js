@@ -129,8 +129,10 @@ export function blendersAt(ground, x, y, floors) {
  * turns a y-up game coordinate into an image row that grows downwards; a canvas row also
  * grows downwards, so converting a second time on the way into `drawImage` undoes the
  * first conversion instead of applying it. This function performs the conversion exactly
- * once. The nine cells were measured out of the atlas, not reasoned out a second time: see
- * the table in `tests/js/tiling.test.js`.
+ * once. Which cell that is was measured out of the atlas rather than reasoned out a second
+ * time, and `tests/js/tiling.test.js` decodes the sheet and measures it again on every run:
+ * a packer that transposed or flipped it fails there instead of quietly drawing a boundary
+ * on the wrong side of every tile.
  */
 export function edgeCell(dx, dy) {
   return { col: 1 - dx, row: 1 + dy };

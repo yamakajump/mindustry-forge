@@ -250,46 +250,101 @@ test("an unpainted neighbour is not a floor and contributes nothing", () => {
 });
 
 import { edgeCell } from "../../site/public/forge/tiling.js";
+import { readFileSync } from "node:fs";
+
+import { decodePng } from "./helpers.js";
 
 /*
- * Where the material sits in each of the nine cells of `floor/grass#edge`, measured out of
- * the atlas rather than reasoned out: for each cell, decode its pixels and count how many
- * have alpha above 128 in each third of the cell (left/centre/right, top/middle/bottom).
- * The side with the material tells which neighbour that cell belongs to.
+ * Which of the nine cells carries the material a neighbour spills, measured out of the atlas.
  *
- *   [col 0][row 0]  material bottom-right   -> south-east neighbour  (dx +1, dy -1)
- *   [col 1][row 0]  material bottom strip   -> south neighbour       (dx  0, dy -1)
- *   [col 2][row 0]  material bottom-left    -> south-west neighbour  (dx -1, dy -1)
- *   [col 0][row 1]  material right strip    -> east neighbour        (dx +1, dy  0)
- *   [col 1][row 1]  fully opaque            -> the centre, never drawn as an edge
- *   [col 2][row 1]  material left strip     -> west neighbour        (dx -1, dy  0)
- *   [col 0][row 2]  material top-right      -> north-east neighbour  (dx +1, dy +1)
- *   [col 1][row 2]  material top strip      -> north neighbour       (dx  0, dy +1)
- *   [col 2][row 2]  material top-left       -> north-west neighbour  (dx -1, dy +1)
+ * What this replaces asserted eight literal cells and kept the pixel measurement that
+ * justified them in a comment above the table. That is a measurement written down rather than
+ * run: a packer that transposed or flipped the sheet would have left the comment describing a
+ * sheet that no longer existed, and every assertion passing.
+ *
+ * So the sheet is decoded here, and the claim under test is the one that matters rather than
+ * eight coordinates. A neighbour's floor spills along the edge the two tiles share, so the
+ * opaque material in the cell `edgeCell` picks has to lie on the side the neighbour is on: a
+ * neighbour to the east paints the right hand strip, one to the north the top one.
+ *
+ * `grass` because it is an ordinary floor with an ordinary sheet. Any of the 55 would do.
  */
-const MEASURED_CELLS = [
-  { dir: "south-east", dx: 1, dy: -1, cell: { col: 0, row: 0 } },
-  { dir: "south", dx: 0, dy: -1, cell: { col: 1, row: 0 } },
-  { dir: "south-west", dx: -1, dy: -1, cell: { col: 2, row: 0 } },
-  { dir: "east", dx: 1, dy: 0, cell: { col: 0, row: 1 } },
-  { dir: "west", dx: -1, dy: 0, cell: { col: 2, row: 1 } },
-  { dir: "north-east", dx: 1, dy: 1, cell: { col: 0, row: 2 } },
-  { dir: "north", dx: 0, dy: 1, cell: { col: 1, row: 2 } },
-  { dir: "north-west", dx: -1, dy: 1, cell: { col: 2, row: 2 } },
-];
+const atlas = JSON.parse(readFileSync(
+  new URL("../../site/public/forge/atlas.json", import.meta.url), "utf8"));
+const SHEET = atlas.sprites["floor/grass#edge"];
+const CELL = SHEET.w / 3;
+const image = decodePng(
+  new URL("../../site/public/forge/atlas.png", import.meta.url), SHEET.y + SHEET.h);
 
-for (const { dir, dx, dy, cell } of MEASURED_CELLS) {
-  test(`the ${dir} neighbour's material sits at col ${cell.col}, row ${cell.row}`, () => {
-    assert.deepEqual(edgeCell(dx, dy), cell);
-  });
+/** How much of one cell is opaque, and where in it that material sits. */
+function materialIn(col, row) {
+  let count = 0;
+  let sumX = 0;
+  let sumY = 0;
+  for (let y = 0; y < CELL; y++) {
+    for (let x = 0; x < CELL; x++) {
+      const at = ((SHEET.y + row * CELL + y) * image.width + SHEET.x + col * CELL + x) * 4;
+      if (image.pixels[at + 3] > 128) {
+        count++;
+        sumX += x;
+        sumY += y;
+      }
+    }
+  }
+  return { cover: count / (CELL * CELL), x: sumX / count, y: sumY / count };
 }
 
-test("no direction ever selects the centre cell, which is fully opaque", () => {
-  /* Cell (1, 1) is the whole texture with no cut, measured as fully opaque above. Selecting
-     it for a direction would paint a whole tile of the neighbour's floor rather than a
-     sliver, since drawImage would read solid material with nothing missing. */
-  for (const { dx, dy } of MEASURED_CELLS) {
+/** The middle of a cell, in its own pixel coordinates. */
+const MIDDLE = (CELL - 1) / 2;
+
+const NAMES = {
+  "1,0": "east", "1,1": "north-east", "0,1": "north", "-1,1": "north-west",
+  "-1,0": "west", "-1,-1": "south-west", "0,-1": "south", "1,-1": "south-east",
+};
+
+for (const [dx, dy] of D8) {
+  test(`the cell picked for a ${NAMES[`${dx},${dy}`]} neighbour carries its material there`,
+    () => {
+      const { col, row } = edgeCell(dx, dy);
+      const found = materialIn(col, row);
+      assert.ok(found.cover > 0, `cell (${col}, ${row}) has no material in it at all`);
+      /* A sliver along one edge, not a tile. The centre cell is the whole texture and covers
+         everything, so a direction landing on it would paint the neighbour's floor over this
+         one entire rather than creeping onto it. */
+      assert.ok(found.cover < 0.5,
+        `cell (${col}, ${row}) is ${Math.round(found.cover * 100)}% opaque, not a sliver`);
+
+      /* An image row grows downwards and a game y grows upwards, so a northern neighbour's
+         material sits at the TOP of the cell, which is the low row. That single inversion is
+         the whole of the coordinate change, and it is why the y expectation is negated. */
+      const axes = [
+        ["x", dx, found.x, "left", "right"],
+        ["y", -dy, found.y, "top", "bottom"],
+      ];
+      for (const [axis, want, mean, low, high] of axes) {
+        const where = `${axis} ${mean.toFixed(1)} of ${CELL}, middle ${MIDDLE}`;
+        if (want > 0) {
+          assert.ok(mean > MIDDLE + 4, `material should hug the ${high}, sits at ${where}`);
+        } else if (want < 0) {
+          assert.ok(mean < MIDDLE - 4, `material should hug the ${low}, sits at ${where}`);
+        } else {
+          assert.ok(Math.abs(mean - MIDDLE) < 2,
+            `material should be centred on ${axis}, sits at ${where}`);
+        }
+      }
+    });
+}
+
+test("the centre cell is the whole texture, and no direction ever picks it", () => {
+  /* Measured rather than assumed: cell (1, 1) is the floor with nothing cut out of it. Every
+     direction must land on one of the other eight, and on a different one, or two neighbours
+     would spill through the same hole. */
+  assert.equal(materialIn(1, 1).cover, 1, "the centre cell is not fully opaque");
+  const seen = new Set();
+  for (const [dx, dy] of D8) {
     const { col, row } = edgeCell(dx, dy);
     assert.ok(!(col === 1 && row === 1), `(${dx}, ${dy}) selected the centre cell`);
+    seen.add(`${col},${row}`);
   }
+  assert.equal(seen.size, 8, "two directions were sent to the same cell");
 });
