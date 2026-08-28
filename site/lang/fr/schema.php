@@ -24,10 +24,10 @@ return [
      * done correctly on it.
      */
     'page' => [
-        'bac-a-sable' => 'Alimentee par une source de bac a sable',
+        'bac-a-sable' => 'Alimenté par une source de bac a sable',
         'bac-a-sable-court' => 'source de bac a sable',
-        'cout' => 'Ce qu elle coute',
-        'cout-aide' => "Ce que le jeu retire de ton noyau quand tu la poses, a l'unite
+        'cout' => 'Ce qu il coute',
+        'cout-aide' => "Ce que le jeu retire de ton noyau quand tu le poses, a l'unite
             pres : c'est `Block.requirements` additionne bloc par bloc, pas une estimation.",
         /*
          * Le courant affiche vient de `analysis['potential']`, donc du plafond, et le
@@ -39,18 +39,18 @@ return [
         'au-mieux' => 'au mieux',
         /*
          * Le contraire du precedent, et il se dit a voix haute. La vitrine classe sur
-         * les plafonds ; le jour ou une schematique n'en porte pas, sa tuile montre sa
+         * les plafonds ; le jour ou un schema n'en porte pas, sa tuile montre sa
          * mesure plutot que rien, et une mesure sans etiquette se lirait comme le
          * plafond de la tuile d'a cote. Un filet silencieux ne vaut pas mieux que pas
          * de filet.
          */
         'mesuree' => 'mesuré',
         'bac-a-sable-aide' => "Un robinet de bac a sable donne autant qu'on lui demande, donc
-            ce que cette schematique sort n'est pas une mesure de ce que ses blocs font :
-            c'est ce qu'un robinet permet. Elle reste lisible et analysable, elle n'est
-            simplement pas classee parmi les productrices.",
+            ce que ce schéma sort n'est pas une mesure de ce que ses blocs font :
+            c'est ce qu'un robinet permet. Il reste lisible et analysable, il n'est
+            simplement pas classé parmi les producteurs.",
         'bac-a-sable-courant' => "Son courant vient d'une source de bac a sable, pas de ses
-            generateurs : il n'y a rien a en conclure sur ce qu'elle rendrait a ta base.",
+            generateurs : il n'y a rien a en conclure sur ce qu'il rendrait a ta base.",
     ],
 
     /*
@@ -130,11 +130,11 @@ return [
     ],
 
     'gestion' => [
-        'qui-peut-voir' => 'Qui peut la voir',
-        'privee' => 'Privee',
+        'qui-peut-voir' => 'Qui peut le voir',
+        'privee' => 'Privé',
         'par-lien' => 'Par lien',
-        'publique' => 'Publique',
-        'lien' => 'Lien de la schematique',
+        'publique' => 'Public',
+        'lien' => 'Lien du schéma',
         'copier' => 'Copier',
         'supprimer' => 'Supprimer',
     ],
