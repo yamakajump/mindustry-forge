@@ -5,9 +5,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        Before writing: [`docs/fonctionnalites.md`](../blob/main/docs/fonctionnalites.md)
-        lists what is planned and what was deliberately refused, with the reasons. If your
-        idea is already there, saying that you want it is still useful.
+        Before writing: [`docs/roadmap.md`](../blob/main/docs/roadmap.md) lists what is
+        planned and in which order, with the reasons. If your idea is already there,
+        saying that you want it is still useful.
 
   - type: textarea
     id: problem

@@ -171,13 +171,13 @@ bottom. It answers "why would I believe you", which is not the first thing to sa
 Recorded here because it changed the design, not as a note about how the work went.
 
 **The hazard is one working tree with one HEAD.** Five sessions shared
-`C:/Users/coren/Projets/mindustry-forge`, so a `checkout -b` by one of them moved HEAD under
+the one checkout, so a `checkout -b` by one of them moved HEAD under
 the others. It cost a real defect within twenty minutes: a commit landed on a branch that
 was not its author's and swallowed 143 lines of a file belonging to a third session, which
 had staged it seconds earlier. A targeted `git add` does not protect against this. Only
 `git commit -- <paths>`, or not sharing the tree, does.
 
-**This work moved to `C:/Users/coren/Projets/_worktrees/forge-accueil` on `fix/mot-schema`,
+**This work moved to its own worktree on `fix/mot-schema`,
 branched from `main`.** The polluted commit is left alone on the abandoned branch rather
 than rewritten, and nothing is lost: the third session's spec already lives on its own
 branch.

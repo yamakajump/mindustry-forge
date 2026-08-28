@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #######################################################################
-# Deploiement de mindustry-forge sur le VPS codwingz-apps.
+# Deploiement de mindustry-forge sur son serveur.
 #
-#   ssh codwingz-apps "bash /var/www/mindustry-forge/deployment/deploy.sh"
+#   ssh <serveur> "bash /var/www/mindustry-forge/deployment/deploy.sh"
 #
 # Le corps tient dans main(), appelee sur la derniere ligne : bash lit le
 # script au fur et a mesure, donc un `git checkout` qui reecrit ce fichier
@@ -104,8 +104,8 @@ main() {
     chmod -R 775 "${SITE_DIR}/storage" "${SITE_DIR}/bootstrap/cache"
 
     # Le pool ne bouge presque jamais, et le recharger coute cher : un
-    # nouveau pool exige un restart, qui coupe brievement le panel de
-    # facturation et le site de Sandrine. On ne le fait que s'il a change.
+    # nouveau pool exige un restart, qui coupe brievement les autres
+    # sites servis par le meme PHP-FPM. On ne le fait que s'il a change.
     if config_a_change "${APP_DIR}/deployment/php-fpm/mforge.conf" "$POOL"; then
         echo "→ Pool PHP-FPM modifie, redemarrage complet..."
         systemctl restart "$PHP_FPM" || echec "restart php-fpm"

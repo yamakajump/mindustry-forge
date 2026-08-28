@@ -1,232 +1,201 @@
 # mindustry-forge
 
-Colle une schematique Mindustry, sache ce qu'elle produit vraiment et où elle
-coince. Site public : **https://mindustryforge.com**
+Paste a Mindustry schematic, find out what it really produces and where it jams.
+Public site: **https://mindustryforge.com**
 
-## Le tronc est `main`, et il n'y en a qu'un
+This file is for anyone working in this repository, human or agent. It is in English like
+the rest of the repository, and it is a set of rules rather than a history: what to do,
+and what it costs when it is not done.
 
-Tout vit sur **`main`** : c'est la branche par défaut du dépôt public, celle que
-`deploy.sh` met en production, et celle que la CI surveille.
+## The trunk is `main`, and there is only one
 
-Ça n'a pas toujours été vrai. Le travail a vécu des semaines sur
-`restart/place-de-marche` pendant que `main` montrait le projet d'avant le restart, et le
-27/08/2026 quelqu'un ouvrant la page GitHub voyait 161 commits de retard, des dossiers
-disparus et aucune licence. Les deux branches ont été réunies et l'ancienne supprimée.
+Everything lives on **`main`**: the default branch, what `deploy.sh` puts into production,
+what CI watches. Long lived side branches have already cost this repository a public page
+showing 161 commits of lag and no licence. If one is ever needed again, it is merged early
+and often, not at the end. **No test runs on the difference between two branches.**
 
-**La leçon vaut plus que le fait**, parce qu'elle a coûté une affirmation fausse dans la
-même journée : pendant les vingt minutes où les deux branches ont coexisté, une correction
-de CI a atterri sur l'une et des images sur l'autre, et les deux ont été annoncées comme
-faites. Personne n'avait menti, chacun avait regardé sa branche. **Aucun test ne tourne sur
-la différence entre deux branches.** S'il faut un jour en refaire une longue, elle se
-réunit tôt et souvent, pas à la fin.
+The workflows `tests.yml` and `verify-catalogue.yml` predate the restart and reference
+paths that no longer exist. Do not rely on them. The CI that counts is `site.yml`, and it
+runs the oracle.
 
-Les workflows `tests.yml` et `verify-catalogue.yml` datent d'avant le restart et
-référencent des chemins disparus (`forge/server_setup.py`, `gradlew`). Ne pas s'y fier. La
-CI qui compte est `site.yml`, et elle lance désormais l'oracle.
+## The two rules of this repository
 
-## 🧭 Les deux règles du dépôt
+**One implementation of the analysis.** It is in `site/public/forge/analyse.js`, in
+JavaScript, and it runs in the visitor's browser. A second version, in another language,
+for a command line or a backend, would be a second thing to be wrong. Do not write one.
 
-**Une seule implémentation de l'analyse.** Elle est dans
-`site/public/forge/analyse.js`, en JavaScript, et tourne dans le navigateur du
-visiteur. Une deuxième version, dans un autre langage, pour la ligne de commande
-ou pour un backend, serait une deuxième chose à avoir tort. Ne pas en écrire.
+**Numbers are proven against the game, not against us.** `bench/` runs a real headless
+Mindustry server on a fixed world, stamps the schematic into it and counts what comes out.
+If the analysis and the measurement disagree, that is a bug here, not a matter of opinion.
+Never adjust a constant to make a test pass without checking what the bench says.
 
-**Les chiffres se prouvent contre le jeu, pas contre nous.** `bench/` lance un
-vrai serveur Mindustry headless sur un monde figé, y estampille la schematique
-et compte ce qui sort. Si l'analyse et la mesure divergent, c'est un bug ici, pas
-une affaire d'opinion. Ne jamais ajuster une constante pour faire passer un test
-sans avoir vérifié ce que dit le banc.
+The `.msch` format is implemented from `Schematics.write` and `TypeIO` in Mindustry
+v159.7, the version pinned throughout this repository. Reading that format off a wiki is
+how a tool ends up disagreeing with the game about what the player just pasted.
 
-Le format `.msch` est implémenté d'après `Schematics.write` et `TypeIO` de
-Mindustry v159.7, la version épinglée partout dans ce dépôt. Lire ce format
-depuis un wiki est la façon dont un outil finit par ne plus être d'accord avec
-le jeu sur ce que le joueur a collé.
-
-## 🚀 Commandes
+## Commands
 
 ```bash
-# L'analyseur, le coeur du depot
-npm test
+npm test                   # the analyser, the heart of the repository
+npm run oracle             # replay every recorded scenario, expected gap 0.00 %
+npm run oracle:measure     # re-measure in a real server, needs the jar
+python -m pytest tests/ -q # file formats only, runs no game despite the name
 
-# Le banc, qui tient les chiffres contre le vrai jeu
-npm run oracle             # rejoue chaque scenario enregistre, ecart attendu 0,00 %
-npm run oracle:measure     # re-mesure dans un vrai serveur, demande le jar
-
-# Les formats de fichier seulement. Ne lance aucun jeu, malgre son nom.
-python -m pytest tests/ -q
-
-# L'application Laravel
 cd site
-vendor/bin/pint            # style (--test pour vérifier sans corriger)
-php artisan test           # tests Pest, base SQLite en mémoire
+vendor/bin/pint            # style (--test to check without fixing)
+php artisan test           # Pest tests, SQLite in memory
 php artisan serve --port=8770
-
-# Déploiement (demander avant, c'est la prod)
-ssh codwingz-apps "bash /var/www/mindustry-forge/deployment/deploy.sh"
 ```
 
-## 🏗️ Ce qu'il y a où
+Deployment is production. Ask before running it.
+
+```bash
+ssh <server> "bash /var/www/mindustry-forge/deployment/deploy.sh"
+```
+
+## Where things are
 
 | | |
 |---|---|
-| `site/public/forge/` | l'analyse : lit un `.msch`, construit le graphe de flux, trouve le goulot |
-| `site/public/index.html` | la page, qui ne porte aucun calcul |
-| `site/app/`, `site/routes/` | ce à quoi un serveur sert vraiment : se souvenir, et laisser partager |
-| `bench/` | fait tourner le vrai jeu et mesure la même schematique |
-| `tests/js/` | l'analyse, exécutée exactement comme la page l'exécute |
-| `deployment/` | tout ce qui décrit le serveur de production |
+| `site/public/forge/` | the analysis: reads a `.msch`, builds the flow graph, finds the bottleneck |
+| `site/public/index.html` | the page, which carries no computation |
+| `site/app/`, `site/routes/` | what a server is actually for: remembering, and letting people share |
+| `bench/` | runs the real game and measures the same schematic |
+| `tests/js/` | the analysis, run exactly as the page runs it |
+| `docs/` | the roadmap, the known gaps, and the pitfalls already paid for |
+| `deployment/` | everything that describes the production server |
 
-## 🔒 Déploiement : le dépôt est la vérité
+## Deployment: the repository is the truth
 
-`deployment/` contient le vhost nginx, le pool PHP-FPM et les unités systemd.
-`deploy.sh` les recopie sur le serveur à chaque passage.
+`deployment/` holds the nginx vhost, the PHP-FPM pool and the systemd units, and
+`deploy.sh` copies them onto the server on every pass.
 
-**Ne jamais éditer `/etc/nginx/sites-available/mindustryforge` ni
-`/etc/php/8.3/fpm/pool.d/mforge.conf` en SSH direct** : la modification serait
-écrasée au déploiement suivant, sans prévenir. Modifier le fichier du dépôt.
+**Never edit the nginx site file or the PHP-FPM pool over SSH.** The change would be
+overwritten by the next deployment, silently. Edit the file in the repository.
 
-`install-server.sh` reconstruit la machine depuis zéro. Le tenir à jour : c'est
-la seule chose qui sépare une panne matérielle d'une réinstallation de mémoire.
+`install-server.sh` rebuilds the machine from nothing. Keeping it current is the only
+thing standing between a hardware failure and a reinstall from memory.
 
-**Ce site cohabite avec le panel de facturation de CodWingz**, qui porte des
-factures légales opposables. D'où le compte système `mforge`, le pool PHP-FPM
-dédié et la base séparée. Ne rien mutualiser entre les deux.
+The server hosts other applications under other accounts, which is why this site has its
+own system user, its own PHP-FPM pool and its own database. Do not share anything between
+them.
 
-Piège coûteux : ajouter un pool PHP-FPM demande un `systemctl restart`, pas un
-`reload`. Un reload réutilise les sockets hérités, le nouveau pool n'apparaît
-jamais, et aucun message d'erreur ne le signale.
+Expensive trap: adding a PHP-FPM pool needs a `systemctl restart`, not a `reload`. A
+reload reuses inherited sockets, the new pool never appears, and nothing reports an error.
 
-## ⚖️ Le défaut qui revient : un chiffre juste, à côté de sa question
+## The recurring defect: a correct number, next to the wrong question
 
-Six fois le 27/08/2026, sous six visages différents, le même défaut. À chaque fois un
-nombre **exact**, calculé correctement, affiché à l'endroit qui pose une autre question.
+Six times in one day, under six faces, the same defect. Each time an **exact** number,
+correctly computed, displayed where the surface asks a different question.
 
-| Ce qui était juste | La question posée | Ce que ça donnait |
+| What was correct | The question asked | What it produced |
 |---|---|---|
-| le courant net | « laquelle produit le plus » | une usine classée derrière une schématique vide |
-| le plafond d'énergie | « combien elle mesure » | 480 mégawatts sur un plan que personne ne peut poser |
-| le débit d'un robinet de bac à sable | « que produit ce plan » | 36 millions d'eau par minute |
-| le plafond, rangé en mesure | « celles qui produisent le plus » | 3 364 schématiques classées sur ce qu'elles ne font pas |
-| la position relative d'un lien | « quel bloc relier » | une carte de cases vides |
-| le rapport d'aspect du panneau | « quelle taille faire le dessin » | des plans écrasés, d'autres hors cadre |
+| net power | "which one produces most" | a factory ranked below an empty schematic |
+| the power ceiling | "how big is it" | 480 megawatts on a plan nobody can place |
+| a sandbox tap's throughput | "what does this plan produce" | 36 million water a minute |
+| the ceiling, filed as a measurement | "the ones that produce most" | 3364 schematics ranked on what they do not do |
+| a link's relative position | "which block do I connect" | a map of empty cells |
+| the panel's aspect ratio | "how big should the drawing be" | plans squashed, others out of frame |
 
-Aucun n'était une erreur de calcul, et **aucun n'aurait été trouvé par un test qui vérifie
-un nombre**. Ils se voient en lisant la phrase autour, ou en ouvrant la page.
+None was an arithmetic error, and **none would have been caught by a test that checks a
+number**. They are visible by reading the sentence around them, or by opening the page.
 
-**La règle** : avant d'afficher un chiffre, dire à voix haute la question à laquelle la
-surface prétend répondre. Si le chiffre répond à une question voisine, il est faux à cet
-endroit-là même s'il est vrai partout ailleurs. Un plafond ne s'affiche jamais sans dire
-qu'il en est un.
+**The rule**: before displaying a number, say out loud the question the surface claims to
+answer. If the number answers a neighbouring question, it is wrong in that place even when
+it is right everywhere else. A ceiling is never displayed without saying that it is one.
 
-**Et le corollaire, qui a coûté le sixième cas.** Une voie qui avait passé la journée à
-mesurer le travail des autres et à avoir raison trois fois a dessiné un carré à côté d'un
-fichier qu'elle avait elle-même écrit, qui disait disque. Sa conclusion :
+**The corollary**, which cost the sixth case: whoever spent the day measuring other
+people's work and being right three times drew a square next to a file they had written
+themselves saying disc. Measuring is not what gets forgotten. Measuring yourself is.
 
-> Les trois fois où j'ai eu raison, je mesurais le travail d'un autre. Là où j'ai eu tort,
-> c'était le mien, et je n'ai rien mesuré du tout.
+## What goes into the engine fingerprint, and what does not
 
-Ce n'est pas de mesurer qu'on oublie. C'est de se mesurer soi.
+`EngineVersion` hashes the sources of the analysis and stamps the result into every row,
+so a stale figure can be found. The boundary has been wrong in both directions.
 
-## 🔖 Ce qui entre dans l'empreinte du moteur, et ce qui n'y entre pas
+**Too narrow.** It covered only `public/forge`, not `tools/ingest.mjs`, which decides
+which computed fields reach a column. A field computed and then dropped by the sieve let
+fifteen thousand rows read as current while the item ceiling existed in none of them.
 
-`EngineVersion` hache les sources de l'analyse et estampille le résultat dans chaque ligne,
-pour qu'un chiffre périmé soit trouvable. La frontière a été fausse dans les deux sens le
-même jour :
+**Too wide.** Adding a colour registry, which changes no number, would have staled fifteen
+thousand analyses and triggered a full re-measurement for presentation.
 
-**Trop étroite.** Elle ne couvrait que `public/forge`, pas `tools/ingest.mjs`, qui décide
-lesquels des champs calculés atteignent une colonne. Un champ produit puis jeté par le tamis
-laissait quinze mille lignes se lire à jour alors que le plafond d'objet n'existait dans
-aucune. Le catalogue est passé de 2 % à 64 % de couverture le jour où le tamis est entré
-dans l'empreinte.
+**The rule**: what decides an answer goes in the hashed file, what decides how a page
+reads does not. And the check that goes with it, because a rule alone is an intention:
+compare the checksum of `blocks.json` before and after the change. Identical to the byte
+means zero stale analyses.
 
-**Trop large.** Y ajouter un registre de couleurs, qui ne change aucun chiffre, aurait
-périmé les quinze mille analyses et relancé une re-mesure complète pour de la présentation.
+## Conventions
 
-**La règle** : ce qui décide une réponse va dans le fichier haché, ce qui décide comment une
-page se lit n'y va pas. Un registre de couleurs vit dans son propre fichier, à côté.
+### Language: English in the repository, French on the site
 
-**Et le contrôle qui va avec, parce que la règle seule est une intention** : comparer la
-somme de contrôle de `blocks.json` avant et après le changement. Identique à l'octet près
-veut dire zéro analyse périmée. Une intention écrite au présent se lit comme une mesure,
-et ce dépôt a déjà payé ça une fois.
+**Everything a contributor reads is in English**: the code, its comments, commit messages,
+pull request titles and descriptions, and the documents in `docs/`. The repository is
+public and open source, and a project whose commits and documentation are in a language
+its reader does not speak is a project they do not pick up.
 
-## 📏 Conventions
+**Everything a player reads stays French**, and lives in `site/lang/` and
+`site/public/forge/lang/`. The site addresses French-speaking players first; other
+languages will come, and the multilingual base is there for that.
 
-### La langue : anglais dans le dépôt, français sur le site
+**The language of a commit follows the audience of the repository, not the language of the
+conversation.** This repository is public, so English, including when everything else
+around the work happens in French. A session in doubt runs `git log --oneline -20`: French
+subjects there predate the decision of 27 August 2026 and are not a model.
 
-**Tout ce qu'un contributeur lit est en anglais** : le code, ses commentaires, les messages
-de commit, les descriptions de pull request, et les documents de `docs/`. Le dépôt part en
-open source, et un projet dont les commits et la documentation sont dans une langue que
-son lecteur ne parle pas est un projet qu'il ne reprend pas.
+History is not rewritten. `main` is public, and the merged pull requests are permalinks
+that nothing justifies breaking for cosmetics.
 
-**Tout ce qu'un joueur lit reste en français**, et vit dans `site/lang/` et
-`site/public/forge/lang/`. Le site s'adresse d'abord à des joueurs francophones ; les
-autres langues viendront, et le socle multilingue est là pour ça.
+Accents are written, in both languages. The font carries them, that is verified, and
+French without accents is badly written French.
 
-La frontière est nette et elle passe entre les deux publics, pas entre deux fichiers.
+### The rest
 
-Décidé le 27/08/2026. Le code était déjà entièrement en anglais ; ce qui change est le
-reste. La conversion de l'existant, environ 910 commentaires, se fait **à froid**, quand
-aucune voie n'écrit dans les fichiers concernés. Attention : `analyse.js` est haché par
-`EngineVersion`, donc reformuler un commentaire dedans marque périmées toutes les analyses
-stockées, et déclenche une re-mesure du catalogue entier.
+- Conventional commits, in English, imperative subject, 50 characters max. Same for the
+  pull request title and description.
+- The commit body explains *why*, not *what*: the diff already says what.
+- No em dash, anywhere.
+- Translation keys are written `<domain>.<screen>.<element>`, in kebab-case, **never
+  assembled at runtime**: a key glued together at render time is a key no check sees, and
+  that is verified mechanically.
+- **A unit never goes through a placeholder.** When a key is missing, Laravel renders the
+  key without substituting, so `__('blocs.unite.points', ['n' => 160])` prints
+  `blocs.unite.points` and **the 160 disappears**. Losing a word is a display defect;
+  losing a number, on a site that sells nothing but numbers, is losing the information.
+  Write `{{ $n }} {{ __('blocs.unite.points') }}`, which degrades to
+  `160 blocs.unite.points`.
 
-Les accents s'écrivent, dans les deux langues. La police les porte, c'est vérifié, et du
-français sans accents est du français mal écrit.
+  **The line falls where the disappearance is silent.** Strict for quantities and units,
+  where the number is the whole information and its absence is invisible. Free for
+  sentences, where a missing word is noticed and where freezing the number-then-word order
+  would break translation. The test applies it to `.unite.` keys, because neither PHP nor
+  JS says statically that a variable is a number, and a test that guesses becomes flaky and
+  then gets disabled.
 
-**La règle a été écrite, puis ignorée le lendemain.** Le 28/08/2026, la page des commits de
-`main` montrait quinze sujets d'affilée en français, dont `fix(vitrine): dire dans le
-sous-titre que ce sont des plafonds`, posté après la décision. Personne n'avait décidé de
-passer outre : les règles globales de la machine disent d'écrire les commits en français, et
-c'est cette phrase-là qui a été suivie, parce qu'elle arrive dans le contexte avant celle-ci.
+## Several sessions often work on this repository in parallel
 
-D'où la formulation qui suit, à lire au moment où on tape le message, pas au moment où on
-lit la section sur la langue : **la langue d'un commit se choisit sur le public du dépôt, pas
-sur la langue de la conversation en cours.** Ce dépôt est public, donc anglais, y compris
-quand tout le reste de la session se passe en français. Une session qui hésite regarde
-`git log --oneline -20` : si les sujets récents sont en français, ils datent d'avant la
-décision et ne servent pas de modèle.
-
-L'historique déjà écrit ne se réécrit pas : `main` est publique, et les 88 pull requests
-fusionnées sont des permaliens que rien ne justifie de casser pour de la cosmétique.
-
-### Le reste
-
-- Commits conventionnels, **en anglais**, sujet à l'impératif, 50 caractères max. Idem pour
-  le titre et la description de la pull request.
-- Le corps du commit explique *pourquoi*, pas *quoi* : le diff dit déjà quoi.
-- Pas de tiret cadratin (—), nulle part.
-- Les clés de traduction s'écrivent `<domaine>.<écran>.<élément>`, en kebab-case, **jamais
-  assemblées à l'exécution** : une clé collée au rendu est une clé qu'aucun contrôle ne
-  voit, et c'est vérifié mécaniquement.
-- **Une unité ne passe pas par un placeholder.** Quand une clé manque, Laravel rend la clé
-  sans substituer, donc `__('blocs.unite.points', ['n' => 160])` affiche
-  `blocs.unite.points` et **le 160 disparaît**. Perdre un mot est un défaut d'affichage ;
-  perdre un chiffre, sur un site qui ne vend que des chiffres, c'est perdre l'information.
-  Écrire `{{ $n }} {{ __('blocs.unite.points') }}`, qui dégrade en `160 blocs.unite.points`.
-
-  **La ligne passe là où la disparition est silencieuse.** Dure pour les quantités et les
-  unités, où le nombre est toute l'information et où son absence ne se voit pas. Libre pour
-  les phrases, où un mot manquant se remarque et où figer l'ordre nombre-puis-mot casserait
-  la traduction. Le test l'applique aux clés `.unite.`, parce que ni PHP ni JS ne disent
-  statiquement qu'une variable est un nombre, et qu'un test qui devine devient capricieux
-  puis se fait désactiver.
-
-## 🚧 Plusieurs sessions travaillent souvent sur ce dépôt en parallèle
-
-Avant de committer, vérifier que le diff ne contient que son propre travail :
+Before committing, check that the diff contains only your own work:
 
 ```bash
-git diff --stat        # est-ce que tout ça vient bien de moi ?
-git add <fichiers>     # jamais `git add -A` à l'aveugle
+git diff --stat        # is all of this really mine?
+git add <files>        # never a blind `git add -A`
+git commit -- <paths>  # the only form that ignores what someone else staged
 ```
 
-Un `git add -A` pendant qu'une autre session édite `analyse.js` embarque son
-travail à moitié fini dans un commit qui ne le mentionne pas.
+**And checking is not enough on its own.** `git log --oneline origin/main..HEAD` being
+empty says nothing about the state a few minutes later. Pushing `HEAD:refs/heads/<branch>`
+then carries whatever landed in between: that is how a documentation change came to
+introduce a public endpoint and a page rewrite, under a subject mentioning neither.
 
-## 🤫 Ce qui ne doit jamais entrer dans le dépôt
+Cut your branch from `origin/main` in a worktree, not from the shared checkout:
 
-`site/.env` (clé applicative, identifiants Discord, mot de passe de la base) est
-gitignoré, et le mot de passe de la base ne vit que dans
-`/root/.mforge-db-pass` sur le serveur. Ne jamais recopier l'un ou l'autre dans
-un fichier versionné, une issue ou un commentaire.
+```bash
+git worktree add -b <branch> ../<work> origin/main
+```
+
+## What must never enter the repository
+
+`site/.env` (application key, Discord credentials, database password) is ignored, and the
+database password lives only on the server, readable by root alone. Never copy either into
+a versioned file, an issue or a comment. The repository is public: anything committed here
+is readable by anyone, immediately and permanently.
