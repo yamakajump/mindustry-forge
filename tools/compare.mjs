@@ -194,6 +194,9 @@ export async function ported(code, ticks, ground = [], stock = [], each = null) 
         [...build.state.payload.items.counts].filter(([, n]) => n > 0)),
       payload_liquids: Object.fromEntries([...build.state.payload.liquids.held()]
         .filter(([, n]) => n > 0.0005).map(([l, n]) => [l, Number(n.toFixed(3))])),
+      // And its charge, if it is a battery: a carried battery is in no container, no pool
+      // and no grid, so this is the only field it can be seen in at all.
+      payload_charge: build.state.payload.charge || 0,
     }));
 
   const units = {};
@@ -231,7 +234,8 @@ export async function ported(code, ticks, ground = [], stock = [], each = null) 
     batteries: lineUp(batteries, ["charge"]),
     stocks: lineUp(stocks, ["items"]),
     ammo: lineUp(ammo, ["ammo"]),
-    payloads: lineUp(carried, ["payload", "payload_items", "payload_liquids"]),
+    payloads: lineUp(carried,
+                     ["payload", "payload_items", "payload_liquids", "payload_charge"]),
     units,
   };
 }
@@ -252,7 +256,8 @@ export function measured(name) {
     ammo: lineUp((raw.running || [])
       .filter((one) => (one.ammo || 0) > 0)
       .map((one) => ({ x: one.x, y: one.y, ammo: one.ammo })), ["ammo"]),
-    payloads: lineUp(raw.payloads || [], ["payload", "payload_items", "payload_liquids"]),
+    payloads: lineUp(raw.payloads || [],
+                     ["payload", "payload_items", "payload_liquids", "payload_charge"]),
     standing: lineUp((raw.standing || []).map((one) =>
       ({ x: one.x, y: one.y, block: one.block })), ["block"]),
     units: raw.units || {},
@@ -407,6 +412,18 @@ export function differences(mine, theirs) {
           out.push({ what: `${a.at} ${what} ${key}`, mine: here, theirs: there,
                      gap: there ? Math.abs(here - there) / there : (here ? 1 : 0) });
         }
+      }
+
+      /* And its charge, if the cargo is a battery. To a thousandth, for the reason a
+         battery on the ground is: a float added to eighteen hundred times in a different
+         order on each side, where the fourth decimal is the order and not the physics. */
+      if (b.payload_charge !== undefined || a.payload_charge) {
+        const here = a.payload_charge || 0;
+        const there = b.payload_charge || 0;
+        const apart = Math.abs(here - there);
+        out.push({ what: `${a.at} carries as charge`,
+                   mine: here.toFixed(3), theirs: there.toFixed(3),
+                   gap: apart <= 0.001 ? 0 : apart });
       }
     }
   }

@@ -19,6 +19,9 @@ import { byItemId, DIRECTIONS, Held, Liquids } from "./core.js";
 /** Pixels to a tile, which is the unit `payVector` is measured in. */
 const TILE = 8;
 
+/** A single precision float, which is what every number in the game is. See `core.js`. */
+const f32 = Math.fround;
+
 /** `PayloadBlock.payloadSpeed` and `payloadRotateSpeed`, both fixed on the class. */
 const speedOf = (build) => build.block.payload_speed ?? 0.7;
 const turnOf = (build) => build.block.payload_rotate_speed ?? 5;
@@ -59,6 +62,13 @@ export class Cargo {
     this.name = name;
     this.items = new Held();
     this.liquids = new Liquids();
+    /* `Building.power.status` on the carried building, nought to one.
+
+       A battery keeps its charge while it rides, and it keeps it because nothing touches
+       it: `PowerGraph.add` files a lone battery under `batteries` with no producer and no
+       consumer beside it, so `update` strikes a balance of nothing against nothing and
+       `distributePower` walks an empty list. Off the grid is not the same as flat. */
+    this.charge = 0;
   }
 }
 
@@ -160,11 +170,21 @@ const payloadConveyor = {
     build.state.accepted = -1;
     build.state.payVector = [0, 0];
     build.state.payRotation = 0;
+    build.state.progress = 0;
   },
 
+  /**
+   * `acceptPayload`: only in the six frames after a beat, and it is a **stored** figure.
+   *
+   * `progress` is written once a frame at the top of `updateTile` and read here, so what a
+   * block offering a payload reads is the value from the frame before whenever it is
+   * updated first, which a loader behind a conveyor always is. Computed live instead, a
+   * loader waiting on a full battery handed it over on the beat rather than on the frame
+   * after it, and the whole ferry ran a cycle ahead of the game over thirty seconds.
+   */
   acceptPayload(build, source, payload) {
     return build.state.payload === null
-      && (source === build || (build.world.tick % moveTime(build)) <= 5);
+      && (source === build || (build.state.progress ?? 0) <= 5);
   },
 
   handlePayload(build, source, payload) {
@@ -174,6 +194,10 @@ const payloadConveyor = {
   },
 
   update(build, world, step_) {
+    // `progress = time() % moveTime`, at the top of `updateTile` and before the guard
+    // below, because it is written every frame and not only on a beat.
+    build.state.progress = world.tick % moveTime(build);
+
     const now = step(build);
     if (now <= build.state.step) return;
 
@@ -224,7 +248,11 @@ const payloadRouter = {
   acceptPayload: payloadConveyor.acceptPayload,
   handlePayload: payloadConveyor.handlePayload,
 
-  update(build, world) {
+  update(build, world, step_) {
+    // `PayloadRouterBuild.updateTile` calls `super.updateTile()`, so a router keeps the
+    // same stored `progress` a conveyor does.
+    build.state.progress = world.tick % moveTime(build);
+
     const now = step(build);
     if (now <= build.state.step) return;
 
@@ -238,6 +266,12 @@ const payloadRouter = {
       const side = (build.cdump + i) % 4;
       const [dx, dy] = DIRECTIONS[side];
       const next = world.at(build.x + dx * reach, build.y + dy * reach);
+      /* "Force update to transfer if necessary", and the game names the class it does it
+         for: a payload conveyor and not another router. A conveyor only accepts in the six
+         frames after its own beat, and it writes that figure in its own update, so a
+         router offering to one that has not run yet this frame is reading the beat before
+         and is refused for a whole `moveTime`. */
+      if (next?.role === "payload-conveyor") next.behaviour?.update?.(next, world, step_);
       if (next && next.acceptPayload?.(build, build.state.payload)) {
         next.handlePayload(build, build.state.payload);
         build.state.payload = null;
@@ -485,6 +519,17 @@ function recipeRoom(build, item) {
   return amount ? amount * 2 : 0;
 }
 
+/**
+ * `PayloadLoaderBuild.hasBattery`: `consPower != null && consPower.buffered`.
+ *
+ * Buffered power is the whole of what a battery is, and the catalogue writes a capacity
+ * only for a block that has it, so the capacity is the test rather than a list of names.
+ */
+const batteryCargo = (held) => (held?.power_capacity || 0) > 0;
+
+/** `PayloadLoader.basePowerUse` and `maxPowerConsumption`, both in power a tick. */
+const basePowerOf = (build) => build.block.base_power_use || 0;
+const extraPowerOf = (build) => build.block.max_power_consumption || 0;
 
 /**
  * A payload loader: items and liquid off a belt and into the block it is holding.
@@ -498,9 +543,10 @@ function recipeRoom(build, item) {
  * any more, the loader pushes it out and waits for the next one. Without it a loader with a
  * full vault sits there for ever and the belt behind it backs up.
  *
- * Not modelled, and said rather than hidden: a battery as cargo. `consumePowerDynamic` and
- * `power.status` on a carried building are a second power model on top of the one the grid
- * already runs, for the one exotic case of ferrying charge about.
+ * And charge, which is the third thing it pours in and the only one that is not an item or
+ * a liquid. `PayloadLoader.init` swaps the block's flat draw for a `consumePowerDynamic`,
+ * so what the loader asks the grid for depends on what it is holding: its base while it
+ * carries anything, and twenty-one times that while it is filling a battery.
  */
 const payloadLoader = {
   begin(build) {
@@ -529,6 +575,24 @@ const payloadLoader = {
     build.state.exporting = false;
   },
 
+  /**
+   * What the grid is asked for this frame, `ConsumePowerDynamic.requestedPower`.
+   *
+   * Read off the block every frame rather than off the catalogue once, and that is not a
+   * refinement: `ConsumePowerDynamic` reports a `usage` of zero, so the flat figure the
+   * catalogue carries for every other consumer is zero here and a loader read through it
+   * asks its grid for nothing at all while drawing two thousand five hundred a second.
+   */
+  requestedPower(build) {
+    const cargo = build.state.payload;
+    // `shouldConsume()`: a loader with nothing in it asks for nothing.
+    if (!cargo) return 0;
+    const held = build.world?.catalogue?.blocks?.[cargo.name];
+    return batteryCargo(held) && !build.state.exporting
+      ? basePowerOf(build) + extraPowerOf(build)
+      : basePowerOf(build);
+  },
+
   /* `items.total() < itemCapacity && !(source instanceof PayloadUnloaderBuild)`: a loader
      refuses a **decharger**, and only a decharger. Without it a loader and an unloader
      standing side by side pass the same items back and forth for ever, and the pair reads
@@ -554,7 +618,10 @@ const payloadLoader = {
     }
     if (!moveInPayload(build)) return;
 
-    const efficiency = build.block.power > 0 ? (build.state.power ?? 1) : 1;
+    /* `efficiency` is `power.status` here, and the loader's whole draw is dynamic, so the
+       catalogue's flat `power` is zero for it and cannot be the test for whether it is on
+       a grid at all. `base_power_use` is. */
+    const efficiency = build.state.power ?? 1;
     const delta = build.delta(step);
 
     /* Items, in batches on a timer that runs faster the better the block is fed. An
@@ -595,6 +662,32 @@ const payloadLoader = {
         build.liquids.remove(liquid, flow);
       }
     }
+
+    /* And charge, the one thing a loader puts in that it did not take off a belt.
+
+       `power.status * (basePowerUse + maxPowerConsumption)` is what the grid actually
+       handed over this frame, the loader's own base comes back off the top, and the rest
+       goes into the battery divided by its capacity. Two multiplications by the coverage,
+       not one: the grid throttles what arrives, and `edelta()` throttles it again.
+
+       In single precision, step by step, because the accumulator is compared against one
+       and the comparison falls on the wrong side. A full battery is a hundred additions of
+       forty over four thousand: in double that lands on 1.0000000000000007 and exports on
+       the hundredth frame, in the game's float it lands on 0.9999993 and waits for the
+       hundred and first. One frame a battery, and the whole ferry drifts a cycle ahead. */
+    if (batteryCargo(held)) {
+      const base = basePowerOf(build);
+      const powerInput = f32(efficiency * f32(base + extraPowerOf(build)));
+      const availableInput = Math.max(f32(powerInput - base), 0);
+      const edelta = f32(efficiency * delta);
+      cargo.charge = f32(cargo.charge
+        + f32(f32(availableInput / held.power_capacity) * edelta));
+      // `if(status >= 1f){ exporting = true; status = Mathf.clamp(status); }`
+      if (cargo.charge >= 1) {
+        build.state.exporting = true;
+        cargo.charge = Math.min(1, Math.max(0, cargo.charge));
+      }
+    }
   },
 };
 
@@ -605,6 +698,9 @@ function shouldExport(build, cargo, held) {
       && cargo.liquids.currentAmount >= (held.liquid_capacity || 10) - 0.001) {
     return true;
   }
+  // `hasBattery() && payload.build.power.status >= 0.999999999f`, and the nine nines are
+  // the game's: a float that reaches one from below never quite gets there.
+  if (batteryCargo(held) && cargo.charge >= 0.999999999) return true;
   return false;
 }
 
@@ -614,9 +710,23 @@ function shouldExport(build, cargo, held) {
  * It refuses items and liquid from its sides outright, empties whatever it is holding into
  * itself, and pushes the block out the moment it is dry. And it dumps four times a frame
  * rather than once, which is what makes it faster than the belt it feeds.
+ *
+ * A battery is where the asymmetry shows: an unloader is a **producer** as well as a
+ * consumer, and what it takes out of a battery it is carrying goes back on to its grid.
  */
 const payloadUnloader = {
   ...payloadLoader,
+
+  begin(build) {
+    payloadLoader.begin(build);
+    // `lastOutputPower`, which is what the grid reads off it.
+    build.state.production = 0;
+  },
+
+  /* `loadPowerDynamic = false`: an unloader is not a loader run backwards on this point
+     either. Its draw is the flat `consumePower(2f)` the catalogue already carries, so the
+     dynamic request the loader answers with must not be inherited. */
+  requestedPower: null,
 
   acceptItem() { return false; },
   acceptLiquid() { return false; },
@@ -624,6 +734,9 @@ const payloadUnloader = {
   update(build, world, step) {
     const cargo = build.state.payload;
     build.state.wants = cargo ? 1 : 0;
+    // `lastOutputPower = 0f;`, before anything else: an unloader holding nothing makes
+    // nothing, and the figure is not left over from the frame it was still working.
+    build.state.production = 0;
 
     if (cargo) {
       const held = world.catalogue?.blocks?.[cargo.name];
@@ -661,6 +774,18 @@ const payloadUnloader = {
             cargo.liquids.remove(liquid, flow);
           }
         }
+
+        /* And charge, out of the battery and on to the grid. `maxPowerUnload` is eighty a
+           tick against the loader's forty, so a battery empties in half the time it took
+           to fill, and what comes out is production rather than a discount on the draw. */
+        if (batteryCargo(held)) {
+          const stored = f32(cargo.charge * held.power_capacity);
+          const edelta = f32(efficiency * delta);
+          const unloaded = Math.min(
+            f32(f32(build.block.max_power_unload || 0) * edelta), stored);
+          build.state.production = unloaded;
+          cargo.charge = f32(cargo.charge - f32(unloaded / held.power_capacity));
+        }
       }
     }
 
@@ -680,6 +805,8 @@ const payloadUnloader = {
 function emptyEnough(cargo, held) {
   if (held?.item_capacity && cargo.items.total > 0) return false;
   if (held?.has_liquids && cargo.liquids.currentAmount > 0.011) return false;
+  // `!hasBattery() || payload.build.power.status <= 0.0000001f`.
+  if (batteryCargo(held) && cargo.charge > 1e-7) return false;
   return true;
 }
 

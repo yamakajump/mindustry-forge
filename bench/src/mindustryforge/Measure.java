@@ -363,6 +363,12 @@ public class Measure implements ApplicationListener {
                     String.format(java.util.Locale.ROOT, "%.2f/%.3f/%.2f/%.1f",
                         gun.charge, gun.reloadCounter, gun.payLength, gun.turretRotation));
             }
+            // A battery's charge, which is the whole of what a battery has to say.
+            if (build.power != null && build.block.consPower != null
+                    && build.block.consPower.buffered) {
+                held.append(" #").append(String.format(java.util.Locale.ROOT, "%.4f",
+                    build.power.status));
+            }
             // And what it is carrying, with whatever is inside that.
             mindustry.world.blocks.payloads.Payload cargo = build.getPayload();
             if (cargo != null) {
@@ -374,6 +380,14 @@ public class Measure implements ApplicationListener {
                         if (count > 0) held.append('/').append(item.name).append(':')
                             .append(count);
                     }
+                }
+                /* And the charge of a battery being carried, which no other field on this
+                   line can show: a cargo is in no container, no pool and no grid. */
+                if (cargo instanceof mindustry.world.blocks.payloads.BuildPayload inside
+                        && inside.build.power != null && inside.block().consPower != null
+                        && inside.block().consPower.buffered) {
+                    held.append("/#").append(String.format(java.util.Locale.ROOT, "%.4f",
+                        inside.build.power.status));
                 }
             }
             /* And its place in the update list, because a block that falls asleep leaves it
@@ -503,6 +517,16 @@ public class Measure implements ApplicationListener {
                     }
                 }
                 one.put("payload_liquids", wet);
+                /* And its charge, if it is a battery.
+
+                   Written only for a block that has buffered power, so that every scenario
+                   already recorded reads back byte for byte. A battery as cargo is
+                   invisible in every other field here: it holds no item, fills no pool,
+                   and it is off the grid so it never reaches the battery list above. */
+                if (inside.build.power != null && inside.block().consPower != null
+                        && inside.block().consPower.buffered) {
+                    one.put("payload_charge", inside.build.power.status);
+                }
             }
             carried.asArray().add(one);
         }
