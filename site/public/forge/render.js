@@ -26,24 +26,67 @@ let soils = null;
 /** How many sprites each floor has, filled on first sight and kept for the page's life. */
 const variantCounts = new Map();
 
+/**
+ * A stamp for the atlas index, so the picture it describes can be asked for by name.
+ *
+ * Not a checksum anybody should trust for anything else: a 32 bit rolling hash, whose only
+ * job is to change when the index changes.
+ */
+export function stampOf(text) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(36);
+}
+
+/**
+ * The index and the picture it indexes, fetched as a pair that cannot come apart.
+ *
+ * `atlas.png` used to be asked for by that name alone: one address, for a file whose bytes
+ * change at every build, served with `Cache-Control: max-age=604800`.
+ *
+ * On 28/08/2026 a deployment shipped a bigger atlas and the whole site rendered as garbage.
+ * Cloudflare caches `.png` and not `.json`, so it kept yesterday's picture and served the
+ * new index beside it, and every sprite was read at coordinates belonging to an image
+ * nobody was looking at. Measured while it was happening: the index wanted 2048 by 2864,
+ * the edge served 2048 by 2464. Nothing errored, and nothing could: an index and a picture
+ * that disagree are two perfectly valid files.
+ *
+ * Purging the edge fixed the edge and not the visitors. The picture sits in every browser
+ * that had loaded the site, for the same seven days, and no purge reaches those. The only
+ * repair that reaches a visitor is a different address.
+ *
+ * So the picture is asked for at an address derived from the index that describes it. A new
+ * index gives a new address, an address nothing can have cached, and the two arrive together
+ * or not at all. The index is fetched first for that reason, which costs one round trip and
+ * buys the guarantee; the picture is 1.5 MB and the index is 74 KB, so the trade is cheap.
+ *
+ * The gap this leaves, said rather than hidden: an `atlas.png` that changed while
+ * `atlas.json` came out byte-identical would still be served stale. That means identical
+ * sprite names, positions and sizes over different pixels, which this packer cannot produce
+ * from a different set of sprites. If it ever can, the stamp belongs in the build instead.
+ */
 export async function loadSprites(base = "./forge/") {
   if (atlas && sheet) return { atlas, sheet };
-  const [index, image, blends] = await Promise.all([
+  const [text, blends] = await Promise.all([
     fetch(base + "atlas.json").then((r) => {
       if (!r.ok) throw new Error("atlas introuvable");
-      return r.json();
-    }),
-    new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error("sprites introuvables"));
-      img.src = base + "atlas.png";
+      return r.text();
     }),
     // A missing sols.json must not break the page: the report and the editor drew ground
     // fine before boundary blending existed, so a failed fetch here costs the soft edges
     // between floors, not the ground itself.
     fetch(base + "sols.json").then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
+  const index = JSON.parse(text);
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("sprites introuvables"));
+    img.src = `${base}atlas.png?v=${stampOf(text)}`;
+  });
   atlas = index;
   sheet = image;
   soils = blends;
