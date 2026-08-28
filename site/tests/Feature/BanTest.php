@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\Ban;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
@@ -37,4 +39,52 @@ it('does not stack two rows for the same account', function () {
 
     expect(Ban::where('discord_id', '4242')->count())->toBe(1)
         ->and(Ban::where('discord_id', '4242')->first()->reason)->toBe('second reason');
+});
+
+/**
+ * Answer Discord's two endpoints without leaving the test suite.
+ *
+ * Both have to be faked or the controller stops at the first one and the test passes for
+ * the wrong reason.
+ */
+function signInWith(string $id)
+{
+    Http::fake([
+        'discord.com/api/oauth2/token' => Http::response(['access_token' => 'tok']),
+        'discord.com/api/users/@me' => Http::response([
+            'id' => $id, 'username' => 'Vandale', 'avatar' => null,
+        ]),
+    ]);
+    config(['services.discord.client_id' => 'x', 'services.discord.client_secret' => 'y']);
+
+    return test()->withSession(['discord_state' => 'st'])
+        ->get('/auth/discord/callback?code=c&state=st');
+}
+
+it('refuses to sign in a banned discord account', function () {
+    Ban::place('4242', 'vandalism');
+
+    signInWith('4242');
+
+    expect(auth()->check())->toBeFalse()
+        ->and(User::where('discord_id', '4242')->exists())->toBeFalse();
+});
+
+it('refuses an account that still exists, without touching its row', function () {
+    $kept = User::factory()->create(['discord_id' => '4242', 'name' => 'Ancien nom']);
+    Ban::place('4242', 'vandalism');
+
+    signInWith('4242');
+
+    // updateOrCreate would have rewritten the name from the Discord profile. The guard
+    // runs before it, so the row is exactly as the moderator last saw it.
+    expect(auth()->check())->toBeFalse()
+        ->and($kept->fresh()->name)->toBe('Ancien nom');
+});
+
+it('still signs in an account that is not banned', function () {
+    signInWith('777');
+
+    expect(auth()->check())->toBeTrue()
+        ->and(auth()->user()->discord_id)->toBe('777');
 });

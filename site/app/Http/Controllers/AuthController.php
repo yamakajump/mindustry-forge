@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Ban;
 use App\Models\User;
 use App\Services\Discord;
 use Illuminate\Http\RedirectResponse;
@@ -37,6 +38,18 @@ class AuthController extends Controller
         $profile = $code ? Discord::fromConfig()->identify($code) : null;
         if (! $profile) {
             return redirect('/')->with('error', "Discord n'a pas confirme la connexion.");
+        }
+
+        /*
+         * Before the user row, not after.
+         *
+         * `updateOrCreate` below would recreate the account of somebody who deleted theirs
+         * to shed a ban, and the ban would then be checked against a row that had just been
+         * born clean. The refusal has to happen while the only thing known about them is the
+         * Discord id, which is the one identifier they cannot change.
+         */
+        if (Ban::refuses($profile['id'])) {
+            return redirect('/')->with('error', "Ce compte n'a plus acces au site.");
         }
 
         $user = User::updateOrCreate(
