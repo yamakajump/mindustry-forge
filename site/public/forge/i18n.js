@@ -44,14 +44,14 @@ function warn(message) {
 export function t(key, params) {
   const line = dictionary[key];
   if (line === undefined) {
-    warn(`cle absente du dictionnaire ${locale} : ${key}`);
+    warn(`key missing from the ${locale} dictionary: ${key}`);
     return key;
   }
   if (params === undefined) return line;
 
   return line.replace(/\{(\w+)\}/g, (whole, name) => {
     if (params[name] === undefined) {
-      warn(`${key} attend {${name}}, qui n'a pas ete fourni`);
+      warn(`${key} expects {${name}}, which was not supplied`);
       return whole;
     }
     return params[name];
