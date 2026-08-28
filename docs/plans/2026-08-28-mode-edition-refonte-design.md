@@ -94,8 +94,19 @@ would be false.
 
 **Edges.** 55 floors ship a `<name>-edge.png` in the jar, 96x96, which is the 3x3 sheet of
 the eight directions plus centre. They go into the atlas and the renderer follows
-`Floor.drawEdges` of v159.7, read from the source, never from a wiki. The 52 floors with no
-sheet do not blend: a hard edge, decided in code and named as such, rather than a guess.
+`Floor.drawEdges` of v159.7, decompiled from `server-release.jar`, never read off a wiki.
+
+**A sheet is looked up through the blend group, not through the floor.** `Floor.edges()` is
+`blendGroup.asFloor().edges`, and that is not a detail: **all fourteen floors carrying a
+blend group ship no sheet of their own, and all fourteen groups ship one.** Every crater and
+every vent is in that list. An implementation that reads `<name>-edge` records nothing for
+the lot, and a vent stops blending against anything, which is fourteen floors quietly wrong
+in a way that looks deliberate.
+
+So 69 floors blend, not 55: the 55 with a sheet plus the 14 that borrow their group's. The
+remaining 38 do not, and that is a hard edge decided in code and named as such rather than a
+guess. Found by measuring the dump against the jar before the code was written, which is the
+order this document failed to follow once already.
 
 **The cost, measured rather than estimated.** The atlas is 2048 x 2464 = 5 046 272 px,
 1 310 669 bytes. The additions are 223 360 px of variants across 67 floors and 506 880 px
@@ -235,9 +246,9 @@ sees on the first screenshot, and because it is the only step that depends on no
 
 ## Working conditions
 
-Four other sessions are live on this repository. This work happens in the worktree
-`C:/Users/coren/Projets/_worktrees/forge-editeur` on `feat/mode-edition`, after a shared
-HEAD moved under a session twice in thirty minutes on 28/08.
+Four other sessions are live on this repository. This work happens in a dedicated git
+worktree on `feat/mode-edition` rather than in the shared checkout, after a shared HEAD
+moved under a session twice in thirty minutes on 28/08.
 
 Agreed with the session rewriting the home page:
 

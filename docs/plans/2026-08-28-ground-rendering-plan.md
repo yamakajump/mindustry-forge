@@ -19,7 +19,8 @@ This plan implements section 2 of `docs/plans/2026-08-28-mode-edition-refonte-de
   subjects was over, between 51 and 60. `git log -1 --pretty=%s | wc -c` before pushing.
 - Accented characters are written out in French strings. The font carries them.
 - **`site/public/forge/blocks.json` must come out of this plan byte-identical.** It is hashed by `EngineVersion` and fifteen thousand stored analyses depend on it. Task 3 verifies this with a checksum, and a mismatch stops the task.
-- Work happens in the worktree `C:/Users/coren/Projets/_worktrees/forge-editeur` on `feat/mode-edition`. Four other sessions are live on this repository.
+- Work happens in a dedicated git worktree on `feat/mode-edition`, not in the shared
+  checkout. Several other sessions are live on this repository at the same time.
 - Do not open `site/public/index.html`: another session holds it until it merges. Nothing in this plan needs it.
 - Stage by explicit path: `git add <the files this task names>` then `git commit -m`.
   **Never `git add -A`.** This worktree is yours alone, but the habit is what keeps a
@@ -30,13 +31,14 @@ This plan implements section 2 of `docs/plans/2026-08-28-mode-edition-refonte-de
 
 `tools/build_sprites.py` and Task 3 need `mindustry-forge/assets-v159.7.jar` and
 `mindustry-forge/server-release.jar`. The `mindustry-forge/` directory is gitignored, so a
-fresh worktree does not have it. Before Task 2, make it visible from the worktree root:
+fresh worktree does not have it. Before Task 2, make it visible from the worktree root, by
+pointing a junction at the same directory in the main checkout:
 
 ```bash
-cmd //c mklink //J "C:\Users\coren\Projets\_worktrees\forge-editeur\mindustry-forge" "C:\Users\coren\Projets\mindustry-forge\mindustry-forge"
+cmd //c mklink //J "<worktree>\mindustry-forge" "<main checkout>\mindustry-forge"
 ```
 
-A junction rather than a copy: the jars are 35 MB and 40 MB, and a copy is a second thing
+A junction rather than a copy: the jars are 35 MB and 19 MB, and a copy is a second thing
 that can drift from the pinned build. Verify with `ls mindustry-forge/*.jar` from the
 worktree root before starting Task 2.
 
@@ -457,7 +459,8 @@ there. They decide how a page looks, not what an answer is."
 **Interfaces:**
 - Consumes: `bench/data/blocks.json` with the fields from Task 3.
 - Produces: `site/public/forge/sols.json` shaped
-  `{"floors": {"<name>": {"blend": <int>, "out": <bool>, "variants": <int>, "edges": <bool>}}}`,
+  `{"floors": {"<name>": {"blend": <int>, "out": <bool>, "variants": <int>, "sheet":
+  <string or null>}}}`,
   and atlas keys `floor/<name>#edge`.
 
 - [ ] **Step 1: Write `tools/build_sols.py`**
@@ -499,17 +502,28 @@ def main() -> None:
         variants = 0
         while f"{name}{variants + 1}" in art:
             variants += 1
+        # Whose edge sheet this floor bleeds with.
+        #
+        # `Floor.edges()` is `blendGroup.asFloor().edges`, not the floor's own, and the
+        # distinction is not cosmetic: all fourteen floors carrying a `blend_group` (every
+        # crater and every vent) ship NO sheet of their own, and all fourteen of their
+        # groups ship one. Reading `<name>-edge` alone records nothing for the lot, and a
+        # vent then refuses to blend against anything at all.
+        #
+        # `None` means this floor does not blend, which is a real answer for the fifty-two
+        # whose group has no sheet either.
+        sheet = entry.get("blend_group", name)
         floors[name] = {
             "blend": entry.get("blend_id", 0),
             # Absent means true in the dump, which is how the game's own default reads.
             "out": entry.get("draw_edge_out", True),
             "variants": variants,
-            "edges": f"{name}-edge" in art,
+            "sheet": sheet if f"{sheet}-edge" in art else None,
         }
 
     TARGET.write_text(json.dumps({"floors": floors}, separators=(",", ":")),
                       encoding="utf-8")
-    with_edges = sum(1 for f in floors.values() if f["edges"])
+    with_edges = sum(1 for f in floors.values() if f["sheet"])
     print(f"{len(floors)} sols, {with_edges} avec raccords, "
           f"{sum(1 for f in floors.values() if f['variants'] > 1)} avec variantes")
 
@@ -563,11 +577,22 @@ test("blending data stays out of the hashed catalogue", () => {
   }
 });
 
-test("a floor that says it has edges has them in the atlas", () => {
+test("a floor that names an edge sheet has that sheet in the atlas", () => {
   const atlas = read("atlas.json");
   for (const [name, floor] of Object.entries(sols.floors)) {
-    if (!floor.edges) continue;
-    assert.ok(atlas.sprites[`floor/${name}#edge`], `no edge sheet packed for ${name}`);
+    if (!floor.sheet) continue;
+    assert.ok(atlas.sprites[`floor/${floor.sheet}#edge`],
+      `${name} blends with ${floor.sheet}, which is not packed`);
+  }
+});
+
+test("a vent blends with its group's sheet rather than with nothing", () => {
+  /* Every crater and every vent carries a blend_group and ships no sheet of its own, so
+     reading `<name>-edge` records nothing for all fourteen and they stop blending.
+     `Floor.edges()` is `blendGroup.asFloor().edges`, which is what this checks. */
+  for (const [name, group] of [["crater-stone", "stone"], ["basalt-vent", "basalt"],
+                               ["carbon-vent", "carbon-stone"]]) {
+    assert.equal(sols.floors[name]?.sheet, group, `${name} should blend with ${group}`);
   }
 });
 
@@ -668,13 +693,17 @@ import { blendersAt, D8 } from "../../site/public/forge/tiling.js";
 /* Two floors, one that blends over the other. Written here rather than read out of
    sols.json so the test says what it depends on. */
 const floors = {
-  stone: { blend: 10, out: true, variants: 3, edges: true },
-  grass: { blend: 20, out: true, variants: 3, edges: true },
+  stone: { blend: 10, out: true, variants: 3, sheet: "stone" },
+  grass: { blend: 20, out: true, variants: 3, sheet: "grass" },
   // A floor the game tells not to bleed outwards, which is the one case where a higher
   // blend id still draws nothing.
-  shale: { blend: 30, out: false, variants: 1, edges: true },
-  // A floor with no sheet: it cannot bleed, and it gets bled onto by anything.
-  sand: { blend: 5, out: true, variants: 3, edges: false },
+  shale: { blend: 30, out: false, variants: 1, sheet: "shale" },
+  // A floor with no sheet anywhere, neither its own nor its group's: it cannot bleed, and
+  // anything bleeds onto it.
+  sand: { blend: 5, out: true, variants: 3, sheet: null },
+  // A vent, which ships no sheet and borrows its group's. Fourteen real floors are shaped
+  // like this, and reading `<name>-edge` alone drops every one of them.
+  "stone-vent": { blend: 12, out: true, variants: 3, sheet: "stone" },
 };
 
 const ground = (cells) => Object.fromEntries(
@@ -710,12 +739,19 @@ test("drawEdgeOut false means it never bleeds, whatever its id", () => {
   assert.deepEqual(blendersAt(board, 0, 0, floors), []);
 });
 
-test("a floor with no sheet of its own is bled onto by a lower id", () => {
+test("a floor with no sheet at all is bled onto by a lower id", () => {
   /* doEdge is `other.blendId > this.blendId || this.edges === null`. Sand has no sheet, so
      stone bleeds onto it although stone's id is higher, and grass would too. Without this
      clause a patch of sand next to anything reads as a cut-out. */
   const board = ground({ "0,0": "sand", "1,0": "stone" });
   assert.deepEqual(blendersAt(board, 0, 0, floors).map((b) => b.name), ["stone"]);
+});
+
+test("a vent bleeds, and does it with its group's sheet", () => {
+  const board = ground({ "0,0": "sand", "1,0": "stone-vent" });
+  const found = blendersAt(board, 0, 0, floors);
+  assert.deepEqual(found.map((b) => b.name), ["stone-vent"]);
+  assert.equal(found[0].sheet, "stone", "a vent must draw its group's sheet, not its own");
 });
 
 test("one neighbour contributes once, with every direction it came from", () => {
@@ -788,13 +824,13 @@ export function blendersAt(ground, x, y, floors) {
     if (!name || name === mine) continue;
 
     const other = floors[name];
-    if (!other?.out || !other.edges) continue;
-    // `doEdge`: a higher id wins, and a floor with no sheet of its own loses to everything.
-    if (here?.edges && other.blend <= (here.blend ?? 0)) continue;
+    if (!other?.out || !other.sheet) continue;
+    // `doEdge`: a higher id wins, and a floor whose group has no sheet loses to everything.
+    if (here?.sheet && other.blend <= (here.blend ?? 0)) continue;
 
     const already = found.get(name);
     if (already) already.dirs.push(index);
-    else found.set(name, { name, dirs: [index] });
+    else found.set(name, { name, sheet: other.sheet, dirs: [index] });
   }
 
   return [...found.values()].sort((a, b) => floors[a.name].blend - floors[b.name].blend);
@@ -825,7 +861,7 @@ Then, in the ground loop, after the floor and overlay are drawn for this tile:
          inwards, so a patch of grass beside stone has grass creeping onto the stone tile. */
       if (soils) {
         for (const blender of blendersAt(ground, x, y, soils.floors)) {
-          const edgeArt = atlas?.sprites?.[`floor/${blender.name}#edge`];
+          const edgeArt = atlas?.sprites?.[`floor/${blender.sheet}#edge`];
           if (!edgeArt) continue;
           // Nine cells in a 96 pixel sheet, so a cell is a third of its width.
           const cell = edgeArt.w / 3;
