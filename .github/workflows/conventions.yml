@@ -1,0 +1,66 @@
+# Mechanically enforces the commit and pull request rules AGENTS.md and CONTRIBUTING.md
+# already state in prose: conventional format, a fifty-character subject, no em dash.
+#
+# Nothing checked this before. PR #120's title was 67 characters and PR #125's was 52;
+# merges here are squash-only, so a pull request title becomes the commit subject on
+# `main`, and both are now permanent history. The checking logic lives in
+# `tools/check-conventions.mjs`, run the same way here and by a contributor from the
+# command line, so a failure in this workflow is always reproducible locally.
+name: conventions
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check:
+    name: Title, commits, and diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Needed to diff the base against the head below; the repository is small
+          # enough that a full clone costs nothing here.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # The title becomes the commit subject on `main` at squash-merge time, which is
+      # why it is checked like one. Passed through the environment rather than
+      # interpolated into the shell command: a pull request title is attacker-controlled
+      # text, and `${{ }}` inside `run:` would let it be read as shell syntax.
+      - name: Pull request title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: node tools/check-conventions.mjs --subject "$PR_TITLE"
+
+      # The PR's own commit list, not `HEAD~1`: a branch can carry any number of commits
+      # before it is squashed. Filtered down to sha, subject, author login and parent
+      # count, which is all `check-conventions.mjs` needs to skip merge commits and bots
+      # this repository does not write by hand.
+      - name: Fetch the commit list
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh api "repos/$REPO/pulls/$PR_NUMBER/commits" --paginate \
+            --jq '[.[] | {sha: .sha, message: .commit.message, authorLogin: (.author.login // .commit.author.name), parentCount: (.parents | length)}]' \
+            > commits.json
+
+      - name: Every commit in the pull request
+        run: node tools/check-conventions.mjs --commits-file commits.json
+
+      # The base and head sha come from the event payload, not from free text a
+      # contributor writes, so interpolating them directly is not the injection risk the
+      # title above is.
+      - name: The diff itself, for an em dash on any added line
+        run: |
+          git diff "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" > diff.patch
+          node tools/check-conventions.mjs --diff-file diff.patch
