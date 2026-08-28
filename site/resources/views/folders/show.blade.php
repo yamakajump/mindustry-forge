@@ -12,7 +12,6 @@
 @endpush
 
 @section('body')
-<main>
   @if($ancestors !== [])
     <nav class="fil" aria-label="{{ __('dossiers.page.les-miens') }}">
       @foreach($ancestors as $up)
@@ -56,7 +55,7 @@
             @endif
             <h3>{{ $child->name }}</h3>
           </a>
-          <p class="meta">{{ $child->schematics_count }} {{ __('dossiers.unite.schemas') }}</p>
+          <p class="meta">{{ $child->schematics_count }} {{ trans_choice('dossiers.unite.schemas', $child->schematics_count) }}</p>
         </article>
       @endforeach
     </div>
@@ -71,8 +70,8 @@
   @if($withheld > 0)
     <p class="hint-line">
       {{ $withheld }}
-      {{ __('dossiers.unite.schemas') }}
-      {{ $mine ? __('dossiers.page.retires-proprietaire') : __('dossiers.page.retires-visiteur') }}
+      {{ trans_choice('dossiers.unite.schemas', $withheld) }}
+      {{ trans_choice($mine ? 'dossiers.page.retires-proprietaire' : 'dossiers.page.retires-visiteur', $withheld) }}
     </p>
   @endif
 
@@ -95,13 +94,19 @@
             <p class="legende">{{ $schematic->pivot->note }}</p>
           @endif
           @if($mine)
+            {{-- Separes : colles, les deux libelles se lisaient comme une seule phrase,
+                 « Dire pourquoi il est la Retirer de ce dossier ». Ca ne se voit que sur
+                 la page. --}}
+            <p class="row-end">
             <button type="button" class="link" data-legender
                     data-dossier="{{ $folder->slug }}"
                     data-schema="{{ $schematic->slug }}"
                     data-note="{{ $schematic->pivot->note }}">{{ __('dossiers.gestion.legender') }}</button>
+            &middot;
             <button type="button" class="link" data-retirer
                     data-dossier="{{ $folder->slug }}"
                     data-schema="{{ $schematic->slug }}">{{ __('dossiers.gestion.retirer-dici') }}</button>
+            </p>
           @endif
         </article>
       @endforeach
@@ -109,5 +114,4 @@
 
     {{ $schematics->links() }}
   @endif
-</main>
 @endsection

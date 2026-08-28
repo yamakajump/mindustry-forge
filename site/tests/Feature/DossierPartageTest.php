@@ -41,7 +41,7 @@ it('previent le proprietaire que son dossier partage est en partie invisible', f
 
     $this->actingAs($owner)->get("/d/{$folder->slug}")
         ->assertOk()
-        ->assertSee(__('dossiers.page.retires-proprietaire'));
+        ->assertSee(trans_choice('dossiers.page.retires-proprietaire', 1));
 });
 
 it('dit au visiteur autre chose qu au proprietaire', function () {
@@ -52,8 +52,8 @@ it('dit au visiteur autre chose qu au proprietaire', function () {
 
     $this->get("/d/{$folder->slug}")
         ->assertOk()
-        ->assertSee(__('dossiers.page.retires-visiteur'))
-        ->assertDontSee(__('dossiers.page.retires-proprietaire'));
+        ->assertSee(trans_choice('dossiers.page.retires-visiteur', 1))
+        ->assertDontSee(trans_choice('dossiers.page.retires-proprietaire', 1));
 });
 
 it('ne dit rien quand il n y a rien a cacher', function () {
@@ -64,7 +64,7 @@ it('ne dit rien quand il n y a rien a cacher', function () {
 
     $this->get("/d/{$folder->slug}")
         ->assertOk()
-        ->assertDontSee(__('dossiers.page.retires-visiteur'));
+        ->assertDontSee(trans_choice('dossiers.page.retires-visiteur', 1));
 });
 
 it('refuse un dossier prive a tout le monde sauf son proprietaire', function () {

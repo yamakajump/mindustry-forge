@@ -3,7 +3,6 @@
 @section('title', __('dossiers.page.galerie').' - Mindustry Forge')
 
 @section('body')
-<main>
   <h1 class="title">{{ __('dossiers.page.galerie') }}</h1>
 
   @if($folders->isEmpty())
@@ -31,9 +30,9 @@
             <h3>{{ $folder->name }}</h3>
           </a>
           <p class="meta">
-            {{ $folder->schematics_count }} {{ __('dossiers.unite.schemas') }}
+            {{ $folder->schematics_count }} {{ trans_choice('dossiers.unite.schemas', $folder->schematics_count) }}
             @if($folder->children_count > 0)
-              &middot; {{ $folder->children_count }} {{ __('dossiers.unite.sous-dossiers') }}
+              &middot; {{ $folder->children_count }} {{ trans_choice('dossiers.unite.sous-dossiers', $folder->children_count) }}
             @endif
             {{-- Pas de vignettes ici : vingt-quatre dossiers feraient quatre-vingt-seize
                  dessins sur une page, et la carte Discord les porte deja. --}}
@@ -47,5 +46,4 @@
 
     {{ $folders->links() }}
   @endif
-</main>
 @endsection

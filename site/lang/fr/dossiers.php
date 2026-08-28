@@ -23,8 +23,8 @@ return [
         /* Deux phrases pour deux questions : ce qu'un visiteur ne voit pas, et ce que le
            propriétaire a partagé sans le savoir. Un dossier de douze qui se lit comme un
            dossier de quatre, sans un mot, est la faute que ce dépôt paie depuis le 27. */
-        'retires-visiteur' => 'ne sont pas montrés ici, parce qu ils sont privés',
-        'retires-proprietaire' => 'de ce dossier ne sont visibles que par toi',
+        'retires-visiteur' => "n'est pas montré ici, parce qu'il est privé|ne sont pas montrés ici, parce qu'ils sont privés",
+        'retires-proprietaire' => "de ce dossier n'est visible que par toi|de ce dossier ne sont visibles que par toi",
     ],
 
     'gestion' => [
@@ -37,7 +37,7 @@ return [
         // `supprimer-confirme` n'est pas ici : seul dossiers.js la prononce, et une cle que
         // le PHP ne demande jamais est une orpheline. Elle vit dans forge/lang/fr.json.
         'ajouter-ici' => 'Mettre dans ce dossier',
-        'legender' => 'Dire pourquoi il est la',
+        'legender' => 'Dire pourquoi il est là',
         'retirer-dici' => 'Retirer de ce dossier',
     ],
 
@@ -48,7 +48,7 @@ return [
     ],
 
     'unite' => [
-        'schemas' => 'schémas',
-        'sous-dossiers' => 'sous-dossiers',
+        'schemas' => 'schéma|schémas',
+        'sous-dossiers' => 'sous-dossier|sous-dossiers',
     ],
 ];

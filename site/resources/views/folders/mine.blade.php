@@ -7,7 +7,6 @@
 @endpush
 
 @section('body')
-<main>
   <h1 class="title">{{ __('dossiers.page.les-miens') }}</h1>
 
   {{-- Le formulaire est un vrai formulaire, pas un bouton qui ouvre une fenetre : sans
@@ -44,9 +43,9 @@
           <h3>{{ $folder->name }}</h3>
         </a>
         <p class="meta">
-          {{ $folder->schematics_count }} {{ __('dossiers.unite.schemas') }}
+          {{ $folder->schematics_count }} {{ trans_choice('dossiers.unite.schemas', $folder->schematics_count) }}
           @if($folder->children_count > 0)
-            &middot; {{ $folder->children_count }} {{ __('dossiers.unite.sous-dossiers') }}
+            &middot; {{ $folder->children_count }} {{ trans_choice('dossiers.unite.sous-dossiers', $folder->children_count) }}
           @endif
         </p>
         <p class="row-end">
@@ -59,5 +58,4 @@
   </div>
 
   {{ $folders->links() }}
-</main>
 @endsection
