@@ -1115,8 +1115,6 @@ select {
 .outils-liste strong { font-weight: normal; font-size: 16px; }
 .outils-liste span { color: var(--dim); font-size: 13px; line-height: 1.45; }
 
-/* Sous 520 px le sprite passe au-dessus du texte plutot que de lui voler 44 px de largeur
-   sur les 390 que le telephone donne. */
 @media (max-width: 520px) {
   .plan-cadre { height: 170px; }
 }
