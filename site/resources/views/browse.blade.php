@@ -16,66 +16,95 @@
   etiquette tapee a la main. Ce sont des plafonds : ce que le plan sortirait alimente a
   fond, et non ce qu'il a ete mesure faisant.</p>
 
-{{-- Les objets les plus produits, en images.
+{{-- Qui produit : une seule commande, et c'est celle qui porte les images.
 
-     Corentin : « dans les deroulements c'est pas intuitif, il n'y a pas les icones ». Il a
-     raison, et un `<select>` natif ne porte pas d'image dans ses `<option>` : c'est une
-     limite du controle, pas un oubli.
+     Il y en avait deux, une rangee de pastilles et un deroulant, qui faisaient exactement la
+     meme chose. Corentin : « tu remets produit quoi en doublon ». Le doublon existait pour
+     une raison ecrite ici : un `<select>` natif ne porte pas d'image dans ses `<option>`, et
+     le remplacer par une liste dessinee aurait coute la navigation au clavier, la fermeture
+     par Echap, l'annonce au lecteur d'ecran et le selecteur natif du telephone.
 
-     Le remplacer par une liste dessinee aurait coute la navigation au clavier, la recherche
-     par frappe, la fermeture par Echap, l'annonce au lecteur d'ecran et le selecteur natif du
-     telephone, le tout sur le controle de recherche principal du site. Le compte ne tombait
-     pas juste.
+     Ce qui a change, c'est que cette grille n'est pas une liste dessinee : ce sont des liens
+     dans un `<details>`. Le clavier, le lecteur d'ecran et Echap viennent du navigateur, pas
+     d'un script ; chaque choix a une adresse qui se partage et s'indexe ; et la page marche
+     sans JavaScript. Il ne reste qu'une seule perte reelle, la recherche par frappe, sur une
+     vingtaine d'entrees qui tiennent toutes a l'ecran.
 
-     Cette rangee donne les images sans rien retirer. Ce sont des liens : clavier et lecteur
-     d'ecran gratuits, chaque filtre a une adresse qui se partage et s'indexe, et la page
-     marche sans JavaScript. Le deroulant reste dessous pour tout ce qui n'est pas dans les
-     plus produits. --}}
+     Le champ « qui contient » garde son `datalist`, lui, et pour la raison inverse : deux
+     cents noms de blocs ne tiennent pas dans une grille, et la frappe y est le seul acces
+     raisonnable. La frontiere passe entre vingt et deux cents, pas entre deux gouts. --}}
 @if($items !== [])
-  <nav class="vitrine-pastilles" aria-label="Qui produit">
-    <a href="{{ request()->fullUrlWithQuery(['produit' => null, 'page' => null]) }}"
-       class="vitrine-pastille @if($makes === '') on @endif"
-       @if($makes === '') aria-current="page" @endif>n'importe quoi</a>
-
-    @foreach($items as $item)
-      <a href="{{ request()->fullUrlWithQuery(['produit' => $item, 'page' => null]) }}"
-         class="vitrine-pastille @if($makes === $item) on @endif"
-         @if($makes === $item) aria-current="page" @endif>
-        @if($item !== $powerKey)
-          {{-- L'energie n'est ni un objet ni un liquide : elle n'a pas de sprite, et lui en
-               inventer un serait dessiner quelque chose que le jeu ne dessine pas. --}}
-          <img class="icone" src="/icone/{{ \App\Support\Thing::family($item) }}/{{ $item }}.png?t=32"
-               width="18" height="18" loading="lazy" decoding="async" alt="">
+  <details class="choisisseur">
+    <summary>
+      <span class="ch-quoi">Qui produit</span>
+      @if($makes === '')
+        <b>n'importe quoi</b>
+      @else
+        @if($makes !== $powerKey)
+          <img class="icone" src="/icone/{{ \App\Support\Thing::family($makes) }}/{{ $makes }}.png?t=32"
+               width="22" height="22" decoding="async" alt="">
         @endif
-        {{ $item === $powerKey ? 'energie' : \App\Support\Thing::name($item) }}
-      </a>
-    @endforeach
-  </nav>
+        <b>{{ $makes === $powerKey ? 'énergie' : \App\Support\Thing::name($makes) }}</b>
+      @endif
+      <span class="ch-changer">changer</span>
+    </summary>
+
+    <div class="ch-grille">
+      <a class="ch-case ch-tout @if($makes === '') on @endif"
+         href="{{ request()->fullUrlWithQuery(['produit' => null, 'min' => null, 'page' => null]) }}"
+         @if($makes === '') aria-current="page" @endif>n'importe quoi</a>
+
+      @foreach($items as $item)
+        {{-- Le debit minimum part avec le produit : il est exprime dans l'unite de l'objet
+             choisi, donc « au moins 1000 » garde pour du graphite un nombre qui parlait du
+             silicium. Un chiffre juste a cote de sa question, en une seule seconde. --}}
+        <a class="ch-case @if($makes === $item) on @endif"
+           href="{{ request()->fullUrlWithQuery(['produit' => $item, 'min' => null, 'page' => null]) }}"
+           @if($makes === $item) aria-current="page" @endif>
+          @if($item !== $powerKey)
+            {{-- L'energie n'est ni un objet ni un liquide : elle n'a pas de sprite, et lui en
+                 inventer un serait dessiner quelque chose que le jeu ne dessine pas. --}}
+            <img class="icone" src="/icone/{{ \App\Support\Thing::family($item) }}/{{ $item }}.png?t=32"
+                 width="24" height="24" loading="lazy" decoding="async" alt="">
+          @else
+            <span class="ch-eclair" aria-hidden="true">&#9889;</span>
+          @endif
+          <span>{{ $item === $powerKey ? 'énergie' : \App\Support\Thing::name($item) }}</span>
+        </a>
+      @endforeach
+    </div>
+  </details>
 @endif
 
+{{-- Le classement, en onglets plutot que dans un deroulant.
+
+     C'est la commande la plus structurante de la page et elle etait la seule qu'il fallait
+     ouvrir pour savoir ce qu'elle offrait. Six liens montrent les six facons de classer sans
+     un clic, et chacune garde son adresse.
+
+     Les trois qui comparent des productions restent visibles sans objet choisi, marques
+     plutot que caches : les enlever ferait disparaitre la raison pour laquelle ils manquent,
+     et un lecteur ne peut pas demander ce qu'il ne voit pas. --}}
+<nav class="tris" aria-label="Classer">
+  @foreach($orders as $key => $label)
+    @php $needsItem = in_array($key, ['best', 'dense', 'output'], true) && $makes === ''; @endphp
+    <a class="tri @if($order === $key) on @endif @if($needsItem) gris @endif"
+       href="{{ request()->fullUrlWithQuery(['tri' => $key, 'page' => null]) }}"
+       @if($needsItem) title="{{ __('vitrine.contraintes.debit-sans-objet') }}" @endif
+       @if($order === $key) aria-current="page" @endif>{{ $label }}</a>
+  @endforeach
+</nav>
+
 <form method="get" class="card">
+  {{-- Le produit et le classement sont choisis par des liens, au-dessus. Reportes ici pour
+       qu'appliquer une contrainte ne les efface pas : un formulaire ne renvoie que ses
+       propres champs, et une recherche qui perd la moitie de sa question en gagnant une
+       contrainte est une page plausible et fausse. --}}
+  <input type="hidden" name="produit" value="{{ $makes }}">
+  <input type="hidden" name="tri" value="{{ $order }}">
+  @if($creative)<input type="hidden" name="creatif" value="oui">@endif
+
   <div class="row" style="margin:0">
-    <label class="lead" for="produit" style="margin:0">Qui produit</label>
-    <select name="produit" id="produit">
-      <option value="">n'importe quoi</option>
-      @foreach($items as $item)
-        {{-- L'energie est une production comme une autre : chercher un schéma qui
-             produit de l'energie, c'est chercher une centrale.
-
-             Le nom vient du jeu et non de l'identifiant : ce deroulant affichait
-             `blast-compound` et `phase-fabric` a un joueur francophone. --}}
-        <option value="{{ $item }}" @selected($makes === $item)>{{
-          $item === $powerKey ? 'energie' : \App\Support\Thing::name($item) }}</option>
-      @endforeach
-    </select>
-
-    <label class="lead" for="tri" style="margin:0">Triés par</label>
-    <select name="tri" id="tri">
-      @foreach($orders as $key => $label)
-        <option value="{{ $key }}" @selected($order === $key)>{{ $label }}</option>
-      @endforeach
-    </select>
-
     <label class="lead" for="bloc" style="margin:0">{{ __('vitrine.bloc.label') }}</label>
     <input name="bloc" id="bloc" list="blocs" value="{{ $holds }}"
            placeholder="{{ __('vitrine.bloc.exemple') }}" autocomplete="off">
@@ -286,7 +315,15 @@
               &middot;
             @endforeach
           @endif
-          <strong>{{ $schematic->width }}&times;{{ $schematic->height }}</strong> &middot;
+          {{-- Les dimensions, sans quoi un classement a la surface montrerait un debit
+               plus faible au-dessus d'un plus fort sans rien pour l'expliquer.
+
+               Tues quand elles valent zero plutot qu'affichees en « 0x0 » : une entree
+               analysee par un moteur trop ancien n'a pas de largeur, et « 0x0 » se lit comme
+               une mesure alors que c'est une absence. --}}
+          @if($schematic->width > 0 && $schematic->height > 0)
+            <strong>{{ $schematic->width }}&times;{{ $schematic->height }}</strong> &middot;
+          @endif
           {{ $schematic->blocks }} blocs &middot; {{ $schematic->credit() }}
           {{-- Said in the list too, not only on the page. Somebody scrolling a hundred
                tiles should be able to tell what this site collected from what its members
