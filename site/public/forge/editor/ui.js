@@ -130,13 +130,25 @@ export function storageLayerOf(familyKey) {
   return familyKey === "floor-liquid" ? "floor" : familyKey;
 }
 
-/** The brush tools, the ones from the game's own map editor. */
+/**
+ * The brush tools, the ones from the game's own map editor.
+ *
+ * `icon` is the inside of a 24x24 `<svg>`, drawn plain rather than fetched: these five
+ * gestures have no sprite in the game's own atlas, unlike every block this file otherwise
+ * draws from it. Each button carries its own accessible name in `aria-label` (see
+ * `mountRail`), so the icon itself stays `aria-hidden`.
+ */
 const TOOLS = [
-  { key: "pencil", label: "Crayon", hint: "peindre à la main, taille réglable" },
-  { key: "rect", label: "Rectangle", hint: "remplir une zone d'un glissé" },
-  { key: "bucket", label: "Pot", hint: "remplir la zone contiguë de même sol" },
-  { key: "eraser", label: "Gomme", hint: "effacer le sol peint" },
-  { key: "pipette", label: "Pipette", hint: "reprendre le sol, le minerai ou le mur cliqué" },
+  { key: "pencil", label: "Crayon", hint: "peindre à la main, taille réglable",
+    icon: `<path d="M4 20l1-5L15 5l4 4L9 19z"/><path d="M13 7l4 4"/>` },
+  { key: "rect", label: "Rectangle", hint: "remplir une zone d'un glissé",
+    icon: `<rect x="5" y="7" width="14" height="10" rx="1.5"/>` },
+  { key: "bucket", label: "Pot", hint: "remplir la zone contiguë de même sol",
+    icon: `<path d="M5 8h14l-1.6 10a2 2 0 01-2 1.7H8.6a2 2 0 01-2-1.7z"/><path d="M3.5 8h17"/>` },
+  { key: "eraser", label: "Gomme", hint: "effacer le sol peint",
+    icon: `<path d="M7 15l7-9 5 4-6.5 8H10z"/><path d="M12 8.5l5 4"/>` },
+  { key: "pipette", label: "Pipette", hint: "reprendre le sol, le minerai ou le mur cliqué",
+    icon: `<path d="M14.5 3.5l6 6-2.5 2.5-2-2-7.5 7.5H6v-2.5l7.5-7.5-2-2z"/>` },
 ];
 
 /**
@@ -371,16 +383,21 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     </div>
     <div class="editor-ground" hidden>
       <div class="tools">
-        ${TOOLS.map((tool, i) => `<button type="button" class="chip" data-tool="${tool.key}"
-          title="${escape(tool.hint)}" aria-pressed="${i === 0}">${escape(tool.label)}</button>`)
-          .join("")}
+        ${TOOLS.map((tool, i) => `<button type="button" class="tool" data-tool="${tool.key}"
+          title="${escape(tool.label)} — ${escape(tool.hint)}" aria-label="${escape(tool.label)}"
+          aria-pressed="${i === 0}"><svg class="i" aria-hidden="true" viewBox="0 0 24 24">${
+          tool.icon}</svg></button>`).join("")}
       </div>
-      <label class="size">Taille du crayon
-        <input type="range" min="1" max="9" step="2" value="1">
-        <span class="num">1 × 1</span></label>
-      <label class="fade">Transparence des blocs
-        <input type="range" min="0" max="100" value="35">
-        <span class="num">35 %</span></label>
+      <div class="brushes">
+        <label class="range size" title="Taille du crayon">
+          <span class="tag">Taille</span>
+          <input type="range" min="1" max="9" step="2" value="1">
+          <span class="num">1 × 1</span></label>
+        <label class="range fade" title="Transparence des blocs, sur l'onglet sol">
+          <span class="tag">Transparence</span>
+          <input type="range" min="0" max="100" value="35">
+          <span class="num">35 %</span></label>
+      </div>
       <p class="empty ground-empty" hidden>Aucun sol ne répond à ça.</p>
       ${layers.map((layer) => `<section data-layer="${layer.key}">
         <h3>${escape(layer.label)} <span class="num">${layer.blocks.length}</span></h3>
