@@ -1,0 +1,111 @@
+# Notes: design
+
+Written 28 August 2026. The third of four related specs, and the smallest.
+
+The request was "peut-etre un petit detail sur les schemas ou des trucs comme ca", which is
+one sentence covering two different things. Naming both is most of the work here.
+
+## Two notes, not one
+
+**The private note.** Mine, on a schematic, wherever I meet it. "Celui-ci chauffe si on le
+nourrit a fond", "j'ai remplace les convoyeurs par des titanes". Nobody else ever sees it.
+It follows the schematic, not the folder, because the thing I learned about it is true in
+every folder I put it in.
+
+**The folder note.** A caption on one schematic inside one folder, visible to everybody who
+can see that folder. "Commence par celui-la", "celui-ci suppose que tu as deja du silicium".
+It belongs to the folder, not to the schematic: the same plan is "the first one to build"
+in a beginner's folder and "the fallback" in somebody else's.
+
+Merging them would mean one of the two behaves surprisingly. A private note that suddenly
+becomes public when the schematic enters a shared folder is a leak. A folder caption that
+follows the schematic everywhere is somebody else's opinion appearing on my page.
+
+So: two storages, two surfaces, two words on screen. And the spec says which is which every
+time it shows one, because "note" alone, on a page that has both, tells the reader nothing
+about who will read it.
+
+## Data model
+
+```
+schematic_notes   id, user_id, schematic_id, body, created_at, updated_at
+                  unique(user_id, schematic_id)
+
+folder_items.note  text, nullable          (a column, not a table)
+```
+
+The private note is one row per person per schematic, replaced in place rather than
+appended: it is a memory, not a thread.
+
+The folder caption is a column on the row that already exists to say "this schematic is in
+this folder". A table of its own would have exactly the same key as `folder_items` and
+would need a join to say anything, which is the definition of a column.
+
+Both cascade with what they hang off. Nothing here enters `EngineVersion`: a note decides
+nothing about what a schematic produces. The checksum of `blocks.json` is unchanged.
+
+## Lengths, and why they differ
+
+- Private note: **1000 characters.** It is a workbench memo and sometimes a list of three
+  changes.
+- Folder caption: **280 characters.** It is a caption under a tile, in a grid of tiles. Let
+  it grow and the grid stops being a grid.
+
+Both limits are enforced server side and shown as a live count in the field, because a form
+that refuses 1050 characters after the fact loses the fifty that mattered.
+
+## Plain text, escaped, and no markup
+
+Rendered with Blade's `{{ }}`, which escapes. No markdown, no HTML, and deliberately not the
+game's own `[red]` colour markup either, even though `Services/GameMarkup.php` exists and is
+already used to render schematic names.
+
+That last one is a real choice and worth the sentence: game markup is right for a name
+copied out of Mindustry, where the colours came from the game. A note is written here, in a
+textarea, by somebody who did not ask for a syntax. Offering one means explaining it, and
+explaining it in a tooltip nobody opens.
+
+The folder caption is user content shown to other people, so it is the one place in these
+four specs where an escape matters. Blade escapes by default; the rule is simply never to
+reach for `{!! !!}` on either field, and a test asserts that a caption containing a script
+tag comes back escaped.
+
+## Surfaces
+
+| Where | Which note |
+|---|---|
+| `/s/{slug}`, under the analysis | the private one, an empty textarea until written |
+| `/d/{slug}`, under each tile | the folder caption, shown to anybody who sees the folder |
+| `/d/{slug}`, on one's own folder | the caption, editable in place |
+
+The private note appears on the schematic page for signed-in visitors only, and it is not
+in the social card, not in the meta description, and not in any listing. It is the one
+thing on this site that is nobody's business.
+
+```
+PUT    /api/schematiques/{schematic}/note        auth   (upsert, empty body deletes)
+PATCH  /api/dossiers/{folder}/schemas/{schematic}  auth   (the caption, owner only)
+```
+
+An empty body deletes rather than storing an empty string, so that "has a note" is one
+question with one answer and not two.
+
+## Tests
+
+- Writing a note twice replaces it and leaves one row.
+- An empty body deletes the row.
+- 1001 characters is refused; 1000 is kept.
+- Somebody else's private note is invisible on the same schematic page, and their request
+  to read it is a 404 rather than a 403, which would confirm it exists.
+- A caption is visible to a visitor who can see the folder, and only the folder's owner can
+  write one.
+- A caption containing `<script>` renders escaped.
+- Deleting a schematic deletes its notes; removing a schematic from a folder deletes its
+  caption there and leaves the private note alone.
+
+## What stays out
+
+- Comments, replies, anything with a second author. That is a discussion feature, with
+  moderation, reporting and a code of conduct behind it.
+- Notes on a folder itself. The folder already has `description`, which is that.
+- Any note appearing in a card, a meta tag, a listing or a search index.
