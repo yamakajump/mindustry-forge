@@ -3,20 +3,19 @@
 Paste a Mindustry schematic, find out what it really produces and where it jams.
 Public site: **https://mindustryforge.com**
 
-This file is for anyone working in this repository, human or agent. It is in English like
-the rest of the repository, and it is a set of rules rather than a history: what to do,
-and what it costs when it is not done.
+This file is for anyone working in this repository, human or agent. It describes how the
+codebase is put together and the rules that hold in it.
 
-## The trunk is `main`, and there is only one
+## Branch and CI
 
-Everything lives on **`main`**: the default branch, what `deploy.sh` puts into production,
-what CI watches. Long lived side branches have already cost this repository a public page
-showing 161 commits of lag and no licence. If one is ever needed again, it is merged early
-and often, not at the end. **No test runs on the difference between two branches.**
+`main` is the only branch. It is what `deploy.sh` puts into production and what CI
+watches, and nothing here compares one branch against another: a side branch that
+diverges from `main` is invisible to every check in this repository, so keep any side
+branch short lived and merge it early.
 
-The workflows `tests.yml` and `verify-catalogue.yml` predate the restart and reference
-paths that no longer exist. Do not rely on them. The CI that counts is `site.yml`, and it
-runs the oracle.
+`tests.yml` and `verify-catalogue.yml` reference paths that no longer exist in this
+repository (`forge/server_setup.py`, `gradlew`); do not rely on them. `site.yml` is the CI
+that matters, and it runs the oracle (see below).
 
 ## The two rules of this repository
 
@@ -30,8 +29,9 @@ If the analysis and the measurement disagree, that is a bug here, not a matter o
 Never adjust a constant to make a test pass without checking what the bench says.
 
 The `.msch` format is implemented from `Schematics.write` and `TypeIO` in Mindustry
-v159.7, the version pinned throughout this repository. Reading that format off a wiki is
-how a tool ends up disagreeing with the game about what the player just pasted.
+v159.7, the version pinned throughout this repository, rather than from a wiki: a format
+read off a wiki is how a tool ends up disagreeing with the game about what the player just
+pasted.
 
 ## Commands
 
@@ -70,89 +70,56 @@ ssh <server> "bash /var/www/mindustry-forge/deployment/deploy.sh"
 `deployment/` holds the nginx vhost, the PHP-FPM pool and the systemd units, and
 `deploy.sh` copies them onto the server on every pass.
 
-**Never edit the nginx site file or the PHP-FPM pool over SSH.** The change would be
-overwritten by the next deployment, silently. Edit the file in the repository.
+**Never edit the nginx site file or the PHP-FPM pool over SSH.** The change is overwritten
+by the next deployment, silently. Edit the file in the repository instead.
 
-`install-server.sh` rebuilds the machine from nothing. Keeping it current is the only
-thing standing between a hardware failure and a reinstall from memory.
+`install-server.sh` rebuilds the machine from nothing; keeping it current is what makes a
+hardware failure recoverable without depending on memory.
 
-The server hosts other applications under other accounts, which is why this site has its
-own system user, its own PHP-FPM pool and its own database. Do not share anything between
-them.
+The server hosts other applications under other accounts, so this site has its own system
+user, its own PHP-FPM pool and its own database, and shares nothing between them.
 
-Expensive trap: adding a PHP-FPM pool needs a `systemctl restart`, not a `reload`. A
-reload reuses inherited sockets, the new pool never appears, and nothing reports an error.
-
-## The recurring defect: a correct number, next to the wrong question
-
-Six times in one day, under six faces, the same defect. Each time an **exact** number,
-correctly computed, displayed where the surface asks a different question.
-
-| What was correct | The question asked | What it produced |
-|---|---|---|
-| net power | "which one produces most" | a factory ranked below an empty schematic |
-| the power ceiling | "how big is it" | 480 megawatts on a plan nobody can place |
-| a sandbox tap's throughput | "what does this plan produce" | 36 million water a minute |
-| the ceiling, filed as a measurement | "the ones that produce most" | 3364 schematics ranked on what they do not do |
-| a link's relative position | "which block do I connect" | a map of empty cells |
-| the panel's aspect ratio | "how big should the drawing be" | plans squashed, others out of frame |
-
-None was an arithmetic error, and **none would have been caught by a test that checks a
-number**. They are visible by reading the sentence around them, or by opening the page.
-
-**The rule**: before displaying a number, say out loud the question the surface claims to
-answer. If the number answers a neighbouring question, it is wrong in that place even when
-it is right everywhere else. A ceiling is never displayed without saying that it is one.
-
-**The corollary**, which cost the sixth case: whoever spent the day measuring other
-people's work and being right three times drew a square next to a file they had written
-themselves saying disc. Measuring is not what gets forgotten. Measuring yourself is.
+Adding a PHP-FPM pool needs a `systemctl restart`, not a `reload`: a reload reuses
+inherited sockets, so the new pool never appears, and nothing reports an error.
 
 ## What goes into the engine fingerprint, and what does not
 
-`EngineVersion` hashes the sources of the analysis and stamps the result into every row,
-so a stale figure can be found. The boundary has been wrong in both directions.
+`EngineVersion` hashes the sources of the analysis and stamps the result into every row of
+the catalogue, so a stale figure can be found. What decides an answer belongs in the
+hashed sources; what only decides how a page reads does not.
 
-**Too narrow.** It covered only `public/forge`, not `tools/ingest.mjs`, which decides
-which computed fields reach a column. A field computed and then dropped by the sieve let
-fifteen thousand rows read as current while the item ceiling existed in none of them.
+The hashed sources are `site/public/forge/` and `tools/ingest.mjs`: the ingest pass
+decides which computed fields reach a column, so a field computed but dropped there would
+otherwise read as current everywhere while never actually reaching storage. Data that only
+changes presentation, such as a colour registry, is kept out of the hashed sources on
+purpose: including it would stale every stored analysis and force a full re-measurement
+for no numeric reason.
 
-**Too wide.** Adding a colour registry, which changes no number, would have staled fifteen
-thousand analyses and triggered a full re-measurement for presentation.
-
-**The rule**: what decides an answer goes in the hashed file, what decides how a page
-reads does not. And the check that goes with it, because a rule alone is an intention:
-compare the checksum of `blocks.json` before and after the change. Identical to the byte
-means zero stale analyses.
+To check the boundary after a change, compare the checksum of `blocks.json` before and
+after: identical means the change touched nothing hashed.
 
 ## Conventions
 
 ### Language: English in the repository, French on the site
 
 **Everything a contributor reads is in English**: the code, its comments, commit messages,
-pull request titles and descriptions, and the documents in `docs/`. The repository is
-public and open source, and a project whose commits and documentation are in a language
-its reader does not speak is a project they do not pick up.
+pull request titles and descriptions, and the documents in `docs/`.
 
 **Everything a player reads stays French**, and lives in `site/lang/` and
 `site/public/forge/lang/`. The site addresses French-speaking players first; other
 languages will come, and the multilingual base is there for that.
 
-**The language of a commit follows the audience of the repository, not the language of the
-conversation.** This repository is public, so English, including when everything else
-around the work happens in French. A session in doubt runs `git log --oneline -20`: French
-subjects there predate the decision of 27 August 2026 and are not a model.
+History is not rewritten: `main` is public, and merged pull requests are permalinks that
+nothing justifies breaking for cosmetics.
 
-History is not rewritten. `main` is public, and the merged pull requests are permalinks
-that nothing justifies breaking for cosmetics.
-
-Accents are written, in both languages. The font carries them, that is verified, and
+Accents are written, in both languages. The font carries them, and that is verified;
 French without accents is badly written French.
 
 ### The rest
 
 - Conventional commits, in English, imperative subject, 50 characters max. Same for the
-  pull request title and description.
+  pull request title and description. See `CONTRIBUTING.md` for what that buys a reader
+  of the changelog.
 - The commit body explains *why*, not *what*: the diff already says what.
 - No em dash, anywhere.
 - Translation keys are written `<domain>.<screen>.<element>`, in kebab-case, **never
@@ -165,14 +132,12 @@ French without accents is badly written French.
   Write `{{ $n }} {{ __('blocs.unite.points') }}`, which degrades to
   `160 blocs.unite.points`.
 
-  **The line falls where the disappearance is silent.** Strict for quantities and units,
-  where the number is the whole information and its absence is invisible. Free for
-  sentences, where a missing word is noticed and where freezing the number-then-word order
-  would break translation. The test applies it to `.unite.` keys, because neither PHP nor
-  JS says statically that a variable is a number, and a test that guesses becomes flaky and
-  then gets disabled.
+  The rule is strict for quantities and units, where the number is the whole information
+  and its absence is invisible, and free for sentences, where a missing word is noticed
+  and freezing the number-then-word order would break translation. The test applies it to
+  `.unite.` keys, because neither PHP nor JS says statically that a variable is a number.
 
-## Several sessions often work on this repository in parallel
+## Working with a shared checkout
 
 Before committing, check that the diff contains only your own work:
 
@@ -182,12 +147,8 @@ git add <files>        # never a blind `git add -A`
 git commit -- <paths>  # the only form that ignores what someone else staged
 ```
 
-**And checking is not enough on its own.** `git log --oneline origin/main..HEAD` being
-empty says nothing about the state a few minutes later. Pushing `HEAD:refs/heads/<branch>`
-then carries whatever landed in between: that is how a documentation change came to
-introduce a public endpoint and a page rewrite, under a subject mentioning neither.
-
-Cut your branch from `origin/main` in a worktree, not from the shared checkout:
+Cut a branch from `origin/main`, in a worktree rather than the shared checkout, so that
+pushing it cannot carry work someone else left staged or committed there in the meantime:
 
 ```bash
 git worktree add -b <branch> ../<work> origin/main
@@ -195,7 +156,7 @@ git worktree add -b <branch> ../<work> origin/main
 
 ## What must never enter the repository
 
-`site/.env` (application key, Discord credentials, database password) is ignored, and the
-database password lives only on the server, readable by root alone. Never copy either into
-a versioned file, an issue or a comment. The repository is public: anything committed here
-is readable by anyone, immediately and permanently.
+`site/.env` (application key, Discord credentials, database password) is gitignored, and
+the database password lives only on the server, readable by root alone. Never copy either
+into a versioned file, an issue or a comment: the repository is public, and anything
+committed here is readable by anyone, immediately and permanently.
