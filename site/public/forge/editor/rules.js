@@ -19,7 +19,7 @@
  * ground before replacement.
  */
 
-import { footprint } from "./state.js";
+import { BOARD_SIZE, footprint, MAX_SIZE } from "./state.js";
 
 const ok = { ok: true };
 const no = (why) => ({ ok: false, why });
@@ -81,9 +81,16 @@ export function canPlace(board, plan, catalogue, batch = null) {
   /* The size limit is judged on the whole batch when there is one. A drag of a hundred
      conveyors sees each of its blocks fit on its own, since a block measured alone is one
      tile wide: without the batch, the editor would let somebody build a schematic a hundred
-     long that the game refuses to open. */
+     long that the game refuses to open.
+
+     Which cap `board.fits` is enforcing depends on whether a frame exists: 64, the game's
+     own ceiling on the whole board, as long as nothing has carved it into frames; 256, the
+     board's own ceiling, once a frame carries the 64 on its own. The message names whichever
+     one just refused, so a player never reads "64" while standing nowhere near it. */
   if (!board.fits(batch || plan)) {
-    return no("64 tuiles de côté, le jeu n'en accepte pas plus");
+    return board.frames.length
+      ? no(`${BOARD_SIZE} tuiles de côté, le plateau n'en accepte pas plus`)
+      : no(`${MAX_SIZE} tuiles de côté, le jeu n'en accepte pas plus`);
   }
 
   const cells = footprint(plan, (name) => catalogue.blocks[name]?.size || 1);

@@ -6,7 +6,7 @@
  */
 
 import { readFileSync } from "node:fs";
-import { deflateSync } from "node:zlib";
+import { deflateSync, inflateSync } from "node:zlib";
 
 import { useCatalogue } from "../../site/public/forge/analyse.js";
 
@@ -96,3 +96,77 @@ export function paste(tiles, name = "essai") {
  */
 export const inAt = (...marks) => Object.fromEntries(
   marks.map(([x, y, resource]) => [`${x},${y}`, { side: "in", resource }]));
+
+/**
+ * An 8 bit RGBA PNG, decoded far enough to look at a pixel.
+ *
+ * There is no image library here and there should not be one: this exists so a test can ask
+ * the atlas what it actually contains rather than trust a measurement somebody wrote down in
+ * a comment. `atlas.png` is written by Pillow as 8 bit RGBA, so the four filter types and one
+ * colour type below are the whole of what has to be understood; anything else throws rather
+ * than guessing.
+ *
+ * `rows` stops the walk early, because a caller usually wants one 96 pixel sheet out of a
+ * 2048 by 2864 atlas and the filters make scanlines readable only in order.
+ */
+export function decodePng(path, rows = Infinity) {
+  const file = readFileSync(path);
+  let at = 8;
+  let width = 0;
+  let height = 0;
+  let depth = 0;
+  let colour = 0;
+  const parts = [];
+  while (at < file.length) {
+    const length = file.readUInt32BE(at);
+    const type = file.toString("ascii", at + 4, at + 8);
+    if (type === "IHDR") {
+      const body = file.subarray(at + 8, at + 8 + length);
+      width = body.readUInt32BE(0);
+      height = body.readUInt32BE(4);
+      depth = body[8];
+      colour = body[9];
+    } else if (type === "IDAT") {
+      parts.push(file.subarray(at + 8, at + 8 + length));
+    } else if (type === "IEND") {
+      break;
+    }
+    at += 12 + length;
+  }
+  if (depth !== 8 || colour !== 6) {
+    throw new Error(`${path}: expected 8 bit RGBA, got depth ${depth} colour type ${colour}`);
+  }
+
+  const raw = inflateSync(Buffer.concat(parts));
+  const stride = width * 4;
+  const wanted = Math.min(height, rows);
+  const pixels = Buffer.alloc(wanted * stride);
+  for (let y = 0; y < wanted; y++) {
+    const filter = raw[y * (stride + 1)];
+    const line = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
+    const out = pixels.subarray(y * stride, (y + 1) * stride);
+    const up = y > 0 ? pixels.subarray((y - 1) * stride, y * stride) : null;
+    for (let i = 0; i < stride; i++) {
+      // The four bytes to the left, above, and above-left: PNG's a, b and c.
+      const a = i >= 4 ? out[i - 4] : 0;
+      const b = up ? up[i] : 0;
+      const c = up && i >= 4 ? up[i - 4] : 0;
+      let value = line[i];
+      if (filter === 1) value += a;
+      else if (filter === 2) value += b;
+      else if (filter === 3) value += (a + b) >> 1;
+      else if (filter === 4) {
+        // Paeth: whichever of the three neighbours the linear estimate lands nearest.
+        const guess = a + b - c;
+        const da = Math.abs(guess - a);
+        const db = Math.abs(guess - b);
+        const dc = Math.abs(guess - c);
+        value += da <= db && da <= dc ? a : db <= dc ? b : c;
+      } else if (filter !== 0) {
+        throw new Error(`${path}: unknown scanline filter ${filter} on row ${y}`);
+      }
+      out[i] = value & 0xFF;
+    }
+  }
+  return { width, height, rows: wanted, pixels };
+}

@@ -1696,6 +1696,28 @@ public class DumpBlocks {
         return "#" + colour.toString().substring(0, 6);
     }
 
+    /**
+     * What a cache layer is called, which the class itself does not carry.
+     *
+     * <p>{@code CacheLayer} holds an {@code id} and a {@code liquid} flag and no name, and
+     * its {@code id} is a position in {@code CacheLayer.all} that a mod may shift. The names
+     * are the class's own public static fields, so they are read back off it by identity: a
+     * layer added in a later version arrives here under its real name without anybody having
+     * to remember to add it to a list.
+     */
+    private static String cacheLayerName(mindustry.graphics.CacheLayer layer) {
+        for (java.lang.reflect.Field field : mindustry.graphics.CacheLayer.class.getFields()) {
+            if (!java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+            if (field.getType() != mindustry.graphics.CacheLayer.class) continue;
+            try {
+                if (field.get(null) == layer) return field.getName();
+            } catch (IllegalAccessException ignored) {
+                // A public static field of a public class is always readable.
+            }
+        }
+        return "layer-" + layer.id;
+    }
+
     private static void describeFloor(Block block, Jval entry) {
         /* A static wall that drops something, which is Erekir's whole ore economy: there
            are no patches on the ground there, the ore is in the cliffs and a plasma bore
@@ -1717,6 +1739,35 @@ public class DumpBlocks {
         // An overlay is an ore laid over a floor; a floor is the ground itself. Told apart
         // because painting one replaces the ground and painting the other does not.
         entry.put("floor", true);
+        /* What decides whether two floors bleed into each other, read from the game rather
+           than inferred.
+
+           `Floor.drawBase` has four statements: `drawMain(tile)`, then `drawEdges(tile)`
+           when `drawEdgeIn` is set, then `drawOverlay(tile)`, then a redraw of
+           `drawMain(tile)` at `1 - overlayAlpha` when this floor is a liquid carrying an
+           overlay. Only the second is gated, so a floor with `drawEdgeIn` false receives no
+           boundary at all, and the two flags are separate questions: one is whether this
+           floor spills outwards, the other whether anything spills onto it.
+
+           Inside `drawEdges`, `doEdge` compares `realBlendId` on both sides and the higher
+           one wins, a neighbour whose `drawEdgeOut` is false is skipped, and so is one whose
+           floor sits on a different `cacheLayer`. That last gate is why water never blends
+           into land: the game draws the liquid layers in their own pass.
+
+           These five go to the bench dump and stop there. `build_catalogue.py` filters on
+           its KEEP tuple, so they do not reach `site/public/forge/blocks.json`, which
+           `EngineVersion` hashes. They decide how a page looks and no answer it gives, and
+           the day they enter the catalogue is the day fifteen thousand analyses go stale
+           for the sake of presentation. */
+        entry.put("blend_id", floor.blendId);
+        if (!floor.drawEdgeIn) entry.put("draw_edge_in", false);
+        if (!floor.drawEdgeOut) entry.put("draw_edge_out", false);
+        if (floor.blendGroup != floor) entry.put("blend_group", floor.blendGroup.name);
+        // Omitted for the default layer, so the dump stays small and the default stays the
+        // thing a reader sees when a floor says nothing.
+        if (floor.cacheLayer != mindustry.graphics.CacheLayer.normal) {
+            entry.put("cache_layer", cacheLayerName(floor.cacheLayer));
+        }
         if (block instanceof OverlayFloor) entry.put("overlay", true);
 
         // What a floor is worth to a block standing on it. A cultivator on spore moss goes

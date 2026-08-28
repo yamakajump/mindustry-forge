@@ -16,7 +16,8 @@ const KEEP_FOR = 7 * 24 * 60 * 60 * 1000;
 
 export function keepDraft(board, now) {
   try {
-    if (!board.tiles.length && !Object.keys(board.ground).length) {
+    const frames = board.frames || [];
+    if (!board.tiles.length && !Object.keys(board.ground).length && !frames.length) {
       localStorage.removeItem(KEY);
       return;
     }
@@ -25,6 +26,10 @@ export function keepDraft(board, now) {
       tiles: board.tiles.map(({ x, y, block, rotation, config }) =>
         ({ x, y, block, rotation, config: config || undefined })),
       ground: board.ground,
+      /* Only ever written from here on. A draft kept by yesterday's editor has no such
+         key, and that is not a version to read around: it is the "no frame at all" case,
+         which `readDraft` already hands back as an empty list on its own. */
+      frames,
     }));
   } catch {
     /* A browser in private mode refuses to write, and so does a full quota. Losing the
@@ -35,9 +40,13 @@ export function keepDraft(board, now) {
 export function readDraft(now) {
   try {
     const kept = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (!kept?.tiles?.length && !Object.keys(kept?.ground || {}).length) return null;
+    const hasFrames = !!kept?.frames?.length;
+    if (!kept?.tiles?.length && !Object.keys(kept?.ground || {}).length && !hasFrames) return null;
     if (now - (kept.at || 0) > KEEP_FOR) return null;
-    return kept;
+    /* A draft written before frames existed carries no `frames` key at all. Defaulting it
+       here, once, is the entire migration: nobody downstream has to know the key could be
+       missing, and a draft from yesterday opens exactly as one from today. */
+    return { ...kept, frames: kept.frames || [] };
   } catch {
     return null;
   }
@@ -47,6 +56,40 @@ export function dropDraft() {
   try {
     localStorage.removeItem(KEY);
   } catch { /* see above */ }
+}
+
+/** One counted French part: "3 blocs", "1 cadre", never with the count itself missing. */
+function partOf(count, singular, plural = `${singular}s`) {
+  return `${count} ${count > 1 ? plural : singular}`;
+}
+
+/** French list punctuation: "A", "A et B", "A, B et C". Never an Oxford comma before "et". */
+function joinFr(parts) {
+  if (parts.length < 2) return parts[0] || "";
+  return `${parts.slice(0, -1).join(", ")} et ${parts[parts.length - 1]}`;
+}
+
+/**
+ * What a kept draft actually holds, said in French, naming only the parts that are not
+ * zero.
+ *
+ * A draft is kept when it has blocks, painted ground or frames - see `keepDraft` above -
+ * and any one of those alone is enough. Saying "un brouillon de 0 blocs" for a draft that
+ * is all painted ground is an exact number answering a question nobody asked: this
+ * repository's own name for that defect. Say what is there instead, and leave out what
+ * is not.
+ */
+export function describeDraft(kept) {
+  const blocks = kept.tiles?.length || 0;
+  const ground = Object.keys(kept.ground || {}).length;
+  const frames = kept.frames?.length || 0;
+
+  const parts = [];
+  if (blocks) parts.push(partOf(blocks, "bloc"));
+  if (ground) parts.push(partOf(ground, "case de sol peinte", "cases de sol peintes"));
+  if (frames) parts.push(partOf(frames, "cadre"));
+
+  return joinFr(parts);
 }
 
 /** How long ago, said the way somebody would say it out loud. */

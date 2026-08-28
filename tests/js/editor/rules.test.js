@@ -62,6 +62,24 @@ test("au dela de 64 tuiles, le jeu ne suit plus, et la raison le dit", () => {
   assert.match(refus.why, /64/);
 });
 
+test("des qu un cadre existe, 64 ne refuse plus rien : la pose est libre", () => {
+  const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }]);
+  plateau.apply({
+    addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 10 }],
+  });
+  assert.equal(put(plateau, { x: 64, y: 0, block: "conveyor" }).ok, true);
+});
+
+test("mais le plateau lui meme reste borne, a 256, et la raison le dit", () => {
+  const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }]);
+  plateau.apply({
+    addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 10 }],
+  });
+  const refus = put(plateau, { x: 256, y: 0, block: "conveyor" });
+  assert.equal(refus.ok, false);
+  assert.match(refus.why, /256/);
+});
+
 test("rien ne se batit sur un mur", () => {
   const plateau = board([], { "0,0": { floor: "stone", wall: "stone-wall" } });
   assert.equal(put(plateau, { x: 0, y: 0, block: "conveyor" }).ok, false);

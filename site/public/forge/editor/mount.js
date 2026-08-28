@@ -11,13 +11,14 @@
  * qui arrive ici a déjà ces gestes dans les doigts, et lui en imposer d'autres serait lui
  * demander de désapprendre les siens pour se servir d'un outil qui parle de son jeu.
  *
- * Trois écarts seulement, tous listés dans le panneau d'aide plutôt que cachés : la molette
- * zoome quand la main est vide, la vue se déplace au clic milieu glissé, et Q ne fait rien
- * faute de file de construction à vider.
+ * Les écarts sont tous listés dans le panneau d'aide plutôt que cachés : la molette zoome
+ * quand la main est vide, la vue se déplace au clic milieu glissé, Q reprend le sol survolé
+ * au lieu de vider une file de construction qui n'existe pas ici, et les cadres n'ont pas
+ * d'équivalent dans le jeu puisque son plateau n'est jamais plus grand qu'une schématique.
  */
 
 import { draw, itemIcon, spriteOf } from "../render.js";
-import { createBoard, footprint, MAX_SIZE } from "./state.js";
+import { createBoard, footprint, legalFrame, MAX_SIZE } from "./state.js";
 import { lineOf, linksByConfig, reachOf } from "./lines.js";
 import { canPlace } from "./rules.js";
 import { flip, inBox, rotateBy, translate } from "./selection.js";
@@ -25,11 +26,20 @@ import { fromBase64, toBase64 } from "../schematic.js";
 import { createCamera } from "./camera.js";
 import { mountRail, showHelp, sizeGauge } from "./ui.js";
 import { choicesFor, configFor, readsAs } from "./configure.js";
-import { ageOf, dropDraft, keepDraft, readDraft } from "./draft.js";
+import { ageOf, describeDraft, dropDraft, keepDraft, readDraft } from "./draft.js";
+import * as spacesApi from "./spaces.js";
 
 const SHELL = `
   <div class="editor-bar">
-    <span class="brand"><svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>Mindustry <span>Forge</span></span>
+    <a class="brand" href="/"><svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>Mindustry <span>Forge</span></a>
+    <details class="menu editor-site">
+      <summary>Site</summary>
+      <div class="menu-list"></div>
+    </details>
+    <details class="menu editor-spaces" hidden>
+      <summary>Mes plans</summary>
+      <div class="menu-list"></div>
+    </details>
     <span class="editor-modes">
       <button type="button" data-mode="analyse" aria-pressed="false">Analyser</button>
       <button type="button" data-mode="edit" aria-pressed="true">Éditer</button>
@@ -42,6 +52,7 @@ const SHELL = `
   </div>
   <div class="editor-rail"></div>
   <div class="editor-stage"><canvas tabindex="0" aria-label="Le plateau"></canvas>
+    <div class="editor-frame-bars"></div>
     <div class="editor-picker" hidden></div>
     <button type="button" class="editor-turn" data-do="turn-held" hidden
             title="Tourner ce qu'on tient">↻</button>
@@ -74,6 +85,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
      édition n'efface pas l'historique : reconstruire depuis les blocs perd ce qui n'est
      plus dans les blocs, c'est à dire tout ce qu'on pourrait défaire. */
   const board = kept || createBoard({ tiles, ground, sizeOf });
+  const escapeText = (s) => String(s).replace(/[<>&"]/g, (c) =>
+    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]));
 
   host.className = "editor";
   host.innerHTML = SHELL;
@@ -83,8 +96,69 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   const hints = host.querySelector(".hints");
   const updateGauge = sizeGauge(host.querySelector(".editor-size"), MAX_SIZE);
 
+  /*
+   * The way out.
+   *
+   * `.editor` sits fixed over the whole document (see `.editor` in forge.css), so the
+   * site's own `<header>` and its `<nav id="nav">` are still in the page, only covered.
+   * `NavigationTest` holds `config/nav.php` against two hand-written mirrors already
+   * (`public/index.html` and the tool pages); a third one, typed out here, is exactly what
+   * that test's own comment says it exists to prevent. So this menu carries no entry of its
+   * own: it reads the real `#nav` out of the document and rebuilds its links from it, on
+   * every open rather than once at mount, so a reader who signs in mid-session still sees
+   * "Mes schémas" the moment they check.
+   */
+  const siteMenu = host.querySelector(".editor-site");
+  const siteMenuList = siteMenu.querySelector(".menu-list");
+
+  function siteLinkFrom(source) {
+    const link = document.createElement("a");
+    link.href = source.getAttribute("href");
+    link.textContent = source.textContent.trim();
+    return link;
+  }
+
+  function renderSiteMenu() {
+    siteMenuList.replaceChildren();
+    const nav = document.getElementById("nav");
+    if (!nav) return;
+    for (const child of nav.children) {
+      if (child.tagName === "A") {
+        siteMenuList.appendChild(siteLinkFrom(child));
+      } else if (child.tagName === "DETAILS") {
+        const summary = child.querySelector("summary");
+        if (!summary) continue;
+        const heading = document.createElement("span");
+        heading.className = "menu-heading";
+        heading.textContent = summary.textContent.trim();
+        siteMenuList.appendChild(heading);
+        for (const link of child.querySelectorAll(".menu-list a")) {
+          const item = siteLinkFrom(link);
+          /* Not `.sub`: that class already means something else entirely, a subtitle's
+             own grey and its own margin (see forge.css), and a link picking it up by
+             accident inherited both. */
+          item.classList.add("child");
+          siteMenuList.appendChild(item);
+        }
+      }
+    }
+  }
+
+  siteMenu.addEventListener("toggle", () => { if (siteMenu.open) renderSiteMenu(); });
+
+  /* Native `<details>` does not close itself on an outside click, unlike the real header's
+     own menus (see `nav.js`); this one is not inside `#nav`, so that behaviour is repeated
+     here rather than reached for. */
+  const closeSiteMenu = (event) => {
+    if (siteMenu.open && !siteMenu.contains(event.target)) siteMenu.open = false;
+  };
+  document.addEventListener("click", closeSiteMenu);
+
   const camera = createCamera({ scale: 24 });
-  if (board.tiles.length) camera.frame(board.box(), viewportOf());
+  /* Le chantier entier d'un coup quand des cadres existent : cadrer sur le seul cadre actif
+     laisserait les autres hors champ à l'ouverture, comme si on les avait perdus. */
+  if (board.frames.length) camera.frame(board.framesBox(), viewportOf());
+  else if (board.tiles.length) camera.frame(board.box(), viewportOf());
 
   let held = null;
   let rotation = 0;
@@ -109,6 +183,19 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   let diagonal = false;
   let selecting = false;
   let turning = false;
+  /* C tenu dessine un cadre, exactement comme F dessine une sélection : le jeu n'a pas ce
+     geste, mais lui donner la même forme que ceux qu'il a déjà évite d'en inventer une
+     ergonomie de plus. */
+  let framing = false;
+  /** Le coin où un cadre a commencé à se dessiner, tant que le geste dure. */
+  let drawingFrame = null;
+  /** Le cadre actif : celui que la jauge du haut mesure, et que l'assombrissement épargne.
+      Suivi par identifiant plutôt que par référence, parce que renommer, déplacer ou
+      redimensionner un cadre le remplace par un autre objet portant le même id. */
+  let activeFrameId = null;
+  /** Un bloc posé hors de tout cadre ne se dit qu une fois, pas à chaque geste qui en pose
+      un autre : c est ce que dit un rappel, pas ce que dit une alarme. */
+  let orphanWarned = false;
   /** Un déplacement de sélection en cours : d'où il est parti, et ce qu'il emporte. */
   let moving = null;
   /** Le pont qu'on est en train de recibler, tant qu'on n'a pas désigné sa cible. */
@@ -120,6 +207,159 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   let stroke = null;
   /** À quel point les blocs s'effacent, pour voir le sol dessous. */
   let opacity = 1;
+
+  /**
+   * Les plans : les plateaux qu'un compte garde côté serveur, un cran au dessus du
+   * brouillon local de `draft.js`.
+   *
+   * Un visiteur anonyme ne voit jamais ce menu : `spacesApi.whoAmI()` répond `null`, et il
+   * garde exactement ce qu'il avait avant cette fonctionnalité, le brouillon local seul, à
+   * une machine, sept jours. Se connecter est ce qui achète les plans ; rien ici ne
+   * conditionne l'éditeur lui même, qui bâtit pareil dans les deux cas.
+   */
+  const spacesMenu = host.querySelector(".editor-spaces");
+  const spacesMenuList = spacesMenu.querySelector(".menu-list");
+  const spacesSummary = spacesMenu.querySelector("summary");
+
+  /** L'espace ouvert, ou rien tant qu'aucun n'a été choisi : le brouillon local sert alors. */
+  let currentSpace = null;
+  /** Le sauvegardeur différé de l'espace ouvert, arrêté et remplacé à chaque bascule. */
+  let saver = null;
+
+  function spaceStatusWord(status, detail) {
+    if (status === "saving") return "enregistrement…";
+    if (status === "failed") return `échec : ${detail}`;
+    return "enregistré";
+  }
+
+  /** Le résumé du menu porte l'état de sauvegarde : une sauvegarde qui échoue en silence
+      sur une connexion capricieuse coûterait un après midi de travail à quelqu'un. */
+  function updateSpacesSummary(status, detail) {
+    spacesSummary.textContent = currentSpace
+      ? `${currentSpace.name} · ${spaceStatusWord(status, detail)}`
+      : "Mes plans";
+    spacesSummary.classList.toggle("bad", status === "failed");
+  }
+
+  async function renderSpacesMenu() {
+    let mine = [];
+    try {
+      mine = await spacesApi.listSpaces();
+    } catch {
+      /* Hors ligne, ou une session expirée entre temps : le menu s'ouvre quand même, vide
+         plutôt qu'en échec bruyant pour une simple liste. */
+    }
+    spacesMenuList.innerHTML = `<button type="button" class="space-new" data-space="new">
+        + Nouveau plan</button>`
+      + (mine.length ? "" : `<span class="menu-heading">Aucun plan encore</span>`)
+      + mine.map((space) => `
+        <div class="space-row" data-slug="${escapeText(space.slug)}">
+          <button type="button" class="child" data-space="open">${escapeText(space.name)}</button>
+          <button type="button" class="space-icon" data-space="rename" title="Renommer">✎</button>
+          <button type="button" class="space-icon" data-space="delete" title="Supprimer">✕</button>
+        </div>`).join("");
+  }
+
+  spacesMenu.addEventListener("toggle", () => { if (spacesMenu.open) renderSpacesMenu(); });
+
+  /* Même raison que `closeSiteMenu` juste au dessus : `<details>` ne se ferme pas tout
+     seul au clic dehors. */
+  const closeSpacesMenu = (event) => {
+    if (spacesMenu.open && !spacesMenu.contains(event.target)) spacesMenu.open = false;
+  };
+  document.addEventListener("click", closeSpacesMenu);
+
+  /** Charger un espace dans l'éditeur déjà monté, sans le démonter puis le remonter. */
+  async function openSpaceBySlug(slug) {
+    saver?.stop();
+    let opened;
+    try {
+      opened = await spacesApi.openSpace(slug);
+    } catch (error) {
+      flash(`plan introuvable : ${error.message}`);
+      return;
+    }
+    board.load(opened.board);
+    currentSpace = { slug: opened.slug, name: opened.name };
+    saver = spacesApi.autosave(slug, { onStatus: updateSpacesSummary });
+    /* Un espace ouvert est un contexte neuf : la sélection, le cadre actif et l'avertissement
+       d'orphelin d'un autre plan n'ont rien à dire sur celui-ci. */
+    activeFrameId = null;
+    selection = null;
+    picking = null;
+    pasting = null;
+    orphanWarned = false;
+    camera.frame(board.frames.length ? board.framesBox() : board.box(), viewportOf());
+    updateSpacesSummary("saved");
+    say();
+    paint();
+  }
+
+  /** Sauvegarder le plateau actuel comme un nouveau plan, puis l'ouvrir. */
+  async function createSpaceFromCurrent() {
+    const name = window.prompt("Nom du plan", currentSpace?.name || "sans nom");
+    if (!name) return;
+    try {
+      const created = await spacesApi.createSpace(name, board.snapshot());
+      saver?.stop();
+      currentSpace = { slug: created.slug, name: created.name };
+      saver = spacesApi.autosave(created.slug, { onStatus: updateSpacesSummary });
+      updateSpacesSummary("saved");
+    } catch (error) {
+      flash(`plan pas enregistré : ${error.message}`);
+    }
+  }
+
+  async function renameSpaceBySlug(slug, row) {
+    const label = row.querySelector('[data-space="open"]');
+    const name = window.prompt("Nom du plan", label.textContent);
+    if (!name || name === label.textContent) return;
+    try {
+      await spacesApi.renameSpace(slug, name);
+      label.textContent = name;
+      if (currentSpace?.slug === slug) {
+        currentSpace.name = name;
+        updateSpacesSummary("saved");
+      }
+    } catch (error) {
+      flash(`pas renommé : ${error.message}`);
+    }
+  }
+
+  async function deleteSpaceBySlug(slug, row) {
+    // Demandé une fois, parce que c'est définitif : la même prudence que la suppression
+    // d'un schéma ailleurs sur ce site.
+    if (!window.confirm("Supprimer ce plan ? C'est définitif.")) return;
+    try {
+      await spacesApi.deleteSpace(slug);
+      row.remove();
+      if (currentSpace?.slug === slug) {
+        saver?.stop();
+        saver = null;
+        currentSpace = null;
+        updateSpacesSummary();
+      }
+    } catch (error) {
+      flash(`pas supprimé : ${error.message}`);
+    }
+  }
+
+  spacesMenuList.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-space]");
+    if (!button) return;
+    const row = button.closest(".space-row");
+    const slug = row?.dataset.slug;
+    const action = button.dataset.space;
+    if (action === "new") createSpaceFromCurrent();
+    else if (action === "open" && slug) openSpaceBySlug(slug);
+    else if (action === "rename" && slug) renameSpaceBySlug(slug, row);
+    else if (action === "delete" && slug) deleteSpaceBySlug(slug, row);
+    if (action !== "rename" && action !== "delete") spacesMenu.open = false;
+  });
+
+  /** Enregistrer maintenant plutôt que d'attendre le délai, pour l'onglet qui se ferme. */
+  const onBeforeUnload = () => { if (currentSpace) saver?.flush(board.snapshot()); };
+  window.addEventListener("beforeunload", onBeforeUnload);
 
   function viewportOf() {
     return { width: stage.clientWidth || 800, height: stage.clientHeight || 600 };
@@ -204,11 +444,16 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       hints.innerHTML = `<kbd>F</kbd> tenu · <strong>glisse</strong> pour sélectionner une zone`;
       return;
     }
+    if (framing) {
+      hints.innerHTML = `<kbd>C</kbd> tenu · <strong>glisse</strong> pour dessiner un cadre,
+        ${MAX_SIZE} tuiles de côté au plus`;
+      return;
+    }
     hints.innerHTML = held
       ? `<strong>${held}</strong> en main · <kbd>molette</kbd> tourner ·
          <kbd>glisser</kbd> tracer · <kbd>ctrl</kbd> diagonale ·
          <kbd>clic droit</kbd> casser · <kbd>échap</kbd> reposer`
-      : `Choisis un bloc à gauche · <kbd>F</kbd> sélectionner ·
+      : `Choisis un bloc à gauche · <kbd>F</kbd> sélectionner · <kbd>C</kbd> dessiner un cadre ·
          <kbd>clic milieu</kbd> reprendre un bloc · <kbd>ctrl+V</kbd> coller ·
          <kbd>ctrl+Z</kbd> annuler`;
   }
@@ -236,6 +481,49 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   function moved() {
     if (!moving || !cursor) return [];
     return translate(moving.tiles, cursor.x - moving.from.x, cursor.y - moving.from.y);
+  }
+
+  /* ------------------------------------------------------------------------------------
+     Les cadres : un rectangle nommé, dessiné à la main, d'au plus 64 par 64.
+
+     Sans aucun cadre, le plateau entier en tient lieu, plafonné à 64 exactement comme
+     avant cette fonctionnalité : le joueur qui bâtit une seule chose ne rencontre jamais
+     le mot « cadre ». Dès qu'un cadre existe, poser un bloc n'est plus borné à 64 nulle
+     part sur le plateau : ce plafond porte désormais sur le cadre lui-même, vérifié au
+     tracé et jamais à la pose, et le plateau devient l'unité bornée, à 256.
+     ------------------------------------------------------------------------------------ */
+
+  /** Le cadre que la jauge et l'assombrissement doivent montrer : l'actif, ou à défaut le
+      dernier tracé, pour que la jauge ne reste jamais vide dès qu'un cadre existe. */
+  function currentFrame() {
+    return board.frames.find((frame) => frame.id === activeFrameId)
+      || board.frames[board.frames.length - 1]
+      || null;
+  }
+
+  /** Un identifiant qui survit à un rechargement de la page n'a aucun intérêt ici : il ne
+      sert qu'à retrouver un cadre à travers ses propres renommages, le temps d'une session. */
+  const nextFrameId = () => `cadre-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+
+  /** Terminer le tracé d'un cadre : refus dur au delà de 64 par 64, comme le jeu le ferait
+      à l'ouverture d'une schématique de cette taille. */
+  function finishFrame(rect) {
+    if (!legalFrame(rect)) {
+      flash(`${MAX_SIZE} tuiles de côté au plus pour un cadre`);
+      return;
+    }
+    const created = { id: nextFrameId(), name: `cadre ${board.frames.length + 1}`, ...rect };
+    commit({ addFrames: [created] });
+    activeFrameId = created.id;
+  }
+
+  /** Retirer, renommer, déplacer ou redimensionner un cadre passent tous par retirer puis
+      reposer, comme un bloc qu'on remplace : il n'y a pas d'édition en place, et l'identité
+      du cadre ne survit qu à travers son `id`. */
+  function replaceFrame(frame, changes) {
+    const after = { ...frame, ...changes };
+    commit({ removeFrames: [frame], addFrames: [after] });
+    activeFrameId = after.id;
   }
 
   /* ------------------------------------------------------------------------------------
@@ -399,6 +687,18 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
+   * Où va la sauvegarde continue : le plan ouvert s'il y en a un, le brouillon local sinon.
+   *
+   * Jamais les deux à la fois. Écrire aussi dans le brouillon local pendant qu'un plan est
+   * ouvert referait proposer, à la prochaine visite, "reprendre ce brouillon" pour un
+   * contenu déjà en sûreté dans un plan nommé : une offre qui n'aurait aucun sens.
+   */
+  function saveProgress() {
+    if (currentSpace) saver?.schedule(board.snapshot());
+    else keepDraft(board, Date.now());
+  }
+
+  /**
    * Tout ce qui change le plateau passe par ici.
    *
    * Un seul point d'entrée pour appliquer un geste, et donc un seul endroit où le brouillon
@@ -407,7 +707,16 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    */
   function commit(change) {
     const done = board.apply(change);
-    if (done) keepDraft(board, Date.now());
+    if (done) {
+      saveProgress();
+      /* Dit une fois, au premier bloc qui se retrouve hors de tout cadre, jamais plus :
+         c'est un rappel, pas une alarme qui reviendrait à chaque geste qui en pose un
+         autre. Sans aucun cadre le plateau entier en tient lieu, et rien n'est orphelin. */
+      if (change.place?.length && !orphanWarned && board.orphans().length) {
+        orphanWarned = true;
+        flash("un bloc hors de tout cadre ne s'exportera pas");
+      }
+    }
     return done;
   }
 
@@ -417,13 +726,82 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     draw(canvas, board.tiles, sizeOf, roleOf, {
       camera, viewport, ground: board.ground, grid: true, opacity,
     });
-    updateGauge(board.box());
+    /* Sans aucun cadre, la jauge mesure le plateau entier, exactement comme avant cette
+       fonctionnalité. Dès qu'un cadre existe, elle mesure ce qu'il contient, pas ce qu'il
+       a été tracé pour contenir : c'est la boîte utile, pas la boîte dessinée. */
+    const active = board.frames.length ? currentFrame() : null;
+    updateGauge(active ? board.frameBox(active) : board.box(), MAX_SIZE, active?.name || null);
+    dimAroundFrame(viewport, active);
+    drawFrames(viewport, active);
     turnButton.hidden = !(held && catalogue.blocks[held]?.rotate);
     outline(viewport);
     linkable(viewport);
     if (painting) brushGhost(viewport);
     else ghost(viewport);
+    frameGhost(viewport);
     showPickBar();
+    showFrameBars(viewport);
+  }
+
+  /**
+   * Le plateau assombri autour du cadre actif, pour qu'il se distingue des autres
+   * chantiers sans qu'ils disparaissent : ils restent visibles, seulement plus ternes.
+   */
+  function dimAroundFrame(viewport, active) {
+    if (!active) return;
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    const { px, py } = camera.rectOf(active.left, active.bottom + active.height - 1, viewport);
+    const w = active.width * camera.scale;
+    const h = active.height * camera.scale;
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.fillStyle = "rgba(6, 8, 14, .5)";
+    context.fillRect(0, 0, viewport.width, Math.max(0, py));
+    context.fillRect(0, py + h, viewport.width, Math.max(0, viewport.height - (py + h)));
+    context.fillRect(0, Math.max(0, py), Math.max(0, px), h);
+    context.fillRect(px + w, Math.max(0, py), Math.max(0, viewport.width - (px + w)), h);
+    context.restore();
+  }
+
+  /** Le contour de chaque cadre, nommé, l'actif marqué plus fort que les autres. */
+  function drawFrames(viewport, active) {
+    if (!board.frames.length) return;
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    for (const frame of board.frames) {
+      const isActive = frame === active;
+      const { px, py } = camera.rectOf(frame.left, frame.bottom + frame.height - 1, viewport);
+      const w = frame.width * camera.scale;
+      const h = frame.height * camera.scale;
+      context.strokeStyle = isActive ? "#7fd7ff" : "rgba(127, 215, 255, .5)";
+      context.lineWidth = isActive ? 2 : 1;
+      context.setLineDash(isActive ? [] : [5, 5]);
+      context.strokeRect(px + 0.5, py + 0.5, Math.max(0, w - 1), Math.max(0, h - 1));
+    }
+    context.restore();
+  }
+
+  /** Le cadre en cours de tracé, tant que C est tenu et que le bouton l'est aussi. */
+  function frameGhost(viewport) {
+    if (!drawingFrame || !cursor) return;
+    const zone = rectOf(drawingFrame, cursor);
+    const legal = legalFrame(zone);
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    const { px, py } = camera.rectOf(zone.left, zone.bottom + zone.height - 1, viewport);
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.fillStyle = legal ? "rgba(127, 215, 255, .18)" : "rgba(255, 139, 139, .18)";
+    context.strokeStyle = legal ? "#7fd7ff" : "#ff8b8b";
+    context.lineWidth = 2;
+    context.fillRect(px, py, zone.width * camera.scale, zone.height * camera.scale);
+    context.strokeRect(px + 1, py + 1,
+                       zone.width * camera.scale - 2, zone.height * camera.scale - 2);
+    context.restore();
+    showWhy(legal ? null : `${MAX_SIZE} tuiles de côté au plus pour un cadre`);
   }
 
   /**
@@ -654,6 +1032,13 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
+    /* The pipette tool takes over the left click the same way the brush does below, and has
+       to be checked first: it needs neither `brush.block` nor the eraser to be armed, which
+       is exactly what the check below requires. */
+    if (painting && event.button === 0 && brush.tool === "pipette") {
+      pipetteGround();
+      return;
+    }
     /* Le pinceau passe avant tout le reste quand l'onglet sol est ouvert : là, un clic
        gauche peint, et rien d'autre. */
     if (painting && event.button === 0 && (brush.block || brush.tool === "eraser")) {
@@ -687,6 +1072,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       picking = cursor;
       selection = null;
       showPickBar();
+      paint();
+      return;
+    }
+    if (event.button === 0 && framing) {
+      drawingFrame = cursor;
       paint();
       return;
     }
@@ -753,6 +1143,14 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
+    if (drawingFrame) {
+      const zone = rectOf(drawingFrame, cursor);
+      drawingFrame = null;
+      finishFrame(zone);
+      say();
+      paint();
+      return;
+    }
     if (erasing) {
       const gone = inside(rectOf(erasing, cursor));
       erasing = null;
@@ -776,6 +1174,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     panning = null;
     drawing = null;
     erasing = null;
+    drawingFrame = null;
     paint();
   });
 
@@ -863,14 +1262,15 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Copier la sélection, dans l'éditeur et dans le presse-papiers du système.
+   * Copier des blocs, dans l'éditeur et dans le presse-papiers du système.
    *
    * Les deux, parce que ce sont deux usages : recoller ailleurs sur le même plateau, et
    * coller dans le jeu. Le second est ce qui fait de cet éditeur autre chose qu'un jouet,
-   * et `schematic.js` sait déjà écrire le format que le jeu lit.
+   * et `schematic.js` sait déjà écrire le format que le jeu lit. Partagée entre la
+   * sélection et un cadre : les deux ne sont qu'une liste de blocs à écrire, et un nom
+   * à mettre sur l'étiquette.
    */
-  async function copy() {
-    const chosen = picked();
+  async function copyTiles(chosen, tag) {
     if (!chosen.length) return;
     clipboard = chosen.map((tile) => ({ ...tile }));
     /* L'écriture est courue contre une seconde : elle est normalement accordée dans un
@@ -878,7 +1278,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
        devant une interface qui ne répond plus. */
     try {
       const code = await toBase64(clipboard, {
-        tags: { name: "selection" },
+        tags: { name: tag },
         sizeOf,
         priorityOf: (name) => catalogue.blocks[name]?.schematic_priority || 0,
       });
@@ -891,6 +1291,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       flash(`${clipboard.length} blocs copiés dans l'éditeur`);
     }
   }
+
+  const copy = () => copyTiles(picked(), "selection");
+  const copyFrame = (frame) => copyTiles(board.tilesIn(frame), frame.name);
 
   /**
    * Coller ce qu'on a copié, dans l'éditeur ou dans le jeu.
@@ -926,6 +1329,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   const pickBar = host.querySelector(".editor-pick");
   const picker = host.querySelector(".editor-picker");
+  const frameBars = host.querySelector(".editor-frame-bars");
 
   function showPickBar() {
     if (!selection || !picked().length) {
@@ -954,6 +1358,75 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       if (gone.length) commit({ remove: gone });
       paint();
     }
+  });
+
+  /**
+   * La barre d'actions de chaque cadre : analyser, copier, renommer, supprimer, posée à
+   * côté de lui plutôt que dans un panneau à part. À côté et pas ailleurs, pour la même
+   * raison que la barre de sélection : quitter des yeux ce sur quoi on agit coûte plus
+   * cher qu'un bouton de plus à l'écran.
+   */
+  function showFrameBars(viewport) {
+    const active = currentFrame();
+    frameBars.innerHTML = board.frames.map((frame) => {
+      const { px, py } = camera.rectOf(frame.left, frame.bottom + frame.height - 1, viewport);
+      /* `editor-pick` est réutilisée telle quelle : c'est déjà la barre flottante posée
+         contre une sélection, et un cadre n'a besoin de rien d'autre qu'un deuxième
+         habillage du même genre plutôt que d'une feuille de style de plus. */
+      return `<div class="editor-pick editor-frame-bar${frame === active ? " active" : ""}"
+          style="position:absolute;left:${Math.max(4, px)}px;top:${Math.max(4, py - 32)}px">
+        <button type="button" data-frame="${frame.id}" data-frame-do="focus"
+          title="Rendre actif">${escapeText(frame.name)}</button>
+        <button type="button" data-frame="${frame.id}" data-frame-do="analyse"
+          title="Analyser">Analyser</button>
+        <button type="button" data-frame="${frame.id}" data-frame-do="copy"
+          title="Copier, collable dans le jeu">Copier</button>
+        <button type="button" data-frame="${frame.id}" data-frame-do="rename"
+          title="Renommer">Renommer</button>
+        <button type="button" data-frame="${frame.id}" data-frame-do="delete"
+          title="Supprimer le cadre, garde ses blocs">Supprimer</button>
+      </div>`;
+    }).join("");
+  }
+
+  /**
+   * Analyser un cadre passe par un plateau neuf, fait juste de ce que ce cadre contient :
+   * `onAnalyse` n'a jamais connu qu'un plateau entier, et un plateau neuf, valide de la
+   * même façon que celui de l'éditeur, est ce qui lui permet de continuer à l'ignorer.
+   */
+  function analyseFrame(frame) {
+    const scoped = createBoard({
+      tiles: board.tilesIn(frame), ground: board.ground, frames: [{ ...frame }], sizeOf,
+    });
+    onAnalyse(scoped);
+  }
+
+  function renameFrame(frame) {
+    const chosen = window.prompt("Nom du cadre", frame.name);
+    if (chosen === null) return;
+    const name = chosen.trim();
+    if (!name || name === frame.name) return;
+    replaceFrame(frame, { name });
+    paint();
+  }
+
+  function deleteFrame(frame) {
+    commit({ removeFrames: [frame] });
+    if (activeFrameId === frame.id) activeFrameId = null;
+    paint();
+  }
+
+  frameBars.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-frame-do]");
+    if (!button) return;
+    const frame = board.frames.find((candidate) => candidate.id === button.dataset.frame);
+    if (!frame) return;
+    const what = button.dataset.frameDo;
+    if (what === "focus") { activeFrameId = frame.id; paint(); }
+    if (what === "analyse") analyseFrame(frame);
+    if (what === "copy") copyFrame(frame);
+    if (what === "rename") renameFrame(frame);
+    if (what === "delete") deleteFrame(frame);
   });
 
   /** Un mot dans la barre d'état, qui s'efface tout seul. */
@@ -1170,7 +1643,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * faut retrouver le bloc dans une palette de 245, puis le retourner dans le bon sens.
    */
   function pipette() {
-    if (!cursor) return;
+    /* Gated on the ground tab: nothing is held there (`onTab` above already puts a held
+       block down on the way in), and this used to fire regardless, quietly re-arming a
+       phantom build block and, since Task 3, overwriting the ground status bar with it. */
+    if (painting || !cursor) return;
     const under = board.at(cursor.x, cursor.y);
     if (!under) return;
     held = under.block;
@@ -1182,6 +1658,21 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     rail.setHeld(held, rotation);
     say();
     paint();
+  }
+
+  /**
+   * The ground pipette: samples whatever is stacked on the cursor's tile and hands it to
+   * the rail, which decides which of the wall, the ore or the floor a pipette takes
+   * (`pipetteLayerOf` in `ui.js`) and updates the brush, the swatches and the status bar.
+   * `say()` picks the new floor up in its own hints through `brush`, already shared with
+   * `mount.js` by reference.
+   */
+  function pipetteGround() {
+    if (!cursor) return;
+    if (rail.pipetteGround(board.ground[`${cursor.x},${cursor.y}`])) {
+      say();
+      paint();
+    }
   }
 
   const onKey = (event) => {
@@ -1202,6 +1693,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
     if (key === "f" && !selecting) { selecting = true; say(); return; }
     if (key === "r" && !turning) { turning = true; say(); return; }
+    if (key === "c" && !framing && !ctrl) { framing = true; say(); return; }
 
     /* Z et X retournent la sélection, comme `schematicFlipX` et `schematicFlipY`. Sans
        sélection ils ne font rien, plutôt que de retourner tout le plateau. */
@@ -1249,8 +1741,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
-    /* Q ne fait rien, et c'est voulu : le jeu s'en sert pour vider la file de construction.
-       La pipette reste sur le clic milieu, comme `Binding.pick`. */
+    /* Q is idle in the game here, its own job (clearing a build queue) does not exist in
+       this editor, so it is free to take the ground pipette: the wall, the ore or the floor
+       under the cursor, wall first, in the order `ui.js`'s `pipetteLayerOf` reads a tile.
+       Only on the ground tab, the one place a ground brush has anything to fill. */
+    if (key === "q" && painting) { pipetteGround(); return; }
   };
   /**
    * Ce qu'il faut oublier quand le plateau bouge sous nos pieds.
@@ -1261,7 +1756,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * disparaît entre temps.
    */
   function settle() {
-    keepDraft(board, Date.now());
+    saveProgress();
     selection = null;
     linking = null;
     showPickBar();
@@ -1278,6 +1773,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
     if (key === "f" && selecting) { selecting = false; say(); }
     if (key === "r" && turning) { turning = false; say(); }
+    if (key === "c" && framing) { framing = false; drawingFrame = null; say(); paint(); }
   };
 
   /**
@@ -1327,24 +1823,44 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * Écraser d'office ce que quelqu'un vient de coller par un brouillon vieux de trois jours
    * est pire que de perdre le brouillon : dans un cas on perd du travail qu'on savait avoir,
    * dans l'autre on perd celui qu'on croyait avoir devant les yeux.
+   *
+   * `signedIn` n'ajoute qu'un troisième choix, jamais un comportement différent des deux
+   * premiers : un compte peut en plus transformer ce brouillon en un plan qui survivra sur
+   * un autre appareil. Offert, comme le reste de cette barre, jamais fait tout seul à la
+   * connexion : voir le mot du module `draft.js` en tête de ce fichier, il tient encore ici.
    */
-  function offerDraft() {
-    if (board.tiles.length || Object.keys(board.ground).length) return;
+  function offerDraft(signedIn) {
+    if (board.tiles.length || Object.keys(board.ground).length || board.frames.length) return;
     const kept = readDraft(Date.now());
     if (!kept) return;
 
     const bar = document.createElement("div");
     bar.className = "editor-draft";
-    bar.innerHTML = `<span>Un brouillon de <strong>${kept.tiles.length} blocs</strong>
+    bar.innerHTML = `<span>Un brouillon de <strong>${describeDraft(kept)}</strong>
       attend, gardé ${ageOf(kept.at, Date.now())}.</span>
       <button type="button" class="primary" data-draft="take">Le reprendre</button>
-      <button type="button" data-draft="drop">Repartir de zéro</button>`;
-    bar.addEventListener("click", (event) => {
+      <button type="button" data-draft="drop">Repartir de zéro</button>`
+      + (signedIn ? `<button type="button" data-draft="keep">Le garder comme un plan</button>` : "");
+    bar.addEventListener("click", async (event) => {
       const button = event.target.closest("[data-draft]");
       if (!button) return;
       if (button.dataset.draft === "take") {
-        commit({ place: kept.tiles, paint: kept.ground });
-        camera.frame(board.box(), viewportOf());
+        commit({ place: kept.tiles, paint: kept.ground, addFrames: kept.frames });
+        camera.frame(board.frames.length ? board.framesBox() : board.box(), viewportOf());
+      } else if (button.dataset.draft === "keep") {
+        const name = window.prompt("Nom du plan", "sans nom");
+        if (!name) return;
+        try {
+          const created = await spacesApi.importLocalDraft(name);
+          currentSpace = { slug: created.slug, name: created.name };
+          saver = spacesApi.autosave(created.slug, { onStatus: updateSpacesSummary });
+          commit({ place: kept.tiles, paint: kept.ground, addFrames: kept.frames });
+          camera.frame(board.frames.length ? board.framesBox() : board.box(), viewportOf());
+          updateSpacesSummary("saved");
+        } catch (error) {
+          flash(`pas importé : ${error.message}`);
+          return;
+        }
       } else {
         dropDraft();
       }
@@ -1352,6 +1868,25 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
     });
     stage.appendChild(bar);
+  }
+
+  /**
+   * Qui est connecté, et donc si les plans ont leur place dans cette session.
+   *
+   * Un visiteur anonyme sort d'ici exactement comme avant cette fonctionnalité : le menu
+   * reste caché, et `offerDraft` ne propose que ses deux choix d'origine. L'éditeur
+   * lui même n'est jamais conditionné par cette réponse, seule cette barre du haut l'est.
+   */
+  async function initSpaces() {
+    let me = null;
+    try {
+      me = await spacesApi.whoAmI();
+    } catch {
+      /* Hors ligne au moment du montage : reste anonyme pour cette session plutôt que de
+         bloquer l'éditeur sur une requête qui ne sert que ce menu. */
+    }
+    spacesMenu.hidden = !me;
+    offerDraft(!!me);
   }
 
   /* ------------------------------------------------------------------------------------
@@ -1418,7 +1953,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   say();
   paint();
-  offerDraft();
+  initSpaces();
 
   return {
     board,
@@ -1426,6 +1961,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("keyup", onKeyUp);
       document.removeEventListener("paste", onPaste);
+      document.removeEventListener("click", closeSiteMenu);
+      document.removeEventListener("click", closeSpacesMenu);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      saver?.stop();
       clearTimeout(fading);
       resize?.disconnect();
       clearTimeout(longPress);

@@ -136,6 +136,17 @@ header nav a:hover { color: var(--ink); }
 .menu-list a { padding: 8px 10px; border-radius: 5px; white-space: nowrap; }
 .menu-list a:hover { background: var(--panel); color: var(--ink); text-decoration: none; }
 
+/* Un menu deroulant a plat, sans sous-menu : la section qui portait un `<details>` dans
+   `#nav` (Schematiques, Outils) devient ici un intitule non cliquable suivi de ses liens,
+   plutot qu un `<details>` imbrique dans un autre. C est ce que l entete de l editeur en
+   fait, voir `mount.js`. */
+.menu-heading {
+  display: block; margin: 6px 0 0; padding: 4px 10px; font-size: 11px;
+  letter-spacing: .6px; text-transform: uppercase; color: var(--dim);
+}
+.menu-heading:first-child { margin-top: 0; }
+.menu-list a.child { padding-left: 18px; }
+
 /* Le bouton qui deplie, sur telephone. Pose `hidden` dans le document et revele par
    `nav.js` : sans script il n y a rien pour rouvrir la barre, donc elle reste depliee et
    passe a la ligne, ce qu elle faisait deja avant qu il y ait des menus. */
@@ -188,6 +199,65 @@ a.discord {
 a.discord:hover { background: var(--discord-hover); text-decoration: none; }
 
 main { max-width: 1120px; margin: 0 auto; padding: 24px; }
+
+/* Set by the inline guard in index.html's <head> while this document is serving
+   /editer, so <main> never paints on the way to the editor: enterEditor() still has to
+   fetch the catalogue and the sprite atlas before it has anything to mount. #editor is
+   excluded once mountEditor() gives it its own "editor" class (see mount.js): the fixed
+   full-viewport overlay that class installs is untouched here, on purpose, and is
+   matched below rather than left for mount time to introduce.
+
+   #editor also carries the wait's own markup on `/`, which never sets this class: this
+   first rule keeps it out of the document entirely there, since nothing before this
+   line scoped it and an empty `main { max-width: 1120px; ... }` page is not where a
+   shimmering placeholder belongs.
+
+   Two things were measured wrong before this settled here. First, an earlier version
+   let #editor sit in the document's normal flow before mount, which kept the header
+   visible but moved #editor's own top from 70px to 0px the instant mountEditor() swaps
+   it to `position: fixed`: a real shift of a persisting element, not a cosmetic one,
+   measured at a cumulative 0.1383 over one load against a 0.10 "good" ceiling. Second,
+   that version's flex-item skeleton had no size of its own to fall back on and
+   collapsed to zero height: a rule that claims to draw something and draws nothing.
+   Both are fixed by the same move, occupying the mounted box from the first byte so
+   nothing about #editor's position ever changes, and giving what sits inside it an
+   explicit size instead of trusting a flex parent to hand it one. */
+#editor:not(.editor) { display: none; }
+.route-editeur main { display: none; }
+.route-editeur #editor:not(.editor) {
+  display: flex; flex-direction: column;
+  position: fixed; inset: 0; z-index: 60;
+  background: var(--bg) url("./plate.png") repeat; background-size: 96px 96px;
+}
+
+/* A strip carrying only the brand, so the wait still says what site this is now that
+   #editor covers the header. Not `.editor-bar`, which mount.js builds with a mode
+   toggle and undo buttons that mean nothing before a board exists to act on: a second
+   copy of that markup here would be a second thing that has to agree with it, and
+   nothing would check that it does. Its own class rather than `.editor-bar`'s, so a
+   later change to the real bar cannot reshape this one by accident.
+
+   Padding, background and border are read from `.editor-bar` by eye; the 36px comes
+   from the same place the real bar's own height does -- `.editor-modes button`'s
+   `min-height`, a few rules below -- so the strip lands close to the same height
+   without inventing a second number for one already in this file. Poorer than the real
+   bar on purpose, not a stand-in for it. */
+.editor-wait-bar {
+  display: flex; align-items: center; min-height: 36px;
+  padding: 8px 16px; background: var(--panel); border-bottom: 2px solid var(--edge);
+}
+.editor-wait-bar .brand { font-size: 17px; }
+
+.route-editeur #editor:not(.editor) .skeleton {
+  flex: 1; margin: 24px; border-radius: var(--radius);
+}
+
+@media (max-width: 560px) {
+  /* `.editor-bar` hides its own brand under this width once mounted (see the media
+     query further down this file): the strip agrees, rather than showing a brand the
+     mounted bar is about to take away. */
+  .editor-wait-bar .brand { display: none; }
+}
 
 /* ------------------------------------------------------------------------------------
    L'accueil d'une page vide.
@@ -574,7 +644,54 @@ select {
   grid-area: bar; display: flex; align-items: center; gap: 14px;
   padding: 8px 16px; background: var(--panel); border-bottom: 2px solid var(--edge);
 }
-.editor-bar .brand { font-size: 17px; }
+/* La marque redevient un lien ici : c'est la sortie de l'editeur vers le site, pas une
+   decoration. `header .brand::after`, plus haut, ne s'applique qu'a `header .brand` -- ce
+   lien-la n'est pas dans un `<header>` -- donc la meme cible de 44 px est redonnee ici,
+   sur `.editor-bar .brand` elle-meme plutot que par un pseudo-element : la barre n'a pas
+   la ligne de trop que l'entete du site avait pour se le permettre. */
+.editor-bar .brand { font-size: 17px; min-height: 36px; }
+
+/* Le menu qui donne acces au reste du site : voir le commentaire de `mount.js` sur
+   pourquoi son contenu n'est pas ecrit ici, mais lu dans `#nav`. `.menu-list` s'aligne par
+   defaut sur la droite de son declencheur (pense pour l'entete du site, ou les menus sont
+   colles a droite) ; celui-ci est pres du bord gauche de la barre, donc l'inverse. */
+.editor-site summary {
+  min-height: 36px; padding: 0 10px; border-radius: 6px; border: 2px solid var(--edge);
+  font-size: 13px;
+}
+.editor-site summary:hover { background: var(--raised-hover); }
+.editor-site .menu-list { left: 0; right: auto; }
+
+/* Les plans : a cote du menu Site plutot que dans le rail. Le rail choisit un outil pour
+   batir ; ceci choisit *quel plateau* on batit, au meme niveau que Site et que annuler /
+   refaire, pas un onglet de plus au milieu des blocs et du sol. Cache par defaut (voir
+   `mount.js`) : un visiteur anonyme ne voit jamais ce menu exister. */
+.editor-spaces summary {
+  min-height: 36px; padding: 0 10px; border-radius: 6px; border: 2px solid var(--edge);
+  font-size: 13px; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.editor-spaces summary:hover { background: var(--raised-hover); }
+.editor-spaces summary.bad { color: var(--bad); border-color: var(--bad); }
+.editor-spaces .menu-list { left: 0; right: auto; min-width: 220px; }
+.space-new {
+  padding: 8px 10px; border-radius: 5px; text-align: left; border: 0; background: none;
+  color: var(--accent); font-size: 13px;
+}
+.space-new:hover { background: var(--panel); }
+.space-row { display: flex; align-items: center; gap: 2px; }
+.space-row .child {
+  flex: 1; padding: 8px 10px 8px 18px; border-radius: 5px; border: 0; background: none;
+  text-align: left; font-size: 13px; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.space-row .child:hover { background: var(--panel); color: var(--ink); }
+.space-icon {
+  min-height: 28px; width: 28px; padding: 0; justify-content: center; border: 0;
+  background: none; color: var(--dim); font-size: 13px;
+}
+.space-icon:hover { background: var(--panel); color: var(--ink); }
+
 .editor-modes { display: flex; gap: 0; margin-left: 6px; }
 .editor-modes button {
   min-height: 36px; padding: 0 16px; border-radius: 0; border-right-width: 1px;
@@ -613,12 +730,44 @@ select {
   color: var(--accent); background: var(--raised);
   box-shadow: inset 0 -2px 0 var(--accent);
 }
+/* La recherche : un champ nu sans icone ni bouton d'effacement avant ceci, et un texte de
+   remplacement pour seul signe qu'une frappe avait ete lue. `.field` porte l'icone et le
+   bouton en position absolue par-dessus le champ ; `.count` dit ce que le champ a trouve,
+   silencieuse tant que rien n'est cherche pour ne pas annoncer une evidence a chaque
+   ouverture du panneau. */
 .editor-rail .search { padding: 10px; border-bottom: 1px solid var(--edge); }
-.editor-rail .search input { width: 100%; }
-.editor-grid {
-  flex: 1; min-height: 0; overflow: auto; padding: 8px;
+.editor-rail .search .field { position: relative; display: flex; }
+.editor-rail .search .field > .i {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; color: var(--dim); pointer-events: none;
+}
+.editor-rail .search input[type="search"] {
+  width: 100%; min-height: 36px; padding: 0 32px; font-size: 12.5px;
+}
+/* Le bouton d'effacement natif du champ, remplace par le notre juste apres : garder les
+   deux aurait mis deux croix l'une sur l'autre. */
+.editor-rail .search input[type="search"]::-webkit-search-cancel-button { display: none; }
+.editor-rail .search .clear {
+  position: absolute; right: 3px; top: 3px; min-height: 30px; min-width: 30px; padding: 0;
+  justify-content: center; border: 0; background: transparent; color: var(--dim);
+}
+.editor-rail .search .clear:hover { background: var(--raised-hover); color: var(--ink); }
+.editor-rail .search .clear .i { width: 13px; height: 13px; }
+.editor-rail .search .count { margin: 6px 2px 0; font-size: 11.5px; color: var(--dim); }
+
+/* La grille BÂTIR, rangee par categorie de jeu (voir `buildGroups` dans `ui.js`), de la
+   meme facon que SOL range deja ses quatre familles : un `<h3>` par groupe, une grille de
+   pastilles par-dessous, qui cache une pastille plutot que d'etre reconstruite a chaque
+   frappe de recherche. */
+.editor-grid { flex: 1; min-height: 0; overflow: auto; padding: 8px; }
+.editor-grid section + section { margin-top: 14px; }
+.editor-grid h3 {
+  margin: 0 0 6px; font-size: 11.5px; letter-spacing: .7px; color: var(--dim);
+  text-transform: uppercase;
+}
+.editor-grid h3 .num { color: var(--edge); }
+.editor-grid .swatches {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
-  align-content: start;
 }
 .editor-grid button {
   min-height: 38px; padding: 0; justify-content: center; border-radius: 4px;
@@ -626,6 +775,7 @@ select {
 }
 .editor-grid button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-pressed); }
 .editor-grid img { width: 26px; height: 26px; image-rendering: pixelated; }
+.editor-grid .empty { color: var(--dim); font-size: 12.5px; padding: 8px; }
 
 /* Ce qui est en main. Le jeu le montre au curseur ; sur une page web il faut aussi le dire
    en toutes lettres, parce que rien n'apprend les raccourcis à celui qui arrive. */
@@ -687,14 +837,16 @@ select {
  * jour ou une traduction rallonge un libelle ou qu'un bouton s'ajoute.
  *
  * Le reste est ce qui evite d'avoir besoin du filet. Le bloc de marque mangeait 194 px des
- * 386 disponibles, la moitie de la barre pour une decoration : dans l'editeur c'est un
- * `span`, il ne mene nulle part, et le selecteur de mode ramene deja a l'analyseur. Et la
- * jauge de taille est un temoin, pas une commande, donc elle se lit aussi bien courte.
- * Ensemble, la barre retombe a 372 px et tient sur une ligne en francais a 390.
+ * 386 disponibles, la moitie de la barre : a l'epoque c'etait un `<span>`, qui ne menait
+ * nulle part, et le cacher ne coutait donc rien. Ce n'est plus vrai : la marque est
+ * maintenant le lien vers le site, et le menu Site a cote d'elle est le seul acces aux
+ * schematiques, aux outils et aux blocs pendant que l'editeur est ouvert (voir `mount.js`).
+ * Les cacher sur telephone retirerait la sortie la ou l'ecran est le plus a l'etroit, donc
+ * ils restent, et c'est `flex-wrap` seul qui absorbe le depassement desormais. La jauge de
+ * taille, elle, reste un temoin plutot qu'une commande, donc elle se lit aussi bien courte.
  */
 @media (max-width: 560px) {
   .editor-bar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
-  .editor-bar .brand { display: none; }
   .editor-modes { margin-left: 0; }
   /* Pas `margin-left: auto` ici : sur une barre qui passe a la ligne, la marge automatique
      mange tout l'espace libre et pousse la jauge sur une ligne a elle, calee a droite,
@@ -703,25 +855,22 @@ select {
   .editor-size .bar { width: 48px; }
 }
 
-/* Les filtres de la palette : la planète d'abord, la catégorie ensuite.
-   Serpulo et Erekir ne partagent presque aucun bloc, donc c'est le tri qui coupe le plus. */
+/* Les filtres de la palette : la planète, seule desormais. La categorie avait sa propre
+   liste deroulante faute de place pour onze puces ; elle n'en a plus besoin, la grille
+   range deja ses blocs sous un intitule par categorie (voir `.editor-grid` plus haut), et
+   un menu qui ne fait que repeter ce que l'oeil voit deja au defilement est un controle en
+   trop, pas une aide. */
 .editor-filters {
   padding: 8px 10px; border-bottom: 1px solid var(--edge);
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }
 .editor-filters .chips { gap: 4px; }
-.editor-filters select {
-  flex: 1; min-width: 120px; min-height: 30px; padding: 0 8px; font: inherit;
-  font-size: 12px; color: var(--ink); background: var(--raised);
-  border: 1px solid var(--edge); border-radius: 6px;
-}
 .editor-filters .chip {
   cursor: pointer; font-size: 11.5px; padding: 3px 8px; color: var(--dim);
 }
 .editor-filters .chip[aria-pressed="true"] {
   color: var(--on-accent); background: var(--accent); border-color: var(--accent-strong);
 }
-.editor-grid .empty { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; padding: 8px; }
 
 /* La barre de la sélection, posée contre elle plutôt que dans le rail.
    Une barre à l'autre bout de l'écran oblige à quitter des yeux ce sur quoi elle agit. */
@@ -769,16 +918,26 @@ select {
 /* L'onglet sol. Une barre d'outils ici et pas du côté bâtir : le jeu n'en a pas pour poser
    un bloc, et son éditeur de carte en a une pour peindre. L'asymétrie vient de lui. */
 .editor-ground { flex: 1; min-height: 0; overflow: auto; padding: 10px; }
-.editor-ground .tools { display: flex; flex-wrap: wrap; gap: 4px; }
-.editor-ground .tools .chip { cursor: pointer; font-size: 12px; padding: 4px 10px; }
-.editor-ground .tools .chip[aria-pressed="true"] {
+/* Les cinq outils du pinceau, en icones plutot qu'en texte : cinq boutons "Crayon",
+   "Rectangle", "Pot", "Gomme", "Pipette" passaient a la ligne sur les 260px utiles du
+   panneau, et mangeaient de la hauteur avant la premiere pastille. Chacun garde son nom
+   pour un lecteur d'ecran (voir `aria-label` dans `ui.js`) et sa description au survol
+   (voir `title`) ; seul le texte visible disparait. */
+.editor-ground .tools { display: flex; gap: 4px; }
+.editor-ground .tools .tool { min-height: 34px; min-width: 34px; padding: 0; justify-content: center; }
+.editor-ground .tools .tool .i { width: 16px; height: 16px; }
+.editor-ground .tools .tool[aria-pressed="true"] {
   color: var(--on-accent); background: var(--accent); border-color: var(--accent-strong);
 }
-.editor-ground label {
-  display: block; margin: 12px 0 0; font-size: 12px; color: var(--dim);
-}
-.editor-ground label input { width: 100%; margin: 4px 0 0; }
-.editor-ground label .num { font-size: 11.5px; }
+
+/* La taille du pinceau et la transparence des blocs : un intitule court, le curseur, la
+   valeur, sur une seule ligne plutot que trois (l'intitule, puis le curseur en pleine
+   largeur, puis la valeur repoussee dessous). L'intitule complet reste en `title`. */
+.editor-ground .brushes { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 0; }
+.editor-ground .range { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--dim); }
+.editor-ground .range .tag { flex: none; width: 76px; }
+.editor-ground .range input { flex: 1; margin: 0; }
+.editor-ground .range .num { flex: none; width: 40px; text-align: right; color: var(--ink); }
 .editor-ground h3 {
   margin: 16px 0 6px; font-size: 11.5px; letter-spacing: .7px; color: var(--dim);
   text-transform: uppercase;
@@ -1102,3 +1261,44 @@ select {
 /* La virgule appartient a ce qui la precede : un saut de ligne de gabarit devient une
    espace a l'affichage, et « tuiles , sur » se lit comme une faute de frappe. */
 .phrase .ph-virgule { color: var(--dim); margin-right: 3px; }
+
+/* The ground grid, a swatch grid rather than a list of text chips: a texture is recognised
+   faster than a name is read. Sized like the BUILD tab's own `.editor-grid` chips so the
+   two tabs share one visual language, new selectors throughout so the old
+   `.editor-ground .chip.pick` rule above is left exactly as it was. */
+.editor-ground .swatches {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
+}
+.editor-ground .swatch {
+  min-height: 38px; padding: 0; justify-content: center; border-radius: 4px;
+  border-width: 1px;
+}
+.editor-ground .swatch[aria-pressed="true"] {
+  border-color: var(--accent); background: var(--accent-pressed);
+}
+.editor-ground .swatch img { width: 26px; height: 26px; image-rendering: pixelated; }
+
+/* The recents row: what was last painted with, above the search so it is the first thing
+   reached on the ground tab. Hidden until there is anything to show, and outside the
+   ground tab regardless. */
+.editor-recents { padding: 8px 10px; border-bottom: 1px solid var(--edge); }
+.editor-recents h3 {
+  margin: 0 0 6px; font-size: 11.5px; letter-spacing: .7px; color: var(--dim);
+  text-transform: uppercase;
+}
+.editor-recents .swatches {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
+}
+.editor-recents .swatch {
+  min-height: 38px; padding: 0; justify-content: center; border-radius: 4px;
+  border-width: 1px;
+}
+.editor-recents .swatch[aria-pressed="true"] {
+  border-color: var(--accent); background: var(--accent-pressed);
+}
+.editor-recents .swatch img { width: 26px; height: 26px; image-rendering: pixelated; }
+
+/* The ground half of the status bar: the same visual weight as `.editor-held .cost` above,
+   a new selector rather than reusing that one, since a rule is not a cost and the two tabs
+   should not have to agree on what a second line under a name means. */
+.editor-held .rule { color: var(--dim); font-size: 12.5px; margin-top: 4px; }

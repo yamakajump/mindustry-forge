@@ -27,6 +27,12 @@ from pathlib import Path
 
 from PIL import Image
 
+# How a floor's numbered art is enumerated, and which kinds have none, shared with
+# `build_sols.py`: see `floor_kinds.py`. `build_sols.py` must not promise the browser a
+# sprite this script never packs, and one enumeration imported by both is what makes that
+# a fact rather than a hope.
+from floor_kinds import NOT_TEXTURE_VARIANTS, variant_names
+
 JAR = Path("mindustry-forge/assets-v159.7.jar")
 CATALOGUE = Path("site/public/forge/blocks.json")
 ATLAS = Path("site/public/forge/atlas.png")
@@ -168,15 +174,32 @@ def main() -> None:
         if (turning or block + "-rotator" in sprites or block + "-spinner" in sprites)                 and block in sprites:
             wanted.append((f"{block}#base", sprites[block]))
 
-    # The ground. One sprite each, no edge variants for now: a painted patch of copper ore
-    # reads as copper ore without them, and the blending rules are a day's work on their
-    # own.
+    # The ground. Every variant the game ships, not just the first: `grass1`, `grass2` and
+    # `grass3` exist, the game picks one per tile, and packing only `grass1` made a painted
+    # patch line its diagonal pattern up from tile to tile into stripes.
+    #
+    # The bare `floor/<name>` key stays, and stays first: it is what a caller with no
+    # position to hash asks for, and what a floor with a single sprite has.
+    named = {name for name, entry in catalogue["blocks"].items() if entry.get("floor")}
     for name, entry in catalogue["blocks"].items():
         if not entry.get("floor"):
             continue
         path = sprites.get(name) or sprites.get(f"{name}1")
         if path:
             wanted.append((f"floor/{name}", path))
+        if entry.get("kind") in NOT_TEXTURE_VARIANTS:
+            continue
+        for n, variant in enumerate(variant_names(name, sprites, named), 1):
+            wanted.append((f"floor/{name}#{n}", sprites[variant]))
+
+        # The 96 by 96 sheet the game blends a boundary with: nine 32 pixel cells, which
+        # `Floor.edge(x, y, i, j)` reads as `edges[i][2 - j]`. 55 of the 107 floors ship one.
+        # Fourteen of the rest blend all the same, through their group's sheet, which is the
+        # whole point of `blendGroup` and is recorded in `sols.json` rather than here: the
+        # sheet a floor borrows is packed under its owner's name. That leaves 38 that do not
+        # blend at all, and a hard edge decided in code beats a guess.
+        if f"{name}-edge" in sprites:
+            wanted.append((f"floor/{name}#edge", sprites[f"{name}-edge"]))
 
     # The frame of a block that gets configured, without the composite's contents.
     #

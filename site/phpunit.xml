@@ -18,6 +18,11 @@
         </include>
     </source>
     <php>
+        <!-- The work space size tests deliberately push payloads near Space::MAX_BOARD_BYTES
+             (16 MiB since frames grew a board's realistic ceiling from 64x64 to 256x256);
+             PHP's usual 128M CLI default is not enough headroom for that string plus the
+             copies validation and json_encode make of it in the same process. -->
+        <ini name="memory_limit" value="256M"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
