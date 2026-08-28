@@ -146,3 +146,30 @@ it('is idempotent when nothing has drifted', function () {
 
     expect($reporter->fresh()->upheld)->toBe(1);
 });
+
+it('hands somebody the keys to the queue', function () {
+    $corentin = User::factory()->create(['name' => 'yamakajump']);
+
+    $this->artisan('forge:moderateur', ['who' => 'yamakajump'])->assertSuccessful();
+
+    // La preuve qui compte n'est pas la colonne, c'est la page : le flag est un moyen, et
+    // c'est l'acces a la file qui est la chose demandee.
+    expect($corentin->fresh()->moderator)->toBeTrue();
+    $this->actingAs($corentin->fresh())->get('/moderation')->assertOk();
+});
+
+it('takes the keys back', function () {
+    $someone = User::factory()->create(['name' => 'Ancien', 'moderator' => true]);
+
+    $this->artisan('forge:moderateur', ['who' => 'Ancien', '--retirer' => true])
+        ->assertSuccessful();
+
+    expect($someone->fresh()->moderator)->toBeFalse();
+    $this->actingAs($someone->fresh())->get('/moderation')->assertNotFound();
+});
+
+it('refuses a name it cannot find rather than flagging nobody', function () {
+    $this->artisan('forge:moderateur', ['who' => 'yamakajumpp'])->assertFailed();
+
+    expect(User::where('moderator', true)->count())->toBe(0);
+});
