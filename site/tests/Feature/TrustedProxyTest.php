@@ -29,11 +29,17 @@ it('still builds an http og:url without the forwarded proto header', function ()
 
 /*
  * The property that would silently disappear if the trusted header set were ever widened
- * to include X-Forwarded-For. Nothing in this repository establishes that only Cloudflare
- * can reach this origin's port 80, so trusting '*' must not also hand a visiting request
- * control over what the application believes its own client IP is: that would poison rate
- * limiting and anything that logs the IP with a spoofable one, on the strength of a header
- * anyone reaching the port directly can set.
+ * to include X-Forwarded-For. Whether port 80 answers a request that skips the Cloudflare
+ * Tunnel is unmeasured, not ruled out, so trusting '*' must not also hand a visiting
+ * request control over what the application believes its own client IP is: that would
+ * poison rate limiting and anything that logs the IP with a spoofable one, on the strength
+ * of a header anyone reaching the port directly can set.
+ *
+ * This is a deliberate current limit, not a permanent one: a feature that needs a real
+ * client IP (a moderation feature hashing them is already planned) can widen the trusted
+ * headers to include HEADER_X_FORWARDED_FOR once that port-80 reachability question has
+ * actually been checked on the server, and this test should be updated alongside that,
+ * not treated as a rule that forbids it.
  */
 it('does not let a forwarded-for header change the client ip the app sees', function () {
     Route::get('/__test/client-ip', fn () => request()->ip());

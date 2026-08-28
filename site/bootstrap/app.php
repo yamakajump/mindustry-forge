@@ -12,23 +12,26 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Cloudflare terminates TLS in front of this app and nginx listens
-        // on plain port 80 (deployment/nginx/mindustryforge.conf). Nothing
-        // in this repository establishes how nginx is reached: there is no
-        // cloudflared unit, no tunnel config, nothing under deployment/
-        // that restricts inbound traffic to Cloudflare. The listener binds
-        // every interface, so a request could in principle arrive directly.
+        // deployment/nginx/mindustryforge.conf line 3 says this site is
+        // exposed by a Cloudflare Tunnel onto http://localhost: cloudflared
+        // runs on the origin and forwards each request in over loopback, so
+        // the peer nginx actually sees is always 127.0.0.1, never one of
+        // Cloudflare's published edge IPs. A hardcoded allowlist of those
+        // edge ranges would therefore match nothing and leave every
+        // absolute URL silently stuck on http while looking fixed, which is
+        // why this trusts every peer address ('*') instead.
         //
-        // Trusting every peer address ('*') would normally make the client
-        // IP spoofable through X-Forwarded-For, which is exactly the wrong
-        // default to reach for while that reachability question is open.
-        // Narrowing the trusted headers to proto/host/port avoids that: the
-        // application still forms its own opinion of the client IP from the
-        // raw connection, so nothing here becomes spoofable regardless of
-        // who can reach port 80. Only the scheme, host and port Laravel
-        // reports for building URLs come from the proxy, which is the one
-        // fact this fix needs and the one Cloudflare is always in a
-        // position to set correctly for a request it actually forwarded.
+        // The vhost still binds every interface (listen 80; listen [::]:80;
+        // in that same file), so whether port 80 answers a request that
+        // skips the tunnel entirely is not something this repository can
+        // settle; it is a measurement on the server, not made here. Trusting
+        // '*' would normally also trust X-Forwarded-For from that same
+        // untested peer, so the headers are narrowed to proto/host/port
+        // only: the application keeps forming its own opinion of the client
+        // IP from the raw connection, which is correct whichever way that
+        // unmeasured question turns out. Widen it to include
+        // HEADER_X_FORWARDED_FOR only once that port-80 reachability has
+        // actually been checked on the server, not assumed here again.
         $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_PROTO
             | Request::HEADER_X_FORWARDED_HOST
             | Request::HEADER_X_FORWARDED_PORT);
