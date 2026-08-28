@@ -43,7 +43,7 @@ it('range chaque chose dans la famille que l adresse d icone attend', function (
 it('offre les objets en pastilles, avec leur icone et leur nom francais', function () {
     produces('Fonte', 'silicon');
 
-    $page = $this->get('/schematiques')->assertOk();
+    $page = $this->get('/schemas')->assertOk();
 
     /* Des liens et non un controle dessine : un `<select>` natif ne porte pas d image, et le
        remplacer aurait coute le clavier, la recherche par frappe, Echap, l annonce au lecteur
@@ -57,7 +57,7 @@ it('offre les objets en pastilles, avec leur icone et leur nom francais', functi
 it('marque la pastille choisie plutot que de laisser deviner', function () {
     produces('Fonte', 'silicon');
 
-    $this->get('/schematiques?produit=silicon')
+    $this->get('/schemas?produit=silicon')
         ->assertOk()
         ->assertSee('aria-current="page"', false);
 });

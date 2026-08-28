@@ -37,7 +37,7 @@ it('affiche chaque ressource avec son icone', function () {
 
     $page = $this->get("/s/{$kept->slug}")->assertOk();
 
-    $page->assertSee('Ce qu elle coute');
+    $page->assertSee('Ce qu il coute');
     $page->assertSee('/icone/objet/copper.png?t=32', escape: false);
     $page->assertSee('/icone/objet/lead.png?t=32', escape: false);
     $page->assertSee('320');
@@ -50,7 +50,7 @@ it('ne montre pas de carte vide quand le cout est inconnu', function () {
         'visibility' => 'public', 'blocks' => 3, 'analysis' => [],
     ]);
 
-    $this->get("/s/{$kept->slug}")->assertOk()->assertDontSee('Ce qu elle coute');
+    $this->get("/s/{$kept->slug}")->assertOk()->assertDontSee('Ce qu il coute');
 });
 
 it('se defend contre ce qu un navigateur peut envoyer', function () {

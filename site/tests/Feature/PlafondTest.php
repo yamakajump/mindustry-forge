@@ -142,14 +142,14 @@ it('cherche sur les plafonds, en disant que ce sont des plafonds', function () {
     expect($ceilingOnly->items()->where('kind', SchematicItem::PLAFOND)->count())->toBe(1);
 
     // Elle se trouve par ce qu'elle pourrait produire...
-    $this->get('/schematiques?produit=silicon')
+    $this->get('/schemas?produit=silicon')
         ->assertOk()
         ->assertSee('Plafond seul');
 
     // ...et elle peuple la liste, qui offre exactement ce qui rend des resultats. Une entree
     // qui ne rend rien serait une impasse ; une entree absente pour 1 700 plans en est une
     // autre, et c'etait celle-la.
-    $this->get('/schematiques')
+    $this->get('/schemas')
         ->assertOk()
         ->assertSee('<option value="silicon"', escape: false);
 });
@@ -181,7 +181,7 @@ it('nomme la grandeur qu une tuile montre, dans les deux sens', function () {
         'kind' => SchematicItem::MESURE, 'rate' => 39700, 'rate_per_block' => 500,
     ]);
 
-    $page = $this->get('/schematiques')->assertOk();
+    $page = $this->get('/schemas')->assertOk();
 
     // Le plafond se voit, et se dit.
     $page->assertSee('900');
@@ -239,7 +239,7 @@ it('takes the game markup out of a name, everywhere a reader sees it', function 
         ->and($kept->name)->toBe('[#1000][] [#ffa77a99]Graphite');
 
     $this->get("/s/{$kept->slug}")->assertOk()->assertDontSee('[#ffa77a99]');
-    $this->get('/schematiques')->assertOk()->assertDontSee('[#ffa77a99]');
+    $this->get('/schemas')->assertOk()->assertDontSee('[#ffa77a99]');
 });
 
 it('does not touch a name that merely contains brackets', function () {
@@ -301,8 +301,8 @@ it('lets no surface print raw markup, including the ones added later', function 
     ]);
 
     $pages = [
-        '/schematiques',
-        '/schematiques?tri=new',
+        '/schemas',
+        '/schemas?tri=new',
         "/s/{$left->slug}",
         "/comparer?a={$left->slug}&b={$right->slug}",
     ];

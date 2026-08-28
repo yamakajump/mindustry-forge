@@ -176,7 +176,7 @@ it('annonce le meme chiffre que la place de marche, pour la meme schematique', f
 
     $accueil = collect(ilot($this->get('/')->getContent())['schematiques'])
         ->firstWhere('nom', 'Turbine');
-    $vitrine = $this->get('/schematiques')->getContent();
+    $vitrine = $this->get('/schemas')->getContent();
 
     /* Deja par minute : rien a convertir. */
     expect((float) $accueil['debit'])->toBe(39700.0);
@@ -214,5 +214,5 @@ it('dit que ce qu il montre est un plafond, chaque fois', function () {
     $mis = ilot($this->get('/')->getContent())['schematiques'][0];
 
     expect($mis['au-mieux'])->toBe(__('schema.page.au-mieux'))->not->toBeEmpty();
-    expect($this->get('/schematiques')->getContent())->toContain(__('schema.page.au-mieux'));
+    expect($this->get('/schemas')->getContent())->toContain(__('schema.page.au-mieux'));
 });

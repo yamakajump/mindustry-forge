@@ -1,19 +1,19 @@
 @extends('layout')
-@section('title', 'Mes schematiques - Mindustry Forge')
+@section('title', 'Mes schémas - Mindustry Forge')
 
 @push('head')
   <script src="/forge/manage.js" type="module" defer></script>
 @endpush
 
 @section('body')
-<h1 class="title">Mes schematiques</h1>
+<h1 class="title">Mes schémas</h1>
 <p class="sub">Tout ce que tu as garde. Publie ce que tu veux montrer, garde le reste.</p>
 
 @if($schematics->isEmpty())
   <div class="card">
-    <p class="empty">Rien encore. Analyse une schematique et garde-la depuis la page
+    <p class="empty">Rien encore. Analyse un schéma et garde-le depuis la page
       d'analyse.</p>
-    <p class="row"><a class="button primary" href="/">Analyser une schematique</a></p>
+    <p class="row"><a class="button primary" href="/">Analyser un schéma</a></p>
   </div>
 @else
   <div class="grid">

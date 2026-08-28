@@ -95,7 +95,7 @@ it('garde la ferme sans carburant, parce qu un plafond dit ce qu elle ferait nou
         ],
     ]);
 
-    $page = $this->get('/schematiques?produit='.SchematicItem::POWER.'&tri=output')->assertOk();
+    $page = $this->get('/schemas?produit='.SchematicItem::POWER.'&tri=output')->assertOk();
 
     $page->assertSee('Reacteur nourri');
     $page->assertSee('POLAR STAR');

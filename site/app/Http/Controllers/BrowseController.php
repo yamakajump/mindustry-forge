@@ -28,7 +28,7 @@ use Illuminate\View\View;
  * nowhere in any ranking, while production is simply one more thing a schematic makes,
  * searchable like graphite.
  *
- * What follows from that is that "les mieux faites" needs an item before it means
+ * What follows from that is that "les mieux faits" needs an item before it means
  * anything. Ranking forty graphite a minute against twenty-five silicon a minute would be
  * declaring that one graphite is worth one silicon, which is false and would be invisible.
  * So without a chosen item the listing sorts by date and says so, and offers the choice.
@@ -37,11 +37,11 @@ class BrowseController extends Controller
 {
     /** How a listing can be ordered, and what each means. */
     private const ORDERS = [
-        'best' => 'Les mieux faites',
-        'output' => 'Celles qui produisent le plus',
-        'small' => 'Les plus compactes',
-        'new' => 'Les plus recentes',
-        'seen' => 'Les plus vues',
+        'best' => 'Les mieux faits',
+        'output' => 'Ceux qui produisent le plus',
+        'small' => 'Les plus compacts',
+        'new' => 'Les plus recents',
+        'seen' => 'Les plus vus',
     ];
 
     /** The two that compare schematics on their output, so the two that need an item. */

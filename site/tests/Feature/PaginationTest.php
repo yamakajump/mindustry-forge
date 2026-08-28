@@ -27,7 +27,7 @@ function aPageOfSchematics(int $howMany): void
 it('ne rend aucune cle de traduction brute', function () {
     aPageOfSchematics(30);
 
-    $html = $this->get('/schematiques')->assertOk()->getContent();
+    $html = $this->get('/schemas')->assertOk()->getContent();
 
     expect($html)->not->toContain('pagination.');
     expect($html)->not->toContain('vitrine.pagination');
@@ -36,7 +36,7 @@ it('ne rend aucune cle de traduction brute', function () {
 it('ne parle pas anglais', function () {
     aPageOfSchematics(30);
 
-    $html = $this->get('/schematiques')->assertOk()->getContent();
+    $html = $this->get('/schemas')->assertOk()->getContent();
 
     foreach (['Showing', ' results', 'Previous', 'Next'] as $anglais) {
         expect($html)->not->toContain($anglais);
@@ -48,7 +48,7 @@ it('ne parle pas anglais', function () {
 it('ne pose pas d icone dans la barre de pages', function () {
     aPageOfSchematics(30);
 
-    $html = $this->get('/schematiques')->assertOk()->getContent();
+    $html = $this->get('/schemas')->assertOk()->getContent();
     $barre = preg_match('#<nav class="pages".*?</nav>#s', $html, $m) ? $m[0] : '';
 
     expect($barre)->not->toBe('');
@@ -61,7 +61,7 @@ it('garde ses nombres quand la traduction manque', function () {
     aPageOfSchematics(30);
 
     app()->setLocale('xx');
-    $html = $this->get('/schematiques')->assertOk()->getContent();
+    $html = $this->get('/schemas')->assertOk()->getContent();
 
     expect($html)->toContain('1 - 24');
     expect($html)->toContain('30');
