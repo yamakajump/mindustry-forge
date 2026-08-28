@@ -4,7 +4,7 @@
 
 **Goal:** A public "j'aime" and a private favorite on a schematic, plus the catalogue ordering that follows from the first one.
 
-**Architecture:** Two flat join tables and one denormalised counter column, on the pattern `schematics.views` already sets. Four API verbs behind `auth`, one page for the favorites, one browser module on the pattern of `manage.js`. No new dependency, server side or browser side.
+**Architecture:** Two flat join tables and one denormalised counter column, on the pattern `schematics.views` already sets. Four API verbs behind `auth` and one browser module on the pattern of `manage.js`. No page of its own for the favorites: they are a filter of the catalogue, so that there is one implementation of listing schematics. No new dependency, server side or browser side.
 
 **Tech Stack:** Laravel 12, Pest, SQLite in memory for tests, Blade, vanilla ES modules, Pint for style.
 
@@ -14,6 +14,7 @@ The design this implements: `docs/plans/2026-08-28-likes-and-favorites-design.md
 
 - **Do not start Task 1 until `fix/mot-schema` is merged into `main`, and branch from the merged state.** That branch renames "schematique" to "schema" across 115 strings in the language files, the views and the routes, which is nearly every file this plan touches. A narrow feature written under a wide rename conflicts on every line. Session `mindustry-forge-7b` owns it and will say when it lands.
 - **`compare.blade.php` and the `schema.comparer` block of `lang/fr/schema.php` belong to a third session (`d3`) right now.** Nothing in this plan touches them. If that changes, wait for `d3` rather than for `mindustry-forge-7b`.
+- **`BrowseController.php` and `browse.blade.php` belong to session `mindustry-forge-30` in their entirety**, including the "Les plus aimés" ordering, the `favoris=oui` and `aimes=oui` filters, and the count on a tile. Do not edit either file. Task 3 exists to hand that session what it needs, not to write it. Agreed 28 August so that the favorites are a filter of the catalogue rather than a second implementation of "list some schematics": in three weeks the catalogue will filter by planet, footprint and minimum output, and a separate favorites page would do none of it.
 - **"Schema" is masculine.** The game's own `bundle_fr.properties` says `schematic = Schema`. Every string added here agrees with that: "Les plus aimes" and not "aimees", "un schema" and not "une schematique". The translation key is `vitrine.tri.aimes`.
 - **Only the player-facing address is renamed, not the API.** `/schematiques` becomes `/schemas` with a 301; `/api/schematiques/{schematic}` stays as it is, because a machine address carries no word a player reads and the Laravel model binding hangs off that segment. So the new verbs read `/api/schematiques/{schematic}/aime`, and the controller parameter is `$schematic`, spelled exactly like the route segment or the binding silently hands you nothing. Read `site/routes/web.php` before writing any of them.
 - **No npm dependency.** The repository has none and this is not the feature that introduces one.
@@ -33,18 +34,16 @@ The design this implements: `docs/plans/2026-08-28-likes-and-favorites-design.md
 | `site/app/Models/SchematicLike.php` | One row of the like table |
 | `site/app/Models/Favorite.php` | One row of the favorite table |
 | `site/app/Http/Controllers/LikeController.php` | Adding and removing a like, and keeping the counter true |
-| `site/app/Http/Controllers/FavoriteController.php` | Adding and removing a favorite, and listing one's own |
+| `site/app/Http/Controllers/FavoriteController.php` | Adding and removing a favorite. Not listing them |
 | `site/app/Console/Commands/RecountLikes.php` | Repairing the counter from the join table |
-| `site/resources/views/favorites.blade.php` | The favorites page |
 | `site/public/forge/keep.js` | The two buttons in the browser, optimistic, worded from the dictionary |
-| `site/app/Http/Controllers/BrowseController.php` | *(modified)* the ordering and its threshold |
-| `site/resources/views/browse.blade.php` | *(modified)* the count on a tile |
 | `site/resources/views/schematic.blade.php` | *(modified)* the two buttons |
 | `site/resources/views/mine.blade.php` | *(modified)* the count on a tile |
 | `site/config/nav.php`, `site/public/index.html` | *(modified)* the favorites entry, in both, or `NavigationTest` fails |
 | `site/lang/fr/*.php`, `site/public/forge/lang/fr.json` | *(modified)* the new strings |
-| `site/routes/web.php` | *(modified)* five routes |
+| `site/routes/web.php` | *(modified)* four API verbs |
 | `site/public/forge/forge.css` | *(modified)* the look of the two buttons and the count |
+| `BrowseController.php`, `browse.blade.php` | **session 30's, not touched here** |
 
 ---
 
@@ -377,19 +376,21 @@ orders on it, and an ordering over an aggregate cannot use an index." -- \
 
 ---
 
-### Task 2: The favorite, and the page that holds it
+### Task 2: The favorite, and nothing that lists it
+
+The listing is session 30's, as a `favoris=oui` filter on the catalogue. This task builds
+the table and the two verbs that fill it, and stops there.
 
 **Files:**
 - Create: `site/database/migrations/2026_08_28_201000_create_favorites_table.php`
 - Create: `site/app/Models/Favorite.php`
 - Create: `site/app/Http/Controllers/FavoriteController.php`
-- Create: `site/resources/views/favorites.blade.php`
-- Modify: `site/routes/web.php`, `site/config/nav.php`, `site/public/index.html`, `site/lang/fr/compte.php`, `site/lang/fr/nav.php`
+- Modify: `site/routes/web.php`, `site/config/nav.php`, `site/public/index.html`, `site/lang/fr/schema.php`, `site/lang/fr/nav.php`
 - Test: `site/tests/Feature/FavorisTest.php`
 
 **Interfaces:**
-- Consumes: everything Task 1 produced, plus `Schematic::listed()` and the tile markup of `mine.blade.php`.
-- Produces: `Favorite`, `POST|DELETE /api/schematiques/{schematic}/favori` answering `{"favori": bool}`, and `GET /mes-favoris`.
+- Consumes: everything Task 1 produced.
+- Produces: `Favorite`, and `POST|DELETE /api/schematiques/{schematic}/favori` answering `{"favori": bool}`.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -431,27 +432,23 @@ it('retire un favori', function () {
     expect(Favorite::count())->toBe(0);
 });
 
-it('ne montre a personne les favoris d un autre', function () {
+it('refuse un visiteur qui n est pas connecte', function () {
+    $schema = Schematic::factory()->create();
+
+    $this->postJson("/api/schematiques/{$schema->slug}/favori")->assertUnauthorized();
+});
+
+it('garde chaque favori a son proprietaire', function () {
     $mine = User::factory()->create();
     $theirs = User::factory()->create();
-    $schema = Schematic::factory()->create(['name' => 'Ligne a graphite']);
+    $schema = Schematic::factory()->create();
 
     $this->actingAs($theirs)->postJson("/api/schematiques/{$schema->slug}/favori");
+    // Retirer ce qui n'est pas a soi ne retire rien, et ne se plaint pas non plus :
+    // l'absence d'un favori et l'absence du droit de le retirer sont le meme etat.
+    $this->actingAs($mine)->deleteJson("/api/schematiques/{$schema->slug}/favori")->assertOk();
 
-    $this->actingAs($mine)->get('/mes-favoris')
-        ->assertOk()
-        ->assertDontSee('Ligne a graphite');
-});
-
-it('montre une liste vide plutot qu une erreur', function () {
-    $this->actingAs(User::factory()->create())
-        ->get('/mes-favoris')
-        ->assertOk()
-        ->assertSee(__('compte.favoris.vide'));
-});
-
-it('refuse la page a un visiteur qui n est pas connecte', function () {
-    $this->get('/mes-favoris')->assertRedirect('/auth/discord');
+    expect(Favorite::where('user_id', $theirs->id)->count())->toBe(1);
 });
 
 it('emporte les favoris quand le schema disparait', function () {
@@ -545,32 +542,17 @@ use App\Models\Favorite;
 use App\Models\Schematic;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 /**
- * The private list, and the two verbs that fill it.
+ * Filling and emptying the private list. Reading it is the catalogue's job, under
+ * `favoris=oui`, so that there is one implementation of "list some schematics".
  *
  * No counter to keep in step, so no transaction: the unique constraint is the whole of the
- * correctness here.
+ * correctness here. And the removal is scoped to its owner rather than checked first,
+ * which is why deleting somebody else's favorite deletes nothing and says nothing.
  */
 class FavoriteController extends Controller
 {
-    public function index(Request $request): View
-    {
-        /* `items` eagerly, like the catalogue does, because every tile reads its ceiling
-           and without it a page of twenty-four costs twenty-four more queries. */
-        $schematics = Schematic::query()
-            ->with(['user', 'items'])
-            ->join('favorites', 'favorites.schematic_id', '=', 'schematics.id')
-            ->where('favorites.user_id', $request->user()->id)
-            ->orderByDesc('favorites.created_at')
-            ->orderByDesc('schematics.id')
-            ->select('schematics.*')
-            ->paginate(24);
-
-        return view('favorites', ['schematics' => $schematics]);
-    }
-
     public function store(Request $request, Schematic $schematic): JsonResponse
     {
         $kept = Favorite::firstOrCreate(
@@ -592,58 +574,19 @@ class FavoriteController extends Controller
 }
 ```
 
-- [ ] **Step 5: Write the page**
+- [ ] **Step 5: Nothing to write, and why**
 
-Create `site/resources/views/favorites.blade.php`. Copy the tile markup of `mine.blade.php` rather than inventing a second one, drop the `partials.manage` include (these are other people's schematics, not mine to publish or delete), and add the remove control:
+There is no favorites view in this plan. `/mes-favoris` is session 30's route, rendering
+`BrowseController` with `favoris=oui` already armed, so that the favorites inherit every
+filter the catalogue grows later instead of being a second listing that never catches up.
 
-```blade
-@extends('layout')
-
-@section('title', __('compte.favoris.titre'))
-
-@section('content')
-  <h1>{{ __('compte.favoris.titre') }}</h1>
-
-  @if($schematics->isEmpty())
-    {{-- An empty list that says where to go next, rather than an empty list. --}}
-    <p class="note">{{ __('compte.favoris.vide') }} <a href="/schemas">{{ __('compte.favoris.parcourir') }}</a></p>
-  @else
-    <div class="tiles">
-      @foreach($schematics as $schematic)
-        <article class="tile" data-slug="{{ $schematic->slug }}">
-          <a href="/s/{{ $schematic->slug }}">{{ $schematic->name }}</a>
-          <p class="figures">
-            {{ $schematic->blocks }} {{ __('schema.unite.blocs') }}
-            @if($schematic->likes > 0)
-              &middot; {{ $schematic->likes }} {{ __('schema.unite.jaime') }}
-            @endif
-          </p>
-          <button type="button" class="link" data-favori="off"
-                  data-slug="{{ $schematic->slug }}">{{ __('schema.favori.retirer') }}</button>
-        </article>
-      @endforeach
-    </div>
-
-    @include('partials.pages', ['paginator' => $schematics])
-  @endif
-@endsection
-```
-
-Check the exact names of the tile classes, of the blocks unit key and of the pagination partial against `mine.blade.php` as it stands after the rename, and follow it. If `schema.unite.blocs` does not exist under that name, use the one that does; do not create a second key for the same word.
+Do not create `favorites.blade.php`. If session 30's work has not landed when you reach
+this step, that is expected: the navigation entry below ships with `'ready' => false` and
+the page simply does not exist yet.
 
 - [ ] **Step 6: Add the strings**
 
-In `site/lang/fr/compte.php`, inside the existing array:
-
-```php
-    'favoris' => [
-        'titre' => 'Mes favoris',
-        'vide' => "Rien de garde pour l'instant.",
-        'parcourir' => 'Parcourir les schemas',
-    ],
-```
-
-In `site/lang/fr/schema.php`:
+In `site/lang/fr/schema.php`, the words on the two buttons and nowhere else:
 
 ```php
     'favori' => [
@@ -652,16 +595,21 @@ In `site/lang/fr/schema.php`:
     ],
 ```
 
-Write the accents: `garde` above is this plan file in ASCII, the strings that ship carry them ("Rien de gardé pour l'instant.", "Parcourir les schémas"). The repository requires accents in both languages.
+Accents are written in the file that ships; this plan is ASCII in places and that is the
+plan's limitation, not the string's.
 
 In `site/lang/fr/nav.php`, add the menu entry key `menu.favoris` with the value `Mes favoris`.
+
+Nothing goes into `site/lang/fr/compte.php`. The title of the list, its empty state and the
+wording of the two filters belong to the page that renders them, which is session 30's.
+Writing them here would leave dead keys if that session words them differently, and a
+dictionary nobody can prove is used is a dictionary that rots.
 
 - [ ] **Step 7: Add the routes and the navigation entry**
 
 In `site/routes/web.php`, inside the `auth` group:
 
 ```php
-    Route::get('/mes-favoris', [FavoriteController::class, 'index']);
     Route::post('/api/schematiques/{schematic}/favori', [FavoriteController::class, 'store'])
         ->middleware('throttle:60,1');
     Route::delete('/api/schematiques/{schematic}/favori', [FavoriteController::class, 'destroy'])
@@ -671,15 +619,21 @@ In `site/routes/web.php`, inside the `auth` group:
 In `site/config/nav.php`, in the schematics menu, immediately after `nav.menu.les-miennes`:
 
 ```php
-        ['key' => 'nav.menu.favoris', 'href' => '/mes-favoris', 'ready' => true, 'auth' => true],
+        ['key' => 'nav.menu.favoris', 'href' => '/mes-favoris', 'ready' => false, 'auth' => true],
 ```
+
+**`'ready' => false`, and this is the whole point of that flag.** The address it names is
+session 30's route, which does not exist yet, and an entry pointing at a 404 is worse than
+no entry at all. The repository already uses this for pages that are planned and unbuilt:
+four tool entries sit in that config unready today. Session 30 flips it to `true` in the
+same commit that creates the route.
 
 Then add the same entry by hand to the header written into `site/public/index.html`. That file never meets PHP, so its header is a copy, and `NavigationTest` compares both against the config. An entry in two of the three places fails the suite.
 
 - [ ] **Step 8: Run the tests and watch them pass**
 
 Run: `cd site && php artisan test --filter=FavorisTest`
-Expected: PASS, six tests.
+Expected: PASS, five tests.
 
 - [ ] **Step 9: Run the whole suite, including navigation and translations**
 
@@ -704,20 +658,64 @@ rows would leak the list it came from." -- \
 
 ---
 
-### Task 3: The ordering, and the threshold it waits for
+### Task 3: Hand the ordering to session 30, do not write it
 
-**Files:**
-- Modify: `site/app/Http/Controllers/BrowseController.php`
-- Modify: `site/resources/views/browse.blade.php`
-- Test: `site/tests/Feature/TriAimesTest.php`
+`BrowseController` and `browse.blade.php` belong to session `mindustry-forge-30`, which is
+rebuilding the catalogue's orderings and filters. Writing the ordering here would mean two
+sessions editing the same two files in the same week, which is how a rename and a feature
+conflict on every line.
 
-**Interfaces:**
-- Consumes: `schematics.likes` from Task 1.
-- Produces: `?tri=aimes` on the catalogue, and `BrowseController::LIKED_ENOUGH = 24`.
+This task is a delivery, not an implementation. Nothing in it edits a file under `site/`.
 
-- [ ] **Step 1: Write the failing tests**
+**What session 30 owns and builds:** the `aimes` ordering with its threshold, the
+`favoris=oui` and `aimes=oui` filters, the `garde` ordering, and the count on a tile.
 
-Create `site/tests/Feature/TriAimesTest.php`:
+**What this task delivers to it:**
+
+- [ ] **Step 1: Send the exact names**
+
+```
+schematics.likes                            unsignedInteger, default 0, indexed
+schematic_likes(user_id, schematic_id, created_at)  unique(user_id, schematic_id)
+favorites(user_id, schematic_id, created_at)        unique(user_id, schematic_id)
+                                                    index(user_id, created_at)
+App\Models\SchematicLike, App\Models\Favorite
+ordering key `aimes`, label "Les plus aimes", orderByDesc('schematics.likes')
+ordering key `garde`, over favorites.created_at, only under favoris=oui
+filters `favoris=oui` and `aimes=oui`, offered to signed-in visitors only
+address /mes-favoris, rendering BrowseController with favoris=oui already armed
+```
+
+- [ ] **Step 2: Send the threshold with its reason attached, not as a bare number**
+
+The ordering is not offered until at least a page's worth of schematics carry a like. The
+threshold is not the literal 24: it is the page size, derived from the same value the
+paginator uses, so that changing the page size to 36 cannot leave a true-looking sentence
+next to a stale number.
+
+Below it, `?tri=aimes` typed by hand falls back to `new`, exactly as `best` and `output`
+fall back with no item chosen. That mechanism exists (`NEEDS_AN_ITEM`) and is extended
+rather than duplicated.
+
+Unlike `best` and `output`, this ordering needs no chosen item: "liked" is a single
+quantity, comparable between any two schematics.
+
+- [ ] **Step 3: Send the four rules the filter must not inherit from the catalogue**
+
+1. `ordinary()` is a rule of the catalogue, not a rule of a list. Under any personal filter
+   (kept, liked, mine), the creative schematics come back: what somebody kept, they see
+   again. Say it in the code at that spot, or the next reader restores the scope "for
+   consistency".
+2. A favorite whose author has since made it private drops out, and the page says how many
+   it removed, on the pattern `setAside` already sets: counted on the filtered query before
+   the exclusion, never as the difference of two totals.
+3. Neither filter is offered to a visitor who is not signed in.
+4. The default ordering under `favoris=oui` is `garde`, not the catalogue's default.
+
+- [ ] **Step 4: Send these tests, to be inherited rather than reinvented**
+
+They are written out in full so that nothing is lost in the handover. They live in
+`site/tests/Feature/TriAimesTest.php` and are session 30's to place and to keep green.
 
 ```php
 <?php
@@ -767,98 +765,22 @@ it('classe sur les j aime au dela du seuil', function () {
 });
 ```
 
-The strings asserted here carry their accents in the real files ("Les plus aimés", "Les plus récentes"); assert against the exact value written in `BrowseController::ORDERS`.
+The strings asserted here carry their accents in the real files ("Les plus aimés", "Les
+plus récentes"); assert against the exact value written in `BrowseController::ORDERS`.
 
-- [ ] **Step 2: Run the tests and watch them fail**
+- [ ] **Step 5: Confirm the handover in writing**
 
-Run: `cd site && php artisan test --filter=TriAimesTest`
-Expected: FAIL, "Les plus aimes" is nowhere in the page.
+Send the four blocks above to session 30 and get an explicit acknowledgement of each. A
+handover nobody confirmed is a handover that happened in one person's head. This step is
+done when that session has said, in its own words, what it is taking.
 
-- [ ] **Step 3: Add the ordering to the controller**
-
-In `site/app/Http/Controllers/BrowseController.php`, add to `ORDERS`, after `'seen'`:
-
-```php
-        'aimes' => 'Les plus aimes',
-```
-
-The labels in this constant are literals rather than translation keys, which is what the five neighbours already are. Follow the file rather than half converting it; moving all six into `lang/` is a job of its own and not this one.
-
-Add the threshold and its reason:
-
-```php
-    /**
-     * How many schematics must carry a like before the ranking is offered.
-     *
-     * Twenty-four, the size of a page. Below that the ranking cannot fill its own first
-     * screen, and a page titled "les plus aimes" would be listing schematics on the
-     * strength of a zero they all share.
-     */
-    private const LIKED_ENOUGH = 24;
-```
-
-- [ ] **Step 4: Hide the ordering until it means something**
-
-In `index()`, after `$order` is resolved and before the `match`:
-
-```php
-        /* Counted, not cached. This is an index-only scan over one column; the ten minute
-           cache this page used to carry was removed the day an index made it pointless. */
-        $ranked = Schematic::query()->listed()->where('likes', '>', 0)->count() >= self::LIKED_ENOUGH;
-
-        $orders = self::ORDERS;
-        if (! $ranked) {
-            unset($orders['aimes']);
-            // Typed by hand, since the page does not offer it. Same fallback as an output
-            // ordering with no item chosen, and the page says which of the two it is doing.
-            if ($order === 'aimes') {
-                $order = 'new';
-            }
-        }
-```
-
-Add the arm to the `match`:
-
-```php
-            'aimes' => $query->orderByDesc('schematics.likes'),
-```
-
-And pass `$orders` to the view in place of `self::ORDERS`:
-
-```php
-            'orders' => $orders,
-```
-
-- [ ] **Step 5: Run the tests and watch them pass**
-
-Run: `cd site && php artisan test --filter=TriAimesTest`
-Expected: PASS, four tests.
-
-- [ ] **Step 6: Check that the catalogue did not get slower**
-
-Run: `cd site && php artisan test --filter=BrowsePerformanceTest`
-Expected: PASS, untouched. If it fails, the count added per render is the suspect; it must be one query for the whole page, not one per tile.
-
-- [ ] **Step 7: Run the whole suite and commit**
-
-```bash
-cd site && php artisan test && vendor/bin/pint --test
-cd .. && git rev-parse --abbrev-ref HEAD
-git commit -m "feat(vitrine): rank on likes, once there are any" -m "Fifteen thousand schematics nobody has liked would order the whole
-catalogue on a zero they all share, under a heading promising the most
-liked. The ranking is not offered before twenty-four carry a like." -- \
-  site/app/Http/Controllers/BrowseController.php \
-  site/resources/views/browse.blade.php \
-  site/tests/Feature/TriAimesTest.php
-```
-
----
+Nothing is committed in this task.
 
 ### Task 4: The two buttons, and the count on a tile
 
 **Files:**
 - Create: `site/public/forge/keep.js`
-- Modify: `site/resources/views/schematic.blade.php`, `site/resources/views/browse.blade.php`, `site/resources/views/mine.blade.php`, `site/resources/views/layout.blade.php`
+- Modify: `site/resources/views/schematic.blade.php`, `site/resources/views/mine.blade.php`, `site/resources/views/layout.blade.php`
 - Modify: `site/lang/fr/schema.php`, `site/public/forge/lang/fr.json`, `site/public/forge/forge.css`
 - Test: `site/tests/Feature/JaimeAffichageTest.php`
 
@@ -957,7 +879,12 @@ In `site/resources/views/schematic.blade.php`, near the existing actions:
 
 - [ ] **Step 5: Add the count to the tiles**
 
-In `site/resources/views/browse.blade.php` and `site/resources/views/mine.blade.php`, in the figures line of the tile, and nowhere else. No button on a tile: forty-eight controls on a page of twenty-four is noise, and the gesture belongs on the page where the schema is being looked at.
+In `site/resources/views/mine.blade.php` only, in the figures line of the tile. The
+catalogue's tile is session 30's and it is placing the same count there itself; do not
+touch `browse.blade.php`.
+
+No button on a tile either way: forty-eight controls on a page of twenty-four is noise, and
+the gesture belongs on the page where the schema is being looked at.
 
 ```blade
             @if($schematic->likes > 0)
@@ -1087,7 +1014,7 @@ git commit -m "feat(schemas): put the two gestures on the page" -m "The count on
 no query is added per tile, and there is no button on a tile: forty-eight
 controls on a page of twenty-four is noise." -- \
   site/public/forge/keep.js site/public/forge/forge.css site/public/forge/lang/fr.json \
-  site/resources/views/schematic.blade.php site/resources/views/browse.blade.php \
+  site/resources/views/schematic.blade.php \
   site/resources/views/mine.blade.php site/resources/views/layout.blade.php \
   site/lang/fr/schema.php site/tests/Feature/JaimeAffichageTest.php
 ```
@@ -1115,7 +1042,7 @@ cd site && php artisan test && vendor/bin/pint --test
 cd .. && npm test
 ```
 
-Expected: all green, and the PHP count is the baseline plus twenty.
+Expected: all green, and the PHP count is the baseline plus fifteen (six, five and four). The four tests of the ordering are not among them: they went to session 30 with the ordering.
 
 - [ ] **Step 3: Look at it**
 
@@ -1130,10 +1057,14 @@ Sign in with Discord, then check, on the real page:
 - pressing it again removes it, and the count goes back to nothing rather than to "0";
 - reloading the page keeps the button pressed;
 - signed out, the button is a link to Discord and the page still renders;
-- `/mes-favoris` lists what was kept, newest first, and the remove control empties it;
-- `/schemas` offers "Les plus aimés" only once twenty-four schemas carry a like, and the tiles carry counts that agree with the pages they link to.
+- `/mes-schematiques` shows the count on a tile, and it agrees with the page it links to;
+- the "Mes favoris" entry is absent from the menu, because it ships `'ready' => false` until session 30's route exists. Its presence at this point would be the bug.
 
-Take a screenshot of the schematic page and of `/mes-favoris` and read them. The question to say out loud in front of each number on screen: what question does this surface claim to answer, and is this the answer to that one.
+`/mes-favoris` and the "Les plus aimés" ordering are session 30's to show and to check. Do
+not claim them as working here: this branch cannot make them work, and a plan that ticks
+somebody else's box is how two sessions both report a thing done that neither did.
+
+Take a screenshot of the schematic page and of `/mes-schematiques` and read them. The question to say out loud in front of each number on screen: what question does this surface claim to answer, and is this the answer to that one.
 
 - [ ] **Step 4: Open the pull request**
 
@@ -1151,9 +1082,9 @@ Checked, section by section:
 - Denormalised counter with a repair command, and no double count: Task 1.
 - Cascade on the schematic and the user: migrations in Tasks 1 and 2, tests in both.
 - Nothing in `EngineVersion`, checked by checksum: Task 5 step 1.
-- Ordering with a threshold of 24 and a fallback to date: Task 3.
-- Count on tiles with no extra query, `BrowsePerformanceTest` green: Task 4 step 5, Task 3 step 6.
-- `/mes-favoris`, navigation entry in all three places: Task 2 step 7.
+- Ordering with a threshold of a page's worth and a fallback to date: handed over in Task 3, built by session 30.
+- Count on a tile with no extra query: Task 4 step 5 for `mine.blade.php`, session 30 for the catalogue's.
+- Navigation entry in all three places, unready until its page exists: Task 2 step 7.
 - Anonymous visitors see the button as a link: Task 4 step 4, tested.
 - Throttling on the four verbs: Tasks 1 and 2.
 - Units outside placeholders: Task 4 step 6, enforced by `TranslationKeysTest`.

@@ -5,7 +5,7 @@ the site is better with it and without the other two.
 
 | Spec | What it adds |
 |---|---|
-| **1. This one** | A public like on a schematic, a private favourite, and the ordering that follows |
+| **1. This one** | A public like on a schematic, a private favorite, and the ordering that follows |
 | 2. Folders | Nested collections with a name and an icon, shareable by link, likeable themselves |
 | 3. Notes | A personal note attached to a schematic |
 
@@ -66,11 +66,11 @@ to the byte before and after this work.
 
 ## The ordering, and the threshold it waits for
 
-`?tri=aimees` joins the five orderings of `BrowseController::ORDERS`.
+`?tri=aimes` joins the five orderings of `BrowseController::ORDERS`.
 
 It does not appear in the menu until **at least 24 schematics carry a like**. Twenty-four
 is the size of a page: below that, the ranking cannot fill its own first screen, and a page
-titled "les plus aimees" would list schematics on the strength of a zero they all share.
+titled "les plus aimés" would list schematics on the strength of a zero they all share.
 That is the defect this repository has written down six times, a correct number displayed
 where it answers a different question, and a catalogue of 15,000 imported schematics that
 nobody has liked yet is the perfect place for the seventh.
@@ -79,9 +79,19 @@ The count is `Schematic::where('likes', '>', 0)->count()`, an index-only scan, a
 not cached. The repository removed a ten minute cache on this same page the day an index
 made it pointless.
 
-Below the threshold, `?tri=aimees` typed by hand falls back to `new`, exactly as `best` and
+Below the threshold, `?tri=aimes` typed by hand falls back to `new`, exactly as `best` and
 `output` fall back when no item is chosen. That mechanism exists (`NEEDS_AN_ITEM`) and is
 extended rather than duplicated.
+
+Unlike `best` and `output`, this ordering needs no chosen item. "Liked" is a single
+quantity, comparable between any two schematics. Ranking 40 graphite a minute against 25
+silicon a minute would be declaring that one graphite is worth one silicon, which is false
+and invisible; one like is worth one like.
+
+**Built by session `mindustry-forge-30`, not here.** It owns `BrowseController` and is
+rebuilding its orderings and filters. The threshold and the reason for it travel with the
+ordering, because that is what survives a refactor badly: the number 24 without the
+sentence explaining it is a number the next person deletes.
 
 ## Surfaces
 
@@ -100,15 +110,48 @@ schematic is actually being looked at.
 The count is read off the column the listing already selects, so **no query is added per
 tile**. `BrowsePerformanceTest` must stay green without being relaxed.
 
-### The favorites page, `/mes-favoris`
+### The favorites, `/mes-favoris`, which is the catalogue with a filter
 
-Paginated, newest addition first. Its tiles carry a remove control, because a list you
-cannot take things out of is a trap.
+This was a page of its own, with a listing query of its own. Session `mindustry-forge-30`,
+which is rebuilding the catalogue's orderings and filters, pointed out that this is a
+second implementation of "list some schematics", and it was right. The cost does not show
+today; it shows in three weeks, when the catalogue can filter by planet, by footprint and
+by minimum output, and the favorites page can do none of it. Somebody with eighty favorites
+cannot find the one that fits in 12x12.
 
-It goes into `config/nav.php` under the "Schematiques" menu with `'auth' => true`, next to
-"Les miennes". The header is written twice, in the Blade partial and by hand in
-`public/index.html`, and `NavigationTest` compares both against the config: the entry lands
-in all three or the test fails.
+So `/mes-favoris` is a route that renders `BrowseController` with `favoris=oui` already
+armed, and `aimes=oui` exists beside it. One query, one tile, and the favorites inherit
+every filter that gets built later, including the ones nobody has thought of.
+
+**The division of work.** `BrowseController` and `browse.blade.php` belong to session 30
+in their entirety: the ordering, the two filters and the count on a tile. This spec keeps
+the tables, the models, the API verbs, `keep.js`, the buttons on a schematic's page and
+`RecountLikes`.
+
+Four things the filter must not inherit from the catalogue:
+
+1. **The creative schematics set aside by default must come back.** The catalogue puts them
+   aside for a good reason, and applying that reason to a private list is the repository's
+   signature defect wearing a new face: a rule that is right for "the catalogue" answering
+   a different question when the question is "what did I keep". What somebody kept, they
+   see again, whatever it is.
+2. **A favorite whose author has since made it private drops out of the list, and the page
+   says how many it removed.** Not showing ghosts is right; removing them silently reads as
+   the site losing things.
+3. **Neither filter is offered to a visitor who is not signed in.** A filter that always
+   returns nothing is worse than a filter that is absent. `config/nav.php` already has the
+   `'auth' => true` mechanism.
+4. **The expected order under `favoris=oui` is none of the catalogue's**: it is the order
+   they were kept in. That is an ordering of its own, `garde`, over `favorites.created_at`,
+   which means nothing under any other filter. An asymmetry, and it is said out loud in the
+   code rather than discovered.
+
+The navigation entry goes into `config/nav.php` under the schematics menu with
+`'auth' => true` and **`'ready' => false`** until session 30's route exists, then it flips.
+That flag is the repository's own mechanism for an entry whose page is not built yet, and
+it is the difference between a menu item and a 404. The header is written twice, in the
+Blade partial and by hand in `public/index.html`, and `NavigationTest` compares both
+against the config: the entry lands in all three or the suite fails.
 
 ### Anonymous visitors
 
@@ -125,7 +168,7 @@ POST   /api/schematiques/{schematic}/aime      auth
 DELETE /api/schematiques/{schematic}/aime      auth
 POST   /api/schematiques/{schematic}/favori    auth
 DELETE /api/schematiques/{schematic}/favori    auth
-GET    /mes-favoris                            auth
+GET    /mes-favoris                            auth   (BrowseController, session 30)
 ```
 
 The player-facing address is renamed to `/schemas` by session `mindustry-forge-7b`, with a
@@ -149,7 +192,7 @@ schema.aime.retirer         Je n'aime plus
 schema.unite.jaime          j'aime          (the word next to the count, plural invariant)
 schema.favori.ajouter       Garder en favori
 schema.favori.retirer       Retirer des favoris
-vitrine.tri.aimees          Les plus aimées
+vitrine.tri.aimes           Les plus aimés
 compte.favoris.titre        Mes favoris
 compte.favoris.vide         Rien de gardé pour l'instant. Parcourir le catalogue.
 ```
@@ -169,11 +212,15 @@ Pest, `site/tests/Feature/`, one file per gesture.
 - An anonymous request is refused, and the page still renders for them.
 - Deleting a schematic deletes its likes and its favorites.
 - `forge:recount-likes` repairs a counter that has been tampered with.
-- The ordering is absent from the menu with 23 liked schematics and present with 24.
-- `?tri=aimees` below the threshold renders the date ordering and says so.
-- A favourite list shows only its owner's rows, and another user's request to the page
-  shows their own empty list rather than an error.
 - `BrowsePerformanceTest` and `NavigationTest` stay green untouched.
+
+These go to session 30 with the ordering and the filter, written out in full in the plan so
+they are inherited rather than reinvented:
+
+- The ordering is absent from the menu with 23 liked schematics and present with 24.
+- `?tri=aimes` below the threshold renders the date ordering and says so.
+- `favoris=oui` shows only its owner's rows, and an empty list rather than an error.
+- `favoris=oui` shows a creative schematic that was kept, which the catalogue sets aside.
 
 ## What stays out
 
