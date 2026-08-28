@@ -79,3 +79,20 @@ export function blendersAt(ground, x, y, floors) {
 
   return [...found.values()].sort((a, b) => floors[a.name].blend - floors[b.name].blend);
 }
+
+/**
+ * Which cell of a floor's nine cell edge sheet carries the material that spills from a
+ * neighbour in direction `(dx, dy)`.
+ *
+ * A neighbour's floor spills onto this tile along the edge the two share, so the material
+ * has to sit on the side the neighbour is on: a neighbour to the north paints the top of
+ * the cell, one to the east paints the right. The game's own `edges[i][2 - j]` already
+ * turns a y-up game coordinate into an image row that grows downwards; a canvas row also
+ * grows downwards, so converting a second time on the way into `drawImage` undoes the
+ * first conversion instead of applying it. This function performs the conversion exactly
+ * once. The nine cells were measured out of the atlas, not reasoned out a second time: see
+ * the table in `tests/js/tiling.test.js`.
+ */
+export function edgeCell(dx, dy) {
+  return { col: 1 - dx, row: 1 + dy };
+}

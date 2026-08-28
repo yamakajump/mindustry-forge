@@ -162,3 +162,48 @@ test("an unpainted neighbour is not a floor and contributes nothing", () => {
   const board = ground({ "0,0": "stone" });
   assert.deepEqual(blendersAt(board, 0, 0, floors), []);
 });
+
+import { edgeCell } from "../../site/public/forge/tiling.js";
+
+/*
+ * Where the material sits in each of the nine cells of `floor/grass#edge`, measured out of
+ * the atlas rather than reasoned out: for each cell, decode its pixels and count how many
+ * have alpha above 128 in each third of the cell (left/centre/right, top/middle/bottom).
+ * The side with the material tells which neighbour that cell belongs to.
+ *
+ *   [col 0][row 0]  material bottom-right   -> south-east neighbour  (dx +1, dy -1)
+ *   [col 1][row 0]  material bottom strip   -> south neighbour       (dx  0, dy -1)
+ *   [col 2][row 0]  material bottom-left    -> south-west neighbour  (dx -1, dy -1)
+ *   [col 0][row 1]  material right strip    -> east neighbour        (dx +1, dy  0)
+ *   [col 1][row 1]  fully opaque            -> the centre, never drawn as an edge
+ *   [col 2][row 1]  material left strip     -> west neighbour        (dx -1, dy  0)
+ *   [col 0][row 2]  material top-right      -> north-east neighbour  (dx +1, dy +1)
+ *   [col 1][row 2]  material top strip      -> north neighbour       (dx  0, dy +1)
+ *   [col 2][row 2]  material top-left       -> north-west neighbour  (dx -1, dy +1)
+ */
+const MEASURED_CELLS = [
+  { dir: "south-east", dx: 1, dy: -1, cell: { col: 0, row: 0 } },
+  { dir: "south", dx: 0, dy: -1, cell: { col: 1, row: 0 } },
+  { dir: "south-west", dx: -1, dy: -1, cell: { col: 2, row: 0 } },
+  { dir: "east", dx: 1, dy: 0, cell: { col: 0, row: 1 } },
+  { dir: "west", dx: -1, dy: 0, cell: { col: 2, row: 1 } },
+  { dir: "north-east", dx: 1, dy: 1, cell: { col: 0, row: 2 } },
+  { dir: "north", dx: 0, dy: 1, cell: { col: 1, row: 2 } },
+  { dir: "north-west", dx: -1, dy: 1, cell: { col: 2, row: 2 } },
+];
+
+for (const { dir, dx, dy, cell } of MEASURED_CELLS) {
+  test(`the ${dir} neighbour's material sits at col ${cell.col}, row ${cell.row}`, () => {
+    assert.deepEqual(edgeCell(dx, dy), cell);
+  });
+}
+
+test("no direction ever selects the centre cell, which is fully opaque", () => {
+  /* Cell (1, 1) is the whole texture with no cut, measured as fully opaque above. Selecting
+     it for a direction would paint a whole tile of the neighbour's floor rather than a
+     sliver, since drawImage would read solid material with nothing missing. */
+  for (const { dx, dy } of MEASURED_CELLS) {
+    const { col, row } = edgeCell(dx, dy);
+    assert.ok(!(col === 1 && row === 1), `(${dx}, ${dy}) selected the centre cell`);
+  }
+});

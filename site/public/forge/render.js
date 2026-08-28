@@ -14,7 +14,7 @@
 import {
   beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
 } from "./live.js";
-import { variantOf, blendersAt, D8 } from "./tiling.js";
+import { variantOf, blendersAt, D8, edgeCell } from "./tiling.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -466,10 +466,8 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
           const cell = edgeArt.w / 3;
           for (const dir of blender.dirs) {
             const [dx, dy] = D8[dir];
-            // `Floor.edge(x, y, i, j)` is `edges[i][2 - j]`: column from dx, row flipped
-            // because the board's y grows upwards and the sheet's grows downwards.
-            const col = dx + 1;
-            const row = 2 - (dy + 1);
+            // Which cell holds the material for this side: see edgeCell in tiling.js.
+            const { col, row } = edgeCell(dx, dy);
             context.drawImage(sheet,
               edgeArt.x + col * cell, edgeArt.y + row * cell, cell, cell,
               px, py, scale, scale);
