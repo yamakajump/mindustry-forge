@@ -354,13 +354,6 @@
     @endif
   </div>
 @else
-  {{-- Which one wins at what, before the grid.
-
-       A list that only ranks leaves the whole comparison to the reader. Four questions
-       rather than one, because "the best" is not a question: the player with a hole in
-       their base, the player counting their copper and the player after raw throughput are
-       not asking the same thing, and a single ranking cannot answer all three. That one
-       schematic wins two of them is an answer, not a defect. --}}
   {{-- What is held for comparison, said and cancellable.
 
        Without this sentence, a reader coming back to the page from a shared link would see
@@ -375,6 +368,13 @@
     </p>
   @endif
 
+  {{-- Which one wins at what, before the grid.
+
+       A list that only ranks leaves the whole comparison to the reader. Four questions
+       rather than one, because "the best" is not a question: the player with a hole in
+       their base, the player counting their copper and the player after raw throughput are
+       not asking the same thing, and a single ranking cannot answer all three. That one
+       schematic wins two of them is an answer, not a defect. --}}
   @if($winners !== [])
     <div class="verdicts">
       @foreach($winners as $win)
