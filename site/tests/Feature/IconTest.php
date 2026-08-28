@@ -51,7 +51,7 @@ it('covers every liquid the catalogue names', function () {
     $catalogue = json_decode(file_get_contents(public_path('forge/blocks.json')), true);
     $liquids = array_keys($catalogue['liquids'] ?? []);
 
-    expect($liquids)->toHaveCount(11, 'le catalogue ne porte plus onze liquides');
+    expect($liquids)->toHaveCount(11, 'the catalogue no longer carries eleven liquids');
 
     foreach ($liquids as $liquid) {
         $this->get("/icone/liquide/{$liquid}.png?t=32")->assertOk();

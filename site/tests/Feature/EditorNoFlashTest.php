@@ -16,66 +16,66 @@ function pageIndex(): string
     return file_get_contents(public_path('index.html'));
 }
 
-it('sert la garde a la fois sur / et sur /editer', function () {
-    /* `/editer` repond par `response()->file()`, dont `getContent()` rend `false` en
-       test (Symfony la sert par flux plutot que par tampon) : la reponse elle-meme ne
-       dit donc rien de son contenu ici, seul son code HTTP compte. Le contenu qu'elle
-       sert est celui du fichier statique, verifie plus bas. */
+it('serves the guard on both / and /editer', function () {
+    /* `/editer` answers with `response()->file()`, whose `getContent()` returns `false` in
+       a test (Symfony serves it as a stream rather than a buffer): the response itself
+       therefore says nothing about its content here, only its HTTP status counts. What it
+       serves is the content of the static file, checked further down. */
     $this->get('/')->assertOk();
     $this->get('/editer')->assertOk();
 
-    /* `/` passe par HomeController, qui remplace `<!--VITRINE-->` par son ilot de donnees
-       (voir HomeTest) sans toucher au reste du document : la garde, elle, doit survivre
-       a ce remplacement. */
+    /* `/` goes through HomeController, which replaces `<!--VITRINE-->` with its data island
+       (see HomeTest) without touching the rest of the document: the guard has to survive
+       that replacement. */
     expect($this->get('/')->getContent())->toContain('classList.add("route-editeur")');
     expect(pageIndex())->toContain('classList.add("route-editeur")');
 });
 
-it('pose la garde avant toute feuille de style, dans la tete du document', function () {
+it('puts the guard before any stylesheet, in the head of the document', function () {
     $html = pageIndex();
 
     $tete = strpos($html, '</head>');
     $garde = strpos($html, 'classList.add("route-editeur")');
     $feuille = strpos($html, '<link rel="stylesheet" href="./forge/forge.css">');
 
-    expect($garde)->not->toBeFalse('la garde a disparu du document')
-        ->and($feuille)->not->toBeFalse('la feuille de style a disparu du document')
-        ->and($garde)->toBeLessThan($feuille, 'la garde doit s executer avant la feuille de style')
-        ->and($garde)->toBeLessThan($tete, 'la garde doit rester dans <head>');
+    expect($garde)->not->toBeFalse('the guard has disappeared from the document')
+        ->and($feuille)->not->toBeFalse('the stylesheet has disappeared from the document')
+        ->and($garde)->toBeLessThan($feuille, 'the guard must run before the stylesheet')
+        ->and($garde)->toBeLessThan($tete, 'the guard must stay inside <head>');
 });
 
-it('cache <main> pendant que la garde est posee', function () {
+it('hides <main> while the guard is set', function () {
     $css = file_get_contents(public_path('forge/forge.css'));
 
     expect($css)->toMatch('/\.route-editeur\s+main\s*\{[^}]*display:\s*none/');
 });
 
-it('retire la garde en quittant l editeur, pas seulement en le posant', function () {
-    /* Sans ce retrait, revenir sur l'analyse depuis le bouton de l'editeur laisserait
-       <main> cache pour le reste de la visite : la garde ne survit a une navigation que
-       parce que /editer recharge le document, et rien ne la retire dans ce cas-la. */
+it('removes the guard when leaving the editor, not only when setting it', function () {
+    /* Without that removal, going back to the analysis from the editor's button would leave
+       <main> hidden for the rest of the visit: the guard only survives a navigation because
+       /editer reloads the document, and nothing removes it in that case. */
     $html = pageIndex();
 
     expect($html)->toContain('classList.remove("route-editeur")');
 });
 
-it('ne montre pas le placeholder de l editeur sur une page ou il n est pas monte', function () {
-    /* Trouve au round 3 : la marque et le squelette du placeholder etaient dans le
-       document sur toutes les pages, `/` compris, sans qu'aucune regle ne les cache
-       hors de /editer. `.skeleton` porte deja une hauteur (`height: 260px`) pour le
-       squelette du rapport, donc rien n'empechait celui de l'editeur de s'afficher au
-       bas de l'accueil, entierement sans rapport avec ce que la page racontait. */
+it('does not show the editor placeholder on a page where it is not mounted', function () {
+    /* Found in round 3: the placeholder's markup and skeleton were in the document on every
+       page, `/` included, with no rule hiding them outside /editer. `.skeleton` already
+       carries a height (`height: 260px`) for the report's skeleton, so nothing stopped the
+       editor's own from showing at the bottom of the home page, entirely unrelated to what
+       the page was saying. */
     $css = file_get_contents(public_path('forge/forge.css'));
 
     expect($css)->toMatch('/#editor:not\(\.editor\)\s*\{[^}]*display:\s*none/');
 });
 
-it('donne au squelette de l editeur une taille, pas seulement une regle', function () {
-    /* Un `#editor` en `display: flex` sans dimension propre a laisse un enfant flex
-       sans base s ecraser a zero de hauteur : la regle existait, rien ne se voyait.
-       `flex: 1` sur un parent en colonne lui donne une taille reelle des que ce parent
-       en a une (ici plein ecran), ce qu'un test hors navigateur ne peut que verifier
-       par la regle, pas par le rendu -- voir le rapport pour la mesure en navigateur. */
+it('gives the editor skeleton a size, not only a rule', function () {
+    /* An `#editor` in `display: flex` with no size of its own let a flex child with no
+       basis collapse to zero height: the rule existed, nothing showed. `flex: 1` on a
+       column parent gives it a real size as soon as that parent has one (here full
+       screen), which a test outside a browser can only check through the rule and not
+       through the rendering; see the report for the measurement in a browser. */
     $css = file_get_contents(public_path('forge/forge.css'));
 
     expect($css)->toMatch('/\.route-editeur #editor:not\(\.editor\) \.skeleton\s*\{[^}]*flex:\s*1/');

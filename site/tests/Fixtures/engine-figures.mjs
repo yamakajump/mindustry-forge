@@ -29,8 +29,8 @@ const definition = source.match(/const craftsPerSecond = ([^;]+);/);
 
 if (!ticks || !definition) {
   process.stderr.write(
-    "craftsPerSecond ou TICKS introuvable dans analyse.js : la forme a change, "
-    + "et la copie PHP dans Block::craftsPerSecond doit etre relue.\n",
+    "craftsPerSecond or TICKS not found in analyse.js: the shape has changed, "
+    + "and the PHP copy in Block::craftsPerSecond needs reading again.\n",
   );
   process.exit(2);
 }

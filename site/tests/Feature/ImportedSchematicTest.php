@@ -20,7 +20,7 @@ uses(RefreshDatabase::class);
  * could exist at all opened a hole big enough to publish the whole unreleased catalogue
  * through, and it did not look like a hole.
  */
-it('ne montre pas le catalogue non publie aux visiteurs deconnectes', function () {
+it('never shows the unpublished catalogue to signed-out visitors', function () {
     /*
      * The regression this whole file exists for.
      *
@@ -41,7 +41,7 @@ it('ne montre pas le catalogue non publie aux visiteurs deconnectes', function (
     expect($imported->visibleTo(null))->toBeFalse();
 });
 
-it('laisse un moderateur ouvrir un import non publie', function () {
+it('lets a moderator open an unpublished import', function () {
     // Somebody has to be able to look at what was collected before deciding to publish it.
     $imported = Schematic::factory()->imported()->create(['visibility' => 'private']);
 
@@ -50,7 +50,7 @@ it('laisse un moderateur ouvrir un import non publie', function () {
         ->assertOk();
 });
 
-it('dit sur la page d ou vient une schematique importee', function () {
+it('says on the page where an imported schematic comes from', function () {
     $imported = Schematic::factory()->imported()->create([
         'visibility' => 'public', 'name' => 'Venue d ailleurs', 'author' => 'quelqu un',
     ]);
@@ -65,7 +65,7 @@ it('dit sur la page d ou vient une schematique importee', function () {
         ->assertSee($imported->sourceUrl(), escape: false);
 });
 
-it('ne colle pas cette mention sur ce qui a ete poste ici', function () {
+it('never sticks that notice on what was posted here', function () {
     $mine = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Faite ici']);
 
     $this->get("/s/{$mine->slug}")
@@ -73,7 +73,7 @@ it('ne colle pas cette mention sur ce qui a ete poste ici', function () {
         ->assertDontSee('Schéma importé');
 });
 
-it('signale les imports dans la vitrine aussi', function () {
+it('flags imports in the catalogue too', function () {
     // A hundred tiles deep, the origin still has to be readable without opening anything.
     Schematic::factory()->imported()->create([
         'visibility' => 'public', 'name' => 'Prise ailleurs',
@@ -82,7 +82,7 @@ it('signale les imports dans la vitrine aussi', function () {
     $this->get('/schemas')->assertOk()->assertSee('importé', false);
 });
 
-it('renvoie vers la page d origine plutot que de citer sans lier', function () {
+it('links back to the original page rather than citing without linking', function () {
     $tool = Schematic::factory()->imported(Schematic::MINDUSTRY_TOOL)
         ->create(['source_id' => '01a040db-26af-74be-9db7-ef304ddf13f4']);
     $other = Schematic::factory()->imported(Schematic::MINDUSTRY_SCHEMATICS)
@@ -97,7 +97,7 @@ it('renvoie vers la page d origine plutot que de citer sans lier', function () {
         ->and($mine->imported())->toBeFalse();
 });
 
-it('cite le membre, sinon l auteur d origine, sinon personne', function () {
+it('credits the member, failing that the original author, failing that nobody', function () {
     $member = User::factory()->create(['name' => 'Corentin']);
 
     expect(Schematic::factory()->for($member)->create()->credit())->toBe('Corentin')
@@ -111,7 +111,7 @@ it('cite le membre, sinon l auteur d origine, sinon personne', function () {
         ->toBe('auteur inconnu');
 });
 
-it('refuse d ingerer deux fois la meme schematique', function () {
+it('refuses to ingest the same schematic twice', function () {
     // What lets the collector die halfway through twelve thousand and simply start again.
     Schematic::factory()->imported()->create(['source_id' => 'meme-id']);
 
@@ -119,21 +119,21 @@ it('refuse d ingerer deux fois la meme schematique', function () {
         ->toThrow(QueryException::class);
 });
 
-it('laisse coexister les schematiques postees ici, qui n ont pas d id d origine', function () {
+it('lets schematics posted here coexist, since they have no source id', function () {
     // Nulls do not collide in SQL, so the unique constraint sits entirely outside uploads.
     Schematic::factory()->count(3)->create();
 
     expect(Schematic::where('source', Schematic::UPLOAD)->count())->toBe(3);
 });
 
-it('distingue le meme identifiant chez deux sources differentes', function () {
+it('tells the same identifier apart across two different sources', function () {
     Schematic::factory()->imported(Schematic::MINDUSTRY_TOOL)->create(['source_id' => '42']);
     Schematic::factory()->imported(Schematic::MINDUSTRY_SCHEMATICS)->create(['source_id' => '42']);
 
     expect(Schematic::count())->toBe(2);
 });
 
-it('retient quel moteur a produit les chiffres', function () {
+it('keeps which engine produced the figures', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)->postJson('/api/schematiques', [
@@ -148,7 +148,7 @@ it('retient quel moteur a produit les chiffres', function () {
         ->and($kept->analysisIsStale())->toBeFalse();
 });
 
-it('sait dire quelles analyses sont a refaire', function () {
+it('can say which analyses need redoing', function () {
     /*
      * The engine changes every week, and a stored figure has no way of knowing. Without
      * this the site keeps presenting last month's numbers as measurements, and the only
@@ -167,7 +167,7 @@ it('sait dire quelles analyses sont a refaire', function () {
         ->and($never->analysisIsStale())->toBeTrue();
 });
 
-it('change de version des qu une source du moteur change', function () {
+it('changes version as soon as an engine source changes', function () {
     /*
      * Run against a throwaway copy of the engine rather than the real one. A test that
      * edits `power.js` and puts it back is a test that loses somebody's work the day two

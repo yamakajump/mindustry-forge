@@ -42,7 +42,7 @@ function comparable(string $name, array $produces, array $extra = []): Schematic
     return $schematic->fresh(['items']);
 }
 
-it('soustrait ce que les deux produisent', function () {
+it('subtracts what both of them produce', function () {
     $a = comparable('Ligne large', ['graphite' => ['rate' => 40]]);
     $b = comparable('Ligne serree', ['graphite' => ['rate' => 25]]);
 
@@ -54,10 +54,10 @@ it('soustrait ce que les deux produisent', function () {
         ->and($shared[0]['comparable'])->toBeTrue();
 });
 
-it('refuse de departager deux schematiques qui ne font pas la meme chose', function () {
-    // Classer quarante graphite contre vingt-cinq silicium reviendrait a decreter qu'un
-    // graphite vaut un silicium, ce qui est faux et serait invisible. Meme faute que le
-    // classement par energie nette repare le 27/08.
+it('refuses to rank two schematics that do not make the same thing', function () {
+    // Ranking forty graphite against twenty-five silicon would amount to declaring that
+    // one graphite is worth one silicon, which is false and would be invisible. The same
+    // mistake as the ranking by net power, fixed on 27/08.
     $a = comparable('Graphite', ['graphite' => ['rate' => 40]]);
     $b = comparable('Silicium', ['silicon' => ['rate' => 25]]);
 
@@ -71,10 +71,10 @@ it('refuse de departager deux schematiques qui ne font pas la meme chose', funct
         ->assertSee('rien en commun', false);
 });
 
-it('ne soustrait pas une mesure et un plafond', function () {
-    // Le catalogue importe arrive sans marquage, donc ses debits ne peuvent etre que des
-    // plafonds. Les soustraire d'une mesure fabriquerait un verdict a partir de deux
-    // natures de chiffre differentes.
+it('does not subtract a ceiling from a measurement', function () {
+    // The imported catalogue arrives unmarked, so its rates can only be ceilings.
+    // Subtracting them from a measurement would build a verdict out of two different
+    // kinds of number.
     $a = comparable('Relue', ['graphite' => ['rate' => 40, 'kind' => SchematicItem::MESURE]]);
     $b = comparable('Importee', ['graphite' => ['rate' => 25, 'kind' => SchematicItem::PLAFOND]]);
 
@@ -82,46 +82,46 @@ it('ne soustrait pas une mesure et un plafond', function () {
     $row = $comparison->shared()[0];
 
     expect($comparison->mixedKinds())->toBeTrue()
-        ->and($row['comparable'])->toBeFalse('les deux natures ne se soustraient pas');
+        ->and($row['comparable'])->toBeFalse('the two kinds do not subtract');
 
-    // Les deux valeurs restent montrees cote a cote : refuser la soustraction n'est pas
-    // refuser l'information.
+    // Both values are still shown side by side: refusing the subtraction is not refusing
+    // the information.
     $this->get("/comparer?a={$a->slug}&b={$b->slug}")
         ->assertOk()
         ->assertSee('40')
         ->assertSee('25');
 });
 
-it('signale un plafond meme quand les deux cotes en sont un', function () {
+it('says it is a ceiling even when both sides are one', function () {
     $a = comparable('Une', ['graphite' => ['rate' => 40, 'kind' => SchematicItem::PLAFOND]]);
     $b = comparable('Deux', ['graphite' => ['rate' => 25, 'kind' => SchematicItem::PLAFOND]]);
 
     $comparison = new Comparison($a, $b);
 
-    // Comparables entre eux, et toujours des plafonds : la soustraction est licite, la
-    // nature du chiffre doit quand meme etre dite.
+    // Comparable with one another, and still ceilings: the subtraction is legitimate, and
+    // the kind of number still has to be stated.
     expect($comparison->mixedKinds())->toBeFalse()
         ->and($comparison->anyCeiling())->toBeTrue()
         ->and($comparison->shared()[0]['comparable'])->toBeTrue();
 });
 
-it('ne designe jamais de vainqueur', function () {
-    // Une schematique qui produit plus et coute trois fois plus cher n'est pas meilleure,
-    // c'est un autre marche. Aucun score global n'est calcule, et la page le dit.
+it('never names a winner', function () {
+    // A schematic that produces more and costs three times as much is not better, it is a
+    // different trade. No overall score is computed, and the page says so.
     $a = comparable('Grosse', ['graphite' => ['rate' => 40]], ['blocks' => 90]);
     $b = comparable('Petite', ['graphite' => ['rate' => 25]], ['blocks' => 12]);
 
     $comparison = new Comparison($a, $b);
 
-    expect(method_exists($comparison, 'winner'))->toBeFalse('pas de vainqueur, jamais')
-        ->and(method_exists($comparison, 'score'))->toBeFalse('et pas de score global');
+    expect(method_exists($comparison, 'winner'))->toBeFalse('no winner, ever')
+        ->and(method_exists($comparison, 'score'))->toBeFalse('and no overall score either');
 
     $this->get("/comparer?a={$a->slug}&b={$b->slug}")
         ->assertOk()
         ->assertSee('Aucun vainqueur', false);
 });
 
-it('dit la place et le courant en ecart plutot qu en deux colonnes', function () {
+it('gives space and power as a gap rather than as two columns', function () {
     $a = comparable('Etalee', ['graphite' => ['rate' => 40]],
         ['blocks' => 90, 'power_used' => 300]);
     $b = comparable('Compacte', ['graphite' => ['rate' => 40]],
@@ -133,7 +133,7 @@ it('dit la place et le courant en ecart plutot qu en deux colonnes', function ()
         ->and($sizes['schema.comparer.mesure-energie']['gap'])->toBe(180.0);
 });
 
-it('liste ce que l une fait et pas l autre sans en faire un ecart', function () {
+it('lists what one makes and the other does not, without calling it a gap', function () {
     $a = comparable('Mixte', ['graphite' => ['rate' => 40], 'silicon' => ['rate' => 10]]);
     $b = comparable('Simple', ['graphite' => ['rate' => 40]]);
 
@@ -146,10 +146,10 @@ it('liste ce que l une fait et pas l autre sans en faire un ecart', function () 
         ->and($seul[0]['item'])->toBe('silicon');
 });
 
-it('ne tire pas une schematique privee ou par lien dans la page', function () {
-    // Une comparaison est une page dont tout le contenu est le travail de deux autres
-    // personnes, et son lien voyage. Une schematique par lien est joignable par son adresse
-    // a elle, ce qui n'est pas la meme chose qu'etre de bonne prise a cote d'une inconnue.
+it('does not pull a private or unlisted schematic into the page', function () {
+    // A comparison is a page whose whole content is two other people's work, and its link
+    // travels. An unlisted schematic is reachable at its own address, which is not the same
+    // thing as being fair game beside a stranger's.
     $public = comparable('Publique', ['graphite' => ['rate' => 40]]);
     $unlisted = comparable('Par lien', ['graphite' => ['rate' => 25]],
         ['visibility' => Schematic::UNLISTED]);
@@ -159,7 +159,7 @@ it('ne tire pas une schematique privee ou par lien dans la page', function () {
         ->assertDontSee('Par lien');
 });
 
-it('reste une page utile sans rien de choisi', function () {
+it('stays a useful page with nothing chosen', function () {
     comparable('Une recente', ['graphite' => ['rate' => 40]]);
 
     $this->get('/comparer')
@@ -167,7 +167,7 @@ it('reste une page utile sans rien de choisi', function () {
         ->assertSee('Une recente');
 });
 
-it('ne se laisse pas donner n importe quoi comme identifiant', function () {
+it('does not take just anything as an identifier', function () {
     $this->get('/comparer?a='.urlencode('../../etc/passwd').'&b=x')->assertOk();
     $this->get('/comparer?a='.str_repeat('a', 200))->assertOk();
     $this->get('/comparer?a[]=1')->assertOk();

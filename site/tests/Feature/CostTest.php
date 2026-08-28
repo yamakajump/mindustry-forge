@@ -6,13 +6,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 /*
- * Ce qu'une schematique coute a poser, avec les icones du jeu.
+ * What a schematic costs to place, with the game's icons.
  *
- * Le chiffre vient de l'analyse, qui le tient de `Block.requirements` : c'est ce que le jeu
- * retire du noyau, a l'unite pres. Recalcule ici depuis `schematic_blocks` fois le
- * catalogue, ce serait la meme arithmetique ecrite une deuxieme fois, donc une deuxieme
- * chose a avoir tort, sur le chiffre qu'un joueur verifie contre son propre noyau avant de
- * coller.
+ * The figure comes from the analysis, which gets it from `Block.requirements`: it is what
+ * the game takes out of the core, to the unit. Recomputed here from `schematic_blocks`
+ * times the catalogue, it would be the same arithmetic written a second time, so a second
+ * thing to be wrong, about the figure a player checks against their own core before
+ * pasting.
  */
 
 function avecCout(array $cost): Schematic
@@ -23,16 +23,16 @@ function avecCout(array $cost): Schematic
     ]);
 }
 
-it('range le cout dans l ordre du jeu, pas dans l ordre alphabetique', function () {
-    /* Le cuivre avant le plomb, le titane avant le thorium : l'ordre que le joueur lit sur
-       tous les panneaux du jeu. En alphabetique, une construction de Serpulo commencerait
-       par le beryllium, qui n'y a rien a faire. */
+it('orders the cost the way the game does, not alphabetically', function () {
+    /* Copper before lead, titanium before thorium: the order the player reads on every panel
+       in the game. Alphabetically, a Serpulo build would start with beryllium, which has no
+       business being there. */
     $kept = avecCout(['titanium' => 40, 'copper' => 320, 'lead' => 96]);
 
     expect(array_keys($kept->cost()))->toBe(['copper', 'lead', 'titanium']);
 });
 
-it('affiche chaque ressource avec son icone', function () {
+it('shows each resource with its icon', function () {
     $kept = avecCout(['copper' => 320, 'lead' => 96]);
 
     $page = $this->get("/s/{$kept->slug}")->assertOk();
@@ -43,9 +43,9 @@ it('affiche chaque ressource avec son icone', function () {
     $page->assertSee('320');
 });
 
-it('ne montre pas de carte vide quand le cout est inconnu', function () {
-    /* Une analyse enregistree avant que le champ existe, ou une schematique faite de blocs
-       qu'aucun catalogue ne connait : mieux vaut ne rien dire qu'afficher un zero. */
+it('does not show an empty card when the cost is unknown', function () {
+    /* An analysis stored before the field existed, or a schematic made of blocks no
+       catalogue knows: better to say nothing than to show a zero. */
     $kept = Schematic::factory()->create([
         'visibility' => 'public', 'blocks' => 3, 'analysis' => [],
     ]);
@@ -53,7 +53,7 @@ it('ne montre pas de carte vide quand le cout est inconnu', function () {
     $this->get("/s/{$kept->slug}")->assertOk()->assertDontSee('Ce qu il coute');
 });
 
-it('se defend contre ce qu un navigateur peut envoyer', function () {
+it('defends itself against what a browser can send', function () {
     $kept = avecCout(['copper' => 320, 'lead' => 0, 'plomb' => 'beaucoup', '' => 4]);
 
     expect($kept->cost())->toBe(['copper' => 320]);

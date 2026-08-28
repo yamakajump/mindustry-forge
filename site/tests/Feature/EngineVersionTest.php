@@ -13,7 +13,7 @@ use App\Services\EngineVersion;
  * Checked against the directory rather than against a second list, because a second list
  * goes stale the same way the first one did.
  */
-it('couvre tous les fichiers du moteur', function () {
+it('covers every file of the engine', function () {
     $reflected = new ReflectionClass(EngineVersion::class);
     $listed = $reflected->getConstant('SOURCES');
 
@@ -25,16 +25,16 @@ it('couvre tous les fichiers du moteur', function () {
         ->all();
 
     expect($found)->not->toBeEmpty();
-    expect(array_diff($found, $listed))->toBe([], 'un fichier du moteur manque a EngineVersion::SOURCES');
+    expect(array_diff($found, $listed))->toBe([], 'an engine file is missing from EngineVersion::SOURCES');
 });
 
-it('change quand une source change', function () {
+it('changes when a source changes', function () {
     $before = EngineVersion::current();
 
     $path = public_path('forge/engine/core.js');
     $kept = file_get_contents($path);
     try {
-        file_put_contents($path, $kept."\n// touche par un test\n");
+        file_put_contents($path, $kept."\n// touched by a test\n");
         cache()->flush();
         expect(EngineVersion::current())->not->toBe($before);
     } finally {
@@ -55,16 +55,16 @@ it('change quand une source change', function () {
  * sells. Editing the pass has to age the catalogue, or the next omission hides the same
  * way.
  */
-it('change quand le tamis de la passe change', function () {
+it('changes when the sieve of the ingestion pass changes', function () {
     $before = EngineVersion::current();
 
     $path = dirname(base_path()).DIRECTORY_SEPARATOR.'tools'.DIRECTORY_SEPARATOR.'ingest.mjs';
-    expect(is_file($path))->toBeTrue('tools/ingest.mjs introuvable');
+    expect(is_file($path))->toBeTrue('tools/ingest.mjs not found');
 
     $kept = file_get_contents($path);
     try {
         file_put_contents($path, $kept.'
-// touche par un test
+// touched by a test
 ');
         cache()->flush();
         expect(EngineVersion::current())->not->toBe($before);

@@ -239,9 +239,9 @@ it('says the list is on declared throughputs when it is', function () {
         ]);
     }
 
-    // La phrase qui coiffe la liste repond a la meme question que le classement. Laisser
-    // « ce sont des plafonds » au-dessus d'un tri sur des debits declares serait un texte
-    // juste au-dessus de chiffres qui disent autre chose.
+    // The sentence that heads the list answers the same question as the ranking. Leaving
+    // "these are ceilings" above a sort on declared rates would be a correct line of text
+    // sitting above figures that say something else.
     $this->get('/schemas?produit=graphite&tri=declare')->assertOk()
         ->assertSee('débits déclarés', false)
         ->assertDontSee('Ce sont des plafonds', false);

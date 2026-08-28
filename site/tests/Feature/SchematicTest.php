@@ -24,7 +24,7 @@ function analysis(array $extra = []): array
     ], $extra);
 }
 
-it('garde une schematique et en tire les chiffres cherchables', function () {
+it('keeps a schematic and pulls the searchable figures out of it', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -45,7 +45,7 @@ it('garde une schematique et en tire les chiffres cherchables', function () {
         ->and($kept->verified)->toBeFalse();
 });
 
-it('borne ce qui arrive du navigateur', function () {
+it('bounds what comes in from the browser', function () {
     // The analysis is computed on a machine nobody controls, so a figure that cannot be
     // true is dropped rather than stored for whatever reads it next to trip over.
     $user = User::factory()->create();
@@ -68,7 +68,7 @@ it('borne ce qui arrive du navigateur', function () {
         ->and($kept->produces)->toEqual(['coal' => 12]);
 });
 
-it('refuse une image qui n en est pas une', function () {
+it('refuses an image that is not one', function () {
     Storage::fake('public');
     $user = User::factory()->create();
 
@@ -82,7 +82,7 @@ it('refuse une image qui n en est pas une', function () {
     Storage::disk('public')->assertDirectoryEmpty('apercus');
 });
 
-it('garde une schematique privee privee', function () {
+it('keeps a private schematic private', function () {
     $owner = User::factory()->create();
     $someoneElse = User::factory()->create();
     $schematic = Schematic::factory()->for($owner)->create(['visibility' => 'private']);
@@ -92,7 +92,7 @@ it('garde une schematique privee privee', function () {
     $this->actingAs($owner)->get("/s/{$schematic->slug}")->assertOk();
 });
 
-it('montre une schematique publique a tout le monde', function () {
+it('shows a public schematic to everybody', function () {
     $schematic = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Presse a graphite']);
 
     $this->get("/s/{$schematic->slug}")
@@ -101,7 +101,7 @@ it('montre une schematique publique a tout le monde', function () {
         ->assertSee('og:title', escape: false);
 });
 
-it('ne laisse personne modifier la schematique d un autre', function () {
+it('refuses to let anyone edit a schematic that is not theirs', function () {
     $schematic = Schematic::factory()->create(['visibility' => 'private']);
 
     $this->actingAs(User::factory()->create())
@@ -111,7 +111,7 @@ it('ne laisse personne modifier la schematique d un autre', function () {
     expect($schematic->fresh()->visibility)->toBe('private');
 });
 
-it('donne a chaque schematique une adresse imprevisible', function () {
+it('gives every schematic an unpredictable address', function () {
     // A sequential url says how many schematics the site has and lets anyone walk every
     // private one that ever slipped through.
     $first = Schematic::factory()->create();
@@ -123,11 +123,11 @@ it('donne a chaque schematique une adresse imprevisible', function () {
         ->and($second->slug)->not->toBe((string) $second->id);
 });
 
-it('trouve une schematique par ce qu elle produit', function () {
+it('finds a schematic by what it produces', function () {
     // The thing no other Mindustry site can do: they search names and hand-typed tags,
     // because that is all they hold.
-    // Le plafond autant que la mesure : l'analyse rend toujours les deux, et c'est sur le
-    // plafond que la vitrine cherche, faute d'une mesure dans le catalogue importe.
+    // The ceiling as much as the measurement: the analysis always returns both, and it is
+    // the ceiling the catalogue searches on, for want of a measurement in what was imported.
     Schematic::factory()->create([
         'visibility' => 'public', 'name' => 'Presse a graphite',
         'produces' => ['graphite' => 40.0],
@@ -145,7 +145,7 @@ it('trouve une schematique par ce qu elle produit', function () {
         ->assertDontSee('Four a silicium');
 });
 
-it('ne confond pas produire et couter', function () {
+it('does not confuse producing with costing', function () {
     // "graphite" must not match a schematic that merely needs graphite to be built, which
     // is what a LIKE over the whole analysis would have done.
     Schematic::factory()->create([
@@ -158,7 +158,7 @@ it('ne confond pas produire et couter', function () {
         ->assertDontSee('Coute du graphite');
 });
 
-it('met les mieux faites devant, pas les plus recentes', function () {
+it('puts the best made ones in front, not the most recent', function () {
     // A list sorted by date is a list of whoever posted last; a list sorted by output per
     // block is a list of the good ones.
     Schematic::factory()->create([
@@ -174,13 +174,13 @@ it('met les mieux faites devant, pas les plus recentes', function () {
     expect(strpos($page, 'Petite et vive'))->toBeLessThan(strpos($page, 'Grosse et molle'));
 });
 
-it('ne montre pas les schematiques privees dans la vitrine', function () {
+it('does not show private schematics in the catalogue', function () {
     Schematic::factory()->create(['visibility' => 'private', 'name' => 'Gardee pour moi']);
 
     $this->get('/schemas')->assertOk()->assertDontSee('Gardee pour moi');
 });
 
-it('garde une schematique non repertoriee accessible par lien', function () {
+it('keeps an unlisted schematic reachable by link', function () {
     /* The state a boolean could not express: reachable by anybody given the link, absent
        from the public list. It is what a draft posted in a Discord thread wants. */
     $schematic = Schematic::factory()->create([
@@ -191,7 +191,7 @@ it('garde une schematique non repertoriee accessible par lien', function () {
     $this->get('/schemas')->assertOk()->assertDontSee('Brouillon partage');
 });
 
-it('laisse son auteur changer qui la voit', function () {
+it('lets its author change who sees it', function () {
     $owner = User::factory()->create();
     $schematic = Schematic::factory()->for($owner)->create(['visibility' => 'private']);
 
@@ -202,7 +202,7 @@ it('laisse son auteur changer qui la voit', function () {
     expect($schematic->fresh()->visibility)->toBe('public');
 });
 
-it('refuse une visibilite inventee', function () {
+it('refuses a made-up visibility', function () {
     $owner = User::factory()->create();
     $schematic = Schematic::factory()->for($owner)->create(['visibility' => 'private']);
 
@@ -213,7 +213,7 @@ it('refuse une visibilite inventee', function () {
     expect($schematic->fresh()->visibility)->toBe('private');
 });
 
-it('laisse son auteur la supprimer, et personne d\'autre', function () {
+it('lets its author delete it, and nobody else', function () {
     $owner = User::factory()->create();
     $other = User::factory()->create();
     $schematic = Schematic::factory()->for($owner)->create();
@@ -229,7 +229,7 @@ it('laisse son auteur la supprimer, et personne d\'autre', function () {
     expect(Schematic::whereKey($schematic->id)->exists())->toBeFalse();
 });
 
-it('laisse le moderateur retirer de la vitrine ce qui ne va pas', function () {
+it('lets a moderator take what is wrong out of the catalogue', function () {
     /* A public list anyone can post to needs somebody able to take something out of it,
        and the alternative was opening the database by hand. */
     $moderator = User::factory()->create(['moderator' => true]);
@@ -246,7 +246,7 @@ it('laisse le moderateur retirer de la vitrine ce qui ne va pas', function () {
         ->assertOk();
 });
 
-it('ne fait de personne un moderateur par defaut', function () {
+it('makes nobody a moderator by default', function () {
     $someone = User::factory()->create();
     $schematic = Schematic::factory()->create(['visibility' => 'public']);
 
@@ -254,11 +254,11 @@ it('ne fait de personne un moderateur par defaut', function () {
         ->deleteJson("/api/schematiques/{$schematic->slug}")
         ->assertForbidden();
 
-    // Relu depuis la base : c'est la valeur par defaut de la colonne qu'on teste.
+    // Read back from the database: what is under test here is the column default.
     expect($someone->fresh()->moderator)->toBeFalse();
 });
 
-it('rend une schematique gardee telle qu\'on l\'a laissee', function () {
+it('gives a kept schematic back the way it was left', function () {
     /* What its author marked by hand was stored from the first day and never read back:
        reopening one threw away the one answer the tool cannot work out for itself. */
     $owner = User::factory()->create();
@@ -277,7 +277,7 @@ it('rend une schematique gardee telle qu\'on l\'a laissee', function () {
         ]);
 });
 
-it('laisse corriger le nom, la description et le code', function () {
+it('allows the name, the description and the code to be corrected', function () {
     $owner = User::factory()->create();
     $schematic = Schematic::factory()->for($owner)->create(['name' => 'Faute de frappe']);
 
@@ -294,12 +294,12 @@ it('laisse corriger le nom, la description et le code', function () {
     expect($fresh->name)->toBe('Presse a graphite')
         ->and($fresh->description)->toBe('Deux presses, une bande.')
         ->and($fresh->code)->toBe('bXNjaAF4nA==')
-        // Les colonnes cherchables sont refaites depuis la nouvelle analyse.
+        // The searchable columns are rebuilt from the new analysis.
         ->and($fresh->blocks)->toBe(12)
         ->and($fresh->analysis['marked'])->toBe(['0,0' => 'in']);
 });
 
-it('ne laisse pas un inconnu reecrire une schematique', function () {
+it('does not let a stranger rewrite a schematic', function () {
     $schematic = Schematic::factory()->create(['name' => 'Pas la tienne']);
 
     $this->actingAs(User::factory()->create())
@@ -310,13 +310,13 @@ it('ne laisse pas un inconnu reecrire une schematique', function () {
 });
 
 /**
- * Le sol survit a l enregistrement.
+ * The ground survives being saved.
  *
- * Sans lui, une schematique gardee puis rouverte perdait son terrain, et ses foreuses
- * repassaient a « au mieux, sur une tache pleine », ce qui est l aveu que l outil ne sait
- * pas sur quoi elles sont. L auteur avait pourtant pris la peine de le peindre.
+ * Without it, a schematic kept and then reopened lost its terrain, and its drills fell back
+ * to "at best, on a full patch", which is the tool admitting it does not know what they are
+ * standing on. The author had taken the trouble to paint it.
  */
-it('garde le sol avec la schematique et le rend en la rouvrant', function () {
+it('keeps the ground with the schematic and gives it back on reopening', function () {
     $user = User::factory()->create();
     $sol = [
         '0,0' => ['floor' => 'stone', 'overlay' => 'ore-copper'],
@@ -334,10 +334,10 @@ it('garde le sol avec la schematique et le rend en la rouvrant', function () {
         ->assertCreated();
 
     $kept = Schematic::first();
-    /* `toEqual` et non `toBe` : MySQL range les cles d un objet JSON par longueur puis par
-       octets, donc `wall` ressort avant `floor` alors qu on les avait ecrites dans l autre
-       sens. L ordre des cles d un objet JSON ne veut rien dire, et l exiger faisait passer
-       ce test sur SQLite et echouer en production. */
+    /* `toEqual` and not `toBe`: MySQL orders the keys of a JSON object by length then by
+       bytes, so `wall` comes back before `floor` although they were written the other way
+       round. The key order of a JSON object means nothing, and demanding it made this test
+       pass on SQLite and fail in production. */
     expect($kept->ground)->toEqual($sol);
 
     $this->actingAs($user)
@@ -347,9 +347,9 @@ it('garde le sol avec la schematique et le rend en la rouvrant', function () {
         ->assertJsonPath('ground.2,0.wall', 'stone-wall');
 });
 
-it('refuse un sol plus grand que la limite du jeu', function () {
-    /* 64 x 64 fait 4 096 cases. Une de plus est soit un bug, soit quelqu un qui essaie de
-       remplir la base de donnees par la porte de derriere. */
+it('refuses a ground larger than the game limit', function () {
+    /* 64 x 64 makes 4 096 tiles. One more is either a bug or somebody trying to fill the
+       database through the back door. */
     $user = User::factory()->create();
     $trop = [];
     for ($i = 0; $i <= 4096; $i++) {
@@ -366,7 +366,7 @@ it('refuse un sol plus grand que la limite du jeu', function () {
         ->assertStatus(422);
 });
 
-it('modifie le sol d une schematique sans toucher au reste', function () {
+it('changes the ground of a schematic without touching the rest', function () {
     $user = User::factory()->create();
     $kept = Schematic::factory()->for($user)->create([
         'ground' => ['0,0' => ['floor' => 'stone']],

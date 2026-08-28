@@ -54,7 +54,7 @@ function expectedNav(bool $signedIn): array
 function navIn(string $html, string $by = 'data-i18n'): array
 {
     preg_match('~<nav id="nav".*?</nav>~s', $html, $found);
-    expect($found)->not->toBeEmpty('aucun <nav id="nav"> dans cette page');
+    expect($found)->not->toBeEmpty('no <nav id="nav"> in this page');
 
     $document = new DOMDocument;
     $previous = libxml_use_internal_errors(true);
@@ -67,8 +67,8 @@ function navIn(string $html, string $by = 'data-i18n'): array
 
     $flat = [];
     foreach ($xpath->query('//nav/*') as $node) {
-        /* Le bouton Discord est un lien lui aussi, mais il porte une classe et ne vient pas
-           de la config : c est le compte, qui reste a droite quoi qu il arrive a la nav. */
+        /* The Discord button is a link too, but it carries a class and does not come from
+           the config: it is the account, which stays on the right whatever the nav does. */
         if ($node->nodeName === 'a' && ! $node->getAttribute('class')) {
             $flat[$label($node)] = $node->getAttribute('href');
         }
@@ -97,7 +97,7 @@ function expectedLabels(bool $signedIn): array
     return $flat;
 }
 
-it('declare `ready` sur chaque entree, pour que la basculer soit sans ambiguite', function () {
+it('declares `ready` on every entry, so that flipping one is unambiguous', function () {
     $undeclared = [];
     foreach (config('nav') as $entry) {
         foreach (array_merge([$entry], $entry['menu'] ?? []) as $node) {
@@ -110,10 +110,10 @@ it('declare `ready` sur chaque entree, pour que la basculer soit sans ambiguite'
         }
     }
 
-    expect($undeclared)->toBe([], 'la voie qui livre cet outil ne doit pas avoir a deviner');
+    expect($undeclared)->toBe([], 'the branch that ships this tool must not have to guess');
 });
 
-it('ne mene nulle part vers une page qui n existe pas encore', function () {
+it('never links to a page that does not exist yet', function () {
     $routes = collect(Route::getRoutes())->map(fn ($route) => '/'.ltrim($route->uri(), '/'));
 
     $dead = [];
@@ -128,43 +128,44 @@ it('ne mene nulle part vers une page qui n existe pas encore', function () {
         }
     }
 
-    expect($dead)->toBe([], 'une entree allumee dont la route n existe pas est un 404 en production');
+    expect($dead)->toBe([], 'an entry switched on whose route does not exist is a 404 in production');
 });
 
-it('ecrit le meme entete dans les pages statiques que dans les vues', function () {
-    /* La page statique ne sait pas qui lit : « Les miennes » y est ajoutee par `whoAmI`
-       une fois `/api/moi` repondu, donc elle est comparee a l entete d un visiteur.
+it('writes the same header in the static pages as in the views', function () {
+    /* The static page does not know who is reading: the `les-miennes` entry is added to it
+       by `whoAmI` once `/api/moi` has answered, so it is compared against the header of a
+       visitor.
 
-       Les pages d outils sont dans la liste depuis qu on a constate leur derive : elles
-       portaient un entete de deux entrees, fige au jour ou la premiere a ete ecrite, et
-       personne ne le voyait parce que ce test ne regardait qu `index.html`. Une copie ecrite
-       a la main qu aucun test ne surveille finit toujours par mentir. */
+       The tool pages have been in this list since their drift was noticed: they carried a
+       header of two entries, frozen on the day the first one was written, and nobody saw it
+       because this test only looked at `index.html`. A hand-written copy no test watches
+       always ends up lying. */
     foreach (['index.html', 'outils/logique.html', 'outils/planificateur.html'] as $page) {
         expect(navIn(File::get(public_path($page))))->toBe(expectedNav(signedIn: false),
-            "config/nav.php et public/{$page} ne disent plus la meme chose");
+            "config/nav.php and public/{$page} no longer say the same thing");
     }
 });
 
-it('sert la meme favicone sur toutes les pages', function () {
-    /* Les deux pages d outils portaient une icone en ligne, en `data:`, differente de celle
-       du reste du site : l icone de l onglet changeait donc en passant sur le planificateur.
-       Signale par Corentin avant que ce test existe. */
+it('serves the same favicon on every page', function () {
+    /* The two tool pages carried an inline icon, in `data:`, different from the one on the
+       rest of the site: the tab icon therefore changed on the way to the planner. Reported
+       by Corentin before this test existed. */
     $reference = ['/favicon.ico', '/favicon.svg', '/apple-touch-icon.png'];
 
     foreach (['index.html', 'outils/logique.html', 'outils/planificateur.html'] as $page) {
         $html = File::get(public_path($page));
         preg_match_all('~<link rel="(?:icon|apple-touch-icon)"[^>]*href="([^"]+)"~', $html, $m);
 
-        expect($m[1])->toBe($reference, "public/{$page} ne sert pas les memes icones");
+        expect($m[1])->toBe($reference, "public/{$page} does not serve the same icons");
     }
 });
 
-it('rend dans Blade exactement ce que la config declare, pour un visiteur', function () {
+it('renders in Blade exactly what the config declares, for a visitor', function () {
     expect(navIn($this->get('/schemas')->getContent(), by: 'text'))
         ->toBe(expectedLabels(signedIn: false));
 });
 
-it('ouvre `Les miennes` a qui est connecte, et a personne d autre', function () {
+it('opens my own schematics to whoever is signed in, and to nobody else', function () {
     $guest = $this->get('/schemas')->getContent();
     expect($guest)->not->toContain('/mes-schemas');
 
@@ -173,11 +174,11 @@ it('ouvre `Les miennes` a qui est connecte, et a personne d autre', function () 
     expect(navIn($member, by: 'text'))->toBe(expectedLabels(signedIn: true));
 });
 
-it('cache les entrees eteintes plutot que de les afficher mortes', function () {
-    /* Deduit de la configuration plutot que d une liste ecrite ici. Une liste nommee est
-       une liste qui perime le jour ou une voie allume son entree, et elle perime en
-       rougissant sur une entree devenue legitime : le prochain reflexe est de la retirer
-       de la liste, ce qui retire aussi la verification. */
+it('hides the switched-off entries rather than showing them dead', function () {
+    /* Derived from the configuration rather than from a list written out here. A list of
+       names is a list that goes stale the day a branch switches its entry on, and it goes
+       stale by going red on an entry that has become legitimate: the next reflex is to take
+       it out of the list, which takes the check out with it. */
     $rendered = $this->get('/schemas')->getContent();
 
     $eteintes = collect(config('nav'))
@@ -185,68 +186,67 @@ it('cache les entrees eteintes plutot que de les afficher mortes', function () {
         ->reject(fn ($entree) => $entree['ready'])
         ->pluck('href');
 
-    expect($eteintes)->not->toBeEmpty('plus rien n est eteint, ce test ne verifie plus rien');
+    expect($eteintes)->not->toBeEmpty('nothing is switched off any more, this test checks nothing');
 
     foreach ($eteintes as $href) {
         expect($rendered)->not->toContain($href);
     }
 });
 
-it('dit la meme chose que le navigateur sur les libelles de l entete', function () {
+it('says the same thing as the browser about the header labels', function () {
     $browser = json_decode(File::get(public_path('forge/lang/fr.json')), true);
 
-    /* Les deux moteurs ecrivent cet entete, donc chaque libelle que la page statique nomme
-       doit exister des deux cotes et dire la meme chose. L inverse n est pas vrai : une
-       entree encore eteinte n est dans aucun HTML, donc sa cle n a rien a faire dans le
-       dictionnaire du navigateur. */
+    /* Both engines write this header, so every label the static page names has to exist on
+       both sides and say the same thing. The reverse does not hold: an entry still switched
+       off is in no HTML, so its key has no business in the browser's dictionary. */
     foreach ($browser as $key => $value) {
         if (! str_starts_with($key, 'nav.') && ! str_starts_with($key, 'compte.')) {
             continue;
         }
-        expect(__($key))->toBe($value, "{$key} differe entre les deux dictionnaires");
+        expect(__($key))->toBe($value, "{$key} differs between the two dictionaries");
     }
 });
 
-it('dessine le signe de marque comme sa source, aux trois endroits', function () {
-    /* La geometrie est recopiee en ligne dans les deux entetes, et `docs/direction-artistique.md`
-       interdit de la recopier ailleurs : un deuxieme dessin finit par differer du premier sans
-       que rien ne le dise. Elle est recopiee quand meme, pour deux raisons qui tiennent -- un
-       `<img>` ne laisse pas passer `currentColor`, donc le signe ne suivrait ni la couleur ni la
-       taille de son voisin, et la barre de l editeur retombe a 17px ; et une geometrie posee en
-       ligne ne peut pas manquer a l affichage.
+it('draws the brand mark like its source, in all three places', function () {
+    /* The geometry is copied inline into both headers, and `docs/direction-artistique.md`
+       forbids copying it anywhere else: a second drawing ends up differing from the first
+       without anything saying so. It is copied anyway, for two reasons that hold: an `<img>`
+       does not let `currentColor` through, so the mark would follow neither the colour nor
+       the size of its neighbour, and the editor bar drops back to 17px; and a geometry laid
+       out inline cannot fail to show up.
 
-       Ce test est ce qui rend la copie sure. Il remplace l interdiction par une verification,
-       ce qui est la meme reponse que pour les deux navs. */
+       This test is what makes the copy safe. It replaces the ban with a check, which is the
+       same answer as for the two navs. */
     $source = File::get(public_path('brand/mark-plain.svg'));
     preg_match_all('~<path d="([^"]+)"~', $source, $attendu);
-    expect($attendu[1])->not->toBeEmpty('brand/mark-plain.svg ne contient plus de chemin');
+    expect($attendu[1])->not->toBeEmpty('brand/mark-plain.svg no longer holds a path');
 
     $copies = [
         'resources/views/layout.blade.php',
         'public/index.html',
-        /* La barre de l editeur ecrit sa propre marque, en JavaScript. C est la troisieme
-           copie, et c est celle pour laquelle la taille en `em` a ete pensee : elle retombe
-           a 17px, et un signe en pixels y serait au mauvais rapport sans que rien ne le
-           dise avant qu on ouvre l editeur. */
+        /* The editor bar writes its own mark, in JavaScript. That is the third copy, and it
+           is the one the size in `em` was thought out for: it drops back to 17px, and a mark
+           in pixels would be at the wrong ratio there without anything saying so before
+           somebody opens the editor. */
         'public/forge/editor/mount.js',
     ];
 
     foreach ($copies as $chemin) {
         $texte = File::get(base_path($chemin));
         preg_match('~<svg class="signe".*?</svg>~s', $texte, $bloc);
-        expect($bloc)->not->toBeEmpty("aucun signe dans {$chemin}");
+        expect($bloc)->not->toBeEmpty("no mark in {$chemin}");
 
         preg_match_all('~<path d="([^"]+)"~', $bloc[0], $trouve);
-        expect($trouve[1])->toBe($attendu[1], "le signe de {$chemin} a derive de sa source");
+        expect($trouve[1])->toBe($attendu[1], "the mark in {$chemin} has drifted from its source");
     }
 });
 
-it('ne peint que « Forge » en ambre, pas toute la marque', function () {
-    /* `.brand span` porte l accent. Envelopper « Mindustry » dans un span, ce qui est tentant
-       pour pouvoir le masquer sur un petit ecran, le peindrait en ambre aussi. */
+it('paints only Forge in amber, not the whole brand', function () {
+    /* `.brand span` carries the accent colour. Wrapping "Mindustry" in a span, which is
+       tempting so that it can be hidden on a small screen, would paint it amber too. */
     foreach (['resources/views/layout.blade.php', 'public/index.html'] as $chemin) {
         preg_match('~<a class="brand".*?</a>~s', File::get(base_path($chemin)), $bloc);
-        expect(substr_count($bloc[0], '<span'))->toBe(1, "trop de span dans la marque de {$chemin}");
+        expect(substr_count($bloc[0], '<span'))->toBe(1, "too many spans in the brand of {$chemin}");
         expect($bloc[0])->toContain('<span>Forge</span>');
     }
 });
