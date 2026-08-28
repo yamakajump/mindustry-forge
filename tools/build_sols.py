@@ -11,20 +11,17 @@ written down in CLAUDE.md and this file is on the presentation side of it.
 from __future__ import annotations
 
 import json
-import re
 import zipfile
 from pathlib import Path
+
+# Which floor kinds have numbered art that is not a texture variant, and why: see
+# `floor_kinds.py`. A count here for one of these would promise the browser a sprite
+# `build_sprites.py` never packs.
+from floor_kinds import NOT_TEXTURE_VARIANTS
 
 JAR = Path("mindustry-forge/assets-v159.7.jar")
 SOURCE = Path("bench/data/blocks.json")
 TARGET = Path("site/public/forge/sols.json")
-
-#: Kept in step with `NOT_TEXTURE_VARIANTS` in `build_sprites.py`. A `RuneOverlay` or
-#: `CharacterOverlay` floor has numbered art too, but the number there picks one fixed
-#: glyph by configuration, not a texture the game hashes per tile, so `build_sprites.py`
-#: packs none of those into the atlas. Counting them here as variants would promise the
-#: browser a sprite it was never given.
-NOT_TEXTURE_VARIANTS = {"RuneOverlay", "CharacterOverlay"}
 
 
 def main() -> None:
