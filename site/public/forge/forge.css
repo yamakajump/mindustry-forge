@@ -145,7 +145,7 @@ header nav a:hover { color: var(--ink); }
   letter-spacing: .6px; text-transform: uppercase; color: var(--dim);
 }
 .menu-heading:first-child { margin-top: 0; }
-.menu-list a.sub { padding-left: 18px; }
+.menu-list a.child { padding-left: 18px; }
 
 /* Le bouton qui deplie, sur telephone. Pose `hidden` dans le document et revele par
    `nav.js` : sans script il n y a rien pour rouvrir la barre, donc elle reste depliee et
@@ -643,10 +643,20 @@ select {
 }
 .editor-rail .search { padding: 10px; border-bottom: 1px solid var(--edge); }
 .editor-rail .search input { width: 100%; }
-.editor-grid {
-  flex: 1; min-height: 0; overflow: auto; padding: 8px;
+
+/* La grille BÂTIR, rangee par categorie de jeu (voir `buildGroups` dans `ui.js`), de la
+   meme facon que SOL range deja ses quatre familles : un `<h3>` par groupe, une grille de
+   pastilles par-dessous, qui cache une pastille plutot que d'etre reconstruite a chaque
+   frappe de recherche. */
+.editor-grid { flex: 1; min-height: 0; overflow: auto; padding: 8px; }
+.editor-grid section + section { margin-top: 14px; }
+.editor-grid h3 {
+  margin: 0 0 6px; font-size: 11.5px; letter-spacing: .7px; color: var(--dim);
+  text-transform: uppercase;
+}
+.editor-grid h3 .num { color: var(--edge); }
+.editor-grid .swatches {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
-  align-content: start;
 }
 .editor-grid button {
   min-height: 38px; padding: 0; justify-content: center; border-radius: 4px;
@@ -654,6 +664,7 @@ select {
 }
 .editor-grid button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-pressed); }
 .editor-grid img { width: 26px; height: 26px; image-rendering: pixelated; }
+.editor-grid .empty { color: var(--dim); font-size: 12.5px; padding: 8px; }
 
 /* Ce qui est en main. Le jeu le montre au curseur ; sur une page web il faut aussi le dire
    en toutes lettres, parce que rien n'apprend les raccourcis à celui qui arrive. */
@@ -733,25 +744,22 @@ select {
   .editor-size .bar { width: 48px; }
 }
 
-/* Les filtres de la palette : la planète d'abord, la catégorie ensuite.
-   Serpulo et Erekir ne partagent presque aucun bloc, donc c'est le tri qui coupe le plus. */
+/* Les filtres de la palette : la planète, seule desormais. La categorie avait sa propre
+   liste deroulante faute de place pour onze puces ; elle n'en a plus besoin, la grille
+   range deja ses blocs sous un intitule par categorie (voir `.editor-grid` plus haut), et
+   un menu qui ne fait que repeter ce que l'oeil voit deja au defilement est un controle en
+   trop, pas une aide. */
 .editor-filters {
   padding: 8px 10px; border-bottom: 1px solid var(--edge);
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }
 .editor-filters .chips { gap: 4px; }
-.editor-filters select {
-  flex: 1; min-width: 120px; min-height: 30px; padding: 0 8px; font: inherit;
-  font-size: 12px; color: var(--ink); background: var(--raised);
-  border: 1px solid var(--edge); border-radius: 6px;
-}
 .editor-filters .chip {
   cursor: pointer; font-size: 11.5px; padding: 3px 8px; color: var(--dim);
 }
 .editor-filters .chip[aria-pressed="true"] {
   color: var(--on-accent); background: var(--accent); border-color: var(--accent-strong);
 }
-.editor-grid .empty { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; padding: 8px; }
 
 /* La barre de la sélection, posée contre elle plutôt que dans le rail.
    Une barre à l'autre bout de l'écran oblige à quitter des yeux ce sur quoi elle agit. */

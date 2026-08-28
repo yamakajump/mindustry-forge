@@ -66,6 +66,30 @@ const CATEGORIES = {
   units: "Unités", effect: "Effets", logic: "Logique",
 };
 
+/**
+ * The build grid, filed the way the game's own build menu is: as tabs of icons by
+ * category, not as one wall of 235 of them under a dropdown.
+ *
+ * `entries` is expected already sorted by the game's own id, as `buildables` returns it,
+ * and that sort is what decides the order of the categories too: a group is opened the
+ * moment its first block is met walking that order, so nothing here invents a tab order
+ * the catalogue does not already carry. A category `CATEGORIES` does not know still gets
+ * a group, titled as the game names it.
+ */
+export function buildGroups(entries) {
+  const order = [];
+  const byKey = new Map();
+  for (const entry of entries) {
+    const key = entry.block.category || "";
+    if (!byKey.has(key)) {
+      byKey.set(key, []);
+      order.push(key);
+    }
+    byKey.get(key).push(entry);
+  }
+  return order.map((key) => ({ key, label: CATEGORIES[key] || key, blocks: byKey.get(key) }));
+}
+
 const PLANETS = { serpulo: "Serpulo", erekir: "Erekir" };
 
 /**
@@ -283,6 +307,7 @@ export function groundRule(name, catalogue) {
  */
 export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   const all = buildables(catalogue);
+  const groups = buildGroups(all);
   const layers = grounds(catalogue);
 
   /* Fetched once, here, so it has the best chance of being answered by the time anything
@@ -291,10 +316,23 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
      leaves a caller waiting either way, an unanswered fetch degrades to the identifier. */
   loadNames();
 
-  /* The categories and worlds that are actually present, taken from the catalogue rather
-     than written here. A hand-kept list starts lying the day the game adds one. */
-  const categories = [...new Set(all.map(({ block }) => block.category))].filter(Boolean);
+  /* The worlds actually present, taken from the catalogue rather than written here. A
+     hand-kept list starts lying the day the game adds one. The categories no longer need
+     their own such list: `buildGroups` already reads them off `all`, in the game's own
+     order, so the grid headings are that list. */
   const planets = [...new Set(all.map(({ block }) => block.planet))].filter(Boolean);
+
+  /**
+   * A build swatch: the sprite and nothing else, same reasoning as `groundSwatch` below --
+   * a texture reads faster than a name, so the name only travels in `title`.
+   */
+  const blockSwatch = (name, block) => {
+    const src = iconOf(name);
+    return `<button type="button" data-block="${escape(name)}"
+      title="${escape(name)} — ${escape(costOf(block))}"
+      aria-pressed="false">${
+      src ? `<img src="${src}" alt="${escape(name)}">` : escape(name.slice(0, 3))}</button>`;
+  };
 
   host.innerHTML = `
     <div class="editor-tabs">
@@ -315,13 +353,14 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
         ${planets.map((p) => `<button type="button" class="chip" data-planet="${escape(p)}"
            aria-pressed="false">${escape(PLANETS[p] || p)}</button>`).join("")}
       </div>
-      <select class="cats" aria-label="Categorie de blocs">
-        <option value="">Toutes categories</option>
-        ${categories.map((c) => `<option value="${escape(c)}">${
-          escape(CATEGORIES[c] || c)}</option>`).join("")}
-      </select>
     </div>
-    <div class="editor-grid" role="listbox" aria-label="Blocs"></div>
+    <div class="editor-grid" role="listbox" aria-label="Blocs">
+      <p class="empty grid-empty" hidden>Aucun bloc ne répond à ça.</p>
+      ${groups.map((group) => `<section data-category="${escape(group.key)}">
+        <h3>${escape(group.label)} <span class="num">${group.blocks.length}</span></h3>
+        <div class="swatches"></div>
+      </section>`).join("")}
+    </div>
     <div class="editor-ground" hidden>
       <div class="tools">
         ${TOOLS.map((tool, i) => `<button type="button" class="chip" data-tool="${tool.key}"
@@ -354,7 +393,6 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   let holding = null;
   let needle = "";
   let planet = "";
-  let category = "";
   let onGroundTab = false;
 
   /** What the brush holds: which layer, which block, which tool, which size. */
@@ -380,6 +418,14 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   for (const layer of layers) {
     const box = groundPanel.querySelector(`[data-layer="${layer.key}"] .swatches`);
     box.innerHTML = layer.blocks.map((name) => groundSwatch(name, layer.key)).join("");
+  }
+
+  /* The build swatches, drawn once per category: same reasoning as the ground grid above,
+     search and the planet filter only ever hide a swatch or a whole section, they do not
+     redraw the grid. */
+  for (const group of groups) {
+    const box = grid.querySelector(`[data-category="${group.key}"] .swatches`);
+    box.innerHTML = group.blocks.map(({ name, block }) => blockSwatch(name, block)).join("");
   }
 
   /** Redraw the recents row from `recents`, and decide whether it is worth showing at all:
@@ -420,23 +466,29 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   }
   paintGround();
 
+  /**
+   * Filter the build grid, the same way `paintGround` already filters the ground one: a
+   * swatch hides rather than leaves the grid, and a category with nothing left to show
+   * hides its own heading instead of standing empty under a live count that no longer
+   * agrees with what it says.
+   */
   const paint = () => {
-    const shown = all.filter(({ name, block }) =>
-      (!needle || name.includes(needle))
-      && (!planet || block.planet === planet)
-      && (!category || block.category === category));
-
-    if (!shown.length) {
-      grid.innerHTML = `<p class="empty">Aucun bloc ne répond à ça.</p>`;
-      return;
+    let shown = 0;
+    for (const group of groups) {
+      const section = grid.querySelector(`[data-category="${group.key}"]`);
+      const box = section.querySelector(".swatches");
+      let shownInGroup = 0;
+      for (const chip of box.children) {
+        const name = chip.dataset.block;
+        const block = catalogue.blocks[name];
+        const match = (!needle || name.includes(needle)) && (!planet || block.planet === planet);
+        chip.hidden = !match;
+        if (match) shownInGroup++;
+      }
+      section.hidden = shownInGroup === 0;
+      shown += shownInGroup;
     }
-    grid.innerHTML = shown.map(({ name, block }) => {
-      const src = iconOf(name);
-      return `<button type="button" data-block="${escape(name)}"
-        title="${escape(name)} — ${escape(costOf(block))}"
-        aria-pressed="${name === holding}">${
-        src ? `<img src="${src}" alt="${escape(name)}">` : escape(name.slice(0, 3))}</button>`;
-    }).join("");
+    grid.querySelector(".grid-empty").hidden = shown > 0;
   };
 
   /** A group of filters where only one choice holds at a time. */
@@ -452,16 +504,6 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     });
   };
   wireFilter(".planets", "planet", (v) => { planet = v; });
-
-  /* The category is a dropdown rather than chips, for want of room: the eleven chips took
-     five rows, a third of the height of the rail, against one line here. The game shows them
-     as icons on a single row, but its category icons are not in the atlas and fetching them
-     out of the jar is a job of its own. A dropdown hides no option, unlike a row that
-     scrolls. */
-  host.querySelector("select.cats").addEventListener("change", (event) => {
-    category = event.target.value;
-    paint();
-  });
 
   const rail = {
     /** What is held, spelled out: nothing teaches the shortcuts to somebody arriving. */

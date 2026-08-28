@@ -124,9 +124,12 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
         heading.textContent = summary.textContent.trim();
         siteMenuList.appendChild(heading);
         for (const link of child.querySelectorAll(".menu-list a")) {
-          const sub = siteLinkFrom(link);
-          sub.classList.add("sub");
-          siteMenuList.appendChild(sub);
+          const item = siteLinkFrom(link);
+          /* Not `.sub`: that class already means something else entirely, a subtitle's
+             own grey and its own margin (see forge.css), and a link picking it up by
+             accident inherited both. */
+          item.classList.add("child");
+          siteMenuList.appendChild(item);
         }
       }
     }
