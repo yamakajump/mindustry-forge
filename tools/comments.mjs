@@ -11,8 +11,20 @@
  * four parsers, and four parsers would be four things to keep in step.
  */
 
-/** Which comment shapes a path uses, from its extension. */
+/**
+ * Files with no extension whose comments start with a hash.
+ *
+ * Named one by one rather than guessed at, because "no extension" also covers `LICENSE`,
+ * where a line beginning with a hash is not a comment. These four were invisible to the
+ * check until somebody looked: `.gitattributes`, `.gitignore` and `.editorconfig` were
+ * still commented in French after the repository had been translated.
+ */
+const HASH_FILES = new Set([".gitattributes", ".gitignore", ".editorconfig", ".gitmodules"]);
+
+/** Which comment shapes a path uses, from its name or its extension. */
 export function grammarOf(path) {
+  const name = path.split(/[\/]/).pop();
+  if (HASH_FILES.has(name)) return { blade: false, html: false, code: "hash", inline: true };
   if (/\.blade\.php$/.test(path)) return { blade: true, html: true, code: "php", inline: false };
   if (/\.(php)$/.test(path)) return { blade: false, html: false, code: "php", inline: true };
   if (/\.(html?)$/.test(path)) return { blade: false, html: true, code: "js", inline: false };
