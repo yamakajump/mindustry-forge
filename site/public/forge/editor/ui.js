@@ -809,17 +809,22 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
  *
  * It is permanent, not merely present at the moment of refusal: a hard limit discovered when
  * it bites is a limit that feels like a bug.
+ *
+ * Reports the active frame once frames exist, not the board: `name` prefixes the reading
+ * ("cadre fonderie - 22 x 14 / 64 x 64") so what is measured is never in doubt. Both
+ * `cap` and `name` default to the board-wide reading used before frames existed, so the
+ * one call site that still means "the whole board" needs no change.
  */
 export function sizeGauge(host, MAX_SIZE) {
   host.innerHTML = `<span class="num"></span>
     <span class="bar"><i></i></span>`;
   const label = host.querySelector(".num");
   const fill = host.querySelector("i");
-  return (box) => {
+  return (box, cap = MAX_SIZE, name = null) => {
     const worst = Math.max(box.width, box.height);
-    label.textContent = `${box.width} × ${box.height} / ${MAX_SIZE} × ${MAX_SIZE}`;
-    fill.style.width = `${Math.min(100, (worst / MAX_SIZE) * 100)}%`;
-    host.classList.toggle("full", worst >= MAX_SIZE);
+    label.textContent = `${name ? `${name} - ` : ""}${box.width} × ${box.height} / ${cap} × ${cap}`;
+    fill.style.width = `${Math.min(100, (worst / cap) * 100)}%`;
+    host.classList.toggle("full", worst >= cap);
   };
 }
 
@@ -863,6 +868,10 @@ const SHORTCUTS = [
     ["ctrl+Z", "annuler"],
     ["ctrl+Y", "refaire"],
   ]],
+  ["Cadres", [
+    ["C + glisser", "dessiner un cadre, 64 tuiles de côté au plus"],
+    ["clic sur son nom", "le rendre actif"],
+  ]],
 ];
 
 /** What differs from the game, and why. Said rather than hidden. */
@@ -874,6 +883,8 @@ const DIVERGENCES = [
     + "absente ici ; sur l'onglet sol, la touche recharge plutôt le pinceau avec la case "
     + "survolée (mur, sinon minerai, sinon sol), ce que fait le pick de l'éditeur du jeu, "
     + "lui sur la touche I"],
+  ["Les cadres", "le jeu n'a pas de plateau plus grand qu'une schématique ; ici le plateau "
+    + "est un établi, et un cadre en marque un chantier"],
 ];
 
 export function showHelp(host) {
@@ -889,7 +900,7 @@ export function showHelp(host) {
         ${rows.map(([keys, what]) => `<div class="row">
           <kbd>${escape(keys)}</kbd><span>${escape(what)}</span></div>`).join("")}
       </section>`).join("")}
-      <section class="apart"><h3>Les trois écarts, et pourquoi</h3>
+      <section class="apart"><h3>Les écarts, et pourquoi</h3>
         ${DIVERGENCES.map(([what, why]) => `<div class="row">
           <b>${escape(what)}</b><span>${escape(why)}</span></div>`).join("")}
       </section>

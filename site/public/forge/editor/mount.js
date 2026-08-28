@@ -11,13 +11,14 @@
  * qui arrive ici a déjà ces gestes dans les doigts, et lui en imposer d'autres serait lui
  * demander de désapprendre les siens pour se servir d'un outil qui parle de son jeu.
  *
- * Trois écarts seulement, tous listés dans le panneau d'aide plutôt que cachés : la molette
- * zoome quand la main est vide, la vue se déplace au clic milieu glissé, et Q, qui vide une
- * file de construction absente ici, reprend plutôt le sol survolé sur l'onglet sol.
+ * Les écarts sont tous listés dans le panneau d'aide plutôt que cachés : la molette zoome
+ * quand la main est vide, la vue se déplace au clic milieu glissé, Q reprend le sol survolé
+ * au lieu de vider une file de construction qui n'existe pas ici, et les cadres n'ont pas
+ * d'équivalent dans le jeu puisque son plateau n'est jamais plus grand qu'une schématique.
  */
 
 import { draw, itemIcon, spriteOf } from "../render.js";
-import { createBoard, footprint, MAX_SIZE } from "./state.js";
+import { createBoard, footprint, legalFrame, MAX_SIZE } from "./state.js";
 import { lineOf, linksByConfig, reachOf } from "./lines.js";
 import { canPlace } from "./rules.js";
 import { flip, inBox, rotateBy, translate } from "./selection.js";
@@ -46,6 +47,7 @@ const SHELL = `
   </div>
   <div class="editor-rail"></div>
   <div class="editor-stage"><canvas tabindex="0" aria-label="Le plateau"></canvas>
+    <div class="editor-frame-bars"></div>
     <div class="editor-picker" hidden></div>
     <button type="button" class="editor-turn" data-do="turn-held" hidden
             title="Tourner ce qu'on tient">↻</button>
@@ -146,7 +148,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   document.addEventListener("click", closeSiteMenu);
 
   const camera = createCamera({ scale: 24 });
-  if (board.tiles.length) camera.frame(board.box(), viewportOf());
+  /* Le chantier entier d'un coup quand des cadres existent : cadrer sur le seul cadre actif
+     laisserait les autres hors champ à l'ouverture, comme si on les avait perdus. */
+  if (board.frames.length) camera.frame(board.framesBox(), viewportOf());
+  else if (board.tiles.length) camera.frame(board.box(), viewportOf());
 
   let held = null;
   let rotation = 0;
@@ -171,6 +176,19 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   let diagonal = false;
   let selecting = false;
   let turning = false;
+  /* C tenu dessine un cadre, exactement comme F dessine une sélection : le jeu n'a pas ce
+     geste, mais lui donner la même forme que ceux qu'il a déjà évite d'en inventer une
+     ergonomie de plus. */
+  let framing = false;
+  /** Le coin où un cadre a commencé à se dessiner, tant que le geste dure. */
+  let drawingFrame = null;
+  /** Le cadre actif : celui que la jauge du haut mesure, et que l'assombrissement épargne.
+      Suivi par identifiant plutôt que par référence, parce que renommer, déplacer ou
+      redimensionner un cadre le remplace par un autre objet portant le même id. */
+  let activeFrameId = null;
+  /** Un bloc posé hors de tout cadre ne se dit qu une fois, pas à chaque geste qui en pose
+      un autre : c est ce que dit un rappel, pas ce que dit une alarme. */
+  let orphanWarned = false;
   /** Un déplacement de sélection en cours : d'où il est parti, et ce qu'il emporte. */
   let moving = null;
   /** Le pont qu'on est en train de recibler, tant qu'on n'a pas désigné sa cible. */
@@ -266,11 +284,16 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       hints.innerHTML = `<kbd>F</kbd> tenu · <strong>glisse</strong> pour sélectionner une zone`;
       return;
     }
+    if (framing) {
+      hints.innerHTML = `<kbd>C</kbd> tenu · <strong>glisse</strong> pour dessiner un cadre,
+        ${MAX_SIZE} tuiles de côté au plus`;
+      return;
+    }
     hints.innerHTML = held
       ? `<strong>${held}</strong> en main · <kbd>molette</kbd> tourner ·
          <kbd>glisser</kbd> tracer · <kbd>ctrl</kbd> diagonale ·
          <kbd>clic droit</kbd> casser · <kbd>échap</kbd> reposer`
-      : `Choisis un bloc à gauche · <kbd>F</kbd> sélectionner ·
+      : `Choisis un bloc à gauche · <kbd>F</kbd> sélectionner · <kbd>C</kbd> dessiner un cadre ·
          <kbd>clic milieu</kbd> reprendre un bloc · <kbd>ctrl+V</kbd> coller ·
          <kbd>ctrl+Z</kbd> annuler`;
   }
@@ -298,6 +321,49 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   function moved() {
     if (!moving || !cursor) return [];
     return translate(moving.tiles, cursor.x - moving.from.x, cursor.y - moving.from.y);
+  }
+
+  /* ------------------------------------------------------------------------------------
+     Les cadres : un rectangle nommé, dessiné à la main, d'au plus 64 par 64.
+
+     Sans aucun cadre, le plateau entier en tient lieu, plafonné à 64 exactement comme
+     avant cette fonctionnalité : le joueur qui bâtit une seule chose ne rencontre jamais
+     le mot « cadre ». Dès qu'un cadre existe, poser un bloc n'est plus borné à 64 nulle
+     part sur le plateau : ce plafond porte désormais sur le cadre lui-même, vérifié au
+     tracé et jamais à la pose, et le plateau devient l'unité bornée, à 256.
+     ------------------------------------------------------------------------------------ */
+
+  /** Le cadre que la jauge et l'assombrissement doivent montrer : l'actif, ou à défaut le
+      dernier tracé, pour que la jauge ne reste jamais vide dès qu'un cadre existe. */
+  function currentFrame() {
+    return board.frames.find((frame) => frame.id === activeFrameId)
+      || board.frames[board.frames.length - 1]
+      || null;
+  }
+
+  /** Un identifiant qui survit à un rechargement de la page n'a aucun intérêt ici : il ne
+      sert qu'à retrouver un cadre à travers ses propres renommages, le temps d'une session. */
+  const nextFrameId = () => `cadre-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+
+  /** Terminer le tracé d'un cadre : refus dur au delà de 64 par 64, comme le jeu le ferait
+      à l'ouverture d'une schématique de cette taille. */
+  function finishFrame(rect) {
+    if (!legalFrame(rect)) {
+      flash(`${MAX_SIZE} tuiles de côté au plus pour un cadre`);
+      return;
+    }
+    const created = { id: nextFrameId(), name: `cadre ${board.frames.length + 1}`, ...rect };
+    commit({ addFrames: [created] });
+    activeFrameId = created.id;
+  }
+
+  /** Retirer, renommer, déplacer ou redimensionner un cadre passent tous par retirer puis
+      reposer, comme un bloc qu'on remplace : il n'y a pas d'édition en place, et l'identité
+      du cadre ne survit qu à travers son `id`. */
+  function replaceFrame(frame, changes) {
+    const after = { ...frame, ...changes };
+    commit({ removeFrames: [frame], addFrames: [after] });
+    activeFrameId = after.id;
   }
 
   /* ------------------------------------------------------------------------------------
@@ -469,7 +535,16 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    */
   function commit(change) {
     const done = board.apply(change);
-    if (done) keepDraft(board, Date.now());
+    if (done) {
+      keepDraft(board, Date.now());
+      /* Dit une fois, au premier bloc qui se retrouve hors de tout cadre, jamais plus :
+         c'est un rappel, pas une alarme qui reviendrait à chaque geste qui en pose un
+         autre. Sans aucun cadre le plateau entier en tient lieu, et rien n'est orphelin. */
+      if (change.place?.length && !orphanWarned && board.orphans().length) {
+        orphanWarned = true;
+        flash("un bloc hors de tout cadre ne s'exportera pas");
+      }
+    }
     return done;
   }
 
@@ -479,13 +554,82 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     draw(canvas, board.tiles, sizeOf, roleOf, {
       camera, viewport, ground: board.ground, grid: true, opacity,
     });
-    updateGauge(board.box());
+    /* Sans aucun cadre, la jauge mesure le plateau entier, exactement comme avant cette
+       fonctionnalité. Dès qu'un cadre existe, elle mesure ce qu'il contient, pas ce qu'il
+       a été tracé pour contenir : c'est la boîte utile, pas la boîte dessinée. */
+    const active = board.frames.length ? currentFrame() : null;
+    updateGauge(active ? board.frameBox(active) : board.box(), MAX_SIZE, active?.name || null);
+    dimAroundFrame(viewport, active);
+    drawFrames(viewport, active);
     turnButton.hidden = !(held && catalogue.blocks[held]?.rotate);
     outline(viewport);
     linkable(viewport);
     if (painting) brushGhost(viewport);
     else ghost(viewport);
+    frameGhost(viewport);
     showPickBar();
+    showFrameBars(viewport);
+  }
+
+  /**
+   * Le plateau assombri autour du cadre actif, pour qu'il se distingue des autres
+   * chantiers sans qu'ils disparaissent : ils restent visibles, seulement plus ternes.
+   */
+  function dimAroundFrame(viewport, active) {
+    if (!active) return;
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    const { px, py } = camera.rectOf(active.left, active.bottom + active.height - 1, viewport);
+    const w = active.width * camera.scale;
+    const h = active.height * camera.scale;
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.fillStyle = "rgba(6, 8, 14, .5)";
+    context.fillRect(0, 0, viewport.width, Math.max(0, py));
+    context.fillRect(0, py + h, viewport.width, Math.max(0, viewport.height - (py + h)));
+    context.fillRect(0, Math.max(0, py), Math.max(0, px), h);
+    context.fillRect(px + w, Math.max(0, py), Math.max(0, viewport.width - (px + w)), h);
+    context.restore();
+  }
+
+  /** Le contour de chaque cadre, nommé, l'actif marqué plus fort que les autres. */
+  function drawFrames(viewport, active) {
+    if (!board.frames.length) return;
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    for (const frame of board.frames) {
+      const isActive = frame === active;
+      const { px, py } = camera.rectOf(frame.left, frame.bottom + frame.height - 1, viewport);
+      const w = frame.width * camera.scale;
+      const h = frame.height * camera.scale;
+      context.strokeStyle = isActive ? "#7fd7ff" : "rgba(127, 215, 255, .5)";
+      context.lineWidth = isActive ? 2 : 1;
+      context.setLineDash(isActive ? [] : [5, 5]);
+      context.strokeRect(px + 0.5, py + 0.5, Math.max(0, w - 1), Math.max(0, h - 1));
+    }
+    context.restore();
+  }
+
+  /** Le cadre en cours de tracé, tant que C est tenu et que le bouton l'est aussi. */
+  function frameGhost(viewport) {
+    if (!drawingFrame || !cursor) return;
+    const zone = rectOf(drawingFrame, cursor);
+    const legal = legalFrame(zone);
+    const context = canvas.getContext("2d");
+    const dpr = canvas.width / (viewport.width || 1);
+    const { px, py } = camera.rectOf(zone.left, zone.bottom + zone.height - 1, viewport);
+    context.save();
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.fillStyle = legal ? "rgba(127, 215, 255, .18)" : "rgba(255, 139, 139, .18)";
+    context.strokeStyle = legal ? "#7fd7ff" : "#ff8b8b";
+    context.lineWidth = 2;
+    context.fillRect(px, py, zone.width * camera.scale, zone.height * camera.scale);
+    context.strokeRect(px + 1, py + 1,
+                       zone.width * camera.scale - 2, zone.height * camera.scale - 2);
+    context.restore();
+    showWhy(legal ? null : `${MAX_SIZE} tuiles de côté au plus pour un cadre`);
   }
 
   /**
@@ -759,6 +903,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
+    if (event.button === 0 && framing) {
+      drawingFrame = cursor;
+      paint();
+      return;
+    }
     if (event.button === 0 && held) {
       drawing = cursor;
       paint();
@@ -822,6 +971,14 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
+    if (drawingFrame) {
+      const zone = rectOf(drawingFrame, cursor);
+      drawingFrame = null;
+      finishFrame(zone);
+      say();
+      paint();
+      return;
+    }
     if (erasing) {
       const gone = inside(rectOf(erasing, cursor));
       erasing = null;
@@ -845,6 +1002,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     panning = null;
     drawing = null;
     erasing = null;
+    drawingFrame = null;
     paint();
   });
 
@@ -932,14 +1090,15 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Copier la sélection, dans l'éditeur et dans le presse-papiers du système.
+   * Copier des blocs, dans l'éditeur et dans le presse-papiers du système.
    *
    * Les deux, parce que ce sont deux usages : recoller ailleurs sur le même plateau, et
    * coller dans le jeu. Le second est ce qui fait de cet éditeur autre chose qu'un jouet,
-   * et `schematic.js` sait déjà écrire le format que le jeu lit.
+   * et `schematic.js` sait déjà écrire le format que le jeu lit. Partagée entre la
+   * sélection et un cadre : les deux ne sont qu'une liste de blocs à écrire, et un nom
+   * à mettre sur l'étiquette.
    */
-  async function copy() {
-    const chosen = picked();
+  async function copyTiles(chosen, tag) {
     if (!chosen.length) return;
     clipboard = chosen.map((tile) => ({ ...tile }));
     /* L'écriture est courue contre une seconde : elle est normalement accordée dans un
@@ -947,7 +1106,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
        devant une interface qui ne répond plus. */
     try {
       const code = await toBase64(clipboard, {
-        tags: { name: "selection" },
+        tags: { name: tag },
         sizeOf,
         priorityOf: (name) => catalogue.blocks[name]?.schematic_priority || 0,
       });
@@ -960,6 +1119,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       flash(`${clipboard.length} blocs copiés dans l'éditeur`);
     }
   }
+
+  const copy = () => copyTiles(picked(), "selection");
+  const copyFrame = (frame) => copyTiles(board.tilesIn(frame), frame.name);
 
   /**
    * Coller ce qu'on a copié, dans l'éditeur ou dans le jeu.
@@ -995,6 +1157,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   const pickBar = host.querySelector(".editor-pick");
   const picker = host.querySelector(".editor-picker");
+  const frameBars = host.querySelector(".editor-frame-bars");
 
   function showPickBar() {
     if (!selection || !picked().length) {
@@ -1023,6 +1186,78 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       if (gone.length) commit({ remove: gone });
       paint();
     }
+  });
+
+  const escapeText = (s) => String(s).replace(/[<>&"]/g, (c) =>
+    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]));
+
+  /**
+   * La barre d'actions de chaque cadre : analyser, copier, renommer, supprimer, posée à
+   * côté de lui plutôt que dans un panneau à part. À côté et pas ailleurs, pour la même
+   * raison que la barre de sélection : quitter des yeux ce sur quoi on agit coûte plus
+   * cher qu'un bouton de plus à l'écran.
+   */
+  function showFrameBars(viewport) {
+    const active = currentFrame();
+    frameBars.innerHTML = board.frames.map((frame) => {
+      const { px, py } = camera.rectOf(frame.left, frame.bottom + frame.height - 1, viewport);
+      /* `editor-pick` est réutilisée telle quelle : c'est déjà la barre flottante posée
+         contre une sélection, et un cadre n'a besoin de rien d'autre qu'un deuxième
+         habillage du même genre plutôt que d'une feuille de style de plus. */
+      return `<div class="editor-pick editor-frame-bar${frame === active ? " active" : ""}"
+          style="position:absolute;left:${Math.max(4, px)}px;top:${Math.max(4, py - 32)}px">
+        <button type="button" data-frame="${frame.id}" data-frame-do="focus"
+          title="Rendre actif">${escapeText(frame.name)}</button>
+        <button type="button" data-frame="${frame.id}" data-frame-do="analyse"
+          title="Analyser">Analyser</button>
+        <button type="button" data-frame="${frame.id}" data-frame-do="copy"
+          title="Copier, collable dans le jeu">Copier</button>
+        <button type="button" data-frame="${frame.id}" data-frame-do="rename"
+          title="Renommer">Renommer</button>
+        <button type="button" data-frame="${frame.id}" data-frame-do="delete"
+          title="Supprimer le cadre, garde ses blocs">Supprimer</button>
+      </div>`;
+    }).join("");
+  }
+
+  /**
+   * Analyser un cadre passe par un plateau neuf, fait juste de ce que ce cadre contient :
+   * `onAnalyse` n'a jamais connu qu'un plateau entier, et un plateau neuf, valide de la
+   * même façon que celui de l'éditeur, est ce qui lui permet de continuer à l'ignorer.
+   */
+  function analyseFrame(frame) {
+    const scoped = createBoard({
+      tiles: board.tilesIn(frame), ground: board.ground, frames: [{ ...frame }], sizeOf,
+    });
+    onAnalyse(scoped);
+  }
+
+  function renameFrame(frame) {
+    const chosen = window.prompt("Nom du cadre", frame.name);
+    if (chosen === null) return;
+    const name = chosen.trim();
+    if (!name || name === frame.name) return;
+    replaceFrame(frame, { name });
+    paint();
+  }
+
+  function deleteFrame(frame) {
+    commit({ removeFrames: [frame] });
+    if (activeFrameId === frame.id) activeFrameId = null;
+    paint();
+  }
+
+  frameBars.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-frame-do]");
+    if (!button) return;
+    const frame = board.frames.find((candidate) => candidate.id === button.dataset.frame);
+    if (!frame) return;
+    const what = button.dataset.frameDo;
+    if (what === "focus") { activeFrameId = frame.id; paint(); }
+    if (what === "analyse") analyseFrame(frame);
+    if (what === "copy") copyFrame(frame);
+    if (what === "rename") renameFrame(frame);
+    if (what === "delete") deleteFrame(frame);
   });
 
   /** Un mot dans la barre d'état, qui s'efface tout seul. */
@@ -1289,6 +1524,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
     if (key === "f" && !selecting) { selecting = true; say(); return; }
     if (key === "r" && !turning) { turning = true; say(); return; }
+    if (key === "c" && !framing && !ctrl) { framing = true; say(); return; }
 
     /* Z et X retournent la sélection, comme `schematicFlipX` et `schematicFlipY`. Sans
        sélection ils ne font rien, plutôt que de retourner tout le plateau. */
@@ -1368,6 +1604,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
     if (key === "f" && selecting) { selecting = false; say(); }
     if (key === "r" && turning) { turning = false; say(); }
+    if (key === "c" && framing) { framing = false; drawingFrame = null; say(); paint(); }
   };
 
   /**
@@ -1419,7 +1656,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * dans l'autre on perd celui qu'on croyait avoir devant les yeux.
    */
   function offerDraft() {
-    if (board.tiles.length || Object.keys(board.ground).length) return;
+    if (board.tiles.length || Object.keys(board.ground).length || board.frames.length) return;
     const kept = readDraft(Date.now());
     if (!kept) return;
 
@@ -1433,8 +1670,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       const button = event.target.closest("[data-draft]");
       if (!button) return;
       if (button.dataset.draft === "take") {
-        commit({ place: kept.tiles, paint: kept.ground });
-        camera.frame(board.box(), viewportOf());
+        commit({ place: kept.tiles, paint: kept.ground, addFrames: kept.frames });
+        camera.frame(board.frames.length ? board.framesBox() : board.box(), viewportOf());
       } else {
         dropDraft();
       }

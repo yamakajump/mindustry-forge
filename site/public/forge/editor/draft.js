@@ -16,7 +16,8 @@ const KEEP_FOR = 7 * 24 * 60 * 60 * 1000;
 
 export function keepDraft(board, now) {
   try {
-    if (!board.tiles.length && !Object.keys(board.ground).length) {
+    const frames = board.frames || [];
+    if (!board.tiles.length && !Object.keys(board.ground).length && !frames.length) {
       localStorage.removeItem(KEY);
       return;
     }
@@ -25,6 +26,10 @@ export function keepDraft(board, now) {
       tiles: board.tiles.map(({ x, y, block, rotation, config }) =>
         ({ x, y, block, rotation, config: config || undefined })),
       ground: board.ground,
+      /* Only ever written from here on. A draft kept by yesterday's editor has no such
+         key, and that is not a version to read around: it is the "no frame at all" case,
+         which `readDraft` already hands back as an empty list on its own. */
+      frames,
     }));
   } catch {
     /* A browser in private mode refuses to write, and so does a full quota. Losing the
@@ -35,9 +40,13 @@ export function keepDraft(board, now) {
 export function readDraft(now) {
   try {
     const kept = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (!kept?.tiles?.length && !Object.keys(kept?.ground || {}).length) return null;
+    const hasFrames = !!kept?.frames?.length;
+    if (!kept?.tiles?.length && !Object.keys(kept?.ground || {}).length && !hasFrames) return null;
     if (now - (kept.at || 0) > KEEP_FOR) return null;
-    return kept;
+    /* A draft written before frames existed carries no `frames` key at all. Defaulting it
+       here, once, is the entire migration: nobody downstream has to know the key could be
+       missing, and a draft from yesterday opens exactly as one from today. */
+    return { ...kept, frames: kept.frames || [] };
   } catch {
     return null;
   }

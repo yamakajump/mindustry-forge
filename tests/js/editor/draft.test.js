@@ -85,3 +85,40 @@ test("l age se dit comme on le dirait a voix haute", () => {
   assert.equal(ageOf(0, 61 * minute), "il y a 1 heure");
   assert.equal(ageOf(0, 50 * 60 * minute), "il y a 2 jours");
 });
+
+/* --------------------------------------------------------------------------------------
+   Les cadres dans le brouillon.
+
+   Un brouillon d hier n a jamais entendu parler de cadres : il porte `tiles` et `ground`,
+   pas de cle `frames`, et ca ne demande aucune migration puisque l absence de cadre est
+   deja un etat que ce plateau connait. A partir d aujourd hui, un brouillon garde aussi
+   les cadres, pour qu ouvrir un onglet ferme par erreur ne fasse pas perdre le travail
+   de nommer et de tracer des chantiers, pas seulement celui de les remplir.
+   -------------------------------------------------------------------------------------- */
+
+const cadre = { id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 8 };
+
+test("un cadre se garde et se relit avec le reste", () => {
+  comptoir();
+  keepDraft({ tiles: [bande], ground: {}, frames: [cadre] }, 1000);
+  const kept = readDraft(1000);
+  assert.equal(kept.frames.length, 1);
+  assert.deepEqual(kept.frames[0], cadre);
+});
+
+test("un plateau qui n a qu un cadre, sans bloc, vaut quand meme la peine d etre garde", () => {
+  const box = comptoir();
+  keepDraft({ tiles: [], ground: {}, frames: [cadre] }, 1000);
+  assert.ok(box.size > 0);
+  assert.equal(readDraft(1000).frames.length, 1);
+});
+
+test("un brouillon d hier, sans cle frames, se relit quand meme : la liste est vide", () => {
+  comptoir();
+  // Ecrit a la main, comme l aurait fait la version d avant les cadres : pas de `frames`.
+  globalThis.localStorage.setItem("forge:brouillon",
+    JSON.stringify({ at: 1000, tiles: [bande], ground: {} }));
+  const kept = readDraft(2000);
+  assert.deepEqual(kept.tiles, [bande]);
+  assert.deepEqual(kept.frames ?? [], []);
+});
