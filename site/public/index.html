@@ -77,7 +77,7 @@
        visiteur qui arrive sans savoir ce qu'est ce site voyait un champ vide et repartait. -->
   <section class="accroche" id="accroche">
     <h1 data-i18n="vitrine.accueil.titre">Sache ce que ton schéma produit vraiment</h1>
-    <p class="lede" data-i18n="vitrine.accueil.accroche">Colle-la, et Forge te dit ce qui en
+    <p class="lede" data-i18n="vitrine.accueil.accroche">Colle-le, et Forge te dit ce qui en
       sort par minute, quel bloc limite toute la ligne, et ce qui se perd en route. Les
       chiffres sont mesures contre un vrai serveur Mindustry, pas estimes.</p>
   </section>
@@ -154,7 +154,7 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
       <!-- Rempli par `peuplerVitrine` si le serveur a pose son ilot. Vide sinon, et la
            page se lit quand meme : c'est la moitie qui depend d'une base. -->
       <div class="deja" id="deja" hidden>
-        <h3 data-i18n="vitrine.accueil.deja-analysees">Deja analysees</h3>
+        <h3 data-i18n="vitrine.accueil.deja-analysees">Deja analysés</h3>
         <p class="hint-line" id="deja-compte"></p>
         <ul class="deja-liste" id="deja-liste"></ul>
       </div>
@@ -384,7 +384,7 @@ function render(report) {
 
   if (answered) right.push(`<div class="card"><h2>${
     report.sealed || report.selfFed ? "Avec ses propres sources"
-    : report.fedItself ? "Branchee comme elle est" : "Avec ce que tu as indique"}</h2>${
+    : report.fedItself ? "Branché comme il est" : "Avec ce que tu as indique"}</h2>${
     power.made > 0.01
       ? `<div class="out-rate" style="color:var(--accent)">${bolt}
            <b>${rate(power.net)}</b><span>energie / s &nbsp;<span style="color:var(--dim)">
@@ -613,7 +613,7 @@ function render(report) {
         </select>
       </label>
     </div>
-    <textarea id="keep-desc" rows="2" placeholder="Une ligne pour dire ce qu'elle fait"
+    <textarea id="keep-desc" rows="2" placeholder="Une ligne pour dire ce qu'il fait"
       aria-label="Description">${escape(editing?.description || "")}</textarea>
     ${editing ? `<div class="row" style="margin-top:8px">
       <button type="button" id="keep-new">Garder comme une nouvelle</button>
@@ -1452,7 +1452,7 @@ if (asked) {
       text.value = found.code;
       // Its author's own marks come back with it, and its author edits it in place.
       marked = { ...(found.marked || {}) };
-      /* Et le terrain sur lequel elle a ete concue. Sans lui, rouvrir un schéma
+      /* Et le terrain sur lequel il a ete concu. Sans lui, rouvrir un schéma
          rendait ses foreuses muettes : le rapport repassait a « au mieux, sur une tache
          pleine », alors que son auteur avait pris la peine de peindre le sol. */
       ground = { ...(found.ground || {}) };

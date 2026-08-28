@@ -86,8 +86,8 @@
           @else
             {{ $schematic->sourceName() ?? $schematic->source }},
           @endif
-          ou {{ $schematic->credit() }} l'a publiee. Elle ne vient pas d'ici et
-          personne ne l'a relue&nbsp;: elle peut etre incomplete, cassee, ou faite pour
+          ou {{ $schematic->credit() }} l'a publié. Il ne vient pas d'ici et
+          personne ne l'a relu&nbsp;: il peut etre incomplet, cassé, ou fait pour
           une version du jeu qui n'est plus la notre.
         </p>
         <p>
@@ -117,7 +117,7 @@
          calcul etait juste et la phrase etait fausse, sur un site dont l'argument est qu'on
          peut verifier ses chiffres au lieu de les croire.
 
-         Ce qu'elle produit reste lisible dans l'analyse. C'est la presentation qui change :
+         Ce qu'il produit reste lisible dans l'analyse. C'est la presentation qui change :
          un infini n'est pas un dimensionnement, et il ne doit pas en avoir l'air. --}}
     @if($schematic->fedBySandbox())
       <div class="card"><h2>Sortie</h2>
@@ -186,13 +186,13 @@
             @if($schematic->fedBySandbox())
               {{ __('schema.page.bac-a-sable-courant') }}
             @elseif($schematic->powerSpare() > 0.5)
-              Elle produit plus de courant qu'elle n'en consomme, donc elle s'alimente
-              seule et il lui en reste
+              Il produit plus de courant qu'il n'en consomme, donc il s'alimente
+              seul et il lui en reste
               {{ number_format($schematic->powerSpare(), 0, ',', ' ') }} / s pour le reste
               de ta base.
             @else
-              Elle ne fabrique pas son courant&nbsp;: il faudra la brancher sur ton reseau,
-              sinon elle reste a l'arret. Ce n'est pas compte contre elle dans les
+              Il ne fabrique pas son courant&nbsp;: il faudra le brancher sur ton reseau,
+              sinon il reste a l'arret. Ce n'est pas compte contre lui dans les
               classements.
             @endif
           </p>
@@ -205,11 +205,11 @@
         @include('partials.manage', ['gone' => '/mes-schemas'])
         <p class="hint-line">
           @if($schematic->user_id !== auth()->id())
-            Tu vois ces boutons parce que tu tiens la vitrine, pas parce que la
+            Tu vois ces boutons parce que tu tiens la vitrine, pas parce que le
             schéma est a toi.
           @else
-            Privee, personne d'autre ne la voit. Par lien, elle marche pour qui l'a et
-            reste hors de la vitrine. Publique, elle est dans la vitrine et classee avec
+            Privé, personne d'autre ne le voit. Par lien, il marche pour qui l'a et
+            reste hors de la vitrine. Public, il est dans la vitrine et classé avec
             les autres.
           @endif
         </p>
@@ -225,7 +225,7 @@
 
         {{-- Le geste part d'ici, pas d'une page vide. Personne n'arrive au comparateur avec
              deux identifiants en tete : on est sur un schéma et on se demande comment
-             elle se situe. Un cote est donc deja rempli et il n'en reste qu'un a choisir. --}}
+             il se situe. Un cote est donc deja rempli et il n'en reste qu'un a choisir. --}}
         @if($schematic->visibility === \App\Models\Schematic::PUBLIC)
           <a class="button" href="/comparer?a={{ $schematic->slug }}">{{
             __('schema.comparer.comparer-avec') }}</a>
@@ -241,7 +241,7 @@
             Ouvrir la logique</a>
         @endif
       </div>
-      <p class="hint-line">Colle-la dans Mindustry avec ctrl+v.</p>
+      <p class="hint-line">Colle-le dans Mindustry avec ctrl+v.</p>
     </div>
   </div>
 </div>

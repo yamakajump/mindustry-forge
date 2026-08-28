@@ -132,7 +132,7 @@ it('ne pretend pas classer un rendement sans savoir de quoi on parle', function 
     $page = $this->get('/schemas?tri=best')->assertOk();
 
     expect($page->viewData('order'))->toBe('new');
-    $page->assertSee('Classees par date, faute de mieux');
+    $page->assertSee('Classés par date, faute de mieux');
 });
 
 it('dit sur la page qu il faudra l alimenter', function () {
@@ -145,9 +145,9 @@ it('dit sur la page qu il faudra l alimenter', function () {
         ->assertSee('Il lui faut')
         ->assertSee('electricite')
         ->assertSee('600')
-        ->assertSee('il faudra la brancher sur ton reseau', escape: false)
+        ->assertSee('il faudra le brancher sur ton reseau', escape: false)
         // And it must be clear this is not held against it.
-        ->assertSee('Ce n\'est pas compte contre elle', escape: false);
+        ->assertSee('Ce n\'est pas compte contre lui', escape: false);
 });
 
 it('dit au contraire ce qu une centrale laisse au reste de la base', function () {
@@ -155,7 +155,7 @@ it('dit au contraire ce qu une centrale laisse au reste de la base', function ()
 
     $this->get("/s/{$centrale->slug}")
         ->assertOk()
-        ->assertSee('elle s\'alimente', escape: false)
+        ->assertSee('il s\'alimente', escape: false)
         ->assertSee('860');
 });
 

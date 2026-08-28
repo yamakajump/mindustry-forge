@@ -109,18 +109,18 @@
        graphite vaut un silicium. Alors on ne le fait pas, on le dit, et on propose le
        seul geste qui rend le classement possible. --}}
   @if($makes === '')
-    <p class="hint-line">Classees par date, faute de mieux. Choisis ce que tu cherches
+    <p class="hint-line">Classés par date, faute de mieux. Choisis ce que tu cherches
       ci-dessus et le classement devient un vrai rendement&nbsp;: combien le schéma
-      en sort, pour la place qu'elle prend.</p>
+      en sort, pour la place qu'il prend.</p>
   @else
     {{-- La nature du chiffre est dite avec le chiffre, jamais apres. C'est la condition a
          laquelle la vitrine a le droit de chercher sur des plafonds : les nommer n'est pas
          les melanger a des mesures. --}}
-    <p class="hint-line">Classees sur ce qu'elles pourraient sortir en
+    <p class="hint-line">Classés sur ce qu'ils pourraient sortir en
       <strong>{{ $makes === $powerKey ? 'energie' : \App\Support\Thing::name($makes) }}</strong>,
-      alimentees a fond, rapporte a leur taille. Un plafond et non un releve&nbsp;: une
+      alimentés a fond, rapporte a leur taille. Un plafond et non un releve&nbsp;: un
       schéma arraché d'une base n'a pas la foreuse qui l'alimentait, donc ce qu'il
-      fait vraiment depend de la votre. L'electricite qu'elle consomme ne la penalise
+      fait vraiment depend de la votre. L'electricite qu'il consomme ne le penalise
       pas&nbsp;: c'est un prerequis, indique sur sa page.</p>
   @endif
 
@@ -224,8 +224,8 @@
                made, without opening anything. --}}
           @if($schematic->imported())
             &middot; <span class="from"
-              title="Importee depuis {{ $schematic->sourceName() ?? $schematic->source }},
-              non relue">importee</span>
+              title="Importé depuis {{ $schematic->sourceName() ?? $schematic->source }},
+              non relu">importé</span>
           @endif
         </p>
       </article>

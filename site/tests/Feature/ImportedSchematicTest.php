@@ -61,7 +61,7 @@ it('dit sur la page d ou vient une schematique importee', function () {
         ->assertSee('mindustry-tool.com')
         ->assertSee('quelqu un')
         // The honest part: nobody read it, and it may simply not work.
-        ->assertSee('personne ne l\'a relue', escape: false)
+        ->assertSee('personne ne l\'a relu', escape: false)
         ->assertSee($imported->sourceUrl(), escape: false);
 });
 
@@ -79,7 +79,7 @@ it('signale les imports dans la vitrine aussi', function () {
         'visibility' => 'public', 'name' => 'Prise ailleurs',
     ]);
 
-    $this->get('/schemas')->assertOk()->assertSee('importee');
+    $this->get('/schemas')->assertOk()->assertSee('importé', false);
 });
 
 it('renvoie vers la page d origine plutot que de citer sans lier', function () {
