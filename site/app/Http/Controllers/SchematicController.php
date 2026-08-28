@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Favorite;
+use App\Models\Folder;
 use App\Models\Schematic;
 use App\Models\SchematicLike;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -164,6 +166,16 @@ class SchematicController extends Controller
                 ->where('schematic_id', $schematic->id)->exists(),
             'favori' => $user !== null && Favorite::where('user_id', $user->id)
                 ->where('schematic_id', $schematic->id)->exists(),
+            /* Ses dossiers a elle, et lesquels contiennent deja ce schema : sans le second,
+               la liste proposerait de ranger une chose deja rangee, et la personne ne
+               saurait pas ou elle l'a mise. */
+            'folders' => $user === null ? collect() : Folder::query()
+                ->where('user_id', $user->id)->orderBy('name')->get(['id', 'slug', 'name']),
+            'inFolders' => $user === null ? [] : DB::table('folder_items')
+                ->join('folders', 'folders.id', '=', 'folder_items.folder_id')
+                ->where('folders.user_id', $user->id)
+                ->where('folder_items.schematic_id', $schematic->id)
+                ->pluck('folders.slug')->all(),
         ]);
     }
 

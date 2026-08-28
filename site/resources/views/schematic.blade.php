@@ -42,6 +42,7 @@
        besoin d'aucun script. --}}
   @auth
     <script src="/forge/keep.js" type="module" defer></script>
+    <script src="/forge/dossiers.js" type="module" defer></script>
   @endauth
 @endpush
 
@@ -97,6 +98,25 @@
              « J'aime  3 j'aime », le meme mot deux fois a trois pixels d'intervalle. Ca ne
              se voit dans aucun test, seulement en ouvrant la page. --}}
         <span class="compte"{{ $schematic->likes > 0 ? '' : ' hidden' }}>{{ $schematic->likes }} {{ __('schema.unite.jaime') }}</span>
+        @if($folders->isNotEmpty())
+          {{-- Des cases et non une liste deroulante : un schema va dans plusieurs dossiers
+               a la fois, c'est tout l'interet, et un `select` dirait le contraire. --}}
+          <details class="ranger">
+            <summary>{{ __('dossiers.gestion.ajouter-ici') }}</summary>
+            <div class="menu-list">
+              @foreach($folders as $folder)
+                <label>
+                  <input type="checkbox" data-ranger
+                         data-dossier="{{ $folder->slug }}"
+                         data-schema="{{ $schematic->slug }}"
+                         @checked(in_array($folder->slug, $inFolders, true))>
+                  {{ $folder->name }}
+                </label>
+              @endforeach
+            </div>
+            <p class="hint-line note" hidden></p>
+          </details>
+        @endif
       @else
         {{-- Montre plutot que cache, et comme lien plutot que comme bouton : un bouton
              qu'un visiteur ne voit pas est une fonctionnalite dont il n'apprend jamais

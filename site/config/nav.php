@@ -28,6 +28,7 @@ return [
            jusqu'a ce qu'elle existe : une entree de menu qui pointe sur un 404 est pire
            qu'une entree absente. */
         ['key' => 'nav.menu.favoris', 'href' => '/mes-favoris', 'ready' => false, 'auth' => true],
+        ['key' => 'nav.menu.dossiers', 'href' => '/mes-dossiers', 'ready' => true, 'auth' => true],
         ['key' => 'nav.menu.comparer', 'href' => '/comparer', 'ready' => true],
         ['key' => 'nav.menu.publier', 'href' => '/publier', 'ready' => false],
     ]],
