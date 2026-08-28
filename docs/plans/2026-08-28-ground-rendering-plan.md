@@ -535,7 +535,12 @@ if __name__ == "__main__":
 - [ ] **Step 2: Run it**
 
 Run: `python tools/build_sols.py`
-Expected: prints about `107 sols, 55 avec raccords, 67 avec variantes`.
+Expected: `107 sols, 69 avec raccords, 64 avec variantes`.
+
+**69, not 55.** 55 floors ship their own sheet and 14 more borrow their blend group's.
+A run reporting 55 means the group resolution above is not working, whatever else passes.
+64 rather than 67 because the glyph kinds are excluded from the variant count too, for the
+same reason `build_sprites.py` excludes them from the atlas.
 
 - [ ] **Step 3: Write the test that keeps the two files apart**
 
