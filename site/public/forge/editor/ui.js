@@ -9,7 +9,7 @@
  * what this repository spends its time avoiding.
  */
 
-import { itemIcon } from "../render.js";
+import { groundPlanets, itemIcon } from "../render.js";
 import { loadNames, nameOf } from "../noms.js";
 
 /** A block's sprite, cached: the same chip is redrawn on every search. */
@@ -202,6 +202,27 @@ export function writeRecents(list) {
   }
 }
 
+/**
+ * Whether a piece of ground belongs on the planet being filtered for.
+ *
+ * The build grid reads `block.planet`, stamped by walking each planet's tech tree. Terrain
+ * is on no tech tree, so that field is empty for every floor, every ore and every static
+ * wall, and this reads `sols.json`'s `planets` instead: which planets the game was measured
+ * putting each one down on, by `bench`'s `dump-ground`. Same question as the build grid
+ * answers, asked of the one source that can answer it for the ground.
+ *
+ * Two things are deliberately shown rather than hidden. A floor no planet places, such as
+ * `air` or the editor's own coloured floor, stays visible under either filter: not knowing
+ * where a floor belongs is not the same as knowing it belongs elsewhere. And a page whose
+ * `sols.json` never arrived has no `homes` at all, which shows everything rather than
+ * emptying the palette over a failed fetch.
+ */
+export function onPlanet(name, planet, homes) {
+  if (!planet) return true;
+  const where = homes?.[name];
+  return !where || where.includes(planet);
+}
+
 /** What the catalogue offers to paint with, filed by layer. */
 export function grounds(catalogue) {
   return LAYERS.map((layer) => ({
@@ -333,6 +354,11 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
      their own such list: `buildGroups` already reads them off `all`, in the game's own
      order, so the grid headings are that list. */
   const planets = [...new Set(all.map(({ block }) => block.planet))].filter(Boolean);
+
+  /* The same question for the ground, out of the one source that can answer it: a floor is
+     on no tech tree, so `block.planet` is empty for every one of them (see `onPlanet`). One
+     chip row drives both grids, so the two answers have to arrive here together. */
+  const homes = groundPlanets();
 
   /**
    * A build swatch: the sprite and nothing else, same reasoning as `groundSwatch` below --
@@ -478,7 +504,8 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   paintRecents();
 
   /**
-   * Filter the ground swatches by the search box, matched on the block's own game name.
+   * Filter the ground swatches by the search box and by the planet, exactly as `paint`
+   * filters the build grid by the same two.
    *
    * A floor's French name does exist, in `noms/fr.json`, and belongs in this match too, so
    * that both spellings find a floor: that is left to whoever wires up the rest of this
@@ -496,7 +523,8 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       const box = section.querySelector(".swatches");
       let shownInLayer = 0;
       for (const chip of box.children) {
-        const match = !needle || chip.dataset.ground.includes(needle);
+        const name = chip.dataset.ground;
+        const match = (!needle || name.includes(needle)) && onPlanet(name, planet, homes);
         chip.hidden = !match;
         if (match) shownInLayer++;
       }
@@ -505,7 +533,10 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     }
     groundEmpty.hidden = shown > 0;
     groundEmpty.textContent = needle
-      ? `Aucun sol ne répond à « ${needle} ».` : "Aucun sol ne répond à ça.";
+      ? `Aucun sol ne répond à « ${needle} ».`
+      : planet
+        ? `Aucun sol de ${PLANETS[planet] || planet} ici.`
+        : "Aucun sol ne répond à ça.";
     return shown;
   }
   paintGround();
@@ -538,9 +569,12 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     return shown;
   };
 
-  /* A group of filters where only one choice holds at a time. The only one left is the
-     planet, and it only ever acts on BÂTIR: `.editor-filters` itself is hidden on SOL (see
-     `showTab`), so this never fires while `paintGround` is the one that would need calling. */
+  /* A group of filters where only one choice holds at a time. The only one is the planet,
+     and it acts on both tabs, the way the search box above it already does: one chip row
+     that both grids read, rather than a second row on SOL that would let a player hold two
+     different planets at once and have to notice which tab they had set. Both grids are
+     repainted for the same reason the search box repaints both, and only the visible one's
+     count is said out loud. */
   const wireFilter = (selector, attribute, set) => {
     host.querySelector(selector).addEventListener("click", (event) => {
       const chip = event.target.closest(`[data-${attribute}]`);
@@ -549,7 +583,9 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       for (const other of host.querySelectorAll(`${selector} [data-${attribute}]`)) {
         other.setAttribute("aria-pressed", String(other === chip));
       }
-      sayCount(paint());
+      const built = paint();
+      const found = paintGround();
+      sayCount(onGroundTab ? found : built);
     });
   };
   wireFilter(".planets", "planet", (v) => { planet = v; });
@@ -626,10 +662,12 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     }
     groundPanel.hidden = !onGround;
     grid.hidden = onGround;
-    filters.hidden = onGround;
+    /* The chip row stays up on both tabs. It used to be hidden here, which is what left
+       somebody building on Erekir scrolling past grass, snow and ice to reach the floors
+       that are actually under their feet. */
+    filters.hidden = !homes && onGround;
     /* The search box is shared: only what it searches, and what it says while empty,
-       changes with the tab. There is no world filter on the ground side (see the plan for
-       this branch), so the search is the only narrowing tool it has. */
+       changes with the tab. */
     search.placeholder = onGround
       ? "Chercher un sol, un minerai ou un mur" : `Chercher dans ${all.length} blocs`;
     search.setAttribute("aria-label", onGround ? "Chercher dans le sol" : "Chercher un bloc");

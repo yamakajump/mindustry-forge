@@ -40,6 +40,15 @@ public class BenchPlugin extends Plugin {
             DumpBlocks.dump(out);
         });
 
+        /* Terrain is on no tech tree, so the walk that gives every buildable block its
+           planet gives every floor none. This one generates the planets instead and writes
+           down what landed. */
+        handler.register("dump-ground", "[path]",
+                "Generate every planet and write down which ground it puts down.", args -> {
+            Path out = args.length > 0 ? Paths.get(args[0]) : DumpGround.defaultOut();
+            DumpGround.dump(out);
+        });
+
         /* The oracle. The browser carries a transcription of the game's update loop, and a
            transcription is worth nothing unless something can tell it apart from a
            plausible invention. The only thing that can is the engine it came from. */

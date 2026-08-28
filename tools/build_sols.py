@@ -3,9 +3,15 @@
     python tools/build_sols.py
 
 Blending data decides how a patch of ground looks and decides no figure the analyser
-reports. `site/public/forge/blocks.json` is hashed by `EngineVersion`, so a field added
+reports, and so does which planet a floor comes from: it sorts a palette, and no throughput
+turns on it. `site/public/forge/blocks.json` is hashed by `EngineVersion`, so a field added
 there marks every stored analysis stale; a field added here marks nothing. That boundary is
 written down in CLAUDE.md and this file is on the presentation side of it.
+
+Reads two measurements, both from the game: `bench/data/blocks.json` for the registry, and
+`bench/data/planetes-sol.json` for which planet puts which ground down. The second is
+`tools/dump_ground.py`, and why it has to exist at all is in `DumpGround.java`: terrain is
+on no tech tree, so the walk that gives a buildable block its planet gives a floor none.
 """
 
 from __future__ import annotations
@@ -21,7 +27,24 @@ from floor_kinds import NOT_TEXTURE_VARIANTS, variant_names
 
 JAR = Path("mindustry-forge/assets-v159.7.jar")
 SOURCE = Path("bench/data/blocks.json")
+PLANETS = Path("bench/data/planetes-sol.json")
 TARGET = Path("site/public/forge/sols.json")
+
+#: How small a share of a piece of ground a planet may hold and still be said to have it.
+#:
+#: `dump_ground.py` counts tiles rather than ticking names off, because a campaign map
+#: borrows scenery from the other planet and being placed at all does not mean belonging.
+#: The counts leave a wide gap, measured on v159.7 across all six planets: the largest
+#: borrowed share is 12.1 % (Serpulo's 91 tiles of crystalline vent against Erekir's 810),
+#: and the smallest genuine one is 30.0 % (Tantros's dune walls against Serpulo's). A fifth
+#: sits in the middle of that gap rather than at either edge, so the reading does not turn
+#: on a tile.
+#:
+#: What it gets wrong, said rather than hidden: Erekir keeps `dirt-wall`, 497 tiles of it
+#: against Serpulo's 594, and that is Serpulo's wall used as scenery. The cost is one extra
+#: swatch under one filter; the cost of tightening the rule until it goes is every floor a
+#: planet really does use sparingly, which is how `pine` and `shrubs` would leave Serpulo.
+BORROWED = 0.2
 
 #: What `Floor.overlayAlpha` is worth, and for whom it is not the default.
 #:
@@ -50,6 +73,28 @@ OVERLAY_ALPHA = {"pooled-cryofluid": 0.35}
 def alpha_of(name: str, entry: dict) -> float:
     """This floor's `Floor.overlayAlpha`, from the dump when it carries it."""
     return entry.get("overlay_alpha", OVERLAY_ALPHA.get(name, OVERLAY_ALPHA_DEFAULT))
+
+
+def planet_of(counts: dict[str, dict[str, int]]) -> dict[str, list[str]]:
+    """Which planets each piece of ground belongs to, from what each of them puts down.
+
+    A block no planet places at all is absent rather than listed empty, and the palette
+    reads that as "shown under every filter": not knowing where a floor belongs is not the
+    same as knowing it belongs elsewhere.
+    """
+    busiest: dict[str, int] = {}
+    for tiles in counts.values():
+        for name, n in tiles.items():
+            busiest[name] = max(busiest.get(name, 0), n)
+
+    homes: dict[str, list[str]] = {}
+    # The dump's own order, which is the game's content registry: sorting the planets here
+    # would put Erekir before Serpulo, an order the game states nowhere.
+    for planet, tiles in counts.items():
+        for name, n in tiles.items():
+            if n >= BORROWED * busiest[name]:
+                homes.setdefault(name, []).append(planet)
+    return dict(sorted(homes.items()))
 
 
 def main() -> None:
@@ -114,13 +159,19 @@ def main() -> None:
             f"OVERLAY_ALPHA names {', '.join(strangers)}, which the dump does not call a "
             "liquid floor: re-read Floor.overlayAlpha out of the pinned jar")
 
-    TARGET.write_text(json.dumps({"floors": floors}, separators=(",", ":")),
-                      encoding="utf-8")
+    # Beside `floors` rather than inside it: a static wall belongs to a planet too, and the
+    # ground palette offers it, while `floors` is what the renderer blends and holds no wall
+    # at all.
+    homes = planet_of(json.loads(PLANETS.read_text(encoding="utf-8"))["planets"])
+
+    TARGET.write_text(json.dumps({"floors": floors, "planets": homes},
+                                 separators=(",", ":")), encoding="utf-8")
     blending = sum(1 for f in floors.values() if f["sheet"])
     varied = sum(1 for f in floors.values() if f["variants"] > 1)
     veiled = sum(1 for f in floors.values() if f["veil"])
     print(f"{len(floors)} floors, {blending} that blend, {varied} with several sprites, "
           f"{veiled} that veil an overlay")
+    print(f"{len(homes)} pieces of ground a planet of the game's own puts down")
 
 
 if __name__ == "__main__":
