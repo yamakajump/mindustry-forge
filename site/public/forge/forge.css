@@ -476,6 +476,20 @@ select {
 }
 .manage .seg button.on:hover { background: var(--accent-soft); }
 
+/* Les deux gestes sur une schematique.
+   L'etat presse reprend les couleurs de `.seg button.on` plutot que d'en choisir de
+   nouvelles : deux facons de dire « ce bouton est actif » sur la meme page, c'est une de
+   trop, et la couleur vit dans son propre fichier a cote. */
+.keep { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.keep button { display: inline-flex; align-items: center; gap: 6px; }
+.keep button[aria-pressed="true"] {
+  background: var(--accent); border-color: var(--accent); color: #1a1d23;
+}
+.keep button[aria-pressed="true"]:hover { background: var(--accent-soft); }
+.keep button[disabled] { opacity: .6; cursor: progress; }
+.keep .compte { font-size: 12px; opacity: .75; }
+.keep .compte[hidden] { display: none; }
+
 .manage .share { display: flex; gap: 6px; }
 .manage .share input {
   flex: 1; min-width: 0; font-size: 12px; min-height: 38px;

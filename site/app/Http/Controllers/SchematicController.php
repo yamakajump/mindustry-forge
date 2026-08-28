@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Favorite;
 use App\Models\Schematic;
+use App\Models\SchematicLike;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -150,7 +152,19 @@ class SchematicController extends Controller
         abort_unless($schematic->visibleTo(auth()->user()), 404);
         $schematic->increment('views');
 
-        return view('schematic', ['schematic' => $schematic]);
+        /* Deux lectures, et seulement pour qui est connecte : le compteur est public et
+           vaut la meme chose pour tout le monde, mais l'etat des deux boutons est celui de
+           cette personne-la. Prendre l'un pour l'autre montrerait le bouton presse a qui
+           n'a rien presse. */
+        $user = auth()->user();
+
+        return view('schematic', [
+            'schematic' => $schematic,
+            'aime' => $user !== null && SchematicLike::where('user_id', $user->id)
+                ->where('schematic_id', $schematic->id)->exists(),
+            'favori' => $user !== null && Favorite::where('user_id', $user->id)
+                ->where('schematic_id', $schematic->id)->exists(),
+        ]);
     }
 
     /** The raw string, for the analyser's "analyse chez moi" link. */
