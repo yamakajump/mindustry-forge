@@ -175,9 +175,19 @@ of CSS, since the mark itself does not move.
 | `brand/depot-entete.jpg` | 1280 × 360 | the README header |
 
 `depot-apercu.jpg` is the one entry in that table no script can put in place. GitHub exposes
-the social preview nowhere in its REST or GraphQL API: the file is uploaded once, under
-Settings, General, Social preview. `gh api repos/OWNER/REPO --jq .open_graph_image_url`
-reports whether it is set, and returns null until somebody has done it.
+no write for the social preview, in REST or in GraphQL: the file is uploaded by hand, under
+Settings, General, Social preview.
+
+Reading it back has a trap. `gh api repos/OWNER/REPO --jq .open_graph_image_url` returns
+null whether or not an image is set, so it proves nothing. What answers is the page itself:
+
+```bash
+curl -s https://github.com/OWNER/REPO | grep -o '<meta[^>]*og:image[^>]*>'
+```
+
+A `repository-images.githubusercontent.com` address means the uploaded file is live. An
+`opengraph.githubassets.com` address means it is not, and what unfurls is the card GitHub
+draws from the repository name.
 
 Three different framings of one mark, because the systems do not crop alike:
 
