@@ -10,11 +10,12 @@
 
 return [
     'unite' => [
-        'energie' => 'energie',
+        'energie' => 'Énergie',
         'par-seconde' => '/ s',
         'par-minute' => '/ min',
         // Invariable au pluriel, d'ou une seule cle : « 1 j'aime », « 12 j'aime ».
         'jaime' => "j'aime",
+        'blocs' => 'blocs',
     ],
 
     /*
@@ -70,7 +71,7 @@ return [
          * parmi les mesures. Une ferme de reacteurs sans carburant declare a un plafond
          * de 1 950 000 et une mesure de zero, et les deux sont vrais.
          */
-        'energie-plafond' => 'Energie nette, au mieux',
+        'energie-plafond' => 'Énergie nette, au mieux',
         'au-mieux' => 'au mieux',
         /*
          * Le contraire du precedent, et il se dit a voix haute. La vitrine classe sur
@@ -123,7 +124,7 @@ return [
         'comparer-avec' => 'Comparer avec un autre',
         'a-choisir' => 'Des schemas a comparer',
         'rien-a-comparer' => "Rien de publie pour l'instant.",
-        'energie' => 'energie',
+        'energie' => 'Énergie',
 
         /*
          * The two slots, which are what the page is now built around.
@@ -148,7 +149,7 @@ return [
 
         'mesure-blocs' => 'Blocs poses',
         'mesure-emprise' => 'Emprise au sol',
-        'mesure-energie' => 'Energie a fournir',
+        'mesure-energie' => 'Énergie a fournir',
 
         'ecart-lecture' => "L'ecart est celui de gauche moins celui de droite : en vert, la
             gauche en fait plus.",

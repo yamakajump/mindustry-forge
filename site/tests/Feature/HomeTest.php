@@ -211,7 +211,7 @@ it('states power per second, as everywhere else on the site', function () {
 
     expect((float) $mis['debit'])->toBe(56562.0);
     expect($mis['unite'])->toBe('/ s');
-    expect($mis['produit'])->toBe('energie');
+    expect($mis['produit'])->toBe('Énergie');
 });
 
 it('says what it shows is a ceiling, every time', function () {
