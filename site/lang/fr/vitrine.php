@@ -38,6 +38,24 @@ return [
      * substituer, et le nombre disparaitrait de la seule phrase qui existe pour le donner.
      * Les nombres sont donc poses a cote de ces mots par la vue.
      */
+    /*
+     * La recherche ecrite comme une phrase.
+     *
+     * Ce que ce depot promet en premiere ligne est « cent graphite par minute sous trente
+     * blocs ». Une suite d'etiquettes et de champs dit la meme chose et ne se lit pas : il
+     * faut assembler soi-meme ce que la phrase donne d'un coup.
+     *
+     * Aucun nombre ne passe par ces cles : ce sont les mots entre les champs, et les champs
+     * sont poses par la vue. Une cle manquante laisse donc la phrase bancale mais garde tous
+     * ses chiffres, ce qui est le bon sens de la degradation sur un site qui ne vend que ca.
+     */
+    'phrase' => [
+        'je-cherche' => 'Je cherche un schéma qui produit',
+        'au-moins' => 'au moins',
+        'qui-tient-dans' => 'qui tient dans',
+        'sur' => 'sur',
+    ],
+
     'contraintes' => [
         'titre' => 'Contraintes',
         'tient-dans' => 'Tient dans',

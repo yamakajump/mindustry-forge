@@ -417,7 +417,9 @@ class BrowseController extends Controller
         // arithmetiquement et faux partout ailleurs sur ce site.
         $unitShort = $makes === '' ? '' : ($makes === SchematicItem::POWER
             ? __('vitrine.note.energie-seconde')
-            : Thing::name($makes).__('schema.unite.par-minute'));
+            // Ecrit d'un bloc : `schema.unite.par-minute` vaut « / min », espace comprise,
+            // et le coller rendait « Silicium/ min » sur chaque puce.
+            : Thing::name($makes).'/min');
 
         /* Ce que la recherche porte en ce moment, une puce par contrainte, chacune avec le
            lien qui la retire.
