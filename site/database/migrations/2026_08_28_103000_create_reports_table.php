@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Somebody saying this does not belong here.
  *
- * A `target_type` string rather than the flat table per surface the likes work chose, and
- * the difference is which side of the hot path each sits on. A like is read on every tile
- * of every listing render, so an abstraction there costs a join nobody can afford. A report
- * is written rarely and read by one person on one page, and there will be four kinds of
- * target before long: a schematic, a contribution, a folder, a comment. Four tables that
- * differ by one column would be four migrations, four models and four queues.
+ * A `target_type` string rather than one flat table per kind of target, and the difference
+ * is which side of the hot path each sits on. Something read on every tile of every listing
+ * render cannot afford an abstraction; a report is written rarely and read by one person on
+ * one page. There will be four kinds of target before long, a schematic, a contribution, a
+ * folder, a comment, and four tables differing by one column would be four migrations, four
+ * models and four queues.
  *
  * `weight` is copied in at the moment the report is made rather than joined from the
  * reporter's standing when the queue is read. Standing moves: somebody who was worth

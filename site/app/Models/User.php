@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 #[Fillable(['name', 'email', 'password', 'discord_id', 'avatar', 'upheld', 'overturned', 'overturned_at', 'discord_created_at'])]
 #[Hidden(['password', 'remember_token'])]
@@ -33,6 +34,36 @@ class User extends Authenticatable
             'overturned_at' => 'datetime',
             'discord_created_at' => 'datetime',
         ];
+    }
+
+    /** Their page is found by slug, never by id or by name. */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    /**
+     * Give every member an address, whatever route created them.
+     *
+     * On the model rather than in the sign-in controller, because a member also arrives
+     * from a factory in a test and from the console, and a profile link that works for
+     * people who signed in through Discord and 404s for anybody else is worse than no link.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (self $user) {
+            $user->slug ??= static::freshSlug();
+        });
+    }
+
+    /** A short address nobody else holds. */
+    public static function freshSlug(): string
+    {
+        do {
+            $slug = Str::lower(Str::random(10));
+        } while (static::where('slug', $slug)->exists());
+
+        return $slug;
     }
 
     /** Where this member stands, and what their word is worth. */

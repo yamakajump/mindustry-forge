@@ -14,9 +14,9 @@ use Illuminate\Support\Facades\Schema;
  * nothing recomputed. The score is `upheld - 2 * overturned`, in one method, read from
  * these two.
  *
- * Denormalising is what `schematics.likes` and `schematics.views` do, and it is right
- * there, because those are ordered on by the database. Nothing orders by trust: it is read
- * for the person in front of you, one row at a time.
+ * Denormalising is what `schematics.views` does, and it is right there, because the
+ * database orders on it. Nothing orders by trust: it is read for the person in front of
+ * you, one row at a time.
  *
  * `discord_created_at` is a gate rather than a measure of merit. A Discord account made
  * this morning to vote is the cheapest attack on any of this, and account age is the one

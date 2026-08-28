@@ -11,6 +11,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IconController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\ModerationController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SchematicSearchController;
@@ -91,6 +92,11 @@ Route::get('/schematiques', fn (Request $request) => redirect(
    they asked for. */
 Route::get('/mes-schematiques', fn () => redirect('/mes-schemas', 301));
 Route::get('/s/{schematic}', [SchematicController::class, 'show']);
+
+/* A member's page. Accounts only: the imported catalogue credits author names with no
+   account behind them, and a page each would be thousands of near empty pages that let
+   anybody claim a name that is not theirs. */
+Route::get('/u/{user}', [ProfileController::class, 'show']);
 
 /*
  * Two schematics side by side, which is the question the catalogue creates.
