@@ -82,7 +82,7 @@ reading the site's name.
 | `--accent` | `#ffd37f` | the brand, and one thing per screen |
 | `--good` `--bad` `--warn` | `#84d98b` `#ff8b8b` `#ffbe6b` | states, never decoration |
 
-### Thirteen colours that should have been tokens
+### Eight colours that should have been tokens
 
 `forge.css` opens on this sentence:
 
@@ -186,8 +186,8 @@ Three different framings of one mark, because the systems do not crop alike:
 
 ## Per-schematic share cards
 
-`app/Services/SocialCard.php` composes them with GD, `SocialCardController` serves them at
-`/s/{slug}/carte.jpg` and keeps them on disk.
+`app/Services/Cards/SchematicCard.php` composes them with GD, `SocialCardController` serves
+them at `/s/{slug}/carte.jpg` and keeps them on disk.
 
 The page used to push **the raw plan render** as `og:image`. A plan is square or very long
 depending on what was copied, so an unfurler crops it or sits it on black bars, and it

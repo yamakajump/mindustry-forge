@@ -41,7 +41,7 @@ output is a bug here, not a matter of opinion.
 npm run oracle          # replays every recorded scenario against its measurement
 ```
 
-**Largest disagreement: 0.00%, over 164 recorded scenarios** (27 August 2026). Two of them
+**Largest disagreement: 0.00%, over 164 recorded scenarios** (28 August 2026). Two of them
 have never been measured, and say so rather than passing quietly.
 
 **This runs on every push.** The replay needs no server and no game, only the measurements
@@ -72,7 +72,7 @@ node tools/gap.mjs
 ```
 
 ```
-88 scenarios compared, of 164 recorded      (27 August 2026)
+88 scenarios compared, of 164 recorded      (28 August 2026)
   agree within 20%                    49
   the throughput is wrong             27
   right throughput, wrong container   12
@@ -174,11 +174,11 @@ cd site && php artisan test  # the application
 python -m pytest tests/ -q   # the file formats. Runs no game, despite sitting by the bench
 ```
 
-Counts on 27 August 2026: 565, 141 and 8. They will be wrong tomorrow, which is why they
+Counts on 28 August 2026: 723, 499 and 16. They will be wrong tomorrow, which is why they
 carry a date.
 
 Use `npm test` rather than a glob of your own. `node --test "tests/js/*.test.js"` looks
-equivalent and silently skips every subdirectory, which is 196 of the 565.
+equivalent and silently skips every subdirectory, which is 304 of the 723.
 
 ## What is where
 

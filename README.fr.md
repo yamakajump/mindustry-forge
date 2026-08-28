@@ -42,7 +42,7 @@ sa sortie mesurée est un bug ici, pas une affaire d'opinion.
 npm run oracle          # rejoue chaque scénario enregistré contre sa mesure
 ```
 
-**Écart maximum : 0,00 %, sur 164 scénarios enregistrés** (27 août 2026). Deux d'entre eux
+**Écart maximum : 0,00 %, sur 164 scénarios enregistrés** (28 août 2026). Deux d'entre eux
 n'ont jamais été mesurés, et le disent au lieu de passer en silence.
 
 **Ça tourne à chaque poussée.** Le rejeu ne demande ni serveur ni jeu, seulement les mesures
@@ -75,7 +75,7 @@ node tools/gap.mjs
 ```
 
 ```
-88 scénarios comparés, sur 164 enregistrés    (27 août 2026)
+88 scénarios comparés, sur 164 enregistrés    (28 août 2026)
   d'accord à 20 % près                  49
   le débit est faux                     27
   bon débit, mauvais contenant          12
@@ -179,11 +179,11 @@ cd site && php artisan test  # l'application
 python -m pytest tests/ -q   # les formats de fichier. Ne lance aucun jeu, malgré le banc à côté
 ```
 
-Comptes au 27 août 2026 : 565, 141 et 8. Ils seront faux demain, et c'est pour ça qu'ils
+Comptes au 28 août 2026 : 723, 499 et 16. Ils seront faux demain, et c'est pour ça qu'ils
 portent une date.
 
 Utilise `npm test` plutôt qu'un motif à toi. `node --test "tests/js/*.test.js"` a l'air
-équivalent et saute silencieusement chaque sous-dossier, soit 196 des 565.
+équivalent et saute silencieusement chaque sous-dossier, soit 304 des 723.
 
 ## Ce qu'il y a où
 

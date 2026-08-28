@@ -14,9 +14,8 @@ watches, and nothing here compares one branch against another: a side branch tha
 diverges from `main` is invisible to every check in this repository, so keep any side
 branch short lived and merge it early.
 
-`tests.yml` and `verify-catalogue.yml` reference paths that no longer exist in this
-repository (`forge/server_setup.py`, `gradlew`); do not rely on them. `site.yml` is the CI
-that matters, and it runs the oracle (see below).
+`tests.yml` predates the restart and does not cover `site/`; do not rely on it for a change
+there. `site.yml` is the CI that matters for the site, and it runs the oracle (see below).
 
 ## The two rules of this repository
 
@@ -89,12 +88,12 @@ inherited sockets, so the new pool never appears, and nothing reports an error.
 the catalogue, so a stale figure can be found. What decides an answer belongs in the
 hashed sources; what only decides how a page reads does not.
 
-The hashed sources are `site/public/forge/` and `tools/ingest.mjs`: the ingest pass
+The hashed sources are a fixed list of files under `site/public/forge/` (`EngineVersion::SOURCES`), plus `tools/ingest.mjs`: the ingest pass
 decides which computed fields reach a column, so a field computed but dropped there would
 otherwise read as current everywhere while never actually reaching storage. Data that only
 changes presentation, such as a colour registry, is kept out of the hashed sources on
-purpose: including it would stale every stored analysis and force a full re-measurement
-for no numeric reason.
+purpose, and so is the renderer: including either would stale every stored analysis and
+force a full re-measurement for no numeric reason.
 
 To check the boundary after a change, compare the checksum of `blocks.json` before and
 after: identical means the change touched nothing hashed.

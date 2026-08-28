@@ -44,9 +44,10 @@ rows all tied on zero is not a smaller version of the catalogue's problem; it is
 problem where the top of the page is the whole page.
 
 **And the second threshold, which is this spec's own.** `/dossiers` itself does not go into
-the navigation until public folders exist at all. An empty gallery reachable from the menu
-teaches every visitor, once, that the feature is dead. The `'ready' => false` flag in
-`config/nav.php` is exactly this mechanism, and spec 1 already uses it for `/mes-favoris`.
+the navigation until public folders exist at all: it has no entry of its own in
+`config/nav.php` at all, distinct from `nav.menu.dossiers`, which points at the private
+`/mes-dossiers` gallery. An empty public gallery reachable from the menu would teach every
+visitor, once, that the feature is dead.
 
 An empty `/dossiers` reached by its address still answers, and says there are none yet.
 Refusing to link it is not the same as hiding it.
