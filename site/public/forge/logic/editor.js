@@ -12,7 +12,7 @@
  * They are not the same the moment a program has a comment or a label in it, and getting
  * that wrong is the most common way a hand-written jump lands one line off.
  *
- * Nothing here runs the program. `docs/todo.md` §7.
+ * Nothing here runs the program. See `docs/known-gaps.md`.
  */
 
 import { t } from "../i18n.js";

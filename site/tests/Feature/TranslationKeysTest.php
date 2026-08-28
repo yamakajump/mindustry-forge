@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\File;
  * way today: a button Blade writes and `manage.js` puts back after it has flashed.
  */
 
-/** The domains the naming convention allows, from docs/fonctionnalites.md. */
+/** The domains the naming convention allows, from the conventions in CLAUDE.md. */
 const DOMAINS = ['nav', 'vitrine', 'schema', 'analyse', 'edition', 'outils', 'blocs', 'compte'];
 
 /**

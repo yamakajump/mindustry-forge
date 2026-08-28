@@ -224,34 +224,6 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 .accueil-mots h2 { margin: 0 0 10px; font-size: 19px; }
 .accueil-mots p { margin: 0 0 12px; color: var(--dim); }
 
-/* Ce que le catalogue a deja mange. Choisi sur une production mesuree, ce qui ecarte le
-   bac a sable sans regle a maintenir : une schematique nommee `Fps Droper` ne produit
-   rien, donc elle ne peut pas remonter. */
-.deja { margin-top: 22px; }
-.deja h3 { margin: 0 0 6px; font-size: 16px; }
-.deja .hint-line { margin: 0 0 10px; }
-
-.deja-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.deja-liste a {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-  min-height: 44px; padding: 6px 10px; border-radius: 6px; color: var(--ink);
-}
-.deja-liste a:hover { background: var(--raised); text-decoration: none; }
-.deja-nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.deja-chiffres { color: var(--dim); font-size: 13px; white-space: nowrap; }
-
-/* Sous 520 px la ligne ne tient plus : le nom tronque, mais les chiffres ne peuvent pas
-   se couper sans perdre leur sens, alors ils poussaient la rangee a 455 px dans une
-   fenetre de 390. Mesure avant correction, et c'est un debordement lateral, donc une
-   page qui glisse sous le pouce et pas un defaut d'alignement. Ils passent dessous. */
-@media (max-width: 520px) {
-  .deja-liste a {
-    flex-direction: column; align-items: flex-start; gap: 2px;
-    padding-top: 8px; padding-bottom: 8px;
-  }
-  .deja-nom { max-width: 100%; }
-}
-
 .porte { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .porte .dim { color: var(--dim); }
 .porte .button { text-decoration: none; }
@@ -923,4 +895,84 @@ select {
 .vitrine-pastille:hover { border-color: var(--accent); text-decoration: none; }
 .vitrine-pastille.on {
   border-color: var(--accent); background: var(--raised); color: var(--accent);
+}
+
+/* La vitrine de l'accueil, et l'etagere des outils.
+
+   En fin de fichier et sans toucher une regle existante : plusieurs sessions ecrivent dans
+   ce fichier en meme temps, et deux ajouts en queue fusionnent la ou deux modifications au
+   milieu se disputent. */
+
+.vitrine-accueil { margin-top: 34px; }
+.vitrine-accueil h2 { margin: 0 0 6px; font-size: 19px; }
+.vitrine-accueil .hint-line { margin: 0 0 14px; }
+
+/* Trois par rangee, puis deux, puis une. `auto-fill` plutot qu'un nombre fixe : les six
+   tuiles n'ont pas a savoir combien de place elles ont, et une largeur minimale de 220 px
+   est ce en dessous de quoi un plan de 30 tuiles de large n'est plus lisible. */
+.plans {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 14px;
+  /* Trois par rangee sur un ecran large, ce qui range six tuiles en deux rangees pleines.
+     `auto-fill` a 220 px en donnait quatre, donc une derniere rangee de deux qui se lisait
+     comme un reste. La largeur minimale est ce qui decide du nombre de colonnes ici, pas un
+     nombre fixe : sous 640 px il en reste deux, puis une. */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+.plan-tuile {
+  background: var(--panel); border: 1px solid var(--edge); border-radius: var(--radius);
+  padding: 10px; display: flex; flex-direction: column; gap: 6px;
+}
+.plan-tuile a { color: var(--ink); display: block; }
+.plan-tuile a:hover { text-decoration: none; }
+.plan-tuile a:hover .plan-nom { color: var(--accent); }
+
+/* Le plateau sur lequel `apercu.js` dessine. La hauteur est fixe et la largeur suit la
+   colonne : sans hauteur, le cadre vaut zero pixel au moment ou le module mesure la place
+   dont il dispose, et le plan sort a un pixel de haut. Mesure sur la liste des schemas,
+   ou le meme piege existe. */
+.plan-cadre {
+  background: var(--stage); border-radius: 6px;
+  height: 150px; display: flex; align-items: center; justify-content: center;
+  color: var(--dim); font-size: 12px; overflow: hidden;
+}
+.plan-cadre canvas { display: block; }
+.plan-nom {
+  display: block; margin-top: 8px; font-size: 15px; font-weight: normal;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.plan-chiffres {
+  margin: 0; color: var(--dim); font-size: 13px; line-height: 1.5;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+}
+/* L'image du produit s'aligne sur le texte plutot que sur la ligne de base, sans quoi un
+   sprite de 18 px pousse l'interligne de la rangee entiere. */
+.plan-chiffres .icone { vertical-align: middle; flex: none; }
+
+.outils { margin-top: 34px; }
+.outils h2 { margin: 0 0 14px; font-size: 19px; }
+.outils-liste {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+}
+.outils-liste a {
+  display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 4px 12px;
+  align-items: center;
+  height: 100%; padding: 12px; border-radius: var(--radius);
+  background: var(--panel); border: 1px solid var(--edge); color: var(--ink);
+}
+.outils-liste a:hover {
+  background: var(--raised-hover); border-color: var(--accent); text-decoration: none;
+}
+.outils-liste img { grid-row: span 2; image-rendering: pixelated; }
+.outils-liste strong { font-weight: normal; font-size: 16px; }
+.outils-liste span { color: var(--dim); font-size: 13px; line-height: 1.45; }
+
+/* Sous 520 px le sprite passe au-dessus du texte plutot que de lui voler 44 px de largeur
+   sur les 390 que le telephone donne. */
+@media (max-width: 520px) {
+  .outils-liste a { grid-template-columns: minmax(0, 1fr); }
+  .outils-liste img { grid-row: auto; }
+  .plan-cadre { height: 170px; }
 }

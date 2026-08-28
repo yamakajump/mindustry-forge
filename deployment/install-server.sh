@@ -2,7 +2,7 @@
 #######################################################################
 # Provisionnement de mindustry-forge sur un serveur nu.
 #
-#   ssh codwingz-apps "bash /chemin/vers/install-server.sh"
+#   ssh <serveur> "bash /chemin/vers/install-server.sh"
 #
 # Ce script existe pour une seule raison : que la machine soit
 # reconstruisible sans avoir a se souvenir de ce qui a ete tape a la
@@ -21,7 +21,7 @@ set -euo pipefail
 APP_DIR="/var/www/mindustry-forge"
 SITE_DIR="${APP_DIR}/site"
 REPO="https://github.com/yamakajump/mindustry-forge.git"
-BRANCH="${DEPLOY_BRANCH:-restart/place-de-marche}"
+BRANCH="${DEPLOY_BRANCH:-main}"
 APP_USER="mforge"
 DB_NAME="mindustry_forge"
 DB_USER="mforge"

@@ -79,7 +79,7 @@ node tools/gap.mjs
 ```
 
 Moving the report onto the engine changes every number on the site at once, so it is stated
-work rather than silent work. `docs/todo.md` carries it.
+work rather than silent work. [`docs/known-gaps.md`](docs/known-gaps.md) carries it.
 
 ## It runs on your machine
 
@@ -192,7 +192,7 @@ equivalent and silently skips every subdirectory, which is 196 of the 565.
 | `bench/` | runs the real game and measures the same schematic |
 | `tests/js/` | the analysis, run exactly as the page runs it |
 | `tools/` | the oracle, the gap, and the generators for the catalogue and the sprites |
-| `docs/` | the plan, what is done, what is left, and the defects we know by name |
+| `docs/` | the roadmap, the gaps we know by name, and the pitfalls already paid for |
 
 ## The `.msch` format is not guessed
 
@@ -207,8 +207,9 @@ decide before writing code whether the rules suit you. Conduct is in
 [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), and vulnerabilities go through GitHub's private
 reporting rather than an issue: [`SECURITY.md`](SECURITY.md).
 
-`docs/fonctionnalites.md` is the plan: what exists, what is being built, and who holds what.
-`docs/todo.md` names the known defects, including the one above.
+[`docs/roadmap.md`](docs/roadmap.md) is the plan: what exists, what is being built, and in
+which order. [`docs/known-gaps.md`](docs/known-gaps.md) names what the engine does not model
+and what the bench does not prove, including the one above.
 
 Two rules govern the repository, and both are in `CLAUDE.md`:
 

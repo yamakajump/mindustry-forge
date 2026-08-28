@@ -17,7 +17,7 @@
  *
  * Reading is all it does. The program is never executed: a property the engine does not
  * model would read back as null, a branch would go the other way, and nothing would say so.
- * That is settled in `docs/todo.md` §7.
+ * That is settled in `docs/known-gaps.md`.
  */
 
 import { instruction, resolved, inEnum, isContent, catalogueOf } from "./catalogue.js";
