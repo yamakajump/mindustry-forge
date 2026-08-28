@@ -160,16 +160,16 @@ it('sert la meme favicone sur toutes les pages', function () {
 });
 
 it('rend dans Blade exactement ce que la config declare, pour un visiteur', function () {
-    expect(navIn($this->get('/schematiques')->getContent(), by: 'text'))
+    expect(navIn($this->get('/schemas')->getContent(), by: 'text'))
         ->toBe(expectedLabels(signedIn: false));
 });
 
 it('ouvre `Les miennes` a qui est connecte, et a personne d autre', function () {
-    $guest = $this->get('/schematiques')->getContent();
-    expect($guest)->not->toContain('/mes-schematiques');
+    $guest = $this->get('/schemas')->getContent();
+    expect($guest)->not->toContain('/mes-schemas');
 
-    $member = $this->actingAs(User::factory()->create())->get('/schematiques')->getContent();
-    expect($member)->toContain('/mes-schematiques');
+    $member = $this->actingAs(User::factory()->create())->get('/schemas')->getContent();
+    expect($member)->toContain('/mes-schemas');
     expect(navIn($member, by: 'text'))->toBe(expectedLabels(signedIn: true));
 });
 
@@ -178,7 +178,7 @@ it('cache les entrees eteintes plutot que de les afficher mortes', function () {
        une liste qui perime le jour ou une voie allume son entree, et elle perime en
        rougissant sur une entree devenue legitime : le prochain reflexe est de la retirer
        de la liste, ce qui retire aussi la verification. */
-    $rendered = $this->get('/schematiques')->getContent();
+    $rendered = $this->get('/schemas')->getContent();
 
     $eteintes = collect(config('nav'))
         ->flatMap(fn ($entree) => $entree['menu'] ?? [$entree])

@@ -71,7 +71,7 @@ it('hands the list its codes so the grid stops being grey rectangles', function 
     $one = schema(['name' => 'Une']);
     $two = schema(['name' => 'Deux']);
 
-    $html = $this->get('/schematiques')->assertOk()->getContent();
+    $html = $this->get('/schemas')->assertOk()->getContent();
 
     expect($html)->toContain('data-code="'.$one->code.'"');
     expect($html)->toContain('data-code="'.$two->code.'"');
@@ -82,7 +82,7 @@ it('asks for a big code instead of carrying it, and still draws the tile', funct
     Storage::fake('public');
     $gros = schema(['name' => 'Enorme', 'code' => str_repeat('A', 16385)]);
 
-    $html = $this->get('/schematiques')->assertOk()->getContent();
+    $html = $this->get('/schemas')->assertOk()->getContent();
 
     /* Measured on the live catalogue, a page of 24 carries 44 kB of codes, median 1 kB and
        largest 8.7 kB. The cap guards the shape the column allows, not the shapes it holds:

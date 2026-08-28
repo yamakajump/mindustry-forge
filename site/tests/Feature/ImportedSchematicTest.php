@@ -36,7 +36,7 @@ it('ne montre pas le catalogue non publie aux visiteurs deconnectes', function (
 
     $this->get("/s/{$imported->slug}")->assertNotFound();
     $this->actingAs(User::factory()->create())->get("/s/{$imported->slug}")->assertNotFound();
-    $this->get('/schematiques')->assertOk()->assertDontSee('Pas encore publiee');
+    $this->get('/schemas')->assertOk()->assertDontSee('Pas encore publiee');
 
     expect($imported->visibleTo(null))->toBeFalse();
 });
@@ -57,7 +57,7 @@ it('dit sur la page d ou vient une schematique importee', function () {
 
     $this->get("/s/{$imported->slug}")
         ->assertOk()
-        ->assertSee('Schematique importee')
+        ->assertSee('Schéma importé')
         ->assertSee('mindustry-tool.com')
         ->assertSee('quelqu un')
         // The honest part: nobody read it, and it may simply not work.
@@ -70,7 +70,7 @@ it('ne colle pas cette mention sur ce qui a ete poste ici', function () {
 
     $this->get("/s/{$mine->slug}")
         ->assertOk()
-        ->assertDontSee('Schematique importee');
+        ->assertDontSee('Schéma importé');
 });
 
 it('signale les imports dans la vitrine aussi', function () {
@@ -79,7 +79,7 @@ it('signale les imports dans la vitrine aussi', function () {
         'visibility' => 'public', 'name' => 'Prise ailleurs',
     ]);
 
-    $this->get('/schematiques')->assertOk()->assertSee('importee');
+    $this->get('/schemas')->assertOk()->assertSee('importee');
 });
 
 it('renvoie vers la page d origine plutot que de citer sans lier', function () {

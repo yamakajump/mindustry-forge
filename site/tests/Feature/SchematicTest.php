@@ -139,7 +139,7 @@ it('trouve une schematique par ce qu elle produit', function () {
         'analysis' => ['potentialPerMinute' => ['silicon' => 25.0]],
     ]);
 
-    $this->get('/schematiques?produit=graphite')
+    $this->get('/schemas?produit=graphite')
         ->assertOk()
         ->assertSee('Presse a graphite')
         ->assertDontSee('Four a silicium');
@@ -153,7 +153,7 @@ it('ne confond pas produire et couter', function () {
         'produces' => ['silicon' => 10.0], 'needs' => ['graphite' => 90.0],
     ]);
 
-    $this->get('/schematiques?produit=graphite')
+    $this->get('/schemas?produit=graphite')
         ->assertOk()
         ->assertDontSee('Coute du graphite');
 });
@@ -170,14 +170,14 @@ it('met les mieux faites devant, pas les plus recentes', function () {
         'blocks' => 10, 'power_made' => 300, 'power_used' => 0,
     ]);
 
-    $page = $this->get('/schematiques?tri=best')->assertOk()->getContent();
+    $page = $this->get('/schemas?tri=best')->assertOk()->getContent();
     expect(strpos($page, 'Petite et vive'))->toBeLessThan(strpos($page, 'Grosse et molle'));
 });
 
 it('ne montre pas les schematiques privees dans la vitrine', function () {
     Schematic::factory()->create(['visibility' => 'private', 'name' => 'Gardee pour moi']);
 
-    $this->get('/schematiques')->assertOk()->assertDontSee('Gardee pour moi');
+    $this->get('/schemas')->assertOk()->assertDontSee('Gardee pour moi');
 });
 
 it('garde une schematique non repertoriee accessible par lien', function () {
@@ -188,7 +188,7 @@ it('garde une schematique non repertoriee accessible par lien', function () {
     ]);
 
     $this->get("/s/{$schematic->slug}")->assertOk()->assertSee('Brouillon partage');
-    $this->get('/schematiques')->assertOk()->assertDontSee('Brouillon partage');
+    $this->get('/schemas')->assertOk()->assertDontSee('Brouillon partage');
 });
 
 it('laisse son auteur changer qui la voit', function () {
