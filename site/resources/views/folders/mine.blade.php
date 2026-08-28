@@ -58,6 +58,6 @@
     @endforeach
   </div>
 
-  @include('partials.pages', ['paginator' => $folders])
+  {{ $folders->links() }}
 </main>
 @endsection

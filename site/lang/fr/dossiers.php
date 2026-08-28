@@ -11,6 +11,10 @@
 return [
     'page' => [
         'les-miens' => 'Mes dossiers',
+        'galerie' => 'Les dossiers partagés',
+        'trier' => 'Trier par',
+        'appliquer' => 'Appliquer',
+        'galerie-vide' => "Personne n'a encore partagé de dossier.",
         'vide' => "Aucun dossier pour l'instant.",
         'creer-premier' => 'Créer le premier',
         'contenu' => 'Ce que contient ce dossier',

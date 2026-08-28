@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Folder;
+use App\Models\FolderLike;
 use App\Models\Schematic;
 use App\Services\BlockCatalogue;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +17,58 @@ use Illuminate\View\View;
  */
 class FolderController extends Controller
 {
+    /** How a gallery can be ordered. Literals, like `BrowseController::ORDERS`. */
+    private const ORDERS = [
+        'new' => 'Les plus récents',
+        'garnis' => 'Les mieux garnis',
+        'aimes' => 'Les plus aimés',
+    ];
+
+    /** La taille d'une page, et donc le seuil : voir `index()`. */
+    private const PER_PAGE = 24;
+
+    /**
+     * The public folders, and the two thresholds that keep the page honest.
+     *
+     * The ordering waits for a page's worth of liked folders, derived from the page size
+     * rather than written as a number so that changing one cannot leave a true-looking
+     * sentence beside a stale threshold. There will be forty public folders in the first
+     * month against fifteen thousand schematics: a ranking over forty rows all tied on zero
+     * is not a smaller version of the catalogue's problem, it is the same problem where the
+     * top of the page is the whole page.
+     */
+    public function index(Request $request): View
+    {
+        $public = Folder::query()->where('visibility', Schematic::PUBLIC);
+
+        $ranked = (clone $public)->where('likes', '>', 0)->count() >= self::PER_PAGE;
+
+        $orders = self::ORDERS;
+        if (! $ranked) {
+            unset($orders['aimes']);
+        }
+
+        $order = array_key_exists($request->query('tri'), $orders) ? $request->query('tri') : 'new';
+
+        $public = match ($order) {
+            'garnis' => $public->withCount('schematics')->orderByDesc('schematics_count'),
+            'aimes' => $public->orderByDesc('likes'),
+            default => $public->orderByDesc('created_at'),
+        };
+
+        return view('folders.index', [
+            /* Un dernier depart, pour que l'ordre soit total : des milliers de dossiers
+               seront a zero schema ou a un j'aime, et deux lignes egales reviennent dans
+               l'ordre qui arrange la base, qui n'a aucune raison de choisir le meme deux
+               fois. Sans ca, une page montre un dossier deux fois et un autre jamais. */
+            'folders' => $public->withCount(['schematics', 'children'])
+                ->with('user')->orderByDesc('id')
+                ->paginate(self::PER_PAGE)->withQueryString(),
+            'orders' => $orders,
+            'order' => $order,
+        ]);
+    }
+
     public function mine(Request $request): View
     {
         return view('folders.mine', [
@@ -68,6 +121,8 @@ class FolderController extends Controller
                 ->orderByDesc('folder_items.created_at')
                 ->paginate(24),
             'withheld' => $withheld,
+            'aime' => $request->user() !== null && FolderLike::where('user_id', $request->user()->id)
+                ->where('folder_id', $folder->id)->exists(),
         ]);
     }
 

@@ -4,6 +4,13 @@
 @section('og-title', $folder->name)
 @section('og-description', $folder->description ?: $folder->name)
 
+@push('head')
+  @auth
+    <script src="/forge/keep.js" type="module" defer></script>
+    <script src="/forge/dossiers.js" type="module" defer></script>
+  @endauth
+@endpush
+
 @section('body')
 <main>
   @if($ancestors !== [])
@@ -20,6 +27,19 @@
     @endif
     {{ $folder->name }}
   </h1>
+
+  @if($folder->visibility !== 'private')
+    <div class="keep" data-kind="dossier" data-dossier="{{ $folder->slug }}">
+      @auth
+        <button type="button" data-aime aria-pressed="{{ $aime ? 'true' : 'false' }}">
+          <span class="mot">{{ __($aime ? 'schema.aime.retirer' : 'schema.aime.bouton') }}</span>
+        </button>
+      @else
+        <a class="bouton" href="/auth/discord">{{ __('schema.aime.bouton') }}</a>
+      @endauth
+      <span class="compte"{{ $folder->likes > 0 ? '' : ' hidden' }}>{{ $folder->likes }} {{ __('schema.unite.jaime') }}</span>
+    </div>
+  @endif
 
   @if($folder->description)
     <p class="sub">{{ $folder->description }}</p>
@@ -87,7 +107,7 @@
       @endforeach
     </div>
 
-    @include('partials.pages', ['paginator' => $schematics])
+    {{ $schematics->links() }}
   @endif
 </main>
 @endsection

@@ -15,8 +15,13 @@ import { ready, t } from "./i18n.js";
 const token = () => decodeURIComponent(
   (document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || "");
 
-async function send(slug, what, method) {
-  const answer = await fetch(`/api/schematiques/${slug}/${what}`, {
+/* Deux noms, un seul geste. `data-kind` dit lequel ; un second module pour la meme
+   mecanique sur un autre objet serait une seconde chose a reparer le jour ou le geste est
+   faux. */
+const ROOTS = { schema: "schematiques", dossier: "dossiers" };
+
+async function send(kind, slug, what, method) {
+  const answer = await fetch(`/api/${ROOTS[kind] ?? ROOTS.schema}/${slug}/${what}`, {
     method,
     headers: {
       "Content-Type": "application/json",
@@ -39,7 +44,8 @@ document.addEventListener("click", async (event) => {
   if (!button) return;
 
   const box = button.closest(".keep");
-  const slug = box?.dataset.schema;
+  const kind = box?.dataset.kind || "schema";
+  const slug = box?.dataset.schema || box?.dataset.dossier;
   if (!slug) return;
 
   const liking = button.hasAttribute("data-aime");
@@ -57,7 +63,7 @@ document.addEventListener("click", async (event) => {
   }
 
   try {
-    const state = await send(slug, liking ? "aime" : "favori", was ? "DELETE" : "POST");
+    const state = await send(kind, slug, liking ? "aime" : "favori", was ? "DELETE" : "POST");
 
     if (liking) {
       const count = box.querySelector(".compte");

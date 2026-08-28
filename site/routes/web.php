@@ -8,6 +8,7 @@ use App\Http\Controllers\CompareController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\FolderItemController;
+use App\Http\Controllers\FolderLikeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IconController;
 use App\Http\Controllers\LikeController;
@@ -150,6 +151,7 @@ Route::get('/api/schematiques/{schematic}', [SchematicController::class, 'read']
 
 /* Un dossier, et ce qu'il contient. Adresse a lui, comme /s/ pour un schema, parce qu'un
    dossier se donne par un lien et qu'un fragment ne se partage pas. */
+Route::get('/dossiers', [FolderController::class, 'index']);
 Route::get('/d/{folder}', [FolderController::class, 'show']);
 
 Route::middleware('auth')->group(function () {
@@ -158,6 +160,11 @@ Route::middleware('auth')->group(function () {
         ->middleware('throttle:30,1');
     Route::patch('/api/dossiers/{folder}', [FolderController::class, 'update']);
     Route::delete('/api/dossiers/{folder}', [FolderController::class, 'destroy']);
+
+    Route::post('/api/dossiers/{folder}/aime', [FolderLikeController::class, 'store'])
+        ->middleware('throttle:60,1');
+    Route::delete('/api/dossiers/{folder}/aime', [FolderLikeController::class, 'destroy'])
+        ->middleware('throttle:60,1');
 
     Route::post('/api/dossiers/{folder}/schemas/{schematic}', [FolderItemController::class, 'store'])
         ->middleware('throttle:60,1');
