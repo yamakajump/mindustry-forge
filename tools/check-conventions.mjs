@@ -51,6 +51,7 @@ const SUBJECT_PATTERN = new RegExp(`^(?:${ALLOWED_TYPES.join("|")})(?:\\([^)]+\\
 /** Bot commits this repository does not write by hand, so its own rules do not bind them. */
 const BOT_AUTHORS = new Set([
   "release-please[bot]", "github-actions[bot]", "release-please", "GitHub Actions",
+  "dependabot[bot]", "dependabot",
 ]);
 
 /** Everything after the first `": "`, which is what the fifty-character limit measures. */
@@ -64,9 +65,15 @@ function subjectOf(line) {
  * the three rules. Returns an array of teaching sentences, each naming the rule broken and
  * showing the text that broke it; an empty array means the line is clean.
  */
-export function checkSubjectLine(rawLine) {
+export function checkSubjectLine(rawLine, author = null) {
   const line = rawLine.trim();
   const errors = [];
+  /* A bot's title is generated, not written, and no wording here changes it. Dependabot
+     opens with "bump the actions group across 1 directory with 6 updates", which is 55
+     characters and describes the update honestly; refusing it would block a dependency
+     update on a style rule. The format and the em dash still bind, because those a bot
+     either satisfies or does not, and both of ours satisfy them. */
+  const written = !BOT_AUTHORS.has(author);
 
   if (!SUBJECT_PATTERN.test(line)) {
     errors.push(
@@ -76,7 +83,7 @@ export function checkSubjectLine(rawLine) {
   }
 
   const subject = subjectOf(line);
-  if (subject.length > MAX_SUBJECT_LENGTH) {
+  if (written && subject.length > MAX_SUBJECT_LENGTH) {
     errors.push(
       `subject is ${subject.length} characters, the limit is ${MAX_SUBJECT_LENGTH}: `
       + `"${subject}"`,
@@ -161,6 +168,7 @@ export function checkDiffForEmDash(diffText) {
 
 const USAGE = `Usage:
   node tools/check-conventions.mjs --subject "<pull request title or commit subject>"
+                                   [--author <login, to spare a bot's generated title>]
   node tools/check-conventions.mjs --commits-file <path to JSON array of commits>
   node tools/check-conventions.mjs --diff-file <path to a unified diff>
 
@@ -171,6 +179,7 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i];
     if (flag === "--subject") args.subject = argv[++i];
+    else if (flag === "--author") args.author = argv[++i];
     else if (flag === "--commits-file") args.commitsFile = argv[++i];
     else if (flag === "--diff-file") args.diffFile = argv[++i];
   }
@@ -182,7 +191,8 @@ function main(argv) {
   const errors = [];
 
   if (args.subject !== undefined) {
-    errors.push(...checkSubjectLine(args.subject).map((issue) => `pull request title ${issue}`));
+    errors.push(...checkSubjectLine(args.subject, args.author)
+      .map((issue) => `pull request title ${issue}`));
   }
 
   if (args.commitsFile) {

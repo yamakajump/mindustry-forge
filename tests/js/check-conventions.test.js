@@ -40,6 +40,23 @@ function tempFile(name, content) {
   return path;
 }
 
+test("a bot's generated title is spared the length limit", () => {
+  const long = "chore(deps): bump the actions group across 1 directory with 6 updates";
+  assert.equal(checkSubjectLine(long).length, 1);
+  assert.deepEqual(checkSubjectLine(long, "dependabot[bot]"), []);
+});
+
+test("a bot is spared the length and nothing else", () => {
+  const shapeless = checkSubjectLine("bumped some stuff", "dependabot[bot]");
+  assert.equal(shapeless.length, 1);
+  assert.match(shapeless[0], /format/);
+});
+
+test("an unknown author is held to every rule", () => {
+  const long = "chore(deps): bump the actions group across 1 directory with 6 updates";
+  assert.equal(checkSubjectLine(long, "yamakajump").length, 1);
+});
+
 test("a clean conventional subject passes all three checks", () => {
   assert.deepEqual(checkSubjectLine("fix(vitrine): show the missing thumbnail"), []);
 });
