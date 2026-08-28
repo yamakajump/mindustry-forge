@@ -44,24 +44,45 @@ export const D8 = [
   [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1],
 ];
 
-/** The floor a tile contributes to its neighbour: its overlay when it has one, else itself. */
-function contributorAt(ground, x, y, mine) {
-  const layers = ground[`${x},${y}`];
-  if (!layers?.floor) return null;
-  return layers.overlay && layers.floor !== mine ? layers.overlay : layers.floor;
+/**
+ * The floor a tile contributes to its neighbour, which is its floor and never its overlay.
+ *
+ * The game's expression is `(this != tile.floor() && other.overlay() != air) ? other.overlay()
+ * : other.floor()`. The tempting misreading is that `this` is the neighbour, making the clause
+ * "prefer the layer on top". It is not: `this` is the floor whose `drawEdges` is running and
+ * `tile` is the tile being drawn, so `this != tile.floor()` is a property of the tile at the
+ * centre and is true only on the overlay pass described beside `blendersAt`. On the floor pass,
+ * the one modelled here, it is false on every tile, and the neighbour's own overlay never
+ * enters the choice.
+ *
+ * Getting this wrong does not swap one sheet for another. Every overlay in the catalogue has
+ * `sheet: null`, so returning one drops the neighbour at the sheet guard below: painting copper
+ * ore on a grass tile bordering stone would stop the grass bleeding at that tile alone, which
+ * punches a hole in a boundary that is continuous everywhere else.
+ */
+function contributorAt(ground, x, y) {
+  return ground[`${x},${y}`]?.floor || null;
 }
 
 /**
  * Which neighbouring floors bleed onto this tile, and from which sides.
  *
- * `Floor.drawEdges` of v159.7, decompiled from `server-release.jar` rather than read off a
- * wiki. The clause worth naming is `doEdge`: a neighbour bleeds when its blend id is higher
- * **or when this tile's floor has no edge sheet at all**. Drop the second half and every
- * patch of a sheetless floor reads as a cut-out with hard borders, which is the state this
- * replaces rather than an improvement on it.
+ * The floor pass of `Floor.drawEdges` in v159.7, decompiled from `server-release.jar` rather
+ * than read off a wiki. Two departures, named rather than left for a reader to discover:
  *
- * Returns one entry per distinct floor, sorted by blend id ascending so that two of them
- * stack the same way on every frame, each carrying the directions it came from.
+ * - `drawBase` runs `drawMain; if(drawEdgeIn) drawEdges; drawOverlay`, and then a second time
+ *   for the tile's own overlay, with the overlay's blend id and its `edges`. That second pass
+ *   is not implemented here. A tile's overlay therefore bleeds onto nothing.
+ * - `doEdge` compares `realBlendId`, which for a liquid floor under a non-ore overlay composes
+ *   a negative value rather than returning `blendId`. This compares `blendId` alone.
+ *
+ * The clause worth naming inside `doEdge` is the second half: a neighbour bleeds when its blend
+ * id is higher **or when this tile's floor has no edge sheet at all**. Drop it and every patch
+ * of a sheetless floor reads as a cut-out with hard borders, which is the state this replaces
+ * rather than an improvement on it.
+ *
+ * Returns one entry per distinct floor, sorted by blend id ascending so that two of them stack
+ * the same way on every frame, each carrying the directions it came from.
  */
 export function blendersAt(ground, x, y, floors) {
   const mine = ground[`${x},${y}`]?.floor;
@@ -69,7 +90,7 @@ export function blendersAt(ground, x, y, floors) {
   const found = new Map();
 
   for (const [index, [dx, dy]] of D8.entries()) {
-    const name = contributorAt(ground, x + dx, y + dy, mine);
+    const name = contributorAt(ground, x + dx, y + dy);
     if (!name || name === mine) continue;
 
     const other = floors[name];

@@ -96,8 +96,9 @@ const floors = {
   // A vent, which ships no sheet and borrows its group's. Fourteen real floors are shaped
   // like this, and reading `<name>-edge` alone drops every one of them.
   "stone-vent": { blend: 12, out: true, variants: 3, sheet: "stone" },
-  // An ore overlay, so the overlay branch of contributorAt has something realistic to
-  // exercise: ores are overlays in this catalogue, drawn over whatever floor is beneath.
+  // An ore overlay. Its blend id (45) beats every floor here and it is given a sheet it does
+  // not really have, so that a test which mistakenly let an overlay contribute would show it
+  // by name rather than by an empty result that half a dozen other faults also produce.
   "ore-copper": { blend: 45, out: true, variants: 1, sheet: "ore-copper" },
 };
 
@@ -156,29 +157,24 @@ test("a vent bleeds, and does it with its group's sheet", () => {
   assert.equal(found[0].sheet, "stone", "a vent must draw its group's sheet, not its own");
 });
 
-test("a neighbour's overlay contributes when its floor differs from this tile's", () => {
-  /* Ores are overlays in this catalogue: copper ore sits on stone here, and this tile is
-     grass, so contributorAt must offer the overlay rather than the stone underneath it,
-     exactly as the game draws the layer actually on top. */
-  const board = {
-    "0,0": { floor: "grass" },
+test("a neighbour's overlay changes nothing about which floor bleeds", () => {
+  /* `(this != tile.floor() && other.overlay() != air) ? other.overlay() : other.floor()`
+     reads as "prefer the layer on top" only if `this` is taken for the neighbour. It is the
+     floor being drawn, and the clause is true only on the overlay pass, which is not modelled
+     here: on the floor pass the neighbour always contributes its floor.
+
+     This is not a matter of which sheet gets drawn. Every overlay in the catalogue has no
+     sheet, so preferring one deletes the neighbour at the sheet guard. Painting ore on the
+     stone tile below would stop stone bleeding onto sand at that tile and nowhere else, which
+     is a hole in a boundary rather than a different boundary. Both boards must agree. */
+  const bare = { "0,0": { floor: "sand" }, "1,0": { floor: "stone" } };
+  const ored = {
+    "0,0": { floor: "sand" },
     "1,0": { floor: "stone", overlay: "ore-copper" },
   };
-  const found = blendersAt(board, 0, 0, floors);
-  assert.deepEqual(found.map((b) => b.name), ["ore-copper"]);
-});
-
-test("a neighbour's overlay does not override a floor matching this tile's", () => {
-  /* The ore sits on grass here, the same floor as this tile, so contributorAt must fall
-     back to the floor, which equals mine and is not a boundary. A version that returned
-     the overlay whenever one is present, without checking the floor beneath it, would
-     report ore-copper here too, since the overlay itself differs from grass and clears
-     every other check on its own. */
-  const board = {
-    "0,0": { floor: "grass" },
-    "1,0": { floor: "grass", overlay: "ore-copper" },
-  };
-  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+  assert.deepEqual(blendersAt(bare, 0, 0, floors).map((b) => b.name), ["stone"]);
+  assert.deepEqual(blendersAt(ored, 0, 0, floors), blendersAt(bare, 0, 0, floors),
+    "an ore patch on the neighbour changed which floor bleeds");
 });
 
 test("one neighbour contributes once, with every direction it came from", () => {
