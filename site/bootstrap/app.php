@@ -12,18 +12,26 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Production sits behind a Cloudflare Tunnel: nginx never receives a
-        // request from a public IP at all, cloudflared forwards everything
-        // from localhost (see deployment/nginx/mindustryforge.conf). That
-        // means the immediate peer nginx sees is always the local tunnel
-        // daemon, never one of Cloudflare's published edge ranges, so a
-        // hardcoded IP allowlist would never match and would leave every
-        // absolute URL built as http. Trusting '*' matches the actual
-        // topology (tunnel-only ingress, no other route to this origin) and
-        // accepts the risk that a direct request reaching this origin some
-        // other way could spoof its own scheme; that risk is judged smaller
-        // than an IP list that goes stale and silently stops working.
-        $middleware->trustProxies(at: '*');
+        // Cloudflare terminates TLS in front of this app and nginx listens
+        // on plain port 80 (deployment/nginx/mindustryforge.conf). Nothing
+        // in this repository establishes how nginx is reached: there is no
+        // cloudflared unit, no tunnel config, nothing under deployment/
+        // that restricts inbound traffic to Cloudflare. The listener binds
+        // every interface, so a request could in principle arrive directly.
+        //
+        // Trusting every peer address ('*') would normally make the client
+        // IP spoofable through X-Forwarded-For, which is exactly the wrong
+        // default to reach for while that reachability question is open.
+        // Narrowing the trusted headers to proto/host/port avoids that: the
+        // application still forms its own opinion of the client IP from the
+        // raw connection, so nothing here becomes spoofable regardless of
+        // who can reach port 80. Only the scheme, host and port Laravel
+        // reports for building URLs come from the proxy, which is the one
+        // fact this fix needs and the one Cloudflare is always in a
+        // position to set correctly for a request it actually forwarded.
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_PROTO
+            | Request::HEADER_X_FORWARDED_HOST
+            | Request::HEADER_X_FORWARDED_PORT);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

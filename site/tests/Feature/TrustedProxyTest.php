@@ -1,15 +1,15 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 
 uses(RefreshDatabase::class);
 
 /**
- * Production sits behind a Cloudflare Tunnel: TLS ends at Cloudflare, and the request
- * reaches nginx over plain HTTP from the local cloudflared daemon carrying an
- * `X-Forwarded-Proto: https` header. Without `trustProxies` configured, Laravel never
- * reads that header and builds every absolute URL as `http`, on a domain that only serves
- * `https`. `og:url` on the browse page is a real, user-facing instance of that bug.
+ * Cloudflare terminates TLS in front of this app, and nginx receives the forwarded
+ * request in the clear. Without `trustProxies` configured, Laravel never reads
+ * `X-Forwarded-Proto` and builds every absolute URL as `http`, on a domain that only
+ * serves `https`. `og:url` on the browse page is a real, user-facing instance of that bug.
  *
  * The second assertion is the one that proves the header, not a blanket rewrite, does the
  * work: the same route, hit without the header, must still answer `http`. A fix that
@@ -25,4 +25,21 @@ it('still builds an http og:url without the forwarded proto header', function ()
     $html = $this->get('/schemas')->getContent();
 
     expect($html)->toContain('<meta property="og:url" content="http://');
+});
+
+/*
+ * The property that would silently disappear if the trusted header set were ever widened
+ * to include X-Forwarded-For. Nothing in this repository establishes that only Cloudflare
+ * can reach this origin's port 80, so trusting '*' must not also hand a visiting request
+ * control over what the application believes its own client IP is: that would poison rate
+ * limiting and anything that logs the IP with a spoofable one, on the strength of a header
+ * anyone reaching the port directly can set.
+ */
+it('does not let a forwarded-for header change the client ip the app sees', function () {
+    Route::get('/__test/client-ip', fn () => request()->ip());
+
+    $real = $this->get('/__test/client-ip')->getContent();
+    $spoofed = $this->get('/__test/client-ip', ['X-Forwarded-For' => '203.0.113.9'])->getContent();
+
+    expect($spoofed)->toBe($real)->not->toBe('203.0.113.9');
 });
