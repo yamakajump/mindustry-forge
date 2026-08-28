@@ -4,7 +4,7 @@
   The framework's default view is written for Tailwind and this site has no Tailwind: all
   of its classes fall flat, and the SVG chevron it lays down, deprived of the `w-5 h-5`
   that was meant to constrain it, draws itself at the size of the page. The defect showed
-  on the marketplace and on "my schematics", plain to see on a screenshot.
+  on the catalogue and on "my schematics", plain to see on a screenshot.
 
   It also rendered `pagination.previous` and `pagination.next` as they are, for want of a
   `lang/fr/pagination.php`, and announced "Showing 1 to 24 of 884 results" in English on a

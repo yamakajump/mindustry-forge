@@ -147,9 +147,9 @@ function remplirObjets() {
   const planete = $("planete").value;
   const garde = $("objet").value;
   $("objet").innerHTML = "";
-  /* Triees sur le nom affiche et pas sur l'identifiant : une liste francaise rangee dans
-     l'ordre alphabetique anglais met « Charbon » avant « Cuivre » et « Sable » apres
-     « Silicium », ce qui se lit comme un desordre. */
+  /* Sorted on the displayed name and not on the identifier: a French list arranged in
+     English alphabetical order puts "Sable" before "Ferraille", because `sand` sorts before
+     `scrap`, and that reads as disorder. */
   const objets = objetsProposes(planete)
     .map((nom) => ({ nom, affiche: lisible(nom) }))
     .sort((a, b) => a.affiche.localeCompare(b.affiche, "fr"));
@@ -166,20 +166,6 @@ function remplirObjets() {
 const nombre = (valeur, decimales = 2) =>
   Number(valeur).toLocaleString("fr-FR", { maximumFractionDigits: decimales });
 
-/*
- * Le nom d'un bloc ou d'un objet, tel qu'on peut le montrer aujourd'hui.
- *
- * Le catalogue ne porte aucun nom lisible : `items.copper.name` vaut « copper », et un bloc
- * n'a que son identifiant. Un joueur francophone lisait donc « silicon-smelter » et
- * « blast-drill » en toutes lettres.
- *
- * Le vrai correctif n'est pas ici : le jeu embarque ses propres traductions, et
- * `DumpBlocks.java` peut lire `Core.bundle` pour sortir un nom francais par bloc, ce qui
- * vaut infiniment mieux qu'une table de 254 entrees ecrite a la main et vieillie a chaque
- * version. En attendant, l'identifiant redresse se lit deja beaucoup mieux que l'identifiant
- * brut. Meme regle que `Block::title()` cote PHP, et les deux bougeront ensemble le jour ou
- * le catalogue portera de vrais noms.
- */
 /* The name the game gives it, in the reader's language, and the tidied-up identifier when
    it gives none. The fallback serves seventeen blocks the game names in none of its
    thirty-seven languages, and the first render if the names are not loaded yet. */

@@ -16,9 +16,9 @@
       ->map(fn ($rate, $item) => number_format($rate, 0, ',', ' ')." {$item}/min")
       ->values();
   $power = $schematic->power_made - $schematic->power_used;
-  /* Le resume part dans la balise `description`, dans l'`og:title` et sur la carte
-     sociale : c'est la forme du chiffre qui voyage le plus loin, et la seule qu'un lecteur
-     voit sans avoir ouvert la page. */
+  /* The summary goes into the `description` tag, into `og:description` and into the social
+     card's alt text: it is the form of the figure that travels furthest, and the only one a
+     reader sees without having opened the page. `og:title` is the name, not this. */
   $tap = $schematic->fedBySandbox();
   $summary = trim(collect([
       $tap ? __('schema.page.bac-a-sable-court') : null,
