@@ -15,9 +15,9 @@ jobs:
   suite:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -25,13 +25,13 @@ jobs:
       # those are the only ones that prove the schematic format against the game rather
       # than against our own reader. Skipping them in CI would leave the format unguarded
       # exactly where it matters.
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Cache the pinned server
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: mindustry-forge
           key: mindustry-server-${{ hashFiles('bench/server_setup.py') }}

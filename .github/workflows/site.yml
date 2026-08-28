@@ -20,8 +20,8 @@ jobs:
     name: Analyser (JavaScript)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       # The analysis runs in the visitor's browser: these tests are the only
@@ -53,7 +53,7 @@ jobs:
       run:
         working-directory: site
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -70,7 +70,7 @@ jobs:
       - run: composer validate --no-check-publish
 
       - name: Cache the Composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: site/vendor
           key: composer-${{ hashFiles('site/composer.lock') }}
@@ -118,7 +118,7 @@ jobs:
       DB_USERNAME: root
       DB_PASSWORD: root
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -127,7 +127,7 @@ jobs:
           coverage: none
 
       - name: Cache the Composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: site/vendor
           key: composer-${{ hashFiles('site/composer.lock') }}
