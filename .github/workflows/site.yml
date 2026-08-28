@@ -1,7 +1,7 @@
-# CI du site : l'analyseur JavaScript et l'application Laravel.
+# The site's CI: the JavaScript analyser and the Laravel application.
 #
-# Les deux autres workflows de ce depot (tests.yml, verify-catalogue.yml)
-# datent de la structure d'avant le restart et ne couvrent pas site/.
+# tests.yml covers the file formats in tests/ and nothing under site/, so a
+# green run there says nothing about the analyser or the application.
 name: site
 
 on:

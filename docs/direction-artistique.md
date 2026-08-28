@@ -171,8 +171,23 @@ of CSS, since the mark itself does not move.
 | `brand/discord-icon.png` | 512 | the server icon |
 | `brand/discord-banniere.jpg` | 960 × 540 | the server banner |
 | `brand/apercu-produit.png` | 2144 × 1420 | the product shot, for a landing page or an article |
-| `brand/depot-apercu.jpg` | 1280 × 640 | GitHub's social preview, uploaded in the repository settings |
+| `brand/depot-apercu.jpg` | 1280 × 640 | GitHub's social preview, set by hand under Settings |
 | `brand/depot-entete.jpg` | 1280 × 360 | the README header |
+
+`depot-apercu.jpg` is the one entry in that table no script can put in place. GitHub exposes
+no write for the social preview, in REST or in GraphQL: the file is uploaded by hand, under
+Settings, General, Social preview.
+
+Reading it back has a trap. `gh api repos/OWNER/REPO --jq .open_graph_image_url` returns
+null whether or not an image is set, so it proves nothing. What answers is the page itself:
+
+```bash
+curl -s https://github.com/OWNER/REPO | grep -o '<meta[^>]*og:image[^>]*>'
+```
+
+A `repository-images.githubusercontent.com` address means the uploaded file is live. An
+`opengraph.githubassets.com` address means it is not, and what unfurls is the card GitHub
+draws from the repository name.
 
 Three different framings of one mark, because the systems do not crop alike:
 
