@@ -58,3 +58,25 @@ it('retire la garde en quittant l editeur, pas seulement en le posant', function
 
     expect($html)->toContain('classList.remove("route-editeur")');
 });
+
+it('ne montre pas le placeholder de l editeur sur une page ou il n est pas monte', function () {
+    /* Trouve au round 3 : la marque et le squelette du placeholder etaient dans le
+       document sur toutes les pages, `/` compris, sans qu'aucune regle ne les cache
+       hors de /editer. `.skeleton` porte deja une hauteur (`height: 260px`) pour le
+       squelette du rapport, donc rien n'empechait celui de l'editeur de s'afficher au
+       bas de l'accueil, entierement sans rapport avec ce que la page racontait. */
+    $css = file_get_contents(public_path('forge/forge.css'));
+
+    expect($css)->toMatch('/#editor:not\(\.editor\)\s*\{[^}]*display:\s*none/');
+});
+
+it('donne au squelette de l editeur une taille, pas seulement une regle', function () {
+    /* Un `#editor` en `display: flex` sans dimension propre a laisse un enfant flex
+       sans base s ecraser a zero de hauteur : la regle existait, rien ne se voyait.
+       `flex: 1` sur un parent en colonne lui donne une taille reelle des que ce parent
+       en a une (ici plein ecran), ce qu'un test hors navigateur ne peut que verifier
+       par la regle, pas par le rendu -- voir le rapport pour la mesure en navigateur. */
+    $css = file_get_contents(public_path('forge/forge.css'));
+
+    expect($css)->toMatch('/\.route-editeur #editor:not\(\.editor\) \.skeleton\s*\{[^}]*flex:\s*1/');
+});

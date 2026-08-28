@@ -193,22 +193,59 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
    /editer, so <main> never paints on the way to the editor: enterEditor() still has to
    fetch the catalogue and the sprite atlas before it has anything to mount. #editor is
    excluded once mountEditor() gives it its own "editor" class (see mount.js): the fixed
-   full-viewport overlay that class installs is untouched here, on purpose.
+   full-viewport overlay that class installs is untouched here, on purpose, and is
+   matched below rather than left for mount time to introduce.
 
-   Before that, #editor stays in the document's normal flow, under the header, rather
-   than covering it: the first version of this fix gave #editor that same fixed overlay
-   pre-mount, which put a grey rectangle over the brand and the nav for the whole wait --
-   nine and a half seconds on a slow connection, measured -- with nothing on screen to
-   say what site this even is. Filled by flex rather than by a fixed height taken from
-   the header: the header wraps onto two lines on a narrow screen, and a number copied
-   from one measurement would drift the day that height changes. */
+   #editor also carries the wait's own markup on `/`, which never sets this class: this
+   first rule keeps it out of the document entirely there, since nothing before this
+   line scoped it and an empty `main { max-width: 1120px; ... }` page is not where a
+   shimmering placeholder belongs.
+
+   Two things were measured wrong before this settled here. First, an earlier version
+   let #editor sit in the document's normal flow before mount, which kept the header
+   visible but moved #editor's own top from 70px to 0px the instant mountEditor() swaps
+   it to `position: fixed`: a real shift of a persisting element, not a cosmetic one,
+   measured at a cumulative 0.1383 over one load against a 0.10 "good" ceiling. Second,
+   that version's flex-item skeleton had no size of its own to fall back on and
+   collapsed to zero height: a rule that claims to draw something and draws nothing.
+   Both are fixed by the same move, occupying the mounted box from the first byte so
+   nothing about #editor's position ever changes, and giving what sits inside it an
+   explicit size instead of trusting a flex parent to hand it one. */
+#editor:not(.editor) { display: none; }
 .route-editeur main { display: none; }
-.route-editeur body { display: flex; flex-direction: column; min-height: 100vh; }
 .route-editeur #editor:not(.editor) {
-  flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px;
+  display: flex; flex-direction: column;
+  position: fixed; inset: 0; z-index: 60;
+  background: var(--bg) url("./plate.png") repeat; background-size: 96px 96px;
 }
+
+/* A strip carrying only the brand, so the wait still says what site this is now that
+   #editor covers the header. Not `.editor-bar`, which mount.js builds with a mode
+   toggle and undo buttons that mean nothing before a board exists to act on: a second
+   copy of that markup here would be a second thing that has to agree with it, and
+   nothing would check that it does. Its own class rather than `.editor-bar`'s, so a
+   later change to the real bar cannot reshape this one by accident.
+
+   Padding, background and border are read from `.editor-bar` by eye; the 36px comes
+   from the same place the real bar's own height does -- `.editor-modes button`'s
+   `min-height`, a few rules below -- so the strip lands close to the same height
+   without inventing a second number for one already in this file. Poorer than the real
+   bar on purpose, not a stand-in for it. */
+.editor-wait-bar {
+  display: flex; align-items: center; min-height: 36px;
+  padding: 8px 16px; background: var(--panel); border-bottom: 2px solid var(--edge);
+}
+.editor-wait-bar .brand { font-size: 17px; }
+
 .route-editeur #editor:not(.editor) .skeleton {
-  width: 100%; height: 100%; max-width: 1200px; max-height: 720px;
+  flex: 1; margin: 24px; border-radius: var(--radius);
+}
+
+@media (max-width: 560px) {
+  /* `.editor-bar` hides its own brand under this width once mounted (see the media
+     query further down this file): the strip agrees, rather than showing a brand the
+     mounted bar is about to take away. */
+  .editor-wait-bar .brand { display: none; }
 }
 
 /* ------------------------------------------------------------------------------------

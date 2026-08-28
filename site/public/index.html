@@ -231,16 +231,23 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
 <!-- L'editeur vit hors de <main>, qui est borne a 1120 pixels de large : le plateau prend
      tout l'ecran, et une largeur maximale pensee pour un article de texte n'a rien a lui
      dire. -->
-<!-- The skeleton is what a visitor to /editer sees while the guard above is keeping
-     <main> off screen: mountEditor() overwrites this element's innerHTML the moment it
-     has what it needs (see mount.js), so nothing here has to be cleaned up by hand.
+<!-- What a visitor to /editer sees while the guard above is keeping <main> off
+     screen: mountEditor() overwrites this element's innerHTML the moment it has what
+     it needs (see mount.js), so nothing here has to be cleaned up by hand.
 
-     No caption on it. The header above stays on screen and clickable for the whole
-     wait (see forge.css), so a visitor already has the brand and the nav telling them
-     what site this is; a shimmering box sitting where the board will be is the same
-     "something is coming" signal the report skeleton already gives on this same page,
-     and a French sentence next to it would only repeat what the shimmer already says. -->
-<div id="editor"><div class="skeleton"></div></div>
+     #editor covers the header on /editer (see forge.css), so the strip below is the
+     only thing left saying what site this is; the real editor's own nav was never
+     shown either, once mounted, so nothing is lost that the mounted state also has.
+     It is only the brand, not a copy of the editor's own bar: see the comment in
+     forge.css for why. No French caption next to the skeleton itself -- the shimmer
+     is the same "something is coming" signal the report's own skeleton already gives
+     on this page, and a sentence beside it would only repeat what the shimmer says. -->
+<div id="editor">
+  <div class="editor-wait-bar">
+    <span class="brand"><svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>Mindustry <span>Forge</span></span>
+  </div>
+  <div class="skeleton"></div>
+</div>
 
 <script type="module">
 import { analyse, catalogueOf, loadCatalogue } from "./forge/analyse.js";
