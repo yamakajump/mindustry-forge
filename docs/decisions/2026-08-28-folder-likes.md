@@ -1,11 +1,10 @@
-# Liking a folder: design
+# Liking a folder
 
-Written 28 August 2026. The fourth and last of the related specs, and the one that pays for
-the three before it.
+The fourth and last of the related specs, and the one that pays for the three before it.
 
 Folders exist so people can hand each other a dozen plans in an order somebody thought
-about. Without a way to say "this one is good", every folder is worth the same until you
-have opened it, and nobody opens the fortieth.
+about. Without a way to say "this one is good", every folder is worth the same until it has
+been opened, and nobody opens the fortieth.
 
 ## What this adds
 
@@ -14,10 +13,10 @@ Spec 1's gesture, on a second object, plus the listing that makes it useful:
 - **J'aime** on a folder, public, counted.
 - `/dossiers`, the public folders, orderable.
 
-No favorite on a folder. A favorite exists so you can find something again, and a folder is
-already a place things are found: keeping a folder inside a folder is what nesting is for.
-Two mechanisms for "put it where I can reach it" would leave the reader choosing between
-them for no reason.
+No favorite on a folder. A favorite exists to find something again, and a folder is already
+a place things are found: keeping a folder inside a folder is what nesting is for. Two
+mechanisms for "put it where it can be reached again" would leave the reader choosing
+between them for no reason.
 
 ## Data model
 
@@ -37,7 +36,7 @@ commands doing the same repair on two tables is one command somebody forgets to 
 
 `/dossiers` offers "Les plus aimés", and it is **not offered until at least a page's worth
 of folders carry a like**, derived from the paginator's page size rather than written as a
-literal, on the rule session `mindustry-forge-30` set for the catalogue.
+literal, following the same rule the catalogue uses for its own "les plus aimés" ordering.
 
 The reason is the same one, and it will bite harder here. There will be perhaps forty
 public folders in the first month against fifteen thousand schematics. A ranking over forty
