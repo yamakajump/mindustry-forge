@@ -1,0 +1,27 @@
+version: 2
+updates:
+  # Composer is the only real dependency surface in this repository. See the
+  # comment at the top of .github/workflows/dependency-audit.yml: the
+  # analysis engine (site/public/forge/analyse.js) is hand-written
+  # JavaScript, and package.json declares zero dependencies, it exists only
+  # to hold `npm test` and the oracle scripts. An npm ecosystem entry here
+  # would have nothing to open pull requests against, so it is left out on
+  # purpose rather than by oversight.
+  - package-ecosystem: "composer"
+    directory: "/site"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      laravel:
+        patterns:
+          - "laravel/*"
+      production-dependencies:
+        dependency-type: "production"
+        exclude-patterns:
+          - "laravel/*"
+      development-dependencies:
+        dependency-type: "development"
