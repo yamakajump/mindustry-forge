@@ -60,13 +60,13 @@ const NOTHING_HAPPENS = new Set([
   // Same rule on the other carrier: an armoured belt takes from a belt or from directly
   // behind, and a source standing beside it is not either.
   "conveyor-armored-side",
-  // Une pompe sans courant ne pompe rien. C'est le resultat, et le scenario existe pour
-  // dire qu'il vaut zero et non un frame de plus.
+  // An unpowered pump pumps nothing. That is the result, and the scenario exists to say
+  // it is worth zero, not one frame more.
   "pump-unpowered",
-  /* Un incinerateur a scories sans scories est un mur. Sa recette demande zero scorie par
-     image, donc son efficacite est zero divise par zero, et toute comparaison contre `NaN`
-     est fausse : il n'accepte rien du tout. Le vide **est** la mesure, et la paire avec
-     `incinerator-slag` est ce qui lui donne un sens. */
+  /* A slag incinerator with no slag is a wall. Its recipe asks for zero slag a frame, so
+     its efficiency is zero divided by zero, and any comparison against `NaN` is false: it
+     accepts nothing at all. The emptiness **is** the measurement, and the pair with
+     `incinerator-slag` is what gives it meaning. */
   "incinerator-dry",
 ]);
 
@@ -75,7 +75,7 @@ const scenarios = readdirSync(KEPT)
   .map((name) => name.replace(/\.json$/, ""));
 
 test("there are scenarios to check against", () => {
-  assert.ok(scenarios.length >= 15, `${scenarios.length} scenarios mesures`);
+  assert.ok(scenarios.length >= 15, `${scenarios.length} scenarios measured`);
 });
 
 for (const name of scenarios) {
@@ -87,13 +87,13 @@ for (const name of scenarios) {
 
     const gaps = differences(mine, engine);
     assert.ok(gaps.length > 0 || NOTHING_HAPPENS.has(name),
-              "le moteur a fait quelque chose de mesurable");
+              "the engine did something measurable");
 
     const slack = KNOWN_GAPS[name] || 0.0001;
     for (const gap of gaps) {
       assert.ok(gap.gap <= slack,
-                `${gap.what} : ${gap.mine} contre ${gap.theirs}, `
-                + `${(gap.gap * 100).toFixed(1)}% d'ecart`);
+                `${gap.what}: ${gap.mine} vs ${gap.theirs}, `
+                + `${(gap.gap * 100).toFixed(1)}% off`);
     }
   });
 }

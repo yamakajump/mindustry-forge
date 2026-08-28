@@ -27,17 +27,17 @@ test("a real schematic survives being written back out", async () => {
     tags: before.tags, sizeOf,
   }));
 
-  assert.equal(after.tiles.length, before.tiles.length, "le meme nombre de blocs");
+  assert.equal(after.tiles.length, before.tiles.length, "the same number of blocks");
   assert.equal(after.width, before.width);
   assert.equal(after.height, before.height);
-  assert.deepEqual(after.tags, before.tags, "le nom et les etiquettes suivent");
+  assert.deepEqual(after.tags, before.tags, "the name and the tags carry over");
 
   for (let i = 0; i < before.tiles.length; i++) {
     const a = before.tiles[i];
     const b = after.tiles[i];
     assert.deepEqual([b.block, b.x, b.y, b.rotation], [a.block, a.x, a.y, a.rotation],
-                     `bloc ${i}`);
-    assert.deepEqual(b.config, a.config, `configuration du bloc ${i}`);
+                     `block ${i}`);
+    assert.deepEqual(b.config, a.config, `block ${i}'s configuration`);
   }
 });
 
@@ -51,9 +51,9 @@ test("what comes back out analyses to the same thing", async () => {
   const after = await analyse(written, {}, eau);
 
   assert.equal(after.blocks, before.blocks);
-  assert.deepEqual(after.cost, before.cost, "le meme cout de construction");
+  assert.deepEqual(after.cost, before.cost, "the same build cost");
   assert.ok(Math.abs(after.power.net - before.power.net) < 1e-6,
-            `${after.power.net} contre ${before.power.net}`);
+            `${after.power.net} vs ${before.power.net}`);
 });
 
 test("a block placed by hand comes out readable", async () => {
@@ -66,7 +66,7 @@ test("a block placed by hand comes out readable", async () => {
   assert.equal(back.tags.name, "posee a la main");
   assert.equal(back.tiles.length, 2);
   assert.deepEqual(back.tiles.map((t) => t.block), ["conveyor", "graphite-press"]);
-  // La presse fait deux de cote : la boite va de 0 a 2.
+  // The press is two tiles wide: the box runs from 0 to 2.
   assert.equal(back.width, 3);
 });
 
@@ -88,12 +88,12 @@ test("an empty schematic is refused rather than written", async () => {
   await assert.rejects(() => toBase64([], { sizeOf }), /vide/);
 });
 
-test("une configuration creee par l editeur survit a l ecriture", async () => {
-  /* Le lecteur garde les octets bruts et l ecrivain les rejoue : parfait tant que rien ne
-     CREE de configuration. L editeur en cree, puisqu un glisse de ponts lie chaque maillon
-     au suivant. Sans ecriture des configurations, cette chaine sortait du site en file de
-     ponts qui s ignorent : l image etait juste, le fichier etait faux, et rien ne le
-     disait. */
+test("a configuration created by the editor survives being written", async () => {
+  /* The reader keeps the raw bytes and the writer replays them: fine as long as nothing
+     CREATES a configuration. The editor does, since dragging a run of bridges links each
+     link to the next. Without writing configurations, that chain used to come out of the
+     site as a row of bridges ignoring each other: the picture was right, the file was
+     wrong, and nothing said so. */
   const tiles = [
     { x: 0, y: 0, block: "bridge-conveyor", rotation: 0,
       config: { type: 7, dx: 4, dy: 0 } },
@@ -108,18 +108,18 @@ test("une configuration creee par l editeur survit a l ecriture", async () => {
                    { type: 7, dx: 4, dy: 0 });
 
   const bout = relu.tiles.find((t) => t.block === "bridge-conveyor" && t.x === 4);
-  assert.equal(bout.config, null, "le dernier pont ne vise personne");
+  assert.equal(bout.config, null, "the last bridge points at nobody");
 
   const trieur = relu.tiles.find((t) => t.block === "sorter");
   assert.deepEqual({ type: trieur.config.type, content: trieur.config.content, id: trieur.config.id },
                    { type: 5, content: 0, id: 1 });
 });
 
-test("l ordre d ecriture est l ordre de construction du jeu", async () => {
-  /* `Block.schematicPriority` va de +10 pour un mur de plastanium a -15 pour une tour de
-     surtension : ce qui protege se batit en premier, ce qui relie en dernier, une fois que
-     ce qu il doit relier existe. Ecrire dans l ordre de pose fait poser un pylone avant les
-     reacteurs qu il devait alimenter. */
+test("the write order is the game's own build order", async () => {
+  /* `Block.schematicPriority` goes from +10 for a plastanium wall to -15 for a surge
+     tower: what protects gets built first, what links gets built last, once what it has
+     to link to exists. Writing in placement order would place a power node before the
+     reactors it was meant to feed. */
   const priorites = { "power-node": -10, "plastanium-wall": 10, conveyor: 0 };
   const tiles = [
     { x: 0, y: 0, block: "power-node", rotation: 0 },
@@ -134,8 +134,8 @@ test("l ordre d ecriture est l ordre de construction du jeu", async () => {
                    ["plastanium-wall", "conveyor", "power-node"]);
 });
 
-test("a priorite egale, l ordre d origine tient", async () => {
-  // Sinon deux exports de la meme schematique donneraient deux fichiers differents.
+test("at equal priority, the original order holds", async () => {
+  // Otherwise two exports of the same schematic would give two different files.
   const tiles = [
     { x: 0, y: 0, block: "conveyor", rotation: 0 },
     { x: 1, y: 0, block: "router", rotation: 0 },

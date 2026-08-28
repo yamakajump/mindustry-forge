@@ -56,13 +56,13 @@ test("a layout short of power names the machine it is starving", async () => {
     [3, 3, "power-node", 0], [4, 3, "combustion-generator", 0],
     [5, 3, "item-source", 0, coal]]));
 
-  close(out.power.spent, 90, "trois fours a trente");
-  close(out.power.made, 60, "un generateur a soixante");
-  close(out.power.net, -30, "il en manque trente");
+  close(out.power.spent, 90, "three smelters at thirty");
+  close(out.power.made, 60, "one generator at sixty");
+  close(out.power.net, -30, "thirty short");
 
-  assert.ok(out.bottleneck, "un plan a court de courant a un goulot");
+  assert.ok(out.bottleneck, "a plan short of power has a bottleneck");
   assert.equal(out.bottleneck[0], "silicon-smelter");
-  close(out.bottleneck[1], 2 / 3, "soixante sur quatre-vingt-dix");
+  close(out.bottleneck[1], 2 / 3, "sixty out of ninety");
 });
 
 test("the throughput falls in the same proportion as the current", async () => {
@@ -75,9 +75,9 @@ test("the throughput falls in the same proportion as the current", async () => {
   const plenty = await analyse(paste([...smelters(),
     [3, 3, "power-node", 0], [4, 3, "power-source", 0]]));
 
-  close(plenty.perMinute.silicon, 270, "a plein courant");
-  close(short.perMinute.silicon, 180, "aux deux tiers");
-  close(short.perMinute.silicon / plenty.perMinute.silicon, 2 / 3, "le prorata est exact");
+  close(plenty.perMinute.silicon, 270, "at full power");
+  close(short.perMinute.silicon, 180, "at two thirds");
+  close(short.perMinute.silicon / plenty.perMinute.silicon, 2 / 3, "the ratio is exact");
 });
 
 test("what a layout asks for is not what it manages to run at", async () => {
@@ -85,11 +85,11 @@ test("what a layout asks for is not what it manages to run at", async () => {
      nothing and still need their ninety a second: that is the number a player builds
      against, and it survives being unmet. */
   const out = await analyse(paste(smelters()));
-  close(out.power.spent, 90, "la demande tient meme sans rien pour la couvrir");
-  close(out.power.made, 0, "et rien ne la couvre");
-  assert.ok(out.bottleneck, "les fours sont a l'arret et c'est dit");
-  close(out.bottleneck[1], 0, "a l'arret veut dire zero");
-  assert.deepEqual(out.perMinute, {}, "un four sans courant ne fond rien");
+  close(out.power.spent, 90, "the demand holds even with nothing covering it");
+  close(out.power.made, 0, "and nothing covers it");
+  assert.ok(out.bottleneck, "the smelters are stopped and it says so");
+  close(out.bottleneck[1], 0, "stopped means zero");
+  assert.deepEqual(out.perMinute, {}, "a smelter with no power smelts nothing");
 });
 
 test("two grids that never touch are two grids", async () => {
@@ -106,9 +106,9 @@ test("two grids that never touch are two grids", async () => {
   const out = await analyse(paste([...smelters(),
     [2, 0, "combustion-generator", 0], [2, 1, "item-source", 0, coal]]));
 
-  close(out.power.spent, 90, "trois fours veulent toujours quatre-vingt-dix");
-  close(out.power.made, 60, "et un seul generateur les regarde");
-  close(out.bottleneck[1], 0, "deux fours sur trois sont sur une grille morte");
+  close(out.power.spent, 90, "three smelters still want ninety");
+  close(out.power.made, 60, "and only one generator looks at them");
+  close(out.bottleneck[1], 0, "two smelters out of three are on a dead grid");
 });
 
 test("the coverage is the fraction the game itself was measured at", async () => {
@@ -137,9 +137,9 @@ test("the coverage is the fraction the game itself was measured at", async () =>
     [0, 5, "item-source", 0, coal], [0, 4, "router", 0],
     [0, 3, "combustion-generator", 0]]), {}, null, { ground });
 
-  close(out.power.coverage, drill.efficiency, "la couverture est celle que le jeu a mesuree");
-  close(out.power.made, 60, "un generateur a combustion");
-  close(out.power.spent, 66, "une foreuse a laser en demande soixante-six");
+  close(out.power.coverage, drill.efficiency, "the coverage is the one the game measured");
+  close(out.power.made, 60, "one combustion generator");
+  close(out.power.spent, 66, "a laser drill demands sixty-six");
 });
 
 test("a plan that powers its own drill settles rather than oscillating", async () => {
@@ -157,7 +157,7 @@ test("a plan that powers its own drill settles rather than oscillating", async (
     [1, 1, "laser-drill", 0], [3, 1, "conveyor", 0],
     [4, 1, "combustion-generator", 0], [4, 0, "power-node", 0]]), {}, null, { ground });
 
-  assert.equal(out.settled, true, "le regime est stable");
-  close(out.power.spent, 66, "la foreuse demande soixante-six");
-  close(out.power.made, 60, "le generateur en rend soixante");
+  assert.equal(out.settled, true, "the regime is stable");
+  close(out.power.spent, 66, "the drill demands sixty-six");
+  close(out.power.made, 60, "the generator gives back sixty");
 });

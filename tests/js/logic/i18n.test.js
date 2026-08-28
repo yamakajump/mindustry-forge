@@ -22,7 +22,7 @@ const read = (path) => readFileSync(new URL(path, root), "utf8");
 
 const DICTIONARY = JSON.parse(read("site/public/forge/lang/fr.json"));
 
-test("chaque famille de suggestion a une etiquette", () => {
+test("every suggestion family has a label", () => {
   /* The families as the editor actually uses them, read back from its calls to `add`, and
      not as `KINDS` declares them: the gap between the two is exactly what would leave the
      hole. */
@@ -32,14 +32,14 @@ test("chaque famille de suggestion a une etiquette", () => {
   used.add("monde");                       // chosen by a ternary, not by a literal
 
   const orphans = [...used].filter((kind) => !KINDS[kind]);
-  assert.deepEqual(orphans, [], "des familles que la liste afficherait sans etiquette");
+  assert.deepEqual(orphans, [], "families the list would display without a label");
 
   for (const [kind, key] of Object.entries(KINDS)) {
-    assert.ok(key in DICTIONARY, `${kind} pointe sur ${key}, absente du dictionnaire`);
+    assert.ok(key in DICTIONARY, `${kind} points to ${key}, missing from the dictionary`);
   }
 });
 
-test("les diagnostics produits et les phrases ecrites sont les memes", () => {
+test("the diagnostics produced and the sentences written match", () => {
   const source = read("site/public/forge/logic/syntax.js")
     + read("site/public/outils/logique.html");
 
@@ -51,5 +51,5 @@ test("les diagnostics produits et les phrases ecrites sont les memes", () => {
   /* Both directions, and no expected count written here: a hard number in a test gets
      updated without a thought the first time it gets in the way. */
   assert.deepEqual([...produced].sort(), [...written].sort(),
-    "un diagnostic sans phrase s'afficherait vide, une phrase sans diagnostic est morte");
+    "a diagnostic without a sentence would display empty, a sentence without a diagnostic is dead code");
 });

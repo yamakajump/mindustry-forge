@@ -29,14 +29,14 @@ catalogue();
 const seen = JSON.parse(readFileSync(
   new URL("../../../bench/data/logique-collee.json", import.meta.url), "utf8"));
 
-test("le jeu a bien lu la schematique qu'on fabrique", () => {
-  assert.ok(!seen.refused, `le jeu l'a refusee : ${seen.refused}`);
+test("the game correctly read the schematic we build", () => {
+  assert.ok(!seen.refused, `the game refused it: ${seen.refused}`);
   assert.equal(seen.processors.length, 1);
   assert.ok(seen.processors[0].matches_game_writer,
-    "nos octets ne sont plus ceux que LogicBlock.compress ecrit");
+    "our bytes are no longer those LogicBlock.compress writes");
 });
 
-test("on relit ce que le jeu a relu", async () => {
+test("we read back what the game read back", async () => {
   const pasted = await build().toSchematic({ block: BLOCK, name: "epreuve" });
   const ours = await fromSchematic(pasted);
 
@@ -48,7 +48,7 @@ test("on relit ce que le jeu a relu", async () => {
   assert.deepEqual(ours[0].links, seen.processors[0].links);
 });
 
-test("le programme d'epreuve est celui que le jeu a vu", () => {
+test("the trial program is the one the game saw", () => {
   assert.equal(build().text(), seen.processors[0].code,
-    "le programme a change sans que tools/build_logic_paste.py soit relance");
+    "the program changed without tools/build_logic_paste.py being rerun");
 });

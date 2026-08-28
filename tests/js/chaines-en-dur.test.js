@@ -21,22 +21,21 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-/* Quarante-deux au moment ou ce cliquet est pose, apres la migration de trois cartes.
-   Le compte n'a pas baisse d'autant : la carte logique et le planificateur en ont ajoute
-   pendant ce temps. C'est l'argument pour ce fichier plutot que contre lui -- un chantier
-   qui perd du terrain pendant qu'on le vide n'a pas besoin d'aller plus vite, il a besoin
-   qu'on ferme le robinet. */
+/* Forty-two when this ratchet was set, after migrating three cards. The count has not
+   dropped by as much: the logic card and the planner added some in the meantime. That is
+   the argument for this file rather than against it -- a chantier losing ground while it
+   is being drained does not need to go faster, it needs the tap shut. */
 const RESTANT = 42;
 
 const MOTS = /(?<![\w-])(le|la|les|un|une|des|du|de|et|ou|qui|que|pas|sur|dans|pour|ce|il|elle|ne|se|est|sont|au|aux|en|par|plus|rien|tout|toute|avec|sans|son|sa|ses|cette|cet|tu|te|ton|ta|quoi|quand|comme|deja|encore|meme|leur|lui|on)(?![\w-])/i;
 
-/** Le rendu du rapport, sans ses commentaires : une phrase en commentaire ne s'affiche pas. */
+/** The report's rendered output, without its comments: a sentence in a comment does not display. */
 function rapport() {
   const page = readFileSync(new URL("../../site/public/index.html", import.meta.url), "utf8");
   const lignes = page.split("\n");
   const debut = lignes.findIndex((l) => l.includes("const right = []"));
   const fin = lignes.findIndex((l) => l.includes("async function whoAmI"));
-  assert.ok(debut > 0 && fin > debut, "le rendu du rapport a change de forme, releve ses bornes");
+  assert.ok(debut > 0 && fin > debut, "the report's rendered output changed shape, update its bounds");
 
   return lignes.slice(debut, fin).join("\n")
     .replace(/\/\*[\s\S]*?\*\//g, " ")
@@ -44,11 +43,11 @@ function rapport() {
 }
 
 /**
- * Les phrases francaises que le code pose lui-meme.
+ * The French sentences the code writes in by hand.
  *
- * Les balises sont retirees avant comparaison : une phrase ne doit pas compter pour une
- * autre parce qu'on a deplace un style, sinon le compte bouge sans que rien n'ait ete
- * ajoute et le garde-fou devient du bruit.
+ * Tags are stripped before comparison: a sentence must not count as a different one
+ * because a style attribute moved, or the count would shift without anything having
+ * been added, and the guard would turn into noise.
  */
 function enDur(source) {
   const trouve = new Set();
@@ -66,32 +65,32 @@ function enDur(source) {
   return [...trouve].sort();
 }
 
-test("le francais ecrit en dur dans le rapport ne remonte pas", () => {
+test("the hardcoded French in the report does not creep back up", () => {
   const restant = enDur(rapport());
 
   assert.ok(restant.length <= RESTANT,
-    `${restant.length} chaines en dur, le cliquet est a ${RESTANT}. Ajoutees :\n  `
+    `${restant.length} hardcoded strings, the ratchet is at ${RESTANT}. Added:\n  `
     + restant.slice(RESTANT).join("\n  "));
 
   assert.equal(restant.length, RESTANT,
-    `plus que ${restant.length} chaines en dur : descends le cliquet a ${restant.length}`);
+    `only ${restant.length} hardcoded strings left: lower the ratchet to ${restant.length}`);
 });
 
-test("le cliquet compte des phrases et pas du balisage", () => {
-  /* Sans ce test le cliquet peut se derégler sans qu'on le voie : une phrase capturee avec
-     sa balise autour compte pour une phrase differente des qu'on touche au style. */
+test("the ratchet counts sentences, not markup", () => {
+  /* Without this test the ratchet can drift unnoticed: a sentence captured together with
+     its surrounding tag counts as a different sentence the moment the style changes. */
   const avec = enDur(`<p class="hint-line" style="margin:0">Rien de marque pour l'instant.</p>`);
   const sans = enDur(`<p>Rien de marque pour l'instant.</p>`);
 
   assert.deepEqual(avec, ["Rien de marque pour l'instant."]);
-  assert.deepEqual(avec, sans, "le style ne doit pas changer ce qui est compte");
+  assert.deepEqual(avec, sans, "style must not change what gets counted");
 });
 
-test("le cliquet voit une chaine ajoutee, et ignore une cle", () => {
+test("the ratchet sees an added string, and ignores a key", () => {
   const avant = enDur(`<h2>Il lui faut</h2>`);
   const apres = enDur(`<h2>Il lui faut</h2><p>Cette phrase est ecrite a la main.</p>`);
-  assert.equal(apres.length, avant.length + 1, "une phrase ajoutee doit compter");
+  assert.equal(apres.length, avant.length + 1, "an added sentence must count");
 
   assert.deepEqual(enDur(`<h2>${'${escape(t("analyse.besoins.titre"))}'}</h2>`), [],
-    "une cle passee par t() ne compte pas");
+    "a key passed through t() does not count");
 });

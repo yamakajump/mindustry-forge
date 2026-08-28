@@ -62,7 +62,7 @@ test("an item handed in from the side starts against that side", async () => {
 
   const belt = world.builds.find((b) => b.role === "conveyor" && b.x === 2 && b.y === 1);
   const at = belt.state.ids.indexOf("lead");
-  assert.notEqual(at, -1, "le plomb devrait etre entre par le cote");
+  assert.notEqual(at, -1, "the lead should have entered from the side");
   // `Conveyor.handleItem`: an item arriving across the belt lands at plus or minus one.
   assert.equal(Math.abs(belt.state.xs[at]), 1);
   // And half way along it rather than at its back, which is `ys[mid] = 0.5f`.
@@ -89,8 +89,8 @@ test("and slides back to the middle at twice the belt's speed", async () => {
      goes stale on the next version. */
   const speed = catalogue.blocks.conveyor.speed;
   const step = Math.abs(across[0]) - Math.abs(across[1]);
-  assert.ok(Math.abs(step - speed * 2) < 1e-6, `pas de ${step}`);
-  assert.ok(across.some((value) => value === 0), "il devrait finir au milieu");
+  assert.ok(Math.abs(step - speed * 2) < 1e-6, `step of ${step}`);
+  assert.ok(across.some((value) => value === 0), "it should end up in the middle");
 });
 
 test("a belt scrolls at its own speed and stops when it is backed up", () => {
@@ -101,7 +101,7 @@ test("a belt scrolls at its own speed and stops when it is backed up", () => {
   const frames = [];
   for (let tick = 0; tick < 24; tick += 1) frames.push(beltFrame(belt, tick, 0, 1));
   assert.deepEqual(frames.slice(0, 6), [0, 0, 0, 1, 1, 1]);
-  assert.ok(frames.includes(3), "les quatre images devraient defiler");
+  assert.ok(frames.includes(3), "the four frames should cycle through");
 
   // A titanium belt is nearly twice as fast, and its animation is too.
   const fast = { block: { speed: catalogue.blocks["titanium-conveyor"].speed },

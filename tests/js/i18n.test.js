@@ -78,8 +78,8 @@ function sources() {
     }
   };
 
-  /* Parcourus plutot que nommes un a un : il arrive une page par chantier de parite, et
-     une page oubliee ici est une page dont personne ne verifie les cles. */
+  /* Walked rather than listed one by one: a new page arrives with every parity chantier,
+     and a page forgotten here is a page whose keys nobody checks. */
   walk("public");
 
   return found;
@@ -94,7 +94,7 @@ function asked(path) {
   return keys;
 }
 
-test("une cle demandee rend sa ligne, et ses trous sont remplis", () => {
+test("a requested key renders its line, and its holes are filled", () => {
   useDictionary({
     "analyse.goulot.titre": "Le goulot",
     "analyse.goulot.bloc": "{bloc} tient tout le reste",
@@ -104,41 +104,41 @@ test("une cle demandee rend sa ligne, et ses trous sont remplis", () => {
   assert.equal(t("analyse.goulot.bloc", { bloc: "conveyor" }), "conveyor tient tout le reste");
 });
 
-test("une cle absente se lit a l'ecran plutot que de disparaitre", () => {
+test("a missing key reads on screen rather than disappearing", () => {
   useDictionary({});
   assert.equal(t("analyse.goulot.titre"), "analyse.goulot.titre",
-    "une chaine vide serait un bug que personne ne signale");
+    "an empty string would be a bug nobody reports");
 });
 
-test("un trou qu'on a oublie de remplir se voit aussi", () => {
+test("a hole someone forgot to fill shows too", () => {
   useDictionary({ "analyse.goulot.bloc": "{bloc} tient tout le reste" });
   assert.equal(t("analyse.goulot.bloc", {}), "{bloc} tient tout le reste");
 });
 
-test("la langue courante suit le dictionnaire installe", () => {
+test("the current locale follows the installed dictionary", () => {
   useDictionary({}, "en");
   assert.equal(currentLocale(), "en");
   useDictionary(DICTIONARY, DEFAULT_LOCALE);
   assert.equal(currentLocale(), DEFAULT_LOCALE);
 });
 
-test("une langue qui n'en est pas une ne part pas chercher un fichier", async () => {
+test("a locale that is not one does not go looking for a file", async () => {
   await assert.rejects(() => useLocale("../../etc/passwd"), /langue invalide/);
   await assert.rejects(() => useLocale(""), /langue invalide/);
 });
 
-test("traduire une page deja ecrite dans sa langue ne la touche pas", () => {
-  const page = { querySelectorAll: () => assert.fail("le francais est deja dans la page") };
+test("translating a page already written in its language leaves it untouched", () => {
+  const page = { querySelectorAll: () => assert.fail("French is already on the page") };
 
   useDictionary(DICTIONARY, DEFAULT_LOCALE);
   translate(page);
 
   useDictionary(DICTIONARY, "en");
-  assert.throws(() => translate(page), /le francais est deja dans la page/,
-    "et dans une autre langue, il faut bien qu'il la parcoure");
+  assert.throws(() => translate(page), /French is already on the page/,
+    "and in another language, it does have to walk the page");
 });
 
-test("toute cle demandee par le navigateur existe dans le dictionnaire", () => {
+test("every key the browser asks for exists in the dictionary", () => {
   const missing = [];
   const built = [];
 
@@ -149,29 +149,29 @@ test("toute cle demandee par le navigateur existe dans le dictionnaire", () => {
     }
   }
 
-  assert.deepEqual(built, [], "une cle assemblee a l'execution ne peut etre verifiee par personne");
-  assert.deepEqual(missing, [], "ces cles seraient imprimees telles quelles a l'ecran");
+  assert.deepEqual(built, [], "a key assembled at runtime cannot be checked by anyone");
+  assert.deepEqual(missing, [], "these keys would print verbatim on screen");
 });
 
-test("toute cle du dictionnaire est demandee quelque part", () => {
+test("every key in the dictionary is asked for somewhere", () => {
   const all = new Set(sources().flatMap((path) => [...asked(path)]));
   const orphans = Object.keys(DICTIONARY).filter((key) => !all.has(key));
 
   assert.deepEqual(orphans, [],
-    "une cle que plus personne ne demande est une ligne a faire traduire pour rien");
+    "a key nobody asks for anymore is a line translated for nothing");
 });
 
-test("le dictionnaire respecte la convention de nommage", () => {
+test("the dictionary follows the naming convention", () => {
   const shape = new RegExp("^" + DOMAIN + "(?:[.][a-z0-9-]+){2,}$");
   const wrong = Object.keys(DICTIONARY).filter((key) => !shape.test(key));
 
-  assert.deepEqual(wrong, [], "attendu <domaine>.<ecran>.<element>");
+  assert.deepEqual(wrong, [], "expected <domain>.<screen>.<element>");
 });
 
-test("le dictionnaire est range, pour que deux voies le modifient sans se croiser", () => {
+test("the dictionary is sorted, so two branches can edit it without colliding", () => {
   const keys = Object.keys(DICTIONARY);
   assert.deepEqual(keys, [...keys].sort(),
-    "des cles triees, c'est un conflit de fusion par ligne au lieu d'un par fichier");
+    "sorted keys turn a merge conflict into one line instead of one file");
 });
 
 /** The holes in a line. */
@@ -202,24 +202,25 @@ function localeGaps(reference, other) {
   return gaps;
 }
 
-test("garde les unites en mots nus, pour qu'un chiffre ne disparaisse jamais", () => {
-  /* Une cle absente rend la cle, sans rien substituer. Une unite ecrite `{n} cases` ferait
-     donc disparaitre le 160 et pas le mot. Ecrite en mot nu et accolee au nombre par la
-     vue, la page degradee dit `160 blocs.unite.cases` : illisible, mais pas faux.
+test("keeps units as bare words, so a number never disappears", () => {
+  /* A missing key renders the key, substituting nothing. A unit written `{n} cases` would
+     therefore make the 160 disappear along with the word. Written as a bare word and stuck
+     next to the number by the view, the degraded page reads `160 blocs.unite.cases`:
+     unreadable, but not wrong.
 
-     La regle s'arrete aux quantites. Interpoler un nom dans une phrase reste libre, parce
-     que son absence se voit. */
+     The rule stops at quantities. Interpolating a noun into a sentence stays free, because
+     its absence is noticed. */
   const wrong = Object.entries(DICTIONARY)
     .filter(([key, line]) => key.includes(".unite.") && holesIn(line).length)
     .map(([key]) => key);
 
-  assert.deepEqual(wrong, [], "une unite est un mot nu que la vue accole au nombre");
+  assert.deepEqual(wrong, [], "a unit is a bare word the view sticks next to the number");
 });
 
-test("sait reconnaitre une traduction trouee, sur un exemple fabrique", () => {
-  /* Le test suivant ne peut rien prouver tant qu'une seule langue est livree. Celui-ci
-     montre que la comparaison mord, pour qu'on sache que la deuxieme sera surveillee par
-     autre chose qu'une boucle vide. */
+test("recognizes a translation with holes, on a made-up example", () => {
+  /* The next test cannot prove anything as long as only one locale ships. This one shows
+     the comparison actually bites, so we know the second locale will be watched by more
+     than an empty loop. */
   const reference = { "blocs.page.debit": "{n} par seconde", "blocs.page.cout": "Cout" };
 
   assert.deepEqual(localeGaps(reference, reference), []);
@@ -232,12 +233,12 @@ test("sait reconnaitre une traduction trouee, sur un exemple fabrique", () => {
     ["blocs.page.orpheline : en trop"]);
 });
 
-test("livre chaque langue avec les memes cles et les memes trous que le francais", () => {
+test("ships every locale with the same keys and the same holes as French", () => {
   const others = readdirSync(at("public/forge/lang"))
     .filter((name) => name.endsWith(".json") && name !== `${DEFAULT_LOCALE}.json`);
 
   for (const name of others) {
     assert.deepEqual(localeGaps(DICTIONARY, JSON.parse(read(`public/forge/lang/${name}`))), [],
-      `la langue ${name} a derive`);
+      `the ${name} locale has drifted`);
   }
 });

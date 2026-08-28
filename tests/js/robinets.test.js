@@ -40,10 +40,10 @@ test("a sandbox power source makes no power, and powers the grid all the same", 
     [3, 0, "power-source", 0],
   ]));
 
-  close(out.power.made, 0, "un robinet ne fabrique pas de courant");
-  close(out.power.spent, 30, "le four en demande trente");
-  close(out.power.coverage, 1, "et il l'a, puisque le robinet est la");
-  close(out.perMinute.silicon, 90, "donc le four tourne a plein regime");
+  close(out.power.made, 0, "a tap makes no power");
+  close(out.power.spent, 30, "the smelter draws thirty");
+  close(out.power.coverage, 1, "and it has it, since the tap is there");
+  close(out.perMinute.silicon, 90, "so the smelter runs flat out");
 });
 
 test("a real generator is left exactly as it was", async () => {
@@ -52,7 +52,7 @@ test("a real generator is left exactly as it was", async () => {
   const out = await analyse(paste([
     [0, 0, "combustion-generator", 0], [1, 0, "item-source", 0, item("coal")],
   ]));
-  close(out.power.made, 60, "soixante, comme avant");
+  close(out.power.made, 60, "sixty, same as before");
 });
 
 test("a sandbox tap claims no ceiling of its own", async () => {
@@ -61,14 +61,14 @@ test("a sandbox tap claims no ceiling of its own", async () => {
   const items = await analyse(paste([
     [0, 1, "item-source", 0, item("copper")], [1, 1, "conveyor", 0], [3, 1, "vault", 0],
   ]));
-  assert.equal(items.potentialPerMinute.copper, undefined, "pas six mille cuivre/min");
+  assert.equal(items.potentialPerMinute.copper, undefined, "not six thousand copper/min");
 
   const liquids = await analyse(paste([
     [0, 1, "liquid-source", 0, liquid("water")], [1, 1, "conduit", 0],
     [2, 1, "liquid-tank", 0],
   ]));
   assert.equal(liquids.potentialPerMinute.water, undefined,
-               "pas trente-six millions d'eau/min");
+               "not thirty-six million water/min");
 });
 
 test("a machine standing beside a tap keeps its own ceiling", async () => {
@@ -80,6 +80,6 @@ test("a machine standing beside a tap keeps its own ceiling", async () => {
     [0, 0, "item-source", 0, item("coal")], [0, 1, "item-source", 0, item("sand")],
     [3, 0, "power-source", 0],
   ]));
-  close(out.potentialPerMinute.silicon, 90, "le four garde le sien");
-  assert.equal(out.potentialPerMinute.coal, undefined, "le robinet n'en a pas");
+  close(out.potentialPerMinute.silicon, 90, "the smelter keeps its own");
+  assert.equal(out.potentialPerMinute.coal, undefined, "the tap has none");
 });

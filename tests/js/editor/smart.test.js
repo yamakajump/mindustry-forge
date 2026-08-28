@@ -1,9 +1,10 @@
 /**
- * Ce que le jeu décide à la place du joueur quand il trace une ligne.
+ * What the game decides on the player's behalf when they trace a line.
  *
- * Les deux mécaniques qui font qu'on trace à travers son usine sans y penser : la jonction
- * au croisement, et le pont qui franchit un obstacle tout seul. Transcrites de
- * `Conveyor.getReplacement` et `Placement.smartCalculateBridges` de la v159.7.
+ * The two mechanics that let you trace through your own factory without thinking about
+ * it: the junction at a crossing, and the bridge that clears an obstacle on its own.
+ * Transcribed from `Conveyor.getReplacement` and `Placement.smartCalculateBridges` in
+ * v159.7.
  */
 
 import test from "node:test";
@@ -24,58 +25,58 @@ const ligne = (from, to, y = 0, rotation = 0) => {
   return out;
 };
 
-/* --- La jonction au croisement -------------------------------------------------------- */
+/* --- The junction at a crossing --------------------------------------------------------- */
 
-test("traverser une ligne perpendiculaire pose une jonction", () => {
-  // Une bande verticale en (2, 0), et on trace une ligne horizontale a travers.
+test("crossing a perpendicular line places a junction", () => {
+  // A vertical belt at (2, 0), and a horizontal line traced across it.
   const plateau = board([bande(2, 0, 1)]);
   const posee = withJunctions(ligne(0, 4), plateau, known);
   assert.equal(posee[2].block, "junction");
   assert.deepEqual(posee.filter((p) => p.block === "junction").length, 1);
 });
 
-test("une jonction ne se pose pas au bout de la ligne", () => {
-  /* La regle du jeu demande que la ligne continue DES DEUX COTES : au bout, il n y a rien
-     a faire traverser, et une jonction terminale ne serait qu un convoyeur en moins. */
+test("a junction is not placed at the end of the line", () => {
+  /* The game's rule requires the line to continue on BOTH SIDES: at the end, there is
+     nothing to cross, and a terminal junction would just be one conveyor short. */
   const plateau = board([bande(4, 0, 1)]);
   const posee = withJunctions(ligne(0, 4), plateau, known);
   assert.equal(posee[4].block, "conveyor");
 });
 
-test("un convoyeur dans le meme sens se remplace, il ne devient pas une jonction", () => {
+test("a conveyor facing the same way gets replaced, it does not become a junction", () => {
   const plateau = board([bande(2, 0, 0)]);
   const posee = withJunctions(ligne(0, 4), plateau, known);
   assert.equal(posee[2].block, "conveyor");
 });
 
-test("un convoyeur a contresens n est pas un croisement non plus", () => {
-  // Rotation 2 contre 0 : deux quarts de tour d ecart, donc pas perpendiculaire.
+test("a conveyor facing the opposite way is not a crossing either", () => {
+  // Rotation 2 against 0: two quarter turns apart, so not perpendicular.
   const plateau = board([bande(2, 0, 2)]);
   assert.equal(withJunctions(ligne(0, 4), plateau, known)[2].block, "conveyor");
 });
 
-test("une case vide reste un convoyeur", () => {
+test("an empty tile stays a conveyor", () => {
   const posee = withJunctions(ligne(0, 4), board(), known);
   assert.equal(posee.every((p) => p.block === "conveyor"), true);
 });
 
-test("un bloc sans jonction de remplacement n en pose jamais", () => {
-  // Une gaine d Erekir n a pas de `junctionReplacement` dans le jeu.
+test("a block with no junction replacement never places one", () => {
+  // An Erekir duct has no `junctionReplacement` in the game.
   const plateau = board([{ x: 2, y: 0, block: "duct", rotation: 1 }]);
   const gaines = ligne(0, 4).map((p) => ({ ...p, block: "duct" }));
   assert.equal(withJunctions(gaines, plateau, known).every((p) => p.block === "duct"), true);
 });
 
-/* --- Le garde-fou de la pose de cote --------------------------------------------------- */
+/* --- The side-placement guard ------------------------------------------------------------ */
 
-test("une ligne posee de cote est laissee tranquille", () => {
-  /* Le premier bloc regarde le nord alors que la ligne part vers l est : ce n est pas une
-     ligne qu on prolonge, c est une entree qu on branche. */
+test("a line placed sideways is left alone", () => {
+  /* The first block faces north while the line runs east: this is not a line being
+     extended, it's an input being connected. */
   assert.equal(isSidePlace(ligne(0, 4, 0, 1)), true);
   assert.equal(isSidePlace(ligne(0, 4, 0, 0)), false);
 });
 
-/* --- Les ponts automatiques ------------------------------------------------------------ */
+/* --- Automatic bridges ------------------------------------------------------------------- */
 
 const franchir = (plans, plateau, block = "conveyor") => withBridges(plans, {
   blocked: blockerOf(plateau, known, block),
@@ -83,26 +84,26 @@ const franchir = (plans, plateau, block = "conveyor") => withBridges(plans, {
   bridge: known.blocks[block].bridge_replacement,
 });
 
-test("sans obstacle, la ligne reste une ligne", () => {
+test("with no obstacle, the line stays a line", () => {
   const posee = franchir(ligne(0, 6), board());
   assert.equal(posee.every((p) => p.block === "conveyor"), true);
 });
 
-test("une presse au milieu de la ligne se franchit en pont", () => {
-  /* Le geste que le jeu fait a la place du joueur : la ligne rencontre un bloc qu elle ne
-     peut pas remplacer, et deux ponts apparaissent de part et d autre pour l enjamber. */
+test("a press in the middle of the line gets cleared with a bridge", () => {
+  /* The move the game makes on the player's behalf: the line hits a block it cannot
+     replace, and two bridges appear on either side to jump over it. */
   const plateau = board([{ x: 3, y: 0, block: "graphite-press", rotation: 0 }]);
   const posee = franchir(ligne(0, 6), plateau);
   const ponts = posee.filter((p) => p.block === "bridge-conveyor");
-  assert.ok(ponts.length >= 2, `${ponts.length} pont(s), il en faut au moins deux`);
+  assert.ok(ponts.length >= 2, `${ponts.length} bridge(s), at least two are needed`);
   const vise = ponts.find((p) => p.config);
-  assert.ok(vise, "aucun pont ne vise son vis-a-vis");
+  assert.ok(vise, "no bridge targets its counterpart");
   assert.equal(vise.config.type, 7);
 });
 
-test("un pont ne s ouvre pas pour rien : un obstacle hors de portee laisse la ligne", () => {
-  /* La portee d un pont a bande est de quatre. Un mur de six cases ne se saute pas, donc le
-     calcul ne doit pas fabriquer un pont impossible. */
+test("a bridge does not open for nothing: an obstacle out of range leaves the line", () => {
+  /* A belt bridge's range is four. A six-tile wall cannot be jumped, so the calculation
+     must not fabricate an impossible bridge. */
   const mur = [];
   for (let x = 2; x <= 7; x++) mur.push({ x, y: 0, block: "graphite-press", rotation: 0 });
   const posee = franchir(ligne(0, 10), board(mur));
@@ -110,51 +111,51 @@ test("un pont ne s ouvre pas pour rien : un obstacle hors de portee laisse la li
   for (const pont of ponts) {
     if (!pont.config) continue;
     const far = Math.max(Math.abs(pont.config.dx), Math.abs(pont.config.dy));
-    assert.ok(far <= 4, `un pont vise a ${far} cases, sa portee est de quatre`);
+    assert.ok(far <= 4, `a bridge targets ${far} tiles away, its range is four`);
   }
 });
 
-test("le pont prefere le saut le plus court", () => {
-  /* Le malus par case vide enjambee est ce qui l en empeche : sans lui, un pont de portee
-     quatre sauterait toujours de quatre, meme pour franchir une seule case. */
+test("the bridge prefers the shortest jump", () => {
+  /* The per-empty-tile penalty is what prevents this: without it, a range-four bridge
+     would always jump four, even to clear a single tile. */
   const plateau = board([{ x: 3, y: 0, block: "graphite-press", rotation: 0 }]);
   const posee = franchir(ligne(0, 8), plateau);
   const vise = posee.find((p) => p.config);
   const saut = Math.max(Math.abs(vise.config.dx), Math.abs(vise.config.dy));
-  assert.ok(saut <= 3, `saut de ${saut} cases pour franchir une presse de deux`);
+  assert.ok(saut <= 3, `${saut}-tile jump to clear a size-two press`);
 });
 
-test("une ligne qui n est pas droite n est pas touchee", () => {
-  // Le jeu ne calcule les ponts que sur une ligne orthogonale.
+test("a line that is not straight is left untouched", () => {
+  // The game only computes bridges over an orthogonal line.
   const coude = [bande(0, 0), bande(1, 0), bande(1, 1)];
   assert.deepEqual(withBridges(coude, { blocked: () => true, reach: 4, bridge: "bridge-conveyor" }),
                    coude);
 });
 
-test("un mur du terrain bloque comme un bloc", () => {
+test("a terrain wall blocks like a block does", () => {
   const plateau = board([], { "3,0": { floor: "stone", wall: "stone-wall" } });
   const gene = blockerOf(plateau, known, "conveyor");
   assert.equal(gene(3, 0), true);
   assert.equal(gene(2, 0), false);
 });
 
-test("un liquide profond bloque, sauf ce qui flotte", () => {
+test("a deep liquid blocks, except for what floats", () => {
   const plateau = board([], { "3,0": { floor: "deep-water" } });
   assert.equal(blockerOf(plateau, known, "conveyor")(3, 0), true);
   assert.equal(blockerOf(plateau, known, "thermal-generator")(3, 0), false);
 });
 
-test("un convoyeur du meme groupe ne bloque pas, il se remplace", () => {
+test("a conveyor from the same group does not block, it gets replaced", () => {
   const plateau = board([bande(3, 0)]);
   assert.equal(blockerOf(plateau, known, "titanium-conveyor")(3, 0), false);
 });
 
-test("une jonction ne traverse qu un transporteur, pas une presse", () => {
-  /* Le garde-fou qui rend le pont possible. `avoid` du jeu vaut `b instanceof Conveyor` :
-     une jonction ne se pose que pour croiser un transporteur. Sans lui, le calcul faisait
-     passer une jonction imaginaire au travers d une presse pour 30, contre 200 pour un
-     pont, et aucun pont ne s ouvrait jamais. Mesure avant correction : dix-sept convoyeurs
-     et zero pont sur une ligne coupee par une presse. */
+test("a junction only crosses a transporter, not a press", () => {
+  /* The guard that makes the bridge possible. The game's `avoid` is
+     `b instanceof Conveyor`: a junction only gets placed to cross a transporter. Without
+     it, the calculation let an imaginary junction cross through a press for 30, against
+     200 for a bridge, and no bridge ever won. Measured before the fix: seventeen
+     conveyors and zero bridges over a line cut by a press. */
   const plateau = board([{ x: 3, y: 0, block: "graphite-press", rotation: 0 }]);
   const avec = withBridges(ligne(0, 8), {
     blocked: blockerOf(plateau, known, "conveyor"),
@@ -165,9 +166,9 @@ test("une jonction ne traverse qu un transporteur, pas une presse", () => {
     },
   });
   assert.ok(avec.some((p) => p.block === "bridge-conveyor"),
-            "une presse doit se franchir en pont");
+            "a press must be cleared with a bridge");
 
-  // Et sans le garde-fou, la presse se laissait traverser : le pont ne gagnait jamais.
+  // And without the guard, the press let itself be crossed: the bridge never won.
   const sans = withBridges(ligne(0, 8), {
     blocked: blockerOf(plateau, known, "conveyor"),
     reach: 4, bridge: "bridge-conveyor", hasJunction: true,

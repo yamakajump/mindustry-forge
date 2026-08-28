@@ -1,9 +1,9 @@
 /**
- * Ce que la palette propose, et dans quel ordre.
+ * What the palette offers, and in what order.
  *
- * Une palette est ce qui separe un editeur d un annuaire. Celle d avant montrait 253
- * pastilles a plat, sans categorie ni planete, dans l ordre ou le catalogue les avait
- * ecrites.
+ * A palette is what separates an editor from a directory listing. The previous one showed
+ * 253 icons flat, with no category and no planet, in whatever order the catalogue had
+ * written them.
  */
 
 import test from "node:test";
@@ -16,55 +16,55 @@ const known = loadCatalogue();
 const palette = buildables(known);
 const names = palette.map((entry) => entry.name);
 
-test("la palette ne propose que ce qu un joueur peut poser", () => {
-  assert.ok(palette.length > 200, `seulement ${palette.length} blocs`);
-  // Ni sol, ni mur de decor, ni air, ni marqueur d apparition.
+test("the palette only offers what a player can actually place", () => {
+  assert.ok(palette.length > 200, `only ${palette.length} blocks`);
+  // No floor, no decorative wall, no air, no spawn marker.
   for (const interdit of ["stone", "ore-copper", "deep-water", "stone-wall", "air", "spawn"]) {
-    assert.ok(!names.includes(interdit), `${interdit} n a rien a faire dans la palette`);
+    assert.ok(!names.includes(interdit), `${interdit} has nothing to do in the palette`);
   }
   assert.ok(names.includes("conveyor"));
   assert.ok(names.includes("duct"));
 });
 
-test("chaque bloc propose porte un cout, une categorie et une planete", () => {
+test("every block offered carries a cost, a category and a planet", () => {
   for (const { name, block } of palette) {
-    assert.ok(block.cost, `${name} n a pas de cout`);
-    assert.ok(block.category, `${name} n a pas de categorie`);
+    assert.ok(block.cost, `${name} has no cost`);
+    assert.ok(block.category, `${name} has no category`);
   }
-  // Les blocs de bac a sable n appartiennent a aucun arbre technologique, donc a aucune
-  // planete. Ils restent posables : le jeu les pose aussi.
+  // Sandbox blocks belong to no tech tree, so to no planet. They stay placeable: the game
+  // places them too.
   const sansPlanete = palette.filter(({ block }) => !block.planet);
   assert.ok(sansPlanete.length < 10,
-            `${sansPlanete.length} blocs sans planete, c est trop pour du bac a sable`);
+            `${sansPlanete.length} blocks with no planet, too many for sandbox-only blocks`);
 });
 
-test("l ordre est celui du jeu, pas l alphabet", () => {
-  /* Dans le registre du jeu, un convoyeur vient avant un convoyeur titane. L alphabet
-     mettrait « titanium-conveyor » en premier, ce qui n est l ordre de rien et separe les
-     deux moities d une meme famille. */
+test("the order is the game's own, not the alphabet", () => {
+  /* In the game's registry, a conveyor comes before a titanium conveyor. The alphabet
+     would put "titanium-conveyor" first, which is nobody's order and splits a single
+     family in two. */
   assert.ok(names.indexOf("conveyor") < names.indexOf("titanium-conveyor"));
   assert.ok(names.indexOf("mechanical-drill") < names.indexOf("pneumatic-drill"));
 });
 
-test("filtrer par planete separe vraiment les deux jeux de blocs", () => {
+test("filtering by planet really does separate the two block sets", () => {
   const serpulo = palette.filter(({ block }) => block.planet === "serpulo");
   const erekir = palette.filter(({ block }) => block.planet === "erekir");
   assert.ok(serpulo.length > 100 && erekir.length > 80,
-            `${serpulo.length} serpuliens, ${erekir.length} erekiriens`);
+            `${serpulo.length} serpulo blocks, ${erekir.length} erekir blocks`);
   assert.equal(serpulo.some(({ name }) => name === "duct"), false);
   assert.equal(erekir.some(({ name }) => name === "conveyor"), false);
 });
 
-test("la palette montre ce que le menu du jeu montre, pas ce qui a un cout", () => {
-  /* `buildVisibility` et `placeablePlayer` sont le tri du jeu. Trier sur « il a un cout de
-     construction » laissait passer dix blocs que personne ne peut poser en partie : les
-     rampes de lancement, le radar, l illuminateur, l accelerateur interplanetaire, et le
-     coeur, qui n existe que dans sa zone. */
+test("the palette shows what the game's own menu shows, not whatever has a cost", () => {
+  /* `buildVisibility` and `placeablePlayer` are the game's own filter. Filtering on "it
+     has a build cost" let through ten blocks nobody can place in a real game: launch pads,
+     the radar, the illuminator, the interplanetary accelerator, and the core, which only
+     exists inside its own zone. */
   for (const absent of ["launch-pad", "advanced-launch-pad", "core-shard", "radar",
                         "illuminator", "interplanetary-accelerator"]) {
-    assert.ok(!names.includes(absent), `${absent} n a rien a faire dans la palette`);
+    assert.ok(!names.includes(absent), `${absent} has nothing to do in the palette`);
   }
   for (const present of ["conveyor", "graphite-press", "duo", "power-node"]) {
-    assert.ok(names.includes(present), `${present} devrait etre proposable`);
+    assert.ok(names.includes(present), `${present} should be placeable`);
   }
 });
