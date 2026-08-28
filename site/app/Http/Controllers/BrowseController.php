@@ -519,7 +519,11 @@ class BrowseController extends Controller
             ];
         }
 
+        [$pageTitle, $pageSummary] = $this->titles($makes, $eats, $holds, $planet, $page->total());
+
         return view('browse', [
+            'pageTitle' => $pageTitle,
+            'pageSummary' => $pageSummary,
             'schematics' => $page,
             'winners' => Remarks::winners($shown, $makes, $unit),
             'notes' => $shown->mapWithKeys(
@@ -587,5 +591,45 @@ class BrowseController extends Controller
     private static function plain(float $value): string
     {
         return rtrim(rtrim(number_format($value, 2, ',', ' '), '0'), ',');
+    }
+
+    /**
+     * What a filtered listing calls itself, in a browser tab and in a search result.
+     *
+     * Every listing answered to the same title, so `?produit=graphite`, `?bloc=router` and
+     * `?planete=erekir` were three distinct sets of schematics that no reader could tell
+     * apart in a list of results. The filters name real sets; the title had to say which.
+     *
+     * The name goes first and outside the translated phrase, which is two decisions. First
+     * because it is the word somebody scanning results reads, and the only one separating
+     * this page from every other listing. Outside because a missing key renders as the key
+     * without substituting, and the name is the whole information here: "Graphite
+     * vitrine.titre-page.produit" reports itself, a title with Graphite gone does not.
+     *
+     * One filter names the page even when several are set. A title that tried to say all of
+     * them would be long before it was useful, and the first one set is the one a reader
+     * came for.
+     */
+    private function titles(string $makes, string $eats, string $holds, string $planet, int $total): array
+    {
+        /* Written out one key at a time rather than assembled from a variable: AGENTS.md
+           forbids a key built at render time, because a key glued together is a key no
+           check ever sees. */
+        [$name, $phrase] = match (true) {
+            $makes !== '' => [Thing::name($makes), __('vitrine.titre-page.produit')],
+            $eats !== '' => [Thing::name($eats), __('vitrine.titre-page.consomme')],
+            $holds !== '' => [Thing::name($holds), __('vitrine.titre-page.bloc')],
+            $planet !== '' => [ucfirst($planet), __('vitrine.titre-page.planete')],
+            default => ['', ''],
+        };
+
+        if ($name === '') {
+            return ['Schémas - Mindustry Forge', null];
+        }
+
+        return [
+            $name.' : '.$phrase.' - Mindustry Forge',
+            $name.' : '.$total.' '.__('vitrine.titre-page.analyses'),
+        ];
     }
 }

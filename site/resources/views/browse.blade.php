@@ -6,7 +6,13 @@
      Scope: schematics, winners, notes, makes, order, creative, setAside, orders, items,
      holds, blocks, powerKey, and more filter state BrowseController::index builds up. --}}
 @extends('layout')
-@section('title', 'Schémas - Mindustry Forge')
+{{-- Named by its filter, so that `?produit=graphite` and `?bloc=router` are told apart
+     in a list of search results. BrowseController::titles() builds it, and puts the item's
+     name outside the translated phrase so a missing key cannot swallow it. --}}
+@section('title', $pageTitle)
+@if($pageSummary !== null)
+  @section('og-description', $pageSummary)
+@endif
 
 @push('head')
   <script src="/forge/apercu.js" type="module" defer></script>
