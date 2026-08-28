@@ -68,15 +68,23 @@ const CATEGORIES = {
 const PLANETS = { serpulo: "Serpulo", erekir: "Erekir" };
 
 /**
- * The three layers of the ground, the way the game stacks them.
+ * The four families the ground grid sorts a block into, the way the game stacks and
+ * distinguishes them.
  *
  * An ore goes **over** a floor, not in its place, and a wall goes over both. Keeping them
- * apart in the interface is what saves somebody, looking at a copper chip, from having to
+ * apart in the interface is what saves somebody, looking at a copper swatch, from having to
  * guess whether placing it will erase the stone underneath.
+ *
+ * The floor layer is split again by `floor_liquid`, the catalogue's own flag for a floor a
+ * pump can draw from: a grid mixing water with sand is a grid nobody can scan. No family
+ * here is a hand-kept list of names; each is a predicate over fields the catalogue already
+ * carries, so a floor the game adds tomorrow files itself.
  */
 const LAYERS = [
   { key: "floor", label: "Sols",
-    of: (block) => block.floor && !block.overlay && !block.wall },
+    of: (block) => block.floor && !block.floor_liquid && !block.overlay && !block.wall },
+  { key: "floor-liquid", label: "Liquides",
+    of: (block) => block.floor && block.floor_liquid && !block.overlay && !block.wall },
   { key: "overlay", label: "Minerais", of: (block) => block.overlay },
   { key: "wall", label: "Murs", of: (block) => block.wall },
 ];
@@ -150,7 +158,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
         <span class="num">35 %</span></label>
       ${layers.map((layer) => `<section data-layer="${layer.key}">
         <h3>${escape(layer.label)} <span class="num">${layer.blocks.length}</span></h3>
-        <div class="chips"></div>
+        <div class="swatches"></div>
       </section>`).join("")}
       <button type="button" class="wipe">Effacer tout le sol peint</button>
     </div>
@@ -170,15 +178,24 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   /** What the brush holds: which layer, which block, which tool, which size. */
   const brush = { layer: "floor", block: null, tool: "pencil", size: 1 };
 
-  /* The ground chips, drawn once: they are not filtered and they do not move. */
+  /**
+   * A swatch: the sprite and nothing else. No text in the button, on purpose: a texture is
+   * recognised faster than a name is read, and that is the entire point of a grid over a
+   * list. The name still travels, in `title`, for the status line and for a mouse that
+   * lingers.
+   */
+  const groundSwatch = (name, layerKey) => {
+    const src = iconOf(name, 26);
+    return `<button type="button" class="swatch" data-ground="${escape(name)}"
+      data-of="${layerKey}" title="${escape(name)}" aria-pressed="${name === brush.block}">${
+      src ? `<img src="${src}" alt="">` : ""}</button>`;
+  };
+
+  /* The ground swatches, drawn once per family: they do not move, only `hidden` toggles
+     under a search. */
   for (const layer of layers) {
-    const box = groundPanel.querySelector(`[data-layer="${layer.key}"] .chips`);
-    box.innerHTML = layer.blocks.map((name) => {
-      const src = iconOf(name, 20);
-      return `<button type="button" class="chip pick" data-ground="${escape(name)}"
-        data-of="${layer.key}" title="${escape(name)}" aria-pressed="false">${
-        src ? `<img src="${src}" alt="">` : ""}${escape(name.replace(/-/g, " "))}</button>`;
-    }).join("");
+    const box = groundPanel.querySelector(`[data-layer="${layer.key}"] .swatches`);
+    box.innerHTML = layer.blocks.map((name) => groundSwatch(name, layer.key)).join("");
   }
 
   const paint = () => {

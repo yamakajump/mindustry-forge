@@ -1102,3 +1102,19 @@ select {
 /* La virgule appartient a ce qui la precede : un saut de ligne de gabarit devient une
    espace a l'affichage, et « tuiles , sur » se lit comme une faute de frappe. */
 .phrase .ph-virgule { color: var(--dim); margin-right: 3px; }
+
+/* The ground grid, a swatch grid rather than a list of text chips: a texture is recognised
+   faster than a name is read. Sized like the BUILD tab's own `.editor-grid` chips so the
+   two tabs share one visual language, new selectors throughout so the old
+   `.editor-ground .chip.pick` rule above is left exactly as it was. */
+.editor-ground .swatches {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
+}
+.editor-ground .swatch {
+  min-height: 38px; padding: 0; justify-content: center; border-radius: 4px;
+  border-width: 1px;
+}
+.editor-ground .swatch[aria-pressed="true"] {
+  border-color: var(--accent); background: var(--accent-pressed);
+}
+.editor-ground .swatch img { width: 26px; height: 26px; image-rendering: pixelated; }
