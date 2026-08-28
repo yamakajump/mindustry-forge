@@ -12,9 +12,15 @@
      vingt-quatre tuiles qui portent toutes « au mieux ». Un plafond ne s'affiche jamais
      sans dire qu'il en est un, et cette regle vaut pour la phrase qui coiffe la liste
      autant que pour la ligne d'une tuile. --}}
-<p class="sub">Chaque chiffre vient de l'analyse du schéma lui-meme, pas d'une
-  etiquette tapee a la main. Ce sont des plafonds : ce que le plan sortirait alimente a
-  fond, et non ce qu'il a ete mesure faisant.</p>
+@if($order === 'declare')
+  <p class="sub">Chaque chiffre vient de l'analyse du schéma lui-meme, pas d'une
+    etiquette tapee a la main. Ici ce sont des débits déclarés : ce que le plan fait
+    branché comme un joueur l'a marqué, et non ce qu'il ferait alimenté à fond.</p>
+@else
+  <p class="sub">Chaque chiffre vient de l'analyse du schéma lui-meme, pas d'une
+    etiquette tapee a la main. Ce sont des plafonds : ce que le plan sortirait alimente a
+    fond, et non ce qu'il a ete mesure faisant.</p>
+@endif
 
 {{-- Le classement, en onglets plutot que dans un deroulant.
 
@@ -277,12 +283,23 @@
     {{-- La nature du chiffre est dite avec le chiffre, jamais apres. C'est la condition a
          laquelle la vitrine a le droit de chercher sur des plafonds : les nommer n'est pas
          les melanger a des mesures. --}}
+    @if($order === 'declare')
+      {{-- La meme regle sous l'autre tri. Laisser la phrase des plafonds coiffer une liste
+           classee sur des debits declares serait la faute exacte que la phrase existe pour
+           empecher : un texte juste, au-dessus de chiffres qui repondent a autre chose. --}}
+      <p class="hint-line">Classés sur ce qu'ils sortent en
+        <strong>{{ $makes === $powerKey ? 'energie' : \App\Support\Thing::name($makes) }}</strong>
+        branchés comme un joueur les a marqués. Un débit déclaré et non une mesure&nbsp;: le
+        calcul est exact, le branchement est la parole de celui qui l'a marqué, et son nom
+        est sur la fiche.</p>
+    @else
     <p class="hint-line">Classés sur ce qu'ils pourraient sortir en
       <strong>{{ $makes === $powerKey ? 'energie' : \App\Support\Thing::name($makes) }}</strong>,
       alimentés à fond, rapporté à leur taille. Un plafond et non un relevé&nbsp;: un
       schéma arraché d'une base n'a pas la foreuse qui l'alimentait, donc ce qu'il
       fait vraiment depend de la votre. L'electricite qu'il consomme ne le penalise
       pas&nbsp;: c'est un prerequis, indique sur sa page.</p>
+    @endif
   @endif
 
   {{-- Ce qui est mis a part, dit avec son compte et un lien pour le voir.
@@ -424,7 +441,10 @@
                  sans que son nom le dise : les objets y sont par minute, l'energie par
                  seconde. Ecrire « 60 energie/min » etait la faute exacte contre laquelle une
                  autre voie venait de me mettre en garde, et je l'ai faite quand meme. --}}
-            @foreach(array_slice($schematic->chiffresMontres(), 0, 2, true) as $item => $chiffre)
+            @php $montre = $order === 'declare'
+       ? \App\Models\SchematicItem::DECLARE
+       : \App\Models\SchematicItem::PLAFOND; @endphp
+            @foreach(array_slice($schematic->chiffresMontres($montre), 0, 2, true) as $item => $chiffre)
               {{ number_format($chiffre['rate'], 0, ',', ' ') }}
               {{ $item === $powerKey
                   ? 'energie/s'
@@ -432,9 +452,11 @@
               {{-- Chacune des deux grandeurs se nomme. Laisser la mesure muette la ferait
                    lire comme le plafond de la tuile d'a cote, sur une page qui classe sur
                    les plafonds. --}}
-              <span class="hint-line">{{ $chiffre['kind'] === \App\Models\SchematicItem::PLAFOND
-                  ? __('schema.page.au-mieux')
-                  : __('schema.page.mesuree') }}</span>
+              <span class="hint-line">{{ match($chiffre['kind']) {
+                  \App\Models\SchematicItem::PLAFOND => __('schema.page.au-mieux'),
+                  \App\Models\SchematicItem::DECLARE => __('schema.page.declaree'),
+                  default => __('schema.page.mesuree'),
+              } }}</span>
               &middot;
             @endforeach
           @endif

@@ -42,6 +42,17 @@ class BrowseController extends Controller
         'best' => 'Les mieux faits (par bloc posé)',
         'dense' => 'Les plus denses (par tuile de sol)',
         'output' => 'Ceux qui produisent le plus',
+        /*
+         * A sort of its own, and never merged into the two above.
+         *
+         * A ceiling and a declared throughput answer different questions: one is what the
+         * machines could do fed flat out, the other is what a player says the plan does as
+         * branched. Ranked in one column, a ceiling of 120 beats a declared 90 that may
+         * well be the larger real number, and a vote would be able to move a schematic
+         * inside a ranking that claims to be computed. Two lists, each comparing like
+         * with like.
+         */
+        'declare' => 'Ceux qui produisent le plus (debit declare)',
         'small' => 'Les plus compacts',
         'new' => 'Les plus récents',
         'seen' => 'Les plus vus',
@@ -54,8 +65,8 @@ class BrowseController extends Controller
         'garde' => "Dans l'ordre où je les ai gardés",
     ];
 
-    /** The two that compare schematics on their output, so the two that need an item. */
-    private const NEEDS_AN_ITEM = ['best', 'dense', 'output'];
+    /** The four that compare schematics on their output, so the four that need an item. */
+    private const NEEDS_AN_ITEM = ['best', 'dense', 'output', 'declare'];
 
     /**
      * How many fit on one page, and the size of the crowd a leaderboard needs.
@@ -206,9 +217,19 @@ class BrowseController extends Controller
         $leaderboard = Schematic::query()->listed()->where('likes', '>', 0)->count()
             >= self::PER_PAGE;
 
+        /* Meme regle pour le debit declare, et elle vient de la meme phrase : un tri qui
+           ne peut pas remplir son premier ecran n'est pas un tri. Compte sur les
+           schematiques distinctes et non sur les lignes, parce qu'un plan qui declare
+           quatre objets en pose quatre et remplirait le seuil a lui seul. */
+        $declared = SchematicItem::where('kind', SchematicItem::DECLARE)
+            ->distinct()->count('schematic_id') >= self::PER_PAGE;
+
         $offered = self::ORDERS;
         if (! $leaderboard) {
             unset($offered['aimes']);
+        }
+        if (! $declared) {
+            unset($offered['declare']);
         }
         if (! $favorites) {
             unset($offered['garde']);
@@ -329,7 +350,15 @@ class BrowseController extends Controller
                  * chaque tuile le repete a cote de son chiffre.
                  */
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
-                ->where('schematic_items.kind', Vitrine::NATURE)
+                /* Le tri decide la nature, et une seule a la fois : `declare` lit ce qu'un
+                   joueur a marque, tous les autres lisent le plafond de `Vitrine::NATURE`.
+                   Une seule clause, parce que deux se conjuguent : `kind = plafond` et
+                   `kind = declare` posees cote a cote ne ramenent rien, et une liste vide
+                   sous un tri actif se lit comme un catalogue sans reponse plutot que comme
+                   une requete qui se contredit. */
+                ->where('schematic_items.kind', $order === 'declare'
+                    ? SchematicItem::DECLARE
+                    : Vitrine::NATURE)
                 ->select('schematics.*');
 
             /* "At least a hundred a minute", which only means anything once a thing is
@@ -376,6 +405,7 @@ class BrowseController extends Controller
             // layout spread wide with few blocks wins one and loses the other.
             'dense' => $query->orderByDesc('schematic_items.rate_per_tile'),
             'output' => $query->orderByDesc('schematic_items.rate'),
+            'output', 'declare' => $query->orderByDesc('schematic_items.rate'),
             'small' => $query->orderBy('blocks'),
             'seen' => $query->orderByDesc('views'),
             'aimes' => $query->orderByDesc('schematics.likes'),
