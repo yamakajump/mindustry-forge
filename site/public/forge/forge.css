@@ -1017,3 +1017,26 @@ select {
 /* Visible mais marque : un tri qui compare des productions n'a rien a comparer tant
    qu'aucun objet n'est choisi. Le cacher ferait disparaitre la raison de son absence. */
 .tris .tri.gris { opacity: .45; }
+
+/* Lequel gagne sur quoi : quatre questions nommees, avant la grille. */
+.verdicts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 1px;
+  background: var(--line); border: 1px solid var(--line); border-radius: 8px;
+  overflow: hidden; margin: 0 0 16px;
+}
+.verdict { background: #14161b; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px; }
+.v-question { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+.v-nom { font-size: 14px; color: var(--ink); }
+.v-chiffre { color: var(--accent); font-size: 12.5px; }
+
+/* Les remarques d'une tuile : une conclusion, et le chiffre qui la fonde juste dessous. */
+.remarques { list-style: none; margin: 9px 0 0; padding: 8px 0 0; border-top: 1px solid var(--line); }
+.remarques li {
+  display: flex; flex-direction: column; gap: 1px; padding: 3px 0 3px 8px;
+  border-left: 2px solid var(--line); margin-bottom: 3px;
+}
+.remarques b { font-size: 11.5px; font-weight: 500; color: var(--ink); }
+.remarques span { font-size: 10.5px; color: var(--dim); line-height: 1.45; }
+.remarques .r-fort { border-left-color: var(--accent); }
+.remarques .r-petit, .remarques .r-tot, .remarques .r-autonome { border-left-color: var(--good); }
+.remarques .r-tard { border-left-color: var(--warn); }

@@ -187,8 +187,20 @@ it('classe autrement au sol qu au bloc pose', function () {
     // 900/min sur 100 tuiles et 45 blocs : 20 par bloc, 9 par tuile.
     schemaQuiProduit('Dense', 10, 10, 45, 900);
 
-    $auBloc = $this->get('/schemas?produit=silicon&tri=best')->content();
-    $auSol = $this->get('/schemas?produit=silicon&tri=dense')->content();
+    /* Cherche dans la grille seulement, et pas dans la page.
+     *
+     * Le bandeau des verdicts nomme les gagnants au-dessus des tuiles, donc la premiere
+     * occurrence d'un nom dans le HTML n'est plus sa tuile. Le test disait « Dense arrive
+     * avant Etale » et mesurait en fait la position d'un nom dans une phrase de resume :
+     * un test exact qui verifiait autre chose que ce qu'il annonce. */
+    $grille = function (string $url) {
+        $html = $this->get($url)->content();
+
+        return substr($html, strpos($html, '<div class="grid">'));
+    };
+
+    $auBloc = $grille('/schemas?produit=silicon&tri=best');
+    $auSol = $grille('/schemas?produit=silicon&tri=dense');
 
     expect(strpos($auBloc, 'Etale'))->toBeLessThan(strpos($auBloc, 'Dense'))
         ->and(strpos($auSol, 'Dense'))->toBeLessThan(strpos($auSol, 'Etale'));

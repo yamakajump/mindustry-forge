@@ -248,6 +248,26 @@
     <p class="row"><a class="button primary" href="/">Analyser un schéma</a></p>
   </div>
 @else
+  {{-- Lequel gagne sur quoi, avant la grille.
+
+       Une liste qui se contente de classer laisse toute la comparaison au lecteur. Quatre
+       questions plutot qu'une, parce que « le meilleur » n'en est pas une : celui qui a un
+       trou dans sa base, celui qui compte son cuivre et celui qui veut du debit brut ne
+       demandent pas la meme chose, et un seul classement ne peut pas repondre aux trois.
+       Qu'un meme schema en gagne deux est une reponse, pas un defaut. --}}
+  @if($winners !== [])
+    <div class="verdicts">
+      @foreach($winners as $win)
+        <div class="verdict">
+          <span class="v-question">{{ $win['question'] }}</span>
+          <a class="v-nom" href="/s/{{ $win['schematic']->slug }}">{{
+            $win['schematic']->displayName() }}</a>
+          <span class="v-chiffre">{{ $win['figure'] }}</span>
+        </div>
+      @endforeach
+    </div>
+  @endif
+
   <div class="grid">
     @foreach($schematics as $schematic)
       @php
@@ -334,6 +354,20 @@
               non relu">importé</span>
           @endif
         </p>
+        {{-- La conclusion et le nombre qui la fonde, toujours colles. Jamais « celui-ci est
+             bien », toujours « le plus rentable a la surface, 2,3 fois la mediane de cette
+             liste » : un lecteur peut etre en desaccord avec le second, ce qui est la seule
+             facon honnete d'ecrire le premier. --}}
+        @if(($notes[$schematic->id] ?? []) !== [])
+          <ul class="remarques">
+            @foreach($notes[$schematic->id] as $note)
+              <li class="r-{{ $note['tone'] }}">
+                <b>{{ $note['title'] }}</b>
+                <span>{{ $note['because'] }}</span>
+              </li>
+            @endforeach
+          </ul>
+        @endif
       </article>
     @endforeach
   </div>

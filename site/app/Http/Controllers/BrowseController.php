@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Schematic;
 use App\Models\SchematicItem;
 use App\Services\BlockCatalogue;
+use App\Support\Remarks;
+use App\Support\Thing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -255,8 +257,29 @@ class BrowseController extends Controller
          */
         $query->orderByDesc('schematics.id');
 
+        $page = $query->paginate(24)->withQueryString();
+
+        /* Ce que la page dit, en plus de ce qu'elle classe.
+         *
+         * Calcule ici plutot que dans la vue, et une seule fois : chaque remarque compare une
+         * schematique aux autres de la meme page, donc la laisser a la vue voudrait dire
+         * passer la page entiere a chaque tuile.
+         *
+         * Aucune requete de plus : les plafonds sont deja charges par `with('items')`, et le
+         * cout de construction se lit dans `analysis`, deja sur la ligne. Le recalculer depuis
+         * `schematic_blocks` fois le catalogue serait la meme arithmetique ecrite une seconde
+         * fois, sur le chiffre qu'un joueur verifie contre son propre noyau avant de coller.
+         */
+        $shown = $page->getCollection();
+        $unit = $makes === '' ? '' : ($makes === SchematicItem::POWER
+            ? __('schema.unite.energie') : Thing::name($makes));
+
         return view('browse', [
-            'schematics' => $query->paginate(24)->withQueryString(),
+            'schematics' => $page,
+            'winners' => Remarks::winners($shown, $makes, $unit),
+            'notes' => $shown->mapWithKeys(
+                fn (Schematic $s) => [$s->id => Remarks::about($s, $shown, $makes, $unit)]
+            ),
             'makes' => $makes,
             'order' => $order,
             'creative' => $creative,

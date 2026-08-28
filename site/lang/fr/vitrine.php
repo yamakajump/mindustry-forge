@@ -43,10 +43,10 @@ return [
         'tient-dans' => 'Tient dans',
         'au-moins' => 'Au moins',
         'au-plus' => 'Au plus',
-        'planete' => 'Planete',
+        'planete' => 'Planète',
         'planete-peu-importe' => 'peu importe',
-        'autonome' => 'autonome en energie',
-        'verifie' => 'verifie par le banc',
+        'autonome' => 'autonome en énergie',
+        'verifie' => 'vérifié par le banc',
         'chercher' => 'Appliquer',
         'unite' => [
             'tuiles' => 'tuiles',
@@ -60,10 +60,71 @@ return [
          * et `schematicFlipY`, aucune rotation, et `Schematics.rotate()` n'est appelee que
          * par `BaseBuilderAI` et `BaseGenerator`. Un miroir ne change pas l'encombrement.
          */
-        'sans-rotation' => 'Le jeu ne permet pas de faire pivoter un schema a la pose, donc
+        'sans-rotation' => 'Le jeu ne permet pas de faire pivoter un schéma à la pose, donc
             un plan plus large que haut ne rentre pas dans un trou plus haut que large.',
-        'debit-sans-objet' => 'Choisis d abord ce que tu cherches : un debit minimum n a rien
-            contre quoi se mesurer tant qu aucun objet n est choisi.',
+        'debit-sans-objet' => "Choisis d'abord ce que tu cherches : un débit minimum n'a rien
+            contre quoi se mesurer tant qu'aucun objet n'est choisi.",
+    ],
+
+    /*
+     * Ce que la page dit d'un schema, en plus de le classer.
+     *
+     * Une liste qui se contente de trier laisse toute la comparaison au joueur : vingt-quatre
+     * tuiles, quatre nombres chacune, et nulle part une phrase qui dise laquelle repond a sa
+     * question. Corentin : « dis quel est le plus rendement par rapport a la taille, lui est
+     * plus pour le debut de jeu car moins de ressource demander ».
+     *
+     * La regle sous laquelle ces phrases vivent, et c'est celle du depot : une remarque n'est
+     * jamais un avis, et elle ne voyage jamais sans le chiffre qui l'a produite. Pas « celui-ci
+     * est bien » mais « le plus rentable a la surface, 2,3 fois la mediane de cette liste ». Un
+     * lecteur peut etre en desaccord avec le second, ce qui est la seule facon honnete
+     * d'ecrire le premier.
+     *
+     * Aucune quantite ne passe par un placeholder, ici moins qu'ailleurs : ces phrases ne sont
+     * QUE des chiffres, et une cle manquante les viderait de tout ce qu'elles apportent.
+     */
+    'verdict' => [
+        'rendement' => 'Le meilleur rendement pour sa taille',
+        'production' => 'Le plus productif',
+        'encombrement' => 'Le plus petit',
+        'blocs' => 'Le moins de blocs à poser',
+        'par-tuile' => 'par tuile de sol',
+    ],
+
+    'note' => [
+        'rentable' => 'Rentable à la surface',
+        'etale' => "Étalé pour ce qu'il rend",
+        'la-mediane' => 'la médiane de cette liste',
+        'contre' => 'contre',
+        'pour-la-mediane' => 'pour la médiane',
+        'le-plus-petit' => 'Le plus petit de cette liste',
+        'soit' => 'soit',
+        /*
+         * « Debut de partie » est ce qu'un joueur veut savoir et ce que ce depot refuse de
+         * deviner : aucun champ du jeu ne classe ses ressources par epoque. Le jeu tient
+         * pourtant cet ordre, dans son arbre technologique, et le dumper du banc le parcourt
+         * deja pour attribuer une planete a chaque bloc.
+         *
+         * En attendant, la question est retournee en une que le catalogue sait trancher sans
+         * aucun ordre : tout se ramasse-t-il au sol, ou faut-il d'abord avoir bati une usine ?
+         * Le joueur lit le fait et conclut « tot » lui-meme.
+         */
+        'rien-a-fabriquer' => 'Rien à fabriquer avant de le poser',
+        'a-fabriquer' => "Demande d'abord de fabriquer",
+        'coute' => 'coûte',
+        'autonome' => "S'alimente tout seul",
+        'a-brancher' => 'À brancher',
+        'il-reste' => 'il lui reste',
+        'il-faut' => 'il lui faut',
+
+        /*
+         * L'unite ecrite d'un bloc plutot qu'assemblee de deux cles.
+         *
+         * `schema.unite.energie` vaut « energie » et `schema.unite.par-seconde` vaut « / s »,
+         * espace comprise : les coller rendait « energie/ s » sur chaque tuile. Une unite se
+         * lit, elle ne se calcule pas, et le reste du site ecrit deja « energie/s » entier.
+         */
+        'energie-seconde' => 'énergie/s',
     ],
 
     'creatif' => [
@@ -81,7 +142,7 @@ return [
         /* Words, not arrows. They translate, they need no stylesheet to come out the
            right size, and a screen reader reads them. The default view's chevron drew
            at the width of the page here, because its Tailwind classes do nothing. */
-        'titre' => 'Pages de resultats',
+        'titre' => 'Pages de résultats',
         'precedent' => 'Precedente',
         'suivant' => 'Suivante',
         'sur' => 'sur',
