@@ -253,6 +253,7 @@ import { loadSprites, draw, itemIcon, bounds } from "./forge/render.js";
 import { Live } from "./forge/live.js";
 import { gridsOf } from "./forge/engine/power.js";
 import { mountEditor } from "./forge/editor/mount.js";
+import { workbenchOf } from "./forge/editor/state.js";
 import { ready as dictionary, t } from "./forge/i18n.js";
 import { watch } from "./forge/apercu.js";
 
@@ -1012,8 +1013,13 @@ async function leaveEditor(board) {
   lastPayload = String(text.value).replace(/\s+/g, "");
   /* The board is kept as it is, history included: switching must cost nothing. An editor
      where going back wipes what could be undone is an editor nobody switches out of, so
-     one where the analysis is of no use at all while you build. */
-  kept = board;
+     one where the analysis is of no use at all while you build.
+
+     The workbench, and not simply what was analysed: analysing a single frame hands over a
+     board cut down to that frame, right for the report and wrong on the shelf. Shelving it
+     is shelving a board holding one frame, which is the board the player then comes back
+     to, and which the first gesture writes over their saved draft. */
+  kept = workbenchOf(board);
   keptFor = lastPayload;
   /* The head's inline guard hides <main> for as long as this document is serving
      /editer. Leaving the editor here does not reload the page, so this is the one
