@@ -27,12 +27,17 @@ import { createCamera } from "./camera.js";
 import { mountRail, showHelp, sizeGauge } from "./ui.js";
 import { choicesFor, configFor, readsAs } from "./configure.js";
 import { ageOf, describeDraft, dropDraft, keepDraft, readDraft } from "./draft.js";
+import * as spacesApi from "./spaces.js";
 
 const SHELL = `
   <div class="editor-bar">
     <a class="brand" href="/"><svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>Mindustry <span>Forge</span></a>
     <details class="menu editor-site">
       <summary>Site</summary>
+      <div class="menu-list"></div>
+    </details>
+    <details class="menu editor-spaces" hidden>
+      <summary>Mes plans</summary>
       <div class="menu-list"></div>
     </details>
     <span class="editor-modes">
@@ -80,6 +85,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
      édition n'efface pas l'historique : reconstruire depuis les blocs perd ce qui n'est
      plus dans les blocs, c'est à dire tout ce qu'on pourrait défaire. */
   const board = kept || createBoard({ tiles, ground, sizeOf });
+  const escapeText = (s) => String(s).replace(/[<>&"]/g, (c) =>
+    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]));
 
   host.className = "editor";
   host.innerHTML = SHELL;
@@ -200,6 +207,159 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   let stroke = null;
   /** À quel point les blocs s'effacent, pour voir le sol dessous. */
   let opacity = 1;
+
+  /**
+   * Les plans : les plateaux qu'un compte garde côté serveur, un cran au dessus du
+   * brouillon local de `draft.js`.
+   *
+   * Un visiteur anonyme ne voit jamais ce menu : `spacesApi.whoAmI()` répond `null`, et il
+   * garde exactement ce qu'il avait avant cette fonctionnalité, le brouillon local seul, à
+   * une machine, sept jours. Se connecter est ce qui achète les plans ; rien ici ne
+   * conditionne l'éditeur lui même, qui bâtit pareil dans les deux cas.
+   */
+  const spacesMenu = host.querySelector(".editor-spaces");
+  const spacesMenuList = spacesMenu.querySelector(".menu-list");
+  const spacesSummary = spacesMenu.querySelector("summary");
+
+  /** L'espace ouvert, ou rien tant qu'aucun n'a été choisi : le brouillon local sert alors. */
+  let currentSpace = null;
+  /** Le sauvegardeur différé de l'espace ouvert, arrêté et remplacé à chaque bascule. */
+  let saver = null;
+
+  function spaceStatusWord(status, detail) {
+    if (status === "saving") return "enregistrement…";
+    if (status === "failed") return `échec : ${detail}`;
+    return "enregistré";
+  }
+
+  /** Le résumé du menu porte l'état de sauvegarde : une sauvegarde qui échoue en silence
+      sur une connexion capricieuse coûterait un après midi de travail à quelqu'un. */
+  function updateSpacesSummary(status, detail) {
+    spacesSummary.textContent = currentSpace
+      ? `${currentSpace.name} · ${spaceStatusWord(status, detail)}`
+      : "Mes plans";
+    spacesSummary.classList.toggle("bad", status === "failed");
+  }
+
+  async function renderSpacesMenu() {
+    let mine = [];
+    try {
+      mine = await spacesApi.listSpaces();
+    } catch {
+      /* Hors ligne, ou une session expirée entre temps : le menu s'ouvre quand même, vide
+         plutôt qu'en échec bruyant pour une simple liste. */
+    }
+    spacesMenuList.innerHTML = `<button type="button" class="space-new" data-space="new">
+        + Nouveau plan</button>`
+      + (mine.length ? "" : `<span class="menu-heading">Aucun plan encore</span>`)
+      + mine.map((space) => `
+        <div class="space-row" data-slug="${escapeText(space.slug)}">
+          <button type="button" class="child" data-space="open">${escapeText(space.name)}</button>
+          <button type="button" class="space-icon" data-space="rename" title="Renommer">✎</button>
+          <button type="button" class="space-icon" data-space="delete" title="Supprimer">✕</button>
+        </div>`).join("");
+  }
+
+  spacesMenu.addEventListener("toggle", () => { if (spacesMenu.open) renderSpacesMenu(); });
+
+  /* Même raison que `closeSiteMenu` juste au dessus : `<details>` ne se ferme pas tout
+     seul au clic dehors. */
+  const closeSpacesMenu = (event) => {
+    if (spacesMenu.open && !spacesMenu.contains(event.target)) spacesMenu.open = false;
+  };
+  document.addEventListener("click", closeSpacesMenu);
+
+  /** Charger un espace dans l'éditeur déjà monté, sans le démonter puis le remonter. */
+  async function openSpaceBySlug(slug) {
+    saver?.stop();
+    let opened;
+    try {
+      opened = await spacesApi.openSpace(slug);
+    } catch (error) {
+      flash(`plan introuvable : ${error.message}`);
+      return;
+    }
+    board.load(opened.board);
+    currentSpace = { slug: opened.slug, name: opened.name };
+    saver = spacesApi.autosave(slug, { onStatus: updateSpacesSummary });
+    /* Un espace ouvert est un contexte neuf : la sélection, le cadre actif et l'avertissement
+       d'orphelin d'un autre plan n'ont rien à dire sur celui-ci. */
+    activeFrameId = null;
+    selection = null;
+    picking = null;
+    pasting = null;
+    orphanWarned = false;
+    camera.frame(board.frames.length ? board.framesBox() : board.box(), viewportOf());
+    updateSpacesSummary("saved");
+    say();
+    paint();
+  }
+
+  /** Sauvegarder le plateau actuel comme un nouveau plan, puis l'ouvrir. */
+  async function createSpaceFromCurrent() {
+    const name = window.prompt("Nom du plan", currentSpace?.name || "sans nom");
+    if (!name) return;
+    try {
+      const created = await spacesApi.createSpace(name, board.snapshot());
+      saver?.stop();
+      currentSpace = { slug: created.slug, name: created.name };
+      saver = spacesApi.autosave(created.slug, { onStatus: updateSpacesSummary });
+      updateSpacesSummary("saved");
+    } catch (error) {
+      flash(`plan pas enregistré : ${error.message}`);
+    }
+  }
+
+  async function renameSpaceBySlug(slug, row) {
+    const label = row.querySelector('[data-space="open"]');
+    const name = window.prompt("Nom du plan", label.textContent);
+    if (!name || name === label.textContent) return;
+    try {
+      await spacesApi.renameSpace(slug, name);
+      label.textContent = name;
+      if (currentSpace?.slug === slug) {
+        currentSpace.name = name;
+        updateSpacesSummary("saved");
+      }
+    } catch (error) {
+      flash(`pas renommé : ${error.message}`);
+    }
+  }
+
+  async function deleteSpaceBySlug(slug, row) {
+    // Demandé une fois, parce que c'est définitif : la même prudence que la suppression
+    // d'un schéma ailleurs sur ce site.
+    if (!window.confirm("Supprimer ce plan ? C'est définitif.")) return;
+    try {
+      await spacesApi.deleteSpace(slug);
+      row.remove();
+      if (currentSpace?.slug === slug) {
+        saver?.stop();
+        saver = null;
+        currentSpace = null;
+        updateSpacesSummary();
+      }
+    } catch (error) {
+      flash(`pas supprimé : ${error.message}`);
+    }
+  }
+
+  spacesMenuList.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-space]");
+    if (!button) return;
+    const row = button.closest(".space-row");
+    const slug = row?.dataset.slug;
+    const action = button.dataset.space;
+    if (action === "new") createSpaceFromCurrent();
+    else if (action === "open" && slug) openSpaceBySlug(slug);
+    else if (action === "rename" && slug) renameSpaceBySlug(slug, row);
+    else if (action === "delete" && slug) deleteSpaceBySlug(slug, row);
+    if (action !== "rename" && action !== "delete") spacesMenu.open = false;
+  });
+
+  /** Enregistrer maintenant plutôt que d'attendre le délai, pour l'onglet qui se ferme. */
+  const onBeforeUnload = () => { if (currentSpace) saver?.flush(board.snapshot()); };
+  window.addEventListener("beforeunload", onBeforeUnload);
 
   function viewportOf() {
     return { width: stage.clientWidth || 800, height: stage.clientHeight || 600 };
@@ -527,6 +687,18 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
+   * Où va la sauvegarde continue : le plan ouvert s'il y en a un, le brouillon local sinon.
+   *
+   * Jamais les deux à la fois. Écrire aussi dans le brouillon local pendant qu'un plan est
+   * ouvert referait proposer, à la prochaine visite, "reprendre ce brouillon" pour un
+   * contenu déjà en sûreté dans un plan nommé : une offre qui n'aurait aucun sens.
+   */
+  function saveProgress() {
+    if (currentSpace) saver?.schedule(board.snapshot());
+    else keepDraft(board, Date.now());
+  }
+
+  /**
    * Tout ce qui change le plateau passe par ici.
    *
    * Un seul point d'entrée pour appliquer un geste, et donc un seul endroit où le brouillon
@@ -536,7 +708,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   function commit(change) {
     const done = board.apply(change);
     if (done) {
-      keepDraft(board, Date.now());
+      saveProgress();
       /* Dit une fois, au premier bloc qui se retrouve hors de tout cadre, jamais plus :
          c'est un rappel, pas une alarme qui reviendrait à chaque geste qui en pose un
          autre. Sans aucun cadre le plateau entier en tient lieu, et rien n'est orphelin. */
@@ -1188,9 +1360,6 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
   });
 
-  const escapeText = (s) => String(s).replace(/[<>&"]/g, (c) =>
-    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]));
-
   /**
    * La barre d'actions de chaque cadre : analyser, copier, renommer, supprimer, posée à
    * côté de lui plutôt que dans un panneau à part. À côté et pas ailleurs, pour la même
@@ -1587,7 +1756,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * disparaît entre temps.
    */
   function settle() {
-    keepDraft(board, Date.now());
+    saveProgress();
     selection = null;
     linking = null;
     showPickBar();
@@ -1654,8 +1823,13 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * Écraser d'office ce que quelqu'un vient de coller par un brouillon vieux de trois jours
    * est pire que de perdre le brouillon : dans un cas on perd du travail qu'on savait avoir,
    * dans l'autre on perd celui qu'on croyait avoir devant les yeux.
+   *
+   * `signedIn` n'ajoute qu'un troisième choix, jamais un comportement différent des deux
+   * premiers : un compte peut en plus transformer ce brouillon en un plan qui survivra sur
+   * un autre appareil. Offert, comme le reste de cette barre, jamais fait tout seul à la
+   * connexion : voir le mot du module `draft.js` en tête de ce fichier, il tient encore ici.
    */
-  function offerDraft() {
+  function offerDraft(signedIn) {
     if (board.tiles.length || Object.keys(board.ground).length || board.frames.length) return;
     const kept = readDraft(Date.now());
     if (!kept) return;
@@ -1665,13 +1839,28 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     bar.innerHTML = `<span>Un brouillon de <strong>${describeDraft(kept)}</strong>
       attend, gardé ${ageOf(kept.at, Date.now())}.</span>
       <button type="button" class="primary" data-draft="take">Le reprendre</button>
-      <button type="button" data-draft="drop">Repartir de zéro</button>`;
-    bar.addEventListener("click", (event) => {
+      <button type="button" data-draft="drop">Repartir de zéro</button>`
+      + (signedIn ? `<button type="button" data-draft="keep">Le garder comme un plan</button>` : "");
+    bar.addEventListener("click", async (event) => {
       const button = event.target.closest("[data-draft]");
       if (!button) return;
       if (button.dataset.draft === "take") {
         commit({ place: kept.tiles, paint: kept.ground, addFrames: kept.frames });
         camera.frame(board.frames.length ? board.framesBox() : board.box(), viewportOf());
+      } else if (button.dataset.draft === "keep") {
+        const name = window.prompt("Nom du plan", "sans nom");
+        if (!name) return;
+        try {
+          const created = await spacesApi.importLocalDraft(name);
+          currentSpace = { slug: created.slug, name: created.name };
+          saver = spacesApi.autosave(created.slug, { onStatus: updateSpacesSummary });
+          commit({ place: kept.tiles, paint: kept.ground, addFrames: kept.frames });
+          camera.frame(board.frames.length ? board.framesBox() : board.box(), viewportOf());
+          updateSpacesSummary("saved");
+        } catch (error) {
+          flash(`pas importé : ${error.message}`);
+          return;
+        }
       } else {
         dropDraft();
       }
@@ -1679,6 +1868,25 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
     });
     stage.appendChild(bar);
+  }
+
+  /**
+   * Qui est connecté, et donc si les plans ont leur place dans cette session.
+   *
+   * Un visiteur anonyme sort d'ici exactement comme avant cette fonctionnalité : le menu
+   * reste caché, et `offerDraft` ne propose que ses deux choix d'origine. L'éditeur
+   * lui même n'est jamais conditionné par cette réponse, seule cette barre du haut l'est.
+   */
+  async function initSpaces() {
+    let me = null;
+    try {
+      me = await spacesApi.whoAmI();
+    } catch {
+      /* Hors ligne au moment du montage : reste anonyme pour cette session plutôt que de
+         bloquer l'éditeur sur une requête qui ne sert que ce menu. */
+    }
+    spacesMenu.hidden = !me;
+    offerDraft(!!me);
   }
 
   /* ------------------------------------------------------------------------------------
@@ -1745,7 +1953,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   say();
   paint();
-  offerDraft();
+  initSpaces();
 
   return {
     board,
@@ -1754,6 +1962,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       document.removeEventListener("keyup", onKeyUp);
       document.removeEventListener("paste", onPaste);
       document.removeEventListener("click", closeSiteMenu);
+      document.removeEventListener("click", closeSpacesMenu);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      saver?.stop();
       clearTimeout(fading);
       resize?.disconnect();
       clearTimeout(longPress);

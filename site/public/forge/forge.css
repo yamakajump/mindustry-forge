@@ -662,6 +662,36 @@ select {
 .editor-site summary:hover { background: var(--raised-hover); }
 .editor-site .menu-list { left: 0; right: auto; }
 
+/* Les plans : a cote du menu Site plutot que dans le rail. Le rail choisit un outil pour
+   batir ; ceci choisit *quel plateau* on batit, au meme niveau que Site et que annuler /
+   refaire, pas un onglet de plus au milieu des blocs et du sol. Cache par defaut (voir
+   `mount.js`) : un visiteur anonyme ne voit jamais ce menu exister. */
+.editor-spaces summary {
+  min-height: 36px; padding: 0 10px; border-radius: 6px; border: 2px solid var(--edge);
+  font-size: 13px; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.editor-spaces summary:hover { background: var(--raised-hover); }
+.editor-spaces summary.bad { color: var(--bad); border-color: var(--bad); }
+.editor-spaces .menu-list { left: 0; right: auto; min-width: 220px; }
+.space-new {
+  padding: 8px 10px; border-radius: 5px; text-align: left; border: 0; background: none;
+  color: var(--accent); font-size: 13px;
+}
+.space-new:hover { background: var(--panel); }
+.space-row { display: flex; align-items: center; gap: 2px; }
+.space-row .child {
+  flex: 1; padding: 8px 10px 8px 18px; border-radius: 5px; border: 0; background: none;
+  text-align: left; font-size: 13px; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.space-row .child:hover { background: var(--panel); color: var(--ink); }
+.space-icon {
+  min-height: 28px; width: 28px; padding: 0; justify-content: center; border: 0;
+  background: none; color: var(--dim); font-size: 13px;
+}
+.space-icon:hover { background: var(--panel); color: var(--ink); }
+
 .editor-modes { display: flex; gap: 0; margin-left: 6px; }
 .editor-modes button {
   min-height: 36px; padding: 0 16px; border-radius: 0; border-right-width: 1px;
