@@ -8,8 +8,8 @@ use Illuminate\Console\Command;
 /**
  * Rebuild the search index from analyses that are already stored.
  *
- *     php artisan forge:indexer                 tout le catalogue
- *     php artisan forge:indexer --lot=200       par paquets plus gros
+ *     php artisan forge:indexer                 the whole catalogue
+ *     php artisan forge:indexer --lot=200       in bigger batches
  *
  * The one thing `forge:analyser` cannot do, and the gap it leaves is quiet.
  *
@@ -35,9 +35,9 @@ use Illuminate\Console\Command;
 class ReindexSchematics extends Command
 {
     protected $signature = 'forge:indexer
-        {--lot=500 : Combien de schematiques par paquet}';
+        {--lot=500 : How many schematics per batch}';
 
-    protected $description = 'Reclasser les analyses deja stockees, sans les recalculer';
+    protected $description = 'Reclassify analyses already stored, without recomputing them';
 
     public function handle(): int
     {
@@ -63,11 +63,11 @@ class ReindexSchematics extends Command
                     }
                 }
 
-                $this->line("  {$seen} relues, {$changed} reclassees");
+                $this->line("  {$seen} re-read, {$changed} reclassified");
             });
 
         $this->newLine();
-        $this->info("{$seen} schematiques relues, {$changed} reclassees");
+        $this->info("{$seen} schematics re-read, {$changed} reclassified");
 
         return self::SUCCESS;
     }

@@ -56,12 +56,12 @@ class BrowseController extends Controller
         'small' => 'Les plus compacts',
         'new' => 'Les plus récents',
         'seen' => 'Les plus vus',
-        // Une grandeur unique, comparable entre deux schemas quels qu'ils soient : un
-        // j'aime vaut un j'aime. C'est pourquoi ce tri n'exige pas d'objet choisi la ou
-        // les trois qui comparent des productions l'exigent.
+        // A single quantity, comparable between any two schematics whatsoever: a like is
+        // a like. That is why this sort does not need a chosen item where the three that
+        // compare production do.
         'aimes' => 'Les plus aimés',
-        // N'a de sens que sous le filtre des favoris, et n'est offert que la : ailleurs il
-        // classerait sur une date que la liste ne porte pas. Asymetrie assumee.
+        // Only makes sense under the favorites filter, and is only offered there:
+        // elsewhere it would sort on a date the list does not carry. Asymmetry accepted.
         'garde' => "Dans l'ordre où je les ai gardés",
     ];
 
@@ -152,33 +152,33 @@ class BrowseController extends Controller
         $planet = in_array($request->query('planete'), self::PLANETS, true)
             ? $request->query('planete') : '';
 
-        /* Ce qui est a moi : mes favoris, ce que j'ai aime, ce que j'ai publie.
+        /* What is mine: my favorites, what I liked, what I published.
 
-           Offerts aux seuls connectes, parce qu'un filtre qui rend toujours vide est pire
-           qu'un filtre absent. Le controle est ici et pas seulement dans la vue : une
-           adresse se tape, et `favoris=oui` sans session ne doit pas filtrer sur un
-           identifiant nul. */
-        /* Ce qu'il faut lui amener : « j'ai du charbon, qu'est-ce que je peux faire tourner ».
+           Offered only to signed-in visitors, because a filter that always renders empty
+           is worse than no filter at all. The check is here and not only in the view: an
+           address can be typed by hand, and `favoris=oui` without a session must not
+           filter on a null id. */
+        /* What has to be brought to it: "I have coal, what can I run".
 
-           Confronte a ce que le catalogue reclame vraiment plutot que pris pour argent
-           comptant, comme le filtre par bloc : un nom qui n'est demande par rien rendrait une
-           page vide sans que rien ne dise que la faute est dans le nom. */
+           Checked against what the catalogue actually asks for rather than taken at face
+           value, like the block filter: a name nothing asks for would render an empty
+           page without anything saying the fault is in the name. */
         $eats = (string) $request->query('consomme', '');
         $eatsOnOffer = Vitrine::eatsOnOffer();
         if ($eats !== '' && ! in_array($eats, $eatsOnOffer, true)) {
             $eats = '';
         }
 
-        /* Comparer deux plans, en deux clics et sans une ligne de JavaScript.
+        /* Comparing two plans, in two clicks and without a line of JavaScript.
 
-           `/comparer` existe depuis longtemps et la vitrine ne l'alimentait pas : un joueur
-           qui voulait opposer deux resultats devait ouvrir deux onglets et recopier deux
-           adresses. Des cases a cocher auraient demande un script, et sans lui elles
-           n'auraient rien fait du tout, ce qui est pire qu'une absence.
+           `/comparer` has existed for a long time and the showcase never fed it: a player
+           who wanted to set two results against each other had to open two tabs and copy
+           two addresses by hand. Checkboxes would have needed a script, and without one
+           they would have done nothing at all, which is worse than having none.
 
-           Alors c'est un parametre. Le premier clic retient un schema dans l'adresse, le
-           second part vers la comparaison. Chaque etape a son adresse, donc elle se partage,
-           se met en favori et revient par le bouton precedent. */
+           So it is a parameter. The first click keeps one schematic in the address, the
+           second leaves for the comparison. Every step has its own address, so it can be
+           shared, bookmarked and returned to with the back button. */
         $against = (string) $request->query('comparer', '');
         $held = $against === '' ? null
             : Schematic::query()->listed()->where('slug', $against)->first();
@@ -191,36 +191,36 @@ class BrowseController extends Controller
         $liked = $me !== null && $request->query('aimes') === 'oui';
         $mine = $me !== null && $request->query('miens') === 'oui';
 
-        /* Une liste personnelle n'est pas le catalogue, et ne suit donc pas sa regle.
+        /* A personal list is not the catalogue, and so does not follow its rule.
 
-           `ordinary()` met de cote ce qui ne se pose pas en partie normale, ce qui est juste
-           pour « qu'est-ce qui existe et qui marche ». Ma liste de favoris repond a « qu'est-ce
-           que j'ai garde », et la reponse ne se discute pas : je l'ai garde, je le revois.
-           Vaut pour les trois, y compris ce que j'ai publie : un auteur doit retrouver son
-           propre plan de bac a sable dans sa propre liste.
+           `ordinary()` sets aside what does not place in a normal game, which is fair for
+           "what exists and what works". My favorites list answers "what did I keep", and
+           that answer is not up for debate: I kept it, I see it again. Holds for all
+           three, including what I published: an author has to find their own sandbox plan
+           again in their own list.
 
-           Ecrit ici plutot que laisse a deduire, parce que la prochaine personne qui verra
-           un scope manquant sous un filtre le remettra par coherence. */
+           Written here rather than left to be inferred, because the next person to see a
+           missing scope under a filter would put it back for consistency. */
         $personal = $favorites || $liked || $mine;
 
-        /* Quels classements cette page a le droit d'offrir, et lesquels elle retire.
+        /* Which rankings this page has the right to offer, and which it withdraws.
 
-           « Les plus aimés » n'apparait pas tant que moins d'une page entiere de schemas
-           porte au moins un j'aime. En dessous, le palmares ne remplit pas son premier ecran
-           et classe des schemas dont la plupart valent zero : un chiffre exact, affiche a
-           l'endroit qui pose une autre question, ce que ce depot a paye six fois en une
-           journee. Le seuil EST la taille d'une page, derive d'elle et non recopie a cote,
-           pour qu'en la changeant la raison reste vraie.
+           "Les plus aimés" does not appear until a whole page's worth of schematics
+           carries at least one like. Below that, the leaderboard does not fill its own
+           first screen and ranks schematics most of which are worth zero: an exact figure,
+           shown in the spot that answers another question, which this repository paid for
+           six times in one day. The threshold IS the page size, derived from it rather
+           than copied next to it, so that changing it leaves the reason true.
 
-           « Dans l'ordre ou je les ai gardes » ne vit que sous les favoris : ailleurs la
-           table de liaison n'est pas jointe et la colonne n'existe pas dans la requete. */
+           "Dans l'ordre ou je les ai gardes" only lives under favorites: elsewhere the
+           join table is not joined and the column does not exist in the query. */
         $leaderboard = Schematic::query()->listed()->where('likes', '>', 0)->count()
             >= self::PER_PAGE;
 
-        /* Meme regle pour le debit declare, et elle vient de la meme phrase : un tri qui
-           ne peut pas remplir son premier ecran n'est pas un tri. Compte sur les
-           schematiques distinctes et non sur les lignes, parce qu'un plan qui declare
-           quatre objets en pose quatre et remplirait le seuil a lui seul. */
+        /* Same rule for the declared throughput, and it comes from the same sentence: a
+           sort that cannot fill its own first screen is not a sort. Counted on distinct
+           schematics and not on rows, because a plan that declares four items would put
+           in four and fill the threshold on its own. */
         $declared = SchematicItem::where('kind', SchematicItem::DECLARE)
             ->distinct()->count('schematic_id') >= self::PER_PAGE;
 
@@ -236,17 +236,17 @@ class BrowseController extends Controller
         }
 
         if (! array_key_exists($order, $offered)) {
-            // Retombe sur ce que la page sait faire, et le dit, plutot que de rendre une
-            // liste classee autrement que ce que son onglet actif annonce.
+            // Falls back to what the page can actually do, and says so, rather than
+            // rendering a list sorted otherwise than what its active tab announces.
             $order = $favorites ? 'garde' : 'new';
         } elseif ($favorites && $request->query('tri') === null) {
-            // Ce que je viens de garder en premier : c'est la question que pose une liste
-            // personnelle, et elle n'est pas celle du catalogue.
+            // What I just kept, first: that is the question a personal list asks, and it
+            // is not the catalogue's question.
             $order = 'garde';
         }
 
-        // `items` charge en une fois : chaque tuile lit son plafond, et sans ca une page de
-        // vingt-quatre ferait vingt-quatre requetes de plus.
+        // `items` loaded in one go: every tile reads its ceiling, and without this a page
+        // of twenty-four would fire twenty-four extra queries.
         $query = Schematic::query()->with(['user', 'items'])->listed();
         if ($holds !== '') {
             $query->whereExists(fn ($sub) => $sub
@@ -286,10 +286,10 @@ class BrowseController extends Controller
             $query->onPlanet($planet);
         }
 
-        /* Une jointure plutot qu'un `whereExists` pour les favoris : l'ordre « dans l'ordre
-           ou je les ai gardes » a besoin de la colonne `created_at` de la table de liaison,
-           qu'un `exists` ne rend pas. Les deux autres n'ont rien a lire, donc ils restent
-           des existences. */
+        /* A join rather than a `whereExists` for favorites: the "dans l'ordre ou je les ai
+           gardes" sort needs the `created_at` column from the join table, which an
+           `exists` does not surface. The other two have nothing to read, so they stay
+           existence checks. */
         if ($favorites) {
             $query->join('favorites', function ($join) use ($me) {
                 $join->on('favorites.schematic_id', '=', 'schematics.id')
@@ -309,9 +309,9 @@ class BrowseController extends Controller
             $query->where('schematics.user_id', $me->id);
         }
 
-        /* Une existence et non une jointure : la jointure sur `schematic_items` est deja
-           prise par le produit, et une seconde sur la meme table multiplierait les lignes
-           sans que le compte affiche le dise. */
+        /* An existence check and not a join: the join on `schematic_items` is already
+           taken by the produced item, and a second one on the same table would multiply
+           the rows without the displayed count saying so. */
         if ($eats !== '') {
             $query->whereExists(fn ($sub) => $sub
                 ->selectRaw('1')
@@ -329,33 +329,33 @@ class BrowseController extends Controller
             $query->join('schematic_items', 'schematic_items.schematic_id', '=', 'schematics.id')
                 ->where('schematic_items.item', $makes)
                 /*
-                 * Le plafond, et lui seul.
+                 * The ceiling, and only the ceiling.
                  *
-                 * Exiger une mesure rendait le catalogue muet : 117 schematiques en portent
-                 * une contre 6 775 qui portent un plafond, et ni le graphite ni le silicium
-                 * n'avaient un seul resultat alors que 844 et 1 700 plans en produisent.
-                 * Ce n'est pas un accident qui se resorbera : une schematique arrachee d'une
-                 * base n'a pas la foreuse qui l'alimentait, donc son debit mesure vaut zero
-                 * et le restera.
+                 * Requiring a measurement left the catalogue mute: 117 schematics carry
+                 * one against 6,775 that carry a ceiling, and neither graphite nor
+                 * silicon had a single result even though 844 and 1,700 plans produce
+                 * them. This is not an accident that will shrink over time: a schematic
+                 * torn out of a base does not have the drill that fed it, so its measured
+                 * throughput is zero and will stay zero.
                  *
-                 * Le plafond seul, et non « plafond ou mesure », parce qu'un classement qui
-                 * melange les deux natures est exactement la faute reparee sur l'energie
-                 * nette. Et il n'exclut personne : le plafond se calcule avec une
-                 * alimentation infinie, donc il est toujours superieur ou egal a la mesure,
-                 * et toute schematique qui a une mesure non nulle a aussi un plafond. Une
-                 * seule nature dans un seul ordre, sans rien perdre.
+                 * The ceiling alone, and not "ceiling or measurement", because a ranking
+                 * that mixes the two natures is exactly the fault repaired on net power.
+                 * And it excludes nobody: the ceiling is computed with an infinite feed,
+                 * so it is always greater than or equal to the measurement, and any
+                 * schematic with a nonzero measurement also has a ceiling. One nature in
+                 * one ranking, without losing anything.
                  *
-                 * La regle n'est pas assouplie, elle est appliquee : un plafond ne s'affiche
-                 * jamais sans dire qu'il en est un. La phrase sous les filtres le dit, et
-                 * chaque tuile le repete a cote de son chiffre.
+                 * The rule is not relaxed, it is applied: a ceiling is never shown without
+                 * saying it is one. The sentence under the filters says so, and every tile
+                 * repeats it next to its figure.
                  */
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
-                /* Le tri decide la nature, et une seule a la fois : `declare` lit ce qu'un
-                   joueur a marque, tous les autres lisent le plafond de `Vitrine::NATURE`.
-                   Une seule clause, parce que deux se conjuguent : `kind = plafond` et
-                   `kind = declare` posees cote a cote ne ramenent rien, et une liste vide
-                   sous un tri actif se lit comme un catalogue sans reponse plutot que comme
-                   une requete qui se contredit. */
+                /* The sort decides the nature, and only one at a time: `declare` reads
+                   what a player marked, every other sort reads the ceiling from
+                   `Vitrine::NATURE`. A single clause, because two combine badly: `kind =
+                   plafond` and `kind = declare` placed side by side return nothing, and an
+                   empty list under an active sort reads as a catalogue with no answer
+                   rather than as a query contradicting itself. */
                 ->where('schematic_items.kind', $order === 'declare'
                     ? SchematicItem::DECLARE
                     : Vitrine::NATURE)
@@ -427,40 +427,42 @@ class BrowseController extends Controller
 
         $page = $query->paginate(self::PER_PAGE)->withQueryString();
 
-        /* Ce que la page dit, en plus de ce qu'elle classe.
+        /* What the page says, on top of what it ranks.
          *
-         * Calcule ici plutot que dans la vue, et une seule fois : chaque remarque compare une
-         * schematique aux autres de la meme page, donc la laisser a la vue voudrait dire
-         * passer la page entiere a chaque tuile.
+         * Computed here rather than in the view, and only once: every remark compares a
+         * schematic against the others on the same page, so leaving it to the view would
+         * mean passing the whole page to every tile.
          *
-         * Aucune requete de plus : les plafonds sont deja charges par `with('items')`, et le
-         * cout de construction se lit dans `analysis`, deja sur la ligne. Le recalculer depuis
-         * `schematic_blocks` fois le catalogue serait la meme arithmetique ecrite une seconde
-         * fois, sur le chiffre qu'un joueur verifie contre son propre noyau avant de coller.
+         * No extra query: the ceilings are already loaded by `with('items')`, and the
+         * build cost is read from `analysis`, already on the row. Recomputing it from
+         * `schematic_blocks` times the catalogue would be the same arithmetic written a
+         * second time, on the figure a player checks against their own core before
+         * pasting.
          */
         $shown = $page->getCollection();
         $unit = $makes === '' ? '' : ($makes === SchematicItem::POWER
             ? __('schema.unite.energie') : Thing::name($makes));
 
-        // L'unite suit la chose et non la colonne : `rate` porte des objets par minute et de
-        // l'energie par seconde sous le meme nom. Ecrire « 60 energie/min » serait juste
-        // arithmetiquement et faux partout ailleurs sur ce site.
+        // The unit follows the thing and not the column: `rate` carries items per minute
+        // and power per second under the same name. Writing "60 power/min" would be
+        // arithmetically correct and wrong everywhere else on this site.
         $unitShort = $makes === '' ? '' : ($makes === SchematicItem::POWER
             ? __('vitrine.note.energie-seconde')
-            // Ecrit d'un bloc : `schema.unite.par-minute` vaut « / min », espace comprise,
-            // et le coller rendait « Silicium/ min » sur chaque puce.
+            // Written as one piece: `schema.unite.par-minute` is "/ min", space included,
+            // and concatenating it rendered "Silicon/ min" on every chip.
             : Thing::name($makes).'/min');
 
-        /* Ce que la recherche porte en ce moment, une puce par contrainte, chacune avec le
-           lien qui la retire.
+        /* What the search currently carries, one chip per constraint, each with the link
+           that removes it.
 
-           Une page arrivee par un lien partage applique des filtres que son lecteur n'a pas
-           poses, et le panneau qui les contient est replie. Sans ces puces, la seule façon de
-           savoir pourquoi la liste est courte est d'ouvrir le panneau et de lire six champs.
+           A page reached from a shared link applies filters its reader never set, and the
+           panel holding them is collapsed. Without these chips, the only way to know why
+           the list is short is to open the panel and read six fields.
 
-           Les nombres sont assembles ici et jamais passes a une cle de traduction : une cle
-           manquante rendrait la cle sans substituer, et « au moins 1 000 » deviendrait « au
-           moins », ce qui est la seule moitie de la phrase qui ne veut rien dire. */
+           The numbers are assembled here and never passed to a translation key: a missing
+           key would render the key without substituting, and "at least 1,000" would
+           become "at least", which is the one half of the sentence that means nothing on
+           its own. */
         $chips = [];
         if ($fitsWide > 0 || $fitsTall > 0) {
             $chips[] = [
@@ -495,11 +497,11 @@ class BrowseController extends Controller
         if ($holds !== '') {
             $chips[] = ['label' => Thing::name($holds), 'clear' => ['bloc' => null]];
         }
-        /* Les trois listes personnelles ont leur puce comme le reste.
+        /* The three personal lists get their chip like everything else.
 
-           Sans elle, `/mes-favoris` rendait une liste sans rien dire qu'elle etait filtree :
-           le panneau qui porte les cases est replie, et le titre de la page est celui du
-           catalogue. Un lecteur voyait une vitrine anormalement courte, pas ses favoris. */
+           Without it, `/mes-favoris` rendered a list without saying anywhere that it was
+           filtered: the panel holding the checkboxes is collapsed, and the page title is
+           the catalogue's. A reader saw an oddly short showcase, not their favorites. */
         if ($favorites) {
             $chips[] = ['label' => __('vitrine.a-moi.favoris'), 'clear' => ['favoris' => null]];
         }

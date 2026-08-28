@@ -14,48 +14,48 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
- * Ramener les deux catalogues existants, sans rien casser chez eux.
+ * Bring back the two existing catalogues, without breaking anything on their side.
  *
- *     php artisan forge:collecter                     les deux, une seconde entre chaque appel
- *     php artisan forge:collecter mindustry-tool      une seule
- *     php artisan forge:collecter --limite=20         un essai
+ *     php artisan forge:collecter                     both, one second between each call
+ *     php artisan forge:collecter mindustry-tool      just one
+ *     php artisan forge:collecter --limite=20         a trial run
  *
- * Collecter et publier sont deux gestes distincts. Tout arrive en `private`, sans
- * proprietaire, et le catalogue reste mesurable, requetable et invisible jusqu'au jour ou
- * quelqu'un decide le contraire. La publication sera un UPDATE en masse ; elle attend
- * qu'un message soit parti au mainteneur d'en face, ce qui coute cinq minutes avant et ne
- * vaut plus rien apres.
+ * Collecting and publishing are two distinct gestures. Everything arrives `private`, with
+ * no owner, and the catalogue stays measurable, queryable and invisible until the day
+ * somebody decides otherwise. Publishing will be a bulk UPDATE; it waits for a message to
+ * have gone out to the maintainer on the other side, which costs five minutes before and
+ * is worth nothing anymore after.
  *
- * **La reprise n'a pas d'etat.** Pas de curseur, pas de fichier de position, pas de table
- * d'avancement : avant de payer les deux appels que coute une entree, on demande a la base
- * si elle la tient deja. Couper au dixieme mille et relancer re-parcourt les listings, ce
- * qui prend deux minutes, et ne redemande que ce qui manque. Un curseur, lui, est faux des
- * qu'une entree est deposee chez eux pendant la collecte, et il est faux en silence.
+ * **Resuming carries no state.** No cursor, no position file, no progress table: before
+ * paying the two calls an entry costs, the database is asked whether it already holds it.
+ * Cutting off at the ten thousandth entry and restarting walks the listings again, which
+ * takes two minutes, and only asks again for what is missing. A cursor, by contrast, goes
+ * wrong the moment an entry is dropped on their side during the collection, and it goes
+ * wrong silently.
  *
- * Rien n'est analyse ici. Une ligne collectee sort avec `engine_version` a null, donc elle
- * est perimee par construction et `forge:analyser` la prendra. Les deux passes echouent
- * differemment - l'une sur le reseau de quelqu'un d'autre, l'autre sur un `.msch` tordu -
- * et une seule commande qui ferait les deux obligerait a tout recommencer pour la mauvaise
- * moitie.
+ * Nothing is analysed here. A collected row comes out with `engine_version` at null, so it
+ * is stale by construction and `forge:analyser` will pick it up. The two passes fail
+ * differently - one on somebody else's network, the other on a mangled `.msch` - and a
+ * single command doing both would force starting everything over for the wrong half.
  */
 class CollectCatalogues extends Command
 {
     protected $signature = 'forge:collecter
-        {source? : mindustry-tool, mindustryschematics, ou rien pour les deux}
-        {--pause=0 : Millisecondes entre deux lots, quand la source demande a souffler}
-        {--essais=4 : Combien de fois insister avant d abandonner un appel}
+        {source? : mindustry-tool, mindustryschematics, or nothing for both}
+        {--pause=0 : Milliseconds between two batches, when the source asks to breathe}
+        {--essais=4 : How many times to insist before giving up on a call}
         {--paralleles=1 : How many calls in flight at once. One by one unless asked}
-        {--limite=0 : S arreter apres tant de nouvelles entrees, pour essayer}';
+        {--limite=0 : Stop after this many new entries, for a trial run}';
 
-    protected $description = 'Ingerer les catalogues existants, en prive, sans les analyser';
+    protected $description = 'Ingest the existing catalogues, privately, without analysing them';
 
     /**
-     * Combien de pages perdues de suite avant de conclure que ce n'est plus un accident.
+     * How many lost pages in a row before concluding this is no longer an accident.
      *
-     * Une schematique retiree, un detail casse, un `.msch` vide : ca arrive et ca se saute
-     * sans rien compter ici. Ce qui compte ici, c'est une page entiere qui casse, donc le
-     * serveur qui a change d'avis sur nous. Trois d'affilee suffisent a le dire, et
-     * continuer a taper serait exactement la mauvaise reponse.
+     * A withdrawn schematic, a broken detail, an empty `.msch`: that happens and is skipped
+     * without counting anything here. What matters here is a whole page breaking, meaning
+     * the server has changed its mind about us. Three in a row is enough to say so, and
+     * continuing to hammer it would be exactly the wrong response.
      */
     private const GIVE_UP_AFTER = 3;
 
@@ -75,8 +75,8 @@ class CollectCatalogues extends Command
         );
 
         if ($catalogues === []) {
-            $this->error("Source inconnue : {$wanted}");
-            $this->line('Attendu : '.Schematic::MINDUSTRY_TOOL.', '.Schematic::MINDUSTRY_SCHEMATICS);
+            $this->error("Unknown source: {$wanted}");
+            $this->line('Expected: '.Schematic::MINDUSTRY_TOOL.', '.Schematic::MINDUSTRY_SCHEMATICS);
 
             return self::INVALID;
         }
@@ -85,8 +85,8 @@ class CollectCatalogues extends Command
             try {
                 $this->walk($catalogue);
             } catch (Throwable $stopped) {
-                $this->error("{$catalogue->source()} : {$stopped->getMessage()}");
-                $this->line('Rien n\'est perdu : relancer la commande reprend ou elle en etait.');
+                $this->error("{$catalogue->source()}: {$stopped->getMessage()}");
+                $this->line('Nothing is lost: rerunning the command resumes where it left off.');
 
                 return self::FAILURE;
             }
@@ -101,16 +101,16 @@ class CollectCatalogues extends Command
         $announced = $catalogue->announced();
 
         $this->newLine();
-        $this->info($source.($announced ? " : {$announced} annoncees" : ''));
+        $this->info($source.($announced ? ": {$announced} announced" : ''));
 
         $taken = $held = $gone = $failed = $withdrawn = 0;
         $inARow = 0;
         $limit = (int) $this->option('limite');
 
         foreach ($catalogue->pages() as $listedPage) {
-            // Une requete pour toute la page plutot qu'une par entree. C'est ce qui rend la
-            // reprise gratuite : sur un deuxieme passage, cent entrees deja connues coutent
-            // un `select` et zero appel reseau.
+            // One query for the whole page rather than one per entry. This is what makes
+            // resuming free: on a second pass, a hundred already known entries cost one
+            // `select` and zero network calls.
             $known = Schematic::where('source', $source)
                 ->whereIn('source_id', array_map($catalogue->idOf(...), $listedPage))
                 ->pluck('source_id')
@@ -158,7 +158,7 @@ class CollectCatalogues extends Command
                 $rows = $catalogue->fetchMany($todo);
             } catch (Throwable $broke) {
                 $failed += count($todo);
-                $this->warn("  page perdue : {$broke->getMessage()}");
+                $this->warn("  page lost: {$broke->getMessage()}");
                 if (++$inARow >= self::GIVE_UP_AFTER) {
                     throw $broke;
                 }
@@ -187,28 +187,28 @@ class CollectCatalogues extends Command
                 }
             });
 
-            $this->line("  {$taken} prises, {$held} deja tenues, {$gone} disparues"
-                .($withdrawn ? ", {$withdrawn} retirees sur demande" : ''));
+            $this->line("  {$taken} taken, {$held} already held, {$gone} gone"
+                .($withdrawn ? ", {$withdrawn} withdrawn on request" : ''));
 
             if ($limit > 0 && $taken >= $limit) {
-                $this->line("  limite de {$limit} atteinte");
+                $this->line("  limit of {$limit} reached");
                 break;
             }
         }
 
         $this->table(
-            ['prises', 'deja tenues', 'disparues', 'echecs', 'retirees'],
+            ['taken', 'already held', 'gone', 'failed', 'withdrawn'],
             [[$taken, $held, $gone, $failed, $withdrawn]],
         );
     }
 
     /**
-     * Ecrire la ligne, et laisser la base refuser un doublon plutot que de le prevoir.
+     * Write the row, and let the database refuse a duplicate rather than predicting one.
      *
-     * La verification de page ne couvre pas tout : deux entrees du meme identifiant dans
-     * une meme page, ou une deuxieme collecte lancee en parallele, passent a travers. La
-     * contrainte d'unicite sur (source, source_id) est la vraie garantie, et elle est du
-     * cote qui ne peut pas se tromper. On la laisse parler.
+     * The page check does not cover everything: two entries with the same id in the same
+     * page, or a second collection run in parallel, slip through it. The uniqueness
+     * constraint on (source, source_id) is the real guarantee, and it is on the side that
+     * cannot get it wrong. It is left to speak for itself.
      */
     private function keep(string $source, string $id, array $row): bool
     {
@@ -220,9 +220,9 @@ class CollectCatalogues extends Command
                 'source_id' => $id,
                 'name' => mb_substr(trim($row['name']) ?: 'sans nom', 0, 120),
                 'description' => $row['description'],
-                // Meme nettoyage que la route d'envoi : le jeu colle du base64 sur une
-                // ligne, et un retour chariot glisse par un serveur en fait deux chaines
-                // differentes pour la meme schematique.
+                // Same cleaning as the submission route: the game packs base64 onto one
+                // line, and a carriage return let through by a server turns it into two
+                // different strings for the same schematic.
                 'code' => preg_replace('/\s+/', '', $row['code']),
                 'visibility' => Schematic::PRIVATE,
                 'author' => $row['author'] === null ? null : mb_substr($row['author'], 0, 80),
@@ -232,9 +232,10 @@ class CollectCatalogues extends Command
 
             return true;
         } catch (QueryException $refused) {
-            // Seulement le doublon. Une colonne trop courte, une base pleine ou une
-            // connexion coupee levent la meme exception, et les avaler ferait une collecte
-            // qui annonce quinze mille lignes en en ayant ecrit trois mille.
+            // Only the duplicate. A column too short, a full database or a dropped
+            // connection raise the same exception, and swallowing them would produce a
+            // collection that announces fifteen thousand rows while having written three
+            // thousand.
             if ($refused->getCode() !== '23000') {
                 throw $refused;
             }

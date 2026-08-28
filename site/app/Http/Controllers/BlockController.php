@@ -57,17 +57,18 @@ class BlockController extends Controller
         }
 
         /*
-         * Un monde est choisi par defaut, et ce n'est pas un detail de confort.
+         * A world is chosen by default, and that is not a comfort detail.
          *
-         * On joue Serpulo ou Erekir, jamais les deux a la fois, et les deux arbres
-         * technologiques ne partagent presque rien : melanges, les 254 blocs mettent un
-         * convoyeur a cote d'une gaine renforcee, que le meme joueur ne posera jamais dans
-         * la meme partie. Mesure sur le catalogue : 139 blocs Serpulo, 102 Erekir, et
-         * seulement 13 qui appartiennent aux deux.
+         * A player plays Serpulo or Erekir, never both at once, and the two tech trees
+         * share almost nothing: mixed together, the 254 blocks put a conveyor next to a
+         * reinforced conduit, which the same player will never place in the same game.
+         * Measured on the catalogue: 139 Serpulo blocks, 102 Erekir, and only 13 that
+         * belong to both.
          *
-         * Serpulo parce que c'est la ou le jeu commence et ou il y a le plus a montrer. Le
-         * choix est en tete de page avec ses comptes, donc rien n'est cache : « les deux »
-         * reste a un clic, et l'ancien comportement s'obtient par `?planete=tout`.
+         * Serpulo because that is where the game starts and where there is the most to
+         * show. The choice sits at the top of the page with its counts, so nothing is
+         * hidden: "both" stays one click away, and the old behaviour is reached with
+         * `?planete=tout`.
          */
         $planet = (string) $request->query('planete', self::DEFAULT_PLANET);
         if (! in_array($planet, [...self::PLANETS, self::ANY], true)) {
@@ -97,8 +98,8 @@ class BlockController extends Controller
             'categories' => $categories,
             'chosen' => $chosen,
             'planet' => $planet,
-            // Les comptes a cote de chaque monde : un choix qui cache la moitie du
-            // catalogue doit au moins dire combien il cache.
+            // The counts beside each world: a choice that hides half the catalogue
+            // should at least say how much it hides.
             'counts' => self::countsByPlanet(),
             'allCategories' => array_keys(BlockCatalogue::byCategory()),
             'total' => count(BlockCatalogue::all()),
@@ -120,9 +121,9 @@ class BlockController extends Controller
 
         foreach (BlockCatalogue::all() as $block) {
             $counts[self::ANY]++;
-            // Un bloc qui n'appartient a aucun monde appartient aux deux : le convoyeur est
-            // sur Serpulo et sur Erekir, et le retirer des deux listes le rendrait
-            // introuvable partout.
+            // A block belonging to no world belongs to both: the conveyor is on Serpulo
+            // and on Erekir, and removing it from both lists would make it findable
+            // nowhere.
             foreach ($block->planet() === null ? self::PLANETS : [$block->planet()] as $world) {
                 $counts[$world]++;
             }

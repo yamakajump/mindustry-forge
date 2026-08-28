@@ -35,16 +35,16 @@ class MakeModerator extends Command
         $user = User::where('name', $who)->first();
 
         if ($user === null) {
-            $this->error("Aucun membre nomme {$who}.");
+            $this->error("No member named {$who}.");
 
             // Named rather than left to be guessed: the usual cause is that the person has
             // never signed in here, so there is no row to flag, and the answer is to sign in
             // once rather than to look for a bug.
-            $this->line('  Il faut s etre connecte au moins une fois pour avoir un compte.');
+            $this->line('  They need to have signed in at least once to have an account.');
 
             $close = User::where('name', 'like', '%'.$who.'%')->limit(5)->pluck('name');
             if ($close->isNotEmpty()) {
-                $this->line('  Peut-etre : '.$close->implode(', '));
+                $this->line('  Maybe: '.$close->implode(', '));
             }
 
             return self::FAILURE;
@@ -54,8 +54,8 @@ class MakeModerator extends Command
 
         if ((bool) $user->moderator === $wanted) {
             $this->info($wanted
-                ? "{$user->name} est deja moderateur. Rien a faire."
-                : "{$user->name} n est deja pas moderateur. Rien a faire.");
+                ? "{$user->name} is already a moderator. Nothing to do."
+                : "{$user->name} is already not a moderator. Nothing to do.");
 
             return self::SUCCESS;
         }
@@ -63,8 +63,8 @@ class MakeModerator extends Command
         $user->forceFill(['moderator' => $wanted])->save();
 
         $this->info($wanted
-            ? "{$user->name} est moderateur. /moderation lui repond desormais."
-            : "{$user->name} n est plus moderateur. /moderation lui repond 404.");
+            ? "{$user->name} is a moderator. /moderation now answers them."
+            : "{$user->name} is no longer a moderator. /moderation answers them with a 404.");
 
         return self::SUCCESS;
     }

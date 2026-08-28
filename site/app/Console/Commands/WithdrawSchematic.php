@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 /**
  * Honour a takedown request, in the one gesture that actually honours it.
  *
- *     php artisan forge:retirer y00htikdfh --raison="demande de l auteur, 28/08"
+ *     php artisan forge:retirer y00htikdfh --raison="author's request, 28/08"
  *
  * `SECURITY.md` promises an author's schematic will be removed without argument. Deleting
  * the row does not do that: the collector holds no cursor, it asks the database whether a
@@ -33,28 +33,28 @@ class WithdrawSchematic extends Command
         $schematic = Schematic::where('slug', $this->argument('slug'))->first();
 
         if ($schematic === null) {
-            $this->error("Aucune schematique a l'adresse /s/{$this->argument('slug')}");
+            $this->error("No schematic at the address /s/{$this->argument('slug')}");
 
             return self::FAILURE;
         }
 
         $this->line("  {$schematic->name}");
-        $this->line('  '.($schematic->sourceName() ?? 'postee ici').', par '.$schematic->credit());
+        $this->line('  '.($schematic->sourceName() ?? 'posted here').', by '.$schematic->credit());
 
         // Nothing collected this one, so nothing will bring it back and there is nothing to
         // remember. Said out loud rather than silently skipped: whoever runs this is
         // answering somebody, and needs to know which of the two things happened.
         if ($schematic->source_id === null) {
             $schematic->delete();
-            $this->info('Retiree. Rien ne la ramenera : elle a ete postee ici, pas collectee.');
+            $this->info('Withdrawn. Nothing will bring it back: it was posted here, not collected.');
 
             return self::SUCCESS;
         }
 
         Withdrawal::take($schematic, $this->option('raison') ?: null);
 
-        $this->info("Retiree, et {$schematic->source} ne la ramenera pas : "
-            .'la collecte consulte les retraits avant de demander quoi que ce soit.');
+        $this->info("Withdrawn, and {$schematic->source} will not bring it back: "
+            .'the collector checks withdrawals before asking for anything.');
 
         return self::SUCCESS;
     }

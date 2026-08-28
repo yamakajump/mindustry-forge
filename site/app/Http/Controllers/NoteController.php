@@ -24,8 +24,8 @@ class NoteController extends Controller
 
         $keys = ['user_id' => $request->user()->id, 'schematic_id' => $schematic->id];
 
-        /* Vide veut dire pas de note, et non une note vide : sinon « est-ce qu'il y a une
-           note » a deux reponses possibles pour le meme etat. */
+        /* Empty means no note, not an empty note: otherwise "is there a note" would
+           have two possible answers for the same state. */
         if ($body === '') {
             SchematicNote::where($keys)->delete();
 

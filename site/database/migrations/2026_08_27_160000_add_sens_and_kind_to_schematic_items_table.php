@@ -6,56 +6,56 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Deux axes que la table ne savait pas dire, posés d'un coup.
+ * Two axes the table had no way to say, added in one pass.
  *
- * `schematic_items` a été écrite pour une seule question : combien cette schématique
- * produit-elle de cet objet, mesuré. Trois chantiers arrivent dessus en même temps et
- * chacun a besoin d'une distinction que la table ne porte pas.
+ * `schematic_items` was written for a single question: how much of this item does this
+ * schematic produce, measured. Three pieces of work land on it at the same time, and each
+ * needs a distinction the table does not carry.
  *
- * Le premier veut chercher par ce dont un joueur dispose, « j'ai du charbon, montre ce que
- * je peux faire tourner », donc il faut savoir si une ligne dit ce qui sort ou ce qui
- * entre. Le second veut indexer le débit d'un schéma que personne n'a marqué à la main,
- * qui est un plafond et non une mesure : les quinze mille entrées du catalogue arrivent
- * sans marquage, et le moteur refuse de deviner où elles se branchent, à juste titre.
+ * The first wants to search by what a player has on hand, "I have coal, show me what I
+ * can run", so a row needs to say whether it is what comes out or what must go in. The
+ * second wants to index the rate of a schematic nobody marked by hand, which is a ceiling
+ * and not a measurement: the catalogue's fifteen thousand entries arrive unmarked, and the
+ * engine rightly refuses to guess where they connect.
  *
- * Les deux axes sont indépendants : un plafond de consommation se conçoit très bien. Ce
- * n'est donc pas un choix entre deux colonnes, ce sont deux colonnes, et il vaut mieux les
- * poser en un passage que de repasser sur une table qui portera quinze mille lignes fois
- * le nombre d'objets. Les défauts reconduisent exactement ce que les lignes existantes
- * disaient déjà, donc rien ne bouge pour elles.
+ * The two axes are independent: a consumption ceiling makes perfect sense. So this is not
+ * a choice between two columns, it is two columns, and adding both in one pass beats
+ * coming back to a table that will carry fifteen thousand rows times the number of items.
+ * The defaults carry forward exactly what the existing rows already said, so nothing
+ * changes for them.
  *
- * `kind` porte la règle de la journée : ce qui n'est pas mesuré ne doit jamais s'afficher
- * comme s'il l'était. Une colonne plutôt qu'une convention, parce qu'une convention se perd
- * et qu'un classement qui mélange un plafond et une mesure ment sans que rien ne le dise.
+ * `kind` carries the rule of the day: what is not measured must never display as if it
+ * were. A column rather than a convention, because a convention gets lost, and a ranking
+ * that mixes a ceiling and a measurement lies without anything saying so.
  */
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::table('schematic_items', function (Blueprint $table) {
-            // Ce qui sort, ou ce qui doit entrer.
+            // What comes out, or what must go in.
             $table->string('sens', 8)->default('produit')->after('item');
 
-            // Un débit constaté, ou ce que la schématique ferait alimentée à fond.
+            // An observed rate, or what the schematic would do running flat out.
             $table->string('kind', 8)->default('mesure')->after('sens');
         });
 
         Schema::table('schematic_items', function (Blueprint $table) {
-            // La même chose peut désormais être dite quatre fois d'une schématique : ce
-            // qu'elle produit et ce qu'elle consomme, mesuré et au mieux.
+            // The same thing can now be said four times about a schematic: what it
+            // produces and what it consumes, measured and at best.
             //
-            // Le nouvel index est posé avant que l'ancien parte, et l'ordre n'est pas un
-            // détail de style : la clé étrangère sur `schematic_id` a besoin d'un index qui
-            // commence par cette colonne, et MySQL refuse de supprimer le seul qui reste.
-            // SQLite l'accepte, parce qu'il reconstruit la table, donc l'erreur ne se voit
-            // qu'en production. Elle a été trouvée par le contrôle MySQL de la CI, écrit ce
-            // matin précisément pour ça.
+            // The new index is added before the old one is dropped, and the order is not
+            // a matter of style: the foreign key on `schematic_id` needs an index that
+            // starts with this column, and MySQL refuses to drop the only one left.
+            // SQLite accepts it, because it rebuilds the table, so the error only shows
+            // up in production. It was caught by the MySQL check in CI, written this
+            // morning precisely for this.
             $table->unique(['schematic_id', 'item', 'sens', 'kind']);
             $table->dropUnique(['schematic_id', 'item']);
 
-            // Les deux tris du listing, une fois l'objet choisi. Les trois colonnes de
-            // filtre passent devant celle de tri, sinon l'index ne sert que la moitié de
-            // la requête et la base retrie derrière.
+            // The listing's two sorts, once the item is chosen. The three filter columns
+            // come before the sort column, otherwise the index only serves half the
+            // query and the database sorts the rest itself.
             $table->dropIndex(['item', 'rate_per_block']);
             $table->dropIndex(['item', 'rate']);
             $table->index(['item', 'sens', 'kind', 'rate_per_block']);
@@ -70,18 +70,17 @@ return new class extends Migration
             $table->dropIndex(['item', 'sens', 'kind', 'rate']);
         });
 
-        // Sous l'ancienne forme une schématique ne peut avoir qu'une ligne par objet.
-        // Celles qui disent autre chose que le débit produit et mesuré n'y ont pas de
-        // place : les garder ferait échouer la contrainte, et en choisir une au hasard
-        // serait pire.
+        // Under the old form a schematic can only have one row per item. Rows that say
+        // something other than the produced, measured rate have no place there: keeping
+        // them would fail the constraint, and picking one at random would be worse.
         DB::table('schematic_items')
             ->where('sens', '!=', 'produit')
             ->orWhere('kind', '!=', 'mesure')
             ->delete();
 
-        // Même contrainte qu'à l'aller, dans l'autre sens : l'ancien index unique revient
-        // avant que le nouveau parte, sinon la clé étrangère se retrouve un instant sans
-        // index qui commence par `schematic_id` et MySQL refuse.
+        // Same constraint as on the way up, in reverse: the old unique index comes back
+        // before the new one is dropped, otherwise the foreign key is left for an instant
+        // without an index starting with `schematic_id`, and MySQL refuses.
         Schema::table('schematic_items', function (Blueprint $table) {
             $table->unique(['schematic_id', 'item']);
         });

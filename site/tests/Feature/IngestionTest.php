@@ -283,7 +283,7 @@ it('ne reprend pas ce que le moteur courant a deja mesure', function () {
     ]);
 
     $this->artisan('forge:analyser')
-        ->expectsOutputToContain('0 analysees')
+        ->expectsOutputToContain('0 analysed')
         ->assertSuccessful();
 });
 

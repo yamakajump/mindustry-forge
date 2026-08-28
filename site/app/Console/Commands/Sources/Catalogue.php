@@ -3,48 +3,48 @@
 namespace App\Console\Commands\Sources;
 
 /**
- * Un catalogue d'ou l'on ingere, et ce que le collecteur a besoin d'en savoir.
+ * A catalogue we ingest from, and what the collector needs to know about it.
  *
- * Les deux sources ne se ressemblent pas. L'une expose une API versionnee, pagine par
- * decalage et sert le `.msch` en octets a une troisieme adresse ; l'autre est un site a
- * l'abandon dont le listing porte deja le base64 et dont le detail vit sous une extension
- * `.json` collee derriere l'identifiant. Une troisieme arrivera avec ses propres manieres.
+ * The two sources do not resemble each other. One exposes a versioned API, paginates by
+ * offset and serves the `.msch` in bytes at a third address; the other is an abandoned
+ * site whose listing already carries the base64 and whose detail lives under a `.json`
+ * extension stuck behind the identifier. A third will arrive with its own ways.
  *
- * Ce qui ne change pas, c'est la marche : parcourir le listing, sauter ce qu'on tient
- * deja, aller chercher le reste. C'est ce que cette classe fixe, et c'est tout ce qu'elle
- * fixe. Chaque source garde ses bizarreries chez elle.
+ * What does not change is the walk: go through the listing, skip what we already hold,
+ * go fetch the rest. That is what this class fixes, and that is all it fixes. Each source
+ * keeps its quirks to itself.
  */
 abstract class Catalogue
 {
     public function __construct(protected PoliteClient $http) {}
 
-    /** Le nom sous lequel l'origine est stockee, cote `Schematic::SOURCES`. */
+    /** The name under which the origin is stored, on the `Schematic::SOURCES` side. */
     abstract public function source(): string;
 
-    /** Combien la source annonce en tenir, quand elle sait le dire. */
+    /** How many the source announces it holds, when it knows how to say so. */
     abstract public function announced(): ?int;
 
     /**
-     * Les entrees du listing, page par page.
+     * The listing's entries, page by page.
      *
-     * Un generateur plutot qu'un tableau : douze mille entrees tiennent en memoire, mais
-     * la collecte doit pouvoir ecrire les premieres lignes avant d'avoir lu la derniere
-     * page. Une collecte coupee au milieu a alors deja garde ce qu'elle avait pris.
+     * A generator rather than an array: twelve thousand entries fit in memory, but the
+     * collection must be able to write the first rows before it has read the last
+     * page. A collection cut off midway has then already kept what it had taken.
      *
      * @return iterable<int, array<int, array<string, mixed>>>
      */
     abstract public function pages(): iterable;
 
-    /** L'identifiant d'une entree chez elle, qui est ce qui rend l'ingestion idempotente. */
+    /** The identifier of an entry on its own side, which is what makes the ingestion idempotent. */
     abstract public function idOf(array $listed): string;
 
     /**
-     * Tout ce qu'il faut pour ecrire la ligne, ou null si la source ne la rend plus.
+     * Everything needed to write the row, or null if the source no longer serves it.
      *
-     * Retourne `name`, `description`, `code` (le `.msch` en base64), `author` et `meta`,
-     * cette derniere etant la reponse de la source gardee entiere. Recrawler douze mille
-     * pages coute des heures, donc le moment ou un champ ne coute rien a garder est celui
-     * ou il arrive, bien avant que quiconque sache lesquels serviront.
+     * Returns `name`, `description`, `code` (the `.msch` in base64), `author` and `meta`,
+     * the latter being the source's response kept whole. Recrawling twelve thousand
+     * pages costs hours, so the moment a field costs nothing to keep is the moment it
+     * arrives, well before anyone knows which ones will be useful.
      *
      * @return array{name: string, description: ?string, code: string, author: ?string, meta: array}|null
      */
@@ -74,7 +74,7 @@ abstract class Catalogue
         return $rows;
     }
 
-    /** Une chaine vide n'est pas une description, c'est l'absence de description. */
+    /** An empty string is not a description, it is the absence of a description. */
     protected function orNothing(mixed $text): ?string
     {
         $text = is_string($text) ? trim($text) : '';

@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 /**
  * Shut an account out, and keep it shut.
  *
- *     php artisan forge:bannir Vandale --raison="murs obscenes, 28/08"
+ *     php artisan forge:bannir Vandale --raison="obscene wall spam, 28/08"
  *     php artisan forge:bannir 4242 --jusqu-au=2026-09-30
  *
  * Takes a name as readily as a Discord id, because whoever is answering a report has the
@@ -43,8 +43,8 @@ class BanAccount extends Command
          * that matters most: somebody who deleted their account to shed a ban.
          */
         if ($user === null && ! ctype_digit($who)) {
-            $this->error("Aucun membre nomme {$who}. "
-                .'Donne son identifiant Discord si le compte a ete supprime.');
+            $this->error("No member named {$who}. "
+                .'Give their Discord id if the account has been deleted.');
 
             return self::FAILURE;
         }
@@ -52,7 +52,7 @@ class BanAccount extends Command
         $discordId = $user?->discord_id ?? $who;
 
         if ($discordId === null) {
-            $this->error("{$who} n'a pas d'identifiant Discord, il n'y a rien a bannir.");
+            $this->error("{$who} has no Discord id, there is nothing to ban.");
 
             return self::FAILURE;
         }
@@ -64,9 +64,9 @@ class BanAccount extends Command
         Ban::place($discordId, $this->option('raison') ?: null, $until);
 
         $this->info($until
-            ? "Ferme jusqu'au {$until->format('d/m/Y')}. Ses schematiques restent en place."
-            : 'Ferme. Ses schematiques restent en place : un bannissement ne les retire pas, '
-                .'forge:retirer est la pour ca.');
+            ? "Shut out until {$until->format('d/m/Y')}. Their schematics stay in place."
+            : 'Shut out. Their schematics stay in place: a ban does not remove them, '
+                .'forge:retirer is there for that.');
 
         return self::SUCCESS;
     }

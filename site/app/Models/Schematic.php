@@ -166,16 +166,16 @@ class Schematic extends Model
     {
         static::saved(function (self $schematic) {
             $schematic->indexWhatItMakes();
-            // Le plafond passe par le meme crochet et pour la meme raison : la route
-            // d'envoi, un moderateur qui corrige un nom et la passe d'analyse ecrivent
-            // toutes les trois par ici, et n'en cabler qu'une laisserait les deux autres
-            // avec un index qui ne dit plus la meme chose que la schematique.
+            // The ceiling goes through the same hook and for the same reason: the upload
+            // route, a moderator correcting a name and the analysis pass all three write
+            // here, and wiring only one of them would leave the other two with an index
+            // that no longer says the same thing as the schematic.
             $schematic->indexWhatItCouldMake();
             // Which blocks it is built from, for the wiki. A different table, so the two
             // rebuilds never touch each other's rows.
             $schematic->indexWhatItHolds();
-            // Et ce qu'il reclame de l'exterieur, qui est la question posee dans l'autre
-            // sens : « j'ai du charbon, qu'est-ce que je peux faire tourner ».
+            // And what it demands from the outside, which is the same question asked the
+            // other way round: "I have coal, what can I run".
             $schematic->indexWhatItNeeds();
         });
     }
@@ -279,28 +279,27 @@ class Schematic extends Model
     }
 
     /**
-     * Ce qu'il faut lui amener, indexe comme ce qu'il rend.
+     * What has to be brought to it, indexed the same way as what it hands out.
      *
-     * L'autre moitie de la promesse du site, et l'autre sens de la meme question. « Qu'est-ce
-     * qui fait du graphite » est une liste de courses ; « qu'est-ce qui mange du charbon » est
-     * la reponse a « j'ai une mine qui tourne, que puis-je construire maintenant », qui est la
-     * façon dont un joueur choisit sa prochaine usine.
+     * The other half of the site's promise, and the other direction of the same question.
+     * "What makes graphite" is a shopping list; "what eats coal" is the answer to "I have a
+     * mine running, what can I build now", which is how a player picks their next factory.
      *
-     * La colonne `needs` porte deja la reponse depuis le premier jour, ecrite par l'analyse :
-     * ce que le plan reclame de l'exterieur, par minute, une fois deduit ce qu'il produit
-     * lui-meme. Rien n'est recalcule ici, la ligne est seulement rendue interrogeable.
+     * The `needs` column has carried the answer since day one, written by the analysis: what
+     * the plan demands from the outside, per minute, once what it makes for itself is
+     * deducted. Nothing is recomputed here, the row is only made queryable.
      *
-     * Range en `plafond` et non en `mesure`, parce que c'est ce qu'elle est : la demande d'un
-     * plan tournant a plein regime, pas un releve. Melanger les deux natures dans une meme
-     * colonne est la faute que ce depot a passe une journee a defaire du cote production, et
-     * elle serait aussi silencieuse de ce cote-ci.
+     * Filed under `plafond` and not `mesure`, because that is what it is: the demand of a
+     * plan running flat out, not a reading. Mixing the two natures in the same column is the
+     * fault this repository spent a day undoing on the production side, and it would be just
+     * as silent on this side.
      *
-     * Les cles categorielles sont ecartees. Un generateur qui brule « n'importe quoi » ne
-     * nomme pas de ressource et sort sous `*combustible` : 267 lignes sur 3 000 dans le
-     * catalogue actuel. Savoir si du charbon couvre cette faim demande la liste `accepts` que
-     * le jeu tient par bloc, et que `needs.js` lit deja dans le navigateur. La resoudre une
-     * seconde fois ici serait la deuxieme implementation que ce depot passe son temps a
-     * eviter ; et un nom qu'aucun joueur ne peut taper n'est de toute façon pas un filtre.
+     * Category keys are dropped. A generator that burns "anything" names no resource and
+     * comes out under `*combustible`: 267 rows out of 3,000 in the current catalogue. Knowing
+     * whether coal covers that hunger needs the `accepts` list the game keeps per block, and
+     * which `needs.js` already reads in the browser. Resolving it a second time here would be
+     * the second implementation this repository spends its time avoiding, and a name no
+     * player can type is not a filter anyway.
      */
     public function indexWhatItNeeds(): void
     {
@@ -389,23 +388,23 @@ class Schematic extends Model
     }
 
     /**
-     * Ce qu'elle pourrait faire si on l'alimentait, indexe a cote de ce qu'elle fait.
+     * What it could make if it were fed, indexed alongside what it actually makes.
      *
-     * Deux lignes pour une meme schematique et un meme objet, et c'est voulu : `mesure` est
-     * ce qu'elle rend branchee comme son auteur l'a decrite, `plafond` est ce que ses
-     * machines sortiraient a plein regime. Les melanger classerait une promesse a cote d'un
-     * fait, ce qui est l'erreur que ce depot passe ses journees a defaire.
+     * Two rows for the same schematic and the same item, and that is deliberate: `mesure` is
+     * what it hands out plugged in the way its author described it, `plafond` is what its
+     * machines would put out running flat out. Mixing them would rank a promise next to a
+     * fact, which is the mistake this repository spends its days undoing.
      *
-     * Sans ca, la moitie de l'argument du site ne tient pas : quinze mille schematiques
-     * collectees ailleurs que personne ne marquera jamais une par une n'ont pas de mesure,
-     * donc « trouve-moi une usine a silicium » ne les trouve pas. Sur les quarante
-     * premieres entrees reelles, cinq portaient un chiffre.
+     * Without this, half of the site's argument does not hold: fifteen thousand schematics
+     * collected elsewhere that nobody will ever mark one by one have no measurement, so "find
+     * me a silicon factory" does not find them. Of the first forty real entries, five carried
+     * a figure.
      *
-     * Ne touche a rien quand l'analyse ne dit rien du plafond, plutot que de conclure qu'il
-     * est vide. Une schematique renommee par un moderateur passe par ici avec l'analyse
-     * qu'elle avait ; si ce silence effacait les lignes, un changement de nom supprimerait
-     * le travail de la passe d'analyse sans que rien ne le signale. C'est exactement le
-     * piege repare dans la methode d'a cote, dans l'autre sens.
+     * Touches nothing when the analysis says nothing about the ceiling, rather than
+     * concluding that it is empty. A schematic renamed by a moderator passes through here
+     * with the analysis it already had; if this silence wiped the rows, a rename would erase
+     * the analysis pass's work without anything flagging it. That is exactly the trap fixed
+     * in the neighbouring method, in the other direction.
      */
     public function indexWhatItCouldMake(): void
     {
@@ -435,9 +434,9 @@ class Schematic extends Model
             }
         }
 
-        // L'energie suit la meme regle que du cote mesure : ce qui reste une fois que la
-        // schematique s'est servie. Un plafond de production brute classerait une centrale
-        // qui brule la moitie de ce qu'elle fait au-dessus de celle qui la rend.
+        // Energy follows the same rule as on the measured side: what is left over once the
+        // schematic has helped itself. A raw-production ceiling would rank a plant that
+        // burns half of what it makes above the one that hands it out.
         $spare = (float) ($analysis['potential']['made'] ?? 0)
             - (float) ($analysis['potential']['spent'] ?? 0);
         if ($spare > 0) {
@@ -505,22 +504,22 @@ class Schematic extends Model
     public function chiffresMontres(?string $prefer = null): array
     {
         /*
-         * Quelle nature la tuile montre quand la schematique en porte plusieurs.
+         * Which kind the tile shows when the schematic carries more than one.
          *
-         * Le plafond par defaut, parce que la vitrine classe sur lui. Mais la page classe
-         * desormais sur le debit declare quand on le lui demande, et une tuile qui
-         * montrerait le plafond sous ce classement-la dirait autre chose que la liste qui
-         * l'a rangee : le chiffre serait juste et repondrait a la question d'a cote. C'est
-         * pour ca que l'appelant passe ce qu'il classe, au lieu que ce soit fige ici.
+         * The ceiling by default, because the showcase ranks on it. But the page now ranks
+         * on the declared throughput when asked to, and a tile that showed the ceiling under
+         * that ranking would say something different from the list that ranked it: the
+         * figure would be correct and would answer the neighbouring question. That is why
+         * the caller passes what it ranks on, instead of that being fixed here.
          */
         $prefer ??= SchematicItem::PLAFOND;
         $produced = $this->items->where('sens', SchematicItem::PRODUIT);
 
         $rows = [];
         foreach ($produced->sortByDesc('rate') as $row) {
-            // La nature preferee gagne quand plusieurs existent, et le tri par debit
-            // decroissant ferait passer la plus grande en premier : on force, plutot que
-            // de dependre de l'ordre.
+            // The preferred kind wins when several exist, and sorting by descending rate
+            // would put the largest one first regardless: we force it, rather than depend
+            // on the order.
             if (isset($rows[$row->item]) && $rows[$row->item]['kind'] === $prefer) {
                 continue;
             }

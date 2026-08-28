@@ -8,39 +8,39 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Process;
 
 /**
- * Mesurer ce que le collecteur a ramene, avec le moteur du navigateur.
+ * Measure what the collector brought back, with the browser's own engine.
  *
- *     php artisan forge:analyser              tout ce que le moteur courant n a pas vu
- *     php artisan forge:analyser --lot=200    par paquets plus gros
- *     php artisan forge:analyser --tout       tout reprendre, meme ce qui est a jour
+ *     php artisan forge:analyser              everything the current engine has not seen
+ *     php artisan forge:analyser --lot=200    in bigger batches
+ *     php artisan forge:analyser --tout       redo everything, even what is already current
  *
- * Il n'y a qu'une implementation de l'analyse dans ce depot et c'est
- * `site/public/forge/analyse.js`. Executer ce fichier-la sous Node n'en fait pas une
- * deuxieme : c'est le meme fichier, avec le meme catalogue, qui rend les memes chiffres.
- * Le reecrire en PHP en ferait une deuxieme, et une deuxieme chose a avoir tort. Donc
- * l'orchestration et la base restent ici, l'arithmetique reste la-bas, et ce qui passe
- * entre les deux tient sur une ligne de JSON.
+ * There is only one implementation of the analysis in this repository, and it is
+ * `site/public/forge/analyse.js`. Running that file under Node does not make a second one:
+ * it is the same file, with the same catalogue, rendering the same figures. Rewriting it in
+ * PHP would make a second one, and a second thing to have wrong. So the orchestration and
+ * the database stay here, the arithmetic stays there, and what passes between the two fits
+ * on a single line of JSON.
  *
- * Cette commande sert deux fois. Elle mesure ce qui vient d'arriver, et elle re-mesure tout
- * le catalogue le jour ou une correction du moteur atterrit : `Schematic::stale()` designe
- * exactement les lignes dont les chiffres ont ete produits par un moteur qui n'existe plus,
- * et sans elles le site continuerait de presenter les chiffres du mois dernier comme des
- * mesures. C'est la seule chose qu'il vend.
+ * This command serves two purposes. It measures what just arrived, and it re-measures the
+ * whole catalogue the day a correction to the engine lands: `Schematic::stale()` names
+ * exactly the rows whose figures were produced by an engine that no longer exists, and
+ * without it the site would keep presenting last month's figures as measurements. That is
+ * the one thing it sells.
  */
 class AnalyseSchematics extends Command
 {
     protected $signature = 'forge:analyser
-        {--lot=50 : Combien de schematiques par appel a Node}
-        {--limite=0 : S arreter apres tant de schematiques}
-        {--tout : Tout reprendre, et pas seulement ce qui est perime}';
+        {--lot=50 : How many schematics per call to Node}
+        {--limite=0 : Stop after this many schematics}
+        {--tout : Redo everything, not just what is stale}';
 
-    protected $description = 'Analyser les schematiques que le moteur courant n a pas vues';
+    protected $description = 'Analyse the schematics the current engine has not seen';
 
     public function handle(): int
     {
         $script = dirname(base_path()).DIRECTORY_SEPARATOR.'tools'.DIRECTORY_SEPARATOR.'ingest.mjs';
         if (! is_file($script)) {
-            $this->error("Introuvable : {$script}");
+            $this->error("Not found: {$script}");
 
             return self::FAILURE;
         }
@@ -49,7 +49,7 @@ class AnalyseSchematics extends Command
         $limit = (int) $this->option('limite');
         $engine = EngineVersion::current();
 
-        $this->info("Moteur {$engine}");
+        $this->info("Engine {$engine}");
 
         $done = $failed = 0;
         $after = 0;
@@ -68,10 +68,10 @@ class AnalyseSchematics extends Command
 
             $answers = $this->askNode($script, $rows);
             if ($answers === []) {
-                // Node n'a pas repondu du tout. Estampiller ces cinquante lignes comme
-                // illisibles serait bruler le catalogue sur une commande absente : le
-                // moteur les marquerait vues, et plus rien ne les reprendrait.
-                $this->error('Node n\'a rien rendu : rien n\'a ete ecrit, la file est intacte.');
+                // Node did not answer at all. Stamping these fifty rows as unreadable would
+                // burn the catalogue over an absent command: the engine would mark them
+                // seen, and nothing would ever pick them up again.
+                $this->error('Node returned nothing: nothing was written, the queue is intact.');
 
                 return self::FAILURE;
             }
@@ -89,25 +89,25 @@ class AnalyseSchematics extends Command
                 }
             }
 
-            $this->line("  {$done} analysees".($failed ? ", dont {$failed} illisibles" : ''));
+            $this->line("  {$done} analysed".($failed ? ", {$failed} of them unreadable" : ''));
         }
 
         $this->newLine();
-        $this->info("{$done} analysees, {$failed} illisibles");
+        $this->info("{$done} analysed, {$failed} unreadable");
 
         return self::SUCCESS;
     }
 
     /**
-     * La file, et deux facons de ne pas tourner en rond dedans.
+     * The queue, and two ways not to spin in circles inside it.
      *
-     * En marche normale le filtre se vide tout seul : une ligne analysee cesse d'etre
-     * perimee, donc reprendre la tete de `stale()` a chaque tour avance forcement, et l'
-     * ordre voulu - jamais analysee d'abord, puis la plus ancienne - est respecte.
+     * In normal operation the filter empties itself: an analysed row stops being stale, so
+     * picking up the head of `stale()` on every pass necessarily moves forward, and the
+     * intended order - never analysed first, then the oldest - is respected.
      *
-     * `--tout` n'a pas ce luxe : rien ne sort du filtre, donc reprendre la tete rendrait
-     * eternellement les cinquante memes lignes. D'ou le curseur sur l'identifiant, qui ne
-     * sert qu'a ce cas.
+     * `--tout` does not have that luxury: nothing ever leaves the filter, so picking up the
+     * head would return the same fifty rows forever. Hence the cursor on the id, which is
+     * used only for this case.
      */
     private function pending(int $after)
     {
@@ -117,11 +117,11 @@ class AnalyseSchematics extends Command
     }
 
     /**
-     * Un aller-retour avec Node : une ligne JSON par schematique, dans les deux sens.
+     * A round trip with Node: one line of JSON per schematic, in both directions.
      *
-     * Un processus par lot plutot qu'un par schematique. Node met deux dixiemes de seconde
-     * a demarrer et a relire le catalogue de blocs, ce qui ne se voit pas une fois et fait
-     * cinquante minutes sur quinze mille.
+     * One process per batch rather than one per schematic. Node takes about two tenths of a
+     * second to start up and re-read the block catalogue, which is not noticeable once but
+     * adds up to fifty minutes over fifteen thousand.
      *
      * @return array<int, array{analyse?: array, erreur?: string}>
      */
@@ -134,9 +134,9 @@ class AnalyseSchematics extends Command
         $ran = Process::timeout(600)->input($asked)->run(['node', $script]);
 
         if (! $ran->successful()) {
-            // Node absent, script casse : ca ne concerne pas une schematique en
-            // particulier, et reessayer ligne par ligne ne ferait que le repeter.
-            $this->error(trim($ran->errorOutput()) ?: 'node a echoue sans rien dire');
+            // Node missing, script broken: this is not about any one schematic in
+            // particular, and retrying line by line would only repeat the same failure.
+            $this->error(trim($ran->errorOutput()) ?: 'node failed without saying why');
 
             return [];
         }
@@ -156,19 +156,19 @@ class AnalyseSchematics extends Command
     {
         $schematic->fill(Schematic::fromAnalysis($analysis));
         $schematic->analysis = $analysis;
-        // `saved` reconstruit `schematic_items` derriere, donc une schematique re-analysee
-        // cesse d'apparaitre sous ce qu'elle ne produit plus.
+        // `saved` rebuilds `schematic_items` behind the scenes, so a re-analysed schematic
+        // stops appearing under what it no longer produces.
         $schematic->save();
     }
 
     /**
-     * Estampiller quand meme une schematique que le moteur n'a pas su lire.
+     * Stamp a schematic even when the engine failed to read it.
      *
-     * Sinon elle reste perimee pour toujours, la file ne se vide jamais, et la commande
-     * repasse eternellement sur les memes cinquante `.msch` tordus. Elle **a** ete analysee
-     * par ce moteur : la reponse est simplement qu'il n'y arrive pas, et c'est une reponse
-     * qu'il faut garder. Le jour ou le moteur apprend le bloc de mod qui la bloquait, sa
-     * version change et la ligne revient d'elle-meme dans la file.
+     * Otherwise it stays stale forever, the queue never empties, and the command keeps
+     * cycling over the same fifty broken `.msch` files forever. It **has** been analysed
+     * by this engine: the answer is simply that it cannot manage it, and that is an answer
+     * worth keeping. The day the engine learns the mod block that was blocking it, its
+     * version changes and the row comes back into the queue on its own.
      */
     private function giveUpOn(Schematic $schematic, string $why): void
     {

@@ -159,8 +159,8 @@ Route::get('/api/schematiques/{schematic}/code', [SchematicController::class, 'c
    Stored from the first day and never read back. */
 Route::get('/api/schematiques/{schematic}', [SchematicController::class, 'read']);
 
-/* Un dossier, et ce qu'il contient. Adresse a lui, comme /s/ pour un schema, parce qu'un
-   dossier se donne par un lien et qu'un fragment ne se partage pas. */
+/* A folder, and what it contains. An address of its own, like /s/ for a schema, because a
+   folder is given by a link and a fragment cannot be shared. */
 Route::get('/dossiers', [FolderController::class, 'index']);
 Route::get('/d/{folder}', [FolderController::class, 'show']);
 
@@ -185,17 +185,17 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/mes-schemas', [SchematicController::class, 'mine']);
 
-    /* Mes favoris : le catalogue avec le filtre deja arme, et non une seconde liste.
+    /* My favorites: the catalogue with the filter already armed, and not a second list.
      *
-     * Une page a part aurait eu sa propre requete, donc une deuxieme implementation de
-     * « lister des schemas », ce que la premiere regle du depot interdit. Le cout ne se voit
-     * pas le premier jour : il se voit quand la vitrine sait filtrer par encombrement, par
-     * planete et par debit minimum, et qu'une liste de quatre-vingts favoris ne sait rien
-     * faire de tout ca. Ici elle herite de tout, y compris de ce que personne n'a encore
-     * imagine.
+     * A separate page would have had its own query, hence a second implementation of
+     * "listing schematics", which the repository's first rule forbids. The cost is not
+     * visible on day one: it becomes visible once the storefront can filter by footprint,
+     * by planet and by minimum throughput, and a list of eighty favorites knows how to
+     * do none of that. Here it inherits everything, including what nobody has imagined
+     * yet.
      *
-     * L'adresse est `/mes-favoris` et non `/favoris`, par parite avec `/mes-schemas` : le
-     * « mes » dit que la liste est personnelle avant meme qu'elle s'affiche. */
+     * The address is `/mes-favoris` and not `/favoris`, for parity with `/mes-schemas`:
+     * the "mes" (my) says the list is personal before it is even displayed. */
     Route::get('/mes-favoris', fn (Request $request) => app(BrowseController::class)
         ->index($request->merge(['favoris' => 'oui'])));
     Route::post('/api/schematiques', [SchematicController::class, 'store']);

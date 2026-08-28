@@ -5,30 +5,30 @@ namespace App\Console\Commands\Sources;
 use App\Models\Schematic;
 
 /**
- * mindustryschematics.com, le petit des deux, et le plus facile.
+ * mindustryschematics.com, the smaller of the two, and the easiest.
  *
- * Deux mille neuf cent quarante-neuf entrees sur un site a l'abandon, sans conditions
- * d'utilisation : sa page `/info` contient trois liens et rien d'autre.
+ * Two thousand nine hundred and forty-nine entries on an abandoned site, with no terms
+ * of use: its `/info` page contains three links and nothing else.
  *
- * Le plan de la place de marche annonce des `.msch` bruts a `/schematics/{id}.msch`. Il y
- * a mieux, releve en lisant ce que la page appelle vraiment : le listing lui-meme sert
- * deja le base64 dans son champ `text`, donc la schematique ne coute aucun appel a elle
- * seule.
+ * The marketplace's own plan announces raw `.msch` at `/schematics/{id}.msch`. There is
+ * better, found by reading what the page actually calls: the listing itself already
+ * serves the base64 in its `text` field, so the schematic on its own costs no call at
+ * all.
  *
- *     /schematics.json?page=N        pages de vingt : _id, name, text (le base64)
- *     /schematics/{id}.json          description, tags, cout, leurs chiffres, creator_id
- *     /user/{id}.json                le pseudo
+ *     /schematics.json?page=N        pages of twenty: _id, name, text (the base64)
+ *     /schematics/{id}.json          description, tags, cost, their figures, creator_id
+ *     /user/{id}.json                the username
  *
- * Piege a ne pas reproduire : la page du site appelle ce detail avec `?increment=true`,
- * qui incremente leur compteur de telechargements. Le collecteur ne le passe pas. Gonfler
- * les statistiques de quelqu'un pour lire une page est une facon de mentir, meme petite,
- * et le mensonge resterait dans leur base a nous.
+ * A trap not to reproduce: the site's own page calls this detail with `?increment=true`,
+ * which increments their download counter. The collector does not pass it. Inflating
+ * someone's statistics just to read a page is a way of lying, even a small one, and the
+ * lie would stay in their database because of us.
  */
 class MindustrySchematics extends Catalogue
 {
     private const BASE = 'https://mindustryschematics.com';
 
-    /** Ce que la source annonce tenir, releve a la premiere page et garde. */
+    /** What the source announces it holds, read on the first page and kept. */
     private ?int $documents = null;
 
     private array $names = [];
@@ -49,13 +49,13 @@ class MindustrySchematics extends Catalogue
     }
 
     /**
-     * Les cent quarante-huit pages, en s'arretant sur le nombre qu'elle annonce.
+     * The hundred and forty-eight pages, stopping at the number it announces.
      *
-     * Pas sur une page vide, comme l'autre source : celle-ci **borne** le numero de page.
-     * Demander la page deux cents renvoie la page cent quarante-huit, avec un HTTP 200 et
-     * vingt entrees parfaitement valables. Un collecteur qui attendrait le vide tournerait
-     * en rond sur la derniere page jusqu'a la fin des temps, sans jamais rien ecrire de
-     * nouveau, et sans qu'aucune erreur ne le signale.
+     * Not at an empty page, like the other source: this one **caps** the page number.
+     * Asking for page two hundred returns page one hundred and forty-eight, with an HTTP
+     * 200 and twenty perfectly valid entries. A collector waiting for emptiness would
+     * loop forever on the last page, never writing anything new, with no error ever
+     * reporting it.
      */
     public function pages(): iterable
     {
@@ -90,9 +90,9 @@ class MindustrySchematics extends Catalogue
         $detail = $this->http->json(self::BASE."/schematics/{$id}.json");
         $detail = is_array($detail) ? $detail : [];
 
-        // Le listing porte deja la schematique, donc une entree dont le detail a disparu
-        // reste ingerable. C'est ce qui compte : le `.msch` est la chose, le reste est ce
-        // qu'on en dit.
+        // The listing already carries the schematic, so an entry whose detail has vanished
+        // remains ingestable. That is what matters: the `.msch` is the thing, the rest is
+        // what is said about it.
         $code = (string) ($detail['text'] ?? $listed['text'] ?? '');
         if ($code === '') {
             return null;
@@ -103,9 +103,9 @@ class MindustrySchematics extends Catalogue
             'description' => $this->orNothing($detail['description'] ?? null),
             'code' => $code,
             'author' => $this->nameOf($detail['creator_id'] ?? null),
-            // Sans `text` : il est deja dans `code`, entier, et deux mille neuf cent
-            // quarante-neuf base64 gardes deux fois sont de la place perdue en double.
-            // Tout le reste de leur reponse passe tel quel.
+            // Without `text`: it is already in `code`, whole, and two thousand nine
+            // hundred and forty-nine base64 kept twice is wasted duplicate space.
+            // Everything else in their response passes through as is.
             'meta' => array_diff_key($detail, ['text' => null]),
         ];
     }

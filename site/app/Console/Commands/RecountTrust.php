@@ -71,7 +71,7 @@ class RecountTrust extends Command
                 continue;
             }
 
-            $this->line(sprintf('  %-24s %d/%d -> %d/%d  (retenus/infirmes)',
+            $this->line(sprintf('  %-24s %d/%d -> %d/%d  (upheld/overturned)',
                 $user->name, $user->upheld, $user->overturned,
                 $should['upheld'], $should['overturned']));
             $moved++;
@@ -82,11 +82,11 @@ class RecountTrust extends Command
         }
 
         $this->info($moved === 0
-            ? 'Rien a corriger : les compteurs disent ce que le registre dit.'
+            ? 'Nothing to fix: the counters say what the ledger says.'
             : ($this->option('dry-run')
-                ? "{$moved} membre(s) a corriger. Relance sans --dry-run."
-                : "{$moved} membre(s) corrige(s) depuis ".Decision::count().' decision(s) sur '
-                    .Report::count().' signalement(s).'));
+                ? "{$moved} member(s) to fix. Rerun without --dry-run."
+                : "{$moved} member(s) fixed from ".Decision::count().' decision(s) over '
+                    .Report::count().' report(s).'));
 
         return self::SUCCESS;
     }

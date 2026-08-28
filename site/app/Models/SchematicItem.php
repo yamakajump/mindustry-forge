@@ -22,17 +22,17 @@ class SchematicItem extends Model
     public const POWER = 'power';
 
     /**
-     * Ce qu'une valeur de `rate` mesure, qui n'est pas la meme chose selon la ligne.
+     * What a `rate` value measures, which is not the same thing depending on the row.
      *
-     * Pour un objet, `rate` vient de `produces`, deja par minute. Pour l'energie, il vient
-     * du budget mesure de l'analyse, en energie par seconde. La colonne est la meme et
-     * l'unite ne l'est pas.
+     * For an item, `rate` comes from `produces`, already per minute. For energy, it comes
+     * from the analysis's measured budget, in energy per second. The column is the same and
+     * the unit is not.
      *
-     * D'ou cette methode plutot qu'une conversion : l'accueil multipliait tout par soixante
-     * et ecrivait « / min ». Sur l'energie c'etait arithmetiquement juste et contredisait le
-     * reste du site, qui dit energie/s partout ; sur l'eau c'etait faux, la valeur etant
-     * deja par minute. La meme schematique portait deux chiffres selon la page qui la
-     * montrait, sur un site dont l'argument est que ses chiffres se prouvent.
+     * Hence this method rather than a conversion: the home page used to multiply everything
+     * by sixty and print "/ min". On energy that was arithmetically correct and contradicted
+     * the rest of the site, which says energy/s everywhere; on water it was wrong, the value
+     * already being per minute. The same schematic carried two different figures depending on
+     * which page showed it, on a site whose whole argument is that its figures can be proven.
      */
     public static function parSeconde(string $item): bool
     {
@@ -40,11 +40,11 @@ class SchematicItem extends Model
     }
 
     /**
-     * Le nom que le jeu donne, ou le mot que le site emploie pour l'energie.
+     * The name the game gives it, or the word the site uses for energy.
      *
-     * `power` n'est pas un objet du jeu et n'a donc pas de nom dans ses bundles. Les autres
-     * sont cherches dans les deux familles ou ils peuvent vivre, un objet ou un liquide,
-     * avant de retomber sur l'identifiant, ce que le jeu lui-meme n'a pas de mieux a offrir.
+     * `power` is not a game object and therefore has no name in its bundles. The others are
+     * looked up in the two families where they can live, an item or a liquid, before falling
+     * back to the identifier, which is no worse than what the game itself has to offer.
      */
     public static function nomAffiche(string $item): string
     {
@@ -103,7 +103,7 @@ class SchematicItem extends Model
     protected $fillable = ['schematic_id', 'item', 'sens', 'kind', 'rate', 'rate_per_block',
         'rate_per_tile'];
 
-    /** Les valeurs par défaut de la colonne, là où le modèle peut les voir. */
+    /** The column's default values, where the model can see them. */
     protected $attributes = [
         'sens' => self::PRODUIT,
         'kind' => self::MESURE,

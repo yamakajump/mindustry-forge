@@ -45,12 +45,11 @@ class RecountLikes extends Command
             }
         });
 
-        $this->info("{$repaired} compteurs de schemas repares.");
+        $this->info("{$repaired} schematic counters repaired.");
 
-        /* Une seconde passe et non une seconde commande : deux commandes qui font la meme
-           reparation sur deux tables, c'est une commande que quelqu'un oublie de lancer.
-           Les deux chiffres sont dits separement, parce qu'un total qui melange deux tables
-           ne dit pas ou est la derive. */
+        /* A second pass rather than a second command: two commands doing the same repair
+           on two tables is a command somebody forgets to run. The two figures are reported
+           separately, because a total mixing two tables would not say where the drift is. */
         $folderCounts = FolderLike::query()
             ->selectRaw('folder_id, count(*) as n')
             ->groupBy('folder_id')
@@ -68,7 +67,7 @@ class RecountLikes extends Command
             }
         });
 
-        $this->info("{$folders} compteurs de dossiers repares.");
+        $this->info("{$folders} folder counters repaired.");
 
         return self::SUCCESS;
     }
