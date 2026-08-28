@@ -1717,6 +1717,18 @@ public class DumpBlocks {
         // An overlay is an ore laid over a floor; a floor is the ground itself. Told apart
         // because painting one replaces the ground and painting the other does not.
         entry.put("floor", true);
+        /* What decides whether two floors bleed into each other, read from the game rather
+           than inferred. `Floor.doEdge` compares `realBlendId` on both sides and the higher
+           one wins; `drawEdges` skips a neighbour whose `drawEdgeOut` is false.
+
+           These three go to the bench dump and stop there. `build_catalogue.py` filters on
+           its KEEP tuple, so they do not reach `site/public/forge/blocks.json`, which
+           `EngineVersion` hashes. They decide how a page looks and no answer it gives, and
+           the day they enter the catalogue is the day fifteen thousand analyses go stale
+           for the sake of presentation. */
+        entry.put("blend_id", floor.blendId);
+        if (!floor.drawEdgeOut) entry.put("draw_edge_out", false);
+        if (floor.blendGroup != floor) entry.put("blend_group", floor.blendGroup.name);
         if (block instanceof OverlayFloor) entry.put("overlay", true);
 
         // What a floor is worth to a block standing on it. A cultivator on spore moss goes
