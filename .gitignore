@@ -4,16 +4,16 @@ __pycache__/
 *.egg-info/
 node_modules/
 
-# Les traces image par image : un mega-octet par scenario, regenerable des deux cotes,
-# et lu une fois pendant qu'on cherche l'image ou les deux moteurs se separent.
+# The frame-by-frame traces: a megabyte per scenario, regenerable on both sides, and read
+# once while hunting for the frame where the two engines part ways.
 bench/data/trace/
 bench/data/trace-run.json
 
-# Le brouillon de la direction artistique : planches de contact, variantes ecartees,
-# captures d'essai. Ce qui en sort de bon est versionne dans site/public/brand/.
+# The art direction's scratch pad: contact sheets, rejected variants, trial shots. What
+# comes out of it good is committed under site/public/brand/.
 _da/
 
-# Le serveur de test et ce qu il ecrit. Le jar du jeu ne se versionne pas.
+# The test server and what it writes. The game's jar is not committed.
 _run/
 bench/build/
 bench/.gradle/
@@ -35,7 +35,7 @@ site/public/build/
 site/database/*.sqlite
 site/bootstrap/cache/*
 
-# Fiches projet : contexte de travail, pas du code.
+# Project notes: working context, not code.
 .claude/projet/
 
 # Execution plans: dated, step-by-step, written for whoever is running them that
@@ -48,6 +48,5 @@ site/bootstrap/cache/*
 # ever swept up by it because that directory is not this one.
 docs/plans/
 
-# The log tooled sessions keep as they work: drafts, not code.
-# Working notes of a tooled session: regenerable from git log.
+# The working notes a tooled session keeps as it goes: drafts, regenerable from git log.
 .superpowers/
