@@ -56,14 +56,13 @@ if (location.pathname === "/editer") {
     <svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>
     Mindustry <span>Forge</span>
   </a>
-  <!-- Le meme entete que `resources/views/partials/nav.blade.php`, ecrit a la main parce
-       que cette page est servie telle quelle et ne rencontre jamais PHP. Un test la compare
-       a `config/nav.php` : une entree qui atterrit la-bas et pas ici ne peut pas etre
-       fusionnee.
+  <!-- The same header as `resources/views/partials/nav.blade.php`, written by hand because
+       this page is served as it lies and never meets PHP. A test compares it against
+       `config/nav.php`: an entry that lands there and not here cannot be merged.
 
-       Le francais est ecrit en clair et `data-i18n` ne porte que la cle. Rien a remplacer
-       tant que le site parle la langue dans laquelle il est ecrit, donc pas de scintillement,
-       et un lecteur sans JavaScript lit des mots plutot que des cles. -->
+       The French is written out in clear and `data-i18n` carries only the key. Nothing to
+       substitute while the site speaks the language it is written in, so no flicker, and a
+       reader without JavaScript reads words rather than keys. -->
   <button class="deplier" type="button" aria-expanded="false" aria-controls="nav"
           data-i18n-aria-label="nav.barre.deplier" aria-label="Ouvrir le menu" hidden>
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -91,8 +90,9 @@ if (location.pathname === "/editer") {
 </header>
 
 <main>
-  <!-- L'accroche precede le champ, et elle est ecrite en clair avec sa cle a cote. Un
-       visiteur qui arrive sans savoir ce qu'est ce site voyait un champ vide et repartait. -->
+  <!-- The pitch comes before the field, and it is written out in clear with its key beside
+       it. A visitor arriving without knowing what this site is saw an empty field and
+       left. -->
   <section class="accroche" id="accroche">
     <h1 data-i18n="vitrine.accueil.titre">Sache ce que ton schéma produit vraiment</h1>
     <p class="lede" data-i18n="vitrine.accueil.accroche">Colle-le, et Forge te dit ce qui en
@@ -144,47 +144,47 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
 
   <div id="out" aria-live="polite"></div>
 
-  <!-- Tout ce qui suit disparait des qu'un rapport s'affiche : c'est l'accueil d'une page
-       vide, pas un pied de page. `montrerAccueil` s'en charge. -->
-  <!-- Le trou dans le fichier. `HomeController` y pose une balise `application/json` avec
-       le compte reel et quelques schémas ; servi en statique, le marqueur reste un
-       commentaire inerte et la page se passe simplement de vitrine. -->
-  <!-- Le trou dans le fichier. `HomeController` y pose une balise `application/json` avec
-       le compte reel et six schemas ; servi en statique, le marqueur reste un commentaire
-       inerte et la page se passe simplement de vitrine. -->
+  <!-- Everything below disappears as soon as a report is shown: this is the welcome of an
+       empty page, not a footer. `montrerAccueil` takes care of that. -->
+  <!-- The hole in the file. `HomeController` puts an `application/json` tag here with the
+       real count and a few schematics; served statically, the marker stays an inert
+       comment and the page simply goes without a showcase. -->
+  <!-- The hole in the file. `HomeController` puts an `application/json` tag here with the
+       real count and six schematics; served statically, the marker stays an inert comment
+       and the page simply goes without a showcase. -->
   <!--VITRINE-->
 
-  <!-- La vitrine, pour qui arrive sans rien a coller.
+  <!-- The showcase, for whoever arrives with nothing to paste.
 
-       Un plan dessine et pas une ligne de texte : ce site parle de plans faits des sprites
-       du jeu, et son accueil n'en montrait aucun. Le dessin ne coute presque rien ici,
-       parce que `loadSprites()` est deja appele au chargement de cette page.
+       A drawn plan and not a line of text: this site is about plans made of the game's
+       sprites, and its home page showed none of them. Drawing costs almost nothing here,
+       because `loadSprites()` is already called when this page loads.
 
-       Vide et masquee tant que le serveur n'a pas pose son ilot, comme le bloc qu'elle
-       remplace : c'est la moitie de la page qui depend d'une base. -->
+       Empty and hidden until the server has laid its island down, like the block it
+       replaces: this is the half of the page that depends on a database. -->
   <section class="vitrine-accueil" id="vitrine-accueil" hidden>
     <h2 data-i18n="vitrine.accueil.rien-a-coller">Rien a coller ? Prends-en un</h2>
     <p class="hint-line" id="deja-compte"></p>
     <ul class="plans" id="plans"></ul>
     <p class="porte">
-      <!-- Pas `primary` : « Analyser » est le geste principal et doit rester le seul
-           bouton ambre de la page. Une porte secondaire n'a pas a crier aussi fort que la
-           porte principale, surtout sur telephone ou elle est plus large. -->
+      <!-- Not `primary`: "Analyser" is the main gesture and has to stay the only amber
+           button on the page. A secondary door has no business shouting as loud as the
+           main one, especially on a phone where it is wider. -->
       <a class="button" href="/schemas"
          data-i18n="vitrine.accueil.parcourir">Parcourir les schémas deja analysés</a>
     </p>
   </section>
 
-  <!-- L'etagere.
+  <!-- The shelf.
 
-       Les cinq existaient deja et ne vivaient que dans un menu deroulant, ou personne ne
-       les trouvait. Chaque carte porte un vrai sprite du jeu, decoupe dans la meme feuille
-       que l'analyseur dessine, et une ligne qui dit a quelle question l'outil repond.
+       All five already existed and lived only inside a dropdown, where nobody found them.
+       Each card carries a real sprite from the game, cut out of the same sheet the
+       analyser draws with, and one line saying what question the tool answers.
 
-       Les sprites viennent de `/icone/bloc/`, donc d'un serveur. Servie en statique la page
-       montre des images cassees, ce qui est le seul endroit du fichier ou elle ne degrade
-       pas proprement : le `onerror` retire l'image plutot que de laisser une icone brisee
-       au-dessus d'un nom qui, lui, se lit tres bien. -->
+       The sprites come from `/icone/bloc/`, so from a server. Served statically the page
+       shows broken images, which is the one place in this file where it does not degrade
+       cleanly: the `onerror` removes the image rather than leaving a broken icon above a
+       name that reads perfectly well. -->
   <section class="outils" id="outils">
     <h2 data-i18n="vitrine.accueil.outils-titre">Cinq outils autour de l'analyse</h2>
     <ul class="outils-liste">
@@ -228,9 +228,9 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
 
 </main>
 
-<!-- L'editeur vit hors de <main>, qui est borne a 1120 pixels de large : le plateau prend
-     tout l'ecran, et une largeur maximale pensee pour un article de texte n'a rien a lui
-     dire. -->
+<!-- The editor lives outside <main>, which is capped at 1120 pixels wide: the board takes
+     the whole screen, and a maximum width meant for an article of text has nothing to say
+     to it. -->
 <!-- What a visitor to /editer sees while the guard above is keeping <main> off
      screen: mountEditor() overwrites this element's innerHTML the moment it has what
      it needs (see mount.js), so nothing here has to be cleaned up by hand.
@@ -376,11 +376,11 @@ function render(report) {
   const needs = report.needs || [];
   if (needs.length) {
     right.push(`<div class="card"><h2>${escape(t("analyse.besoins.titre"))}</h2>${needs.map((need) => {
-      /* Quatre, comme le planificateur. Trois retirait toujours l'option la moins chere a
-         debloquer, la liste etant triee par nombre de blocs croissant : la foreuse
-         mecanique n'etait jamais proposee. Quatre est le vivier d'une planete, donc une
-         schéma dont le monde est reconnu voit tout ; un schéma qui melange les
-         deux mondes en voit quatre sur huit, et la n'importe quel choix serait arbitraire. */
+      /* Four, like the planner. Three always dropped the option that is cheapest to
+         unlock, the list being sorted by increasing block count: the mechanical drill was
+         never offered. Four is one planet's pool, so a schematic whose world is recognised
+         sees all of them; a schematic mixing the two worlds sees four out of eight, and
+         there any choice would be arbitrary. */
       const best = need.options.slice(0, 4);
       const label = need.resource.startsWith("*")
         ? escape(t("analyse.besoins.combustible"))
@@ -394,10 +394,10 @@ function render(report) {
               escape(t("analyse.besoins.ou"))}</span>`)}</div>`
         : "") + (where.length
         ? `<p class="hint-line" style="margin:0 0 10px">${where.length > 1
-             /* Pose sans `escape` : la phrase et ses morceaux viennent du dictionnaire et
-                d ici, pas d un lecteur, et le compte est enveloppe dans un `<strong>` que la
-                traduction doit pouvoir deplacer. Le nom de la ressource, lui, est escape a
-                l endroit ou il entre. */
+             /* Placed without `escape`: the sentence and its pieces come from the
+                dictionary and from here, not from a reader, and the count is wrapped in a
+                `<strong>` the translation has to be able to move. The resource name is
+                escaped where it comes in. */
              ? t("analyse.besoins.reparti", {
                  compte: `<strong>${where.length}</strong>`,
                  support: escape(t(where[0].carries === "liquid"
@@ -652,14 +652,14 @@ function render(report) {
   const used = [...new Set(report.tiles.map((tile) => tile.name))]
     .filter((name) => catalogueOf()?.blocks?.[name])
     .sort();
-  /* L'edition a demenage.
+  /* Editing has moved out.
 
-     Elle vivait ici, en trois cartes empilees au milieu du rapport, entre « Goulot » et
-     « Garder » : on editait au milieu de ses resultats, avec une palette de 253 pastilles a
-     plat et un pinceau qui peignait sous les blocs sans les voir. Elle a maintenant son
-     mode a elle, plein ecran, avec les mecaniques de pose du jeu.
+     It used to live here, as three cards stacked in the middle of the report, between
+     "Goulot" and "Garder": you edited in the middle of your own results, with a flat
+     palette of 253 pills and a brush that painted under blocks without seeing them. It now
+     has a mode of its own, full screen, with the game's placement mechanics.
 
-     Le bouton « Editer ce schéma », en haut de la colonne de gauche, y mene. */
+     The "Editer ce schéma" button, at the top of the left column, leads there. */
 
   const editing = opened.slug ? opened : null;
   const chosen = editing ? editing.visibility : "private";
@@ -840,11 +840,11 @@ async function edit(change) {
 }
 
 /**
- * Les quelques schémas mis en avant, si le serveur en a pose.
+ * The few schematics put forward, if the server laid any down.
  *
- * Lues dans une balise `application/json` plutot que demandees par une seconde requete :
- * la page passe deja par Laravel, donc la donnee arrive avec elle. Rien a faire quand
- * l'ilot est absent, ce qui est le cas d'un service de fichiers statique.
+ * Read from an `application/json` tag rather than asked for in a second request: the page
+ * already goes through Laravel, so the data arrives with it. Nothing to do when the island
+ * is missing, which is the case behind a static file server.
  */
 async function peuplerVitrine() {
   const ilot = document.getElementById("vitrine");
@@ -857,10 +857,10 @@ async function peuplerVitrine() {
   await dictionary;
   $("deja-compte").textContent = t("vitrine.accueil.compte", { total: data.total });
 
-  /* Le panneau porte son code quand il tient, son slug sinon, et `apercu.js` fait le reste :
-     il dessine le premier tout de suite et demande le second quand la tuile approche de
-     l'ecran. Le meme module que la liste des schemas et que la page d'un schema, plutot
-     qu'un second dessinateur ici. */
+  /* The panel carries its code when the code fits, its slug otherwise, and `apercu.js`
+     does the rest: it draws the first straight away and asks for the second when the tile
+     comes near the screen. The same module the schematic list and a schematic's page use,
+     rather than a second draughtsman here. */
   $("plans").innerHTML = data.schemas.map((s) => `
     <li class="plan-tuile">
       <a href="/s/${encodeURIComponent(s.slug)}">
@@ -882,13 +882,14 @@ async function peuplerVitrine() {
       </p>
     </li>`).join("");
 
-  /* Appele apres l'insertion, parce que le module a fait sa passe au chargement quand la
-     liste etait vide. Il marque ce qu'il dessine, donc deux appels qui se recouvrent ne
-     redessinent rien. */
+  /* Called after the insertion, because the module made its pass at load time when the
+     list was still empty. It marks what it draws, so two overlapping calls redraw
+     nothing. */
   watch($("plans"));
 
-  /* La porte porte le compte, au lieu d'un second lien vers le meme endroit a cent pixels
-     du premier. Un chiffre reel dit mieux que « parcourir » ce qu'il y a derriere. */
+  /* The door carries the count, instead of a second link to the same place a hundred
+     pixels from the first. A real figure says what is behind it better than "browse"
+     does. */
   const porte = document.querySelector(".porte .button");
   if (porte && data.total) {
     porte.textContent = t("vitrine.accueil.parcourir-comptees", { total: data.total });
@@ -899,11 +900,11 @@ async function peuplerVitrine() {
 }
 
 /**
- * L'accueil d'une page vide.
+ * The welcome of an empty page.
  *
- * Le bloc de presentation n'est pas un pied de page : il repond a quelqu'un qui n'a rien
- * colle encore. Des qu'un rapport existe, il n'a plus rien a dire et il s'en va, sinon il
- * pousse le resultat vers le bas au moment ou c'est lui qu'on est venu lire.
+ * The presentation block is not a footer: it answers somebody who has pasted nothing yet.
+ * As soon as a report exists it has nothing left to say and it goes away, or it would push
+ * the result down at the moment the result is what the reader came for.
  */
 function montrerAccueil(oui) {
   for (const id of ["accroche", "vitrine-accueil", "outils"]) {
@@ -944,31 +945,32 @@ async function run() {
 }
 
 /* ------------------------------------------------------------------------------------
-   La bascule entre analyser et editer.
+   Switching between analysing and editing.
 
-   Le mode garde son propre plateau plutot que de repasser par la chaine string -> analyse
-   a chaque geste. Reserialiser un schéma de trois cents blocs a chaque clic serait
-   du travail jete, et surtout l historique d annulation ne survivrait pas a l aller-retour.
+   The mode keeps a board of its own rather than going back through the string -> analysis
+   chain on every gesture. Reserialising a three hundred block schematic on every click
+   would be thrown-away work, and above all the undo history would not survive the round
+   trip.
 
-   Le plateau n est donc pas detruit en revenant sur l analyse : il est mis de cote, et
-   reediter reprend exactement ou on s etait arrete, ctrl+Z compris.
+   So the board is not destroyed on the way back to the analysis: it is set aside, and
+   editing again picks up exactly where it stopped, ctrl+Z included.
    ------------------------------------------------------------------------------------ */
 let editor = null;
 
 /**
- * Le plateau mis de cote en sortant, et le schéma qu il decrivait alors.
+ * The board set aside on the way out, and the schematic it described at that moment.
  *
- * Les deux vont ensemble : reprendre le plateau n est legitime que si la chaine n a pas
- * bouge entre temps. Coller un autre schéma pendant qu on etait sur le rapport doit
- * repartir d un plateau neuf, sinon on editerait l ancienne en croyant editer la nouvelle.
+ * The two go together: picking the board back up is only legitimate if the string has not
+ * moved in the meantime. Pasting another schematic while on the report has to start from a
+ * fresh board, or you would be editing the old one believing you were editing the new one.
  */
 let kept = null;
 let keptFor = null;
 
 async function enterEditor(tiles = null) {
-  /* Le catalogue est demande explicitement : `catalogueOf` ne rend quelque chose qu apres
-     une premiere analyse, et « construire depuis zero » est justement le chemin ou aucune
-     analyse n a eu lieu. */
+  /* The catalogue is asked for explicitly: `catalogueOf` only returns something after a
+     first analysis, and "build from scratch" is precisely the path where no analysis has
+     taken place. */
   let known;
   try {
     [known] = await Promise.all([loadCatalogue(), loadSprites()]);
@@ -1002,18 +1004,18 @@ async function leaveEditor(board) {
     out.innerHTML = `<div class="card">Rien a analyser : le plateau est vide.</div>`;
     return;
   }
-  /* Le schéma redevient la chaine que le jeu lit, qui reste la source de verite de
-     tout le reste de la page : l analyse, la sauvegarde et le presse-papiers travaillent
-     dessus et n ont pas a savoir qu un editeur existe. */
+  /* The schematic becomes again the string the game reads, which stays the source of truth
+     for the whole rest of the page: the analysis, the save and the clipboard all work on
+     it and have no need to know an editor exists. */
   text.value = await toBase64(built, {
     tags: { name: "sans nom" },
     sizeOf: (name) => known(name),
     priorityOf: (name) => catalogueOf()?.blocks?.[name]?.schematic_priority || 0,
   });
   lastPayload = String(text.value).replace(/\s+/g, "");
-  /* Le plateau est garde tel quel, historique compris : la bascule ne doit rien couter.
-     Un editeur ou revenir en arriere efface ce qu on pouvait defaire est un editeur ou
-     personne ne bascule, donc ou l analyse ne sert plus a rien pendant qu on construit. */
+  /* The board is kept as it is, history included: switching must cost nothing. An editor
+     where going back wipes what could be undone is an editor nobody switches out of, so
+     one where the analysis is of no use at all while you build. */
   kept = board;
   keptFor = lastPayload;
   /* The head's inline guard hides <main> for as long as this document is serving
@@ -1025,7 +1027,7 @@ async function leaveEditor(board) {
   await run();
 }
 
-/** La taille d un bloc, prise au catalogue plutot qu au rapport, qui n existe pas encore. */
+/** A block's size, taken from the catalogue rather than the report, which does not exist yet. */
 const known = (name) => catalogueOf()?.blocks?.[name]?.size || 1;
 
 $("build").addEventListener("click", () => enterEditor([]));
@@ -1431,9 +1433,9 @@ async function whoAmI() {
   if (!nav) return;
   await dictionary;
 
-  /* « Les miennes » va dans le menu des schémas et pas au bout de la barre, pour que
-     l entete d un lecteur connecte soit celui de `partials/nav.blade.php` et pas un autre.
-     Le menu est dans la page depuis le debut, seule cette entree attendait la reponse. */
+  /* "Les miennes" goes into the schematics menu and not at the end of the bar, so that a
+     signed-in reader's header is the one from `partials/nav.blade.php` and not another.
+     The menu has been in the page from the start, only this entry waited on the answer. */
   if (me) {
     nav.querySelector("details.menu .menu-list")?.insertAdjacentHTML("beforeend",
       `<a href="/mes-schemas">${escape(t("nav.menu.les-miennes"))}</a>`
@@ -1488,8 +1490,8 @@ function wireKeep(report) {
         // out for itself.
         marked,
       },
-      /* Le sol part a cote de l analyse, pas dedans : ce qui est dans `analysis` est ce que
-         l analyse a trouve, le sol est ce que l auteur a dessine. */
+      /* The ground goes beside the analysis, not inside it: what is in `analysis` is what
+         the analysis found, the ground is what the author painted. */
       ground: Object.keys(ground).length ? ground : null,
       thumbnail: plate.toDataURL("image/png"),
     };
@@ -1535,9 +1537,9 @@ loadSprites().catch(() => {});
 whoAmI();
 peuplerVitrine();
 
-/* `/editer` sert cette meme page, et la page lit son propre chemin. Une adresse plutot
-   qu un fragment : un fragment ne part pas au serveur, donc il ne se partage pas dans un
-   fil et ne s indexe pas. */
+/* `/editer` serves this same page, and the page reads its own path. An address rather than
+   a fragment: a fragment never reaches the server, so it does not share into a thread and
+   does not index. */
 if (location.pathname === "/editer") enterEditor([]);
 
 /* Arriving from a schematic's page, to look at it or to change it. */
@@ -1552,9 +1554,9 @@ if (asked) {
       text.value = found.code;
       // Its author's own marks come back with it, and its author edits it in place.
       marked = { ...(found.marked || {}) };
-      /* Et le terrain sur lequel il a ete concu. Sans lui, rouvrir un schéma
-         rendait ses foreuses muettes : le rapport repassait a « au mieux, sur une tache
-         pleine », alors que son auteur avait pris la peine de peindre le sol. */
+      /* And the terrain it was designed on. Without it, reopening a schematic left its
+         drills silent: the report fell back to "at best, on a full patch", when its author
+         had taken the trouble to paint the ground. */
       ground = { ...(found.ground || {}) };
       sealed = !!found.sealed;
       if (found.mine) opened = found;

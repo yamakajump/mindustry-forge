@@ -14,9 +14,9 @@
 @section('body')
   <h1 class="title">{{ __('dossiers.page.les-miens') }}</h1>
 
-  {{-- Le formulaire est un vrai formulaire, pas un bouton qui ouvre une fenetre : sans
-       JavaScript il ne fait rien, mais il se lit, se remplit et s'annonce au lecteur
-       d'ecran comme ce qu'il est. --}}
+  {{-- The form is a real form, not a button that opens a dialog: without JavaScript it
+       does nothing, but it reads, fills in and announces itself to the screen reader as
+       what it is. --}}
   <form class="card creer-dossier" data-creer>
     <h2>{{ __('dossiers.gestion.creer') }}</h2>
     <label for="nom">{{ __('dossiers.gestion.nom') }}</label>

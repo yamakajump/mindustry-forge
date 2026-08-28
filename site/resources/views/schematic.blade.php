@@ -43,9 +43,9 @@
   @unless($preview)
     <script src="/forge/apercu.js" type="module" defer></script>
   @endunless
-  {{-- Ici plutot que dans le gabarit : les deux boutons n'existent que sur cette page, et
-       seulement pour qui est connecte. Un visiteur anonyme a un lien vers Discord, qui n'a
-       besoin d'aucun script. --}}
+  {{-- Here rather than in the layout: the two buttons exist only on this page, and only
+       for somebody signed in. An anonymous visitor gets a link to Discord, which needs no
+       script at all. --}}
   @auth
     <script src="/forge/keep.js" type="module" defer></script>
     <script src="/forge/dossiers.js" type="module" defer></script>
@@ -82,17 +82,17 @@
       @endunless
     </p>
 
-    {{-- Les deux gestes, nommes plutot que laisses a deux icones : un coeur plein contre
-         un coeur vide ne dit pas la difference entre « c'est bien » et « je veux le
-         retrouver » a quelqu'un a qui personne ne l'a expliquee.
+    {{-- The two gestures, named rather than left to two icons: a filled heart against an
+         empty heart does not tell somebody nobody ever explained it to the difference
+         between "this is good" and "I want to find it again".
 
-         Le compte ne s'affiche qu'au-dessus de zero. « 0 j'aime » sous une schematique que
-         personne n'a encore ouverte repond a « combien de gens l'ont aimee » sur une page
-         ou le lecteur demande si elle est bonne, et se lit comme un verdict. --}}
-    {{-- `data-schema` et non `data-slug` : dans ce depot, `data-slug` est le contrat
-         d'apercu.js, qui prend tout element qui en porte un pour une tuile dont il doit
-         aller chercher le code et dessiner le plan. Il a remplace ces deux boutons par un
-         canvas, sur la vraie page, pendant que les onze tests passaient au vert. --}}
+         The count only shows above zero. "0 likes" under a schematic nobody has opened yet
+         answers "how many people liked it" on a page where the reader is asking whether it
+         is any good, and it reads as a verdict. --}}
+    {{-- `data-schema` and not `data-slug`: in this repository, `data-slug` is apercu.js's
+         contract, and it takes every element carrying one for a tile whose code it has to
+         fetch so it can draw the plan. It replaced these two buttons with a canvas, on the
+         real page, while the eleven tests were all going green. --}}
     <div class="keep" data-schema="{{ $schematic->slug }}">
       @auth
         <button type="button" data-aime aria-pressed="{{ $aime ? 'true' : 'false' }}">
@@ -101,13 +101,13 @@
         <button type="button" data-favori aria-pressed="{{ $favori ? 'true' : 'false' }}">
           <span class="mot">{{ __($favori ? 'schema.favori.retirer' : 'schema.favori.ajouter') }}</span>
         </button>
-        {{-- A cote des boutons et non dedans : dans le bouton, la page affichait
-             « J'aime  3 j'aime », le meme mot deux fois a trois pixels d'intervalle. Ca ne
-             se voit dans aucun test, seulement en ouvrant la page. --}}
+        {{-- Beside the buttons and not inside them: inside the button, the page showed
+             "Like  3 likes", the same word twice three pixels apart. No test sees that,
+             only opening the page does. --}}
         <span class="compte"{{ $schematic->likes > 0 ? '' : ' hidden' }}>{{ $schematic->likes }} {{ __('schema.unite.jaime') }}</span>
         @if($folders->isNotEmpty())
-          {{-- Des cases et non une liste deroulante : un schema va dans plusieurs dossiers
-               a la fois, c'est tout l'interet, et un `select` dirait le contraire. --}}
+          {{-- Checkboxes and not a dropdown: a schematic goes into several folders at once,
+               which is the whole point, and a `select` would say the opposite. --}}
           <details class="ranger">
             <summary>{{ __('dossiers.gestion.ajouter-ici') }}</summary>
             <div class="menu-list">
@@ -125,9 +125,9 @@
           </details>
         @endif
       @else
-        {{-- Montre plutot que cache, et comme lien plutot que comme bouton : un bouton
-             qu'un visiteur ne voit pas est une fonctionnalite dont il n'apprend jamais
-             l'existence, et un lien marche sans une ligne de JavaScript. --}}
+        {{-- Shown rather than hidden, and as a link rather than a button: a button a
+             visitor never sees is a feature whose existence they never learn about, and a
+             link works without a line of JavaScript. --}}
         <a class="bouton" href="/auth/discord">{{ __('schema.aime.bouton') }}</a>
         @if($schematic->likes > 0)
           <span class="compte">{{ $schematic->likes }} {{ __('schema.unite.jaime') }}</span>
@@ -180,16 +180,16 @@
       <p class="desc">{{ $schematic->description }}</p>
     @endif
 
-    {{-- Un robinet de bac a sable est dit, jamais chiffre.
+    {{-- A sandbox tap is said, never given a figure.
 
-         `power-source` rend 999 999,94 energie par seconde, ce qui est la facon dont le jeu
-         ecrit « autant que tu veux ». Une fois la consommation soustraite, la page a affiche
-         479 999 971 en vert, presente comme ce qu'il restait pour le reste de la base. Le
-         calcul etait juste et la phrase etait fausse, sur un site dont l'argument est qu'on
-         peut verifier ses chiffres au lieu de les croire.
+         `power-source` returns 999,999.94 power per second, which is how the game writes
+         "as much as you want". Once consumption was subtracted, the page showed
+         479,999,971 in green, presented as what was left for the rest of the base. The
+         arithmetic was right and the sentence was wrong, on a site whose whole argument is
+         that you can check its figures instead of believing them.
 
-         Ce qu'il produit reste lisible dans l'analyse. C'est la presentation qui change :
-         un infini n'est pas un dimensionnement, et il ne doit pas en avoir l'air. --}}
+         What it produces stays readable in the analysis. What changes is the presentation:
+         an infinity is not a sizing, and it must not look like one. --}}
     @if($schematic->fedBySandbox())
       <div class="card"><h2>Sortie</h2>
         <div class="line"><span class="warn">{{ __('schema.page.bac-a-sable') }}</span>
@@ -198,10 +198,10 @@
       </div>
     @elseif($power > 0.5 || $made->isNotEmpty())
       <div class="card"><h2>Sortie</h2>
-        {{-- « au mieux », parce que la colonne vient de `analysis['potential']` : c'est
-             ce que la disposition ferait alimentee a fond, pas ce qu'elle a ete mesuree
-             faisant. Le meme mot que la page de comparaison emploie deja, et pour la meme
-             raison : un plafond ne s'affiche jamais sans dire qu'il en est un. --}}
+        {{-- "At best", because the column comes from `analysis['potential']`: it is what
+             the layout would do fed at full rate, not what it was measured doing. The same
+             word the comparison page already uses, and for the same reason: a cap is never
+             shown without saying that it is one. --}}
         @if($power > 0.5)
           <div class="line"><span>{{ __('schema.page.energie-plafond') }}</span>
             <span class="num good">{{ number_format($power, 0, ',', ' ') }} / s</span></div>
@@ -213,15 +213,15 @@
       </div>
     @endif
 
-    {{-- Ce qu'elle coute a poser.
+    {{-- What it costs to place.
 
-         Le chiffre vient de l'analyse, qui le tient de `Block.requirements` : c'est ce que
-         le jeu retire du noyau, a l'unite pres. Range dans l'ordre des identifiants
-         d'objets du jeu, celui que le joueur lit sur tous les panneaux, et pas dans l'ordre
-         alphabetique qui mettrait le beryllium en tete d'une construction de Serpulo.
+         The figure comes from the analysis, which gets it from `Block.requirements`: it is
+         what the game takes out of the core, to the unit. Filed in the order of the game's
+         own item ids, the order a player reads on every panel, and not alphabetically,
+         which would put beryllium at the head of a Serpulo build.
 
-         L'icone est decorative : le nom est ecrit a cote, et un lecteur d'ecran qui entend
-         « copper copper » n'apprend rien. --}}
+         The icon is decorative: the name is written next to it, and a screen reader saying
+         "copper copper" teaches nobody anything. --}}
     @if($schematic->cost() !== [])
       <div class="card"><h2>{{ __('schema.page.cout') }}</h2>
         @foreach($schematic->cost() as $item => $amount)
@@ -234,13 +234,13 @@
       </div>
     @endif
 
-    {{-- Ce qu'il faut lui amener pour qu'elle tourne.
-         L'electricite y figure au meme titre que le charbon, et c'est nouveau : la page
-         ne parlait d'energie que lorsqu'il y en avait en trop, donc une chaine a silicium
-         qui reclame six cents energie/s n'en disait pas un mot. Un joueur qui la colle
-         dans un coin non alimente la regardait ne rien faire sans savoir pourquoi.
-         Ce n'est pas un defaut du schéma : une base a du courant, ou on tire un
-         fil. C'est un prerequis, et il se dit. --}}
+    {{-- What has to be brought to it for it to run.
+         Power appears here on the same footing as coal, and that is new: the page only
+         spoke of power when there was some to spare, so a silicon chain demanding six
+         hundred power/s said not a word about it. A player pasting it into an unpowered
+         corner watched it do nothing without knowing why. That is not a defect of the
+         schematic: a base has current, or you run a wire to it. It is a prerequisite, and
+         it gets said. --}}
     @if($schematic->needs || $schematic->powerNeeded() > 0.5)
       <div class="card"><h2>Il lui faut</h2>
         @if($schematic->powerNeeded() > 0.5)
@@ -294,19 +294,19 @@
         <a class="button" href="/?s={{ $schematic->slug }}">{{
           $schematic->managedBy(auth()->user()) ? 'Modifier' : 'Analyser chez moi' }}</a>
 
-        {{-- Le geste part d'ici, pas d'une page vide. Personne n'arrive au comparateur avec
-             deux identifiants en tete : on est sur un schéma et on se demande comment
-             il se situe. Un cote est donc deja rempli et il n'en reste qu'un a choisir. --}}
+        {{-- The move starts here, not from an empty page. Nobody reaches the comparison
+             page with two identifiers in mind: you are on a schematic and you wonder how
+             it stands. So one side is already filled in and only one is left to pick. --}}
         @if($schematic->visibility === \App\Models\Schematic::PUBLIC)
           <a class="button" href="/comparer?a={{ $schematic->slug }}">{{
             __('schema.comparer.comparer-avec') }}</a>
         @endif
 
-        {{-- Vers l'editeur de logique, et seulement quand il y a quelque chose a y ouvrir.
-             Le compte vient de l'analyse deja stockee, donc la page ne decode rien pour le
-             savoir : sur les quatre-vingt-seize schémas mesurés dans la vitrine, six
-             sur dix n'ont aucun processeur, et un bouton mort sur six pages sur dix apprend
-             au lecteur a ne plus lire cette rangee. --}}
+        {{-- To the logic editor, and only when there is something there to open. The count
+             comes from the analysis already stored, so the page decodes nothing to find it
+             out: of the ninety-six measured schematics in the catalogue, six in ten have no
+             processor at all, and a dead button on six pages in ten teaches the reader to
+             stop reading that row. --}}
         @if (data_get($schematic->analysis, 'logic.processors', 0) > 0)
           <a class="button" href="/outils/logique?s={{ $schematic->slug }}">
             Ouvrir la logique</a>

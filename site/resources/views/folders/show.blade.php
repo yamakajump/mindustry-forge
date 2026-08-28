@@ -67,10 +67,9 @@
 
   <h2>{{ __('dossiers.page.contenu') }}</h2>
 
-  {{-- Deux phrases pour deux questions. A un visiteur : ce que la page ne montre pas. Au
-       proprietaire : que ce qu'il a partage est en partie invisible, ce qu'il ne peut
-       apprendre nulle part ailleurs. Sans ca, un dossier de douze se lit comme un dossier
-       de quatre et personne ne sait pourquoi. --}}
+  {{-- Two sentences for two questions. To a visitor: what the page is not showing. To the
+       owner: that what they shared is partly invisible, which they can learn nowhere else.
+       Without this, a folder of twelve reads as a folder of four and nobody knows why. --}}
   @if($withheld > 0)
     <p class="hint-line">
       {{ $withheld }}
@@ -93,14 +92,14 @@
             @endif
           </p>
           @if($schematic->pivot->note)
-            {{-- Avec {{ }} et jamais {!! !!} : c'est le seul endroit de ce chantier ou du
-                 contenu ecrit par quelqu'un est montre a quelqu'un d'autre. --}}
+            {{-- With {{ }} and never {!! !!}: this is the only place in this area where
+                 content written by one person is shown to another. --}}
             <p class="legende">{{ $schematic->pivot->note }}</p>
           @endif
           @if($mine)
-            {{-- Separes : colles, les deux libelles se lisaient comme une seule phrase,
-                 « Dire pourquoi il est la Retirer de ce dossier ». Ca ne se voit que sur
-                 la page. --}}
+            {{-- Kept apart: stuck together, the two labels read as a single sentence,
+                 "Say why it is here Remove from this folder". That is only visible on the
+                 page. --}}
             <p class="row-end">
             <button type="button" class="link" data-legender
                     data-dossier="{{ $folder->slug }}"

@@ -38,9 +38,10 @@
           @if($schematic->power_made > 0.5)
             &middot; @if($schematic->fedBySandbox()){{ __('schema.page.bac-a-sable-court') }}@else{{ number_format($schematic->power_made - $schematic->power_used, 0, ',', ' ') }} energie/s @endif
           @endif
-          {{-- Le compte se lit sur la colonne que la liste selectionne deja : pas un
-               `withCount`, qui ferait une requete par tuile. Et pas de bouton ici, le
-               geste appartient a la page ou l'on regarde vraiment la schematique. --}}
+          {{-- The count is read from the column the list already selects: not a
+               `withCount`, which would make one query per tile. And no button here, the
+               gesture belongs to the page where the schematic is really being looked
+               at. --}}
           @if($schematic->likes > 0)
             &middot; {{ $schematic->likes }} {{ __('schema.unite.jaime') }}
           @endif

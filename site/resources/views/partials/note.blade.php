@@ -1,11 +1,11 @@
-{{-- La note privee.
+{{-- The private note.
 
-     Elle dit au-dessus du champ qui la lira, plutot que dans une bulle d'aide que personne
-     n'ouvre : le jour ou les legendes de dossier arrivent, la page portera deux sortes de
-     notes, et « Note » tout court n'apprendrait rien au lecteur sur qui va la voir.
+     It says above the field who will read it, rather than in a tooltip nobody opens: the
+     day folder captions arrive, the page will carry two kinds of note, and a bare "Note"
+     would teach the reader nothing about who is going to see it.
 
-     L'enregistrement n'est pas optimiste, contrairement au j'aime : du texte que quelqu'un
-     a tape ne doit pas avoir l'air enregistre avant de l'etre. --}}
+     Saving is not optimistic, unlike the like button: text somebody typed must not look
+     saved before it is. --}}
 <section class="note-privee card" data-schema="{{ $schematic->slug }}">
   <h2>{{ __('schema.note.titre') }}</h2>
   <p class="hint-line">{{ __('schema.note.qui-la-voit') }}</p>
