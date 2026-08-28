@@ -69,7 +69,7 @@
       @endforeach
     </select>
 
-    <label class="lead" for="tri" style="margin:0">Tries par</label>
+    <label class="lead" for="tri" style="margin:0">Triés par</label>
     <select name="tri" id="tri">
       @foreach($orders as $key => $label)
         <option value="{{ $key }}" @selected($order === $key)>{{ $label }}</option>

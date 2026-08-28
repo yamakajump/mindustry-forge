@@ -131,11 +131,98 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
   <!-- Le trou dans le fichier. `HomeController` y pose une balise `application/json` avec
        le compte reel et quelques schémas ; servi en statique, le marqueur reste un
        commentaire inerte et la page se passe simplement de vitrine. -->
+  <!-- Le trou dans le fichier. `HomeController` y pose une balise `application/json` avec
+       le compte reel et six schemas ; servi en statique, le marqueur reste un commentaire
+       inerte et la page se passe simplement de vitrine. -->
   <!--VITRINE-->
 
+  <!-- La vitrine, pour qui arrive sans rien a coller.
+
+       Un plan dessine et pas une ligne de texte : ce site parle de plans faits des sprites
+       du jeu, et son accueil n'en montrait aucun. Le dessin ne coute presque rien ici,
+       parce que `loadSprites()` est deja appele au chargement de cette page.
+
+       Vide et masquee tant que le serveur n'a pas pose son ilot, comme le bloc qu'elle
+       remplace : c'est la moitie de la page qui depend d'une base. -->
+  <section class="vitrine-accueil" id="vitrine-accueil" hidden>
+    <h2 data-i18n="vitrine.accueil.rien-a-coller">Rien a coller ? Prends-en un</h2>
+    <p class="hint-line" id="deja-compte"></p>
+    <ul class="plans" id="plans"></ul>
+    <p class="porte">
+      <!-- Pas `primary` : « Analyser » est le geste principal et doit rester le seul
+           bouton ambre de la page. Une porte secondaire n'a pas a crier aussi fort que la
+           porte principale, surtout sur telephone ou elle est plus large. -->
+      <a class="button" href="/schemas"
+         data-i18n="vitrine.accueil.parcourir">Parcourir les schémas deja analysés</a>
+    </p>
+  </section>
+
+  <!-- L'etagere.
+
+       Les cinq existaient deja et ne vivaient que dans un menu deroulant, ou personne ne
+       les trouvait. Chaque carte porte un vrai sprite du jeu, decoupe dans la meme feuille
+       que l'analyseur dessine, et une ligne qui dit a quelle question l'outil repond.
+
+       Les sprites viennent de `/icone/bloc/`, donc d'un serveur. Servie en statique la page
+       montre des images cassees, ce qui est le seul endroit du fichier ou elle ne degrade
+       pas proprement : le `onerror` retire l'image plutot que de laisser une icone brisee
+       au-dessus d'un nom qui, lui, se lit tres bien. -->
+  <section class="outils" id="outils">
+    <h2 data-i18n="vitrine.accueil.outils-titre">Cinq outils autour de l'analyse</h2>
+    <ul class="outils-liste">
+      <li><a href="/editer">
+        <img src="/icone/bloc/router.png?t=64" width="32" height="32" alt=""
+             loading="lazy" decoding="async" onerror="this.remove()">
+        <strong data-i18n="nav.barre.editer">Editer</strong>
+        <span data-i18n="vitrine.accueil.outil-editer">Construis ou retouche un plan dans le
+          navigateur, avec les regles de pose du jeu.</span>
+      </a></li>
+      <li><a href="/comparer">
+        <img src="/icone/bloc/container.png?t=64" width="32" height="32" alt=""
+             loading="lazy" decoding="async" onerror="this.remove()">
+        <strong data-i18n="nav.menu.comparer">Comparer</strong>
+        <span data-i18n="vitrine.accueil.outil-comparer">Deux plans cote a cote, chiffre
+          contre chiffre, sur ce qu'ils produisent vraiment.</span>
+      </a></li>
+      <li><a href="/outils/logique">
+        <img src="/icone/bloc/micro-processor.png?t=64" width="32" height="32" alt=""
+             loading="lazy" decoding="async" onerror="this.remove()">
+        <strong data-i18n="nav.menu.logique">Logique</strong>
+        <span data-i18n="vitrine.accueil.outil-logique">Ecris et verifie du mlog sans lancer
+          le jeu, et repars avec le processeur pose.</span>
+      </a></li>
+      <li><a href="/outils/planificateur">
+        <img src="/icone/bloc/silicon-smelter.png?t=64" width="32" height="32" alt=""
+             loading="lazy" decoding="async" onerror="this.remove()">
+        <strong data-i18n="nav.menu.planificateur">Planificateur</strong>
+        <span data-i18n="vitrine.accueil.outil-planificateur">L'analyse a l'envers : combien
+          de blocs pour sortir tant par minute.</span>
+      </a></li>
+      <li><a href="/blocs">
+        <img src="/icone/bloc/core-shard.png?t=64" width="32" height="32" alt=""
+             loading="lazy" decoding="async" onerror="this.remove()">
+        <strong data-i18n="nav.barre.blocs">Blocs</strong>
+        <span data-i18n="vitrine.accueil.outil-blocs">Les blocs du jeu avec les chiffres que
+          le banc a mesures, pas ceux d'un wiki.</span>
+      </a></li>
+    </ul>
+  </section>
+
+  <!-- La preuve, en dernier. Elle repond a « pourquoi je te croirais », ce qui n'est pas la
+       premiere chose a dire a quelqu'un qui vient d'arriver. -->
   <section class="accueil" id="accueil">
     <!-- Une capture reelle du site en train d'analyser, pas une illustration : les chiffres
-         dessus sont ceux que l'analyse calcule. Produite par tools/build_brand.py. -->
+         dessus sont ceux que l'analyse calcule.
+
+         Elle n'est produite par rien. Ce commentaire disait « Produite par
+         tools/build_brand.py » ; ce script ecrit les logos, les icones et trois JPEG, et
+         jamais ce fichier. `docs/direction-artistique.md` le dit correctement, en la
+         nommant comme une exception au rebuild ; c'est ici que l'intention s'etait
+         transformee en mesure.
+
+         Consequence a savoir avant de s'y fier : l'image montre encore « Editer cette
+         schematique », l'ancien mot, parce que personne ne peut la regenerer depuis le
+         depot. Elle a besoin d'une capture refaite a la main. -->
     <figure class="apercu">
       <img src="./brand/apercu-produit.png" width="1072" height="710" loading="lazy"
            data-i18n-alt="vitrine.accueil.apercu-alt"
@@ -150,23 +237,6 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
       <p class="hint-line" data-i18n="vitrine.accueil.sans-compte">Tout se passe dans ton
         navigateur. Rien n'est envoye, rien n'est garde, et il n'y a pas de compte a creer
         pour analyser.</p>
-
-      <!-- Rempli par `peuplerVitrine` si le serveur a pose son ilot. Vide sinon, et la
-           page se lit quand meme : c'est la moitie qui depend d'une base. -->
-      <div class="deja" id="deja" hidden>
-        <h3 data-i18n="vitrine.accueil.deja-analysees">Deja analysés</h3>
-        <p class="hint-line" id="deja-compte"></p>
-        <ul class="deja-liste" id="deja-liste"></ul>
-      </div>
-
-      <p class="porte">
-        <span class="dim" data-i18n="vitrine.accueil.rien-a-coller">Rien a coller ?</span>
-        <!-- Pas `primary` : « Analyser » est le geste principal et doit rester le seul
-             bouton ambre de la page. Une porte secondaire n'a pas a crier aussi fort que
-             la porte principale, surtout sur telephone ou elle est plus large. -->
-        <a class="button" href="/schemas"
-           data-i18n="vitrine.accueil.parcourir">Parcourir les schémas deja analysés</a>
-      </p>
     </div>
   </section>
 </main>
@@ -184,6 +254,7 @@ import { Live } from "./forge/live.js";
 import { gridsOf } from "./forge/engine/power.js";
 import { mountEditor } from "./forge/editor/mount.js";
 import { ready as dictionary, t } from "./forge/i18n.js";
+import { watch } from "./forge/apercu.js";
 
 const $ = (id) => document.getElementById(id);
 const text = $("text"), out = $("out"), drop = $("drop");
@@ -778,21 +849,40 @@ async function peuplerVitrine() {
 
   let data;
   try { data = JSON.parse(ilot.textContent); } catch { return; }
-  if (!data?.schematiques?.length) return;
+  if (!data?.schemas?.length) return;
 
   await dictionary;
-  const bloc = $("deja");
   $("deja-compte").textContent = t("vitrine.accueil.compte", { total: data.total });
-  $("deja-liste").innerHTML = data.schematiques.map((s) => `
-    <li><a href="/s/${encodeURIComponent(s.slug)}">
-      <span class="deja-nom">${escape(s.nom)}</span>
-      <span class="deja-chiffres">
+
+  /* Le panneau porte son code quand il tient, son slug sinon, et `apercu.js` fait le reste :
+     il dessine le premier tout de suite et demande le second quand la tuile approche de
+     l'ecran. Le meme module que la liste des schemas et que la page d'un schema, plutot
+     qu'un second dessinateur ici. */
+  $("plans").innerHTML = data.schemas.map((s) => `
+    <li class="plan-tuile">
+      <a href="/s/${encodeURIComponent(s.slug)}">
+        <div class="plan-cadre" ${s.code
+          ? `data-code="${escape(s.code)}"`
+          : `data-slug="${escape(s.slug)}"`}>${escape(t("vitrine.accueil.dessin"))}</div>
+        <strong class="plan-nom">${escape(s.nom)}</strong>
+      </a>
+      <p class="plan-chiffres">
+        ${s.icone ? `<img class="icone" src="${escape(s.icone)}" width="18" height="18"
+             alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}
         <span class="num">${escape(String(s.debit))}</span> ${escape(s.produit)}
         ${escape(s.unite)}
         <span class="dim">${escape(s["au-mieux"])}</span>
+        &middot; <span class="num">${escape(String(s.largeur))}</span>&times;<span
+          class="num">${escape(String(s.hauteur))}</span>
         &middot; <span class="num">${escape(String(s.blocs))}</span>
         ${escape(t("vitrine.accueil.blocs"))}
-      </span></a></li>`).join("");
+      </p>
+    </li>`).join("");
+
+  /* Appele apres l'insertion, parce que le module a fait sa passe au chargement quand la
+     liste etait vide. Il marque ce qu'il dessine, donc deux appels qui se recouvrent ne
+     redessinent rien. */
+  watch($("plans"));
 
   /* La porte porte le compte, au lieu d'un second lien vers le meme endroit a cent pixels
      du premier. Un chiffre reel dit mieux que « parcourir » ce qu'il y a derriere. */
@@ -802,7 +892,7 @@ async function peuplerVitrine() {
     porte.removeAttribute("data-i18n");
   }
 
-  bloc.hidden = false;
+  $("vitrine-accueil").hidden = false;
 }
 
 /**
@@ -813,7 +903,7 @@ async function peuplerVitrine() {
  * pousse le resultat vers le bas au moment ou c'est lui qu'on est venu lire.
  */
 function montrerAccueil(oui) {
-  for (const id of ["accueil", "accroche"]) {
+  for (const id of ["accueil", "accroche", "vitrine-accueil", "outils"]) {
     const bloc = $(id);
     if (bloc) bloc.hidden = !oui;
   }

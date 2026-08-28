@@ -87,7 +87,7 @@ it('ne met en avant que ce qui produit une quantite mesuree', function () {
         'kind' => SchematicItem::PLAFOND, 'rate' => 999, 'rate_per_block' => 999,
     ]);
 
-    $noms = collect(ilot($this->get('/')->getContent())['schematiques'])->pluck('nom');
+    $noms = collect(ilot($this->get('/')->getContent())['schemas'])->pluck('nom');
 
     expect($noms)->toContain('Usine a graphite');
     expect($noms)->not->toContain('Fps Droper');
@@ -104,13 +104,13 @@ it('ne laisse pas un nom collecte fermer la balise', function () {
 
     expect($html)->not->toContain('</script><img');
     /* Le nom doit survivre au voyage, seulement encode dans le transport. */
-    expect(ilot($html)['schematiques'][0]['nom'])->toContain('</script>');
+    expect(ilot($html)['schemas'][0]['nom'])->toContain('</script>');
 });
 
 it('rend une page qui marche meme sans rien a montrer', function () {
     $html = $this->get('/')->getContent();
 
-    expect(ilot($html)['schematiques'])->toBe([]);
+    expect(ilot($html)['schemas'])->toBe([]);
     /* L'analyseur doit rester la, catalogue ou pas. */
     expect($html)->toContain('id="text"');
 });
@@ -156,7 +156,7 @@ it('sert encore l analyseur quand la base ne repond pas', function () {
 
     $reponse->assertOk();
     expect($reponse->getContent())->toContain('id="text"');
-    expect(ilot($reponse->getContent()))->toBe(['total' => 0, 'schematiques' => []]);
+    expect(ilot($reponse->getContent()))->toBe(['total' => 0, 'schemas' => []]);
     Log::shouldHaveReceived('warning');
 });
 
@@ -174,7 +174,7 @@ it('annonce le meme chiffre que la place de marche, pour la meme schematique', f
         'kind' => SchematicItem::PLAFOND, 'rate' => 39700, 'rate_per_block' => 500,
     ]);
 
-    $accueil = collect(ilot($this->get('/')->getContent())['schematiques'])
+    $accueil = collect(ilot($this->get('/')->getContent())['schemas'])
         ->firstWhere('nom', 'Turbine');
     $vitrine = $this->get('/schemas')->getContent();
 
@@ -195,7 +195,7 @@ it('dit l energie par seconde, comme partout ailleurs sur le site', function () 
         'kind' => SchematicItem::PLAFOND, 'rate' => 56562, 'rate_per_block' => 900,
     ]);
 
-    $mis = collect(ilot($this->get('/')->getContent())['schematiques'])->firstWhere('nom', 'Centrale');
+    $mis = collect(ilot($this->get('/')->getContent())['schemas'])->firstWhere('nom', 'Centrale');
 
     expect((float) $mis['debit'])->toBe(56562.0);
     expect($mis['unite'])->toBe('/ s');
@@ -211,8 +211,124 @@ it('dit que ce qu il montre est un plafond, chaque fois', function () {
        verifiait le chiffre et pas ce qu'il annonce etre. */
     produisant('Usine a graphite', 3.0, 'graphite');
 
-    $mis = ilot($this->get('/')->getContent())['schematiques'][0];
+    $mis = ilot($this->get('/')->getContent())['schemas'][0];
 
     expect($mis['au-mieux'])->toBe(__('schema.page.au-mieux'))->not->toBeEmpty();
     expect($this->get('/schemas')->getContent())->toContain(__('schema.page.au-mieux'));
+});
+
+/*
+ * The spread, which is the whole reason the showcase was rewritten.
+ *
+ * It used to rank on `rate_per_block` across the catalogue and return the same answer six
+ * times: two identical "Safe Reactor" rows, a schematic named "a", and six figures all
+ * reading 6300 energy per second. Nothing was miscalculated. It answered "what is the very
+ * best" on a page asking "what is in here", while 844 graphite schematics could never
+ * appear.
+ */
+it('montre un schema par produit, pas six fois le meilleur', function () {
+    produisant('Silicium fort', 900, 'silicon');
+    produisant('Silicium faible', 100, 'silicon');
+    produisant('Graphite', 400, 'graphite');
+    produisant('Plastanium', 200, 'plastanium');
+
+    $tuiles = collect(ilot($this->get('/')->getContent())['schemas']);
+
+    expect($tuiles->pluck('produit')->duplicates())->toBeEmpty()
+        ->and($tuiles->pluck('slug')->duplicates())->toBeEmpty()
+        ->and($tuiles->pluck('nom'))->toContain('Graphite', 'Plastanium')
+        /* Le meilleur de son produit, pas le meilleur tout court : sans ca la tuile
+           silicium serait la faible ou n'existerait pas. */
+        ->and($tuiles->firstWhere('produit', 'Silicium')['nom'])->toBe('Silicium fort');
+});
+
+/*
+ * The second query has to carry the nature of the first.
+ *
+ * The list of products is built on ceilings, because that is what the site can rank. A
+ * schematic whose only row is a measurement must therefore not surface here: it would be a
+ * figure of the other kind sitting under a heading built from ceilings, and there are
+ * enough measured rows in the real catalogue to fill a page plausibly rather than to leave
+ * it visibly empty.
+ */
+it('ne melange pas une mesure dans une vitrine de plafonds', function () {
+    $mesure = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Mesuree seule']);
+    $mesure->items()->delete();
+    $mesure->items()->create([
+        'item' => 'titanium',
+        'sens' => SchematicItem::PRODUIT,
+        'kind' => SchematicItem::MESURE,
+        'rate' => 9999,
+        'rate_per_block' => 9999,
+    ]);
+    produisant('Plafond', 10, 'silicon');
+
+    $tuiles = collect(ilot($this->get('/')->getContent())['schemas']);
+
+    expect($tuiles->pluck('nom'))->not->toContain('Mesuree seule')
+        ->and($tuiles->pluck('nom'))->toContain('Plafond');
+});
+
+/*
+ * What the tile needs to be drawn.
+ *
+ * The plan is drawn in the browser from the schematic's own code, so a tile without one is
+ * a grey rectangle. Nothing imported has a stored picture, which is fifteen thousand of
+ * them, so this is the only path that draws anything at all here.
+ */
+it('donne a la tuile de quoi dessiner son plan', function () {
+    produisant('Dessinable', 50, 'silicon');
+
+    $tuile = ilot($this->get('/')->getContent())['schemas'][0];
+
+    expect($tuile['code'])->not->toBeNull()
+        ->and($tuile['largeur'])->not->toBeNull()
+        ->and($tuile['hauteur'])->not->toBeNull()
+        /* L'image du produit vient du meme atlas que le plan, decoupee par /icone. */
+        ->and($tuile['icone'])->toContain('/icone/objet/silicon.png');
+});
+
+/* L'energie n'est ni un objet ni un liquide : elle n'a pas de sprite, et lui en inventer un
+   serait dessiner ce que le jeu ne dessine pas. La tuile le dit par un null, pas par une
+   image cassee. */
+it('ne promet pas une icone a ce que le jeu ne dessine pas', function () {
+    produisant('Centrale', 60, SchematicItem::POWER);
+
+    expect(ilot($this->get('/')->getContent())['schemas'][0]['icone'])->toBeNull();
+});
+
+/*
+ * The case the first version of this file did not have, and the page did.
+ *
+ * `it montre un schema par produit` gave every product a schematic of its own, so it agreed
+ * with a design that promised "no duplicate possible". Opening the page showed `sand to
+ * crucible 3.5` twice and `17PhaseMD` twice: a schematic that makes several things comes
+ * first for several of them.
+ *
+ * Distinct products are not distinct schematics, and only a schematic that makes two things
+ * says so.
+ */
+it('ne montre pas deux fois le meme plan sous deux produits', function () {
+    $double = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Fait les deux']);
+    $double->items()->delete();
+    foreach (['silicon' => 9000, 'graphite' => 9000] as $item => $debit) {
+        $double->items()->create([
+            'item' => $item,
+            'sens' => SchematicItem::PRODUIT,
+            'kind' => SchematicItem::PLAFOND,
+            'rate' => $debit,
+            'rate_per_block' => $debit,
+        ]);
+    }
+    produisant('Second graphite', 10, 'graphite');
+    produisant('Second silicium', 10, 'silicon');
+
+    $tuiles = collect(ilot($this->get('/')->getContent())['schemas']);
+
+    expect($tuiles->pluck('slug')->duplicates())->toBeEmpty()
+        ->and($tuiles->pluck('nom'))->toHaveCount(2)
+        /* Le plus fort garde sa place, et l'autre produit prend le suivant plutot que de
+           disparaitre : une case vide couterait un produit du catalogue. */
+        ->and($tuiles->pluck('nom'))->toContain('Fait les deux')
+        ->and($tuiles->pluck('produit')->duplicates())->toBeEmpty();
 });
