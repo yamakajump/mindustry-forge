@@ -15,7 +15,7 @@ string handed to the game is the string handed to the browser.
 Small on purpose. A large schematic that disagrees says something is wrong; a line of eight
 belts that disagrees says which line of which class.
 
-`SECONDS` is 30 and `TICKS` therefore 1800, both in `tools/oracle.mjs`. What gets compared,
+`SECONDS` is 30 in `tools/oracle.mjs`, and 1800 ticks therefore. What gets compared,
 built for both sides by `tools/compare.mjs`, is the contents of containers and cores, the
 liquid in every pool, battery charge, what the machines are still holding, turret ammo,
 carried payloads, units produced, and which blocks are still standing. Belts are not
@@ -56,11 +56,13 @@ to a server, and exits. On an unchanged tree it rewrites those files byte for by
 encoding is deterministic, so the only diff after adding a scenario is the scenario you
 added and the two lines of `commands.txt`.
 
-`npm test` walks `bench/data/oracle/*.json`, not `SCENARIOS`. The two lists are related only
-by the files between them, and that has two consequences. A scenario in `SCENARIOS` with no
-`.json` is invisible to `npm test` entirely. A `.json` left behind after its entry was
-deleted from `tools/oracle.mjs` goes on being tested against its committed `.txt`, so
-removing a scenario means removing its files in the same commit.
+`npm test` compares each recorded `.json` against the port, and separately holds `SCENARIOS`
+and `bench/data/oracle/` against each other: every scenario has its four files and a line in
+`commands.txt`, and every file belongs to a scenario. Both halves of that were violated at
+once, in opposite directions, for weeks. A scenario with no `.json` was invisible to the
+comparison, so two of them were written and never answered; files left behind by two
+scenarios that had gone sat waiting to be compared against today's analysis under a name
+that had meant something else.
 
 ## Writing the entry
 
@@ -146,15 +148,20 @@ files together with the entry.
 
 ## If you have no jar
 
-Add the entry, run `npm run oracle:measure`, commit the `.txt`, `.sol`, `.stock` and the
-changed `commands.txt`, and say in the pull request that the scenario is not measured.
+Get one. The three commands above need a JDK 17 and about twenty megabytes of download, and
+`npm run oracle:measure` never starts the game itself: it writes files and prints the line
+that feeds them to a server.
 
-Nothing breaks. `npm run oracle` prints `pas encore mesure` on that line and counts it in the
-tally at the bottom without failing, because its exit code depends only on the worst gap
-among the scenarios that have an answer, and `npm test` never sees it because it walks the
-`.json` files. The scenario sits in the repository as a question asked and not yet answered,
-which is where it is useful: the next person with a provisioned server measures it by
-running the two commands above, and the answer arrives in one commit.
+This used to say the opposite, that an unmeasured entry could land and the next person with
+a server would answer it. Two of them landed that way and sat unanswered until an issue was
+opened about them, because the only thing that knew was a line `npm run oracle` printed and
+nothing failed. An entry in `SCENARIOS` with nothing behind it is a claim in this
+repository's own voice with no game behind it, which is the one thing this repository does
+not do, so `npm test` now refuses it.
+
+If the toolchain genuinely will not run where you are, open an issue with the layout rather
+than a pull request with the entry. A scenario nobody has run is a question, and questions
+belong in the tracker.
 
 ## When a measured scenario disagrees
 
