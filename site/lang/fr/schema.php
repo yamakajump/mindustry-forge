@@ -67,6 +67,16 @@ return [
          * de filet.
          */
         'mesuree' => 'mesuré',
+        /*
+         * La troisième nature, et elle se nomme comme les deux autres.
+         *
+         * Un débit calculé à partir d'un branchement qu'un joueur a marqué est aussi
+         * précis qu'une mesure et repose sur la parole d'un inconnu. Affiché sous
+         * l'étiquette « mesuré », il redéfinirait le mot pour les 419 lignes qui
+         * l'avaient mérité, sans que rien ne le signale et sans qu'un seul chiffre soit
+         * faux. C'est le défaut que ce dépôt collectionne, et le voici évité en un mot.
+         */
+        'declaree' => 'déclaré par un joueur',
         'bac-a-sable-aide' => "Un robinet de bac a sable donne autant qu'on lui demande, donc
             ce que ce schéma sort n'est pas une mesure de ce que ses blocs font :
             c'est ce qu'un robinet permet. Il reste lisible et analysable, il n'est

@@ -85,6 +85,19 @@ class SchematicItem extends Model
 
     public const PLAFOND = 'plafond';
 
+    /**
+     * A throughput computed from a marking somebody other than the author supplied.
+     *
+     * As precise as `mesure` and resting on a stranger's word, which is a different claim
+     * and therefore a different value rather than a flag beside one. Filed as `mesure` it
+     * would redefine the word: 419 rows on this site mean "the author said where it is
+     * fed", and burying them under thousands that mean "a passer by said so" costs the
+     * distinction for ever, silently, with every number still correct.
+     *
+     * Never displayed without saying whose word it is.
+     */
+    public const DECLARE = 'declare';
+
     public $timestamps = false;
 
     protected $fillable = ['schematic_id', 'item', 'sens', 'kind', 'rate', 'rate_per_block',

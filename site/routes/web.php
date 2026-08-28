@@ -6,6 +6,7 @@ use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CompareController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\ContributionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IconController;
 use App\Http\Controllers\LikeController;
@@ -191,6 +192,11 @@ Route::middleware('auth')->group(function () {
     /* The queue. Behind `auth` like everything else here, and it answers 404 rather than
        403 to anybody who is not a moderator: a page that says "forbidden" tells a stranger
        it exists. */
+    /* Saying where somebody else's schematic is fed, which is the one thing that turns a
+       ceiling into a throughput and the reason all the rest of this exists. */
+    Route::post('/api/contributions', [ContributionController::class, 'store']);
+    Route::post('/api/contributions/{contribution}/vote', [ContributionController::class, 'vote']);
+
     Route::get('/moderation', [ModerationController::class, 'index']);
     Route::post('/moderation/decision', [ModerationController::class, 'decide']);
 });

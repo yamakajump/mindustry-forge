@@ -42,6 +42,17 @@ class BrowseController extends Controller
         'best' => 'Les mieux faits (par bloc posé)',
         'dense' => 'Les plus denses (par tuile de sol)',
         'output' => 'Ceux qui produisent le plus',
+        /*
+         * A sort of its own, and never merged into the two above.
+         *
+         * A ceiling and a declared throughput answer different questions: one is what the
+         * machines could do fed flat out, the other is what a player says the plan does as
+         * branched. Ranked in one column, a ceiling of 120 beats a declared 90 that may
+         * well be the larger real number, and a vote would be able to move a schematic
+         * inside a ranking that claims to be computed. Two lists, each comparing like
+         * with like.
+         */
+        'declare' => 'Ceux qui produisent le plus (debit declare)',
         'small' => 'Les plus compacts',
         'new' => 'Les plus récents',
         'seen' => 'Les plus vus',
@@ -72,6 +83,18 @@ class BrowseController extends Controller
 
     /** The widest a schematic can be, matching the column the analysis writes into. */
     private const MAX_SIDE = 4096;
+    /** The three that compare schematics on their output, so the three that need an item. */
+    private const NEEDS_AN_ITEM = ['best', 'output', 'declare'];
+
+    /**
+     * How many declared throughputs there have to be before the sort is offered at all.
+     *
+     * One page. Below it the ranking cannot fill its own first screen, and a menu entry
+     * promising "the biggest producers" over eleven rows is the defect this repository has
+     * written down seven times. The likes work applies the same threshold for the same
+     * reason.
+     */
+    private const DECLARED_BEFORE_OFFERED = 24;
 
     /** What an item name is allowed to look like, so a filter cannot be a paragraph. */
     private const ITEM = '/^[a-z][a-z-]{0,39}$/';
@@ -83,7 +106,13 @@ class BrowseController extends Controller
             $makes = '';
         }
 
-        $order = array_key_exists($request->query('tri'), self::ORDERS)
+        $offered = self::ORDERS;
+        if (SchematicItem::where('kind', SchematicItem::DECLARE)->distinct()
+            ->count('schematic_id') < self::DECLARED_BEFORE_OFFERED) {
+            unset($offered['declare']);
+        }
+
+        $order = array_key_exists($request->query('tri'), $offered)
             ? $request->query('tri') : 'best';
 
         // Nothing to rank output against, so do not pretend to. Falling back to date is
@@ -330,6 +359,12 @@ class BrowseController extends Controller
                  */
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
                 ->where('schematic_items.kind', Vitrine::NATURE)
+                // Le tri decide la nature, et une seule a la fois. `declare` lit ce qu'un
+                // joueur a marque, les autres lisent le plafond ; aucune requete ne melange
+                // les deux, ce qui est la seule facon de tenir la promesse ci-dessus.
+                ->where('schematic_items.kind', $order === 'declare'
+                    ? SchematicItem::DECLARE
+                    : SchematicItem::PLAFOND)
                 ->select('schematics.*');
 
             /* "At least a hundred a minute", which only means anything once a thing is
@@ -376,6 +411,7 @@ class BrowseController extends Controller
             // layout spread wide with few blocks wins one and loses the other.
             'dense' => $query->orderByDesc('schematic_items.rate_per_tile'),
             'output' => $query->orderByDesc('schematic_items.rate'),
+            'output', 'declare' => $query->orderByDesc('schematic_items.rate'),
             'small' => $query->orderBy('blocks'),
             'seen' => $query->orderByDesc('views'),
             'aimes' => $query->orderByDesc('schematics.likes'),
