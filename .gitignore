@@ -48,5 +48,5 @@ site/bootstrap/cache/*
 # This line stops the next one from arriving.
 docs/plans/
 
-# Le journal de bord des sessions outillees : du brouillon, pas du code.
+# The log tooled sessions keep as they work: drafts, not code.
 .superpowers/

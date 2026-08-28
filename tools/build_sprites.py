@@ -193,8 +193,11 @@ def main() -> None:
             wanted.append((f"floor/{name}#{n}", sprites[variant]))
 
         # The 96 by 96 sheet the game blends a boundary with: nine 32 pixel cells, which
-        # `Floor.edge(x, y, i, j)` reads as `edges[i][2 - j]`. 55 of the 107 floors ship
-        # one; the rest do not blend, and a hard edge decided in code beats a guess.
+        # `Floor.edge(x, y, i, j)` reads as `edges[i][2 - j]`. 55 of the 107 floors ship one.
+        # Fourteen of the rest blend all the same, through their group's sheet, which is the
+        # whole point of `blendGroup` and is recorded in `sols.json` rather than here: the
+        # sheet a floor borrows is packed under its owner's name. That leaves 38 that do not
+        # blend at all, and a hard edge decided in code beats a guess.
         if f"{name}-edge" in sprites:
             wanted.append((f"floor/{name}#edge", sprites[f"{name}-edge"]))
 

@@ -48,8 +48,10 @@ def main() -> None:
         # groups ship one. Reading `<name>-edge` alone records nothing for the lot, and a
         # vent then refuses to blend against anything at all.
         #
-        # `None` means this floor does not blend, which is a real answer for the fifty-two
-        # whose group has no sheet either.
+        # `None` means this floor does not blend, which is a real answer for the 38 whose
+        # group has no sheet either. Counted: of 107 floors, 55 ship a sheet of their own and
+        # 14 borrow their group's, so 69 blend and 38 do not. Fifty-two was 107 - 55, the
+        # arithmetic from before the blend groups were understood.
         sheet = entry.get("blend_group", name)
         floors[name] = {
             # The block id, which is what the game sorts blenders by. Not the blend id: a
@@ -72,9 +74,9 @@ def main() -> None:
 
     TARGET.write_text(json.dumps({"floors": floors}, separators=(",", ":")),
                       encoding="utf-8")
-    with_edges = sum(1 for f in floors.values() if f["sheet"])
-    print(f"{len(floors)} sols, {with_edges} avec raccords, "
-          f"{sum(1 for f in floors.values() if f['variants'] > 1)} avec variantes")
+    blending = sum(1 for f in floors.values() if f["sheet"])
+    varied = sum(1 for f in floors.values() if f["variants"] > 1)
+    print(f"{len(floors)} floors, {blending} that blend, {varied} with several sprites")
 
 
 if __name__ == "__main__":
