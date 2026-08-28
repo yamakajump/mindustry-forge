@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Ban;
 use App\Models\User;
 use App\Services\Discord;
 use Illuminate\Http\RedirectResponse;
@@ -39,9 +40,28 @@ class AuthController extends Controller
             return redirect('/')->with('error', "Discord n'a pas confirme la connexion.");
         }
 
+        /*
+         * Before the user row, not after.
+         *
+         * `updateOrCreate` below would recreate the account of somebody who deleted theirs
+         * to shed a ban, and the ban would then be checked against a row that had just been
+         * born clean. The refusal has to happen while the only thing known about them is the
+         * Discord id, which is the one identifier they cannot change.
+         */
+        if (Ban::refuses($profile['id'])) {
+            return redirect('/')->with('error', "Ce compte n'a plus acces au site.");
+        }
+
         $user = User::updateOrCreate(
             ['discord_id' => $profile['id']],
-            ['name' => $profile['name'], 'avatar' => $profile['avatar']],
+            [
+                'name' => $profile['name'],
+                'avatar' => $profile['avatar'],
+                // Written on every sign-in rather than only at creation, so the accounts
+                // that existed before this column did fill it in the first time they come
+                // back, without a backfill that would have to parse the same ids anyway.
+                'discord_created_at' => User::discordCreatedAt($profile['id']),
+            ],
         );
 
         Auth::login($user, remember: true);

@@ -67,6 +67,7 @@ class Schematic extends Model
         'analysis', 'ground', 'width', 'height', 'blocks', 'power_made', 'power_used',
         'produces', 'needs',
         'source', 'source_id', 'author', 'fetched_at', 'source_meta',
+        'hidden_at', 'hidden_reason',
         'analysed_at', 'engine_version',
     ];
 
@@ -91,12 +92,18 @@ class Schematic extends Model
         'source_meta' => 'array',
         'fetched_at' => 'datetime',
         'analysed_at' => 'datetime',
+        'hidden_at' => 'datetime',
     ];
 
     /** In the public list. Unlisted schematics are reachable and not listed. */
     public function scopeListed($query)
     {
-        return $query->where('visibility', self::PUBLIC);
+        // Hidden goes here rather than at each of the ten call sites, because that is the
+        // property this scope exists to hold: everything that shows a schematic to somebody
+        // who did not ask for it by name goes through here, and a hiding that covered only
+        // the listing would leave the picture reachable from the home page, the block pages
+        // and the comparison.
+        return $query->where('visibility', self::PUBLIC)->whereNull('hidden_at');
     }
 
     /**
@@ -110,6 +117,21 @@ class Schematic extends Model
      */
     public function visibleTo(?User $user): bool
     {
+        /*
+         * Hidden outranks everything, including being your own.
+         *
+         * The author keeping access would be kinder, and it would also mean the address
+         * they pasted into a Discord thread still answers for the one person most likely
+         * to paste it again. A hiding that the author can route around is a hiding that
+         * only stops strangers, and strangers are not the problem.
+         *
+         * The moderator sees it, because somebody has to look at what was reported before
+         * deciding, and half of what gets reported is fine.
+         */
+        if ($this->hidden_at !== null) {
+            return (bool) $user?->moderator;
+        }
+
         return $this->visibility !== self::PRIVATE
             || ($this->user_id !== null && $this->user_id === $user?->id)
             || (bool) $user?->moderator;
@@ -310,6 +332,63 @@ class Schematic extends Model
     }
 
     /**
+     * The contributed marking currently in force, if a player supplied one.
+     *
+     * @return BelongsTo<Contribution, $this>
+     */
+    public function contribution(): BelongsTo
+    {
+        return $this->belongsTo(Contribution::class);
+    }
+
+    /**
+     * What a contributed marking says it makes, filed under a kind that says whose word it is.
+     *
+     * The same arithmetic as `indexWhatItMakes`, from an analysis that arrived the same way,
+     * through the same code in a browser. What differs is one thing and it is not a number:
+     * the author said where their own plan is fed, and here a stranger did. That is a
+     * different claim, so it is a different `kind`, and never `mesure`.
+     *
+     * The sandbox rule carries over untouched. A layout fed by a tap hands out what a tap
+     * poured in, and marking its belts by hand does not change where it came from.
+     */
+    public function indexWhatWasDeclared(array $analysis): void
+    {
+        $blocks = max(1, (int) $this->blocks);
+
+        $rows = [];
+        if (! $this->fedBySandbox()) {
+            foreach ((array) ($analysis['perMinute'] ?? []) as $item => $rate) {
+                if (is_string($item) && is_numeric($rate) && $rate > 0) {
+                    $rows[substr($item, 0, 40)] = (float) $rate;
+                }
+            }
+
+            // Energy on the surplus, exactly as the measured pass does it, and read from
+            // the measured budget rather than the ceiling for the same reason: a plant that
+            // burns part of its own output hands the base the rest.
+            $power = (array) ($analysis['power'] ?? []);
+            $spare = (float) ($power['made'] ?? 0) - (float) ($power['spent'] ?? 0);
+            if ($spare > 0) {
+                $rows[SchematicItem::POWER] = $spare;
+            }
+        }
+
+        $mine = $this->items()
+            ->where('sens', SchematicItem::PRODUIT)
+            ->where('kind', SchematicItem::DECLARE);
+
+        (clone $mine)->whereNotIn('item', array_keys($rows) ?: [''])->delete();
+
+        foreach ($rows as $item => $rate) {
+            $this->items()->updateOrCreate(
+                ['item' => $item, 'sens' => SchematicItem::PRODUIT, 'kind' => SchematicItem::DECLARE],
+                ['rate' => $rate, 'rate_per_block' => $rate / $blocks],
+            );
+        }
+    }
+
+    /**
      * Ce qu'elle pourrait faire si on l'alimentait, indexe a cote de ce qu'elle fait.
      *
      * Deux lignes pour une meme schematique et un meme objet, et c'est voulu : `mesure` est
@@ -423,16 +502,26 @@ class Schematic extends Model
      *
      * @return array<string, array{rate: float, kind: string}>
      */
-    public function chiffresMontres(): array
+    public function chiffresMontres(?string $prefer = null): array
     {
+        /*
+         * Quelle nature la tuile montre quand la schematique en porte plusieurs.
+         *
+         * Le plafond par defaut, parce que la vitrine classe sur lui. Mais la page classe
+         * desormais sur le debit declare quand on le lui demande, et une tuile qui
+         * montrerait le plafond sous ce classement-la dirait autre chose que la liste qui
+         * l'a rangee : le chiffre serait juste et repondrait a la question d'a cote. C'est
+         * pour ca que l'appelant passe ce qu'il classe, au lieu que ce soit fige ici.
+         */
+        $prefer ??= SchematicItem::PLAFOND;
         $produced = $this->items->where('sens', SchematicItem::PRODUIT);
 
         $rows = [];
         foreach ($produced->sortByDesc('rate') as $row) {
-            // Le plafond gagne quand les deux existent, et le tri par debit decroissant
-            // ferait passer le plus grand des deux en premier : on force, plutot que de
-            // dependre de l'ordre.
-            if (isset($rows[$row->item]) && $rows[$row->item]['kind'] === SchematicItem::PLAFOND) {
+            // La nature preferee gagne quand plusieurs existent, et le tri par debit
+            // decroissant ferait passer la plus grande en premier : on force, plutot que
+            // de dependre de l'ordre.
+            if (isset($rows[$row->item]) && $rows[$row->item]['kind'] === $prefer) {
                 continue;
             }
             $rows[$row->item] = ['rate' => (float) $row->rate, 'kind' => $row->kind];

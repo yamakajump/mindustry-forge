@@ -5,6 +5,7 @@ use App\Http\Controllers\BlockCardController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CompareController;
+use App\Http\Controllers\ContributionController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\FolderItemController;
@@ -12,7 +13,10 @@ use App\Http\Controllers\FolderLikeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IconController;
 use App\Http\Controllers\LikeController;
+use App\Http\Controllers\ModerationController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SchematicSearchController;
 use App\Http\Controllers\SocialCardController;
@@ -92,6 +96,11 @@ Route::get('/schematiques', fn (Request $request) => redirect(
    they asked for. */
 Route::get('/mes-schematiques', fn () => redirect('/mes-schemas', 301));
 Route::get('/s/{schematic}', [SchematicController::class, 'show']);
+
+/* A member's page. Accounts only: the imported catalogue credits author names with no
+   account behind them, and a page each would be thousands of near empty pages that let
+   anybody claim a name that is not theirs. */
+Route::get('/u/{user}', [ProfileController::class, 'show']);
 
 /*
  * Two schematics side by side, which is the question the catalogue creates.
@@ -212,6 +221,20 @@ Route::middleware('auth')->group(function () {
         ->middleware('throttle:60,1');
     Route::delete('/api/schematiques/{schematic}/favori', [FavoriteController::class, 'destroy'])
         ->middleware('throttle:60,1');
+    /* Saying that something does not belong here. Signed in, because a report from nobody
+       cannot be weighed, cannot be answered, and costs its author nothing to repeat. */
+    Route::post('/api/signalements', [ReportController::class, 'store']);
+
+    /* The queue. Behind `auth` like everything else here, and it answers 404 rather than
+       403 to anybody who is not a moderator: a page that says "forbidden" tells a stranger
+       it exists. */
+    /* Saying where somebody else's schematic is fed, which is the one thing that turns a
+       ceiling into a throughput and the reason all the rest of this exists. */
+    Route::post('/api/contributions', [ContributionController::class, 'store']);
+    Route::post('/api/contributions/{contribution}/vote', [ContributionController::class, 'vote']);
+
+    Route::get('/moderation', [ModerationController::class, 'index']);
+    Route::post('/moderation/decision', [ModerationController::class, 'decide']);
 });
 
 /*

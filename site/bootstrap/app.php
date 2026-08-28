@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EndBannedSessions;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -34,6 +35,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 | Request::HEADER_X_FORWARDED_PORT
                 | Request::HEADER_X_FORWARDED_PROTO,
         );
+
+        /*
+         * On the whole web group rather than on `auth` alone. A banned account reaching a
+         * page that does not require signing in should be signed out there too, otherwise
+         * the ban only takes effect on the parts of the site they stop visiting.
+         *
+         * After the proxies above, and it has to stay there: the ban check records nothing,
+         * but the reports it leads to store a hash of `$request->ip()`, and an ip read
+         * before the forwarded headers are trusted is the loopback address of the tunnel,
+         * identical for every visitor.
+         */
+        $middleware->web(append: [EndBannedSessions::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
