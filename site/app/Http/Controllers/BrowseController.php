@@ -37,15 +37,22 @@ class BrowseController extends Controller
 {
     /** How a listing can be ordered, and what each means. */
     private const ORDERS = [
-        'best' => 'Les mieux faits',
+        'best' => 'Les mieux faits (par bloc posé)',
+        'dense' => 'Les plus denses (par tuile de sol)',
         'output' => 'Ceux qui produisent le plus',
         'small' => 'Les plus compacts',
-        'new' => 'Les plus recents',
+        'new' => 'Les plus récents',
         'seen' => 'Les plus vus',
     ];
 
     /** The two that compare schematics on their output, so the two that need an item. */
-    private const NEEDS_AN_ITEM = ['best', 'output'];
+    private const NEEDS_AN_ITEM = ['best', 'dense', 'output'];
+
+    /** The two worlds, which do not share a build menu. */
+    private const PLANETS = ['serpulo', 'erekir'];
+
+    /** The widest a schematic can be, matching the column the analysis writes into. */
+    private const MAX_SIDE = 4096;
 
     /** What an item name is allowed to look like, so a filter cannot be a paragraph. */
     private const ITEM = '/^[a-z][a-z-]{0,39}$/';
@@ -88,6 +95,33 @@ class BrowseController extends Controller
             $holds = '';
         }
 
+        /* The constraints, which are the half of this page no other Mindustry site has.
+           "A hundred graphite a minute under thirty blocks" is the sentence this repository
+           opens with, and until now not one of its three clauses could be typed.
+
+           Every one is bounded rather than trusted: these arrive in a URL a stranger writes,
+           and a width of nine million would be a full scan answering nothing. What does not
+           parse is dropped rather than corrected, and the page then behaves as if it had not
+           been asked, which is the only honest thing to do with a filter nobody can read. */
+        $fitsWide = $this->positive($request->query('large'), self::MAX_SIDE);
+        $fitsTall = $this->positive($request->query('haut'), self::MAX_SIDE);
+        $atLeast = $this->positive($request->query('min'), 1_000_000_000);
+        $atMostBlocks = $this->positive($request->query('blocs'), 65535);
+
+        // Self sufficient in electricity. Both sides of this comparison come from
+        // `analysis['potential']`, so it is a ceiling against a ceiling: what the layout
+        // would make flat out against what it would then draw. Comparing a ceiling to a
+        // measurement is the fault this repository keeps paying for, and it is not made here.
+        $selfPowered = $request->query('autonome') === 'oui';
+
+        // Only what the bench re-measured on a real server. A hundred and seventeen rows
+        // carry a measurement against six thousand seven hundred carrying a ceiling, so this
+        // filter empties most of the catalogue. That is the point of it, and the page says so.
+        $measured = $request->query('verifie') === 'oui';
+
+        $planet = in_array($request->query('planete'), self::PLANETS, true)
+            ? $request->query('planete') : '';
+
         // `items` charge en une fois : chaque tuile lit son plafond, et sans ca une page de
         // vingt-quatre ferait vingt-quatre requetes de plus.
         $query = Schematic::query()->with(['user', 'items'])->listed();
@@ -97,6 +131,36 @@ class BrowseController extends Controller
                 ->from('schematic_blocks')
                 ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
                 ->where('schematic_blocks.block', $holds));
+        }
+
+        /* The footprint, and it is strict on purpose: no rotation, no swapping the two
+           sides. Checked in the game rather than assumed from a wiki - `Binding` exposes
+           `schematicFlipX` and `schematicFlipY` and no rotate at all, and
+           `Schematics.rotate()` is called only by `BaseBuilderAI` and `BaseGenerator`, the
+           enemy base builder. A mirror does not change a bounding box, so a plan of 20 by 15
+           never fits a gap of 15 by 20, and offering it would be an exact answer to a
+           question the player did not ask. */
+        if ($fitsWide > 0) {
+            $query->where('schematics.width', '<=', $fitsWide);
+        }
+        if ($fitsTall > 0) {
+            $query->where('schematics.height', '<=', $fitsTall);
+        }
+
+        if ($atMostBlocks > 0) {
+            $query->where('schematics.blocks', '<=', $atMostBlocks);
+        }
+
+        if ($selfPowered) {
+            $query->whereColumn('schematics.power_made', '>=', 'schematics.power_used');
+        }
+
+        if ($measured) {
+            $query->where('schematics.verified', true);
+        }
+
+        if ($planet !== '') {
+            $query->onPlanet($planet);
         }
 
         if ($makes !== '') {
@@ -129,6 +193,14 @@ class BrowseController extends Controller
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
                 ->where('schematic_items.kind', SchematicItem::PLAFOND)
                 ->select('schematics.*');
+
+            /* "At least a hundred a minute", which only means anything once a thing is
+               chosen. Applied here rather than beside the other constraints for that reason:
+               out here `schematic_items` is not joined, and a floor on a rate with nothing to
+               rate would silently filter on whatever row the database happened to reach. */
+            if ($atLeast > 0) {
+                $query->where('schematic_items.rate', '>=', $atLeast);
+            }
         }
 
         /* Counted on the list the reader is looking at, filters and all, and not on the
@@ -161,6 +233,10 @@ class BrowseController extends Controller
             // How much it makes for the room it takes, which is what "well made" means and
             // what a date-sorted list can never surface.
             'best' => $query->orderByDesc('schematic_items.rate_per_block'),
+            // What it makes for the ground it stands on, which is the question a player
+            // asks in front of a gap in their base. Not the same question as `best`: a
+            // layout spread wide with few blocks wins one and loses the other.
+            'dense' => $query->orderByDesc('schematic_items.rate_per_tile'),
             'output' => $query->orderByDesc('schematic_items.rate'),
             'small' => $query->orderBy('blocks'),
             'seen' => $query->orderByDesc('views'),
@@ -196,7 +272,38 @@ class BrowseController extends Controller
             // player picks a name that exists instead of guessing how it is spelled.
             'blocks' => $this->blocksOnOffer(),
             'powerKey' => SchematicItem::POWER,
+            // Rendered back into the form so a search survives being shared, bookmarked or
+            // paged through. A field the page forgets is a filter the reader cannot see it
+            // is still applying.
+            'fitsWide' => $fitsWide,
+            'fitsTall' => $fitsTall,
+            'atLeast' => $atLeast,
+            'atMostBlocks' => $atMostBlocks,
+            'selfPowered' => $selfPowered,
+            'measured' => $measured,
+            'planet' => $planet,
+            'planets' => self::PLANETS,
         ]);
+    }
+
+    /**
+     * A number a stranger typed, or zero meaning "not asked".
+     *
+     * Zero rather than null for absent, because every caller here treats "not asked" and
+     * "asked for nothing" the same way, and a null would make five call sites carry a check
+     * that means nothing. Anything that is not a positive number inside the bound is dropped
+     * rather than clamped: clamping nine million to four thousand would answer a question
+     * nobody asked, quietly, which is this repository's signature defect.
+     */
+    private function positive(mixed $raw, int $ceiling): float
+    {
+        if (! is_string($raw) && ! is_numeric($raw)) {
+            return 0;
+        }
+
+        $value = is_numeric($raw) ? (float) $raw : 0;
+
+        return $value > 0 && $value <= $ceiling ? $value : 0;
     }
 
     /**

@@ -29,6 +29,43 @@ return [
             la liste proposee : elle ne contient que des noms qui existent.",
     ],
 
+    /*
+     * Les contraintes, qui sont la moitie de cette page qu'aucun autre site Mindustry n'a.
+     * « Cent graphite par minute sous trente blocs » est la phrase par laquelle ce depot
+     * s'ouvre, et jusqu'ici aucune de ses trois propositions ne pouvait etre tapee.
+     *
+     * Aucune quantite ne passe par un placeholder : une cle manquante rendrait la cle sans
+     * substituer, et le nombre disparaitrait de la seule phrase qui existe pour le donner.
+     * Les nombres sont donc poses a cote de ces mots par la vue.
+     */
+    'contraintes' => [
+        'titre' => 'Contraintes',
+        'tient-dans' => 'Tient dans',
+        'au-moins' => 'Au moins',
+        'au-plus' => 'Au plus',
+        'planete' => 'Planete',
+        'planete-peu-importe' => 'peu importe',
+        'autonome' => 'autonome en energie',
+        'verifie' => 'verifie par le banc',
+        'chercher' => 'Appliquer',
+        'unite' => [
+            'tuiles' => 'tuiles',
+            'par-minute' => 'par minute',
+            'blocs' => 'blocs',
+        ],
+        /*
+         * Pourquoi l'encombrement ne permute pas les deux cotes.
+         *
+         * Verifie dans le jeu et non sur un wiki : `Binding` n'expose que `schematicFlipX`
+         * et `schematicFlipY`, aucune rotation, et `Schematics.rotate()` n'est appelee que
+         * par `BaseBuilderAI` et `BaseGenerator`. Un miroir ne change pas l'encombrement.
+         */
+        'sans-rotation' => 'Le jeu ne permet pas de faire pivoter un schema a la pose, donc
+            un plan plus large que haut ne rentre pas dans un trou plus haut que large.',
+        'debit-sans-objet' => 'Choisis d abord ce que tu cherches : un debit minimum n a rien
+            contre quoi se mesurer tant qu aucun objet n est choisi.',
+    ],
+
     'creatif' => [
         'mise-a-part' => 'schéma de bac a sable est mis à part, parce qu il ne
             se pose pas en partie normale.',

@@ -962,3 +962,16 @@ select {
   .outils-liste img { grid-row: auto; }
   .plan-cadre { height: 170px; }
 }
+/* Le panneau de contraintes de la vitrine.
+
+   Replie mais jamais cache : il s'ouvre de lui-meme quand une contrainte est active, sinon
+   un lecteur arrivant par un lien partage verrait une liste filtree sans voir par quoi. */
+.contraintes { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 4px; }
+.contraintes summary { cursor: pointer; color: var(--dim); font-size: 13px; padding: 6px 0; }
+.contraintes summary:hover { color: var(--ink); }
+.contraintes .row { margin-top: 8px; }
+.contraintes .mini { width: 58px; text-align: center; }
+.contraintes .mini2 { width: 82px; text-align: center; }
+.contraintes .mini-x { color: var(--dim); margin: 0 -4px; }
+.contraintes .coche { display: flex; align-items: center; gap: 6px; color: var(--dim); font-size: 13px; }
+.contraintes .coche input { width: auto; min-height: 0; }

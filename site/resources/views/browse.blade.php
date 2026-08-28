@@ -92,6 +92,74 @@
     <button class="primary" type="submit">Chercher</button>
   </div>
 
+  {{-- Les contraintes, repliees mais jamais cachees : le panneau s'ouvre de lui-meme des
+       qu'une contrainte est active, sinon un lecteur arrivant par un lien partage verrait
+       une liste filtree sans voir par quoi. Un `<details>` plutot qu'un panneau en
+       JavaScript : il s'ouvre, se ferme et s'annonce au lecteur d'ecran sans une ligne de
+       script, et chaque combinaison garde une adresse qui se partage et s'indexe. --}}
+  <details class="contraintes" @if($fitsWide || $fitsTall || $atLeast || $atMostBlocks || $selfPowered || $measured || $planet) open @endif>
+    <summary>{{ __('vitrine.contraintes.titre') }}</summary>
+
+    <div class="row">
+      <label class="lead" for="large">{{ __('vitrine.contraintes.tient-dans') }}</label>
+      {{-- `inputmode` plutot que `type=number` : les fleches et la molette d'un champ
+           numerique modifient une recherche par accident, et le clavier du telephone est le
+           meme dans les deux cas. --}}
+      <input name="large" id="large" class="mini" inputmode="numeric" autocomplete="off"
+             value="{{ $fitsWide ?: '' }}" placeholder="20">
+      <span class="mini-x">&times;</span>
+      <input name="haut" id="haut" class="mini" inputmode="numeric" autocomplete="off"
+             value="{{ $fitsTall ?: '' }}" placeholder="15">
+      <span class="hint-line" style="margin:0">{{ __('vitrine.contraintes.unite.tuiles') }}</span>
+
+      <label class="lead" for="min" style="margin-left:10px">{{ __('vitrine.contraintes.au-moins') }}</label>
+      <input name="min" id="min" class="mini2" inputmode="numeric" autocomplete="off"
+             value="{{ $atLeast ? rtrim(rtrim(number_format($atLeast, 2, '.', ''), '0'), '.') : '' }}"
+             placeholder="100">
+      {{-- L'unite suit la chose et non la colonne : les objets sont par minute, l'energie
+           par seconde. Sans objet choisi il n'y a pas d'unite a annoncer, et on n'en invente
+           pas une. --}}
+      <span class="hint-line" style="margin:0">
+        @if($makes === '')
+          {{ __('vitrine.contraintes.unite.par-minute') }}
+        @elseif($makes === $powerKey)
+          energie/s
+        @else
+          {{ \App\Support\Thing::name($makes) }}/min
+        @endif
+      </span>
+
+      <label class="lead" for="blocs" style="margin-left:10px">{{ __('vitrine.contraintes.au-plus') }}</label>
+      <input name="blocs" id="blocs" class="mini" inputmode="numeric" autocomplete="off"
+             value="{{ $atMostBlocks ?: '' }}" placeholder="60">
+      <span class="hint-line" style="margin:0">{{ __('vitrine.contraintes.unite.blocs') }}</span>
+    </div>
+
+    <div class="row">
+      <label class="lead" for="planete">{{ __('vitrine.contraintes.planete') }}</label>
+      <select name="planete" id="planete">
+        <option value="">{{ __('vitrine.contraintes.planete-peu-importe') }}</option>
+        @foreach($planets as $world)
+          <option value="{{ $world }}" @selected($planet === $world)>{{ ucfirst($world) }}</option>
+        @endforeach
+      </select>
+
+      <label class="coche"><input type="checkbox" name="autonome" value="oui"
+        @checked($selfPowered)> {{ __('vitrine.contraintes.autonome') }}</label>
+      <label class="coche"><input type="checkbox" name="verifie" value="oui"
+        @checked($measured)> {{ __('vitrine.contraintes.verifie') }}</label>
+
+      <button class="primary" type="submit">{{ __('vitrine.contraintes.chercher') }}</button>
+    </div>
+
+    @if($fitsWide || $fitsTall)
+      <p class="hint-line">{{ __('vitrine.contraintes.sans-rotation') }}</p>
+    @endif
+    @if($atLeast && $makes === '')
+      <p class="hint-line">{{ __('vitrine.contraintes.debit-sans-objet') }}</p>
+    @endif
+  </details>
+
   @if($holds !== '')
     <p class="hint-line">{{ __('vitrine.bloc.filtrees') }}
       <strong>{{ $holds }}</strong>.
@@ -218,6 +286,7 @@
               &middot;
             @endforeach
           @endif
+          <strong>{{ $schematic->width }}&times;{{ $schematic->height }}</strong> &middot;
           {{ $schematic->blocks }} blocs &middot; {{ $schematic->credit() }}
           {{-- Said in the list too, not only on the page. Somebody scrolling a hundred
                tiles should be able to tell what this site collected from what its members
