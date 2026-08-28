@@ -21,7 +21,7 @@ set -euo pipefail
 APP_DIR="/var/www/mindustry-forge"
 SITE_DIR="${APP_DIR}/site"
 REPO="https://github.com/yamakajump/mindustry-forge.git"
-BRANCH="${DEPLOY_BRANCH:-restart/place-de-marche}"
+BRANCH="${DEPLOY_BRANCH:-main}"
 APP_USER="mforge"
 DB_NAME="mindustry_forge"
 DB_USER="mforge"
