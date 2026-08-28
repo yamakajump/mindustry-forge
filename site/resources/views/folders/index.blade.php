@@ -11,8 +11,8 @@
   <h1 class="title">{{ __('dossiers.page.galerie') }}</h1>
 
   @if($folders->isEmpty())
-    {{-- Repond et le dit, plutot que d'etre absente. Refuser de lier une page n'est pas la
-         meme chose que la cacher. --}}
+    {{-- It answers and says so, rather than being missing. Refusing to link to a page is
+         not the same thing as hiding it. --}}
     <p class="hint-line">{{ __('dossiers.page.galerie-vide') }}</p>
   @else
     <form method="get" class="card">
@@ -39,8 +39,8 @@
             @if($folder->children_count > 0)
               &middot; {{ $folder->children_count }} {{ trans_choice('dossiers.unite.sous-dossiers', $folder->children_count) }}
             @endif
-            {{-- Pas de vignettes ici : vingt-quatre dossiers feraient quatre-vingt-seize
-                 dessins sur une page, et la carte Discord les porte deja. --}}
+            {{-- No thumbnails here: twenty-four folders would make ninety-six drawings on
+                 one page, and the Discord card already carries them. --}}
             @if($folder->likes > 0)
               &middot; {{ $folder->likes }} {{ __('schema.unite.jaime') }}
             @endif

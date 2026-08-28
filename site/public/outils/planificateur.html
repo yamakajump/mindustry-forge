@@ -23,14 +23,13 @@
     <svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>
     Mindustry <span>Forge</span>
   </a>
-  <!-- Le meme entete que `resources/views/partials/nav.blade.php`, ecrit a la main parce
-       que cette page est servie telle quelle et ne rencontre jamais PHP. Un test la compare
-       a `config/nav.php` : une entree qui atterrit la-bas et pas ici ne peut pas etre
-       fusionnee.
+  <!-- The same header as `resources/views/partials/nav.blade.php`, written by hand because
+       this page is served as it lies and never meets PHP. A test compares it against
+       `config/nav.php`: an entry that lands there and not here cannot be merged.
 
-       Le francais est ecrit en clair et `data-i18n` ne porte que la cle. Rien a remplacer
-       tant que le site parle la langue dans laquelle il est ecrit, donc pas de scintillement,
-       et un lecteur sans JavaScript lit des mots plutot que des cles. -->
+       The French is written out in clear and `data-i18n` carries only the key. Nothing to
+       substitute while the site speaks the language it is written in, so no flicker, and a
+       reader without JavaScript reads words rather than keys. -->
   <button class="deplier" type="button" aria-expanded="false" aria-controls="nav"
           data-i18n-aria-label="nav.barre.deplier" aria-label="Ouvrir le menu" hidden>
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -72,9 +71,9 @@
       <input id="quantite" type="number" min="1" max="100000" step="1" value="100"
              inputmode="numeric">
       <select id="objet"></select>
-      <!-- Une cadence choisie plutot qu'imposee. Une chaine de fin de partie se pense a la
-           seconde, un debut de partie a la minute, et convertir de tete pendant qu'on
-           dimensionne une usine est exactement le calcul que cette page existe pour eviter. -->
+      <!-- A rate that is chosen rather than imposed. A late-game chain is thought about by
+           the second, an early-game one by the minute, and converting in your head while
+           sizing a factory is exactly the arithmetic this page exists to spare you. -->
       <select id="cadence" aria-label="Cadence">
         <option value="minute" data-i18n="outils.planificateur.par-minute">par minute</option>
         <option value="seconde" data-i18n="outils.planificateur.par-seconde">par seconde</option>
@@ -92,24 +91,24 @@
 
 <script type="module">
 /*
- * La page du planificateur.
+ * The planner's page.
  *
- * Elle ne calcule rien : tout vient de `plan.js`, qui remonte la chaine depuis le
- * catalogue, et de `needs.js`, qui traduit un debit brut en foreuses. Une page qui
- * calculerait de son cote serait une deuxieme reponse a la meme question.
+ * It computes nothing: everything comes from `plan.js`, which walks the chain back up from
+ * the catalogue, and from `needs.js`, which turns a raw rate into drills. A page computing
+ * on its own side would be a second answer to the same question.
  */
 import { loadCatalogue } from "../forge/analyse.js";
 import { plan } from "../forge/plan.js";
 import { t, translate, ready } from "../forge/i18n.js";
 import { loadNames, nameOf } from "../forge/noms.js";
 
-/* Chaque hypothese nommee en toutes lettres, jamais un prefixe suivi d'une variable. Une
-   cle collee au rendu est une cle qu'aucun controle ne voit, donc le jour ou `plan.js` en
-   ajoute une, la page imprime la cle brute a un lecteur et rien ne le signale.
+/* Every assumption named in full, never a prefix followed by a variable. A key glued
+   together at render time is a key no check sees, so the day `plan.js` adds one, the page
+   prints the raw key to a reader and nothing reports it.
 
-   Ecrit sans exemple, volontairement : le controle des cles lit aussi les commentaires,
-   donc un fragment de cle dans cette phrase serait rapporte comme une cle sans traduction.
-   Constate ici meme, apres l'avoir signale a deux autres voies. */
+   Written without an example, deliberately: the key check reads comments too, so a fragment
+   of a key in this sentence would be reported as a key with no translation. Seen right
+   here, after warning two other lanes about it. */
 const HYPOTHESES = {
   fed: "outils.planificateur.suppose-alimente",
   partial: "outils.planificateur.suppose-partiel",
@@ -121,14 +120,14 @@ const $ = (id) => document.getElementById(id);
 const sortie = $("sortie");
 
 const catalogue = await loadCatalogue("../forge/blocks.json");
-/* Les noms du jeu, charges avec le reste. Dix-huit kilo-octets, et sans eux la page affiche
-   des identifiants redresses : `Blast drill` au lieu de `Foreuse a explosion`. */
+/* The game's names, loaded with the rest. Eighteen kilobytes, and without them the page
+   shows tidied-up identifiers: `Blast drill` instead of `Foreuse a explosion`. */
 await Promise.all([loadNames(), ready]);
 
-/* Les objets qu'on peut demander : ce que le jeu sait fabriquer, plus ce qu'il sait
-   extraire. Proposes plutot que tapes, pour qu'un joueur choisisse dans ce qui existe au
-   lieu de deviner une orthographe. */
-/** Quelle unite le joueur a choisie. Lue au meme endroit par le calcul et par l'affichage. */
+/* The items that can be asked for: what the game knows how to make, plus what it knows how
+   to extract. Offered rather than typed, so that a player picks from what exists instead of
+   guessing at a spelling. */
+/** Which unit the player chose. Read from the same place by the computation and the display. */
 function parSeconde() {
   return $("cadence").value === "seconde";
 }
@@ -181,24 +180,24 @@ const nombre = (valeur, decimales = 2) =>
  * brut. Meme regle que `Block::title()` cote PHP, et les deux bougeront ensemble le jour ou
  * le catalogue portera de vrais noms.
  */
-/* Le nom que le jeu lui donne, dans la langue du lecteur, et l'identifiant redresse quand
-   il n'en donne aucun. Le repli sert a dix-sept blocs que le jeu ne nomme dans aucune de ses
-   trente-sept langues, et au premier rendu si les noms ne sont pas encore charges. */
+/* The name the game gives it, in the reader's language, and the tidied-up identifier when
+   it gives none. The fallback serves seventeen blocks the game names in none of its
+   thirty-seven languages, and the first render if the names are not loaded yet. */
 const lisible = (id, famille = null) => nameOf(famille || familleDe(id), id);
 
 /*
- * De quelle famille une chose releve, demande au catalogue plutot qu'ecrit en liste.
+ * Which family a thing belongs to, asked of the catalogue rather than written out as a list.
  *
- * L'adresse des icones sert trois familles, et le catalogue sait deja dans laquelle ranger
- * un nom : ce qui est dans `items` est un objet, ce qui est dans `liquids` un liquide, le
- * reste un bloc. Une liste tenue a la main se mettrait a mentir des que le jeu en ajoute un.
+ * The icon address serves three families, and the catalogue already knows which one to file
+ * a name under: what is in `items` is an item, what is in `liquids` is a liquid, the rest is
+ * a block. A hand-kept list would start lying the moment the game adds one.
  */
 const familleDe = (nom) =>
   (catalogue.items?.[nom] && "objet")
   || (catalogue.liquids?.[nom] && "liquide")
   || "bloc";
 
-/** Une chose du jeu : son icone, et son nom. */
+/** A thing from the game: its icon, and its name. */
 function chose(nom, famille = null, taille = 20) {
   const span = document.createElement("span");
   span.className = "plan-chose";
@@ -208,19 +207,19 @@ function chose(nom, famille = null, taille = 20) {
   img.width = taille;
   img.height = taille;
   img.loading = "lazy";
-  /* Vide, parce que le nom est ecrit juste a cote : un lecteur d'ecran qui annonce
-     « sable sable » est pire qu'un qui ne dit rien. */
+  /* Empty, because the name is written right next to it: a screen reader announcing
+     "sand sand" is worse than one that says nothing. */
   img.alt = "";
-  /* Quatre blocs sur 395 n'ont pas d'image, `air` et trois usines d'unites hors d'age, que
-     personne n'affiche ici. Si l'un passait quand meme, l'image cassee se retire elle-meme
-     et le nom reste : une icone manquante ne doit pas se voir. */
+  /* Four blocks out of 395 have no image, `air` and three obsolete unit factories, which
+     nobody shows here. If one came through anyway, the broken image removes itself and the
+     name stays: a missing icon must not be seen. */
   img.addEventListener("error", () => img.remove());
   span.append(img, document.createTextNode(lisible(nom, famille || familleDe(nom))));
   return span;
 }
 
-/* Accepte un texte ou un noeud des deux cotes. Une deuxieme fonction pour le cas « avec
-   icone » aurait double la mise en page pour une difference qui tient dans un `append`. */
+/* Accepts either text or a node on both sides. A second function for the "with icon" case
+   would have doubled the layout for a difference that fits inside one `append`. */
 function ligne(gauche, droite, classe = "") {
   const div = document.createElement("div");
   div.className = "line";
@@ -233,7 +232,7 @@ function ligne(gauche, droite, classe = "") {
   return div;
 }
 
-/** La fleche entre ce qu'on pose et ce que ca sort. */
+/** The arrow between what you place and what it puts out. */
 function fleche() {
   const span = document.createElement("span");
   span.className = "plan-fleche";
@@ -241,7 +240,7 @@ function fleche() {
   return span;
 }
 
-/** Plusieurs choses a la suite, separees par une barre : les foreuses au choix. */
+/** Several things in a row, separated by a slash: the drills to choose from. */
 function choix(noms, famille) {
   const span = document.createElement("span");
   span.className = "plan-choix";
@@ -292,9 +291,9 @@ function dessiner(resultat) {
     return;
   }
 
-  /* Les hypotheses en premier, jamais en note de bas de page. Un joueur qui construit
-     contre un chiffre optimiste construit une usine qui sous-tourne sans qu'il puisse
-     voir pourquoi, et c'est la faute que ce depot a payee trois fois dans la journee. */
+  /* The assumptions first, never as a footnote. A player building against an optimistic
+     figure builds a factory that under-runs with no way of seeing why, and that is the
+     fault this repository paid for three times in one day. */
   if (resultat.assumptions.length) {
     const dit = carte("outils.planificateur.hypotheses");
     const liste = document.createElement("ul");
@@ -311,10 +310,11 @@ function dessiner(resultat) {
 
   const usines = carte("outils.planificateur.a-construire");
   for (const etape of resultat.steps) {
-    /* Le nombre entier et la fraction, toujours les deux : 3,2 fours, c'est 4 fours a
-       80 %, et ce sont deux usines differentes. Le nombre est assemble ici et jamais glisse dans une chaine traduite : quand une
-       cle manque, `t` rend la cle sans substituer, et le chiffre disparaitrait. Un chiffre
-       perdu est pire qu'un mot illisible sur un site qui ne vend que des chiffres. */
+    /* The whole number and the fraction, always both: 3.2 smelters means 4 smelters at
+       80 %, and those are two different factories. The number is assembled here and never
+       slipped into a translated string: when a key is missing, `t` renders the key without
+       substituting, and the figure would disappear. A lost figure is worse than an
+       unreadable word on a site that sells nothing but numbers. */
     const droite = `${etape.whole} ${t("outils.planificateur.blocs")}`
       + ` - ${nombre(etape.load * 100, 0)} ${t("outils.planificateur.de-charge")}`;
     const gauche = document.createElement("span");
@@ -327,27 +327,26 @@ function dessiner(resultat) {
   if (resultat.raw.length) {
     const sol = carte("outils.planificateur.a-fournir");
     for (const brut of resultat.raw) {
-      /* Le nombre reste hors de la traduction. Une clef manquante rend la clef sans
-         substituer, donc `t("...", { n })` ferait disparaitre le chiffre en silence, et sur
-         un site qui ne vend que des chiffres c'est l'information qui part. */
+      /* The number stays outside the translation. A missing key renders the key without
+         substituting, so `t("...", { n })` would make the figure disappear in silence, and
+         on a site that sells nothing but numbers it is the information that goes. */
       const droite = document.createElement("span");
       droite.className = "plan-paire";
       droite.append(document.createTextNode(parSeconde()
         ? `${nombre(brut.perMinute / 60, 2)}${t("outils.planificateur.par-sec")}`
         : `${nombre(brut.perMinute, 1)}${t("outils.planificateur.par-min")}`));
 
-      /* Plusieurs foreuses proposees, pas seulement la meilleure. `needs.js` les classe par
-         nombre croissant, donc la premiere est toujours la plus grosse du jeu : repondre
-         « une foreuse a explosifs » a « il me faut du sable » est exact et inutilisable,
-         parce que personne ne debloque la foreuse de fin de partie pour du sable. Le
-         planificateur montre le choix au lieu de le faire a la place du joueur.
+      /* Several drills offered, not only the best one. `needs.js` sorts them by increasing
+         count, so the first is always the biggest in the game: answering "a blast drill" to
+         "I need sand" is exact and unusable, because nobody unlocks the end-game drill for
+         sand. The planner shows the choice instead of making it for the player.
 
-         Quatre, et pas trois. La liste etant triee par nombre croissant, couper a trois
-         retirait toujours la derniere, qui est la moins chere a debloquer : la foreuse
-         mecanique sur Serpulo, le foreur a plasma sur Erekir. La coupe supprimait donc
-         systematiquement la seule option que possede quelqu'un qui commence, c'est-a-dire
-         le lecteur qui a le plus besoin de cet ecran. Quatre est le vivier reel d'un monde,
-         mesure dans le catalogue, et la planete est toujours choisie ici. */
+         Four, and not three. The list being sorted by increasing count, cutting at three
+         always dropped the last one, which is the cheapest to unlock: the mechanical drill
+         on Serpulo, the plasma bore on Erekir. So the cut systematically removed the only
+         option somebody starting out owns, that is, the reader who needs this screen most.
+         Four is a world's real pool, measured in the catalogue, and the planet is always
+         chosen here. */
       const options = brut.options.slice(0, 4);
       if (options.length) {
         droite.append(fleche(), choix(options, "bloc"));
@@ -378,14 +377,14 @@ function calculer(evenement) {
   evenement?.preventDefault();
   dessiner(plan(catalogue, {
     item: $("objet").value,
-    /* Converti ici et nulle part ailleurs : le moteur raisonne en debit par minute, et
-       laisser deux unites circuler dans le calcul est la facon dont un facteur soixante
-       finit par manquer a un seul endroit.
+    /* Converted here and nowhere else: the engine reasons in rate per minute, and letting
+       two units circulate through the computation is how a factor of sixty ends up missing
+       in exactly one place.
 
-       La valeur de l'option est le nom de l'unite et pas son facteur. Avec le facteur ecrit
-       dans le HTML, la premiere version portait 60 sur « par minute » et 1 sur « par
-       seconde », c'est-a-dire l'inverse, et rien ne le disait : la page repondait, avec des
-       chiffres soixante fois trop grands. Un nom se relit, un multiplicateur non. */
+       The option's value is the unit's name and not its factor. With the factor written
+       into the HTML, the first version carried 60 on "par minute" and 1 on "par seconde",
+       that is, the wrong way round, and nothing said so: the page answered, with figures
+       sixty times too large. A name can be read back, a multiplier cannot. */
     perMinute: Number($("quantite").value) * (parSeconde() ? 60 : 1),
     planet: $("planete").value,
   }));

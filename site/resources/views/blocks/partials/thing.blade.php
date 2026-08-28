@@ -1,15 +1,15 @@
-{{-- Une chose du jeu, avec son icone.
+{{-- A thing from the game, with its icon.
 
-     Servie a l'unite par `/icone/{famille}/{nom}.png`, environ un kilooctet, plutot que par
-     la feuille entiere de 1 311 ko posee en fond.
+     Served one at a time by `/icone/{family}/{name}.png`, about a kilobyte, rather than by
+     the whole 1,311 kB sheet laid down as a background.
 
-     La famille est demandee au catalogue plutot qu'ecrite en liste : ce qui est dans `items`
-     est un objet, dans `liquids` un liquide. Les onze liquides ont bien un sprite, range sous
-     le prefixe des objets ; la version precedente de ce gabarit les affichait en texte seul,
-     sur la foi d'une recherche d'un prefixe `liquid/` qui n'existe pas.
+     The family is asked of the catalogue rather than written out as a list: what is in
+     `items` is an item, what is in `liquids` is a liquid. The eleven liquids do have a
+     sprite, filed under the items prefix; the previous version of this template showed them
+     as bare text, on the strength of a search for a `liquid/` prefix that does not exist.
 
-     `alt` vide parce que le nom est ecrit juste a cote : un lecteur d'ecran qui annonce
-     « sable sable » est pire qu'un qui ne dit rien. --}}
+     `alt` empty because the name is written right next to it: a screen reader announcing
+     "sand sand" is worse than one that says nothing. --}}
 <span class="bloc-thing">
   <img class="icone" src="/icone/{{ \App\Support\Thing::family($thing) }}/{{ $thing }}.png?t=32"
        width="18" height="18" loading="lazy" decoding="async" alt="">

@@ -14,11 +14,11 @@
   @if($member->moderator) &middot; modérateur @endif
 </p>
 
-{{-- Le chiffre du site, en premier et nommé.
-     « Plafonds transformés en débits déclarés » est ce que ce site attend de ses membres,
-     et aucun autre catalogue Mindustry ne sait le compter. Les vues viennent après : elles
-     répondent à une autre question, et les afficher côte à côte sans les nommer serait le
-     défaut que ce dépôt collectionne. --}}
+{{-- The site's own figure, first and named.
+     "Caps turned into declared rates" is what this site expects of its members, and no
+     other Mindustry catalogue knows how to count it. Views come after: they answer a
+     different question, and showing the two side by side without naming them would be the
+     very defect this repository keeps collecting. --}}
 <div class="card">
   <p class="lead">{{ $documented }} {{ $documented === 1 ? 'plafond transformé' : 'plafonds transformés' }} en débit déclaré</p>
 
@@ -43,7 +43,7 @@
 </div>
 
 @if($standing !== null)
-  {{-- Visible par la personne elle-même, et par personne d'autre. --}}
+  {{-- Visible to the person themselves, and to nobody else. --}}
   <div class="card">
     <p class="lead">Ton niveau : {{ $standing->level }}</p>
     <p class="meta">

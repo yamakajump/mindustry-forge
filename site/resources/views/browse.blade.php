@@ -14,11 +14,10 @@
 
 @section('body')
 <h1 class="title">Schémas</h1>
-{{-- Le sous-titre a promis pendant des heures ce que la page ne tient pas. « Chaque
-     chiffre vient de l'analyse » restait vrai et laissait croire a un releve, au-dessus de
-     vingt-quatre tuiles qui portent toutes « au mieux ». Un plafond ne s'affiche jamais
-     sans dire qu'il en est un, et cette regle vaut pour la phrase qui coiffe la liste
-     autant que pour la ligne d'une tuile. --}}
+{{-- For hours the subtitle promised what the page does not deliver. "Every figure comes
+     from the analysis" stayed true while suggesting a measurement, above twenty-four tiles
+     that all carry "at best". A cap is never shown without saying that it is one, and that
+     rule holds for the sentence heading the list as much as for a tile's own line. --}}
 @if($order === 'declare')
   <p class="sub">Chaque chiffre vient de l'analyse du schéma lui-meme, pas d'une
     etiquette tapee a la main. Ici ce sont des débits déclarés : ce que le plan fait
@@ -29,15 +28,15 @@
     fond, et non ce qu'il a ete mesure faisant.</p>
 @endif
 
-{{-- Le classement, en onglets plutot que dans un deroulant.
+{{-- The ordering, as tabs rather than inside a dropdown.
 
-     C'est la commande la plus structurante de la page et elle etait la seule qu'il fallait
-     ouvrir pour savoir ce qu'elle offrait. Six liens montrent les six facons de classer sans
-     un clic, et chacune garde son adresse.
+     It is the command that shapes the page most, and it was the only one you had to open
+     to find out what it offered. Six links show the six ways of ordering without a click,
+     and each one keeps its own address.
 
-     Les trois qui comparent des productions restent visibles sans objet choisi, marques
-     plutot que caches : les enlever ferait disparaitre la raison pour laquelle ils manquent,
-     et un lecteur ne peut pas demander ce qu'il ne voit pas. --}}
+     The three that compare production stay visible with no item chosen, marked rather than
+     hidden: removing them would remove the reason they are missing, and a reader cannot
+     ask for what is not shown. --}}
 <nav class="tris" aria-label="Classer">
   @foreach($orders as $key => $label)
     @php $needsItem = in_array($key, ['best', 'dense', 'output'], true) && $makes === ''; @endphp
@@ -48,11 +47,11 @@
   @endforeach
 </nav>
 
-{{-- Ce que la recherche porte, et de quoi le retirer d'un clic.
+{{-- What the search carries, and what removes it in one click.
 
-     Une page ouverte depuis un lien partage applique des contraintes que son lecteur n'a pas
-     posees, dans un panneau qui est replie. Sans ces puces, savoir pourquoi la liste est
-     courte demande d'ouvrir le panneau et de lire six champs. --}}
+     A page opened from a shared link applies constraints its reader never set, inside a
+     panel that is folded shut. Without these chips, finding out why the list is short
+     means opening the panel and reading six fields. --}}
 @if($chips !== [])
   <div class="puces">
     <span class="puces-t">{{ __('vitrine.puces.titre') }}</span>
@@ -68,44 +67,43 @@
 @endif
 
 <form method="get" class="card">
-  {{-- Le produit et le classement sont choisis par des liens, au-dessus. Reportes ici pour
-       qu'appliquer une contrainte ne les efface pas : un formulaire ne renvoie que ses
-       propres champs, et une recherche qui perd la moitie de sa question en gagnant une
-       contrainte est une page plausible et fausse. --}}
+  {{-- The product and the ordering are chosen by links, above. Carried here so that
+       applying a constraint does not erase them: a form submits only its own fields, and
+       a search that loses half its question while gaining a constraint is a page that is
+       plausible and wrong. --}}
   <input type="hidden" name="produit" value="{{ $makes }}">
   <input type="hidden" name="tri" value="{{ $order }}">
   @if($creative)<input type="hidden" name="creatif" value="oui">@endif
 
-  {{-- La recherche est une phrase, pas un formulaire.
+  {{-- The search is a sentence, not a form.
 
-       Ce que ce depot promet en premiere ligne est « cent graphite par minute sous trente
-       blocs ». Une suite d'etiquettes et de champs dit la meme chose et ne se lit pas : il
-       faut assembler soi-meme ce que la phrase donne d'un coup. Les quatre propositions qui
-       comptent sont donc ecrites en toutes lettres, avec leurs champs dedans, et le reste se
-       replie dessous.
+       What this repository promises in its first line is "a hundred graphite a minute
+       under thirty blocks". A row of labels and fields says the same thing and does not
+       read: you have to assemble for yourself what the sentence gives at once. So the four
+       clauses that matter are written out in words, with their fields inside them, and the
+       rest folds away underneath.
 
-       Le choisisseur de produit est une grille de liens, donc il vit hors du formulaire au
-       sens des donnees : c'est le champ cache ci-dessus qui le renvoie quand on applique une
-       contrainte. --}}
+       The product picker is a grid of links, so it lives outside the form as far as data
+       goes: it is the hidden field above that submits it when a constraint is applied. --}}
   <p class="phrase">
     {{ __('vitrine.phrase.je-cherche') }}
-    {{-- Qui produit : une seule commande, et c'est celle qui porte les images.
-    
-         Il y en avait deux, une rangee de pastilles et un deroulant, qui faisaient exactement la
-         meme chose. Corentin : « tu remets produit quoi en doublon ». Le doublon existait pour
-         une raison ecrite ici : un `<select>` natif ne porte pas d'image dans ses `<option>`, et
-         le remplacer par une liste dessinee aurait coute la navigation au clavier, la fermeture
-         par Echap, l'annonce au lecteur d'ecran et le selecteur natif du telephone.
-    
-         Ce qui a change, c'est que cette grille n'est pas une liste dessinee : ce sont des liens
-         dans un `<details>`. Le clavier, le lecteur d'ecran et Echap viennent du navigateur, pas
-         d'un script ; chaque choix a une adresse qui se partage et s'indexe ; et la page marche
-         sans JavaScript. Il ne reste qu'une seule perte reelle, la recherche par frappe, sur une
-         vingtaine d'entrees qui tiennent toutes a l'ecran.
-    
-         Le champ « qui contient » garde son `datalist`, lui, et pour la raison inverse : deux
-         cents noms de blocs ne tiennent pas dans une grille, et la frappe y est le seul acces
-         raisonnable. La frontiere passe entre vingt et deux cents, pas entre deux gouts. --}}
+    {{-- Produces what: a single control, and it is the one that carries the images.
+
+         There were two, a row of pills and a dropdown, doing exactly the same thing.
+         Corentin: "you are putting produces-what back in twice". The duplicate existed for
+         a reason written down here: a native `<select>` carries no image in its `<option>`,
+         and replacing it with a drawn list would have cost keyboard navigation, closing on
+         Esc, the screen reader announcement, and the phone's native picker.
+
+         What changed is that this grid is not a drawn list: it is links inside a
+         `<details>`. The keyboard, the screen reader and Esc come from the browser and not
+         from a script; every choice has an address that shares and indexes; and the page
+         works without JavaScript. Only one real loss is left, type-ahead search, over some
+         twenty entries that all fit on screen.
+
+         The "contains what" field keeps its `datalist`, and for the opposite reason: two
+         hundred block names do not fit in a grid, and typing is the only reasonable way in
+         there. The boundary runs between twenty and two hundred, not between two tastes. --}}
     @if($items !== [])
       <details class="choisisseur">
         <summary>
@@ -128,15 +126,16 @@
              @if($makes === '') aria-current="page" @endif>n'importe quoi</a>
     
           @foreach($items as $item)
-            {{-- Le debit minimum part avec le produit : il est exprime dans l'unite de l'objet
-                 choisi, donc « au moins 1000 » garde pour du graphite un nombre qui parlait du
-                 silicium. Un chiffre juste a cote de sa question, en une seule seconde. --}}
+            {{-- The minimum rate goes away with the product: it is expressed in the unit of
+                 the chosen item, so "at least 1000" would keep, for graphite, a number that
+                 was about silicon. A figure that is right beside its question, in one
+                 second. --}}
             <a class="ch-case @if($makes === $item) on @endif"
                href="{{ request()->fullUrlWithQuery(['produit' => $item, 'min' => null, 'page' => null]) }}"
                @if($makes === $item) aria-current="page" @endif>
               @if($item !== $powerKey)
-                {{-- L'energie n'est ni un objet ni un liquide : elle n'a pas de sprite, et lui en
-                     inventer un serait dessiner quelque chose que le jeu ne dessine pas. --}}
+                {{-- Power is neither an item nor a liquid: it has no sprite, and inventing
+                     one for it would be drawing something the game does not draw. --}}
                 <img class="icone" src="/icone/{{ \App\Support\Thing::family($item) }}/{{ $item }}.png?t=32"
                      width="24" height="24" loading="lazy" decoding="async" alt="">
               @else
@@ -152,8 +151,8 @@
     <span class="champ"><input name="min" id="min" inputmode="numeric" autocomplete="off"
       value="{{ $atLeast ? rtrim(rtrim(number_format($atLeast, 2, '.', ''), '0'), '.') : '' }}"
       placeholder="100" aria-label="{{ __('vitrine.contraintes.au-moins') }}"></span>
-    {{-- L'unite suit la chose et non la colonne : les objets sont par minute, l'energie par
-         seconde. Sans objet choisi il n'y a pas d'unite a annoncer, et on n'en invente pas. --}}
+    {{-- The unit follows the thing and not the column: items are per minute, power per
+         second. With no item chosen there is no unit to announce, and none is invented. --}}
     <span class="ph-unite">
       @if($makes === '')
         {{ __('vitrine.contraintes.unite.par-minute') }}
@@ -184,19 +183,19 @@
     <button class="primary" type="submit">{{ __('vitrine.contraintes.chercher') }}</button>
   </p>
 
-  {{-- Les contraintes, repliees mais jamais cachees : le panneau s'ouvre de lui-meme des
-       qu'une contrainte est active, sinon un lecteur arrivant par un lien partage verrait
-       une liste filtree sans voir par quoi. Un `<details>` plutot qu'un panneau en
-       JavaScript : il s'ouvre, se ferme et s'annonce au lecteur d'ecran sans une ligne de
-       script, et chaque combinaison garde une adresse qui se partage et s'indexe. --}}
+  {{-- The constraints, folded away but never hidden: the panel opens by itself as soon as
+       a constraint is active, or a reader arriving from a shared link would see a filtered
+       list without seeing what filtered it. A `<details>` rather than a panel in
+       JavaScript: it opens, closes and announces itself to the screen reader without a
+       line of script, and every combination keeps an address that shares and indexes. --}}
   <details class="contraintes" @if($fitsWide || $fitsTall || $atLeast || $atMostBlocks || $selfPowered || $measured || $planet) open @endif>
     <summary>{{ __('vitrine.contraintes.titre') }}</summary>
 
     <div class="row">
       <label class="lead" for="bloc">{{ __('vitrine.bloc.label') }}</label>
-      {{-- Un `datalist` et non une grille d'images, a l'inverse du produit : deux cents noms
-           de blocs ne tiennent pas dans une grille, et la frappe y est le seul acces
-           raisonnable. La frontiere passe entre vingt et deux cents. --}}
+      {{-- A `datalist` and not a grid of images, unlike the product: two hundred block
+           names do not fit in a grid, and typing is the only reasonable way in there. The
+           boundary runs between twenty and two hundred. --}}
       <input name="bloc" id="bloc" list="blocs" value="{{ $holds }}"
              placeholder="{{ __('vitrine.bloc.exemple') }}" autocomplete="off">
       <datalist id="blocs">
@@ -212,13 +211,13 @@
     </div>
 
     <div class="row">
-      {{-- Ce qu'il faut lui amener, l'autre sens de la question du site.
+      {{-- What has to be brought to it, the site's question the other way round.
 
-           Un `<select>` ici et une grille d'images pour « qui produit » : la difference n'est
-           pas un oubli. Le produit est la question principale de la page et se choisit avant
-           tout le reste ; celle-ci est une contrainte de second rang, dans un panneau replie,
-           et un deroulant natif y garde la frappe au clavier et le selecteur du telephone
-           pour un cout d'ecran nul. --}}
+           A `<select>` here and a grid of images for "produces what": the difference is
+           not an oversight. The product is the page's main question and is chosen before
+           anything else; this one is a second-rank constraint, inside a folded panel, and
+           a native dropdown keeps typing on the keyboard and the phone's picker there for
+           no screen cost at all. --}}
       <label class="lead" for="consomme">{{ __('vitrine.contraintes.consomme') }}</label>
       <select name="consomme" id="consomme">
         <option value="">{{ __('vitrine.contraintes.consomme-rien') }}</option>
@@ -235,12 +234,12 @@
 
     </div>
 
-    {{-- Ce qui est a moi, offert aux seuls connectes : un filtre qui rend toujours vide
-         est pire qu'un filtre absent.
+    {{-- What is mine, offered to signed-in members only: a filter that always comes back
+         empty is worse than a missing filter.
 
-         Trois cases dans le meme panneau que le reste, et c'est tout l'interet : « mes
-         favoris qui tiennent dans 12x12 et sortent du silicium » est une recherche comme
-         une autre. Une page de favoris a part n'aurait su filtrer sur rien. --}}
+         Three checkboxes in the same panel as the rest, and that is the whole point: "my
+         favourites that fit in 12x12 and put out silicon" is a search like any other. A
+         separate favourites page would have had nothing to filter on. --}}
     @if($signedIn)
       <div class="row">
         <span class="lead">{{ __('vitrine.a-moi.titre') }}</span>
@@ -252,8 +251,8 @@
           @checked($mine)> {{ __('vitrine.a-moi.miens') }}</label>
       </div>
       @if($favorites || $liked || $mine)
-        {{-- Dit, et pas seulement fait : sans cette phrase, un joueur qui retrouve dans ses
-             favoris un plan de bac a sable croirait que le filtre du catalogue est casse. --}}
+        {{-- Said, and not only done: without this sentence, a player finding a sandbox plan
+             in their favourites would think the catalogue's filter is broken. --}}
         <p class="hint-line">{{ __('vitrine.a-moi.tout-garde') }}</p>
       @endif
     @endif
@@ -272,28 +271,28 @@
       <a href="{{ request()->fullUrlWithQuery(['bloc' => null]) }}">{{
         __('vitrine.bloc.enlever') }}</a></p>
   @elseif(request()->query('bloc'))
-    {{-- Un nom qui n'est pas un bloc ne filtre rien, et le dire vaut mieux que rendre la
-         liste entiere comme si de rien n'etait : une faute de frappe renverrait sinon une
-         page plausible et fausse. --}}
+    {{-- A name that is not a block filters nothing, and saying so beats rendering the whole
+         list as if nothing had happened: otherwise a typo would return a page that is
+         plausible and wrong. --}}
     <p class="hint-line">{{ __('vitrine.bloc.inconnu') }}</p>
   @endif
 
-  {{-- Sans item choisi, il n'y a rien contre quoi mesurer un rendement : classer
-       quarante graphite/min devant vingt-cinq silicium/min reviendrait a decreter qu'un
-       graphite vaut un silicium. Alors on ne le fait pas, on le dit, et on propose le
-       seul geste qui rend le classement possible. --}}
+  {{-- With no item chosen there is nothing to measure a yield against: ranking forty
+       graphite/min ahead of twenty-five silicon/min would amount to declaring that one
+       graphite is worth one silicon. So the page does not do it, it says so, and it offers
+       the one move that makes the ranking possible. --}}
   @if($makes === '')
     <p class="hint-line">Classés par date, faute de mieux. Choisis ce que tu cherches
       ci-dessus et le classement devient un vrai rendement&nbsp;: combien le schéma
       en sort, pour la place qu'il prend.</p>
   @else
-    {{-- La nature du chiffre est dite avec le chiffre, jamais apres. C'est la condition a
-         laquelle la vitrine a le droit de chercher sur des plafonds : les nommer n'est pas
-         les melanger a des mesures. --}}
+    {{-- What kind of figure it is gets said with the figure, never after. That is the
+         condition under which the catalogue is allowed to search on caps: naming them is
+         not mixing them with measurements. --}}
     @if($order === 'declare')
-      {{-- La meme regle sous l'autre tri. Laisser la phrase des plafonds coiffer une liste
-           classee sur des debits declares serait la faute exacte que la phrase existe pour
-           empecher : un texte juste, au-dessus de chiffres qui repondent a autre chose. --}}
+      {{-- The same rule under the other ordering. Letting the caps sentence head a list
+           ordered on declared rates would be the exact fault that sentence exists to
+           prevent: a correct text, above figures that answer something else. --}}
       <p class="hint-line">Classés sur ce qu'ils sortent en
         <strong>{{ $makes === $powerKey ? 'energie' : \App\Support\Thing::name($makes) }}</strong>
         branchés comme un joueur les a marqués. Un débit déclaré et non une mesure&nbsp;: le
@@ -309,20 +308,20 @@
     @endif
   @endif
 
-  {{-- Ce qui est mis a part, dit avec son compte et un lien pour le voir.
+  {{-- What is set aside, said with its count and a link to see it.
 
-       Un catalogue qui annonce quinze mille schémas et en sert quatorze mille sans un
-       mot mentirait sur sa propre taille, ce qui est exactement la faute que ce depot a
-       passe la journee a fermer. Le compte est donc affiche, et le lien defait le filtre :
-       un lecteur peut etre en desaccord avec la regle et la contourner en un clic. --}}
+       A catalogue announcing fifteen thousand schematics and serving fourteen thousand
+       without a word would be lying about its own size, which is exactly the fault this
+       repository spent the day closing. So the count is shown, and the link undoes the
+       filter: a reader can disagree with the rule and get around it in one click. --}}
   @if($creative)
     <p class="hint-line">{{ __('vitrine.creatif.affichees') }}
       <a href="{{ request()->fullUrlWithQuery(['creatif' => null]) }}">{{
         __('vitrine.creatif.remettre') }}</a></p>
   @elseif($setAside > 0)
-    {{-- Le singulier a sa propre cle plutot qu'un « (s) ». Le compte reste hors de la
-         chaine traduite : une cle manquante rendrait la cle sans substituer, et le nombre
-         disparaitrait de la seule phrase qui existe pour le donner. --}}
+    {{-- The singular has its own key rather than an "(s)". The count stays outside the
+         translated string: a missing key would render the key without substituting, and
+         the number would disappear from the only sentence that exists to give it. --}}
     <p class="hint-line">{{ $setAside }} {{ __($setAside === 1
       ? 'vitrine.creatif.mise-a-part' : 'vitrine.creatif.mises-a-part') }}
       <a href="{{ request()->fullUrlWithQuery(['creatif' => 'oui']) }}">{{
@@ -331,12 +330,12 @@
 </form>
 
 @if($schematics->isEmpty())
-  {{-- Le vide repond a la question qui a ete posee, et pas a celle du catalogue.
+  {{-- The empty state answers the question that was asked, and not the catalogue's.
 
-       « Rien de publié qui corresponde, analyse un schéma et publie-le » est juste sous une
-       recherche du catalogue et faux sous mes favoris : je n'ai rien a publier, j'ai
-       simplement rien garde encore, et la page m'envoyait analyser un plan pour resoudre ca.
-       Une phrase exacte, posee la ou on demande autre chose. --}}
+       "Nothing published matches, analyse a schematic and publish it" is right under a
+       catalogue search and wrong under my favourites: I have nothing to publish, I have
+       simply kept nothing yet, and the page was sending me off to analyse a plan to fix
+       that. An exact sentence, set where something else is being asked. --}}
   <div class="card">
     @if($favorites)
       <p class="empty">{{ __('vitrine.vide.favoris') }}</p>
@@ -355,17 +354,17 @@
     @endif
   </div>
 @else
-  {{-- Lequel gagne sur quoi, avant la grille.
+  {{-- Which one wins at what, before the grid.
 
-       Une liste qui se contente de classer laisse toute la comparaison au lecteur. Quatre
-       questions plutot qu'une, parce que « le meilleur » n'en est pas une : celui qui a un
-       trou dans sa base, celui qui compte son cuivre et celui qui veut du debit brut ne
-       demandent pas la meme chose, et un seul classement ne peut pas repondre aux trois.
-       Qu'un meme schema en gagne deux est une reponse, pas un defaut. --}}
-  {{-- Ce qui est retenu pour la comparaison, dit et annulable.
+       A list that only ranks leaves the whole comparison to the reader. Four questions
+       rather than one, because "the best" is not a question: the player with a hole in
+       their base, the player counting their copper and the player after raw throughput are
+       not asking the same thing, and a single ranking cannot answer all three. That one
+       schematic wins two of them is an answer, not a defect. --}}
+  {{-- What is held for comparison, said and cancellable.
 
-       Sans cette phrase, un lecteur revenu sur la page par un lien partage verrait chaque
-       tuile proposer « celui-ci » sans savoir contre quoi. --}}
+       Without this sentence, a reader coming back to the page from a shared link would see
+       every tile offering "this one" without knowing against what. --}}
   @if($held !== null)
     <p class="compare-en-cours">
       {{ __('vitrine.comparer.retenu') }}
@@ -390,8 +389,8 @@
   @endif
 
   @php
-    // L'echelle est celle de la page, pas celle de la tuile : deux silhouettes ne se
-    // comparent que si elles partagent leur facteur. Le plus grand cote affiche vaut 26 px.
+    // The scale belongs to the page, not to the tile: two silhouettes only compare if they
+    // share their factor. The largest side shown is 26 px.
     $widest = max(1, $schematics->max(fn ($s) => max($s->width, $s->height)) ?? 1);
     $scale = 26 / $widest;
   @endphp
@@ -428,9 +427,8 @@
           <h3>{{ $schematic->displayName() }}</h3>
         </a>
         <p class="meta">
-          {{-- Un robinet de bac a sable se dit ici aussi. Une vignette qui annonce
-               999 971 energie/s est la meme phrase fausse que la page, en plus court et
-               vue par plus de monde. --}}
+          {{-- A sandbox tap is said here too. A thumbnail announcing 999 971 power/s is the
+               same false sentence as the page, shorter and seen by more people. --}}
           @if($schematic->creative())
             <span class="warn">{{ __('vitrine.creatif.etiquette') }}</span> &middot;
           @endif
@@ -441,13 +439,13 @@
               <span class="good">{{ number_format($power, 0, ',', ' ') }} energie/s</span>
               <span class="hint-line">{{ __('schema.page.au-mieux') }}</span> &middot;
             @endif
-            {{-- Le plafond, parce que c'est sur lui que la page classe : montrer la mesure
-                 sous un classement fait sur autre chose ferait dire a la tuile autre chose
-                 que la liste qui l'a rangee. Et il est nomme comme tel, chaque fois. --}}
-            {{-- L'unite suit la chose et non la colonne. `schematic_items.rate` en porte deux
-                 sans que son nom le dise : les objets y sont par minute, l'energie par
-                 seconde. Ecrire « 60 energie/min » etait la faute exacte contre laquelle une
-                 autre voie venait de me mettre en garde, et je l'ai faite quand meme. --}}
+            {{-- The cap, because the cap is what the page ranks on: showing the measurement
+                 under a ranking made on something else would make the tile say something
+                 other than the list that filed it. And it is named as such, every time. --}}
+            {{-- The unit follows the thing and not the column. `schematic_items.rate`
+                 carries two of them without its name saying so: items are per minute there,
+                 power per second. Writing "60 power/min" was the exact mistake another pass
+                 had just warned me about, and I made it anyway. --}}
             @php $montre = $order === 'declare'
        ? \App\Models\SchematicItem::DECLARE
        : \App\Models\SchematicItem::PLAFOND; @endphp
@@ -456,9 +454,9 @@
               {{ $item === $powerKey
                   ? 'energie/s'
                   : \App\Support\Thing::name($item).'/min' }}
-              {{-- Chacune des deux grandeurs se nomme. Laisser la mesure muette la ferait
-                   lire comme le plafond de la tuile d'a cote, sur une page qui classe sur
-                   les plafonds. --}}
+              {{-- Each of the two quantities names itself. Leaving the measurement silent
+                   would make it read as the cap on the tile next to it, on a page that
+                   ranks on caps. --}}
               <span class="hint-line">{{ match($chiffre['kind']) {
                   \App\Models\SchematicItem::PLAFOND => __('schema.page.au-mieux'),
                   \App\Models\SchematicItem::DECLARE => __('schema.page.declaree'),
@@ -467,24 +465,24 @@
               &middot;
             @endforeach
           @endif
-          {{-- Les dimensions, sans quoi un classement a la surface montrerait un debit
-               plus faible au-dessus d'un plus fort sans rien pour l'expliquer.
+          {{-- The dimensions, without which a ranking by area would show a lower rate above
+               a higher one with nothing to explain it.
 
-               Tues quand elles valent zero plutot qu'affichees en « 0x0 » : une entree
-               analysee par un moteur trop ancien n'a pas de largeur, et « 0x0 » se lit comme
-               une mesure alors que c'est une absence. --}}
+               Dropped when they are zero rather than printed as "0x0": an entry analysed by
+               too old an engine has no width, and "0x0" reads as a measurement when it is
+               an absence. --}}
           @if($schematic->width > 0 && $schematic->height > 0)
-            {{-- L'encombrement dessine a cote de son chiffre, a une echelle commune a la
-                 page : deux plans se comparent alors a l'oeil, ce qu'un couple de nombres ne
-                 permet pas. Le rapport est respecte au pixel pres, largeur et hauteur
-                 multipliees par le meme facteur : un rectangle dessine en carre serait un
-                 dessin qui contredit le nombre pose juste a cote. --}}
-            {{-- Le dessin et son chiffre dans une seule boite insecable.
+            {{-- The footprint drawn beside its figure, at a scale shared across the page:
+                 two plans then compare by eye, which a pair of numbers does not allow. The
+                 ratio is kept to the pixel, width and height multiplied by the same factor:
+                 a rectangle drawn as a square would be a drawing that contradicts the
+                 number set right beside it. --}}
+            {{-- The drawing and its figure in a single unbreakable box.
 
-                 Separes, la ligne se coupait entre les deux : le rectangle finissait colle au
-                 debit de la ligne du dessus et le « 14x7 » partait a la suivante. Un dessin
-                 juste, pose a cote d'un autre nombre que le sien, ce qui est la faute de ce
-                 depot dans sa version graphique. --}}
+                 Separated, the line broke between the two: the rectangle ended up stuck
+                 against the rate on the line above, and the "14x7" went off to the next
+                 one. An accurate drawing, set beside a number that is not its own, which is
+                 this repository's own fault in graphical form. --}}
             <span class="taille">
               <span class="silh" aria-hidden="true"><span class="silh-r" style="width:{{
                 round($schematic->width * $scale, 1) }}px;height:{{
@@ -502,12 +500,13 @@
               non relu">importé</span>
           @endif
         </p>
-        {{-- La conclusion et le nombre qui la fonde, toujours colles. Jamais « celui-ci est
-             bien », toujours « le plus rentable a la surface, 2,3 fois la mediane de cette
-             liste » : un lecteur peut etre en desaccord avec le second, ce qui est la seule
-             facon honnete d'ecrire le premier. --}}
-        {{-- Le premier clic retient, le second compare. Un lien et non une case : une case
-             sans script ne fait rien, et un lien garde une adresse par etape. --}}
+        {{-- The conclusion and the number it rests on, always together. Never "this one is
+             good", always "the most efficient by area, 2.3 times this list's median": a
+             reader can disagree with the second, which is the only honest way of writing
+             the first. --}}
+        {{-- The first click holds, the second compares. A link and not a checkbox: a
+             checkbox does nothing without a script, and a link keeps an address per
+             step. --}}
         @if($held === null)
           <a class="t-comparer" href="{{ request()->fullUrlWithQuery([
               'comparer' => $schematic->slug, 'page' => null]) }}">{{
