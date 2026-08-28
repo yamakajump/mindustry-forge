@@ -94,11 +94,20 @@ function snapshot(world, tick) {
       held += ` $${build.state.charge.toFixed(2)}/${build.state.reload.toFixed(3)}`
         + `/${build.state.length.toFixed(2)}/${build.state.turn.toFixed(1)}`;
     }
+    // A battery's charge, which is the whole of what a battery has to say.
+    if ((build.block.power_capacity || 0) > 0) {
+      held += ` #${(build.state.charge || 0).toFixed(4)}`;
+    }
     // And what it is carrying, with whatever is inside that.
     if (build.state.payload) {
       held += ` %${build.state.payload.name}`;
       for (const [item, count] of build.state.payload.items.counts) {
         if (count > 0) held += `/${item}:${count}`;
+      }
+      // And the charge of a battery being carried, which nothing else on this line shows.
+      const inside = known.blocks[build.state.payload.name];
+      if ((inside?.power_capacity || 0) > 0) {
+        held += `/#${(build.state.payload.charge || 0).toFixed(4)}`;
       }
     }
     /* And its place in the update list, because a block that falls asleep leaves it and

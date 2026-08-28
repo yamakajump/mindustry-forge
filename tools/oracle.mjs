@@ -1851,6 +1851,48 @@ export const SCENARIOS = {
     { x: 11, y: 0, block: "payload-void", rotation: 0 },
   ],
 
+  /* A battery ferried from one grid to another, which is the only way charge moves in
+     Mindustry without a wire.
+
+     A source makes an empty battery, a loader on a grid of its own pours its own
+     `maxPowerConsumption` into it, two conveyors carry it across a stretch where it touches
+     nothing at all, and an unloader on a second grid pulls the charge back out and puts it
+     on that grid instead. What the two large batteries at the far end are holding after
+     thirty seconds is what crossed.
+
+     Three separate claims, and the shape is arranged so that failing any one of them shows:
+     the loader has to draw and charge, the carried battery has to keep what it is holding
+     while nothing touches it, and the unloader has to produce rather than merely stop
+     drawing. The far grid has no generator on it whatsoever, so every unit in those
+     batteries came out of a battery that was carried there. */
+  "payload-battery-ferry": () => [
+    // Five by five: covers -2..2 by -2..2, and hands its cargo out three tiles east.
+    { x: 0, y: 0, block: "payload-source", rotation: 0, raw: blockOf("battery") },
+    // Three by three: covers 3..5 by -1..1. Its grid is itself and the tap above it.
+    { x: 4, y: 0, block: "payload-loader", rotation: 0 },
+    { x: 4, y: 2, block: "power-source", rotation: 0 },
+    // Covers 6..8 and 9..11: a payload conveyor carries no power, so the battery crosses
+    // these two on no grid at all.
+    { x: 7, y: 0, block: "payload-conveyor", rotation: 0 },
+    { x: 10, y: 0, block: "payload-conveyor", rotation: 0 },
+    // Covers 12..14 by -1..1, and the far grid starts here.
+    { x: 13, y: 0, block: "payload-unloader", rotation: 0 },
+    /* And a generator on that grid, which is not padding: an unloader on a grid with no
+       power at all cannot start. What it pulls out is `maxPowerUnload * edelta()`, its own
+       `edelta` is zero on a dead grid, so it produces nothing, so the grid stays dead. The
+       game was asked, and it deadlocked exactly there: both far batteries at zero after
+       thirty seconds with a full battery sitting in the unloader. Sixty a second is enough
+       to break the circle and small enough that what fills the batteries is the ferry. */
+    { x: 13, y: -2, block: "combustion-generator", rotation: 0 },
+    { x: 13, y: -3, block: "item-source", rotation: 0, raw: item("coal") },
+    // Two of them, covering 12..14 by 2..4 and by 5..7: one alone fills up before the run
+    // ends, and a battery pinned at one reads the same whatever the arithmetic was.
+    { x: 13, y: 3, block: "battery-large", rotation: 0 },
+    { x: 13, y: 6, block: "battery-large", rotation: 0 },
+    // Covers 15..19 by -2..2: the flat battery goes off in there.
+    { x: 17, y: 0, block: "payload-void", rotation: 0 },
+  ],
+
   /* And a deconstructor, which gives a block back as its own build cost. A router costs
      three copper and builds in six frames, so it leaves as fast as it arrives, and what
      comes out ends in the vault. */

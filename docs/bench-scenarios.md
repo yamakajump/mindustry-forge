@@ -18,9 +18,10 @@ belts that disagrees says which line of which class.
 `SECONDS` is 30 in `tools/oracle.mjs`, and 1800 ticks therefore. What gets compared,
 built for both sides by `tools/compare.mjs`, is the contents of containers and cores, the
 liquid in every pool, battery charge, what the machines are still holding, turret ammo,
-carried payloads, units produced, and which blocks are still standing. Belts are not
-compared: an item halfway along one is a sub-tile position, and whether it has been handed
-on at frame eighteen hundred is a coin toss neither engine owes the other.
+carried payloads with what is inside them and the charge of a battery among them, units
+produced, and which blocks are still standing. Belts are not compared: an item halfway along
+one is a sub-tile position, and whether it has been handed on at frame eighteen hundred is a
+coin toss neither engine owes the other.
 
 Items are compared exactly. Liquids are compared per pool to half a unit but the total of
 each liquid to a hundredth, because a settled pipeline is a gradient two engines approach

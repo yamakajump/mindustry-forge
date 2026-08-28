@@ -17036,6 +17036,8 @@
       "items_loaded": 8,
       "liquids_loaded": 40,
       "max_block_size": 3,
+      "max_power_consumption": 40,
+      "base_power_use": 2,
       "planet": "erekir"
     },
     "payload-unloader":{
@@ -17080,7 +17082,10 @@
       "items_loaded": 8,
       "liquids_loaded": 40,
       "max_block_size": 3,
+      "max_power_consumption": 40,
+      "base_power_use": 0,
       "offload_speed": 4,
+      "max_power_unload": 80,
       "planet": "erekir"
     },
     "power-source":{

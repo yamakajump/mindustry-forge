@@ -79,6 +79,10 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
         "logic_range",
         "load_time", "items_loaded", "liquids_loaded", "max_block_size",
         "offload_speed", "deconstruct_speed", "dump_rate", "max_payload_size",
+        # A payload loader charges a battery it carries and an unloader empties one, and
+        # neither draw appears in "power": a `consumePowerDynamic` states a usage of zero,
+        # so these three are the only figures that say what the pair costs and produces.
+        "base_power_use", "max_power_consumption", "max_power_unload",
         "charge_time", "length", "knockback", "transfer_time",
         "area_size", "drones_created", "drone_construct_time", "drone_type",
         "plans", "tier", "unit_build_time", "unit_type", "stale_time",

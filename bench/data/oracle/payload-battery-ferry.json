@@ -1,0 +1,180 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [],
+  "batteries": [
+    {
+      "block": "battery-large",
+      "x": 27,
+      "y": 18,
+      "charge": 0.4392832
+    },
+    {
+      "block": "battery-large",
+      "x": 27,
+      "y": 21,
+      "charge": 0.4392832
+    }
+  ],
+  "payloads": [
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 15,
+      "payload": "battery",
+      "payload_items":{},
+      "payload_liquids":{},
+      "payload_charge": 0
+    },
+    {
+      "block": "payload-loader",
+      "x": 18,
+      "y": 15,
+      "payload": "battery",
+      "payload_items":{},
+      "payload_liquids":{},
+      "payload_charge": 0.66999966
+    },
+    {
+      "block": "payload-unloader",
+      "x": 27,
+      "y": 15,
+      "payload": "battery",
+      "payload_items":{},
+      "payload_liquids":{},
+      "payload_charge": 1
+    }
+  ],
+  "units":{},
+  "running": [
+    {
+      "block": "item-source",
+      "x": 27,
+      "y": 12,
+      "efficiency": 1
+    },
+    {
+      "block": "combustion-generator",
+      "x": 27,
+      "y": 13,
+      "efficiency": 1,
+      "holds":{
+        "coal": 10
+      }
+    },
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-loader",
+      "x": 18,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 21,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 24,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-unloader",
+      "x": 27,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "payload-void",
+      "x": 31,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "power-source",
+      "x": 18,
+      "y": 17,
+      "efficiency": 0
+    },
+    {
+      "block": "battery-large",
+      "x": 27,
+      "y": 18,
+      "efficiency": 0
+    },
+    {
+      "block": "battery-large",
+      "x": 27,
+      "y": 21,
+      "efficiency": 0
+    }
+  ],
+  "standing": [
+    {
+      "block": "item-source",
+      "x": 27,
+      "y": 12
+    },
+    {
+      "block": "combustion-generator",
+      "x": 27,
+      "y": 13
+    },
+    {
+      "block": "payload-source",
+      "x": 14,
+      "y": 15
+    },
+    {
+      "block": "payload-loader",
+      "x": 18,
+      "y": 15
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 21,
+      "y": 15
+    },
+    {
+      "block": "payload-conveyor",
+      "x": 24,
+      "y": 15
+    },
+    {
+      "block": "payload-unloader",
+      "x": 27,
+      "y": 15
+    },
+    {
+      "block": "payload-void",
+      "x": 31,
+      "y": 15
+    },
+    {
+      "block": "power-source",
+      "x": 18,
+      "y": 17
+    },
+    {
+      "block": "battery-large",
+      "x": 27,
+      "y": 18
+    },
+    {
+      "block": "battery-large",
+      "x": 27,
+      "y": 21
+    }
+  ],
+  "containers": [],
+  "per_second":{}
+}

@@ -1099,8 +1099,19 @@ public class DumpBlocks {
             entry.put("items_loaded", loader.itemsLoaded);
             entry.put("liquids_loaded", loader.liquidsLoaded);
             entry.put("max_block_size", loader.maxBlockSize);
+            /* What it draws while it is charging a battery it carries, and what it draws
+               while it is only holding something.
+
+               Neither reaches `power` below, and that is not an oversight in this file:
+               `PayloadLoader.init` replaces the block's flat consumer with a
+               `consumePowerDynamic`, whose `usage` is zero by construction, so the figure
+               every other consumer states is zero for a loader. Without these two the
+               block reads as free and sits off the grid entirely. */
+            entry.put("max_power_consumption", loader.maxPowerConsumption);
+            entry.put("base_power_use", basePowerUse(loader));
             if (block instanceof PayloadUnloader out) {
                 entry.put("offload_speed", out.offloadSpeed);
+                entry.put("max_power_unload", out.maxPowerUnload);
             }
             return;
         }
@@ -1623,6 +1634,30 @@ public class DumpBlocks {
         if (drawer == null) return list;
         flatten(drawer, list);
         return list;
+    }
+
+    /**
+     * {@code PayloadLoader.basePowerUse}: what a loader draws while it is not charging.
+     *
+     * <p>Asked for by reflection because the field is {@code protected} and this class is
+     * not in the game's package. The alternative was to copy the {@code consumePower(2f)}
+     * out of {@code Blocks.java} and write it down here, which is a second copy of block
+     * data and exactly what this file exists to avoid: the game would change it and the
+     * copy would not.
+     *
+     * <p>It is not readable any other way. {@code init()} sets it from the block's flat
+     * consumer and then replaces that consumer with a dynamic one, so by the time anything
+     * can look, {@code consPower.usage} is zero and the original figure is gone.
+     */
+    private static float basePowerUse(mindustry.world.blocks.payloads.PayloadLoader loader) {
+        try {
+            java.lang.reflect.Field field = mindustry.world.blocks.payloads.PayloadLoader
+                .class.getDeclaredField("basePowerUse");
+            field.setAccessible(true);
+            return field.getFloat(loader);
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            return 0f;
+        }
     }
 
     /** The {@code drawer} field, which is only declared on some families of blocks. */

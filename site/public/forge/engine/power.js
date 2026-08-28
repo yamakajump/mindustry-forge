@@ -69,11 +69,48 @@ const isBattery = (build) => isNode(build) && (build.block.power_capacity || 0) 
  */
 const output = (block) => block.power_production ?? block.power_out ?? 0;
 
+/**
+ * A block whose draw is not a constant, and which the catalogue therefore cannot state.
+ *
+ * `ConsumePowerDynamic` reports a `usage` of zero, so `power` is zero for the payload
+ * loader and it would sit off every grid while drawing two and a half thousand a second.
+ * `base_power_use` is what it asks for while it carries anything, and it is the flag as
+ * much as the figure.
+ */
+const dynamicDraw = (block) => (block.base_power_use || 0) > 0;
+
+/** And the one block that puts back what it pulls out of a battery it is carrying. */
+const dynamicOutput = (block) => (block.max_power_unload || 0) > 0;
+
+/**
+ * `ConsumePower.requestedPower`, per tick.
+ *
+ * A flat `usage` for almost everything, scaled by whether the block is consuming at all,
+ * which is `state.wants` here. The payload loader answers for itself instead, because
+ * `consumePowerDynamic` reads the block's own state every frame and the grid is updated
+ * before the blocks are: a figure the loader stashed on its own update would be the
+ * frame before's, and a payload that lands on it late in a frame would go a frame unpaid.
+ */
+const askedBy = (build) => build.behaviour?.requestedPower?.(build)
+  ?? build.block.power / 60 * (build.state.wants ?? 1);
+
+/**
+ * `Building.getPowerProduction`, per tick.
+ *
+ * A nameplate for a generator, scaled by whether it is running. For a payload unloader it
+ * is `lastOutputPower`, whatever it pulled out of the battery it is holding, and that is
+ * read a frame late on purpose: the game writes it in `updateTile` and the graph updater
+ * runs before the buildings do, so the grid always spends what came out last frame.
+ */
+const madeBy = (build) => build.state.production
+  ?? output(build.block) / 60 * (build.state.running ?? 1);
+
 const TILE = 8;
 
 export function gridsOf(world) {
   const onGrid = world.builds.filter((build) =>
     isNode(build) || build.block.power > 0 || output(build.block) > 0
+    || dynamicDraw(build.block) || dynamicOutput(build.block)
     || build.role === "power-void");
 
   const owner = new Map(onGrid.map((build) => [build, build]));
@@ -360,9 +397,14 @@ export class Grid {
     // Each block knows which grid it landed on, which is `Building.power.graph`. One block
     // needs it: a diode reads the two banks on either side of it and moves charge across.
     for (const build of builds) build.grid = this;
-    this.producers = builds.filter((build) => output(build.block) > 0);
+    /* `PowerGraph.add` sorts by the two flags on the block, not by what it looks like: a
+       payload unloader outputs and consumes and is filed under both, which is why it is
+       here twice rather than in a category of its own. */
+    this.producers = builds.filter(
+      (build) => output(build.block) > 0 || dynamicOutput(build.block));
     this.consumers = builds.filter(
-      (build) => build.block.power > 0 || build.role === "power-void");
+      (build) => build.block.power > 0 || dynamicDraw(build.block)
+        || build.role === "power-void");
     this.batteries = builds.filter(isBattery);
 
     for (const build of this.batteries) build.state.charge = 0;
@@ -401,7 +443,7 @@ export class Grid {
       // A generator only makes power when it is running, which for a burner means when it
       // has something to burn. `productionEfficiency` in the game; here it is whatever the
       // block's own behaviour worked out.
-      made += output(build.block) / 60 * build.delta(step) * (build.state.running ?? 1);
+      made += madeBy(build) * build.delta(step);
     }
 
     let needed = 0;
@@ -417,7 +459,7 @@ export class Grid {
          because the arithmetic that follows divides by it. */
       needed += build.role === "power-void"
         ? 1e18
-        : build.block.power / 60 * build.delta(step) * (build.state.wants ?? 1);
+        : askedBy(build) * build.delta(step);
     }
 
     this.made = made;
