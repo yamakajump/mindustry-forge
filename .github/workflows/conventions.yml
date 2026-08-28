@@ -1,5 +1,6 @@
-# Mechanically enforces the commit and pull request rules AGENTS.md and CONTRIBUTING.md
-# already state in prose: conventional format, a fifty-character subject, no em dash.
+# Mechanically enforces the rules AGENTS.md and CONTRIBUTING.md already state in prose:
+# conventional format, a fifty-character subject, no em dash, and comments written in
+# English.
 #
 # Nothing checked this before. PR #120's title was 67 characters and PR #125's was 52;
 # merges here are squash-only, so a pull request title becomes the commit subject on
@@ -64,3 +65,10 @@ jobs:
         run: |
           git diff "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" > diff.patch
           node tools/check-conventions.mjs --diff-file diff.patch
+
+      # The whole repository, not the diff. An added-lines check would have missed the
+      # comment in index.html whose first line came out English and whose remaining four
+      # stayed French: none of those four was an added line. Running over everything costs
+      # under a second on 377 files and states the rule as it is written.
+      - name: Comments, in English
+        run: node tools/check-comments.mjs
