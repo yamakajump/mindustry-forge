@@ -316,3 +316,61 @@ test("la boite de tous les cadres sert a cadrer le chantier entier d un coup", (
 test("sans aucun cadre, la boite des cadres est vide plutot que des infinis", () => {
   assert.deepEqual(board().framesBox(), { left: 0, bottom: 0, width: 0, height: 0 });
 });
+
+/* ----------------------------------------------------------------------------------------
+   L instantane : ce qu un brouillon ou un espace de travail sauvegardent vraiment.
+
+   Le brouillon local et un espace de travail sauvegardent tous les deux la meme forme, et
+   c est cet instantane qui la fixe une bonne fois : un cadre absent ici serait un cadre
+   perdu partout ou cette forme sert.
+   ---------------------------------------------------------------------------------------- */
+
+test("l instantane porte les tuiles, le sol et les cadres ensemble", () => {
+  const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }], { "0,0": { floor: "stone" } });
+  plateau.apply({ addFrames: [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 8 }] });
+
+  const photo = plateau.snapshot();
+  assert.equal(photo.tiles.length, 1);
+  assert.deepEqual(photo.ground, { "0,0": { floor: "stone" } });
+  assert.deepEqual(photo.frames, [{ id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 8 }]);
+});
+
+test("l instantane ne garde pas les champs de calcul comme link", () => {
+  const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }]);
+  // Ce que `relink()` de mount.js ecrit sur une tuile a chaque image, jamais sauve.
+  plateau.tiles[0].link = [1, 1];
+
+  const photo = plateau.snapshot();
+  assert.deepEqual(photo.tiles[0], { x: 0, y: 0, block: "conveyor", rotation: 0, config: undefined });
+});
+
+test("l instantane d un plateau vide n a ni tuile ni cadre", () => {
+  assert.deepEqual(board().snapshot(), { tiles: [], ground: {}, frames: [] });
+});
+
+test("charger un instantane remplace le plateau, et vide l historique", () => {
+  const plateau = board([{ x: 5, y: 5, block: "conveyor", rotation: 0 }]);
+  plateau.apply({ place: [{ x: 6, y: 6, block: "conveyor", rotation: 0 }] });
+  assert.equal(plateau.done.length, 1);
+
+  plateau.load({
+    tiles: [{ x: 1, y: 1, block: "wall", rotation: 0 }],
+    ground: { "2,2": { floor: "sand" } },
+    frames: [{ id: "b", name: "assemblage", left: 0, bottom: 0, width: 5, height: 5 }],
+  });
+
+  assert.equal(plateau.tiles.length, 1);
+  assert.equal(plateau.tiles[0].block, "wall");
+  assert.deepEqual(plateau.ground, { "2,2": { floor: "sand" } });
+  assert.equal(plateau.frames.length, 1);
+  assert.equal(plateau.done.length, 0);
+  assert.equal(plateau.undone.length, 0);
+});
+
+test("charger un instantane sans cadre ni sol part avec des listes vides, pas des trous", () => {
+  const plateau = board([{ x: 0, y: 0, block: "conveyor", rotation: 0 }]);
+  plateau.load({ tiles: [] });
+  assert.deepEqual(plateau.tiles, []);
+  assert.deepEqual(plateau.ground, {});
+  assert.deepEqual(plateau.frames, []);
+});

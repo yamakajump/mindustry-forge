@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\Schema;
  * a name and a board is all a work space is.
  *
  * `board` holds a full snapshot on every save, never a delta: the same shape the browser
- * already keeps in `localStorage` for an anonymous visitor's single draft (tiles and
- * ground). A delta log would be a second data model to keep in agreement with the first,
- * for bandwidth a board of a few hundred kilobytes does not need saving.
+ * already keeps in `localStorage` for an anonymous visitor's single draft (tiles, ground
+ * and frames). A delta log would be a second data model to keep in agreement with the
+ * first, for bandwidth a board bounded by `Space::MAX_BOARD_BYTES` does not need saving.
  */
 return new class extends Migration
 {

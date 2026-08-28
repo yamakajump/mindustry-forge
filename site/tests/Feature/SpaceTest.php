@@ -71,6 +71,43 @@ it('ne compte que les espaces de ce compte pour le quota', function () use ($boa
     ])->assertCreated();
 });
 
+// --- Cadres ----------------------------------------------------------------------------
+
+it('garde les cadres d un plateau, y compris apres une relecture', function () {
+    $user = User::factory()->create();
+    $avecCadres = [
+        'tiles' => [['x' => 0, 'y' => 0, 'block' => 'conveyor', 'rotation' => 0]],
+        'ground' => [],
+        'frames' => [['id' => 'a', 'name' => 'fonderie', 'left' => 0, 'bottom' => 0, 'width' => 10, 'height' => 8]],
+    ];
+
+    $slug = $this->actingAs($user)->postJson('/api/espaces', [
+        'name' => 'Avec cadres',
+        'board' => $avecCadres,
+    ])->assertCreated()->json('slug');
+
+    expect(Space::first()->board)->toBe($avecCadres);
+
+    $this->actingAs($user)->getJson("/api/espaces/{$slug}")
+        ->assertOk()
+        ->assertJsonPath('board.frames', $avecCadres['frames']);
+});
+
+it('garde les cadres d un plateau sauvegarde par dessus un espace existant', function () use ($board) {
+    $user = User::factory()->create();
+    $space = Space::factory()->create(['user_id' => $user->id, 'board' => $board()]);
+    $avecCadres = [
+        'tiles' => [],
+        'ground' => [],
+        'frames' => [['id' => 'b', 'name' => 'assemblage', 'left' => 2, 'bottom' => 2, 'width' => 5, 'height' => 5]],
+    ];
+
+    $this->actingAs($user)->patchJson("/api/espaces/{$space->slug}", ['board' => $avecCadres])
+        ->assertOk();
+
+    expect($space->refresh()->board)->toBe($avecCadres);
+});
+
 // --- Taille --------------------------------------------------------------------------
 
 it('refuse un plateau plus gros que la limite', function () {
@@ -95,6 +132,27 @@ it('accepte un plateau juste sous la limite', function () {
     $this->actingAs($user)->postJson('/api/espaces', [
         'name' => 'Juste assez',
         'board' => $ok,
+    ])->assertCreated();
+});
+
+it('accepte un plateau avec cadres plus gros que l ancienne limite de 2 Mio', function () {
+    // Les cadres font grandir un plateau reel de 64x64 (quelques centaines de kilo-octets)
+    // jusqu a 256x256 rempli (environ 4,8 Mo mesures) : l ancienne limite de 2 Mio aurait
+    // refuse un chantier multi-cadres pourtant legitime.
+    $user = User::factory()->create();
+    $ancienneLimite = 2 * 1024 * 1024;
+    $grosChantier = [
+        'tiles' => [],
+        'ground' => ['bourrage' => str_repeat('x', $ancienneLimite + 500)],
+        'frames' => [
+            ['id' => 'a', 'name' => 'fonderie', 'left' => 0, 'bottom' => 0, 'width' => 64, 'height' => 64],
+            ['id' => 'b', 'name' => 'assemblage', 'left' => 70, 'bottom' => 0, 'width' => 64, 'height' => 64],
+        ],
+    ];
+
+    $this->actingAs($user)->postJson('/api/espaces', [
+        'name' => 'Grand chantier',
+        'board' => $grosChantier,
     ])->assertCreated();
 });
 

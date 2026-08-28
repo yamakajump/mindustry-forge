@@ -144,6 +144,41 @@ export function createBoard({ tiles = [], ground = {}, frames = [], sizeOf }) {
   };
 
   /**
+   * A plain, JSON-safe copy of the board: tiles, ground and frames, and nothing that only
+   * makes sense while the board is live.
+   *
+   * `link` is left out on purpose. `mount.js`'s `relink()` writes it onto a tile every
+   * frame, recomputed from `config` against the block's own reach; it is a cache, not a
+   * fact about the board, and saving it would let a stale coordinate outlive the bridge it
+   * once pointed at. This is also, deliberately, the one shape both `draft.js`'s local
+   * draft and a work space save: a save that quietly dropped `frames` here would drop
+   * every frame a player drew, in both places at once, and never say so.
+   */
+  board.snapshot = () => ({
+    tiles: board.tiles.map(({ x, y, block, rotation, config }) =>
+      ({ x, y, block, rotation, config: config || undefined })),
+    ground: { ...board.ground },
+    frames: board.frames.map((frame) => ({ ...frame })),
+  });
+
+  /**
+   * Replace the board's contents with a snapshot, in place.
+   *
+   * Used to open a different work space inside an editor that is already mounted, without
+   * tearing the whole thing down and rebuilding it. The undo history does not travel with
+   * it: `done`/`undone` describe how *this* board got to where it is, and a history
+   * borrowed from a board that was somewhere else entirely would let ctrl+Z reach back into
+   * a space nobody is looking at.
+   */
+  board.load = (snapshot) => {
+    board.tiles = (snapshot.tiles || []).map((tile) => ({ rotation: 0, ...tile }));
+    board.ground = { ...(snapshot.ground || {}) };
+    board.frames = (snapshot.frames || []).map((frame) => ({ ...frame }));
+    board.done = [];
+    board.undone = [];
+  };
+
+  /**
    * Does placing this keep the board within its cap?
    *
    * Takes one block or a whole batch, and the batch is not the sum of the blocks: a drag of

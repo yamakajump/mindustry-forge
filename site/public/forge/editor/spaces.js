@@ -7,10 +7,11 @@
  * signing in buys on top of that, and this module never touches `localStorage` itself
  * except to read the existing draft once, when asked to import it.
  *
- * A "board" here is always a plain snapshot, `{ tiles, ground }`, the same shape `draft.js`
- * already writes out. Never the live board object from `state.js`: that one also carries
- * `done`/`undone` (the undo history) and methods, neither of which belongs in a save. The
- * caller builds the snapshot, typically `{ tiles: board.tiles, ground: board.ground }`.
+ * A "board" here is always a plain snapshot, `{ tiles, ground, frames }`, the same shape
+ * `draft.js` already writes out. Never the live board object from `state.js`: that one also
+ * carries `done`/`undone` (the undo history) and methods, neither of which belongs in a
+ * save. The caller builds the snapshot with `board.snapshot()`, never by hand: leaving
+ * `frames` out here would drop every frame a player drew, silently, on the next reopen.
  *
  * Every request needs an account, so every one of them can fail with "not signed in". This
  * module does not decide what that means on screen: it reports a status and, on failure, a
@@ -120,7 +121,7 @@ export function localDraftAvailable() {
 export async function importLocalDraft(name) {
   const kept = readDraft(Date.now());
   if (!kept) throw new Error("il n'y a pas de brouillon local à importer");
-  const space = await createSpace(name, { tiles: kept.tiles, ground: kept.ground });
+  const space = await createSpace(name, { tiles: kept.tiles, ground: kept.ground, frames: kept.frames || [] });
   dropDraft();
   return space;
 }

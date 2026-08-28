@@ -34,15 +34,17 @@ class Space extends Model
     /**
      * The largest a board's JSON may be, in bytes.
      *
-     * The editor's own bounding box is capped at 64 by 64 tiles (`MAX_SIZE` in
-     * `state.js`), and a schematic's stored ground is capped at 4,096 cells for the same
-     * reason (`SchematicController::MAX_GROUND`). A board at that ceiling, one tile and
-     * one ground entry per cell, JSON-encodes to a few hundred kilobytes. Two megabytes is
-     * roughly triple that: room for a board actually that full plus the field names JSON
-     * repeats on every entry, without being a ceiling a legitimate save could ever meet by
-     * accident.
+     * A board with no frame is still the old 64 by 64 schematic (`MAX_SIZE` in `state.js`),
+     * a few hundred kilobytes at most one tile and one ground entry per cell. Frames change
+     * that story: once one exists, placement is bounded by the board itself, 256 by 256
+     * (`BOARD_SIZE` in `state.js`), not by any one frame's own 64 cap. A board actually
+     * saturated at that size (one tile and one ground entry per one of its 65,536 cells,
+     * plus a handful of frame records) measures about 4.8 MB, not "a few hundred kilobytes"
+     * any more. Sixteen megabytes is roughly triple that, the same margin the old limit
+     * kept over its own worst case, room for a board actually that full without being a
+     * ceiling a legitimate multi-frame save could ever meet by accident.
      */
-    public const MAX_BOARD_BYTES = 2 * 1024 * 1024;
+    public const MAX_BOARD_BYTES = 16 * 1024 * 1024;
 
     protected $fillable = ['user_id', 'slug', 'name', 'board', 'opened_at'];
 
