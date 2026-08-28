@@ -4,22 +4,6 @@ The tags are in place, in `layout.blade.php` and in `index.html`. This page reco
 they are for and what has not been done yet, so nobody has to work it out again from the
 markup.
 
-It started as a handover: `layout.blade.php` and `index.html` were being rewritten by
-another lane when the assets landed, so the blocks were written here and posted later. That
-part is done and has been removed.
-
-## What it repaired
-
-The site had **three different icon states and one dead link**:
-
-| Where | Before |
-|---|---|
-| `site/public/favicon.ico` | 0 bytes, referenced nowhere |
-| `layout.blade.php` | pointed at `/favicon.svg`, a file that **did not exist**, so a 404 on every Laravel page |
-| `site/public/index.html` | a **different** icon, inline as a data URI |
-
-So the Laravel pages and the static page did not share an icon, and one of the two had none.
-
 ## Why each tag is there
 
 Three icon formats, because three families of client ask for one differently: the `.ico` for
@@ -36,7 +20,7 @@ say so. Production wants `APP_URL=https://mindustryforge.com`.
 
 **The description is written out rather than pulled from `site/lang/`.** The convention
 there is `<domain>.<screen>.<element>` with a fixed list of domains, and a description that
-holds for the whole site belongs to no screen; dropping it into another lane's domain file is
+holds for the whole site belongs to no screen; dropping it into an unrelated domain file is
 what that directory's README asks nobody to do. One language ships, so this costs nothing
 today and moves the day a second one does.
 
@@ -49,10 +33,7 @@ thumbnail of its own, and worth knowing before discovering it.
 
 ## What the vhost still owes these files
 
-`deployment/nginx/` belongs to the pilot lane and nothing there has been touched. What
-follows was found by reading the file.
-
-**The brand assets carry no cache lifetime.** The vhost gives `expires 1h` to `/forge/` and
+**The brand assets carry no cache lifetime.** The vhost gives `expires 7d` to `/forge/` and
 to nothing else, so `og.jpg`, the six icons, the manifest and everything under `/brand/` are
 revalidated on every visit, when they only change at deploy time.
 
@@ -102,16 +83,3 @@ replaced with the ordinary SVG.
 No `apple-touch-icon-precomposed`, and no per-size variants: iOS picks the single
 `apple-touch-icon` and resizes it, and nothing has asked for 76, 120 or 152 separately since
 iOS 8.
-
-## Two traps that cost time here
-
-Both are written up in full in [`pitfalls.md`](pitfalls.md).
-They are only named here because this is the work that hit them.
-
-**A dev server can be serving someone else's tree.** `php artisan serve` says "Server
-running" even when the port is already taken, and four lanes had one on the same port. The
-test that settles it: ask for a resource that only exists in your own tree.
-
-**A screenshot of an error page looks exactly like a screenshot.** A before-and-after
-comparison reported "identical" while photographing the Laravel exception page twice. Any
-measurement of a rendered page has to assert the page title first.

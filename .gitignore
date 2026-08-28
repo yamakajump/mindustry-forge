@@ -38,14 +38,14 @@ site/bootstrap/cache/*
 # Fiches projet : contexte de travail, pas du code.
 .claude/projet/
 
-# Session working notes: plans, reviews and handovers. They are written for
-# whoever is holding the work today, not for a contributor, and they date fast.
-# Keep them under .claude/projet/, which is already ignored above.
+# Execution plans: dated, step-by-step, written for whoever is running them that
+# day. Nobody updates a plan once its work has landed, so it is scaffolding, not
+# documentation, and it does not get committed.
 #
-# The nine plans committed on 28/08 stay tracked for now: sessions are executing
-# them, and pulling a plan out from under a running session is the collision this
-# repository keeps paying for. They come out when the work they describe lands.
-# This line stops the next one from arriving.
+# What is worth keeping from one is the reasoning behind a decision, and that
+# lives in docs/decisions/, tracked and indexed there. This line is what keeps
+# the two apart: a plan can grow here freely, and nothing in docs/decisions/ is
+# ever swept up by it because that directory is not this one.
 docs/plans/
 
 # The log tooled sessions keep as they work: drafts, not code.
