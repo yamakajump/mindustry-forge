@@ -6,70 +6,302 @@
  * Everything is prefixed `cmp-`, so nothing here can collide with a class the report or the
  * wiki already owns. The colours come from `forge.css` variables, so a change of palette
  * reaches this page without anyone touching it.
+ *
+ * One colour is decided here and nowhere else: which side is which. The page holds two of
+ * everything, so the reader needs one thing that never moves to tell them apart, and a
+ * position is not it -- the columns of a table on a phone are stacked, and the two plans
+ * are one above the other. So the left is the site's amber and the right a cold blue, on
+ * the badge, on the border of the panel, and behind the figures.
  */
 
-.cmp-choix input {
-  min-height: 44px; padding: 0 12px; width: 150px;
+:root {
+  --cote-a: var(--accent);
+  --cote-b: #8fc7ff;
+}
+
+/* Les deux cotes, et le geste entre les deux ---------------------------------------- */
+
+.cmp-arene {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* Sous 760 px les deux cotes se rangent l'un sous l'autre et le bouton d'echange passe
+   entre eux, en pleine largeur : c'est la seule position ou il garde son sens. */
+@media (max-width: 760px) {
+  .cmp-arene { grid-template-columns: minmax(0, 1fr); }
+  .cmp-milieu { justify-self: stretch; }
+  .cmp-echanger { width: 100%; }
+  .cmp-echanger svg { transform: rotate(90deg); }
+}
+
+.cmp-cote {
+  background: var(--panel); border: 2px solid var(--edge);
+  border-radius: var(--radius); padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  min-width: 0;
+}
+.cmp-cote[data-cote="a"].pris { border-color: color-mix(in srgb, var(--cote-a) 55%, var(--edge)); }
+.cmp-cote[data-cote="b"].pris { border-color: color-mix(in srgb, var(--cote-b) 55%, var(--edge)); }
+
+.cmp-role {
+  margin: 0; display: flex; align-items: center; gap: 8px;
+  font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim);
+}
+.cmp-enlever { margin-left: auto; text-transform: none; letter-spacing: 0; font-size: 12.5px; }
+
+/* La pastille qui dit le cote, partout ou un des deux est nomme : dans l'en-tete des
+   colonnes, sur une proposition, sur la ligne d'un objet qu'un seul des deux produit. */
+.cmp-pastille {
+  display: inline-grid; place-items: center; flex: none;
+  width: 18px; height: 18px; border-radius: 4px;
+  font: 600 11px/1 var(--mono); color: var(--bg);
+}
+.cmp-pastille.a { background: var(--cote-a); }
+.cmp-pastille.b { background: var(--cote-b); }
+
+/* Le plan lui-meme. Une hauteur fixe et pas un rapport d'aspect : les deux cadres doivent
+   faire la meme taille pour que deux plans se comparent a l'oeil, et un schema est aussi
+   bien un carre de 40 qu'une bande de 60 sur 3. Le dessin se met a l'echelle dedans. */
+.cmp-scene {
+  background: var(--stage); border: 1px solid var(--edge); border-radius: 6px;
+  height: 240px; display: flex; align-items: center; justify-content: center;
+  padding: 8px; overflow: hidden;
+}
+.cmp-scene canvas, .cmp-scene img {
+  display: block; image-rendering: pixelated; max-width: 100%; max-height: 100%;
+}
+.cmp-scene .empty { font-size: 12.5px; text-align: center; }
+/* Un cadre vide n'a pas besoin de la taille d'un plan. Les deux a 240 px, c'etait un demi
+   ecran de pointilles avant d'atteindre la premiere proposition sur un telephone, et il n'y
+   a rien a y regarder. La hauteur ne saute pas pour autant : choisir un cote recharge la
+   page, ce n'est pas un deplacement sous le doigt. */
+.cmp-scene.creuse {
+  height: 140px; flex-direction: column; gap: 8px; color: var(--dim);
+  border-style: dashed; border-width: 2px;
+}
+
+@media (max-width: 760px) {
+  .cmp-scene { height: 180px; }
+  .cmp-scene.creuse { height: 96px; }
+}
+
+.cmp-nom { margin: 0; font-size: 16px; }
+.cmp-nom a { color: var(--ink); }
+.cmp-cote .meta { margin: 0; color: var(--dim); font-size: 12.5px; }
+
+/* Le champ et son bouton, sur une ligne, le champ prenant ce qui reste. Il faisait 150 px
+   de large a cote d'un bouton, pour y taper un nom de schema. */
+.cmp-champ { display: flex; gap: 8px; }
+.cmp-champ input {
+  flex: 1; min-width: 0; min-height: 44px; padding: 0 12px;
   border-radius: 6px; border: 2px solid var(--edge);
-  background: var(--raised); color: var(--ink);
+  background: var(--bg); color: var(--ink);
   font: 400 15px var(--mono);
 }
-.cmp-choix input:focus { border-color: var(--accent); outline: none; }
+.cmp-champ input:focus { border-color: var(--accent); outline: none; }
+.cmp-champ button { flex: none; }
 
-.cmp-tetes { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.cmp-nom { margin: 0 0 2px; font-size: 17px; }
-.cmp-de { color: var(--dim); font-size: 12px; font-family: var(--mono); }
+/* L'etiquette existe pour le lecteur d'ecran, pas pour l'oeil : le role du cote est deja
+   ecrit en toutes lettres au-dessus du cadre, et le repeter sous le champ serait le dire
+   deux fois. Retiree du flux plutot que `display:none`, qui la retirerait aussi de la
+   restitution vocale et laisserait un champ sans nom. */
+.cmp-cache {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
 
-/* Quatre colonnes : ce qu'on compare, les deux valeurs, puis l'ecart. C'est l'ecart qui
-   justifie la page, donc il a sa colonne au lieu d'etre a soustraire de tete. */
+.cmp-milieu { align-self: center; padding-top: 22px; }
+@media (max-width: 760px) { .cmp-milieu { padding-top: 0; } }
+.cmp-echanger {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; min-width: 44px; border-radius: 6px;
+  border: 2px solid var(--edge); background: var(--raised); color: var(--dim);
+  touch-action: manipulation;
+}
+.cmp-echanger:hover { background: var(--raised-hover); color: var(--ink); }
+
+.cmp-aide { margin: 0 0 18px; }
+
+/* Ce qu'un nom a trouve ------------------------------------------------------------- */
+
+.cmp-resultats { display: grid; gap: 2px; max-height: 320px; overflow-y: auto; }
+.cmp-resultats:empty { display: none; }
+.cmp-vain { padding: 8px 2px; font-size: 13px; }
+
+.cmp-resultat {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px; border-radius: 6px; min-height: 44px; color: var(--ink);
+  touch-action: manipulation;
+}
+.cmp-resultat:hover, .cmp-resultat:focus-visible {
+  background: var(--raised); text-decoration: none;
+}
+
+/* Le plan, en petit, et c'est toute la raison de cette liste. Huit resultats appeles
+   « Silicon » sont huit lignes identiques, et le choix se faisait au hasard. */
+.cmp-mini {
+  flex: none; width: 64px; height: 48px; border-radius: 4px;
+  background: var(--stage); border: 1px solid var(--edge);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.cmp-mini canvas { display: block; image-rendering: pixelated; max-width: 100%; max-height: 100%; }
+.cmp-mini .empty { font-size: 9px; line-height: 1.1; text-align: center; padding: 2px; }
+
+.cmp-resultat-texte { min-width: 0; display: grid; gap: 1px; }
+.cmp-resultat-nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmp-resultat-de { color: var(--dim); font-size: 12px; font-family: var(--mono); }
+
+/* Ce qu'il y a a comparer, quand on arrive sans rien ---------------------------------- */
+
+.cmp-titre {
+  margin: 22px 0 10px; font-size: 12px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent); font-weight: 400; opacity: .85;
+}
+.cmp-propositions .tile a { display: block; }
+.cmp-propositions .tile h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Les deux gestes que la tuile existe pour offrir. Ils menaient a `/s/` et rien d'autre,
+   donc cliquer une proposition emmenait ailleurs et il fallait revenir avec l'identifiant
+   en tete. */
+.cmp-vers { display: flex; gap: 6px; margin: 8px 0 0; }
+.cmp-vers a {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 40px; border-radius: 6px; border: 2px solid var(--edge);
+  background: var(--raised); color: var(--dim);
+  font-size: 12.5px; touch-action: manipulation;
+}
+.cmp-vers a:hover { background: var(--raised-hover); color: var(--ink); text-decoration: none; }
+
+/* Les ecarts ------------------------------------------------------------------------- */
+
+/*
+ * Quatre colonnes : ce qu'on compare, les deux valeurs, puis l'ecart. C'est l'ecart qui
+ * justifie la page, donc il a sa colonne au lieu d'etre a soustraire de tete. La barre
+ * collante et les cartes partagent cette grille, sinon leurs colonnes ne s'alignent pas.
+ *
+ * Sa propre separation et son propre interligne, plutot que ceux de `.line`. Les deux
+ * classes etaient posees sur le meme element, et `forge.css` est charge apres la feuille de
+ * la page : a specificite egale son `display: flex` gagnait, la grille n'existait pas et
+ * rien ne tombait en face de la barre collante. Une regle de mise en page qui depend de
+ * l'ordre de deux fichiers est une regle qu'un jour quelqu'un range et casse.
+ *
+ * Les deux colonnes de valeurs sont larges parce qu'elles portent la barre : sur 78 px, la
+ * proportion se lisait comme une pastille derriere le chiffre plutot que comme une longueur.
+ */
 .cmp-ligne {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(78px, 1fr));
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(96px, 1.4fr)) minmax(70px, .9fr);
   gap: 10px;
-  align-items: baseline;
+  align-items: center;
+  padding: 6px 0;
+}
+.cmp-ligne + .cmp-ligne { border-top: 1px solid var(--edge); }
+.cmp-quoi {
+  display: flex; align-items: center; gap: 7px; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cmp-quoi .icone {
+  width: 18px; height: 18px; flex: none; image-rendering: pixelated;
 }
 
-/* L'entete des colonnes, sans quoi trois colonnes de chiffres n'ont pas de proprietaire :
-   le lecteur devait deviner laquelle des deux schematiques etait laquelle. */
-.cmp-entete {
-  color: var(--dim); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
-  padding-bottom: 4px; border-bottom: 1px solid var(--edge);
-}
-.cmp-entete span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cmp-ligne .cmp-val,
 .cmp-ligne .cmp-ecart {
-  text-align: right;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
+/* Les deux valeurs se tournent le dos autour de leur separation : la gauche finit dessus,
+   la droite en part. Les deux barres partagent alors un bord, et laquelle est la plus
+   longue se voit sans lire. Rangees dans le meme sens, elles se lisaient une par une. */
+.cmp-ligne .cmp-val.a { text-align: right; }
+.cmp-ligne .cmp-val.b { text-align: left; }
+.cmp-ligne .cmp-ecart { text-align: right; }
 .cmp-ecart { font-weight: 600; }
+.cmp-muet { color: var(--dim); font-size: 12px; font-weight: 400; }
 
-/* Sur telephone, quatre colonnes ne tiennent pas et l'ecart est ce qu'on vient lire. */
+/*
+ * La proportion des deux valeurs entre elles, derriere les chiffres.
+ *
+ * Uniquement sur une ligne comparable : meme objet, meme nature de chiffre. La barre ne dit
+ * rien d'une ligne a la suivante, et c'est voulu. Une echelle commune a toutes les lignes
+ * mettrait le graphite et le silicium sur un meme axe, ce qui est le score global que cette
+ * page refuse de calculer.
+ *
+ * Un fond et pas un element : rien de plus dans le balisage, rien a lire pour un lecteur
+ * d'ecran, et le chiffre reste le chiffre. Il degrade proprement, aussi -- un navigateur
+ * qui ignore `--part` affiche un tableau sans barres, ce que la page etait hier.
+ */
+.cmp-ligne.barree .cmp-val { padding: 3px 6px; border-radius: 4px; }
+.cmp-ligne.barree .cmp-val.a {
+  --teinte: color-mix(in srgb, var(--cote-a) 20%, transparent);
+  background: linear-gradient(to left, var(--teinte) 0 var(--part, 0%), transparent var(--part, 0%));
+}
+.cmp-ligne.barree .cmp-val.b {
+  --teinte: color-mix(in srgb, var(--cote-b) 20%, transparent);
+  background: linear-gradient(to right, var(--teinte) 0 var(--part, 0%), transparent var(--part, 0%));
+}
+
+/*
+ * Qui est qui, colle en haut de l'ecran.
+ *
+ * Les cartes repetaient les deux noms dans chacun de leurs en-tetes, tronques a la largeur
+ * d'une colonne de chiffres. Des qu'on descendait dans les ecarts, les deux plans etaient
+ * sortis de l'ecran et il ne restait plus rien pour dire de quel cote on regardait.
+ *
+ * Les marges laterales valent celles d'une carte, pour que les quatre colonnes tombent en
+ * face de celles des lignes en dessous. Deux valeurs a garder d'accord, c'est le prix d'une
+ * barre qui suit sans emporter la mise en page des cartes avec elle.
+ */
+.cmp-collant {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--panel); border: 2px solid var(--edge);
+  border-radius: var(--radius); padding: 8px 16px; margin-bottom: 12px;
+}
+.cmp-collant .cmp-val {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font); font-size: 12.5px; min-width: 0;
+}
+.cmp-collant .cmp-val.a { justify-content: flex-end; }
+.cmp-collant .cmp-val.b { justify-content: flex-start; }
+.cmp-collant .cmp-nom-court { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmp-collant .cmp-ecart {
+  color: var(--dim); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+  font-weight: 400;
+}
+
+/* Sur telephone, quatre colonnes ne tiennent pas et l'ecart est ce qu'on vient lire, donc
+   il passe sur sa propre ligne plutot que de comprimer les deux valeurs a rien. */
 @media (max-width: 620px) {
-  .cmp-ligne { grid-template-columns: minmax(0, 1fr) 70px 70px; }
+  .cmp-ligne { grid-template-columns: minmax(0, 1fr) 72px 72px; }
   .cmp-ligne .cmp-ecart { grid-column: 2 / -1; text-align: right; }
-  .cmp-entete { display: none; }
+  /* Sous 620 px le nom ne tient plus a cote d'un chiffre, et une pastille de couleur suffit
+     a dire de quel cote on est : c'est la meme sur les deux plans, juste au-dessus. Le mot
+     « ecart » part avec, sinon il tombe seul sur une deuxieme ligne et double la hauteur
+     d'une barre qui ne porte plus que deux pastilles. */
+  .cmp-collant .cmp-nom-court,
+  .cmp-collant .cmp-ecart { display: none; }
+
+  /* Le goulot passe sous le nom du schema plutot que de partager la ligne avec lui : deux
+     noms tronques cote a cote ne disent ni l'un ni l'autre. */
+  .cmp-arret { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .cmp-arret .cmp-quoi { max-width: 100%; }
 }
 
 /*
  * Les cibles tactiles de cette page.
  *
- * Mesure en 390 px : les deux noms de schematique faisaient 17 px de haut et la liste de
- * choix 15. Ce sont les seuls liens de la page, et ils sont toute sa navigation.
+ * Mesure en 390 px : les deux noms de schema faisaient 17 px de haut et la liste de choix
+ * 15. Ce sont les seuls liens de la page, et ils sont toute sa navigation.
  *
  * La regle porte sur ces selecteurs et pas sur `a` : un lien pose dans une phrase doit
  * rester dans la phrase, et une hauteur minimale sur tous les liens defoncerait l'interligne
  * des notes explicatives, dont ce site est plein. C'est le role qui decide, pas l'apparence.
  */
 .cmp-nom a,
-.cmp-liste a {
+.cmp-enlever {
   display: inline-flex; align-items: center;
   min-height: 44px; touch-action: manipulation;
 }
-
-.cmp-liste { list-style: none; margin: 0; padding: 0; }
-.cmp-liste li {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
-  padding: 2px 0;
-}
-.cmp-liste li + li { border-top: 1px solid var(--edge); }

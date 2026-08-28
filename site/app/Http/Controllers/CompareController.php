@@ -139,7 +139,11 @@ class CompareController extends Controller
             ->orderByRaw('length(name) asc')
             ->limit(self::OFFERED)
             ->with('user')
-            ->get(['id', 'user_id', 'slug', 'name', 'blocks', 'author']);
+            /* `code` en fait partie, sinon la colonne n'est pas chargee et chaque
+               proposition affiche « pas de code enregistre » sous un plan vide. Une liste
+               de noms se choisissait au hasard : ce sont les plans qui distinguent huit
+               resultats appeles « Silicon », donc ils sont ce que la page va chercher. */
+            ->get(['id', 'user_id', 'slug', 'name', 'blocks', 'author', 'code']);
     }
 
     /**
@@ -159,6 +163,10 @@ class CompareController extends Controller
             ->orderByDesc('id')
             ->limit(self::OFFERED)
             ->with('user')
-            ->get(['id', 'user_id', 'slug', 'name', 'blocks', 'author']);
+            /* `code` en fait partie, sinon la colonne n'est pas chargee et chaque
+               proposition affiche « pas de code enregistre » sous un plan vide. Une liste
+               de noms se choisissait au hasard : ce sont les plans qui distinguent huit
+               resultats appeles « Silicon », donc ils sont ce que la page va chercher. */
+            ->get(['id', 'user_id', 'slug', 'name', 'blocks', 'author', 'code']);
     }
 }
