@@ -49,4 +49,5 @@ site/bootstrap/cache/*
 docs/plans/
 
 # The log tooled sessions keep as they work: drafts, not code.
+# Working notes of a tooled session: regenerable from git log.
 .superpowers/

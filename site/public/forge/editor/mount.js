@@ -12,8 +12,8 @@
  * demander de désapprendre les siens pour se servir d'un outil qui parle de son jeu.
  *
  * Trois écarts seulement, tous listés dans le panneau d'aide plutôt que cachés : la molette
- * zoome quand la main est vide, la vue se déplace au clic milieu glissé, et Q ne fait rien
- * faute de file de construction à vider.
+ * zoome quand la main est vide, la vue se déplace au clic milieu glissé, et Q, qui vide une
+ * file de construction absente ici, reprend plutôt le sol survolé sur l'onglet sol.
  */
 
 import { draw, itemIcon, spriteOf } from "../render.js";
@@ -29,7 +29,11 @@ import { ageOf, dropDraft, keepDraft, readDraft } from "./draft.js";
 
 const SHELL = `
   <div class="editor-bar">
-    <span class="brand"><svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>Mindustry <span>Forge</span></span>
+    <a class="brand" href="/"><svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>Mindustry <span>Forge</span></a>
+    <details class="menu editor-site">
+      <summary>Site</summary>
+      <div class="menu-list"></div>
+    </details>
     <span class="editor-modes">
       <button type="button" data-mode="analyse" aria-pressed="false">Analyser</button>
       <button type="button" data-mode="edit" aria-pressed="true">Éditer</button>
@@ -82,6 +86,64 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   const canvas = host.querySelector("canvas");
   const hints = host.querySelector(".hints");
   const updateGauge = sizeGauge(host.querySelector(".editor-size"), MAX_SIZE);
+
+  /*
+   * The way out.
+   *
+   * `.editor` sits fixed over the whole document (see `.editor` in forge.css), so the
+   * site's own `<header>` and its `<nav id="nav">` are still in the page, only covered.
+   * `NavigationTest` holds `config/nav.php` against two hand-written mirrors already
+   * (`public/index.html` and the tool pages); a third one, typed out here, is exactly what
+   * that test's own comment says it exists to prevent. So this menu carries no entry of its
+   * own: it reads the real `#nav` out of the document and rebuilds its links from it, on
+   * every open rather than once at mount, so a reader who signs in mid-session still sees
+   * "Mes schémas" the moment they check.
+   */
+  const siteMenu = host.querySelector(".editor-site");
+  const siteMenuList = siteMenu.querySelector(".menu-list");
+
+  function siteLinkFrom(source) {
+    const link = document.createElement("a");
+    link.href = source.getAttribute("href");
+    link.textContent = source.textContent.trim();
+    return link;
+  }
+
+  function renderSiteMenu() {
+    siteMenuList.replaceChildren();
+    const nav = document.getElementById("nav");
+    if (!nav) return;
+    for (const child of nav.children) {
+      if (child.tagName === "A") {
+        siteMenuList.appendChild(siteLinkFrom(child));
+      } else if (child.tagName === "DETAILS") {
+        const summary = child.querySelector("summary");
+        if (!summary) continue;
+        const heading = document.createElement("span");
+        heading.className = "menu-heading";
+        heading.textContent = summary.textContent.trim();
+        siteMenuList.appendChild(heading);
+        for (const link of child.querySelectorAll(".menu-list a")) {
+          const item = siteLinkFrom(link);
+          /* Not `.sub`: that class already means something else entirely, a subtitle's
+             own grey and its own margin (see forge.css), and a link picking it up by
+             accident inherited both. */
+          item.classList.add("child");
+          siteMenuList.appendChild(item);
+        }
+      }
+    }
+  }
+
+  siteMenu.addEventListener("toggle", () => { if (siteMenu.open) renderSiteMenu(); });
+
+  /* Native `<details>` does not close itself on an outside click, unlike the real header's
+     own menus (see `nav.js`); this one is not inside `#nav`, so that behaviour is repeated
+     here rather than reached for. */
+  const closeSiteMenu = (event) => {
+    if (siteMenu.open && !siteMenu.contains(event.target)) siteMenu.open = false;
+  };
+  document.addEventListener("click", closeSiteMenu);
 
   const camera = createCamera({ scale: 24 });
   if (board.tiles.length) camera.frame(board.box(), viewportOf());
@@ -654,6 +716,13 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
+    /* The pipette tool takes over the left click the same way the brush does below, and has
+       to be checked first: it needs neither `brush.block` nor the eraser to be armed, which
+       is exactly what the check below requires. */
+    if (painting && event.button === 0 && brush.tool === "pipette") {
+      pipetteGround();
+      return;
+    }
     /* Le pinceau passe avant tout le reste quand l'onglet sol est ouvert : là, un clic
        gauche peint, et rien d'autre. */
     if (painting && event.button === 0 && (brush.block || brush.tool === "eraser")) {
@@ -1170,7 +1239,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * faut retrouver le bloc dans une palette de 245, puis le retourner dans le bon sens.
    */
   function pipette() {
-    if (!cursor) return;
+    /* Gated on the ground tab: nothing is held there (`onTab` above already puts a held
+       block down on the way in), and this used to fire regardless, quietly re-arming a
+       phantom build block and, since Task 3, overwriting the ground status bar with it. */
+    if (painting || !cursor) return;
     const under = board.at(cursor.x, cursor.y);
     if (!under) return;
     held = under.block;
@@ -1182,6 +1254,21 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     rail.setHeld(held, rotation);
     say();
     paint();
+  }
+
+  /**
+   * The ground pipette: samples whatever is stacked on the cursor's tile and hands it to
+   * the rail, which decides which of the wall, the ore or the floor a pipette takes
+   * (`pipetteLayerOf` in `ui.js`) and updates the brush, the swatches and the status bar.
+   * `say()` picks the new floor up in its own hints through `brush`, already shared with
+   * `mount.js` by reference.
+   */
+  function pipetteGround() {
+    if (!cursor) return;
+    if (rail.pipetteGround(board.ground[`${cursor.x},${cursor.y}`])) {
+      say();
+      paint();
+    }
   }
 
   const onKey = (event) => {
@@ -1249,8 +1336,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
-    /* Q ne fait rien, et c'est voulu : le jeu s'en sert pour vider la file de construction.
-       La pipette reste sur le clic milieu, comme `Binding.pick`. */
+    /* Q is idle in the game here, its own job (clearing a build queue) does not exist in
+       this editor, so it is free to take the ground pipette: the wall, the ore or the floor
+       under the cursor, wall first, in the order `ui.js`'s `pipetteLayerOf` reads a tile.
+       Only on the ground tab, the one place a ground brush has anything to fill. */
+    if (key === "q" && painting) { pipetteGround(); return; }
   };
   /**
    * Ce qu'il faut oublier quand le plateau bouge sous nos pieds.
@@ -1426,6 +1516,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("keyup", onKeyUp);
       document.removeEventListener("paste", onPaste);
+      document.removeEventListener("click", closeSiteMenu);
       clearTimeout(fading);
       resize?.disconnect();
       clearTimeout(longPress);
