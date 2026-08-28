@@ -49,7 +49,7 @@ class AuthController extends Controller
         // id afterwards.
         $request->session()->regenerate();
 
-        return redirect('/mes-schematiques');
+        return redirect('/mes-schemas');
     }
 
     public function logout(Request $request): RedirectResponse

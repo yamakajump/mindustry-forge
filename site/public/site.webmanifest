@@ -34,15 +34,15 @@
   ],
   "shortcuts": [
     {
-      "name": "Analyser une schematique",
+      "name": "Analyser un schéma",
       "short_name": "Analyser",
       "url": "/",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Parcourir les schematiques",
+      "name": "Parcourir les schémas",
       "short_name": "Parcourir",
-      "url": "/schematiques",
+      "url": "/schemas",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
