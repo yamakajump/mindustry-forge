@@ -74,8 +74,8 @@ titled "les plus aimés" would list schematics on the strength of a zero they al
 correct number displayed where it answers a different question is exactly the shape of
 defect a catalogue of 15,000 imported, mostly unliked schematics invites.
 
-The count is `Schematic::where('likes', '>', 0)->count()`, an index-only scan, and it is
-not cached: the index already makes a cache pointless.
+The count is `Schematic::query()->listed()->where('likes', '>', 0)->count()`, an index-only
+scan, and it is not cached: the index already makes a cache pointless.
 
 Below the threshold, `?tri=aimes` typed by hand falls back to `new`, exactly as `best` and
 `output` fall back when no item is chosen. That mechanism exists (`NEEDS_AN_ITEM`) and is
@@ -144,9 +144,9 @@ Four things the filter must not inherit from the catalogue:
    code rather than discovered.
 
 The navigation entry goes into `config/nav.php` under the schematics menu with
-`'auth' => true`, and `'ready' => false` until the `/mes-favoris` route it points at
-exists. That flag is the repository's own mechanism for an entry whose page is not built
-yet, and it is the difference between a menu item and a 404. The header is written twice,
+`'auth' => true` and `'ready' => true`: `ready` is the repository's own mechanism for an
+entry whose page is not built yet, and it is the difference between a menu item and a
+404. The header is written twice,
 in the Blade partial and by hand in `public/index.html`, and `NavigationTest` compares
 both against the config: the entry lands in all three or the suite fails.
 
@@ -189,10 +189,12 @@ schema.aime.retirer         Je n'aime plus
 schema.unite.jaime          j'aime          (the word next to the count, plural invariant)
 schema.favori.ajouter       Garder en favori
 schema.favori.retirer       Retirer des favoris
-vitrine.tri.aimes           Les plus aimés
-compte.favoris.titre        Mes favoris
-compte.favoris.vide         Rien de gardé pour l'instant. Parcourir le catalogue.
 ```
+
+`/mes-favoris` reuses `BrowseController` rather than a page of its own, so it carries no
+title or empty-state key: the sort label "Les plus aimés" is a literal string in
+`BrowseController::ORDERS`, alongside every other sort label, none of which go through
+`site/lang/`.
 
 **The count does not travel through a placeholder.** `{{ $n }} {{ __('schema.unite.jaime') }}`,
 not `__('schema.aime.compte', ['n' => $n])`: when a key is missing Laravel renders the key

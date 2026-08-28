@@ -16,7 +16,7 @@ Each of the four complaints was traced to a line, because "the ground looks bad"
 ground is drawn with one sprite per floor and no rounding" are not the same problem and
 only the second one can be fixed.
 
-**The flash.** `site/public/index.html:1441` is `if (location.pathname === "/editer")
+**The flash.** `site/public/index.html:1541` is `if (location.pathname === "/editer")
 enterEditor([])`, and it is the last statement of the module. The browser paints the whole
 analyser home page, then the editor mounts full screen over it. Nothing is broken; the
 page just does two things when one was asked.
@@ -61,7 +61,17 @@ Two entry points move with it, and both break silently if forgotten:
 They change in the same commit as the move, not in the one after. A path into the tool that
 still looks like a button and does nothing is worse than no button.
 
+**Shipped differently.** `/editer` still serves `index.html`, not a separate page: a
+`route-editeur` class added inline in `<head>` (`index.html:43`) and hidden by CSS
+(`.route-editeur main { display: none; }` in `forge.css`) hides the analyser instead of
+letting the browser paint it, and `leaveEditor()` removes the class when control returns.
+`EditorNoFlashTest.php` covers it. No `editeur.html` file exists.
+
 ### 2. The ground, drawn the way the game draws it
+
+**Shipped.** The algorithm this section reasons through now has its own page,
+[`docs/ground-rendering.md`](../ground-rendering.md), which is the one to read for how the
+code works today; what follows is why it was built that way.
 
 Two corrections, in this order, because the second is invisible until the first lands.
 
@@ -170,7 +180,8 @@ too close together.
 
 ### 5. Work spaces
 
-A new table, never `schematics`.
+A new table, never `schematics`. Shipped as `spaces` (model `Space`, routes under
+`/api/espaces`), not `workspaces` as drafted below.
 
 A draft changes every few seconds and carries no analysis, no engine freshness, no
 moderation state and no public key. Writing it into the table that holds all four would mean
@@ -182,7 +193,7 @@ creates the `schematics` row when the player decides, through the path that alre
 | `user_id` | the owner |
 | `name` | "Usine a silicium" |
 | `board` | the JSON: blocks, ground, frames |
-| `opened_at` | to sort "mes plans" by last opened |
+| `opened_at` | to sort a player's spaces by last opened |
 
 **A full snapshot on every save, no deltas.** A well filled 256 x 256 board is a few hundred
 kilobytes, and a delta log would be a second data model to keep in agreement with the first
@@ -190,8 +201,10 @@ in exchange for bandwidth that costs nothing. Saved three seconds after the last
 on `beforeunload`.
 
 - **Anonymous**: today's single `localStorage` draft, seven days. Unchanged.
-- **Signed in**: as many spaces as wanted, resumed on any machine. A quota of 50, so that a
-  runaway loop cannot fill the database.
+- **Signed in**: as many spaces as wanted, resumed on any machine. Shipped as a quota of 30
+  (`Space::MAX_SPACES`), not 50 as drafted below, so that a runaway loop cannot fill the
+  database. Resuming today means the `/api/espaces` routes; no "mes plans" page reads them
+  yet.
 - **On signing in with a local draft present**, importing it is offered, never done silently.
   `draft.js` already applies that rule and states the reason: quietly overwriting what
   somebody just pasted is worse than losing the draft.
@@ -223,15 +236,24 @@ No live simulation, no collaborative editing, no unit layer, no version history 
 no sharing a space between accounts. A frame published to the catalogue is already the
 sharing story.
 
-## Order
+## Order, and what it became
+
+This was the planned order. It is recorded as planned rather than rewritten as history,
+because the order itself is the reasoning worth keeping; what actually shipped is noted
+against each step instead.
 
 1. **The ground**: variants, edges. Visible immediately, independent of everything else,
-   and touches only `render.js` and `build_sprites.py`.
-2. **The separate `/editer` page.**
-3. **The palette and the rail.**
-4. **The board, frames, the per-frame gauge.**
-5. **`workspaces`**: migration, controller, "mes plans", deferred save.
-6. **The five items picked up along the way.**
+   and touches only `render.js` and `build_sprites.py`. Shipped, see
+   [`docs/ground-rendering.md`](../ground-rendering.md).
+2. **The separate `/editer` page.** Shipped, but not as a separate page: see the note under
+   "The editor gets its own page" above.
+3. **The palette and the rail.** Shipped for search, recents and the `Q` pipette. The
+   ground tab still has no world filter, a gap `editor/ui.js` names in its own comment.
+4. **The board, frames, the per-frame gauge.** Shipped: the board is a fixed 256 x 256,
+   frames cap at 64 x 64.
+5. **`workspaces`**: migration, controller, "mes plans", deferred save. Shipped as `spaces`
+   (see above), except "mes plans": the table and the API exist, no page reads them yet.
+6. **The five items picked up along the way.** Not reverified individually here.
 
 Step 1 first, and not the frames, because a repetition-free ground is the thing the player
 sees on the first screenshot, and because it depends on nothing else in this list.
