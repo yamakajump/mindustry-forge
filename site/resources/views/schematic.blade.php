@@ -77,7 +77,7 @@
          discovered in-game. --}}
     @if($schematic->imported())
       <div class="card notice">
-        <h2>Schematique importee</h2>
+        <h2>Schéma importé</h2>
         <p>
           Recuperee sur
           @if($schematic->sourceUrl())
@@ -86,8 +86,8 @@
           @else
             {{ $schematic->sourceName() ?? $schematic->source }},
           @endif
-          ou {{ $schematic->credit() }} l'a publiee. Elle ne vient pas d'ici et
-          personne ne l'a relue&nbsp;: elle peut etre incomplete, cassee, ou faite pour
+          ou {{ $schematic->credit() }} l'a publié. Il ne vient pas d'ici et
+          personne ne l'a relu&nbsp;: il peut etre incomplet, cassé, ou fait pour
           une version du jeu qui n'est plus la notre.
         </p>
         <p>
@@ -117,7 +117,7 @@
          calcul etait juste et la phrase etait fausse, sur un site dont l'argument est qu'on
          peut verifier ses chiffres au lieu de les croire.
 
-         Ce qu'elle produit reste lisible dans l'analyse. C'est la presentation qui change :
+         Ce qu'il produit reste lisible dans l'analyse. C'est la presentation qui change :
          un infini n'est pas un dimensionnement, et il ne doit pas en avoir l'air. --}}
     @if($schematic->fedBySandbox())
       <div class="card"><h2>Sortie</h2>
@@ -168,7 +168,7 @@
          ne parlait d'energie que lorsqu'il y en avait en trop, donc une chaine a silicium
          qui reclame six cents energie/s n'en disait pas un mot. Un joueur qui la colle
          dans un coin non alimente la regardait ne rien faire sans savoir pourquoi.
-         Ce n'est pas un defaut de la schematique : une base a du courant, ou on tire un
+         Ce n'est pas un defaut du schéma : une base a du courant, ou on tire un
          fil. C'est un prerequis, et il se dit. --}}
     @if($schematic->needs || $schematic->powerNeeded() > 0.5)
       <div class="card"><h2>Il lui faut</h2>
@@ -186,13 +186,13 @@
             @if($schematic->fedBySandbox())
               {{ __('schema.page.bac-a-sable-courant') }}
             @elseif($schematic->powerSpare() > 0.5)
-              Elle produit plus de courant qu'elle n'en consomme, donc elle s'alimente
-              seule et il lui en reste
+              Il produit plus de courant qu'il n'en consomme, donc il s'alimente
+              seul et il lui en reste
               {{ number_format($schematic->powerSpare(), 0, ',', ' ') }} / s pour le reste
               de ta base.
             @else
-              Elle ne fabrique pas son courant&nbsp;: il faudra la brancher sur ton reseau,
-              sinon elle reste a l'arret. Ce n'est pas compte contre elle dans les
+              Il ne fabrique pas son courant&nbsp;: il faudra le brancher sur ton reseau,
+              sinon il reste a l'arret. Ce n'est pas compte contre lui dans les
               classements.
             @endif
           </p>
@@ -202,21 +202,21 @@
 
     @if($schematic->managedBy(auth()->user()))
       <div class="card"><h2>Gerer</h2>
-        @include('partials.manage', ['gone' => '/mes-schematiques'])
+        @include('partials.manage', ['gone' => '/mes-schemas'])
         <p class="hint-line">
           @if($schematic->user_id !== auth()->id())
-            Tu vois ces boutons parce que tu tiens la vitrine, pas parce que la
-            schematique est a toi.
+            Tu vois ces boutons parce que tu tiens la vitrine, pas parce que le
+            schéma est a toi.
           @else
-            Privee, personne d'autre ne la voit. Par lien, elle marche pour qui l'a et
-            reste hors de la vitrine. Publique, elle est dans la vitrine et classee avec
+            Privé, personne d'autre ne le voit. Par lien, il marche pour qui l'a et
+            reste hors de la vitrine. Public, il est dans la vitrine et classé avec
             les autres.
           @endif
         </p>
       </div>
     @endif
 
-    <div class="card"><h2>Prendre la schematique</h2>
+    <div class="card"><h2>Prendre le schéma</h2>
       <textarea id="code" readonly rows="3">{{ $schematic->code }}</textarea>
       <div class="row">
         <button class="primary" id="copy" type="button">Copier</button>
@@ -224,8 +224,8 @@
           $schematic->managedBy(auth()->user()) ? 'Modifier' : 'Analyser chez moi' }}</a>
 
         {{-- Le geste part d'ici, pas d'une page vide. Personne n'arrive au comparateur avec
-             deux identifiants en tete : on est sur une schematique et on se demande comment
-             elle se situe. Un cote est donc deja rempli et il n'en reste qu'un a choisir. --}}
+             deux identifiants en tete : on est sur un schéma et on se demande comment
+             il se situe. Un cote est donc deja rempli et il n'en reste qu'un a choisir. --}}
         @if($schematic->visibility === \App\Models\Schematic::PUBLIC)
           <a class="button" href="/comparer?a={{ $schematic->slug }}">{{
             __('schema.comparer.comparer-avec') }}</a>
@@ -233,7 +233,7 @@
 
         {{-- Vers l'editeur de logique, et seulement quand il y a quelque chose a y ouvrir.
              Le compte vient de l'analyse deja stockee, donc la page ne decode rien pour le
-             savoir : sur les quatre-vingt-seize schematiques mesurees dans la vitrine, six
+             savoir : sur les quatre-vingt-seize schémas mesurés dans la vitrine, six
              sur dix n'ont aucun processeur, et un bouton mort sur six pages sur dix apprend
              au lecteur a ne plus lire cette rangee. --}}
         @if (data_get($schematic->analysis, 'logic.processors', 0) > 0)
@@ -241,7 +241,7 @@
             Ouvrir la logique</a>
         @endif
       </div>
-      <p class="hint-line">Colle-la dans Mindustry avec ctrl+v.</p>
+      <p class="hint-line">Colle-le dans Mindustry avec ctrl+v.</p>
     </div>
   </div>
 </div>

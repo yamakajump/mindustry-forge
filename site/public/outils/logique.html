@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Forge - editeur de logique Mindustry</title>
-<meta name="description" content="Ecris le programme d'un processeur Mindustry avec coloration, autocompletion et verification, puis repars avec la schematique a coller dans le jeu.">
+<meta name="description" content="Ecris le programme d'un processeur Mindustry avec coloration, autocompletion et verification, puis repars avec le schéma a coller dans le jeu.">
 <!-- Three icon formats, because three families of client ask for one differently: the
      .ico for whatever hits /favicon.ico without reading the head, the SVG for any current
      browser, the square PNG for the iOS home screen. -->
@@ -40,9 +40,9 @@
     <a href="/" data-i18n="nav.barre.analyser">Analyser</a>
     <a href="/editer" data-i18n="nav.barre.editer">Editer</a>
     <details class="menu">
-      <summary data-i18n="nav.barre.schematiques">Schematiques</summary>
+      <summary data-i18n="nav.barre.schematiques">Schémas</summary>
       <div class="menu-list">
-        <a href="/schematiques" data-i18n="nav.menu.parcourir">Parcourir</a>
+        <a href="/schemas" data-i18n="nav.menu.parcourir">Parcourir</a>
         <a href="/comparer" data-i18n="nav.menu.comparer">Comparer</a>
       </div>
     </details>
@@ -61,7 +61,7 @@
   <header class="titre">
     <h1 data-i18n="outils.logique.titre">Editeur de logique</h1>
     <p class="lede" data-i18n="outils.logique.sous-titre">
-      Ecris le programme d'un processeur, et repars avec la schematique a coller dans le jeu.
+      Ecris le programme d'un processeur, et repars avec le schéma a coller dans le jeu.
     </p>
   </header>
 
@@ -76,7 +76,7 @@
       <p class="lecture" id="lecture" aria-live="polite"></p>
       <!-- Le geste courant d'abord, seul sur sa rangee. Dans le jeu on colle du code dans
            un processeur : c'est ce que fait ce bouton, et c'est le seul qui n'oblige a
-           fabriquer une schematique autour de rien. -->
+           fabriquer un schéma autour de rien. -->
       <div class="row">
         <button class="primary" id="copier-code" type="button">
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/></svg>
@@ -91,11 +91,11 @@
         </button>
       </div>
 
-      <!-- La schematique ensuite, repliee. Elle sert a poser le processeur deja programme
+      <!-- Le schéma ensuite, replié. Il sert a poser le processeur deja programme
            dans une base ; c'est un besoin reel et ce n'est pas le premier. -->
       <details class="par-schematique">
         <summary data-i18n="outils.logique.par-schematique">
-          Passer par une schematique de processeur
+          Passer par un schéma de processeur
         </summary>
         <p class="hint-line" data-i18n="outils.logique.par-schematique-aide">
           Utile pour poser le processeur deja programme, avec ses liens, plutot que de
@@ -104,7 +104,7 @@
         <div class="row">
           <button id="copier" type="button">
             <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/></svg>
-            <span data-i18n="outils.logique.copier">Copier la schematique</span>
+            <span data-i18n="outils.logique.copier">Copier le schéma</span>
           </button>
           <button id="telecharger" type="button">
             <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 19h16"/></svg>
@@ -112,18 +112,18 @@
           </button>
           <button id="coller" type="button">
             <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3M4 12h16M8 16h8"/></svg>
-            <span data-i18n="outils.logique.coller">Coller une schematique</span>
+            <span data-i18n="outils.logique.coller">Coller un schéma</span>
           </button>
           <label class="file">
             <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></svg>
-            <span data-i18n="outils.logique.importer">Ouvrir une schematique</span>
-            <input type="file" id="fichier" name="fichier" accept=".msch" aria-label="Ouvrir une schematique">
+            <span data-i18n="outils.logique.importer">Ouvrir un schéma</span>
+            <input type="file" id="fichier" name="fichier" accept=".msch" aria-label="Ouvrir un schéma">
           </label>
         </div>
 
         <h3 data-i18n="outils.logique.liens">Liens</h3>
         <p class="hint-line" data-i18n="outils.logique.liens-aide">
-          Ce que le processeur pose dans la schematique sera relie a ces blocs. Le nom est
+          Ce que le processeur pose dans le schéma sera relie a ces blocs. Le nom est
           celui que le programme emploie, et les deux nombres disent de combien de cases le
           bloc est a droite et au-dessus du processeur.
         </p>
@@ -385,7 +385,7 @@ const sortie = () => toSchematic({
 
 /* Le geste que le jeu demande vraiment : dans Mindustry on ouvre un processeur et on
    colle du code dedans. Aucun bouton ne le faisait, et les quatre qui existaient obligeaient
-   tous a fabriquer une schematique autour d'un seul bloc. */
+   tous a fabriquer un schéma autour d'un seul bloc. */
 $("copier-code").onclick = async () => {
   try {
     await navigator.clipboard.writeText(editeur.value);
@@ -490,19 +490,19 @@ async function lire(source) {
   }), "bien");
 }
 
-/* Ouvert depuis une schematique ---------------------------------------------------------- */
+/* Ouvert depuis un schéma ---------------------------------------------------------- */
 
 /**
  * Le mode que Corentin a decrit : « ca ouvre l'editeur logique mais en fonction du schema
  * en particulier ».
  *
  * L'editeur seul ecrit le programme d'un processeur qu'un joueur construira plus tard, donc
- * il n'a aucun bloc dont parler et n'en propose aucun. Ouvert depuis une schematique, il les
+ * il n'a aucun bloc dont parler et n'en propose aucun. Ouvert depuis un schéma, il les
  * a tous : de vrais noms, de vraies positions, et des liens faits en cliquant dans le jeu
  * plutot que tapes en deux entiers ici.
  *
- * Mesure sur quatre-vingt-seize schematiques de la vitrine : 45 % de celles qui portent un
- * processeur en portent plusieurs, et l'une d'elles en porte vingt-deux. Le choix n'est donc
+ * Mesure sur quatre-vingt-seize schémas de la vitrine : 45 % de ceux qui portent un
+ * processeur en portent plusieurs, et l'un d'eux en porte vingt-deux. Le choix n'est donc
  * pas une commodite, et c'est une liste plutot que deux onglets.
  */
 let processeurs = [];
@@ -579,7 +579,7 @@ function dessinerVenuDe() {
 
   const note = document.createElement("p");
   note.className = "hint-line";
-  /* Dit avant qu'on edite, pas apres : ce mode lit la schematique, il ne la reecrit pas
+  /* Dit avant qu'on edite, pas apres : ce mode lit le schéma, il ne le reecrit pas
      encore, et laisser croire l'inverse ferait perdre un programme. */
   note.textContent = t("outils.logique.venu-note");
   carte.append(note);

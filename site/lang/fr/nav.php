@@ -12,7 +12,7 @@ return [
     'barre' => [
         'analyser' => 'Analyser',
         'editer' => 'Editer',
-        'schematiques' => 'Schematiques',
+        'schematiques' => 'Schémas',
         'outils' => 'Outils',
         'blocs' => 'Blocs',
         'deplier' => 'Ouvrir le menu',

@@ -4,7 +4,7 @@
   La vue par defaut du framework est ecrite pour Tailwind et ce site n'a pas Tailwind :
   toutes ses classes tombent a plat, et le chevron SVG qu'elle pose, prive du `w-5 h-5`
   qui devait le contraindre, se dessine a la taille de la page. Le defaut se voyait sur
-  la place de marche et sur "mes schematiques", en clair sur une capture.
+  la place de marche et sur "mes schémas", en clair sur une capture.
 
   Elle rendait aussi `pagination.previous` et `pagination.next` tels quels, faute de
   `lang/fr/pagination.php`, et annoncait "Showing 1 to 24 of 884 results" en anglais sur

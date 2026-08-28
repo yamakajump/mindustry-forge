@@ -69,7 +69,7 @@ return [
         'forage' => 'Forage, par case de minerai',
         'forage-note' => 'Le temps pour un objet, avec une seule case de minerai sous la
             foreuse. Deux fois plus de cases, deux fois plus vite. Ce qui sort vraiment dans
-            une schématique est mesuré par l\'analyse.',
+            un schéma est mesuré par l\'analyse.',
         'durete-max' => 'Dureté maximale forée',
         'boost-liquide' => 'Accélération au liquide',
 
@@ -91,9 +91,9 @@ return [
         'sans-source' => 'rien dans le catalogue ne le produit',
         'sans-debouche' => 'aucun bloc ne le consomme',
 
-        'schematiques' => 'Des schématiques qui s\'en servent',
-        'schematiques-compte' => 'schématiques publiques en contiennent',
-        'aucune-schematique' => 'Aucune schématique publiée n\'en contient pour l\'instant.',
+        'schematiques' => 'Des schémas qui s\'en servent',
+        'schematiques-compte' => 'schémas publics en contiennent',
+        'aucune-schematique' => 'Aucun schéma publié n\'en contient pour l\'instant.',
         'exemplaires' => 'exemplaires',
 
         /*
@@ -111,7 +111,7 @@ return [
            debit et un debit sans nom ne dit rien. La page, elle, a le libelle en entier. */
         'objets' => 'objets',
         'plafond' => 'Ce sont des plafonds : ce que le bloc ferait alimenté à fond et sans
-            rien en travers. Ce qu\'il fait vraiment dans une schématique est mesuré par
+            rien en travers. Ce qu\'il fait vraiment dans un schéma est mesuré par
             l\'analyse, et c\'est presque toujours moins.',
     ],
 

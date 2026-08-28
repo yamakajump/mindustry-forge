@@ -21,8 +21,8 @@ return [
     ['key' => 'nav.barre.editer', 'href' => '/editer', 'ready' => true],
 
     ['key' => 'nav.barre.schematiques', 'menu' => [
-        ['key' => 'nav.menu.parcourir', 'href' => '/schematiques', 'ready' => true],
-        ['key' => 'nav.menu.les-miennes', 'href' => '/mes-schematiques', 'ready' => true, 'auth' => true],
+        ['key' => 'nav.menu.parcourir', 'href' => '/schemas', 'ready' => true],
+        ['key' => 'nav.menu.les-miennes', 'href' => '/mes-schemas', 'ready' => true, 'auth' => true],
         ['key' => 'nav.menu.comparer', 'href' => '/comparer', 'ready' => true],
         ['key' => 'nav.menu.publier', 'href' => '/publier', 'ready' => false],
     ]],

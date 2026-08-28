@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Forge - analyser une schematique Mindustry</title>
+<title>Forge - analyser un schéma Mindustry</title>
 <!-- Three icon formats, because three families of client ask for one differently: the
      .ico for whatever hits /favicon.ico without reading the head, the SVG for any current
      browser, the square PNG for the iOS home screen. -->
@@ -17,12 +17,12 @@
      both / and /editer, so og:url says / even when /editer is the link being shared: an
      editor link unfurls with the analyser's thumbnail. One line to fix the day the editor
      deserves a thumbnail of its own, and worth knowing before discovering it. -->
-<meta name="description" content="Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.">
+<meta name="description" content="Colle un schéma Mindustry, sache ce qu'il produit vraiment et ou il coince.">
 <meta property="og:site_name" content="Mindustry Forge">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Forge - analyser une schematique Mindustry">
-<meta property="og:description" content="Colle une schematique Mindustry, sache ce qu'elle produit vraiment et ou elle coince.">
+<meta property="og:title" content="Forge - analyser un schéma Mindustry">
+<meta property="og:description" content="Colle un schéma Mindustry, sache ce qu'il produit vraiment et ou il coince.">
 <meta property="og:url" content="https://mindustryforge.com/">
 <meta property="og:image" content="https://mindustryforge.com/og.jpg">
 <meta property="og:image:width" content="1200">
@@ -55,9 +55,9 @@
     <a href="/" data-i18n="nav.barre.analyser">Analyser</a>
     <a href="/editer" data-i18n="nav.barre.editer">Editer</a>
     <details class="menu">
-      <summary data-i18n="nav.barre.schematiques">Schematiques</summary>
+      <summary data-i18n="nav.barre.schematiques">Schémas</summary>
       <div class="menu-list">
-        <a href="/schematiques" data-i18n="nav.menu.parcourir">Parcourir</a>
+        <a href="/schemas" data-i18n="nav.menu.parcourir">Parcourir</a>
         <a href="/comparer" data-i18n="nav.menu.comparer">Comparer</a>
       </div>
     </details>
@@ -76,15 +76,15 @@
   <!-- L'accroche precede le champ, et elle est ecrite en clair avec sa cle a cote. Un
        visiteur qui arrive sans savoir ce qu'est ce site voyait un champ vide et repartait. -->
   <section class="accroche" id="accroche">
-    <h1 data-i18n="vitrine.accueil.titre">Sache ce que ta schematique produit vraiment</h1>
-    <p class="lede" data-i18n="vitrine.accueil.accroche">Colle-la, et Forge te dit ce qui en
+    <h1 data-i18n="vitrine.accueil.titre">Sache ce que ton schéma produit vraiment</h1>
+    <p class="lede" data-i18n="vitrine.accueil.accroche">Colle-le, et Forge te dit ce qui en
       sort par minute, quel bloc limite toute la ligne, et ce qui se perd en route. Les
       chiffres sont mesures contre un vrai serveur Mindustry, pas estimes.</p>
   </section>
 
   <div class="drop" id="drop">
     <label class="lead" for="text">
-      Colle la schematique copiee dans le jeu (ctrl+c sur une selection), ou depose un
+      Colle le schéma copié dans le jeu (ctrl+c sur une selection), ou depose un
       fichier <code>.msch</code>.
     </label>
     <textarea id="text" spellcheck="false" autocomplete="off"
@@ -129,7 +129,7 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
   <!-- Tout ce qui suit disparait des qu'un rapport s'affiche : c'est l'accueil d'une page
        vide, pas un pied de page. `montrerAccueil` s'en charge. -->
   <!-- Le trou dans le fichier. `HomeController` y pose une balise `application/json` avec
-       le compte reel et quelques schematiques ; servi en statique, le marqueur reste un
+       le compte reel et quelques schémas ; servi en statique, le marqueur reste un
        commentaire inerte et la page se passe simplement de vitrine. -->
   <!--VITRINE-->
 
@@ -145,7 +145,7 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
     <div class="accueil-mots">
       <h2 data-i18n="vitrine.accueil.preuve-titre">Pourquoi ces chiffres plutot que d'autres</h2>
       <p data-i18n="vitrine.accueil.preuve">Un banc fait tourner le vrai jeu sur un monde
-        fige, y pose la schematique, et compte ce qui sort. L'analyse est confrontee a cette
+        fige, y pose le schéma, et compte ce qui sort. L'analyse est confrontee a cette
         mesure a chaque changement du code.</p>
       <p class="hint-line" data-i18n="vitrine.accueil.sans-compte">Tout se passe dans ton
         navigateur. Rien n'est envoye, rien n'est garde, et il n'y a pas de compte a creer
@@ -154,7 +154,7 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
       <!-- Rempli par `peuplerVitrine` si le serveur a pose son ilot. Vide sinon, et la
            page se lit quand meme : c'est la moitie qui depend d'une base. -->
       <div class="deja" id="deja" hidden>
-        <h3 data-i18n="vitrine.accueil.deja-analysees">Deja analysees</h3>
+        <h3 data-i18n="vitrine.accueil.deja-analysees">Deja analysés</h3>
         <p class="hint-line" id="deja-compte"></p>
         <ul class="deja-liste" id="deja-liste"></ul>
       </div>
@@ -164,8 +164,8 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
         <!-- Pas `primary` : « Analyser » est le geste principal et doit rester le seul
              bouton ambre de la page. Une porte secondaire n'a pas a crier aussi fort que
              la porte principale, surtout sur telephone ou elle est plus large. -->
-        <a class="button" href="/schematiques"
-           data-i18n="vitrine.accueil.parcourir">Parcourir les schematiques deja analysees</a>
+        <a class="button" href="/schemas"
+           data-i18n="vitrine.accueil.parcourir">Parcourir les schémas deja analysés</a>
       </p>
     </div>
   </section>
@@ -305,7 +305,7 @@ function render(report) {
       /* Quatre, comme le planificateur. Trois retirait toujours l'option la moins chere a
          debloquer, la liste etant triee par nombre de blocs croissant : la foreuse
          mecanique n'etait jamais proposee. Quatre est le vivier d'une planete, donc une
-         schematique dont le monde est reconnu voit tout ; une schematique qui melange les
+         schéma dont le monde est reconnu voit tout ; un schéma qui melange les
          deux mondes en voit quatre sur huit, et la n'importe quel choix serait arbitraire. */
       const best = need.options.slice(0, 4);
       const label = need.resource.startsWith("*")
@@ -384,7 +384,7 @@ function render(report) {
 
   if (answered) right.push(`<div class="card"><h2>${
     report.sealed || report.selfFed ? "Avec ses propres sources"
-    : report.fedItself ? "Branchee comme elle est" : "Avec ce que tu as indique"}</h2>${
+    : report.fedItself ? "Branché comme il est" : "Avec ce que tu as indique"}</h2>${
     power.made > 0.01
       ? `<div class="out-rate" style="color:var(--accent)">${bolt}
            <b>${rate(power.net)}</b><span>energie / s &nbsp;<span style="color:var(--dim)">
@@ -415,8 +415,8 @@ function render(report) {
       inside.map(([item, n]) =>
         `<div class="line"><span>${withIcon(item)}${escape(item)}</span>
           <span class="num">${rate(n * 60)} / min</span></div>`).join("")
-    }<p class="hint-line">Ces objets ne sortent pas : ils alimentent les machines de la
-      schematique elle-meme.</p></div>`);
+    }<p class="hint-line">Ces objets ne sortent pas : ils alimentent les machines du
+      schéma lui-meme.</p></div>`);
   }
 
   const fedSomething = made.length || (report.power && report.power.made > 0.01);
@@ -536,7 +536,7 @@ function render(report) {
              &nbsp;<span class="warn">-${rate(asGame.spent)}</span></span></div>`
         : ""
     }<p class="hint-line">Cout et energie calcules avec les formules du jeu, a l'unite
-      pres : c'est l'encart que tu vois sur l'apercu d'une schematique.</p>${
+      pres : c'est l'encart que tu vois sur l'apercu d'un schéma.</p>${
       boost
         ? `<div class="line" style="margin-top:8px"><span>Forge compte plutot</span>
              <span class="num good">${rate(report.potential.made)} energie / s</span></div>
@@ -585,7 +585,7 @@ function render(report) {
      plat et un pinceau qui peignait sous les blocs sans les voir. Elle a maintenant son
      mode a elle, plein ecran, avec les mecaniques de pose du jeu.
 
-     Le bouton « Editer cette schematique », en haut de la colonne de gauche, y mene. */
+     Le bouton « Editer ce schéma », en haut de la colonne de gauche, y mene. */
 
   const editing = opened.slug ? opened : null;
   const chosen = editing ? editing.visibility : "private";
@@ -601,7 +601,7 @@ function render(report) {
     <div class="row" id="keep-row">
       <input type="text" id="keep-name"
         value="${escape(editing ? editing.name : report.name)}"
-        aria-label="Nom de la schematique">
+        aria-label="Nom du schéma">
       <button class="primary" id="keep" type="button">${
         editing ? "Enregistrer" : "Garder"}</button>
       <label style="display:inline-flex;align-items:center;gap:7px;color:var(--dim)">
@@ -613,7 +613,7 @@ function render(report) {
         </select>
       </label>
     </div>
-    <textarea id="keep-desc" rows="2" placeholder="Une ligne pour dire ce qu'elle fait"
+    <textarea id="keep-desc" rows="2" placeholder="Une ligne pour dire ce qu'il fait"
       aria-label="Description">${escape(editing?.description || "")}</textarea>
     ${editing ? `<div class="row" style="margin-top:8px">
       <button type="button" id="keep-new">Garder comme une nouvelle</button>
@@ -640,7 +640,7 @@ function render(report) {
       <div class="row" style="margin:0 0 10px">
         <button type="button" id="to-editor">
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-          Editer cette schematique
+          Editer ce schéma
         </button>
       </div>
       <div class="stage"><canvas id="view" role="img"
@@ -766,7 +766,7 @@ async function edit(change) {
 }
 
 /**
- * Les quelques schematiques mises en avant, si le serveur en a pose.
+ * Les quelques schémas mis en avant, si le serveur en a pose.
  *
  * Lues dans une balise `application/json` plutot que demandees par une seconde requete :
  * la page passe deja par Laravel, donc la donnee arrive avec elle. Rien a faire quand
@@ -822,7 +822,7 @@ function montrerAccueil(oui) {
 async function run() {
   const payload = String(text.value).replace(/\s+/g, "");
   if (!payload) {
-    out.innerHTML = `<div class="card error">Colle une schematique, ou depose un fichier.</div>`;
+    out.innerHTML = `<div class="card error">Colle un schéma, ou depose un fichier.</div>`;
     return;
   }
   montrerAccueil(false);
@@ -854,7 +854,7 @@ async function run() {
    La bascule entre analyser et editer.
 
    Le mode garde son propre plateau plutot que de repasser par la chaine string -> analyse
-   a chaque geste. Reserialiser une schematique de trois cents blocs a chaque clic serait
+   a chaque geste. Reserialiser un schéma de trois cents blocs a chaque clic serait
    du travail jete, et surtout l historique d annulation ne survivrait pas a l aller-retour.
 
    Le plateau n est donc pas detruit en revenant sur l analyse : il est mis de cote, et
@@ -863,10 +863,10 @@ async function run() {
 let editor = null;
 
 /**
- * Le plateau mis de cote en sortant, et la schematique qu il decrivait alors.
+ * Le plateau mis de cote en sortant, et le schéma qu il decrivait alors.
  *
  * Les deux vont ensemble : reprendre le plateau n est legitime que si la chaine n a pas
- * bouge entre temps. Coller une autre schematique pendant qu on etait sur le rapport doit
+ * bouge entre temps. Coller un autre schéma pendant qu on etait sur le rapport doit
  * repartir d un plateau neuf, sinon on editerait l ancienne en croyant editer la nouvelle.
  */
 let kept = null;
@@ -909,7 +909,7 @@ async function leaveEditor(board) {
     out.innerHTML = `<div class="card">Rien a analyser : le plateau est vide.</div>`;
     return;
   }
-  /* La schematique redevient la chaine que le jeu lit, qui reste la source de verite de
+  /* Le schéma redevient la chaine que le jeu lit, qui reste la source de verite de
      tout le reste de la page : l analyse, la sauvegarde et le presse-papiers travaillent
      dessus et n ont pas a savoir qu un editeur existe. */
   text.value = await toBase64(built, {
@@ -1125,14 +1125,14 @@ function showBlock(report, tile) {
                    mark.resource === resource ? "on" : ""}" data-resource="${
                    escape(resource)}">${withIcon(resource, 15)}${escape(resource)}</button>`
                  ).join("")}</div>`
-            : `<p class="hint-line" style="margin:10px 0 0">Cette schematique ne manque de
+            : `<p class="hint-line" style="margin:10px 0 0">Ce schéma ne manque de
                rien qui puisse passer par la.</p>`)
         : mark?.side === "out"
           ? `<p class="hint-line" style="margin:10px 0 0">Ce qui sort n'est pas un choix :
-             c'est ce qui arrive jusqu'ici. Toi tu dis ou, la schematique dit quoi.</p>`
+             c'est ce qui arrive jusqu'ici. Toi tu dis ou, le schéma dit quoi.</p>`
           : ""
     }</div>
-    <p class="hint-line">Garde avec la schematique. Forge ne devine pas les entrees :
+    <p class="hint-line">Garde avec le schéma. Forge ne devine pas les entrees :
       sur une conception un peu grosse c'est un coup de de.</p>`);
   }
 
@@ -1332,12 +1332,12 @@ async function whoAmI() {
   if (!nav) return;
   await dictionary;
 
-  /* « Les miennes » va dans le menu des schematiques et pas au bout de la barre, pour que
+  /* « Les miennes » va dans le menu des schémas et pas au bout de la barre, pour que
      l entete d un lecteur connecte soit celui de `partials/nav.blade.php` et pas un autre.
      Le menu est dans la page depuis le debut, seule cette entree attendait la reponse. */
   if (me) {
     nav.querySelector("details.menu .menu-list")?.insertAdjacentHTML("beforeend",
-      `<a href="/mes-schematiques">${escape(t("nav.menu.les-miennes"))}</a>`);
+      `<a href="/mes-schemas">${escape(t("nav.menu.les-miennes"))}</a>`);
   }
 
   nav.insertAdjacentHTML("beforeend", me
@@ -1358,7 +1358,7 @@ function wireKeep(report) {
   if (!me) {
     button.disabled = true;
     note.innerHTML = `<a href="/auth/discord">Connecte-toi avec Discord</a> pour garder tes
-      schematiques et les publier.`;
+      schémas et les publier.`;
     return;
   }
 
@@ -1452,7 +1452,7 @@ if (asked) {
       text.value = found.code;
       // Its author's own marks come back with it, and its author edits it in place.
       marked = { ...(found.marked || {}) };
-      /* Et le terrain sur lequel elle a ete concue. Sans lui, rouvrir une schematique
+      /* Et le terrain sur lequel il a ete concu. Sans lui, rouvrir un schéma
          rendait ses foreuses muettes : le rapport repassait a « au mieux, sur une tache
          pleine », alors que son auteur avait pris la peine de peindre le sol. */
       ground = { ...(found.ground || {}) };

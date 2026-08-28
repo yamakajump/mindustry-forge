@@ -112,7 +112,7 @@ it('ne cite pas le chiffre dans la vitrine non plus', function () {
     /* Vue creative demandee explicitement : une schematique qui tient un bloc de bac a
        sable est mise a part de la liste par defaut depuis, et c'est une autre regle. Celle
        testee ici est que la vignette, quand elle s'affiche, ne cite pas le chiffre. */
-    $liste = $this->get('/schematiques?creatif=oui');
+    $liste = $this->get('/schemas?creatif=oui');
 
     $liste->assertOk();
     $liste->assertSee('Banc a robinet');
@@ -130,7 +130,7 @@ it('dit le robinet sur la page au lieu d en citer la valeur', function () {
     $page = $this->get("/s/{$kept->slug}");
 
     $page->assertOk();
-    $page->assertSee('Alimentee par une source de bac a sable');
+    $page->assertSee('Alimenté par une source de bac a sable');
     $page->assertSee('power-source');
     // Le chiffre qui a tout declenche, sous les deux formes que la page peut en donner.
     $page->assertDontSee('479 999');
