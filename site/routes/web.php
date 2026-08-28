@@ -8,6 +8,7 @@ use App\Http\Controllers\CompareController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IconController;
 use App\Http\Controllers\SchematicController;
+use App\Http\Controllers\SchematicSearchController;
 use App\Http\Controllers\SocialCardController;
 use Illuminate\Support\Facades\Route;
 
@@ -102,6 +103,13 @@ Route::get('/blocs/{name}/carte.jpg', [BlockCardController::class, 'show']);
    which routes everything. */
 Route::get('/icone/{family}/{name}.png', [IconController::class, 'show'])
     ->where('name', '[a-z0-9-]+');
+
+/* Names while somebody types them, for the comparison page's two slots.
+ *
+ * Declared above `/api/schematiques/{schematic}`, and it has to stay there: route binding
+ * matches in order, so the other way round `recherche` would be read as a slug and answer
+ * 404 for ever. */
+Route::get('/api/schematiques/recherche', SchematicSearchController::class);
 
 /* The string itself, so the analyser can pull one in from a shared link. Plain text and
    nothing else: this is a public schematic, and everything else about it is on its page. */

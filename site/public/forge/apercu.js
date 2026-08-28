@@ -15,6 +15,11 @@
  * that draws anything. That is why this module is loaded by the schematic page, whose entire
  * point is one schematic, and not by the list, where twenty-four plans would be twenty-four
  * renders for pictures the size of a thumbnail.
+ *
+ * Panels that were in the page when it loaded are drawn on import, which is what every
+ * caller needed until the comparison page started putting search results on screen. Those
+ * arrive after a keystroke, so `watch` is exported: the scan is the same one, pointed at a
+ * subtree rather than at the whole document.
  */
 
 import { catalogueOf, loadCatalogue } from "./analyse.js";
@@ -27,7 +32,7 @@ import { fromBase64 } from "./schematic.js";
    the root; nothing else here is. */
 const BASE = "/forge/";
 
-/** How much of the panel the plan may take, leaving it room to breathe. */
+/** How much of the panel the plan may take at most, leaving it room to breathe. */
 const PADDING = 32;
 
 let loading = null;
@@ -49,7 +54,7 @@ function assets() {
  * version of the game that is no longer ours, and a panel that stays empty tells a visitor
  * that the site is broken when it is the schematic that is.
  */
-async function plan(panel, fetched = null) {
+export async function drawPlan(panel, fetched = null) {
   const code = fetched ?? panel.dataset.code ?? "";
 
   /* An early return here left the panel showing "drawing the plan..." for ever, which is
@@ -95,7 +100,17 @@ async function plan(panel, fetched = null) {
   const box = bounds(parsed.tiles, sizeOf);
 
   const paint = () => {
-    const roomWide = Math.max(120, panel.clientWidth - PADDING);
+    /* The breathing room is a share of the panel, capped, rather than a flat thirty-two
+       pixels. A flat one is most of a thumbnail: the comparison page's search results are
+       sixty-four pixels wide, and subtracting thirty-two from them left a plan drawn at
+       half the width of its own box. Above three hundred pixels this is the number it
+       always was, so nothing that was already measured moves. */
+    const measured = panel.clientWidth;
+    const padding = Math.min(PADDING, Math.round(measured * 0.1));
+    /* A panel the browser has not laid out yet measures zero, and drawing a plan twenty
+       pixels wide because of it would be a picture nobody can read that never gets
+       corrected. The observer below repaints it once the panel has a size. */
+    const roomWide = measured > 0 ? Math.max(24, measured - padding) : 120;
     const roomTall = panel.clientHeight;
 
     draw(canvas, parsed.tiles, sizeOf, roleOf, {
@@ -140,24 +155,37 @@ function fail(panel, message) {
   panel.replaceChildren(line);
 }
 
-for (const panel of document.querySelectorAll("[data-code]")) {
-  plan(panel);
+/** The code of one schematic, for a panel too big to have carried its own. */
+async function fetchAndDraw(panel) {
+  try {
+    const answer = await fetch(`/api/schematiques/${panel.dataset.slug}/code`);
+    if (!answer.ok) throw new Error(String(answer.status));
+    await drawPlan(panel, (await answer.text()).trim());
+  } catch {
+    fail(panel, "Cette schematique n'a pas pu etre chargee.");
+  }
 }
 
-/* Tiles whose code was too big to travel in the page ask for it themselves, and only when
-   they are about to be looked at. Fetching all of them on load would put back exactly the
-   weight the cap removed, on a visitor who may never scroll that far. */
-const waiting = document.querySelectorAll("[data-slug]");
-if (waiting.length) {
-  const fetchAndDraw = async (panel) => {
-    try {
-      const answer = await fetch(`/api/schematiques/${panel.dataset.slug}/code`);
-      if (!answer.ok) throw new Error(String(answer.status));
-      await plan(panel, (await answer.text()).trim());
-    } catch {
-      fail(panel, "Cette schematique n'a pas pu etre chargee.");
-    }
-  };
+/**
+ * Draw every plan under `root`, and arrange for the heavy ones to draw themselves.
+ *
+ * Panels are marked done as they are taken, so calling this twice over overlapping ground
+ * does not redraw what is already drawn. The comparison page does exactly that: it watches
+ * a fresh list of results while the two chosen plans, drawn on load, are still on screen.
+ */
+export function watch(root = document) {
+  for (const panel of root.querySelectorAll("[data-code]:not([data-drawn])")) {
+    panel.dataset.drawn = "";
+    drawPlan(panel);
+  }
+
+  /* Tiles whose code was too big to travel in the page ask for it themselves, and only when
+     they are about to be looked at. Fetching all of them on load would put back exactly the
+     weight the cap removed, on a visitor who may never scroll that far. */
+  const waiting = [...root.querySelectorAll("[data-slug]:not([data-drawn])")];
+  for (const panel of waiting) panel.dataset.drawn = "";
+
+  if (!waiting.length) return;
 
   if (typeof IntersectionObserver === "function") {
     const watcher = new IntersectionObserver((entries) => {
@@ -172,3 +200,5 @@ if (waiting.length) {
     for (const panel of waiting) fetchAndDraw(panel);
   }
 }
+
+watch();
