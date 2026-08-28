@@ -155,11 +155,13 @@ it('ne garde que ce qui produit au moins ce qu il consomme', function () {
  * resultat mal adapte, parce que rien sur la tuile ne le dit.
  */
 it('ecarte un plan bati avec les blocs de l autre monde', function () {
-    $serpulo = schemaQuiProduit('De Serpulo', 10, 10, 20, 900);
-    $erekir = schemaQuiProduit('D Erekir', 10, 10, 20, 900);
-
-    $serpulo->blocks()->create(['block' => 'graphite-press', 'count' => 4]);
-    $erekir->blocks()->create(['block' => 'silicon-arc-furnace', 'count' => 4]);
+    // L'inventaire passe par `analysis['held']`, que l'enregistrement indexe dans
+    // `schematic_blocks`. Ecrit comme le fait le reste de la suite plutot qu'insere a la
+    // main : un test qui remplit la table autrement teste une table, pas le site.
+    schemaQuiProduit('De Serpulo', 10, 10, 20, 900, 'silicon',
+        ['analysis' => ['held' => ['graphite-press' => 4, 'conveyor' => 16]]]);
+    schemaQuiProduit('D Erekir', 10, 10, 20, 900, 'silicon',
+        ['analysis' => ['held' => ['silicon-arc-furnace' => 4, 'duct' => 16]]]);
 
     $this->get('/schemas?produit=silicon&planete=serpulo')
         ->assertSee('De Serpulo')
