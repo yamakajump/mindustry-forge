@@ -64,12 +64,12 @@ const links = (offsets) => {
 };
 
 /**
- * Un bloc dont on affirme qu'il ne fait rien, et la forme qui le prouve.
+ * A block claimed to do nothing, and the shape that proves it.
  *
- * Un routeur avec un coffre au bout d'une bande d'un cote et le bloc de l'autre. S'il
- * refuse, tout le cuivre finit dans le coffre ; s'il acceptait quoi que ce soit, la moitie
- * disparaitrait. Une case cochee qui dit "ne fait rien" ne vaut rien tant que personne n'a
- * regarde.
+ * A router with a vault at the end of a belt on one side and the block on the other. If it
+ * refuses, all the copper ends up in the vault; if it accepted anything at all, half of it
+ * would disappear. A ticked box saying "does nothing" is worth nothing until somebody has
+ * looked.
  */
 const refuses = (block) => {
   const size = known.blocks[block].size || 1;
@@ -77,12 +77,12 @@ const refuses = (block) => {
     { x: -2, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
     { x: -1, y: 0, block: "conveyor", rotation: 0 },
     { x: 0, y: 0, block: "router", rotation: 0 },
-    // Pose de facon a toucher la face nord du routeur, quelle que soit sa taille.
+    // Placed so that it touches the router's north face, whatever its size.
     { x: 0, y: 1 + Math.trunc((size - 1) / 2), block, rotation: 0 },
     { x: 1, y: 0, block: "conveyor", rotation: 0 },
     { x: 2, y: 0, block: "conveyor", rotation: 0 },
     { x: 3, y: 0, block: "conveyor", rotation: 0 },
-    // Couvre 4..6 par -1..1, hors de portee du plus grand des blocs testes.
+    // Covers 4..6 by -1..1, out of reach of the largest block under test.
     { x: 5, y: 0, block: "vault", rotation: 0 },
   ];
 };
@@ -195,16 +195,16 @@ const SCENARIOS = {
      and the branch wrong, which is exactly what a simulation is for. */
   "overflow-priority": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
-    /* Onze objets a la seconde en entree, six et demi en sortie tout droit.
+    /* Eleven items a second going in, six and a half going straight out.
 
-       Le scenario nourrissait les deux branches avec une bande de meme debit et se
-       terminait sur un coffre de mille : la branche droite avalait tout, `canForward`
-       etait vrai a chaque image, et le cote ne recevait pas un objet. Les deux scenarios
-       nommes d'apres la regle de debordement ne l'exercaient pas une fois.
+       The scenario used to feed both branches with a belt of the same rate and end on a
+       vault of a thousand: the straight branch swallowed everything, `canForward` was true
+       on every frame, and the side received not one item. The two scenarios named after the
+       overflow rule never exercised it once.
 
-       Ici la branche droite sature a son propre debit et le reste passe sur le cote. Les
-       deux chiffres sont non nuls et differents, et c'est exactement la situation pour
-       laquelle la regle existe. */
+       Here the straight branch saturates at its own rate and the rest goes out the side.
+       Both figures are non zero and different, and that is exactly the situation the rule
+       exists for. */
     { x: 1, y: 0, block: "titanium-conveyor", rotation: 0 },
     { x: 2, y: 0, block: "overflow-gate", rotation: 0 },
     { x: 3, y: 0, block: "conveyor", rotation: 0 },
@@ -242,12 +242,12 @@ const SCENARIOS = {
 
   /* A vault that starts empty, filled by a source, emptied by an unloader into another
      vault. Eleven a second is the unloader's own stat line. */
-  /* Le coffre part plein et rien ne le remplit.
+  /* The vault starts full and nothing refills it.
 
-     Il etait alimente par une bande cuivre a six objets et demi la seconde, et le seul
-     chiffre compare etait ce que cette bande avait porte. Un dechargeur a sept, onze ou
-     quarante par seconde aurait donne le meme resultat : sa vitesse n'etait verifiee nulle
-     part. Sur un stock ferme de mille, ce qui reste dit son debit et rien d'autre. */
+     It used to be fed by a copper belt at six and a half items a second, and the only
+     figure compared was what that belt had carried. An unloader at seven, eleven or forty a
+     second would have given the same result: its speed was checked nowhere. On a closed
+     stock of a thousand, what is left says its rate and nothing else. */
   "unloader-drains": () => ({
     tiles: [
       // Covers 0..2 by -1..1.
@@ -295,30 +295,30 @@ const SCENARIOS = {
     return tiles;
   },
 
-  /* Un routeur qui partage du charbon entre deux presses, chacune au bout de sa bande.
+  /* A router splitting coal between two presses, each at the end of its own belt.
 
-     Deux fois refait. La presse nord n'etait pas collee au routeur, donc le jeu la donnait
-     a efficacite zero et le scenario, nomme d'apres un partage entre deux presses, mesurait
-     une presse derriere un routeur. Collee, il mesurait un **bourrage** : une presse rend
-     son graphite a tous ses voisins, routeur compris, et le routeur se bouchait avec.
+     Rewritten twice. The northern press was not against the router, so the game ran it at
+     zero efficiency and the scenario, named after a split between two presses, measured one
+     press behind a router. Pressed against it, it measured a **jam**: a press hands its
+     graphite to every neighbour, the router included, and the router clogged with it.
 
-     Avec une bande entre le routeur et chaque presse, le graphite n'a nulle part ou
-     revenir : la bande qui alimente la presse pointe vers elle et refuse ce qu'elle lui
-     tend. Le routeur alterne, chaque presse recoit trois charbons et quart la seconde pour
-     un et un tiers de besoin, et les deux tournent a plein. */
+     With a belt between the router and each press, the graphite has nowhere to come back
+     to: the belt feeding the press points at it and refuses what it holds out. The router
+     alternates, each press gets three and a quarter coal a second against a need of one and
+     a third, and both run at full speed. */
   "crafter-two-presses": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
     { x: 1, y: 0, block: "conveyor", rotation: 0 },
     { x: 2, y: 0, block: "router", rotation: 0 },
 
-    // Est : deux bandes, puis une presse en 5..6 par 0..1.
+    // East: two belts, then a press at 5..6 by 0..1.
     { x: 3, y: 0, block: "conveyor", rotation: 0 },
     { x: 4, y: 0, block: "conveyor", rotation: 0 },
     { x: 5, y: 0, block: "graphite-press", rotation: 0 },
     { x: 7, y: 0, block: "conveyor", rotation: 0 },
     { x: 9, y: 0, block: "vault", rotation: 0 },
 
-    // Nord : idem, presse en 2..3 par 3..4.
+    // North: the same, press at 2..3 by 3..4.
     { x: 2, y: 1, block: "conveyor", rotation: 1 },
     { x: 2, y: 2, block: "conveyor", rotation: 1 },
     { x: 2, y: 3, block: "graphite-press", rotation: 0 },
@@ -470,10 +470,10 @@ const SCENARIOS = {
   "duct-armored": () => line("armored-duct", 8),
 
   /* An overflow duct: straight on when it can, to the sides when it cannot. */
-  /* Meme maladie que la porte de trop-plein, meme remede : la branche droite doit saturer
-     a son propre debit, sinon le cote ne recoit jamais rien et le scenario ne mesure pas
-     ce que son nom annonce. Un duct porte quinze par seconde et une bande cuivre six et
-     demi, donc la bande sature et le reste passe sur le cote. */
+  /* The same disease as the overflow gate, and the same cure: the straight branch has to
+     saturate at its own rate, or the side never gets anything and the scenario does not
+     measure what its name says. A duct carries fifteen a second and a copper belt six and a
+     half, so the belt saturates and the rest goes out the side. */
   "duct-overflow": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 1, y: 0, block: "duct", rotation: 0 },
@@ -507,11 +507,11 @@ const SCENARIOS = {
     { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 0, y: 0, block: "conveyor", rotation: 0 },
     { x: 1, y: 0, block: "router", rotation: 0 },
-    // Pointe au nord, donc son arriere est au sud et le routeur le prend par le flanc.
+    // Pointed north, so its rear is south and the router feeds it from the side.
     { x: 2, y: 0, block: "overflow-duct", rotation: 1 },
-    // Ce que le routeur pousse vers le sud : couvre 0..2 par -3..-1.
+    // What the router pushes south: covers 0..2 by -3..-1.
     { x: 1, y: -2, block: "vault", rotation: 0 },
-    // Ce qui sortirait du duct : couvre 2..4 par 1..3.
+    // What would come out of the duct: covers 2..4 by 1..3.
     { x: 3, y: 2, block: "vault", rotation: 0 },
   ],
 
@@ -866,9 +866,9 @@ const SCENARIOS = {
       { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
       { x: 1, y: 1, block: "combustion-generator", rotation: 0 },
       { x: 2, y: 1, block: "beam-node", rotation: 0 },
-      // Couvre 3..5 par 0..2, sans lien a lui : un fil mort en travers du faisceau.
+      // Covers 3..5 by 0..2, with no link of its own: a dead wire across the beam.
       { x: 4, y: 1, block: "beam-link", rotation: 0 },
-      // Couvre 6..8 par 0..2, derriere le fil.
+      // Covers 6..8 by 0..2, behind the wire.
       { x: 7, y: 1, block: "laser-drill", rotation: 0 },
       { x: 9, y: 1, block: "conveyor", rotation: 0 },
       { x: 11, y: 1, block: "vault", rotation: 0 },
@@ -1156,7 +1156,7 @@ const SCENARIOS = {
   "extractor-oil": () => extractor(true),
   "extractor-oil-bare": () => extractor(false),
 
-  /* Une charge utile qui traverse une ligne de convoyeurs.
+  /* A payload crossing a line of payload conveyors.
 
      A payload is a third network: a unit carried whole, on a clock that belongs to the map
      rather than to the block. Every payload conveyor steps on the same frame, and a
@@ -1173,17 +1173,17 @@ const SCENARIOS = {
     { x: 14, y: 0, block: "payload-void", rotation: 0 },
   ],
 
-  /* Un constructeur, qui mange des objets et sort un **bloc** comme cargaison.
+  /* A constructor, which eats items and puts out a **block** as cargo.
 
-     Le seul bloc du jeu dont les ingredients et l'horloge sont tous deux sa configuration :
-     ce qu'il mange est le cout de construction de ce qu'on lui demande, et le temps qu'il
-     met est le temps de construction de ce bloc la, lui-meme derive du cout.
+     The only block in the game whose ingredients and whose clock are both its
+     configuration: what it eats is the build cost of what it is asked for, and the time it
+     takes is that block's build time, itself derived from the cost.
 
-     C'est le **grand** constructeur ici, et pas le petit, pour une raison qui a coute une
-     mesure : le petit porte une liste de sept blocs et refuse en silence tout ce qui n'y
-     est pas, et les sept sont d'Erekir, donc invisibles sur un monde de Serpulo. Il ne
-     rapporte alors aucune recette, ne consomme rien, et reste a zero l'air en pleine sante.
-     Le grand n'a pas de liste, seulement une fourchette de tailles. */
+     It is the **large** constructor here rather than the small one, for a reason that cost
+     a measurement: the small one carries a list of seven blocks and silently refuses
+     anything not on it, and all seven are Erekir's, so invisible on a Serpulo world. It
+     then reports no recipe, consumes nothing, and sits at zero looking perfectly healthy.
+     The large one has no list, only a range of sizes. */
   "constructor-drills": () => ({
     tiles: [
       // Covers -2..2, reaching three tiles east.
@@ -1196,7 +1196,7 @@ const SCENARIOS = {
             "titanium*1000@0,0", "silicon*1000@0,0"],
   }),
 
-  /* Un routeur a charge utile, qui envoie la cargaison d'un cote puis de l'autre.
+  /* A payload router, which sends the cargo one way and then the other.
 
      Same clock as a conveyor, one extra rule: the way out is chosen by a rotating cursor
      rather than always forward. Two voids, one in front and one to the side, and the
@@ -1229,23 +1229,23 @@ const SCENARIOS = {
     stock: ["silicon*200@7,0", "graphite*200@7,0"],
   }),
 
-  /* Trois blocs qui ne tirent d'energie que quand ils ont quelque chose a soigner.
+  /* Three blocks that draw power only when they have something to heal.
 
-     `shouldConsume` est "y a-t-il une cible" : rien n'est abime dans une schematique et
-     aucune unite n'y stationne, donc les trois sont **gratuits**. Comptes comme des
-     consommateurs permanents ils inventaient quatre cent vingt d'energie par seconde a
-     eux trois. La batterie doit lire exactement ce que le RTG a fait, au chiffre pres. */
+     `shouldConsume` is "is there a target": nothing is damaged in a schematic and no unit
+     stands in one, so all three are **free**. Counted as permanent consumers they invented
+     four hundred and twenty power a second between them. The battery has to read exactly
+     what the RTG made, to the digit. */
   "idle-regen": () => idlePower("regen-projector"),
   "idle-repair": () => idlePower("repair-turret"),
   "idle-tower": () => idlePower("unit-repair-tower"),
 
-  /* Et une tour a onde de choc, qui tire jusqu'a etre chargee puis se tait : quatre-vingts
-     images de course, et plus rien pendant les vingt-huit secondes suivantes. */
+  /* And a shockwave tower, which draws until it is loaded and then falls silent: eighty
+     frames of run-up, and nothing at all for the twenty-eight seconds that follow. */
   "idle-shockwave": () => idlePower("shockwave-tower"),
 
-  /* Les vidanges du bac a sable. Celle a liquide etait classee cote objets, donc elle
-     refusait chaque goutte et le tuyau devant elle bouchonnait au lieu de se vider, ce qui
-     est l'exact contraire de ce a quoi le bloc sert. */
+  /* The sandbox voids. The liquid one was filed on the item side, so it refused every drop
+     and the pipe in front of it backed up instead of draining, which is the exact opposite
+     of what the block is for. */
   "void-liquid": () => [
     { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
     { x: 1, y: 0, block: "conduit", rotation: 0 },
@@ -1253,10 +1253,10 @@ const SCENARIOS = {
     { x: 3, y: 0, block: "liquid-void", rotation: 0 },
   ],
 
-  /* Celle a objets est mesuree par ce qu'elle **prend a l'autre branche** : un routeur
-     partage entre un coffre et la vidange, donc le coffre en recoit la moitie. Une vidange
-     qui refuse laisserait tout au coffre, et un scenario qui la nourrit toute seule ne
-     mesure rien du tout puisque le propre du bloc est de ne rien laisser derriere. */
+  /* The item one is measured by what it **takes from the other branch**: a router splits
+     between a vault and the void, so the vault gets half. A void that refused would leave
+     everything to the vault, and a scenario that feeds it on its own measures nothing at
+     all, since the whole point of the block is to leave nothing behind. */
   "void-item": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 1, y: 0, block: "conveyor", rotation: 0 },
@@ -1266,47 +1266,47 @@ const SCENARIOS = {
     { x: 2, y: 3, block: "vault", rotation: 0 },
   ],
 
-  /* Un incinerateur, qui n'est un puits que s'il a du courant.
+  /* An incinerator, which is a sink only when it has power.
 
-     `acceptItem` est `heat > 0.5`, et la chaleur monte vers l'efficacite a 0,04 par image :
-     treize images de courant avant qu'il accepte quoi que ce soit, et jamais rien si le
-     reseau est coupe. Une bande qui y entre bouchonne, ce qui est l'exact contraire de ce
-     que fait un puits. La paire le dit : alimente il prend sa moitie, froid il ne prend
-     rien et le coffre recoit tout. */
+     `acceptItem` is `heat > 0.5`, and the heat climbs towards the efficiency at 0.04 a
+     frame: thirteen frames of power before it accepts anything at all, and never anything
+     if the grid is cut. A belt running into it backs up, which is the exact opposite of
+     what a sink does. The pair says so: powered it takes its half, cold it takes nothing
+     and the vault gets the lot. */
   "incinerator-hot": () => burner(true),
   "incinerator-cold": () => burner(false),
 
-  /* Une presse deux par deux, nourrie d'un cote et videe de deux autres.
+  /* A two by two press, fed from one side and emptied from two others.
 
-     Le seul scenario qui regarde l'anneau de voisinage d'un bloc de taille **paire**. Le
-     jeu prend les decalages de `Edges.getEdges` relativement a la tuile ou le bloc est
-     range ; le portage passait par un milieu, qui pour une taille paire tombe sur une demi
-     tuile, et l'anneau entier glissait d'une case en diagonale. La presse demandait alors
-     la tuile a deux cases a sa droite et jamais celle qui la touche : quatre-vingts blocs
-     du catalogue tendaient leurs objets par dessus un trou.
+     The only scenario that looks at the neighbour ring of a block of **even** size. The
+     game takes the offsets from `Edges.getEdges` relative to the tile the block is stored
+     at; the port went through a centre, which for an even size falls on half a tile, and
+     the whole ring slid one square diagonally. The press then asked for the tile two
+     squares to its right and never the one touching it: eighty blocks of the catalogue were
+     holding their items out over a gap.
 
-     Sans le correctif la presse ne voit meme pas sa source de charbon et ne produit rien. */
+     Without the fix the press does not even see its coal source and produces nothing. */
   "press-even-ring": () => [
     { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
     // Covers 0..1 by 0..1.
     { x: 0, y: 0, block: "graphite-press", rotation: 0 },
-    // Deux sorties, sur deux faces differentes, pour que le tourniquet compte aussi.
+    // Two outputs, on two different faces, so that the rotating cursor counts too.
     { x: 2, y: 0, block: "conveyor", rotation: 0 },
     { x: 4, y: 0, block: "vault", rotation: 0 },
     { x: 0, y: 2, block: "conveyor", rotation: 1 },
     { x: 0, y: 4, block: "vault", rotation: 0 },
   ],
 
-  /* Un dechargeur colle a une presse, et un dechargeur entre deux coffres.
+  /* An unloader against a press, and an unloader between two vaults.
 
-     Les deux regles du bloc, chacune facile a prendre a l'envers. Il tire de **tout** bloc
-     dont le `unloadable` est vrai, ce qui couvre presque tout et inclut une usine et une
-     foreuse : contre une presse a graphite il en sort vraiment le graphite. Et il ne verse
-     **jamais** dans un coffre ni dans un noyau, quels que soient les chiffres.
+     The block's two rules, each easy to get backwards. It pulls from **any** block whose
+     `unloadable` is true, which covers almost everything and includes a factory and a
+     drill: against a graphite press it really does pull the graphite out. And it **never**
+     puts anything into a vault or a core, whatever the numbers.
 
-     Lu comme "hors d'un conteneur, vers ce qui est moins plein", le premier montage ne
-     bougeait rien la ou le jeu sort onze par seconde, et le second en sortait onze par
-     seconde la ou le jeu n'en bouge aucun. */
+     Read as "out of a container, towards whatever is less full", the first layout moved
+     nothing where the game moves eleven a second, and the second moved eleven a second
+     where the game moves none. */
   "unloader-from-press": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
     { x: 1, y: 0, block: "conveyor", rotation: 0 },
@@ -1329,14 +1329,13 @@ const SCENARIOS = {
     stock: ["copper*1000@1,0"],
   }),
 
-  /* Le courant ne traverse pas un consommateur.
+  /* Power does not travel through a consumer.
 
-     Le jeu refuse de relier deux voisins quand les deux consomment, qu'aucun ne produit et
-     qu'aucun n'est conducteur. Ici le premier radar touche le generateur et le second ne
-     touche que le premier : le jeu le laisse seul sur une grille sans producteur, donc le
-     generateur n'alimente qu'un radar et la batterie encaisse le reste. Relies sans
-     condition, les deux radars demandent soixante-douze la ou il en arrive soixante, et la
-     batterie ne monte jamais. */
+     The game refuses to join two neighbours when both consume, neither produces and neither
+     is conductive. Here the first radar touches the generator and the second touches only
+     the first: the game leaves it alone on a grid with no producer, so the generator feeds
+     one radar and the battery takes the rest. Joined unconditionally, the two radars ask
+     for seventy-two where sixty arrives, and the battery never rises. */
   "power-not-conductive": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
     { x: 1, y: 0, block: "combustion-generator", rotation: 0 },
@@ -1345,35 +1344,35 @@ const SCENARIOS = {
     { x: 3, y: 0, block: "radar", rotation: 0 },
   ],
 
-  /* Et une machine a sec ne demande rien du tout.
+  /* And a machine with nothing to eat asks for nothing at all.
 
-     `shouldConsumePower` tombe des qu'un consommateur autre que celui d'energie ne rend
-     rien, et un bloc qui ne consomme pas demande **zero** plutot que de demander et de
-     s'en passer. Un four sans plomb ni sable reclamait quand meme ses trente-six par
-     seconde : la batterie monte de moitie moins vite. */
+     `shouldConsumePower` falls as soon as any consumer other than the power one is not
+     satisfied, and a block that does not consume asks for **zero** rather than asking and
+     going without. A kiln with neither lead nor sand still claimed its thirty-six a second:
+     the battery rises half as fast. */
   "power-starved-asks-nothing": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("coal") },
     { x: 1, y: 0, block: "combustion-generator", rotation: 0 },
     { x: 1, y: -1, block: "battery", rotation: 0 },
-    // Covers 2..3 by 0..1, contre le generateur et sans rien pour le nourrir.
+    // Covers 2..3 by 0..1, against the generator and with nothing to feed it.
     { x: 2, y: 0, block: "kiln", rotation: 0 },
   ],
 
-  /* Une foreuse laser arrosee, et la meme a sec.
+  /* A laser drill with water on it, and the same one dry.
 
-     `speed = lerp(1, liquidBoostIntensity, optionalEfficiency) * efficiency` : l'eau vaut
-     soixante pour cent de plus. Le facteur etait dans le catalogue et la quantite non,
-     donc ni le code ni la donnee ne savaient combien il en fallait : la foreuse acceptait
-     l'eau, se remplissait, ne la buvait jamais et n'en tirait rien. Une conduite posee sur
-     une ferme de foreuses ne changeait aucun chiffre du rapport. */
+     `speed = lerp(1, liquidBoostIntensity, optionalEfficiency) * efficiency`: water is
+     worth sixty per cent more. The factor was in the catalogue and the quantity was not, so
+     neither the code nor the data knew how much was needed: the drill accepted the water,
+     filled up, never drank it and got nothing out of it. A pipe run to a farm of drills
+     changed no figure in the report. */
   "drill-wet": () => wetDrill(true),
   "drill-dry": () => wetDrill(false),
 
-  /* Et une foreuse a percussion sur du beryllium, qu'elle sort deux fois plus vite.
+  /* And an impact drill on beryllium, which it pulls out twice as fast.
 
-     `drillMultipliers.put(Items.beryllium, 2f)` sur les deux foreuses a percussion, et le
-     champ n'etait dumpe que pour la foreuse a faisceau. Le minerai le plus produit
-     d'Erekir etait rapporte a exactement la moitie de sa vitesse. */
+     `drillMultipliers.put(Items.beryllium, 2f)` on both impact drills, and the field was
+     dumped only for the beam drill. Erekir's most produced ore was reported at exactly half
+     its rate. */
   "burst-drill-beryllium": () => ({
     tiles: [
       // Covers 1..4 by 1..4.
@@ -1388,23 +1387,23 @@ const SCENARIOS = {
       [1, 2, 3, 4].map((y) => `ore-beryllium@${x},${y}`)),
   }),
 
-  /* Une pompe rotative sur de l'eau, alimentee et non alimentee.
+  /* A rotary pump on water, powered and unpowered.
 
-     `edelta()`, et le portage lisait `delta()` : une pompe sans courant pompait
-     quarante-huit par seconde ici et rien du tout dans le jeu. Une pompe est un
-     consommateur comme un autre et lit la meme efficacite qu'un four. */
+     `edelta()`, where the port read `delta()`: an unpowered pump pumped forty-eight a
+     second here and nothing at all in the game. A pump is a consumer like any other and
+     reads the same efficiency a kiln does. */
   "pump-powered": () => rotary(true),
   "pump-unpowered": () => rotary(false),
 
-  /* Un trieur qui doit alterner entre ses deux cotes.
+  /* A sorter that has to alternate between its two sides.
 
-     Quand l'objet ne correspond pas et que les **deux** cotes le prennent, le jeu alterne,
-     avec un bit par direction d'arrivee. Le portage prenait le premier cote qui acceptait,
-     donc tout partait du meme cote et la disposition se lisait comme si elle marchait. */
+     When the item does not match and **both** sides take it, the game alternates, with one
+     bit per incoming direction. The port took the first side that accepted, so everything
+     left by the same side and the layout read as though it worked. */
   "sorter-both-sides": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 1, y: 0, block: "conveyor", rotation: 0 },
-    // Regle sur du plomb, donc le cuivre ne correspond pas et sort par les cotes.
+    // Set to lead, so the copper does not match and leaves by the sides.
     { x: 2, y: 0, block: "sorter", rotation: 0, raw: item("lead") },
     { x: 2, y: 1, block: "conveyor", rotation: 1 },
     { x: 2, y: 3, block: "vault", rotation: 0 },
@@ -1412,18 +1411,18 @@ const SCENARIOS = {
     { x: 2, y: -3, block: "vault", rotation: 0 },
   ],
 
-  /* Un conduit qui pointe dans le vide fuit.
+  /* A conduit pointed at nothing leaks.
 
-     `moveLiquidForward(leaks, ...)` verse les deux tiers de ce qu'il tient dans une flaque
-     a chaque image, donc il ne sature jamais. Le drapeau etait dans le catalogue et lu
-     nulle part : une conduite ouverte bloquait la ligne ici et se vidange en continu dans
-     le jeu, ce qui inverse tout l'amont. Le tuyau plaque est le seul qui ne fuit pas, et le
-     seul cas que le portage avait juste. */
+     `moveLiquidForward(leaks, ...)` pours two thirds of what it holds onto the ground every
+     frame, so it never fills up. The flag was in the catalogue and read nowhere: an open
+     pipe blocked the line here and drains continuously in the game, which inverts
+     everything upstream. The plated pipe is the only one that does not leak, and the only
+     case the port had right. */
   "conduit-leaks": () => [
     { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
     { x: 1, y: 0, block: "conduit", rotation: 0 },
     { x: 2, y: 0, block: "conduit", rotation: 0 },
-    // Et rien devant : la case (3,0) est du sol nu.
+    // And nothing in front: the tile (3,0) is bare floor.
   ],
 
   "conduit-plated-holds": () => [
@@ -1432,18 +1431,18 @@ const SCENARIOS = {
     { x: 2, y: 0, block: "plated-conduit", rotation: 0 },
   ],
 
-  /* Un electrolyseur dont on ne tape qu'un des deux gaz.
+  /* An electrolyzer with only one of its two gases tapped.
 
-     C'est le montage courant, et le seul bloc du jeu a deux liquides de sortie. Son
-     hydrogene sature en huit secondes ; ensuite le jeu continue a sortir de l'ozone pour
-     toujours et le portage tombait a zero en bloquant tout l'aval. Et chaque gaz sort par
-     sa propre face : l'ozone par la face relative 1, l'hydrogene par la 3. */
+     That is the ordinary layout, and this is the only block in the game with two output
+     liquids. Its hydrogen fills up in eight seconds; after that the game keeps putting out
+     ozone for ever and the port fell to zero, blocking everything downstream. And each gas
+     leaves by its own face: the ozone by relative face 1, the hydrogen by face 3. */
   "electrolyzer-one-tap": () => [
-    // Covers 0..2 by 0..2, tourne vers l'est.
+    // Covers 0..2 by 0..2, facing east.
     { x: 1, y: 1, block: "electrolyzer", rotation: 0 },
     { x: -1, y: 1, block: "power-source", rotation: 0 },
     { x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
-    // Face relative 1 (le nord quand la rotation est zero) : l'ozone.
+    // Relative face 1 (north when the rotation is zero): the ozone.
     { x: 1, y: 3, block: "conduit", rotation: 1 },
     { x: 1, y: 5, block: "liquid-tank", rotation: 0 },
   ],
@@ -1491,14 +1490,14 @@ const SCENARIOS = {
       raw: point(3, 0) },
     { x: 5, y: 0, block: "bridge-conveyor", rotation: 0 },
     { x: 6, y: 0, block: "conveyor", rotation: 0 },
-    // Couvre 7..9 par -1..1.
+    // Covers 7..9 by -1..1.
     { x: 8, y: 0, block: "vault", rotation: 0 },
 
     { x: 5, y: 4, block: "item-source", rotation: 0, raw: item("lead") },
     { x: 5, y: 3, block: "conveyor", rotation: 3 },
     { x: 5, y: 2, block: "conveyor", rotation: 3 },
     { x: 5, y: 1, block: "router", rotation: 0 },
-    // Couvre 2..4 par 1..3, contre le flanc ouest du routeur.
+    // Covers 2..4 by 1..3, against the router's west side.
     { x: 3, y: 2, block: "vault", rotation: 0 },
   ],
 
@@ -1508,11 +1507,11 @@ const SCENARIOS = {
   "liquid-bridge-idle": () => [
     { x: 0, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") },
     { x: 1, y: 0, block: "conduit", rotation: 0 },
-    // Couvre 2..4 par -1..1.
+    // Covers 2..4 by -1..1.
     { x: 3, y: 0, block: "liquid-tank", rotation: 0 },
     { x: 5, y: 0, block: "bridge-conduit", rotation: 0 },
     { x: 6, y: 0, block: "conduit", rotation: 0 },
-    // Couvre 7..9 par -1..1.
+    // Covers 7..9 by -1..1.
     { x: 8, y: 0, block: "liquid-tank", rotation: 0 },
   ],
 
@@ -1526,22 +1525,22 @@ const SCENARIOS = {
      the thorium up instead. */
   "reactor-drip": () => ({
     tiles: [
-      // Couvre 0..2 par 0..2, sur une seule case de minerai.
+      // Covers 0..2 by 0..2, on a single tile of ore.
       { x: 1, y: 1, block: "laser-drill", rotation: 0 },
-      /* Deux chambres a combustion plutot qu une source de courant : une source est un
-         `PowerNode`, elle se relie toute seule a tout ce qui passe a portee au moment de la
-         pose, batterie comprise, et le scenario mesurait son courant a elle. */
+      /* Two combustion generators rather than a power source: a source is a `PowerNode`, it
+         links itself to anything within reach at the moment it is placed, the battery
+         included, and the scenario then measured the source's own power. */
       { x: 0, y: 3, block: "combustion-generator", rotation: 0 },
       { x: 0, y: 4, block: "item-source", rotation: 0, raw: item("coal") },
       { x: 1, y: 3, block: "combustion-generator", rotation: 0 },
       { x: 1, y: 4, block: "item-source", rotation: 0, raw: item("coal") },
 
       { x: 3, y: 1, block: "conveyor", rotation: 0 },
-      // Couvre 4..6 par 0..2.
+      // Covers 4..6 by 0..2.
       { x: 5, y: 1, block: "thorium-reactor", rotation: 0 },
-      // Refroidi, sinon le scenario mesure une explosion plutot qu un compteur.
+      // Cooled, or the scenario measures an explosion rather than a counter.
       { x: 5, y: 3, block: "liquid-source", rotation: 0, raw: liquid("cryofluid") },
-      // Sur la grille du reacteur et sur elle seule : ce qu elle a pris est la mesure.
+      // On the reactor's grid and on that alone: what it took is the measurement.
       { x: 7, y: 1, block: "battery", rotation: 0 },
     ],
     ground: ["ore-thorium@1,1"],
@@ -1553,63 +1552,63 @@ const SCENARIOS = {
      energy and declared a schematic that forgot its neoplasm pipe perfectly sound. */
   "reactor-neoplasia-full": () => ({
     tiles: [
-      // Couvre 0..4 par 0..4.
+      // Covers 0..4 by 0..4.
       { x: 2, y: 2, block: "neoplasia-reactor", rotation: 0 },
       { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("phase-fabric") },
       { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("arkycite") },
     ],
-    /* Son eau en reserve plutot qu'une source de plus. Ce que le scenario verifie est le
-       reacteur lui-meme : il n'est plus la, et il ne reste rien dedans. Son souffle est
-       mesure par son jumeau juste apres. */
+    /* Its water as a stock rather than one more source. What the scenario checks is the
+       reactor itself: it is gone, and nothing is left inside it. Its blast is measured by
+       its twin just below. */
     stock: ["water~80@2,2"],
   }),
 
-  /* Un noeud pose sans lien enregistre se relie tout seul.
-     `placed()` appelle `getPotentialLinks` des que `power.links` est vide, donc une source
-     de courant lachee a cote de rien alimente la foreuse quatre cases plus loin. Le portage
-     ne lisait que les liens enregistres, donc la foreuse restait seule sur sa grille a
-     couverture zero et ne sortait rien du tout. C'est le cas d'un schema dont les liens
-     n'ont pas ete copies, et c'est aussi ce qui avait fausse `reactor-drip`. */
+  /* A node placed with no recorded link links itself.
+     `placed()` calls `getPotentialLinks` as soon as `power.links` is empty, so a power
+     source dropped next to nothing feeds the drill four tiles away. The port read only the
+     recorded links, so the drill stayed alone on its grid at coverage zero and produced
+     nothing at all. That is the case of a schematic whose links were not copied, and it is
+     also what had skewed `reactor-drip`. */
   "power-node-autolinks": () => ({
     tiles: [
       { x: 0, y: 0, block: "power-source", rotation: 0 },
-      // Couvre 3..5 par 0..2, sans toucher la source.
+      // Covers 3..5 by 0..2, without touching the source.
       { x: 4, y: 1, block: "laser-drill", rotation: 0 },
       { x: 6, y: 1, block: "conveyor", rotation: 0 },
-      // Couvre 7..9 par 0..2.
+      // Covers 7..9 by 0..2.
       { x: 8, y: 1, block: "vault", rotation: 0 },
     ],
     ground: [3, 4, 5].flatMap((x) => [0, 1, 2].map((y) => `ore-copper@${x},${y}`)),
   }),
 
-  /* Un beam-link, qui est un `LongPowerNode` : cinq cents cases de portee, **un** seul
-     lien, pas d'auto-liaison, et `sameBlockConnection`, donc il ne se relie qu'a un autre
-     beam-link et a rien d'autre.
+  /* A beam link, which is a `LongPowerNode`: five hundred tiles of range, **one** link
+     only, no auto-linking, and `sameBlockConnection`, so it joins another beam link and
+     nothing else.
 
-     Ecrit d'abord avec un seul beam-link vise sur la foreuse, il donnait trente-neuf
-     cuivres au portage et zero dans le jeu : un lien enregistre dans un schema n'est pas
-     un lien, le jeu le revalide a la pose. */
+     Written first with a single beam link aimed at the drill, it gave thirty-nine copper in
+     the port and zero in the game: a link recorded in a schematic is not a link, the game
+     revalidates it when the block is placed. */
   "beam-link-span": () => ({
     tiles: [
       { x: 5, y: 2, block: "item-source", rotation: 0, raw: item("coal") },
       { x: 4, y: 2, block: "combustion-generator", rotation: 0 },
-      // Couvre 1..3 par 1..3, contre le generateur, relie au beam-link d'en face.
+      // Covers 1..3 by 1..3, against the generator, linked to the beam link opposite.
       { x: 2, y: 2, block: "beam-link", rotation: 0, raw: links([[10, 0]]) },
-      // Couvre 11..13 par 1..3.
+      // Covers 11..13 by 1..3.
       { x: 12, y: 2, block: "beam-link", rotation: 0 },
-      // Couvre 14..16 par 1..3.
+      // Covers 14..16 by 1..3.
       { x: 15, y: 2, block: "laser-drill", rotation: 0 },
       { x: 17, y: 2, block: "conveyor", rotation: 0 },
-      // Couvre 18..20 par 1..3.
+      // Covers 18..20 by 1..3.
       { x: 19, y: 2, block: "vault", rotation: 0 },
     ],
     ground: [14, 15, 16].flatMap((x) => [1, 2, 3].map((y) => `ore-copper@${x},${y}`)),
   }),
 
-  /* Une diode, le seul bloc qui deplace de la charge entre deux grilles sans etre sur
-     aucune des deux. Derriere elle une grille qui produit, devant elle une batterie seule.
-     Elle envoie la moitie de l'ecart de remplissage a chaque image, donc les deux finissent
-     au meme niveau. Classee en `sink`, la batterie de devant restait a plat. */
+  /* A diode, the only block that moves charge between two grids without being on either of
+     them. Behind it a grid that produces, in front of it a battery on its own. It sends
+     half the difference in fill on every frame, so the two end at the same level. Filed as
+     a `sink`, the battery in front stayed flat. */
   "diode-levels": () => [
     { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
     { x: 0, y: 0, block: "combustion-generator", rotation: 0 },
@@ -1618,16 +1617,16 @@ const SCENARIOS = {
     { x: 3, y: 0, block: "battery", rotation: 0 },
   ],
 
-  /* Un mur bouclier tire trois par seconde en permanence, qu'on lui tire dessus ou non :
-     rien dans `updateTile` ne conditionne sa consommation. Huit d'entre eux autour d'une
-     batterie mangent la moitie de ce qu'une chambre a combustion fabrique, et ce qui reste
-     est ce que la batterie a pris. */
+  /* A shielded wall draws three a second for ever, whether or not anything is shooting at
+     it: nothing in `updateTile` gates its consumption. Eight of them around a battery eat
+     half of what a combustion generator makes, and what is left is what the battery
+     took. */
   "shielded-wall-drains": () => [
     { x: -2, y: 1, block: "item-source", rotation: 0, raw: item("coal") },
     { x: -1, y: 1, block: "combustion-generator", rotation: 0 },
-    // Couvre 0..2 par 0..2.
+    // Covers 0..2 by 0..2.
     { x: 1, y: 1, block: "battery-large", rotation: 0 },
-    // Deux sur deux chacun, donc six tiennent autour d'une batterie de trois sur trois.
+    // Two by two each, so six fit around a three by three battery.
     { x: 3, y: 0, block: "shielded-wall", rotation: 0 },
     { x: 3, y: 2, block: "shielded-wall", rotation: 0 },
     { x: 0, y: 3, block: "shielded-wall", rotation: 0 },
@@ -1636,57 +1635,56 @@ const SCENARIOS = {
     { x: -2, y: 2, block: "shielded-wall", rotation: 0 },
   ],
 
-  /* Une presse deux sur deux dont le coin touche un duct blinde.
+  /* A two by two press whose corner touches an armoured duct.
 
-     Un blinde ne prend que par l'arriere, et l'arriere se mesure a la **case de bordure**
-     que le jeu clampe dans l'empreinte du voisin, pas a sa case de rangement. Pour un bloc
-     de taille paire les deux ne disent pas la meme chose : la presse est a l'est du duct
-     et la case de rangement le fait passer pour au sud, donc le portage acceptait ce que le
-     jeu refuse et vidait toute la presse dans une ligne qui n'en porte rien.
+     An armoured duct takes only from behind, and behind is measured against the **edge
+     tile** the game clamps into the neighbour's footprint, not against its storage tile.
+     For a block of even size the two do not say the same thing: the press is east of the
+     duct and the storage tile makes it look as though it were south, so the port accepted
+     what the game refuses and emptied the whole press into a line that carries none of
+     it.
 
-     La presse couvre 2..3 par 2..3 et n'a que cette sortie. */
+     The press covers 2..3 by 2..3 and has no other outlet. */
   "press-corner-armored": () => [
     { x: 4, y: 2, block: "item-source", rotation: 0, raw: item("coal") },
     { x: 2, y: 2, block: "graphite-press", rotation: 0 },
     { x: 1, y: 3, block: "armored-duct", rotation: 1 },
     { x: 1, y: 4, block: "duct", rotation: 1 },
     { x: 1, y: 5, block: "duct", rotation: 1 },
-    // Couvre 0..2 par 6..8.
+    // Covers 0..2 by 6..8.
     { x: 1, y: 7, block: "vault", rotation: 0 },
   ],
 
-  /* Un pont configure sur une case ou quelqu'un a depuis pose autre chose.
+  /* A bridge configured onto a tile where somebody has since placed something else.
 
-     Le jeu revalide le lien a chaque image : la case d'en face doit porter **le meme
-     bloc**. Sinon le pont n'est plus un pont, il deverse autour de lui. Le portage
-     teleportait quand meme, quatre cases plus loin, et le debordement en amont
-     n'apparaissait jamais. Le coffre du haut est ce que le jeu remplit, celui du bout est
-     ce que le portage remplissait. */
+     The game revalidates the link on every frame: the tile opposite has to carry **the same
+     block**. Otherwise the bridge is no longer a bridge, it dumps around itself. The port
+     teleported all the same, four tiles on, and the backup upstream never appeared. The
+     vault above is what the game fills, the one at the end is what the port filled. */
   "bridge-onto-wrong-block": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 1, y: 0, block: "conveyor", rotation: 0 },
-    // Le premier pont vise le second, qui lui vise une case ou il n'y a pas de pont. Il
-    // faut les deux : un pont sans lien valide n'accepte rien d'un tapis, donc seul un
-    // autre pont peut lui donner de quoi deverser.
+    // The first bridge aims at the second, which aims at a tile with no bridge on it. Both
+    // are needed: a bridge with no valid link accepts nothing from a belt, so only another
+    // bridge can give it something to dump.
     { x: 2, y: 0, block: "bridge-conveyor", rotation: 0, raw: point(3, 0) },
     { x: 5, y: 0, block: "bridge-conveyor", rotation: 0, raw: point(3, 0) },
-    // Couvre 4..6 par 1..3 : ce que le second repand autour de lui.
+    // Covers 4..6 by 1..3: what the second one spreads around itself.
     { x: 5, y: 2, block: "vault", rotation: 0 },
-    // La case visee, qui porte un convoyeur ordinaire et pas un pont.
+    // The tile aimed at, which carries an ordinary conveyor rather than a bridge.
     { x: 8, y: 0, block: "conveyor", rotation: 0 },
     { x: 9, y: 0, block: "conveyor", rotation: 0 },
-    // Couvre 10..12 par -1..1.
+    // Covers 10..12 by -1..1.
     { x: 11, y: 0, block: "vault", rotation: 0 },
   ],
 
-  /* Un convoyeur de phase nourri de deux objets a la fois, avec une sortie plus etroite
-     que ses entrees, donc il sature et doit choisir.
+  /* A phase conveyor fed two items at once, with an outlet narrower than its inlets, so it
+     saturates and has to choose.
 
-     `items.take()` est un curseur qui tourne sur les **identifiants** d'objets et qui
-     avance a chaque passage, donc les deux alternent strictement. Le portage lisait la
-     premiere cle d'une Map, c'est-a-dire le type arrive en premier, qui gagnait pour
-     toujours. Le trieur au bout separe les deux : ce sont les deux coffres qui le disent,
-     pas leur total, qui est le meme des deux facons. */
+     `items.take()` is a cursor that turns over item **ids** and advances on every pass, so
+     the two alternate strictly. The port read the first key of a Map, that is, whichever
+     type arrived first, and it won for ever. The sorter at the end separates the two: it is
+     the two vaults that say so, not their total, which is the same either way. */
   "phase-conveyor-two-items": () => [
     { x: 0, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 1, y: 1, block: "conveyor", rotation: 0 },
@@ -1698,60 +1696,59 @@ const SCENARIOS = {
     { x: 7, y: 1, block: "conveyor", rotation: 0 },
     { x: 8, y: 1, block: "sorter", rotation: 0, raw: item("copper") },
     { x: 9, y: 1, block: "conveyor", rotation: 0 },
-    // Couvre 10..12 par 0..2 : ce que le trieur laisse passer tout droit.
+    // Covers 10..12 by 0..2: what the sorter lets through straight on.
     { x: 11, y: 1, block: "vault", rotation: 0 },
-    // Couvre 7..9 par 2..4 : ce qu'il pousse sur le cote.
+    // Covers 7..9 by 2..4: what it pushes out the side.
     { x: 8, y: 3, block: "vault", rotation: 0 },
   ],
 
-  /* Une plateforme de lancement, qui n'est pas un puits : elle se remplit jusqu'a cent,
-     et a vingt secondes tout part d'un coup. Les deux conditions sont separees, donc une
-     plateforme nourrie lentement part des qu'elle est pleine et une plateforme nourrie vite
-     attend son horloge. Le coffre en dessous n'est la que pour montrer qu'elle ne rend
-     rien : ce qui monte est perdu pour le schema. */
+  /* A launch pad, which is not a sink: it fills to a hundred, and at twenty seconds the lot
+     goes at once. The two conditions are separate, so a pad fed slowly launches as soon as
+     it is full and a pad fed fast waits for its clock. The vault below is there only to
+     show that it gives nothing back: what goes up is lost to the schematic. */
   "launch-pad-eats": () => [
     { x: -1, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 0, y: 1, block: "conveyor", rotation: 0 },
-    // Couvre 1..3 par 0..2.
+    // Covers 1..3 by 0..2.
     { x: 2, y: 1, block: "launch-pad", rotation: 0 },
     { x: 2, y: 4, block: "power-source", rotation: 0 },
   ],
 
-  /* La meme, mais avancee : elle ne prend **qu'un seul type a la fois**, donc un tapis qui
-     porte deux objets la bloque des que le second arrive. Elle couvre 1..4 par 0..3. */
+  /* The same one, advanced: it takes **one kind at a time only**, so a belt carrying two
+     items jams it as soon as the second arrives. It covers 1..4 by 0..3. */
   "launch-pad-one-kind": () => [
     { x: -2, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
-    // Contre le routeur, et pas en diagonale : ecrit en diagonale, le plomb n'atteignait
-    // rien et le scenario mesurait une plateforme nourrie d'un seul type par accident.
+    // Against the router, not diagonal to it: written diagonally, the lead reached nothing
+    // and the scenario measured a pad fed one kind by accident.
     { x: -1, y: 2, block: "item-source", rotation: 0, raw: item("lead") },
     { x: -1, y: 1, block: "router", rotation: 0 },
     { x: 0, y: 1, block: "conveyor", rotation: 0 },
-    // Quatre sur quatre : couvre 1..4 par 1..4.
+    // Four by four: covers 1..4 by 1..4.
     { x: 2, y: 2, block: "advanced-launch-pad", rotation: 0 },
     { x: 2, y: 5, block: "power-source", rotation: 0 },
   ],
 
-  /* Un puits a courant, qui ne demande pas beaucoup mais tout : `Float.MAX_VALUE`. Toute sa
-     grille tombe a zero et la foreuse a cote ne sort rien, alors qu'elle a un generateur
-     pour elle. La batterie reste vide. */
+  /* A power void, which asks not for a lot but for everything: `Float.MAX_VALUE`. Its whole
+     grid falls to zero and the drill beside it produces nothing, although it has a
+     generator to itself. The battery stays empty. */
   "power-void-drains": () => ({
     tiles: [
       { x: 0, y: 4, block: "item-source", rotation: 0, raw: item("coal") },
       { x: 0, y: 3, block: "combustion-generator", rotation: 0 },
       { x: 1, y: 3, block: "power-void", rotation: 0 },
       { x: 0, y: 2, block: "battery", rotation: 0 },
-      // Couvre 0..2 par -1..1, contre la batterie.
+      // Covers 0..2 by -1..1, against the battery.
       { x: 1, y: 0, block: "laser-drill", rotation: 0 },
       { x: 4, y: 0, block: "conveyor", rotation: 0 },
-      // Couvre 6..8 par -1..1.
+      // Covers 6..8 by -1..1.
       { x: 7, y: 0, block: "vault", rotation: 0 },
     ],
     ground: [0, 1, 2].flatMap((x) => [-1, 0, 1].map((y) => `ore-copper@${x},${y}`)),
   }),
 
-  /* Un incinerateur a scories, qui n'est pas l'incinerateur de Serpulo : celui-la ne prend
-     rien tant qu'il n'a pas de scories, et avale tout ce qu'on lui donne des qu'il en a.
-     La paire est la mesure : le meme montage sans la source de scories. */
+  /* A slag incinerator, which is not Serpulo's incinerator: this one takes nothing until it
+     has slag, and swallows whatever it is given as soon as it does. The pair is the
+     measurement: the same layout without the slag source. */
   "incinerator-slag": () => [
     { x: 0, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 1, y: 0, block: "conveyor", rotation: 0 },
@@ -1762,10 +1759,10 @@ const SCENARIOS = {
   "incinerator-dry": () => SCENARIOS["incinerator-slag"]().filter(
     (tile) => tile.block !== "liquid-source"),
 
-  /* Une tourelle continue avec son azote et rien a viser. Elle garde ses vingt unites pour
-     les trente secondes et n'en boit pas une : le liquide d'une tourelle est un stock et pas
-     un debit, et un portage qui le lit comme une consommation invente une ligne
-     d'alimentation. Couvre 0..3 par 0..3. */
+  /* A continuous turret with its nitrogen and nothing to aim at. It keeps its twenty units
+     for the whole thirty seconds and drinks not one: a turret's liquid is a stock and not a
+     rate, and a port that reads it as consumption invents a supply line. Covers 0..3 by
+     0..3. */
   "turret-lustre-idle": () => ({
     tiles: [
       { x: 1, y: 1, block: "lustre", rotation: 0 },
@@ -1774,37 +1771,37 @@ const SCENARIOS = {
     stock: ["nitrogen~20@1,1"],
   }),
 
-  /* Et la tourelle a liquide continue, dont les munitions **sont** un liquide. Couvre 0..2
-     par 0..2. */
+  /* And the continuous liquid turret, whose ammunition **is** a liquid. Covers 0..2 by
+     0..2. */
   "turret-sublimate-idle": () => ({
     tiles: [{ x: 1, y: 1, block: "sublimate", rotation: 0 }],
     stock: ["ozone~50@1,1"],
   }),
 
-  /* L'accelerateur interplanetaire, qui avale huit mille cuivres sans jamais rien en faire
-     hors campagne. Ce que le scenario verifie est qu'il ne bouche pas le tapis : un puits
-     de vingt-cinq mille places ne sature pas en trente secondes. Couvre -2..3 par -2..3. */
+  /* The interplanetary accelerator, which swallows eight thousand copper and never does
+     anything with it outside a campaign. What the scenario checks is that it does not jam
+     the belt: a sink with twenty-five thousand slots does not fill in thirty seconds.
+     Covers -2..3 by -2..3. */
   "accelerator-swallows": () => [
     { x: -6, y: 0, block: "item-source", rotation: 0, raw: item("copper") },
     { x: -5, y: 0, block: "conveyor", rotation: 0 },
     { x: -4, y: 0, block: "conveyor", rotation: 0 },
-    // Sept sur sept : couvre -3..3 par -3..3.
+    // Seven by seven: covers -3..3 by -3..3.
     { x: 0, y: 0, block: "interplanetary-accelerator", rotation: 0 },
     { x: 0, y: 5, block: "power-source", rotation: 0 },
   ],
 
-  /* Les blocs dont la reponse est "rien", chacun avec la forme qui le montre. */
+  /* The blocks whose answer is "nothing", each with the shape that shows it. */
   "refuses-switch": () => refuses("switch"),
   "refuses-door": () => refuses("door"),
   "refuses-blast-door": () => refuses("blast-door"),
-  /* Ni le mur colore ni le sol colore : le jeu refuse de les poser depuis une
-     schematique, donc ils ne peuvent pas y apparaitre et il n y a rien a mesurer. */
+  /* Neither the canvas wall nor the large canvas: the game refuses to place them from a
+     schematic, so they cannot appear in one and there is nothing to measure. */
   "refuses-canvas": () => refuses("canvas"),
   "refuses-large-canvas": () => refuses("large-canvas"),
-  /* Un processeur ne consomme rien du tout : ni courant, ni objet, ni liquide. Ce
-     qu il fait passe par une instruction sur un bloc auquel il est relie, et ca ne
-     se simule pas ici. Ce que le banc peut dire, et qui est vrai, est qu il ne prend
-     rien et ne rend rien. */
+  /* A processor consumes nothing at all: no power, no item, no liquid. What it does goes
+     through an instruction on a block it is linked to, and that is not simulated here. What
+     the bench can say, and it is true, is that it takes nothing and gives nothing back. */
   "refuses-micro-processor": () => refuses("micro-processor"),
   "refuses-hyper-processor": () => refuses("hyper-processor"),
   "refuses-thruster": () => refuses("thruster"),
@@ -1812,8 +1809,8 @@ const SCENARIOS = {
   "refuses-tile-logic-display": () => refuses("tile-logic-display"),
   "refuses-landing-pad": () => refuses("landing-pad"),
 
-  /* Un tapis dans une plateforme d'arrivee, qui n'a rien a faire hors campagne, avec de
-     l'eau a cote qu'elle ne boit pas. Quatre sur quatre : couvre 0..3 par 0..3. */
+  /* A landing pad, which has nothing to do outside a campaign, with water beside it that it
+     does not drink. Four by four: covers 0..3 by 0..3. */
   "landing-pad-idle": () => ({
     tiles: [
       { x: 1, y: 1, block: "landing-pad", rotation: 0 },
@@ -1823,71 +1820,70 @@ const SCENARIOS = {
     stock: ["water~100@1,1"],
   }),
 
-  /* La chaine complete de la famille des charges utiles : une source fabrique un conteneur,
-     un chargeur le remplit de cuivre, un dechargeur le vide dans un coffre, et le conteneur
-     vide repart au vide.
+  /* The whole chain of the payload family: a source makes a container, a loader fills it
+     with copper, an unloader empties it into a vault, and the empty container goes off to
+     the void.
 
-     C'est la premiere forme du banc ou une charge utile est autre chose qu'un nom : un
-     `BuildPayload` est un batiment entier et il emporte son stock. Ce que le chargeur tient
-     **dedans** est compare, pas seulement ce qu'il tient. */
+     It is the bench's first shape where a payload is something other than a name: a
+     `BuildPayload` is a whole building and it carries its own stock. What the loader holds
+     **inside** is compared, not only what it holds. */
   "payload-loader-line": () => [
-    // Cinq sur cinq : couvre -2..2 par -2..2, et atteint trois cases a l'est.
+    // Five by five: covers -2..2 by -2..2, and reaches three tiles east.
     { x: 0, y: 0, block: "payload-source", rotation: 0, raw: blockOf("container") },
-    // Trois sur trois : couvre 3..5 par -1..1.
+    // Three by three: covers 3..5 by -1..1.
     { x: 4, y: 0, block: "payload-loader", rotation: 0 },
-    // Trois sources contre sa face nord : un tapis ne remplirait jamais trois cents.
+    // Three sources against its north face: a belt would never fill three hundred.
     { x: 3, y: 2, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 4, y: 2, block: "item-source", rotation: 0, raw: item("copper") },
     { x: 5, y: 2, block: "item-source", rotation: 0, raw: item("copper") },
-    // Couvre 6..8 par -1..1.
+    // Covers 6..8 by -1..1.
     { x: 7, y: 0, block: "payload-unloader", rotation: 0 },
     { x: 7, y: 2, block: "power-source", rotation: 0 },
-    // Couvre 6..8 par -4..-2 : ce que le dechargeur vide.
+    // Covers 6..8 by -4..-2: what the unloader empties into.
     { x: 7, y: -3, block: "vault", rotation: 0 },
-    // Couvre 9..13 par -2..2 : le conteneur vide repart la-dedans.
+    // Covers 9..13 by -2..2: the empty container goes off in there.
     { x: 11, y: 0, block: "payload-void", rotation: 0 },
   ],
 
-  /* Et un deconstructeur, qui rend un bloc sous forme de son propre cout de construction.
-     Un routeur coute trois cuivres et se construit en six images, donc il repart aussi vite
-     qu'il arrive, et ce qui sort finit dans le coffre. */
+  /* And a deconstructor, which gives a block back as its own build cost. A router costs
+     three copper and builds in six frames, so it leaves as fast as it arrives, and what
+     comes out ends in the vault. */
   "payload-deconstructor-breaks": () => [
     { x: 0, y: 0, block: "payload-source", rotation: 0, raw: blockOf("router") },
-    // Cinq sur cinq : couvre 3..7 par -2..2.
+    // Five by five: covers 3..7 by -2..2.
     { x: 5, y: 0, block: "deconstructor", rotation: 0 },
     { x: 5, y: 3, block: "power-source", rotation: 0 },
     { x: 8, y: 0, block: "conveyor", rotation: 0 },
-    // Couvre 9..11 par -1..1.
+    // Covers 9..11 by -1..1.
     { x: 10, y: 0, block: "vault", rotation: 0 },
   ],
 
-  /* Une paire de mass drivers a cargaison. Le meme accord des deux bouts que la paire a
-     objets, avec une barriere de plus : la cargaison doit avoir glisse jusqu'au bout du
-     canon avant qu'on puisse tirer, et le tir demande quatre-vingt-dix images de charge
-     par-dessus les cent trente de rechargement. Ou en sont les conteneurs a trente secondes
-     est la mesure. */
+  /* A pair of payload mass drivers. The same agreement at both ends as the item pair, with
+     one more barrier: the cargo has to have slid to the end of the barrel before anything
+     can be fired, and the shot needs ninety frames of charge on top of the hundred and
+     thirty of reload. Where the containers have got to at thirty seconds is the
+     measurement. */
   "payload-driver-pair": () => [
-    // Cinq sur cinq : couvre -2..2 par -2..2, atteint trois cases a l'est.
+    // Five by five: covers -2..2 by -2..2, reaches three tiles east.
     { x: 0, y: 0, block: "payload-source", rotation: 0, raw: blockOf("container") },
-    // Trois sur trois : couvre 3..5 par -1..1, vise dix cases plus loin.
+    // Three by three: covers 3..5 by -1..1, aimed ten tiles away.
     { x: 4, y: 0, block: "payload-mass-driver", rotation: 0, raw: point(10, 0) },
     { x: 4, y: 3, block: "power-source", rotation: 0 },
-    // Couvre 13..15 par -1..1.
+    // Covers 13..15 by -1..1.
     { x: 14, y: 0, block: "payload-mass-driver", rotation: 0 },
     { x: 14, y: 3, block: "power-source", rotation: 0 },
-    // Couvre 16..20 par -2..2 : ce que le second pousse dehors.
+    // Covers 16..20 by -2..2: what the second one pushes out.
     { x: 18, y: 0, block: "payload-void", rotation: 0 },
   ],
 
-  /* Un assembleur a moitie alimente. Il construit ses quatre drones un par un, et chacun
-     coute quatre secondes divisees par la fraction de courant qu'il recoit : avec une seule
-     chambre a combustion pour cent cinquante par seconde, il en sort trois en trente
-     secondes et pas quatre. Les drones sont des unites sur la carte, donc le banc les
-     compte comme les autres.
+  /* An assembler on half its power. It builds its four drones one at a time, and each costs
+     four seconds divided by the fraction of power it gets: with a single combustion
+     generator against a hundred and fifty a second, three come out in thirty seconds and
+     not four. The drones are units on the map, so the bench counts them like any other.
 
-     Et il ne boit rien : `shouldConsume` demande que tout son plan soit la, et il n'a aucun
-     stell ni aucun mur. Ses quatre-vingt-dix cyanogenes sont intacts a la fin. Cinq sur
-     cinq : couvre 3..7 par -2..2. */
+     And it drinks nothing: `shouldConsume` wants its whole plan present, and it has neither
+     stell nor any wall. Its ninety cyanogen are untouched at the end. Five by five: covers
+     3..7 by -2..2. */
   "assembler-half-fed": () => ({
     tiles: [
       { x: 5, y: 0, block: "tank-assembler", rotation: 0 },
@@ -1897,64 +1893,66 @@ const SCENARIOS = {
     stock: ["cyanogen~90@5,0"],
   }),
 
-  /* Un point de dechargement que personne n'a regle, qui est l'erreur celebre de ce bloc :
-     aucune unite n'y va jamais et le chargeur se remplit jusqu'a ses deux cents.
+  /* An unload point nobody has configured, which is this block's famous mistake: no unit
+     ever goes to it and the loader fills up to its two hundred.
 
-     Son jumeau, la meme chose avec un point regle sur le cuivre, n'est **pas** ici. Le debit
-     d'un fret aerien n'est pas reproductible depuis un schema : `AIController` tire
-     `Mathf.random(40)` au moment ou l'unite nait, et ce tirage decale son premier
-     chargement d'un nombre d'images que rien dans la schematique ne determine. Le portage
-     fait voler l'unite, la charge et la decharge ; la cadence exacte du premier aller
-     dependrait d'un tirage partage avec tout ce qui s'est passe avant sur la carte. */
+     Its twin, the same thing with the point set to copper, is **not** here. The rate of an
+     air freight run is not reproducible from a schematic: `AIController` draws
+     `Mathf.random(40)` at the moment the unit is born, and that draw shifts its first
+     loading by a number of frames nothing in the schematic decides. The port flies the
+     unit, loads it and unloads it; the exact timing of the first trip would depend on a
+     draw shared with everything that happened on the map before. */
   "cargo-unset": () => [
     { x: -1, y: 1, block: "item-source", rotation: 0, raw: item("copper") },
-    // Couvre 0..2 par 0..2.
+    // Covers 0..2 by 0..2.
     { x: 1, y: 1, block: "unit-cargo-loader", rotation: 0 },
     { x: 1, y: 3, block: "liquid-source", rotation: 0, raw: liquid("nitrogen") },
     { x: 1, y: -1, block: "power-source", rotation: 0 },
-    // Couvre 8..9 par 0..1, regle sur rien.
+    // Covers 8..9 by 0..1, set to nothing.
     { x: 8, y: 0, block: "unit-cargo-unload-point", rotation: 0 },
-    // Couvre 10..12 par -1..1.
+    // Covers 10..12 by -1..1.
     { x: 11, y: 0, block: "vault", rotation: 0 },
   ],
 
-  /* Un reacteur au thorium sans refroidissement, avec de quoi mesurer le souffle.
+  /* A thorium reactor with no cooling, and enough around it to measure the blast.
 
-     Trente thoriums valent six d'explosivite, plus les cinq du bloc, fois trois et demi :
-     trente-huit, en trois vagues de dix-neuf. Un convoyeur a quarante-cinq points de vie et
-     tombe ; un coffre en a quatre cent quatre-vingt-quinze et tient. Ce qui reste debout est
-     la mesure, et sans elle un schema qui se detruit lui-meme se lisait comme un schema qui
-     marche : les compteurs d'un bloc mort sont a zero des deux cotes.
+     Thirty thorium are worth six of explosiveness, plus the block's own five, times three
+     and a half: thirty-eight, in three waves of nineteen. A conveyor has forty-five health
+     and falls; a vault has four hundred and ninety-five and holds. What is left standing is
+     the measurement, and without it a schematic that destroys itself read as a schematic
+     that works: the counters of a dead block are zero on both sides.
 
-     Le reacteur couvre 1..3 par 1..3. */
+     The reactor covers 1..3 by 1..3. */
   "reactor-blast": () => ({
     tiles: [
       { x: 2, y: 2, block: "thorium-reactor", rotation: 0 },
-      /* Une jonction a trente points de vie, un routeur quarante, un convoyeur
-         quarante-cinq. Le souffle les separe : c'est ca, la mesure. */
+      /* A junction has thirty health, a router forty, a conveyor forty-five. The blast
+         separates them: that is the measurement. */
       { x: 4, y: 2, block: "junction", rotation: 0 },
       { x: 2, y: 4, block: "router", rotation: 0 },
       { x: 0, y: 4, block: "conveyor", rotation: 0 },
       { x: 7, y: 2, block: "junction", rotation: 0 },
-      // Couvre 1..3 par -4..-2 : assez solide pour tenir.
+      // Covers 1..3 by -4..-2: solid enough to hold.
       { x: 2, y: -3, block: "vault", rotation: 0 },
     ],
     stock: ["thorium*30@2,2"],
   }),
 
-  /* Le meme, avec de quoi mesurer le souffle : une source d'eau collee contre lui.
+  /* The same one, with enough around it to measure the blast: a water source pressed
+     against it.
 
-     Un reacteur neoplasique qui se tue emporte ce qui le touche, et c'est la seule chose de
-     tout ce depot qu'on ne peut pas lire dans un compteur : ceux d'un bloc mort sont a zero
-     des deux cotes, ce qui se lit comme un accord. Ce qui reste debout est la mesure. */
+     A neoplasia reactor that kills itself takes whatever touches it with it, and it is the
+     one thing in this whole repository that cannot be read from a counter: the counters of
+     a dead block are zero on both sides, which reads as agreement. What is left standing is
+     the measurement. */
   "reactor-neoplasia-blast": () => [
-    // Couvre 0..4 par 0..4.
+    // Covers 0..4 by 0..4.
     { x: 2, y: 2, block: "neoplasia-reactor", rotation: 0 },
     { x: -1, y: 0, block: "item-source", rotation: 0, raw: item("phase-fabric") },
     { x: -1, y: 1, block: "liquid-source", rotation: 0, raw: liquid("arkycite") },
     { x: -1, y: 3, block: "liquid-source", rotation: 0, raw: liquid("water") },
-    // Des convoyeurs autour, qui n'ont que quarante-cinq points de vie : ceux qui tombent
-    // et ceux qui tiennent sont ce que le souffle dit.
+    // Conveyors around it, which have only forty-five health: which of them fall and which
+    // hold is what the blast says.
     { x: 2, y: 5, block: "conveyor", rotation: 0 },
     { x: 5, y: 2, block: "conveyor", rotation: 0 },
     { x: 2, y: 7, block: "conveyor", rotation: 0 },
@@ -2137,7 +2135,7 @@ function wetDrill(wet) {
     // Covers 0..2 by 0..2, with its ore under it.
     { x: 1, y: 1, block: "laser-drill", rotation: 0 },
     { x: -1, y: 1, block: "power-source", rotation: 0 },
-    // Le coffre colle a la foreuse, pour que tout ce qui sort soit compte.
+    // The vault against the drill, so that everything produced is counted.
     { x: 4, y: 1, block: "vault", rotation: 0 },
   ];
   if (wet) tiles.push({ x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("water") });
@@ -2199,11 +2197,11 @@ function flux(hot) {
     // Covers 0..4 by 0..4.
     { x: 2, y: 2, block: "flux-reactor", rotation: 0 },
   ];
-  /* Le froid part avec un plein de cyanogene et **aucune source**.
+  /* The cold one starts with a full tank of cyanogen and **no source**.
 
-     Avec une source collee, le reacteur etait rempli a ras a chaque image et les deux
-     moities de la paire affichaient trente : la moitie "et ne boit rien" n'etait mesuree
-     par aucun chiffre. Sur un plein ferme, ce qui reste le dit. */
+     With a source against it, the reactor was topped up on every frame and both halves of
+     the pair read thirty: the "and drinks nothing" half was measured by no figure at all.
+     On a closed tank, what is left says it. */
   if (hot) tiles.push({ x: -1, y: 0, block: "liquid-source", rotation: 0, raw: liquid("cyanogen") });
   // Facing east, into the reactor's left edge. A heat producer that is not pointed at what
   // it is heating delivers nothing at all.
@@ -2317,8 +2315,8 @@ function check(name, tiles) {
       for (let dy = 0; dy < size; dy++) {
         const at = `${tile.x + offset + dx},${tile.y + offset + dy}`;
         if (taken.has(at)) {
-          throw new Error(`${name} : ${tile.block} et ${taken.get(at)} se chevauchent `
-            + `en ${at}`);
+          throw new Error(`${name}: ${tile.block} and ${taken.get(at)} overlap `
+            + `at ${at}`);
         }
         taken.set(at, tile.block);
       }
@@ -2370,8 +2368,8 @@ if (process.argv.includes("--measure")) {
       + (trailing.length ? ` ${trailing.join(" ")}` : ""));
   }
   writeFileSync(join(KEPT, "commands.txt"), `${commands.join("\n")}\n`);
-  console.log(`${commands.length} scenarios ecrits dans ${KEPT}`);
-  console.log("Pour les mesurer dans le vrai jeu :");
+  console.log(`${commands.length} scenarios written to ${KEPT}`);
+  console.log("To measure them in the real game:");
   console.log("  cd _run && (cat ../bench/data/oracle/commands.txt; sleep 20; echo exit)"
     + " | java -jar server-release.jar");
   process.exit(0);
@@ -2379,7 +2377,7 @@ if (process.argv.includes("--measure")) {
 
 let worst = 0;
 let missing = 0;
-console.log(`scenario / place / ce qui s'y trouve   portage      jeu   ecart`);
+console.log(`scenario / place / what is there          port     game   gap`);
 console.log(`${"-".repeat(66)}`);
 
 for (const [name, build] of Object.entries(SCENARIOS)) {
@@ -2389,7 +2387,7 @@ for (const [name, build] of Object.entries(SCENARIOS)) {
 
   if (!theirs) {
     missing++;
-    console.log(`${name.padEnd(28)} pas encore mesure`);
+    console.log(`${name.padEnd(28)} not measured yet`);
     continue;
   }
 
@@ -2405,7 +2403,7 @@ for (const [name, build] of Object.entries(SCENARIOS)) {
 
 console.log(`${"-".repeat(66)}`);
 if (missing) {
-  console.log(`${missing} scenario(s) jamais mesures : relance avec --measure`);
+  console.log(`${missing} scenario(s) never measured: run again with --measure`);
 }
-console.log(`ecart maximum : ${(worst * 100).toFixed(2)}%`);
+console.log(`worst gap: ${(worst * 100).toFixed(2)}%`);
 process.exitCode = worst > 0.02 ? 1 : 0;

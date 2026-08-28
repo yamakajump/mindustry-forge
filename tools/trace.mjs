@@ -118,13 +118,13 @@ await ported(code, 30 * 60, painted, filled, (world, tick) => {
 mkdirSync(KEPT, { recursive: true });
 const mine = join(KEPT, `${name}.port`);
 writeFileSync(mine, `${lines.join("\n")}\n`);
-console.log(`${lines.length} images ecrites dans ${mine}`);
+console.log(`${lines.length} frames written to ${mine}`);
 
 if (process.argv.includes("--write")) process.exit(0);
 
 const theirs = join(KEPT, `${name}.game`);
 if (!existsSync(theirs)) {
-  console.log("Pour la trace du jeu :");
+  console.log("For the game's trace:");
   console.log(`  cd _run && (echo "trace ${code.trim()} 30 ../bench/data/trace/${name}.game`
     + `${[...painted, ...filled].length ? " " + [...painted, ...filled].join(" ") : ""}"`
     + "; sleep 20; echo exit) | java -jar server-release.jar");
@@ -134,9 +134,9 @@ if (!existsSync(theirs)) {
 const game = readFileSync(theirs, "utf8").trim().split("\n");
 for (let at = 0; at < Math.max(game.length, lines.length); at++) {
   if (game[at] === lines[at]) continue;
-  console.log(`Premiere divergence a l'image ${at + 1} :`);
-  console.log(`  jeu     ${game[at] ?? "(rien)"}`);
-  console.log(`  portage ${lines[at] ?? "(rien)"}`);
+  console.log(`First divergence at frame ${at + 1}:`);
+  console.log(`  game ${game[at] ?? "(nothing)"}`);
+  console.log(`  port ${lines[at] ?? "(nothing)"}`);
   process.exit(1);
 }
-console.log(`${game.length} images identiques.`);
+console.log(`${game.length} frames identical.`);

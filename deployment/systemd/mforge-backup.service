@@ -1,5 +1,5 @@
 [Unit]
-Description=Sauvegarde quotidienne de mindustry-forge
+Description=Daily backup of mindustry-forge
 After=mariadb.service
 
 [Service]

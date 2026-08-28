@@ -57,24 +57,24 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
         "min_efficiency", "display_efficiency_scale", "floating", "item_duration",
         "heating", "coolant_power", "ambient_cooldown_time", "fuel_item",
         "max_heat", "unstable_speed", "item_worth", "leaks", "insulated",
-        # La defense, dont la question est ce qu'elle consomme au repos.
+        # The defensive blocks, whose question is what they consume while idle.
         "coolant_amount", "coolant_multiplier", "ammo_types", "shoot_duration",
         "heal_percent", "phase_boost", "use_time", "radius", "shield_health",
         "phase_radius_boost", "phase_shield_boost", "coolant_consumption",
         "discovery_time", "has_boost", "coolant_worth", "allow_core_unload", "unloadable",
-        # Les foreuses d'Erekir, qui mangent le mur en face plutot que le sol.
+        # Erekir's drills, which eat the wall in front of them rather than the ground.
         "wall", "wall_ore", "drill_time", "optional_boost_intensity",
         "drill_multipliers", "blocked_items", "boost_liquid", "item_boost",
         "liquid_boost", "item_use_time",
-        # Les charges utiles : une unite ou un bloc transporte comme cargaison.
+        # Payloads: a unit or a block carried as cargo.
         "move_time", "payload_limit", "payload_speed", "payload_rotate_speed",
         "outputs_payload", "accepts_payload", "construct_time", "upgrades",
         "capacities", "build_time", "build_speed", "produces", "incinerable", "instant_transfer",
         "consumes_power", "outputs_power_flag", "conductive_power", "power_node", "heat_warmup_rate",
         "laser_range", "max_nodes", "no_autolink", "no_connected_power", "no_update",
         "launch_time", "accept_multiple_items",
-        # Les processeurs, dont la vitesse est tout ce qui les distingue, et la portee de
-        # liaison, qui decide si un capteur est joignable depuis le processeur qui le lit.
+        # The processors, whose speed is all that tells them apart, and the link range,
+        # which decides whether a sensor is reachable from the processor that reads it.
         "instructions_per_tick", "max_instruction_scale", "max_instructions_per_tick",
         "logic_range",
         "load_time", "items_loaded", "liquids_loaded", "max_block_size",
@@ -86,34 +86,34 @@ KEEP = ("id", "size", "role", "items_per_second", "craft_time", "input", "output
         "base_explosiveness", "explosiveness_scale", "explosion_radius",
         "explosion_damage", "health",
         "same_block_link", "liquid_output_directions", "no_dump_extra", "ignore_liquid_fullness", "solid",
-        # Le mass driver, qui lance ses objets a distance.
+        # The mass driver, which throws its items across a distance.
         "rotate_speed", "min_distribute", "reload", "bullet_speed",
         "bullet_lifetime", "translation",
-        # Ce qui decide d une pose dans l editeur, lu dans `Build.validPlace` et
-        # `Block.canReplace`. Ranger la palette demande `category` et `planet` ; decider
-        # d un remplacement demande tous les autres, et en connaitre une partie seulement
-        # donne un editeur qui refuse des gestes que le jeu accepte.
+        # What decides a placement in the editor, read from `Build.validPlace` and
+        # `Block.canReplace`. Ordering the palette needs `category` and `planet`; deciding
+        # a replacement needs all the others, and knowing only some of them gives an editor
+        # that refuses gestures the game accepts.
         "category", "group", "group_any_replace", "subclass", "planet",
         "conveyor_placement", "replaceable", "always_replace", "quick_rotate",
         "privileged", "placeable_on", "requires_water", "placeable_liquid",
-        # Comment un glisse trace, et jusqu ou un pont ou un pylone porte.
+        # How a drag draws, and how far a bridge or a power node reaches.
         "allow_diagonal", "swap_diagonal_placement", "allow_rectangle_placement",
         "laser_range",
-        # Ce qu un convoyeur devient tout seul quand la ligne le demande, et le reste de ce
-        # que la pose lit : rotations forcees, miroirs inverses, configurabilite, casse.
+        # What a conveyor turns into on its own when the line calls for it, and the rest of
+        # what placement reads: forced rotations, inverted mirroring, configurability,
+        # breakage.
         "junction_replacement", "bridge_replacement", "ignore_line_rotation",
         "lock_rotation", "invert_flip", "save_config", "copy_config", "configurable",
         "clear_on_double_tap", "placeable_player", "schematic_priority",
         "build_visibility",
         )
 
-#: Les champs dont `False` est l information, et non l absence d information.
+#: The fields where `False` is the information, rather than the absence of information.
 #:
-#: Le filtre plus bas jette les valeurs vides, et en Python `False == 0` : un champ à
-#: `False` y passait donc à la trappe avec les zéros. Sans importance tant que tout drapeau
-#: valait vrai par défaut, mais `replaceable` et `placeable_on` valent **vrai** par défaut
-#: dans le jeu et ne sont écrits que là où ils sont faux. Les jeter revenait à supprimer la
-#: seule chose qu'ils avaient à dire.
+#: The filter below drops empty values, and in Python `False == 0`: a field set to `False`
+#: therefore fell through with the zeros. That did not matter while every flag defaulted to
+#: true, but `replaceable` and `placeable_on` default to **true** in the game and are only
+#: written where they are false. Dropping them removed the one thing they had to say.
 FALSE_MATTERS = ("replaceable", "placeable_on", "allow_diagonal", "placeable_player")
 
 
@@ -151,9 +151,9 @@ def main() -> None:
     PALETTE.write_text(json.dumps(colours, separators=(",", ":"), sort_keys=True),
                        encoding="utf-8")
 
-    print(f"{len(blocks)} blocs sur {len(raw['blocks'])}, "
-          f"{TARGET.stat().st_size // 1024} ko dans {TARGET}")
-    print(f"{len(colours)} couleurs nommees dans {PALETTE}")
+    print(f"{len(blocks)} blocks of {len(raw['blocks'])}, "
+          f"{TARGET.stat().st_size // 1024} kB in {TARGET}")
+    print(f"{len(colours)} named colours in {PALETTE}")
 
 
 if __name__ == "__main__":

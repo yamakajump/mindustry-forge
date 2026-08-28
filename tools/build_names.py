@@ -34,10 +34,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 JAR = ROOT / "mindustry-forge/assets-v159.7.jar"
 CATALOGUE = ROOT / "site/public/forge/blocks.json"
-#: A cote des dictionnaires d'interface et pas dedans. Le fichier n'en est pas un : c'est de
-#: la donnee de jeu, generee, avec ses propres trous. Un test parcourt `forge/lang/*.json` en
-#: exigeant que chaque langue porte les memes cles que le francais, et il a raison de le
-#: faire ; y deposer ceci lui aurait appris une exception au lieu d'un rangement.
+#: Beside the interface dictionaries rather than inside them. This file is not one of them:
+#: it is game data, generated, with holes of its own. A test walks `forge/lang/*.json` and
+#: demands that every language carry the same keys as French, and it is right to do so;
+#: dropping this in there would have taught it an exception instead of a place to live.
 OUT = ROOT / "site/public/forge/noms"
 
 #: `block.silicon-smelter.name = Fonderie de Silicium`, and the same shape for items and
@@ -54,7 +54,7 @@ def bundle(archive: zipfile.ZipFile, locale: str) -> dict[tuple[str, str], str]:
     """Every name the game states, for one language."""
     inside = f"assets/bundles/bundle_{locale}.properties"
     if inside not in archive.namelist():
-        raise SystemExit(f"le jar ne porte pas {inside}")
+        raise SystemExit(f"the jar does not carry {inside}")
 
     names: dict[tuple[str, str], str] = {}
     for line in archive.read(inside).decode("utf-8").splitlines():
@@ -87,14 +87,14 @@ def build(locale: str) -> None:
     out.write_text(json.dumps(dict(sorted(names.items())), ensure_ascii=False, indent=1)
                    + "\n", encoding="utf-8")
 
-    print(f"   {out.relative_to(ROOT)}  {len(names)} noms, "
-          f"{out.stat().st_size / 1024:.0f} ko")
+    print(f"   {out.relative_to(ROOT)}  {len(names)} names, "
+          f"{out.stat().st_size / 1024:.0f} kB")
 
     if missing:
         #: Said out loud rather than left to be discovered. For French these are `air`, three
         #: removed unit factories and thirteen ore floors, none of which the game names in
         #: any language: they fall back to their identifier and that is the right answer.
-        print(f"   sans nom dans ce bundle : {len(missing)} -> {', '.join(missing[:4])}"
+        print(f"   unnamed in this bundle: {len(missing)} -> {', '.join(missing[:4])}"
               + (" ..." if len(missing) > 4 else ""))
 
 

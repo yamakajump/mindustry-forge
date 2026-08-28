@@ -80,7 +80,7 @@ def main() -> None:
         target = OUT / f"{name}.woff2"
         font.flavor = "woff2"
         font.save(target)
-        print(f"  {name:12s} {len(raw) // 1024:5d} ko  ->  {target.stat().st_size // 1024:4d} ko")
+        print(f"  {name:12s} {len(raw) // 1024:5d} kB  ->  {target.stat().st_size // 1024:4d} kB")
 
 
 if __name__ == "__main__":

@@ -89,7 +89,7 @@ def grammar(classes: Path) -> tuple[list[dict], dict[str, str]]:
     """
     dump = javap(classes, "mindustry.gen.LogicIO", "-c", "-p")
     if not dump:
-        raise SystemExit("mindustry.gen.LogicIO introuvable : mauvais jar ?")
+        raise SystemExit("mindustry.gen.LogicIO not found: wrong jar?")
 
     lines = dump.splitlines()
     starts = [(i, m.group(1)) for i, line in enumerate(lines)
@@ -396,17 +396,17 @@ def main() -> None:
 
     for path in (args.classes, args.assets):
         if not path.exists():
-            raise SystemExit(f"introuvable : {path}")
+            raise SystemExit(f"not found: {path}")
 
     catalogue = build(args.classes, args.assets)
     args.target.parent.mkdir(parents=True, exist_ok=True)
     args.target.write_text(
         json.dumps(catalogue, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
-    print(f"{args.target} : {len(catalogue['instructions'])} instructions, "
-          f"{len(catalogue['enums'])} listes, "
-          f"{sum(len(v) for v in catalogue['content'].values())} contenus, "
-          f"{args.target.stat().st_size // 1024} ko")
+    print(f"{args.target}: {len(catalogue['instructions'])} instructions, "
+          f"{len(catalogue['enums'])} lists, "
+          f"{sum(len(v) for v in catalogue['content'].values())} content entries, "
+          f"{args.target.stat().st_size // 1024} kB")
 
 
 if __name__ == "__main__":

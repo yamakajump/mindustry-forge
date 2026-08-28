@@ -54,7 +54,7 @@ def keep(page, selector: str, name: str, height: int | None = None) -> None:
     out = OUT / f"{name}.png"
     small.quantize(colors=256, dither=Image.NONE).save(out, optimize=True)
     print(f"   {out.name:<24} {small.width}x{small.height}  "
-          f"{out.stat().st_size / 1024:.0f} ko")
+          f"{out.stat().st_size / 1024:.0f} kB")
 
 
 def main() -> None:
@@ -84,7 +84,7 @@ def main() -> None:
 
         page.goto(f"{SITE}/blocs/silicon-smelter", wait_until="networkidle")
         if "Silicon smelter" not in page.title():
-            raise SystemExit(f"/blocs/silicon-smelter rend {page.title()!r}")
+            raise SystemExit(f"/blocs/silicon-smelter renders {page.title()!r}")
         page.wait_for_timeout(800)
         keep(page, "main", "fiche-bloc", height=1500)
 
