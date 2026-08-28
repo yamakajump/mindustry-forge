@@ -32,6 +32,8 @@ or an error page saved under the wrong name is otherwise a jar that starts and l
 driver of both passes is `tools/oracle.mjs`, and the game answers through the plugin built
 from `src/`.
 
-The Python tests here skip rather than fail when the JDK or the jar is missing, so that a
-contributor without a Java toolchain still gets a green suite. A green run on such a machine
-proves nothing about the game side.
+`tests/test_schematic_in_the_game.py` is the other half of the same idea, for the file format
+rather than the throughput: it hands the writer's bytes to the game's own decoder. It skips
+rather than fails when the JDK or the jar is missing, so that a contributor without a Java
+toolchain still gets a green suite. A green run on such a machine proves nothing about the
+game side.
