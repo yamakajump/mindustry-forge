@@ -1,17 +1,17 @@
 /**
- * Faire tourner l'analyse du navigateur sur un lot de schematiques, sous Node.
+ * Run the browser's analysis over a batch of schematics, under Node.
  *
  *     echo '{"id":1,"code":"bXNjaAF4nD..."}' | node tools/ingest.mjs
  *
- * Une ligne JSON entre, une ligne JSON sort. Ce depot n'a qu'une implementation de
- * l'analyse et c'est `site/public/forge/analyse.js` : ce fichier ne calcule rien, il
- * l'importe telle quelle et lui donne le catalogue que le navigateur irait chercher par
- * `fetch`. Le cote PHP orchestre et tient la base, l'arithmetique reste ici.
+ * One JSON line in, one JSON line out. This repository has a single implementation of the
+ * analysis and it is `site/public/forge/analyse.js`: this file computes nothing, it
+ * imports that one as it stands and hands it the catalogue the browser would have fetched.
+ * The PHP side orchestrates and holds the database; the arithmetic stays here.
  *
- * Une schematique qui explose sort une ligne `{"id":..,"erreur":".."}` et le lot continue.
- * Sur quinze mille entrees collectees ailleurs, il y aura des blocs de mods jamais vus et
- * des fichiers tronques : un lot qui meurt sur la premiere ferait recommencer les mille
- * neuf cent quatre-vingt-dix-neuf autres.
+ * A schematic that blows up produces one `{"id":..,"erreur":".."}` line and the batch
+ * carries on. Across fifteen thousand entries collected elsewhere there will be blocks
+ * from mods never seen before and truncated files: a batch that dies on the first would
+ * make the other one thousand nine hundred and ninety-nine start over.
  */
 
 import { createInterface } from "node:readline";
@@ -28,18 +28,17 @@ const { analyse, useCatalogue } = await import(
 useCatalogue(JSON.parse(readFileSync(join(FORGE, "blocks.json"), "utf8")));
 
 /**
- * Ce qu'on garde de la reponse de l'analyse.
+ * What is kept out of the analysis's answer.
  *
- * Une liste blanche, pas une liste noire, et pour deux raisons. La premiere est qu'elle
- * rend `JSON.stringify` possible du tout : la reponse porte `graph` et `tiles`, ou les
- * noeuds se pointent les uns les autres, et serialiser ca part en boucle. La seconde est
- * la taille : `offers` propose un choix de ressources par case, `detail` decrit chaque
- * bloc, et quinze mille lignes de ca sont des centaines de megaoctets de JSON que personne
- * ne relit jamais.
+ * An allowlist rather than a blocklist, for two reasons. The first is that it makes
+ * `JSON.stringify` possible at all: the answer carries `graph` and `tiles`, where the
+ * nodes point at each other, and serialising that runs in circles. The second is size:
+ * `offers` proposes a choice of resources per tile and `detail` describes every block, and
+ * fifteen thousand rows of that are hundreds of megabytes of JSON nobody ever reads back.
  *
- * Ce qui reste est ce que la base cherche (`perMinute`, `needs`, `potential`, les
- * dimensions) et ce qu'une page a besoin de dire sans refaire le calcul. Le reste est
- * recalculable a partir de `code`, qui est garde entier.
+ * What remains is what the database searches on (`perMinute`, `needs`, `potential`, the
+ * dimensions) and what a page needs to say without redoing the computation. The rest is
+ * recomputable from `code`, which is kept whole.
  */
 const KEPT = [
   "name", "width", "height", "blocks", "gameVersion",
@@ -73,8 +72,8 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
   try {
     asked = JSON.parse(trimmed);
   } catch {
-    // Sans identifiant, personne ne peut rattacher l'erreur a une ligne de la base. On le
-    // dit quand meme plutot que de laisser le lot revenir avec une reponse en moins.
+    // With no identifier, nobody can tie the error back to a row in the database. It is
+    // still reported, rather than letting the batch come back one answer short.
     say({ id: null, erreur: "ligne illisible" });
     continue;
   }

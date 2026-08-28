@@ -353,19 +353,20 @@ class Writer {
  * thing to be wrong.
  */
 /**
- * Écrire une configuration, dans le codage de `TypeIO.writeObject` de la v159.7.
+ * Write a configuration, in the encoding of `TypeIO.writeObject` in v159.7.
  *
- * Le lecteur garde les octets bruts de ce qu'il a lu, et l'écrivain les rejoue tels quels :
- * une schématique collée puis recopiée ressort à l'identique sans que ce fichier ait à
- * savoir écrire quoi que ce soit. Parfait tant que rien ne **crée** de configuration.
+ * The reader keeps the raw bytes of what it read and the writer replays them unchanged, so
+ * a schematic pasted and copied back out comes out identical without this file having to
+ * know how to write anything at all. That is enough for as long as nothing **creates** a
+ * configuration.
  *
- * L'éditeur en crée. Un glissé de ponts pose une chaîne dont chaque maillon vise le
- * suivant, et sans ces quelques lignes cette chaîne sortait du site en file de ponts qui
- * s'ignorent : l'image était juste, le fichier était faux, et rien ne le disait.
+ * The editor creates them. Dragging a run of bridges lays a chain whose every link points
+ * at the next, and without these few lines that chain left the site as a row of bridges
+ * ignoring each other: the picture was right, the file was wrong, and nothing said so.
  *
- * Seuls deux types sont écrits, parce que seuls deux sont créés ici : le point relatif d'un
- * pont ou d'un pylône, et le contenu d'un trieur ou d'une source. Une configuration d'un
- * autre type venue d'un fichier repart par ses octets bruts, intacte.
+ * Only two types are written, because only two are created here: the relative point of a
+ * bridge or a power node, and the content of a sorter or a source. A configuration of any
+ * other type, read from a file, leaves again through its raw bytes, untouched.
  */
 function writeConfig(writer, tile) {
   if (tile.raw?.length) return writer.bytes(tile.raw);
@@ -378,17 +379,17 @@ function writeConfig(writer, tile) {
   if (config.type === 5) {
     return writer.u8(5).u8(config.content).i16(config.id);
   }
-  /* Les liens d'un pylône : un octet de compte, puis une position empaquetée par lien.
-     `render.js` les dessine déjà en relisant ce type là, et l'éditeur ne savait pas les
-     écrire : un réseau électrique construit ici ressortait en pylônes qui ne se parlent
-     pas, ce qui à l'image ressemble à un réseau et n'alimente rien. */
+  /* A power node's links: one count byte, then one packed position per link.
+     `render.js` already draws them by reading this same type back, and the editor could
+     not write them: a power network built here came out as nodes that do not talk to each
+     other, which looks like a network in the picture and feeds nothing. */
   if (config.type === 8) {
     writer.u8(8).u8(Math.min(255, config.links.length));
     for (const packed of config.links.slice(0, 255)) writer.i32(packed);
     return writer;
   }
-  /* Un type qu'on ne sait pas écrire est écrit comme « rien », et pas au petit bonheur :
-     inventer des octets décale tout ce qui suit et rend le fichier illisible par le jeu. */
+  /* A type we cannot write is written as "nothing", and not at random: inventing bytes
+     shifts everything after it and leaves the file unreadable by the game. */
   return writer.u8(0);
 }
 
@@ -396,14 +397,14 @@ export async function write(tiles, { tags = {}, sizeOf = () => 1,
                                      priorityOf = () => 0 } = {}) {
   if (!tiles.length) throw new Error("une schematique vide ne se copie pas");
 
-  /* L'ordre d'écriture est l'ordre de construction, et le jeu s'en sert.
-     `Block.schematicPriority` va de +10 pour un mur de plastanium à -15 pour une tour de
-     surtension : ce qui protège se bâtit en premier, ce qui relie en dernier, une fois que
-     ce qu'il doit relier existe. Douze blocs du jeu en portent une, et écrire dans l'ordre
-     de pose fait poser un pylône avant les réacteurs qu'il devait alimenter.
+  /* The order things are written in is the order they are built in, and the game uses it.
+     `Block.schematicPriority` runs from +10 for a plastanium wall to -15 for an overdrive
+     projector: what protects is built first, what connects last, once the thing it has to
+     connect exists. Twelve of the game's blocks carry one, and writing in the order they
+     were placed puts a power node down before the reactors it was meant to feed.
 
-     Tri stable : à priorité égale, l'ordre d'origine est conservé, sinon deux exports de la
-     même schématique donneraient deux fichiers différents. */
+     Stable sort: at equal priority the original order is kept, otherwise two exports of
+     the same schematic would produce two different files. */
   tiles = tiles
     .map((tile, at) => ({ tile, at }))
     .sort((a, b) => (priorityOf(b.tile.block) - priorityOf(a.tile.block)) || (a.at - b.at))

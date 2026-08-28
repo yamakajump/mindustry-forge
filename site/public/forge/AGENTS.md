@@ -47,3 +47,17 @@ hand. A build that leaves it byte-identical added nothing to the hashed catalogu
 what comparing its checksum before and after is for. To check the whole boundary rather
 than that one file, compare `EngineVersion::compute()` before and after the change:
 identical means the change touched nothing hashed.
+
+## Measuring the fingerprint
+
+Compute it from the committed content, not from the working tree:
+
+```bash
+git cat-file blob <ref>:site/public/forge/analyse.js | md5sum
+```
+
+`EngineVersion::compute()` reads files from disk, and on Windows a file an editor rewrote
+can carry CRLF where git stores LF. The two hash differently, so a fingerprint measured on
+the working tree can disagree with the one the server computes after checkout. That is not
+hypothetical: it produced a wrong figure in the pull request that introduced this section,
+and the error only showed when a rebase changed the answer.
