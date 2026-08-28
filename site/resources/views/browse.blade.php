@@ -7,8 +7,14 @@
 
 @section('body')
 <h1 class="title">Schematiques</h1>
+{{-- Le sous-titre a promis pendant des heures ce que la page ne tient pas. « Chaque
+     chiffre vient de l'analyse » restait vrai et laissait croire a un releve, au-dessus de
+     vingt-quatre tuiles qui portent toutes « au mieux ». Un plafond ne s'affiche jamais
+     sans dire qu'il en est un, et cette regle vaut pour la phrase qui coiffe la liste
+     autant que pour la ligne d'une tuile. --}}
 <p class="sub">Chaque chiffre vient de l'analyse de la schematique elle-meme, pas d'une
-  etiquette tapee a la main.</p>
+  etiquette tapee a la main. Ce sont des plafonds : ce que le plan sortirait alimente a
+  fond, et non ce qu'il a ete mesure faisant.</p>
 
 {{-- Les objets les plus produits, en images.
 
