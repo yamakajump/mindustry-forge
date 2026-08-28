@@ -66,7 +66,27 @@ surfaces one release later, at the version that follows the wrong one.
 
 ## Merging the release pull request
 
-Merge it like any other pull request, squashed, which leaves one commit
+**Its checks will not have run.** GitHub does not start a workflow from a push made with
+`GITHUB_TOKEN`, which is what release-please pushes with, so the release branch arrives with
+none of the required contexts reported and the merge is refused by the branch policy:
+
+```
+the base branch policy prohibits the merge
+```
+
+Close the pull request and reopen it. That is an action taken with your own credentials, so
+it fires `pull_request` with the `reopened` type, every workflow runs, and the merge then
+goes through the same gate as any other change:
+
+```bash
+gh pr close <N> && gh pr reopen <N>
+gh pr checks <N> --watch
+```
+
+Merging with `--admin` also works and is worse: it skips the suite on the exact commit that
+is about to be tagged, which is the one commit where skipping it is least defensible.
+
+Merge it squashed, which leaves one commit
 `chore(main): release X.Y.Z (#N)` on `main`. That push triggers the workflow again, and this
 second run is the one that publishes: it creates the tag on that commit and a GitHub release
 carrying the section it just wrote.
