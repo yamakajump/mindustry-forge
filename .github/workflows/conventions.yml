@@ -24,13 +24,13 @@ jobs:
     name: Title, commits, and diff
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # Needed to diff the base against the head below; the repository is small
           # enough that a full clone costs nothing here.
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
 
