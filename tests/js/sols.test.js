@@ -54,6 +54,36 @@ test("a vent blends with its group's sheet rather than with nothing", () => {
   }
 });
 
+test("the variant counts are the game's, not this repository's own arithmetic", () => {
+  /* What this replaces compared `build_sols.py`'s enumeration against `build_sprites.py`'s.
+     Both derive variants from one rule, so it checked a script against its twin and passed
+     for any mistake the two shared. One was shared: `metal-tiles-1` claimed three variants
+     that are in fact the base sprites of `metal-tiles-11`, `-12` and `-13`, three separate
+     floors, and both scripts agreed about it all the way to the browser.
+
+     These counts were read out of `assets-v159.7.jar`, under `sprites/blocks/environment/`,
+     by asking how many of `<name>1`, `<name>2`, ... it ships. The jar is 35 megabytes, is
+     gitignored and is not checked out in CI, so they are written down rather than counted
+     here: a check that skips itself on the machine that matters checks nothing. */
+  const measured = {
+    // The ordinary case: three pictures of one ground, picked per tile.
+    grass: 3, stone: 3, "sand-floor": 3, darksand: 3, basalt: 3, shale: 3,
+    "spore-moss": 3, mud: 3,
+    // A crater ships six, and a vent two. Both borrow `stone`'s edge sheet and neither
+    // borrows its variant count, which is why they are here.
+    "crater-stone": 6, "stone-vent": 2,
+    // One sprite and no choice to make.
+    "deep-water": 0, "molten-slag": 0, space: 0, empty: 0, "metal-tiles-11": 0,
+    // Zero, and the reason this table exists rather than a comparison. Three sprites in the
+    // jar match `metal-tiles-1<n>` and all three belong to other floors.
+    "metal-tiles-1": 0,
+  };
+  for (const [name, count] of Object.entries(measured)) {
+    assert.equal(sols.floors[name]?.variants, count,
+      `${name} should have ${count} variants`);
+  }
+});
+
 test("a floor that says it has variants has them in the atlas", () => {
   const atlas = read("atlas.json");
   for (const [name, floor] of Object.entries(sols.floors)) {
@@ -61,4 +91,67 @@ test("a floor that says it has variants has them in the atlas", () => {
       assert.ok(atlas.sprites[`floor/${name}#${n}`], `no variant ${n} packed for ${name}`);
     }
   }
+  /* A floor with no variants is drawn from the bare key, so `metal-tiles-1` losing its three
+     false ones is only a fix if there is something left to draw it with. */
+  assert.ok(atlas.sprites["floor/metal-tiles-1"], "floor/metal-tiles-1 is not packed");
+});
+
+test("the blend ids came out of the game, and so did the order between them", () => {
+  /* Nothing here pinned a single value the game produced. Spelling `entry.get("blend_id")`
+     as `entry.get("blend")` in `build_sols.py` hands every floor a blend id of 0, no floor
+     ever bleeds onto another, the feature quietly does nothing, and every other test in this
+     repository still passes. These are v159.7's own numbers.
+
+     The relations matter as much as the values, because what a blend id decides is which of
+     two floors paints over the other. */
+  const measured = { "deep-water": 21, stone: 33, "sand-floor": 39, grass: 71, shale: 76 };
+  for (const [name, blend] of Object.entries(measured)) {
+    assert.equal(sols.floors[name]?.blend, blend, `${name} should carry blend id ${blend}`);
+  }
+  assert.ok(sols.floors.grass.blend > sols.floors.stone.blend,
+    "grass must bleed onto stone, not the other way round");
+  assert.ok(sols.floors.stone.blend > sols.floors["deep-water"].blend,
+    "stone's blend id must beat deep water's");
+  // 93 distinct values across 107 floors, the repeats being the blend groups. A field gone
+  // flat collapses this to one, which is the failure the numbers above cannot see on their
+  // own if the whole dump changes shape.
+  assert.ok(new Set(Object.values(sols.floors).map((f) => f.blend)).size > 50,
+    "the blend ids have collapsed onto a handful of values");
+});
+
+test("the gates the game applies are recorded, and are not one answer repeated", () => {
+  /* `in`, `out` and `layer` each decide whether a boundary is drawn at all, so each of them
+     going uniformly true, or uniformly `normal`, silently turns a gate off. Pinned against
+     v159.7 by naming a floor on both sides of each. */
+  assert.equal(sols.floors["metal-tiles-1"].in, false, "metal-tiles-1 receives no edges");
+  assert.equal(sols.floors.stone.in, true, "stone receives edges");
+  // `space` is the pair that proves the two flags are separate questions: it refuses to
+  // bleed outwards and still receives edges, so `in` cannot be read off `out`.
+  assert.equal(sols.floors.space.out, false, "space bleeds onto nothing");
+  assert.equal(sols.floors.space.in, true, "space still receives edges");
+  assert.equal(sols.floors["deep-water"].layer, "water", "deep water is on the water layer");
+  assert.equal(sols.floors["molten-slag"].layer, "slag", "molten slag is on the slag layer");
+  assert.equal(sols.floors.stone.layer, "normal", "stone is on the default layer");
+
+  const counts = (key, value) =>
+    Object.values(sols.floors).filter((f) => f[key] === value).length;
+  assert.equal(counts("in", false), 14, "14 floors receive no edges in v159.7");
+  assert.equal(counts("out", false), 16, "16 floors bleed onto nothing in v159.7");
+  assert.equal(counts("layer", "normal"), 94, "13 floors sit on a layer of their own");
+});
+
+test("the block ids are distinct, because the draw order is sorted on them", () => {
+  /* `blendersAt` sorts blenders by block id, the way `Floor.drawBlended` does. Blend ids
+     repeat across a blend group, which is exactly why the sort cannot use them: `stone`,
+     `char`, `crater-stone` and `stone-vent` all carry blend id 33 and four different ids. */
+  const ids = Object.values(sols.floors).map((f) => f.id);
+  assert.equal(new Set(ids).size, ids.length, "two floors share a block id");
+  for (const name of ["stone", "char", "crater-stone", "stone-vent"]) {
+    assert.equal(sols.floors[name].blend, 33, `${name} is in stone's blend group`);
+  }
+  assert.deepEqual(
+    ["stone", "char", "crater-stone", "stone-vent"]
+      .sort((a, b) => sols.floors[a].id - sols.floors[b].id),
+    ["stone", "crater-stone", "char", "stone-vent"],
+    "the ids that break the blend group's tie are not v159.7's");
 });
