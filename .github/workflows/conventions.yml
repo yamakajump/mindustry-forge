@@ -41,7 +41,8 @@ jobs:
       - name: Pull request title
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
-        run: node tools/check-conventions.mjs --subject "$PR_TITLE"
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: node tools/check-conventions.mjs --subject "$PR_TITLE" --author "$PR_AUTHOR"
 
       # The PR's own commit list, not `HEAD~1`: a branch can carry any number of commits
       # before it is squashed. Filtered down to sha, subject, author login and parent
