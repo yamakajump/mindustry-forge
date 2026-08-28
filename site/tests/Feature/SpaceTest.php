@@ -8,6 +8,40 @@ uses(RefreshDatabase::class);
 
 $board = fn () => ['tiles' => [['x' => 0, 'y' => 0, 'block' => 'conveyor', 'rotation' => 0]], 'ground' => []];
 
+/**
+ * The same board, with every object's keys in a settled order.
+ *
+ * A board goes to MySQL in a `json` column, and MySQL does not store the text it was given:
+ * it parses the value and writes back a normalised one, with each object's keys sorted by
+ * length and then by bytes. SQLite keeps the text as it arrived. So the same round trip
+ * returns `{tiles, ground, frames}` under SQLite and `{tiles, frames, ground}` under MySQL,
+ * and a comparison that asserts identity asserts the storage engine's key order along with
+ * the content.
+ *
+ * Three of these assertions passed under MySQL by accident before frames existed: `tiles`
+ * is five letters and `ground` is six, which is already the order MySQL sorts them into.
+ * Adding `frames`, also six letters and sorting before `ground`, is what made the accident
+ * visible. Renaming any key could have done the same at any time.
+ *
+ * Sorting both sides rather than comparing loosely: a board that came back with the string
+ * "5" where an integer 5 went in would be a real defect, and `==` would not see it.
+ */
+function settled(array $value): array
+{
+    foreach ($value as $key => $item) {
+        if (is_array($item)) {
+            $value[$key] = settled($item);
+        }
+    }
+    // Lists keep their order: the order of `tiles` is the order the blocks were placed.
+    if (array_is_list($value)) {
+        return $value;
+    }
+    ksort($value);
+
+    return $value;
+}
+
 it('cree un espace de travail avec un nom et un plateau', function () use ($board) {
     $user = User::factory()->create();
 
@@ -18,8 +52,8 @@ it('cree un espace de travail avec un nom et un plateau', function () use ($boar
 
     expect(Space::first())
         ->name->toBe('Ligne de silicium')
-        ->user_id->toBe($user->id)
-        ->board->toBe($board());
+        ->user_id->toBe($user->id);
+    expect(settled(Space::first()->board))->toBe(settled($board()));
 });
 
 it('refuse un espace sans nom ni plateau', function () {
@@ -86,7 +120,7 @@ it('garde les cadres d un plateau, y compris apres une relecture', function () {
         'board' => $avecCadres,
     ])->assertCreated()->json('slug');
 
-    expect(Space::first()->board)->toBe($avecCadres);
+    expect(settled(Space::first()->board))->toBe(settled($avecCadres));
 
     $this->actingAs($user)->getJson("/api/espaces/{$slug}")
         ->assertOk()
@@ -105,7 +139,7 @@ it('garde les cadres d un plateau sauvegarde par dessus un espace existant', fun
     $this->actingAs($user)->patchJson("/api/espaces/{$space->slug}", ['board' => $avecCadres])
         ->assertOk();
 
-    expect($space->refresh()->board)->toBe($avecCadres);
+    expect(settled($space->refresh()->board))->toBe(settled($avecCadres));
 });
 
 // --- Taille --------------------------------------------------------------------------
@@ -164,7 +198,7 @@ it('refuse une sauvegarde qui ferait deborder la limite', function () use ($boar
     $this->actingAs($user)->patchJson("/api/espaces/{$space->slug}", ['board' => $trop])
         ->assertStatus(422);
 
-    expect($space->refresh()->board)->toBe($board());
+    expect(settled($space->refresh()->board))->toBe(settled($board()));
 });
 
 // --- Proprietaire, le morceau qui compte ----------------------------------------------
@@ -195,7 +229,7 @@ it('ne laisse personne ecraser le plateau d un autre', function () use ($board) 
         ->patchJson("/api/espaces/{$space->slug}", ['board' => $autre])
         ->assertNotFound();
 
-    expect($space->refresh()->board)->toBe($board());
+    expect(settled($space->refresh()->board))->toBe(settled($board()));
 });
 
 it('ne laisse personne supprimer l espace de travail d un autre', function () {
