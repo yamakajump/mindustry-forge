@@ -218,7 +218,7 @@ dans quel ordre. [`docs/known-gaps.md`](docs/known-gaps.md) nomme ce que le mote
 modélise pas et ce que le banc ne prouve pas, y compris le point du dessus. Ces documents
 sont en anglais : le site parle français, le dépôt parle anglais.
 
-Deux règles gouvernent le dépôt, et les deux sont dans `CLAUDE.md` :
+Deux règles gouvernent le dépôt, et les deux sont dans `AGENTS.md` :
 
 **Une seule implémentation de l'analyse.** Une deuxième, dans un autre langage, serait une
 deuxième chose à avoir tort.
