@@ -129,6 +129,20 @@ export function createBoard({ tiles = [], ground = {}, frames = [], sizeOf }) {
     ? board.tiles.filter((tile) => !board.frames.some((frame) => frameHolds(frame, tile, sizeOf)))
     : [];
 
+  /** The box holding every frame, for framing the whole workbench at a glance rather than
+      whatever single frame happens to be active. */
+  board.framesBox = () => {
+    if (!board.frames.length) return { left: 0, bottom: 0, width: 0, height: 0 };
+    let left = Infinity, bottom = Infinity, right = -Infinity, top = -Infinity;
+    for (const frame of board.frames) {
+      left = Math.min(left, frame.left);
+      bottom = Math.min(bottom, frame.bottom);
+      right = Math.max(right, frame.left + frame.width - 1);
+      top = Math.max(top, frame.bottom + frame.height - 1);
+    }
+    return { left, bottom, width: right - left + 1, height: top - bottom + 1 };
+  };
+
   /**
    * Does placing this keep the board within its cap?
    *

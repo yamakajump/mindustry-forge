@@ -301,3 +301,18 @@ test("un plateau reconstruit sans cle frames part avec une liste vide", () => {
   const plateau = createBoard({ tiles: [], ground: {}, sizeOf });
   assert.deepEqual(plateau.frames, []);
 });
+
+test("la boite de tous les cadres sert a cadrer le chantier entier d un coup", () => {
+  const plateau = board();
+  plateau.apply({
+    addFrames: [
+      { id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 10 },
+      { id: "b", name: "assemblage", left: 40, bottom: -5, width: 8, height: 8 },
+    ],
+  });
+  assert.deepEqual(plateau.framesBox(), { left: 0, bottom: -5, width: 48, height: 15 });
+});
+
+test("sans aucun cadre, la boite des cadres est vide plutot que des infinis", () => {
+  assert.deepEqual(board().framesBox(), { left: 0, bottom: 0, width: 0, height: 0 });
+});
