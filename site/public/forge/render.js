@@ -93,6 +93,19 @@ export async function loadSprites(base = "./forge/") {
   return { atlas, sheet };
 }
 
+/**
+ * Which planets the game puts each piece of ground down on, from `sols.json`.
+ *
+ * Here rather than fetched again by the editor: `sols.json` arrives with the atlas, before
+ * anything is mounted, and a second fetch of one file already in hand is a second thing
+ * that can fail. `null` until `loadSprites` has answered, and `null` for good if the file
+ * did not arrive, which the ground palette reads as "no filter is possible" rather than as
+ * "nothing belongs anywhere".
+ */
+export function groundPlanets() {
+  return soils?.planets || null;
+}
+
 /** The box a schematic occupies, from its tiles rather than from its declared size. */
 export function bounds(tiles, sizeOf) {
   let left = Infinity, bottom = Infinity, right = -Infinity, top = -Infinity;
