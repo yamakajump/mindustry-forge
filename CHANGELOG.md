@@ -1,5 +1,8 @@
 # Changelog
 
+Earlier entries below are in French: this project's commit language changed to English,
+and past entries are kept as written rather than rewritten.
+
 ## [0.3.0](https://github.com/yamakajump/mindustry-forge/compare/v0.2.0...v0.3.0) (2026-08-28)
 
 

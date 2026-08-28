@@ -70,6 +70,22 @@ php artisan serve
 The analyser itself is a static page and needs no server at all: opening
 `site/public/index.html` works.
 
+## Commit messages and releases
+
+This project uses `release-please`. A conventional commit merged to `main` updates an open
+release pull request; merging that pull request cuts the git tag, publishes the GitHub
+release and appends the entry to `CHANGELOG.md`.
+
+The commit type decides what version bumps: `feat` moves the minor version, `fix` the
+patch, `feat!` or a `BREAKING CHANGE:` footer the major. `docs`, `chore`, `refactor`,
+`test` and `style` move nothing.
+
+The subject is what a reader meets in `CHANGELOG.md`, months later, with no other context
+than the words in it: not the diff, not the discussion that led to the change, just the
+sentence. That is why it stays in the imperative and under 50 characters: a changelog is
+read as a list, and a sentence that does not fit on one line reads worse in a list than a
+short one does.
+
 ## Before you open a pull request
 
 - `npm test` and `php artisan test` both green.

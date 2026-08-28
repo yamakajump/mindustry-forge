@@ -211,7 +211,7 @@ reporting rather than an issue: [`SECURITY.md`](SECURITY.md).
 which order. [`docs/known-gaps.md`](docs/known-gaps.md) names what the engine does not model
 and what the bench does not prove, including the one above.
 
-Two rules govern the repository, and both are in `CLAUDE.md`:
+Two rules govern the repository, and both are in `AGENTS.md`:
 
 **One implementation of the analysis.** A second, in another language, would be a second
 thing to be wrong.
