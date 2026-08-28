@@ -15,7 +15,8 @@ The design this implements: `docs/plans/2026-08-28-likes-and-favorites-design.md
 - **Do not start Task 1 until `fix/mot-schema` is merged into `main`, and branch from the merged state.** That branch renames "schematique" to "schema" across 115 strings in the language files, the views and the routes, which is nearly every file this plan touches. A narrow feature written under a wide rename conflicts on every line. Session `mindustry-forge-7b` owns it and will say when it lands.
 - **`compare.blade.php` and the `schema.comparer` block of `lang/fr/schema.php` belong to a third session (`d3`) right now.** Nothing in this plan touches them. If that changes, wait for `d3` rather than for `mindustry-forge-7b`.
 - **`BrowseController.php` and `browse.blade.php` belong to session `mindustry-forge-30` in their entirety**, including the "Les plus aimés" ordering, the `favoris=oui` and `aimes=oui` filters, and the count on a tile. Do not edit either file. Task 3 exists to hand that session what it needs, not to write it. Agreed 28 August so that the favorites are a filter of the catalogue rather than a second implementation of "list some schematics": in three weeks the catalogue will filter by planet, footprint and minimum output, and a separate favorites page would do none of it.
-- **"Schema" is masculine.** The game's own `bundle_fr.properties` says `schematic = Schema`. Every string added here agrees with that: "Les plus aimes" and not "aimees", "un schema" and not "une schematique". The translation key is `vitrine.tri.aimes`.
+- **"Schema" is masculine, and the agreement is the work, not the noun.** The game's own `bundle_fr.properties` says `schematic = Schema`. Every string added here agrees: "Les plus aimés", key `vitrine.tri.aimes`. Session 7b measured this on 154 occurrences: the site is written in the feminine *around* the noun, on lines that do not contain it. So count the agreements, not the names.
+- **Accent the participles, and it is not cosmetic.** In the feminine, "Alimentée" could only be a participle; in the masculine, "Alimente" is a verb. Same for classé, affichés, passés, analysés, copié, publié. The rename forces the accent rather than inviting it.
 - **Only the player-facing address is renamed, not the API.** `/schematiques` becomes `/schemas` with a 301; `/api/schematiques/{schematic}` stays as it is, because a machine address carries no word a player reads and the Laravel model binding hangs off that segment. So the new verbs read `/api/schematiques/{schematic}/aime`, and the controller parameter is `$schematic`, spelled exactly like the route segment or the binding silently hands you nothing. Read `site/routes/web.php` before writing any of them.
 - **No npm dependency.** The repository has none and this is not the feature that introduces one.
 - **Conventional commits in English**, imperative subject, 50 characters maximum. The body says why, not what.
@@ -680,7 +681,7 @@ schematic_likes(user_id, schematic_id, created_at)  unique(user_id, schematic_id
 favorites(user_id, schematic_id, created_at)        unique(user_id, schematic_id)
                                                     index(user_id, created_at)
 App\Models\SchematicLike, App\Models\Favorite
-ordering key `aimes`, label "Les plus aimes", orderByDesc('schematics.likes')
+ordering key `aimes`, label "Les plus aimés", orderByDesc('schematics.likes')
 ordering key `garde`, over favorites.created_at, only under favoris=oui
 filters `favoris=oui` and `aimes=oui`, offered to signed-in visitors only
 address /mes-favoris, rendering BrowseController with favoris=oui already armed
@@ -737,20 +738,20 @@ uses(RefreshDatabase::class);
 it('n offre pas le classement tant que 23 schemas seulement sont aimes', function () {
     Schematic::factory()->count(23)->create(['visibility' => Schematic::PUBLIC, 'likes' => 1]);
 
-    $this->get('/schemas')->assertOk()->assertDontSee('Les plus aimes');
+    $this->get('/schemas')->assertOk()->assertDontSee('Les plus aimés');
 });
 
 it('offre le classement a partir de 24', function () {
     Schematic::factory()->count(24)->create(['visibility' => Schematic::PUBLIC, 'likes' => 1]);
 
-    $this->get('/schemas')->assertOk()->assertSee('Les plus aimes');
+    $this->get('/schemas')->assertOk()->assertSee('Les plus aimés');
 });
 
 it('retombe sur la date quand le classement n existe pas encore', function () {
     Schematic::factory()->count(3)->create(['visibility' => Schematic::PUBLIC, 'likes' => 1]);
 
     // Tape a la main, puisque la page ne l'offre pas.
-    $this->get('/schemas?tri=aimes')->assertOk()->assertSee('Les plus recentes');
+    $this->get('/schemas?tri=aimes')->assertOk()->assertSee($fallback);
 });
 
 it('classe sur les j aime au dela du seuil', function () {
@@ -765,8 +766,15 @@ it('classe sur les j aime au dela du seuil', function () {
 });
 ```
 
-The strings asserted here carry their accents in the real files ("Les plus aimés", "Les
-plus récentes"); assert against the exact value written in `BrowseController::ORDERS`.
+**Do not hard-code the label of the fallback ordering.** Read it from
+`BrowseController::ORDERS['new']` into `$fallback` at the top of the file. As of PR 91 that
+value is still "Les plus recentes", feminine and unaccented, because the rename deliberately
+left `BrowseController` alone: it belongs to session 30. When session 30 agrees it to "Les
+plus récents", a test that guessed the string breaks for a reason that has nothing to do
+with the ordering it is testing.
+
+The one string worth asserting literally is "Les plus aimés", because this plan is what
+creates it.
 
 - [ ] **Step 5: Confirm the handover in writing**
 
@@ -1057,14 +1065,14 @@ Sign in with Discord, then check, on the real page:
 - pressing it again removes it, and the count goes back to nothing rather than to "0";
 - reloading the page keeps the button pressed;
 - signed out, the button is a link to Discord and the page still renders;
-- `/mes-schematiques` shows the count on a tile, and it agrees with the page it links to;
+- `/mes-schemas` shows the count on a tile, and it agrees with the page it links to;
 - the "Mes favoris" entry is absent from the menu, because it ships `'ready' => false` until session 30's route exists. Its presence at this point would be the bug.
 
 `/mes-favoris` and the "Les plus aimés" ordering are session 30's to show and to check. Do
 not claim them as working here: this branch cannot make them work, and a plan that ticks
 somebody else's box is how two sessions both report a thing done that neither did.
 
-Take a screenshot of the schematic page and of `/mes-schematiques` and read them. The question to say out loud in front of each number on screen: what question does this surface claim to answer, and is this the answer to that one.
+Take a screenshot of the schematic page and of `/mes-schemas` and read them. The question to say out loud in front of each number on screen: what question does this surface claim to answer, and is this the answer to that one.
 
 - [ ] **Step 4: Open the pull request**
 
