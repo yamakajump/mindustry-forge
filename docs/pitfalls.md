@@ -56,13 +56,11 @@ caught it. One does now: no `@yield` may appear in the served HTML.
 **`consumes_power` can be true with no consumption at all.** The graphite press is
 mechanical in the game. Trust the presence of `power` and `power_out`, never the boolean.
 
-**The `range` field of `blocks.json` mixes two units, and nothing says so.** It is in tiles
-for bridges, beam nodes, plasma drills, mass drivers and overdrive projectors; in world
-units, eight per tile, for every turret, repair point and shock tower. `DumpBlocks.java`
-divides by eight in three places and copies the raw field elsewhere, because in the game
-`ItemBridge.range` is an integer of tiles and `BaseTurret.range` a float of distance. The
-number alone cannot settle it: a bridge's 4 and a repair point's 40 are plausible in either
-unit. The real fix belongs in the dumper, which should write the unit next to the value.
+**`range` used to mix two units, and nothing said so.** `ItemBridge.range` is an integer
+of tiles in the game, `BaseTurret.range` a float of world units eight times larger, and
+`DumpBlocks.java` copied each straight through into one key with no way to tell them
+apart. Fixed: every distance field (`range`, `radius`, `phase_range_boost`) is now divided
+to tiles at the dumper, the one place that knows which raw field it started from.
 
 **A block's throughput in the catalogue is a nominal ceiling, not a measurement.** It is
 what the block would do fed at full rate, alone, with no bottleneck. The figure the rest of

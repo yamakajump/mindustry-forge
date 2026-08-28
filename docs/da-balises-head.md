@@ -10,9 +10,12 @@ Three icon formats, because three families of client ask for one differently: th
 whatever hits `/favicon.ico` without reading the head, the SVG for any current browser, the
 square PNG for the iOS home screen. Then the manifest and `theme-color`.
 
-The Open Graph block in `layout.blade.php` holds **defaults**. A page with something better
-to say overrides them from its own `@push('head')`, and the last tag wins, which is how a
-schematic page substitutes its own title, description and card.
+The Open Graph block in `layout.blade.php` holds **defaults**, and a page with something
+better to say overrides them with its own `@section`. It used to be defaults here plus a
+`@push('head')` on the page, and that put two `og:image` tags in the same head: a repeated
+`og:image` is an array, and an unfurler takes the first, so a page could never actually
+substitute the generic card. `@yield`/`@section` replaces rather than appends, which is
+what lets a schematic page substitute its own title, description and card today.
 
 **`asset('og.jpg')` only produces an absolute address when `APP_URL` is right.** A relative
 `og:image` is resolved by nobody: the thumbnail is simply missing, with no error anywhere to
