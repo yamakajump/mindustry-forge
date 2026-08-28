@@ -20,6 +20,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SchematicSearchController;
 use App\Http\Controllers\SocialCardController;
+use App\Http\Controllers\SpaceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -249,3 +250,20 @@ Route::get('/api/moi', fn () => response()->json([
         ? ['name' => auth()->user()->name, 'avatar' => auth()->user()->avatar]
         : null,
 ]));
+
+/*
+ * Work spaces: an account's saved editor boards, resumed on any machine.
+ *
+ * An anonymous visitor keeps the single localStorage draft `draft.js` already gives them,
+ * unchanged by any of this. Everything below needs an account, so it lives in its own
+ * `auth` group rather than the one further up: nothing here is public, and nothing here
+ * needed the routes it would otherwise have sat among.
+ */
+Route::middleware('auth')->group(function () {
+    Route::get('/api/espaces', [SpaceController::class, 'index']);
+    Route::post('/api/espaces', [SpaceController::class, 'store'])
+        ->middleware('throttle:30,1');
+    Route::get('/api/espaces/{space}', [SpaceController::class, 'show']);
+    Route::patch('/api/espaces/{space}', [SpaceController::class, 'update']);
+    Route::delete('/api/espaces/{space}', [SpaceController::class, 'destroy']);
+});
