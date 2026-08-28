@@ -291,3 +291,33 @@ function restore(ground, before) {
     else ground[cell] = layers;
   }
 }
+
+/**
+ * One frame as a board of its own, for analysing that frame alone.
+ *
+ * A view rather than a board somebody built: its blocks, its ground and its frame are
+ * copies, so nothing done to it on the way through the analysis reaches the workbench it
+ * was cut from. It carries that workbench, and carrying it is the whole point. The page
+ * sets the board it was handed aside so that editing again resumes where it stopped, and a
+ * view set aside that way becomes the board the player comes back to: every other frame,
+ * and every block outside this one, gone from it, then written over the saved draft on the
+ * first gesture. `workbenchOf` is what the page asks instead.
+ */
+export function frameBoard({ board, frame, sizeOf }) {
+  const scoped = createBoard({
+    tiles: board.tilesIn(frame), ground: board.ground, frames: [{ ...frame }], sizeOf,
+  });
+  scoped.workbench = board;
+  return scoped;
+}
+
+/**
+ * The board to set aside: the workbench a view was cut from, or the board itself when it
+ * is already the workbench.
+ *
+ * A whole-board analysis and a frame analysis come back through the same door, and the
+ * board is the only one that can say which of the two it was.
+ */
+export function workbenchOf(board) {
+  return board.workbench || board;
+}
