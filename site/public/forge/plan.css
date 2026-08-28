@@ -1,14 +1,14 @@
 /*
- * Le planificateur d'usine, et lui seul.
+ * The factory planner, and nothing else.
  *
- * Sa propre feuille plutot qu'une section de plus dans `forge.css` : plusieurs voies
- * editent ce fichier en meme temps, et une page d'outil n'a aucune raison d'etre sur le
- * chemin critique de la page d'analyse. Les couleurs viennent des variables de `forge.css`,
- * donc un changement de palette traverse cette page sans qu'on y touche.
+ * Its own stylesheet rather than one more section of `forge.css`: several sessions edit
+ * that file at once, and a tool page has no reason to sit on the critical path of the
+ * analysis page. The colours come from `forge.css`'s variables, so a change of palette
+ * reaches this page without anyone touching it.
  *
- * Le cadre `.outil` est repris de `logic/logique.css` plutot qu'importe : les deux pages
- * partagent une forme, pas un fichier, et une feuille d'outil qui en charge une autre fait
- * dependre le planificateur d'un chantier qui n'est pas le sien.
+ * The `.outil` frame is taken from `logic/logique.css` rather than imported: the two pages
+ * share a shape, not a file, and a tool stylesheet that loads another makes the planner
+ * depend on work that is not its own.
  */
 
 .outil {
@@ -28,7 +28,7 @@
 
 .outil .lede { margin: 0; color: var(--dim); font-size: 14px; }
 
-/* La demande tient sur une ligne, et se plie sur telephone : le site se lit en jouant. */
+/* The request fits on one line, and folds on a phone: the site is read while playing. */
 .demande .row { gap: 8px; }
 .demande input[type="number"] {
   width: 110px; min-height: 44px; padding: 0 12px;
@@ -38,29 +38,28 @@
 }
 .demande input[type="number"]:focus { border-color: var(--accent); outline: none; }
 
-/* Les chiffres alignes a droite en chasse fixe : une colonne de comptes se lit de haut en
-   bas, et une chasse proportionnelle fait danser les unites. */
+/* The figures right aligned in a fixed pitch: a column of counts is read top to bottom,
+   and a proportional pitch makes the units dance. */
 #sortie .line span:last-child {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
 
-/* Les hypotheses portent la couleur d'un avertissement sans en avoir le ton : ce ne sont
-   pas des erreurs, ce sont les conditions sous lesquelles le chiffre au-dessus est vrai. */
+/* The assumptions carry a warning's colour without its tone: they are not errors, they are
+   the conditions under which the figure above is true. */
 #sortie .card:first-child .notes { color: var(--warn); }
 
-/* Une chose du jeu : son icone puis son nom, qui ne se separent jamais en fin de ligne. */
+/* A thing from the game: its icon then its name, which never part at a line break. */
 .plan-chose { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 
-/* Ce qui relie deux choses, et les separateurs : plus discret que ce qu'ils separent. */
+/* What joins two things, and the separators: quieter than what they separate. */
 .plan-fleche { color: var(--dim); }
 
-/* Une paire ou une suite qui se replie plutot que de deborder : « il faut du sable, et voici
-   trois foreuses » tient sur une ligne en 1280 et sur trois en 390. */
+/* A pair or a run that folds rather than overflows: "it takes sand, and here are three
+   drills" fits on one line at 1280 and on three at 390. */
 .plan-paire,
 .plan-choix { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
-/* Les lignes portent maintenant des icones, donc elles ne s'alignent plus sur la ligne de
-   base du texte seul. */
+/* The rows now carry icons, so they no longer line up on the baseline of text alone. */
 #sortie .line { align-items: center; }

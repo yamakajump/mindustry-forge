@@ -76,8 +76,8 @@ document.addEventListener("change", async (event) => {
   try {
     await send(path, wanted ? "POST" : "DELETE");
   } catch (error) {
-    // La case revient ou elle etait : elle dit ce que le serveur sait, pas ce qu'on a
-    // clique. Une case restee cochee sur un rangement refuse est un mensonge silencieux.
+    // The box goes back where it was: it says what the server knows, not what was
+    // clicked. A box left ticked on a filing the server refused is a silent lie.
     box.checked = !wanted;
     say(box.closest("details"), error.message, true);
   }
@@ -99,8 +99,8 @@ document.addEventListener("click", async (event) => {
       if (name === null || name.trim() === "") return;
       await send(`/api/dossiers/${slug}`, "PATCH", { name: name.trim() });
     } else if (button.hasAttribute("data-supprimer")) {
-      /* Ce qu'il contient ne part pas avec lui, et la question le dit : une suppression
-         qu'on croit recursive est celle qu'on regrette. */
+      /* What it holds does not go with it, and the question says so: a deletion believed
+         to be recursive is the one that gets regretted. */
       if (!confirm(t("dossiers.gestion.supprimer-confirme"))) return;
       await send(`/api/dossiers/${slug}`, "DELETE");
     } else if (button.hasAttribute("data-legender")) {

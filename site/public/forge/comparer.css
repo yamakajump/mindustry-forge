@@ -19,7 +19,7 @@
   --cote-b: #8fc7ff;
 }
 
-/* Les deux cotes, et le geste entre les deux ---------------------------------------- */
+/* The two sides, and the gesture between them ---------------------------------------- */
 
 .cmp-arene {
   display: grid;
@@ -29,8 +29,8 @@
   margin-bottom: 10px;
 }
 
-/* Sous 760 px les deux cotes se rangent l'un sous l'autre et le bouton d'echange passe
-   entre eux, en pleine largeur : c'est la seule position ou il garde son sens. */
+/* Under 760 px the two sides stack one below the other and the swap button moves between
+   them, full width: that is the only position where it keeps its meaning. */
 @media (max-width: 760px) {
   .cmp-arene { grid-template-columns: minmax(0, 1fr); }
   .cmp-milieu { justify-self: stretch; }
@@ -53,8 +53,8 @@
 }
 .cmp-enlever { margin-left: auto; text-transform: none; letter-spacing: 0; font-size: 12.5px; }
 
-/* La pastille qui dit le cote, partout ou un des deux est nomme : dans l'en-tete des
-   colonnes, sur une proposition, sur la ligne d'un objet qu'un seul des deux produit. */
+/* The badge that says which side, everywhere one of the two is named: in the column
+   headers, on a suggestion, on the row of an item only one of them produces. */
 .cmp-pastille {
   display: inline-grid; place-items: center; flex: none;
   width: 18px; height: 18px; border-radius: 4px;
@@ -63,9 +63,9 @@
 .cmp-pastille.a { background: var(--cote-a); }
 .cmp-pastille.b { background: var(--cote-b); }
 
-/* Le plan lui-meme. Une hauteur fixe et pas un rapport d'aspect : les deux cadres doivent
-   faire la meme taille pour que deux plans se comparent a l'oeil, et un schema est aussi
-   bien un carre de 40 qu'une bande de 60 sur 3. Le dessin se met a l'echelle dedans. */
+/* The plan itself. A fixed height and not an aspect ratio: the two frames have to be the
+   same size for two plans to be compared by eye, and a schematic is as easily a 40 square
+   as a 60 by 3 strip. The drawing scales itself inside. */
 .cmp-scene {
   background: var(--stage); border: 1px solid var(--edge); border-radius: 6px;
   height: 240px; display: flex; align-items: center; justify-content: center;
@@ -75,10 +75,10 @@
   display: block; image-rendering: pixelated; max-width: 100%; max-height: 100%;
 }
 .cmp-scene .empty { font-size: 12.5px; text-align: center; }
-/* Un cadre vide n'a pas besoin de la taille d'un plan. Les deux a 240 px, c'etait un demi
-   ecran de pointilles avant d'atteindre la premiere proposition sur un telephone, et il n'y
-   a rien a y regarder. La hauteur ne saute pas pour autant : choisir un cote recharge la
-   page, ce n'est pas un deplacement sous le doigt. */
+/* An empty frame does not need a plan's height. Both at 240 px, that was half a screen of
+   dashes before reaching the first suggestion on a phone, and there is nothing there to
+   look at. The height does not jump for all that: choosing a side reloads the page, it is
+   not a shift under the thumb. */
 .cmp-scene.creuse {
   height: 140px; flex-direction: column; gap: 8px; color: var(--dim);
   border-style: dashed; border-width: 2px;
@@ -93,8 +93,8 @@
 .cmp-nom a { color: var(--ink); }
 .cmp-cote .meta { margin: 0; color: var(--dim); font-size: 12.5px; }
 
-/* Le champ et son bouton, sur une ligne, le champ prenant ce qui reste. Il faisait 150 px
-   de large a cote d'un bouton, pour y taper un nom de schema. */
+/* The field and its button, on one line, the field taking what is left. It was 150 px wide
+   next to a button, to type a schematic's name into. */
 .cmp-champ { display: flex; gap: 8px; }
 .cmp-champ input {
   flex: 1; min-width: 0; min-height: 44px; padding: 0 12px;
@@ -105,10 +105,10 @@
 .cmp-champ input:focus { border-color: var(--accent); outline: none; }
 .cmp-champ button { flex: none; }
 
-/* L'etiquette existe pour le lecteur d'ecran, pas pour l'oeil : le role du cote est deja
-   ecrit en toutes lettres au-dessus du cadre, et le repeter sous le champ serait le dire
-   deux fois. Retiree du flux plutot que `display:none`, qui la retirerait aussi de la
-   restitution vocale et laisserait un champ sans nom. */
+/* The label exists for the screen reader, not for the eye: the side's role is already
+   written out in full above the frame, and repeating it under the field would be saying it
+   twice. Taken out of the flow rather than `display:none`, which would also take it out of
+   the spoken rendering and leave a field with no name. */
 .cmp-cache {
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip-path: inset(50%); white-space: nowrap;
@@ -126,7 +126,7 @@
 
 .cmp-aide { margin: 0 0 18px; }
 
-/* Ce qu'un nom a trouve ------------------------------------------------------------- */
+/* What a name found ----------------------------------------------------------------- */
 
 .cmp-resultats { display: grid; gap: 2px; max-height: 320px; overflow-y: auto; }
 .cmp-resultats:empty { display: none; }
@@ -141,8 +141,8 @@
   background: var(--raised); text-decoration: none;
 }
 
-/* Le plan, en petit, et c'est toute la raison de cette liste. Huit resultats appeles
-   « Silicon » sont huit lignes identiques, et le choix se faisait au hasard. */
+/* The plan, small, and that is the whole reason for this list. Eight results called
+   "Silicon" are eight identical rows, and the choice was made at random. */
 .cmp-mini {
   flex: none; width: 64px; height: 48px; border-radius: 4px;
   background: var(--stage); border: 1px solid var(--edge);
@@ -155,7 +155,7 @@
 .cmp-resultat-nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cmp-resultat-de { color: var(--dim); font-size: 12px; font-family: var(--mono); }
 
-/* Ce qu'il y a a comparer, quand on arrive sans rien ---------------------------------- */
+/* What there is to compare, when you arrive with nothing ------------------------------ */
 
 .cmp-titre {
   margin: 22px 0 10px; font-size: 12px; letter-spacing: .12em;
@@ -164,9 +164,9 @@
 .cmp-propositions .tile a { display: block; }
 .cmp-propositions .tile h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Les deux gestes que la tuile existe pour offrir. Ils menaient a `/s/` et rien d'autre,
-   donc cliquer une proposition emmenait ailleurs et il fallait revenir avec l'identifiant
-   en tete. */
+/* The two gestures the tile exists to offer. They led to `/s/` and nowhere else, so
+   clicking a suggestion took you away and you had to come back with the identifier in your
+   head. */
 .cmp-vers { display: flex; gap: 6px; margin: 8px 0 0; }
 .cmp-vers a {
   flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -176,21 +176,22 @@
 }
 .cmp-vers a:hover { background: var(--raised-hover); color: var(--ink); text-decoration: none; }
 
-/* Les ecarts ------------------------------------------------------------------------- */
+/* The gaps --------------------------------------------------------------------------- */
 
 /*
- * Quatre colonnes : ce qu'on compare, les deux valeurs, puis l'ecart. C'est l'ecart qui
- * justifie la page, donc il a sa colonne au lieu d'etre a soustraire de tete. La barre
- * collante et les cartes partagent cette grille, sinon leurs colonnes ne s'alignent pas.
+ * Four columns: what is being compared, the two values, then the gap. It is the gap that
+ * justifies the page, so it gets its own column instead of having to be subtracted in your
+ * head. The sticky bar and the cards share this grid, otherwise their columns do not line
+ * up.
  *
- * Sa propre separation et son propre interligne, plutot que ceux de `.line`. Les deux
- * classes etaient posees sur le meme element, et `forge.css` est charge apres la feuille de
- * la page : a specificite egale son `display: flex` gagnait, la grille n'existait pas et
- * rien ne tombait en face de la barre collante. Une regle de mise en page qui depend de
- * l'ordre de deux fichiers est une regle qu'un jour quelqu'un range et casse.
+ * Its own separator and its own leading, rather than `.line`'s. The two classes were set on
+ * the same element, and `forge.css` is loaded after the page's own sheet: at equal
+ * specificity its `display: flex` won, the grid did not exist and nothing fell in line with
+ * the sticky bar. A layout rule that depends on the order of two files is a rule somebody
+ * tidies up and breaks one day.
  *
- * Les deux colonnes de valeurs sont larges parce qu'elles portent la barre : sur 78 px, la
- * proportion se lisait comme une pastille derriere le chiffre plutot que comme une longueur.
+ * The two value columns are wide because they carry the bar: at 78 px, the proportion read
+ * as a badge behind the figure rather than as a length.
  */
 .cmp-ligne {
   display: grid;
@@ -213,9 +214,9 @@
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
-/* Les deux valeurs se tournent le dos autour de leur separation : la gauche finit dessus,
-   la droite en part. Les deux barres partagent alors un bord, et laquelle est la plus
-   longue se voit sans lire. Rangees dans le meme sens, elles se lisaient une par une. */
+/* The two values face away from each other around their divide: the left one ends on it,
+   the right one starts from it. The two bars then share an edge, and which one is longer
+   shows without reading. Run the same way, they had to be read one at a time. */
 .cmp-ligne .cmp-val.a { text-align: right; }
 .cmp-ligne .cmp-val.b { text-align: left; }
 .cmp-ligne .cmp-ecart { text-align: right; }
@@ -223,16 +224,15 @@
 .cmp-muet { color: var(--dim); font-size: 12px; font-weight: 400; }
 
 /*
- * La proportion des deux valeurs entre elles, derriere les chiffres.
+ * The proportion of the two values to each other, behind the figures.
  *
- * Uniquement sur une ligne comparable : meme objet, meme nature de chiffre. La barre ne dit
- * rien d'une ligne a la suivante, et c'est voulu. Une echelle commune a toutes les lignes
- * mettrait le graphite et le silicium sur un meme axe, ce qui est le score global que cette
- * page refuse de calculer.
+ * Only on a comparable row: same item, same kind of figure. The bar says nothing from one
+ * row to the next, and that is deliberate. A scale common to every row would put graphite
+ * and silicon on one axis, which is the overall score this page refuses to compute.
  *
- * Un fond et pas un element : rien de plus dans le balisage, rien a lire pour un lecteur
- * d'ecran, et le chiffre reste le chiffre. Il degrade proprement, aussi -- un navigateur
- * qui ignore `--part` affiche un tableau sans barres, ce que la page etait hier.
+ * A background and not an element: nothing more in the markup, nothing to read for a screen
+ * reader, and the figure stays the figure. It degrades cleanly too -- a browser that
+ * ignores `--part` shows a table with no bars, which is what the page was yesterday.
  */
 .cmp-ligne.barree .cmp-val { padding: 3px 6px; border-radius: 4px; }
 .cmp-ligne.barree .cmp-val.a {
@@ -245,15 +245,15 @@
 }
 
 /*
- * Qui est qui, colle en haut de l'ecran.
+ * Which is which, stuck to the top of the screen.
  *
- * Les cartes repetaient les deux noms dans chacun de leurs en-tetes, tronques a la largeur
- * d'une colonne de chiffres. Des qu'on descendait dans les ecarts, les deux plans etaient
- * sortis de l'ecran et il ne restait plus rien pour dire de quel cote on regardait.
+ * The cards repeated both names in every one of their headers, truncated to the width of a
+ * column of figures. As soon as you scrolled down into the gaps, both plans had left the
+ * screen and there was nothing left to say which side you were looking at.
  *
- * Les marges laterales valent celles d'une carte, pour que les quatre colonnes tombent en
- * face de celles des lignes en dessous. Deux valeurs a garder d'accord, c'est le prix d'une
- * barre qui suit sans emporter la mise en page des cartes avec elle.
+ * The side margins match a card's, so the four columns fall in line with those of the rows
+ * below. Two values to keep in agreement is the price of a bar that follows without taking
+ * the cards' layout with it.
  */
 .cmp-collant {
   position: sticky; top: 0; z-index: 5;
@@ -272,33 +272,33 @@
   font-weight: 400;
 }
 
-/* Sur telephone, quatre colonnes ne tiennent pas et l'ecart est ce qu'on vient lire, donc
-   il passe sur sa propre ligne plutot que de comprimer les deux valeurs a rien. */
+/* On a phone, four columns do not fit and the gap is what the reader came for, so it moves
+   onto its own line rather than squeezing the two values down to nothing. */
 @media (max-width: 620px) {
   .cmp-ligne { grid-template-columns: minmax(0, 1fr) 72px 72px; }
   .cmp-ligne .cmp-ecart { grid-column: 2 / -1; text-align: right; }
-  /* Sous 620 px le nom ne tient plus a cote d'un chiffre, et une pastille de couleur suffit
-     a dire de quel cote on est : c'est la meme sur les deux plans, juste au-dessus. Le mot
-     « ecart » part avec, sinon il tombe seul sur une deuxieme ligne et double la hauteur
-     d'une barre qui ne porte plus que deux pastilles. */
+  /* Under 620 px the name no longer fits beside a figure, and a coloured badge is enough to
+     say which side you are on: it is the same badge on both plans, just above. The word for
+     the gap goes with it, otherwise it drops alone onto a second line and doubles the
+     height of a bar that now carries only two badges. */
   .cmp-collant .cmp-nom-court,
   .cmp-collant .cmp-ecart { display: none; }
 
-  /* Le goulot passe sous le nom du schema plutot que de partager la ligne avec lui : deux
-     noms tronques cote a cote ne disent ni l'un ni l'autre. */
+  /* The bottleneck moves below the schematic's name rather than sharing the line with it:
+     two truncated names side by side say neither one nor the other. */
   .cmp-arret { flex-direction: column; align-items: flex-start; gap: 2px; }
   .cmp-arret .cmp-quoi { max-width: 100%; }
 }
 
 /*
- * Les cibles tactiles de cette page.
+ * This page's touch targets.
  *
- * Mesure en 390 px : les deux noms de schema faisaient 17 px de haut et la liste de choix
- * 15. Ce sont les seuls liens de la page, et ils sont toute sa navigation.
+ * Measured at 390 px: the two schematic names were 17 px tall and the list of choices 15.
+ * They are the only links on the page, and they are the whole of its navigation.
  *
- * La regle porte sur ces selecteurs et pas sur `a` : un lien pose dans une phrase doit
- * rester dans la phrase, et une hauteur minimale sur tous les liens defoncerait l'interligne
- * des notes explicatives, dont ce site est plein. C'est le role qui decide, pas l'apparence.
+ * The rule applies to these selectors and not to `a`: a link set inside a sentence has to
+ * stay inside the sentence, and a minimum height on every link would blow out the leading
+ * of the explanatory notes this site is full of. The role decides, not the appearance.
  */
 .cmp-nom a,
 .cmp-enlever {
