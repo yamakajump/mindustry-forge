@@ -34,6 +34,12 @@
           @if($schematic->power_made > 0.5)
             &middot; @if($schematic->fedBySandbox()){{ __('schema.page.bac-a-sable-court') }}@else{{ number_format($schematic->power_made - $schematic->power_used, 0, ',', ' ') }} energie/s @endif
           @endif
+          {{-- Le compte se lit sur la colonne que la liste selectionne deja : pas un
+               `withCount`, qui ferait une requete par tuile. Et pas de bouton ici, le
+               geste appartient a la page ou l'on regarde vraiment la schematique. --}}
+          @if($schematic->likes > 0)
+            &middot; {{ $schematic->likes }} {{ __('schema.unite.jaime') }}
+          @endif
         </p>
         @include('partials.manage', ['compact' => true])
         <p class="meta"><a href="/?s={{ $schematic->slug }}">Modifier</a></p>

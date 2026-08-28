@@ -46,6 +46,14 @@ neither of the two share cards built that evening ever appeared. Nothing raises,
 returns 200, and the only way to see it is to read the served HTML. A page now replaces
 with `@section` instead of appending.
 
+**`data-slug` is a contract, not a spare attribute.** `apercu.js` walks every
+`[data-slug]` in the document, fetches that schematic's code and replaces the element's
+content with a canvas. Putting the attribute on anything that is not a thumbnail panel
+therefore deletes whatever was inside it. It ate a pair of buttons on the schematic page
+while eleven tests stayed green, because the tests read what the server sent and the
+damage happens in the browser afterwards. Carry the slug under another name, and open the
+page.
+
 **An escaped apostrophe in a Blade directive stops the compiler mid-file**, and the page
 answers **200 while printing its own source**, `@stack` and `@include` included. No test
 caught it. One does now: no `@yield` may appear in the served HTML.
@@ -84,6 +92,13 @@ merge-test-push cycle, so comparing against the remote branch just after a resol
 compares against a target that has already moved, and shows deletions that do not exist.
 Someone once believed they had deleted thirty-four lines of another person's work. The
 right reference during a merge is `MERGE_HEAD`, not `origin/<branch>`.
+
+**A plain `diff` lies about two identical files on Windows.** A file written in the
+shared checkout keeps its CRLF line endings, git normalises them to LF on commit and says
+so, and comparing the working copy against the committed one then reports every single
+line as different. One such report was relayed as a risk of losing work; the whole
+difference was 1,099 carriage returns. Normalise before concluding that content diverged:
+`git show "origin/main:$f" | diff - <(tr -d '\r' < "$f")`.
 
 **Checking that a branch is clean does not keep it clean.** `git log --oneline
 origin/main..HEAD` being empty says nothing about the state a few minutes later if anything

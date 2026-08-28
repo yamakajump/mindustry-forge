@@ -5,8 +5,10 @@ use App\Http\Controllers\BlockCardController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CompareController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IconController;
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\SchematicController;
 use App\Http\Controllers\SchematicSearchController;
 use App\Http\Controllers\SocialCardController;
@@ -148,6 +150,24 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/schematiques', [SchematicController::class, 'store']);
     Route::patch('/api/schematiques/{schematic}', [SchematicController::class, 'update']);
     Route::delete('/api/schematiques/{schematic}', [SchematicController::class, 'destroy']);
+
+    /* The public gesture, and the private one beside it.
+     *
+     * Throttled because they are the cheapest requests on the site to repeat: the unique
+     * constraint stops a second press counting twice, but not from arriving.
+     *
+     * The address keeps `schematiques` while the pages moved to `/schemas`, deliberately.
+     * A machine address carries no word a player reads, and the model binding hangs off
+     * this exact segment, so renaming it would buy a redirect and cost a binding. */
+    Route::post('/api/schematiques/{schematic}/aime', [LikeController::class, 'store'])
+        ->middleware('throttle:60,1');
+    Route::delete('/api/schematiques/{schematic}/aime', [LikeController::class, 'destroy'])
+        ->middleware('throttle:60,1');
+
+    Route::post('/api/schematiques/{schematic}/favori', [FavoriteController::class, 'store'])
+        ->middleware('throttle:60,1');
+    Route::delete('/api/schematiques/{schematic}/favori', [FavoriteController::class, 'destroy'])
+        ->middleware('throttle:60,1');
 });
 
 /*

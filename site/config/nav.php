@@ -23,6 +23,11 @@ return [
     ['key' => 'nav.barre.schematiques', 'menu' => [
         ['key' => 'nav.menu.parcourir', 'href' => '/schemas', 'ready' => true],
         ['key' => 'nav.menu.les-miennes', 'href' => '/mes-schemas', 'ready' => true, 'auth' => true],
+        /* La page est rendue par le catalogue avec le filtre `favoris` deja arme, et
+           cette route appartient a la voie qui refait la vitrine. `ready` reste faux
+           jusqu'a ce qu'elle existe : une entree de menu qui pointe sur un 404 est pire
+           qu'une entree absente. */
+        ['key' => 'nav.menu.favoris', 'href' => '/mes-favoris', 'ready' => false, 'auth' => true],
         ['key' => 'nav.menu.comparer', 'href' => '/comparer', 'ready' => true],
         ['key' => 'nav.menu.publier', 'href' => '/publier', 'ready' => false],
     ]],

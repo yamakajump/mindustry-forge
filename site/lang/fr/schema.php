@@ -13,6 +13,28 @@ return [
         'energie' => 'energie',
         'par-seconde' => '/ s',
         'par-minute' => '/ min',
+        // Invariable au pluriel, d'ou une seule cle : « 1 j'aime », « 12 j'aime ».
+        'jaime' => "j'aime",
+    ],
+
+    /*
+     * Les deux gestes, dits plutot que laisses a deux icones.
+     *
+     * Un coeur plein contre un coeur vide ne porte pas la difference entre « c'est bien »
+     * et « je veux le retrouver » a quelqu'un a qui personne ne l'a expliquee. La page a
+     * les deux, donc elle nomme les deux.
+     */
+    'aime' => [
+        'bouton' => "J'aime",
+        'retirer' => "Je n'aime plus",
+        // `schema.aime.refuse` n'est pas ici : seul keep.js la prononce, et une cle que
+        // le PHP ne demande jamais est une orpheline pour TranslationKeysTest. Elle vit
+        // dans public/forge/lang/fr.json, comme schema.gestion.refuse a cote.
+    ],
+
+    'favori' => [
+        'ajouter' => 'Garder en favori',
+        'retirer' => 'Retirer des favoris',
     ],
 
     /*
