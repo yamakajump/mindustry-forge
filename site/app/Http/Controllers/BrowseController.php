@@ -7,8 +7,8 @@ use App\Models\SchematicItem;
 use App\Services\BlockCatalogue;
 use App\Support\Remarks;
 use App\Support\Thing;
+use App\Support\Vitrine;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -193,7 +193,7 @@ class BrowseController extends Controller
                  * chaque tuile le repete a cote de son chiffre.
                  */
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
-                ->where('schematic_items.kind', SchematicItem::PLAFOND)
+                ->where('schematic_items.kind', Vitrine::NATURE)
                 ->select('schematics.*');
 
             /* "At least a hundred a minute", which only means anything once a thing is
@@ -283,11 +283,11 @@ class BrowseController extends Controller
 
         /* Ce que la recherche porte en ce moment, une puce par contrainte, chacune avec le
            lien qui la retire.
-        
+
            Une page arrivee par un lien partage applique des filtres que son lecteur n'a pas
            poses, et le panneau qui les contient est replie. Sans ces puces, la seule façon de
            savoir pourquoi la liste est courte est d'ouvrir le panneau et de lire six champs.
-        
+
            Les nombres sont assembles ici et jamais passes a une cle de traduction : une cle
            manquante rendrait la cle sans substituer, et « au moins 1 000 » deviendrait « au
            moins », ce qui est la seule moitie de la phrase qui ne veut rien dire. */
@@ -341,11 +341,11 @@ class BrowseController extends Controller
             'orders' => self::ORDERS,
             // Offered rather than typed: the analysis already knows what exists, so a
             // player picks from what is actually there instead of guessing a spelling.
-            'items' => $this->itemsOnOffer(),
+            'items' => Vitrine::itemsOnOffer(),
             'holds' => $holds,
             // Offered from what is actually in the catalogue, same reason as the items: a
             // player picks a name that exists instead of guessing how it is spelled.
-            'blocks' => $this->blocksOnOffer(),
+            'blocks' => Vitrine::blocksOnOffer(),
             'powerKey' => SchematicItem::POWER,
             // Rendered back into the form so a search survives being shared, bookmarked or
             // paged through. A field the page forgets is a filter the reader cannot see it
@@ -386,52 +386,5 @@ class BrowseController extends Controller
     private static function plain(float $value): string
     {
         return rtrim(rtrim(number_format($value, 2, ',', ' '), '0'), ',');
-    }
-
-    /**
-     * Everything any public schematic actually produces, commonest first.
-     *
-     * A grouped count over an indexed table. It used to mean reading the `produces` blob of
-     * every public schematic and counting keys in PHP, which measured 141 ms over fifteen
-     * thousand rows, paid on every single view of the listing, to fill a dropdown of
-     * twenty. That was briefly patched with a ten minute cache; indexing what a schematic
-     * makes removed the reason for the cache along with the cost.
-     */
-    /**
-     * Every block a public schematic is built from, commonest first.
-     *
-     * Capped at two hundred: the list goes into a `datalist` on every render of the page,
-     * and the whole catalogue would be four hundred names of markup nobody scrolls past
-     * the first dozen of. The cap is a display decision and it is stated rather than left
-     * to be discovered - a search for a block outside it still works, it simply is not
-     * suggested.
-     */
-    private function blocksOnOffer(): array
-    {
-        return DB::table('schematic_blocks')
-            ->join('schematics', 'schematics.id', '=', 'schematic_blocks.schematic_id')
-            ->where('schematics.visibility', Schematic::PUBLIC)
-            ->groupBy('schematic_blocks.block')
-            ->orderByRaw('count(*) desc')
-            ->limit(200)
-            ->pluck('schematic_blocks.block')
-            ->all();
-    }
-
-    private function itemsOnOffer(): array
-    {
-        return SchematicItem::query()
-            ->join('schematics', 'schematics.id', '=', 'schematic_items.schematic_id')
-            ->where('schematics.visibility', Schematic::PUBLIC)
-            ->where('schematic_items.sens', SchematicItem::PRODUIT)
-            // La meme nature que le classement, sans quoi la liste proposerait du graphite
-            // et la page n'afficherait rien : un filtre qui offre ce qu'il ne sait pas
-            // rendre est pire qu'un filtre qui ne l'offre pas.
-            ->where('schematic_items.kind', SchematicItem::PLAFOND)
-            ->groupBy('schematic_items.item')
-            ->orderByRaw('count(*) desc')
-            ->limit(20)
-            ->pluck('schematic_items.item')
-            ->all();
     }
 }
