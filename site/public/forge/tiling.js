@@ -49,9 +49,9 @@ export const D8 = [
  *
  * The game's expression is `(this != tile.floor() && other.overlay() != air) ? other.overlay()
  * : other.floor()`. The tempting misreading is that `this` is the neighbour, making the clause
- * "prefer the layer on top". It is not: `this` is the floor whose `drawEdges` is running and
+ * "prefer the layer on top". It is not: `this` is the block whose `drawEdges` is running and
  * `tile` is the tile being drawn, so `this != tile.floor()` is a property of the tile at the
- * centre and is true only on the overlay pass described beside `blendersAt`. On the floor pass,
+ * centre. It is true only on the overlay pass described beside `blendersAt`. On the floor pass,
  * the one modelled here, it is false on every tile, and the neighbour's own overlay never
  * enters the choice.
  *
@@ -70,9 +70,11 @@ function contributorAt(ground, x, y) {
  * The floor pass of `Floor.drawEdges` in v159.7, decompiled from `server-release.jar` rather
  * than read off a wiki. Two departures, named rather than left for a reader to discover:
  *
- * - `drawBase` runs `drawMain; if(drawEdgeIn) drawEdges; drawOverlay`, and then a second time
- *   for the tile's own overlay, with the overlay's blend id and its `edges`. That second pass
- *   is not implemented here. A tile's overlay therefore bleeds onto nothing.
+ * - `drawBase` runs `drawMain; if(drawEdgeIn) drawEdges; drawOverlay`, and `drawOverlay` calls
+ *   `drawBase` again on the tile's own overlay block. That re-entry runs `drawEdges` a second
+ *   time with `this` set to the overlay, so it uses the overlay's blend id and its `edges`, and
+ *   it is where the neighbour's overlay clause finally applies. It is not implemented here: a
+ *   tile's overlay bleeds onto nothing.
  * - `doEdge` compares `realBlendId`, which for a liquid floor under a non-ore overlay composes
  *   a negative value rather than returning `blendId`. This compares `blendId` alone.
  *
