@@ -61,29 +61,43 @@ return [
      * numbers against these words instead.
      */
     'comparer' => [
-        'titre' => 'Comparer deux schematiques',
-        'sous-titre' => "Les deux ont ete lues par le meme moteur, donc la difference se
+        'titre' => 'Comparer deux schemas',
+        'sous-titre' => "Les deux ont ete lus par le meme moteur, donc la difference se
             soustrait au lieu de se deviner sur deux captures d'ecran.",
         'gauche' => 'A gauche',
         'droite' => 'A droite',
-        'identifiant' => 'un nom, ou un identifiant',
+        'cherche' => 'Cherche un schema par son nom',
         'comparer' => 'Comparer',
         'aide' => "Tape un nom, ou colle la fin d'une adresse apres /s/.",
-        'trouvees' => 'Ce qui porte ce nom',
+        'trouves' => 'Ce qui porte ce nom',
         'blocs' => 'blocs',
         'par' => 'par',
         'rien-trouve' => 'Rien ne porte ce nom.',
         'mettre-a-gauche' => 'a gauche',
         'mettre-a-droite' => 'a droite',
-        'comparer-avec' => 'Comparer avec une autre',
-        'a-choisir' => 'Des schematiques a comparer',
+        'comparer-avec' => 'Comparer avec un autre',
+        'a-choisir' => 'Des schemas a comparer',
         'rien-a-comparer' => "Rien de publie pour l'instant.",
         'energie' => 'energie',
 
-        'ce-quelles-font' => 'Ce qu\'elles font toutes les deux',
-        'lune-pas-lautre' => "Ce que l'une fait et pas l'autre",
+        /*
+         * The two slots, which are what the page is now built around.
+         *
+         * It used to be two text boxes asking for an identifier, above a list of names
+         * proving the site already knew which schematics it was talking about. A page whose
+         * whole subject is two pictures showed neither of them, at any point, and Corentin's
+         * words for it were "on ne voit pas les schemas".
+         */
+        'vide' => 'Rien de choisi de ce cote',
+        'dessin' => 'Dessin du plan...',
+        'enlever' => 'enlever',
+        'echanger' => 'Echanger les deux cotes',
+        'ouvrir' => 'ouvrir sa page',
+
+        'ce-quils-font' => "Ce qu'ils font tous les deux",
+        'lun-pas-lautre' => "Ce que l'un fait et pas l'autre",
         'la-place' => 'La place et le courant',
-        'le-cout' => "Ce qu'elles coutent a poser",
+        'le-cout' => "Ce qu'ils coutent a poser",
         'ce-qui-bloque' => 'Ce qui les arrete',
         'rien-ne-bloque' => 'rien de signale',
 
@@ -102,16 +116,16 @@ return [
          * A single figure mixing things that do not belong on one axis reads as a verdict,
          * which is exactly the fault repaired on the net-power ranking.
          */
-        'rien-en-commun' => "Ces deux schematiques ne produisent rien en commun, donc il n'y
-            a pas de vainqueur a designer. Classer du graphite contre du silicium reviendrait
-            a decreter qu'un graphite vaut un silicium.",
+        'rien-en-commun' => "Ces deux schemas ne produisent rien en commun, donc il n'y a pas
+            de vainqueur a designer. Classer du graphite contre du silicium reviendrait a
+            decreter qu'un graphite vaut un silicium.",
         'plafond' => "Ces chiffres sont des plafonds, pas des mesures : personne n'a dit a ces
-            schematiques ou elles se branchent, donc c'est ce qu'elles feraient au mieux.",
+            schemas ou ils se branchent, donc c'est ce qu'ils feraient au mieux.",
         'kinds-melanges' => "Un des deux chiffres est une mesure et l'autre un plafond. Ils
             sont montres cote a cote et volontairement pas soustraits : leur difference ne
             voudrait rien dire.",
-        'pas-de-verdict' => "Aucun vainqueur n'est designe. Une schematique qui produit plus
-            et coute trois fois plus cher n'est pas meilleure, c'est un autre marche, et vous
+        'pas-de-verdict' => "Aucun vainqueur n'est designe. Un schema qui produit plus et
+            coute trois fois plus cher n'est pas meilleur, c'est un autre marche, et vous
             etes seul a savoir lequel vous voulez.",
     ],
 
