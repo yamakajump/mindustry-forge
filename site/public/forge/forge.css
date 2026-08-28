@@ -70,29 +70,29 @@ header {
 }
 .brand span { color: var(--accent); }
 
-/* Le signe, en ligne et dimensionne en `em`.
+/* The mark, inline and sized in `em`.
 
-   Pas en pixels : `.editor-bar .brand` retombe a 17px, et un signe fixe s y retrouverait
-   au mauvais rapport sans que rien ne le signale avant qu on ouvre l editeur. Pas en
-   image non plus, `currentColor` ne traverse pas un `<img>`. La geometrie est celle de
-   `brand/mark-plain.svg`, qui reste la source : un test compare les deux copies a elle. */
+   Not in pixels: `.editor-bar .brand` drops back to 17px, and a fixed mark would end up
+   there at the wrong ratio with nothing reporting it before the editor is opened. Not an
+   image either, `currentColor` does not cross an `<img>`. The geometry is that of
+   `brand/mark-plain.svg`, which stays the source: a test compares both copies to it. */
 .brand .signe { height: .95em; width: auto; color: var(--accent); flex: none; }
 
-/* Une cible que le doigt trouve, sans deplacer quoi que ce soit.
+/* A target the thumb can find, without moving anything.
 
-   La marque de l'entete est un lien, et c'etait le seul controle du site sous 36 px de
-   haut : 30 a 390, 27 a 320, la ou ses voisins `a.discord` et `.deplier` portent deja
-   leurs 44. Elle etait l'exception dans sa propre section.
+   The header's mark is a link, and it was the site's only control under 36 px tall: 30 at
+   390, 27 at 320, where its neighbours `a.discord` and `.deplier` already carry their 44.
+   It was the exception inside its own section.
 
-   Un `min-height` aurait suffi, et il aurait coute : mesure, l'entete est deja sur deux
-   lignes a 800 px, et lui donner 44 px de haut le faisait passer de 118 a 132. Grandir un
-   entete deja replie pour reparer une cible, c'est echanger un defaut contre un autre.
+   A `min-height` would have been enough, and it would have cost: measured, the header is
+   already on two lines at 800 px, and giving it 44 px of height took it from 118 to 132.
+   Growing an already wrapped header to fix a target is trading one defect for another.
 
-   La zone sensible est donc etendue par un pseudo-element, qui recoit les clics sans
-   participer a la mise en page. La marque garde ses 30 px, le doigt en trouve 44.
+   The sensitive area is therefore extended by a pseudo-element, which takes the clicks
+   without taking part in the layout. The mark keeps its 30 px, the thumb finds 44.
 
-   Pose sur `header .brand` et pas sur `.brand` : la barre de l'editeur ecrit la sienne
-   dans un `<span>` hors de tout `<header>`. Ce n'est pas un lien, ca ne se vise pas. */
+   Set on `header .brand` and not on `.brand`: the editor's bar writes its own inside a
+   `<span>` outside any `<header>`. It is not a link, and it is not aimed at. */
 header .brand { position: relative; }
 header .brand::after {
   content: ""; position: absolute; left: 0; right: 0; top: 50%;
@@ -102,15 +102,16 @@ header nav { margin-left: auto; display: flex; align-items: center; gap: 16px; f
 header nav a { color: var(--dim); }
 header nav a:hover { color: var(--ink); }
 
-/* Les menus deroulants.
+/* The drop-down menus.
 
-   Des `<details>` plutot qu un bouton et un panneau : ca s ouvre au clavier, ca s ouvre
-   sans JavaScript, et le navigateur tient l etat ouvert-ferme tout seul. `nav.js` n ajoute
-   que ce qui manque, refermer sur Echap, sur un clic dehors, et n en laisser qu un ouvert.
+   `<details>` rather than a button and a panel: they open from the keyboard, they open
+   without JavaScript, and the browser holds the open-closed state on its own. `nav.js`
+   only adds what is missing: closing on Escape, closing on an outside click, and leaving
+   only one open.
 
-   Le triangle par defaut de `summary` est retire : il pointe vers le bas quand le menu est
-   ferme et vers la droite quand il est ouvert, l inverse de ce que fait une barre de
-   navigation partout ailleurs. Le chevron d en dessous, lui, tourne dans le bon sens. */
+   `summary`'s default triangle is removed: it points down when the menu is closed and
+   right when it is open, the opposite of what a navigation bar does everywhere else. The
+   chevron below turns the right way round. */
 .menu { position: relative; }
 .menu > summary {
   color: var(--dim); cursor: pointer; list-style: none;
@@ -136,10 +137,10 @@ header nav a:hover { color: var(--ink); }
 .menu-list a { padding: 8px 10px; border-radius: 5px; white-space: nowrap; }
 .menu-list a:hover { background: var(--panel); color: var(--ink); text-decoration: none; }
 
-/* Un menu deroulant a plat, sans sous-menu : la section qui portait un `<details>` dans
-   `#nav` (Schematiques, Outils) devient ici un intitule non cliquable suivi de ses liens,
-   plutot qu un `<details>` imbrique dans un autre. C est ce que l entete de l editeur en
-   fait, voir `mount.js`. */
+/* A flat drop-down, with no submenu: the section that carried a `<details>` inside `#nav`
+   (Schematiques, Outils) becomes here a non-clickable heading followed by its links,
+   rather than a `<details>` nested inside another. That is what the editor's header makes
+   of it, see `mount.js`. */
 .menu-heading {
   display: block; margin: 6px 0 0; padding: 4px 10px; font-size: 11px;
   letter-spacing: .6px; text-transform: uppercase; color: var(--dim);
@@ -147,21 +148,21 @@ header nav a:hover { color: var(--ink); }
 .menu-heading:first-child { margin-top: 0; }
 .menu-list a.child { padding-left: 18px; }
 
-/* Le bouton qui deplie, sur telephone. Pose `hidden` dans le document et revele par
-   `nav.js` : sans script il n y a rien pour rouvrir la barre, donc elle reste depliee et
-   passe a la ligne, ce qu elle faisait deja avant qu il y ait des menus. */
+/* The unfolding button, on a phone. Written `hidden` into the document and revealed by
+   `nav.js`: with no script there is nothing to reopen the bar, so it stays unfolded and
+   wraps onto the next line, which is what it already did before there were menus. */
 .deplier {
   margin-left: auto; display: none; align-items: center; justify-content: center;
   min-height: 44px; min-width: 44px; padding: 0;
 }
 .deplier svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 
-/* Sous 360 px la ligne ne tient plus.
+/* Under 360 px the line no longer fits.
 
-   Mesure avant d etre corrige : la marque passe de 185 a 216 px avec le signe, et l entete
-   demande `216 + 18 de gap + 44 de bouton + 48 de padding = 326 px`. A 320 px la barre se
-   replie sur deux lignes. Resserrer coute moins que masquer un mot : le signe et « Forge »
-   suffisent a identifier le site, mais tant que les deux tiennent, autant les garder. */
+   Measured before being fixed: the mark goes from 185 to 216 px with the sign, and the
+   header asks for `216 + 18 of gap + 44 of button + 48 of padding = 326 px`. At 320 px the
+   bar wraps onto two lines. Tightening costs less than hiding a word: the sign and "Forge"
+   are enough to identify the site, but as long as both fit, both may as well stay. */
 @media (max-width: 360px) {
   header { padding: 10px 12px; gap: 10px; }
   .brand { font-size: 17px; }
@@ -175,9 +176,9 @@ header nav a:hover { color: var(--ink); }
   }
   header nav.open { display: flex; }
 
-  /* Deplie sur toute la largeur plutot qu en panneau flottant : sur un telephone un menu
-     qui se superpose recouvre la barre dont il sort. Pas de barre laterale non plus, le
-     site se lit en jouant et la largeur sert a l apercu. */
+  /* Unfolded across the full width rather than as a floating panel: on a phone a menu that
+     overlays covers the bar it comes out of. No side bar either, the site is read while
+     playing and the width is there for the preview. */
   .menu-list {
     position: static; min-width: 0; border: 0; box-shadow: none;
     background: none; padding: 0 0 0 14px;
@@ -260,15 +261,15 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 }
 
 /* ------------------------------------------------------------------------------------
-   L'accueil d'une page vide.
+   The welcome of an empty page.
 
-   Ce qui suit ne se voit que tant que rien n'a ete analyse. La capture de Corentin du
-   27/08 montrait un champ de texte, quatre boutons, et deux mille pixels de noir dessous :
-   la page ne disait pas ce que fait l'outil, ne montrait aucun resultat, et ne laissait pas
-   deviner qu'il y a un catalogue derriere.
+   What follows is only seen while nothing has been analysed. Corentin's screenshot of
+   27/08 showed a text field, four buttons, and two thousand pixels of black underneath:
+   the page did not say what the tool does, showed no result, and gave no hint that there
+   is a catalogue behind it.
 
-   Le champ de collage ne bouge pas. C'est le geste principal et il etait deja bien place ;
-   ce qui manquait etait autour, pas a la place.
+   The paste field does not move. It is the main gesture and it was already well placed;
+   what was missing was around it, not in its place.
    ------------------------------------------------------------------------------------ */
 
 .accroche { margin: 8px 0 20px; }
@@ -448,20 +449,20 @@ details.supply input[type=text] { width: 280px; }
 .stage canvas { cursor: pointer; }
 
 /*
- * Une icone du jeu, servie a l'unite par `/icone/{famille}/{nom}.png`.
+ * An icon from the game, served one at a time by `/icone/{famille}/{nom}.png`.
  *
- * Une seule regle pour tout le site, et pas une par surface : le planificateur, le cout de
- * construction d'une schematique et le wiki des blocs montrent les memes images et doivent
- * les montrer pareil. Deux regles qui se ressemblent finissent toujours par diverger d'un
- * pixel, et personne ne sait plus laquelle fait autorite.
+ * One rule for the whole site, and not one per surface: the planner, a schematic's build
+ * cost and the block wiki show the same images and have to show them the same way. Two
+ * rules that resemble each other always end up diverging by a pixel, and nobody knows which
+ * one is authoritative any more.
  *
- * `pixelated` parce que ce sont des sprites de 32 pixels : un lissage a cette taille en fait
- * une tache grise, et le jeu lui-meme les dessine a bords durs.
+ * `pixelated` because these are 32 pixel sprites: smoothing at that size turns them into a
+ * grey smudge, and the game itself draws them with hard edges.
  *
- * Onze liquides n'ont aucune icone, l'atlas n'exportant pas leur famille. L'adresse repond
- * donc 404 pour eux, expres, plutot que de servir un carre gris qui cacherait le trou : les
- * pages qui en affichent doivent degrader en nom seul, en le sachant plutot qu'en le
- * decouvrant.
+ * Eleven liquids have no icon at all, the atlas not exporting their family. The address
+ * therefore answers 404 for them, on purpose, rather than serving a grey square that would
+ * hide the hole: the pages that show them have to degrade to the name alone, knowing it
+ * rather than discovering it.
  */
 .icone {
   image-rendering: pixelated;
@@ -469,11 +470,11 @@ details.supply input[type=text] { width: 280px; }
   flex: none;
 }
 
-/* La largeur naturelle d'une liste deroulante est celle de son plus long libelle, et rien
-   ne la borne par defaut : sur la page des schematiques en 320 px, le choix « n'importe
-   quoi » faisait 281 px dans une ligne de 221 et poussait la page 3 px hors de l'ecran.
-   Trois pixels ne sont pas un defaut visuel, c'est une page qui glisse lateralement sous le
-   pouce. `max-width` la contient sans rien changer partout ou elle tenait deja. */
+/* A drop-down list's natural width is that of its longest label, and nothing bounds it by
+   default: on the schematics page at 320 px, the "n'importe quoi" choice was 281 px inside
+   a 221 wide row and pushed the page 3 px off screen. Three pixels are not a visual defect,
+   they are a page that slides sideways under a thumb. `max-width` contains it without
+   changing anything everywhere it already fitted. */
 select {
   background: var(--bg); color: var(--ink); border: 2px solid var(--edge);
   border-radius: 6px; padding: 10px 12px; min-height: 44px; font: inherit;
@@ -497,10 +498,10 @@ select {
 }
 .manage .seg button.on:hover { background: var(--accent-soft); }
 
-/* Les deux gestes sur une schematique.
-   L'etat presse reprend les couleurs de `.seg button.on` plutot que d'en choisir de
-   nouvelles : deux facons de dire « ce bouton est actif » sur la meme page, c'est une de
-   trop, et la couleur vit dans son propre fichier a cote. */
+/* The two gestures on a schematic.
+   The pressed state reuses `.seg button.on`'s colours rather than choosing new ones: two
+   ways of saying "this button is active" on the same page is one too many, and the colour
+   lives in its own file beside it. */
 .keep { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
 .keep button { display: inline-flex; align-items: center; gap: 6px; }
 .keep button[aria-pressed="true"] {
@@ -614,23 +615,22 @@ select {
 #ores, #grounds { max-height: 150px; }
 
 /* ------------------------------------------------------------------------------------
-   Le mode édition.
+   Editing mode.
 
-   Plein écran et fixe, parce que le plateau est le produit et que tout le reste doit lui
-   céder la place. L'édition vivait avant dans trois cartes empilées au milieu du rapport
-   d'analyse, entre « Goulot » et « Garder » : on éditait au milieu de ses résultats, avec
-   une palette de 253 pastilles à plat et un pinceau qui peignait sous les blocs sans les
-   voir.
+   Full screen and fixed, because the board is the product and everything else has to give
+   way to it. Editing used to live in three cards stacked in the middle of the analysis
+   report, between "Goulot" and "Garder": you edited in the middle of your own results,
+   with a flat palette of 253 swatches and a brush that painted under the blocks without
+   seeing them.
    ------------------------------------------------------------------------------------ */
 
-/* `hidden` doit gagner, toujours.
+/* `hidden` has to win, always.
 
-   La regle du navigateur, `[hidden] { display: none }`, a la meme specificite qu une classe.
-   Des que l editeur donnait `display: grid` ou `display: flex` a un element, et comme cette
-   feuille passe apres celle du navigateur, c est elle qui l emportait : la palette de blocs
-   restait visible sous l onglet sol, et la barre de selection ne se cachait jamais. Le
-   defaut ne se voyait pas dans les tests, qui lisaient la propriete `hidden` et non ce que
-   l ecran montrait. */
+   The browser's rule, `[hidden] { display: none }`, has the same specificity as a class. As
+   soon as the editor gave `display: grid` or `display: flex` to an element, and since this
+   sheet comes after the browser's, this one won: the block palette stayed visible under the
+   ground tab, and the selection bar never hid itself. The defect did not show in the tests,
+   which read the `hidden` property and not what the screen showed. */
 [hidden] { display: none !important; }
 
 .editor {
@@ -644,17 +644,17 @@ select {
   grid-area: bar; display: flex; align-items: center; gap: 14px;
   padding: 8px 16px; background: var(--panel); border-bottom: 2px solid var(--edge);
 }
-/* La marque redevient un lien ici : c'est la sortie de l'editeur vers le site, pas une
-   decoration. `header .brand::after`, plus haut, ne s'applique qu'a `header .brand` -- ce
-   lien-la n'est pas dans un `<header>` -- donc la meme cible de 44 px est redonnee ici,
-   sur `.editor-bar .brand` elle-meme plutot que par un pseudo-element : la barre n'a pas
-   la ligne de trop que l'entete du site avait pour se le permettre. */
+/* The mark becomes a link again here: it is the way out of the editor to the site, not a
+   decoration. `header .brand::after`, above, only applies to `header .brand` -- this link
+   is not inside a `<header>` -- so the same 44 px target is given back here, on
+   `.editor-bar .brand` itself rather than through a pseudo-element: the bar does not have
+   the spare line the site's header had to afford one. */
 .editor-bar .brand { font-size: 17px; min-height: 36px; }
 
-/* Le menu qui donne acces au reste du site : voir le commentaire de `mount.js` sur
-   pourquoi son contenu n'est pas ecrit ici, mais lu dans `#nav`. `.menu-list` s'aligne par
-   defaut sur la droite de son declencheur (pense pour l'entete du site, ou les menus sont
-   colles a droite) ; celui-ci est pres du bord gauche de la barre, donc l'inverse. */
+/* The menu that gives access to the rest of the site: see `mount.js`'s comment on why its
+   contents are not written here, but read out of `#nav`. `.menu-list` aligns by default on
+   the right of its trigger (designed for the site's header, where the menus sit hard right);
+   this one is near the bar's left edge, so the opposite. */
 .editor-site summary {
   min-height: 36px; padding: 0 10px; border-radius: 6px; border: 2px solid var(--edge);
   font-size: 13px;
@@ -662,10 +662,10 @@ select {
 .editor-site summary:hover { background: var(--raised-hover); }
 .editor-site .menu-list { left: 0; right: auto; }
 
-/* Les plans : a cote du menu Site plutot que dans le rail. Le rail choisit un outil pour
-   batir ; ceci choisit *quel plateau* on batit, au meme niveau que Site et que annuler /
-   refaire, pas un onglet de plus au milieu des blocs et du sol. Cache par defaut (voir
-   `mount.js`) : un visiteur anonyme ne voit jamais ce menu exister. */
+/* Plans: beside the Site menu rather than in the rail. The rail chooses a tool to build
+   with; this chooses *which board* is being built, at the same level as Site and as undo /
+   redo, not one more tab in among the blocks and the ground. Hidden by default (see
+   `mount.js`): an anonymous visitor never sees this menu exist. */
 .editor-spaces summary {
   min-height: 36px; padding: 0 10px; border-radius: 6px; border: 2px solid var(--edge);
   font-size: 13px; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
@@ -702,8 +702,8 @@ select {
   background: var(--accent); color: var(--on-accent); border-color: var(--accent-strong);
 }
 
-/* La jauge de taille. Permanente, parce que la limite de 64 est dure et qu'on ne la
-   découvre pas au moment où elle mord. */
+/* The size gauge. Permanent, because the limit of 64 is hard and is not something to
+   discover at the moment it bites. */
 .editor-size { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 .editor-size .num { font-size: 13px; color: var(--dim); }
 .editor-size .bar {
@@ -730,11 +730,11 @@ select {
   color: var(--accent); background: var(--raised);
   box-shadow: inset 0 -2px 0 var(--accent);
 }
-/* La recherche : un champ nu sans icone ni bouton d'effacement avant ceci, et un texte de
-   remplacement pour seul signe qu'une frappe avait ete lue. `.field` porte l'icone et le
-   bouton en position absolue par-dessus le champ ; `.count` dit ce que le champ a trouve,
-   silencieuse tant que rien n'est cherche pour ne pas annoncer une evidence a chaque
-   ouverture du panneau. */
+/* The search: a bare field with no icon and no clear button before this, and a placeholder
+   as the only sign a keystroke had been read. `.field` carries the icon and the button
+   absolutely positioned over the field; `.count` says what the field found, silent while
+   nothing is being searched for so as not to state the obvious every time the panel is
+   opened. */
 .editor-rail .search { padding: 10px; border-bottom: 1px solid var(--edge); }
 .editor-rail .search .field { position: relative; display: flex; }
 .editor-rail .search .field > .i {
@@ -744,8 +744,8 @@ select {
 .editor-rail .search input[type="search"] {
   width: 100%; min-height: 36px; padding: 0 32px; font-size: 12.5px;
 }
-/* Le bouton d'effacement natif du champ, remplace par le notre juste apres : garder les
-   deux aurait mis deux croix l'une sur l'autre. */
+/* The field's native clear button, replaced by ours just after: keeping both would have
+   put two crosses one on top of the other. */
 .editor-rail .search input[type="search"]::-webkit-search-cancel-button { display: none; }
 .editor-rail .search .clear {
   position: absolute; right: 3px; top: 3px; min-height: 30px; min-width: 30px; padding: 0;
@@ -755,10 +755,10 @@ select {
 .editor-rail .search .clear .i { width: 13px; height: 13px; }
 .editor-rail .search .count { margin: 6px 2px 0; font-size: 11.5px; color: var(--dim); }
 
-/* La grille BÂTIR, rangee par categorie de jeu (voir `buildGroups` dans `ui.js`), de la
-   meme facon que SOL range deja ses quatre familles : un `<h3>` par groupe, une grille de
-   pastilles par-dessous, qui cache une pastille plutot que d'etre reconstruite a chaque
-   frappe de recherche. */
+/* The BÂTIR grid, sorted by the game's own category (see `buildGroups` in `ui.js`), the
+   same way SOL already sorts its four families: one `<h3>` per group, a grid of swatches
+   underneath, which hides a swatch rather than being rebuilt on every keystroke in the
+   search. */
 .editor-grid { flex: 1; min-height: 0; overflow: auto; padding: 8px; }
 .editor-grid section + section { margin-top: 14px; }
 .editor-grid h3 {
@@ -777,8 +777,8 @@ select {
 .editor-grid img { width: 26px; height: 26px; image-rendering: pixelated; }
 .editor-grid .empty { color: var(--dim); font-size: 12.5px; padding: 8px; }
 
-/* Ce qui est en main. Le jeu le montre au curseur ; sur une page web il faut aussi le dire
-   en toutes lettres, parce que rien n'apprend les raccourcis à celui qui arrive. */
+/* What is in hand. The game shows it at the cursor; on a web page it also has to be said
+   in words, because nothing teaches the shortcuts to somebody arriving. */
 .editor-held {
   border-top: 2px solid var(--edge); padding: 10px 12px; background: var(--raised);
   min-height: 74px;
@@ -790,13 +790,13 @@ select {
 
 .editor-stage { grid-area: stage; position: relative; overflow: hidden; }
 .editor-stage canvas { display: block; image-rendering: pixelated; cursor: crosshair; }
-/* Le plateau prend le focus au clic pour que les raccourcis marchent, mais il n'a pas a
-   porter le liseré d'un champ de formulaire : c'est une surface de dessin, pas une saisie. */
+/* The board takes the focus on a click so the shortcuts work, but it has no business
+   carrying a form field's ring: it is a drawing surface, not an input. */
 .editor-stage canvas:focus, .editor-stage canvas:focus-visible { outline: none; }
 
-/* La raison d'un refus, sous le curseur et nulle part ailleurs. Un bandeau en haut de page
-   serait lu une fois puis jamais, et une notification empilée serait un journal d'erreurs
-   pour un geste qui n'en est pas une. */
+/* The reason for a refusal, under the cursor and nowhere else. A banner at the top of the
+   page would be read once and then never, and a stacked notification would be an error log
+   for a gesture that is not one. */
 .editor-why {
   position: absolute; pointer-events: none; z-index: 2;
   background: var(--bad-panel); border: 1px solid var(--bad); color: var(--bad);
@@ -821,45 +821,42 @@ select {
 }
 
 /*
- * L'editeur au doigt.
+ * The editor under a thumb.
  *
- * Mesure sur un telephone courant, en 390 px : la barre voulait 656 px, donc le selecteur
- * de mode sortait de 36 px, l'annulation de 136 et la jauge de taille de 266. Le document
- * ne defile pas horizontalement, alors ces commandes n'etaient pas a l'etroit, elles
- * n'existaient pas. Le mode edition est notre plus gros ecart en notre faveur face a la
- * concurrence, et il etait inutilisable sur telephone.
+ * Measured on a common phone, at 390 px: the bar wanted 656 px, so the mode selector ran
+ * 36 px past the edge, undo 136 and the size gauge 266. The document does not scroll
+ * sideways, so those controls were not cramped, they did not exist. Editing mode is our
+ * biggest advantage over the competition, and it was unusable on a phone.
  *
- * Deux corrections, et l'ordre compte.
+ * Two fixes, and the order matters.
  *
- * `flex-wrap` est la garantie : une barre qui passe a la ligne ne peut pas cacher une
- * commande, alors qu'une barre qui defile la cache derriere un geste que rien n'annonce, et
- * qu'une barre qui retrecit finit par ne plus pouvoir. C'est le filet, et il tient meme le
- * jour ou une traduction rallonge un libelle ou qu'un bouton s'ajoute.
+ * `flex-wrap` is the guarantee: a bar that wraps cannot hide a control, whereas a bar that
+ * scrolls hides it behind a gesture nothing announces, and a bar that shrinks eventually
+ * runs out of room. It is the safety net, and it holds even on the day a translation makes
+ * a label longer or a button is added.
  *
- * Le reste est ce qui evite d'avoir besoin du filet. Le bloc de marque mangeait 194 px des
- * 386 disponibles, la moitie de la barre : a l'epoque c'etait un `<span>`, qui ne menait
- * nulle part, et le cacher ne coutait donc rien. Ce n'est plus vrai : la marque est
- * maintenant le lien vers le site, et le menu Site a cote d'elle est le seul acces aux
- * schematiques, aux outils et aux blocs pendant que l'editeur est ouvert (voir `mount.js`).
- * Les cacher sur telephone retirerait la sortie la ou l'ecran est le plus a l'etroit, donc
- * ils restent, et c'est `flex-wrap` seul qui absorbe le depassement desormais. La jauge de
- * taille, elle, reste un temoin plutot qu'une commande, donc elle se lit aussi bien courte.
+ * The rest is what avoids needing the net. The brand block ate 194 px of the 386 available,
+ * half the bar: at the time it was a `<span>` leading nowhere, so hiding it cost nothing.
+ * That is no longer true: the mark is now the link back to the site, and the Site menu
+ * beside it is the only way to the schematics, the tools and the blocks while the editor is
+ * open (see `mount.js`). Hiding them on a phone would take away the exit exactly where the
+ * screen is most cramped, so they stay, and `flex-wrap` alone absorbs the overflow now. The
+ * size gauge stays an indicator rather than a control, so it reads just as well short.
  */
 @media (max-width: 560px) {
   .editor-bar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
   .editor-modes { margin-left: 0; }
-  /* Pas `margin-left: auto` ici : sur une barre qui passe a la ligne, la marge automatique
-     mange tout l'espace libre et pousse la jauge sur une ligne a elle, calee a droite,
-     ou elle a l'air d'un oubli. Collee aux boutons, elle se lit comme leur suite. */
+  /* Not `margin-left: auto` here: on a bar that wraps, the automatic margin eats all the
+     free space and pushes the gauge onto a line of its own, hard right, where it looks
+     like an oversight. Stuck to the buttons, it reads as their continuation. */
   .editor-size { margin-left: 0; gap: 6px; }
   .editor-size .bar { width: 48px; }
 }
 
-/* Les filtres de la palette : la planète, seule desormais. La categorie avait sa propre
-   liste deroulante faute de place pour onze puces ; elle n'en a plus besoin, la grille
-   range deja ses blocs sous un intitule par categorie (voir `.editor-grid` plus haut), et
-   un menu qui ne fait que repeter ce que l'oeil voit deja au defilement est un controle en
-   trop, pas une aide. */
+/* The palette's filters: the planet, alone now. The category had its own drop-down list for
+   want of room for eleven chips; it no longer needs one, the grid already sorts its blocks
+   under one heading per category (see `.editor-grid` above), and a menu that only repeats
+   what the eye already sees while scrolling is one control too many, not a help. */
 .editor-filters {
   padding: 8px 10px; border-bottom: 1px solid var(--edge);
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
@@ -872,8 +869,8 @@ select {
   color: var(--on-accent); background: var(--accent); border-color: var(--accent-strong);
 }
 
-/* La barre de la sélection, posée contre elle plutôt que dans le rail.
-   Une barre à l'autre bout de l'écran oblige à quitter des yeux ce sur quoi elle agit. */
+/* The selection's bar, set against it rather than in the rail.
+   A bar at the other end of the screen forces you to look away from what it acts on. */
 .editor-pick {
   position: absolute; z-index: 3; display: flex; gap: 4px;
   background: var(--panel); border: 2px solid var(--accent); border-radius: 6px;
@@ -883,8 +880,8 @@ select {
   min-height: 30px; padding: 0 10px; font-size: 12.5px; border-width: 1px;
 }
 
-/* Le panneau des raccourcis. Il dit aussi ce qui diffère du jeu : un panneau d'aide qui
-   cache ses divergences est un panneau qui ment. */
+/* The shortcuts panel. It also says what differs from the game: a help panel that hides its
+   divergences is a panel that lies. */
 .editor-help {
   position: fixed; inset: 0; z-index: 70; display: grid; place-items: center;
   background: rgba(9, 11, 14, .72); padding: 24px;
@@ -915,14 +912,14 @@ select {
   background: transparent; color: var(--dim);
 }
 
-/* L'onglet sol. Une barre d'outils ici et pas du côté bâtir : le jeu n'en a pas pour poser
-   un bloc, et son éditeur de carte en a une pour peindre. L'asymétrie vient de lui. */
+/* The ground tab. A toolbar here and not on the building side: the game has none for
+   placing a block, and its map editor has one for painting. The asymmetry comes from it. */
 .editor-ground { flex: 1; min-height: 0; overflow: auto; padding: 10px; }
-/* Les cinq outils du pinceau, en icones plutot qu'en texte : cinq boutons "Crayon",
-   "Rectangle", "Pot", "Gomme", "Pipette" passaient a la ligne sur les 260px utiles du
-   panneau, et mangeaient de la hauteur avant la premiere pastille. Chacun garde son nom
-   pour un lecteur d'ecran (voir `aria-label` dans `ui.js`) et sa description au survol
-   (voir `title`) ; seul le texte visible disparait. */
+/* The brush's five tools, as icons rather than text: five buttons reading "Crayon",
+   "Rectangle", "Pot", "Gomme", "Pipette" wrapped onto a second line within the panel's
+   usable 260px, and ate height before the first swatch. Each keeps its name for a screen
+   reader (see `aria-label` in `ui.js`) and its description on hover (see `title`); only the
+   visible text goes. */
 .editor-ground .tools { display: flex; gap: 4px; }
 .editor-ground .tools .tool { min-height: 34px; min-width: 34px; padding: 0; justify-content: center; }
 .editor-ground .tools .tool .i { width: 16px; height: 16px; }
@@ -930,9 +927,9 @@ select {
   color: var(--on-accent); background: var(--accent); border-color: var(--accent-strong);
 }
 
-/* La taille du pinceau et la transparence des blocs : un intitule court, le curseur, la
-   valeur, sur une seule ligne plutot que trois (l'intitule, puis le curseur en pleine
-   largeur, puis la valeur repoussee dessous). L'intitule complet reste en `title`. */
+/* The brush size and the blocks' transparency: a short label, the slider, the value, on one
+   line rather than three (the label, then the slider full width, then the value pushed
+   underneath). The full label stays in `title`. */
 .editor-ground .brushes { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 0; }
 .editor-ground .range { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--dim); }
 .editor-ground .range .tag { flex: none; width: 76px; }
@@ -953,8 +950,8 @@ select {
 }
 .editor-ground .wipe { margin-top: 16px; width: 100%; min-height: 34px; font-size: 12.5px; }
 
-/* Le choisisseur de contenu : ce qu'un trieur laisse passer, ce qu'une source fabrique.
-   Posé contre le bloc, comme la barre de sélection, et pour la même raison. */
+/* The content picker: what a sorter lets through, what a source makes.
+   Set against the block, like the selection bar, and for the same reason. */
 .editor-picker {
   position: absolute; z-index: 4; max-width: 236px;
   display: flex; flex-wrap: wrap; gap: 3px;
@@ -967,8 +964,8 @@ select {
 .editor-picker button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-pressed); }
 .editor-picker img { width: 20px; height: 20px; image-rendering: pixelated; }
 
-/* La reprise d'un brouillon, proposée en bas du plateau. Jamais imposée : ecraser d'office
-   ce que quelqu'un vient de coller serait pire que de perdre le brouillon. */
+/* Picking a draft back up, offered at the foot of the board. Never imposed: overwriting
+   what somebody has just pasted would be worse than losing the draft. */
 .editor-draft {
   position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 5;
   display: flex; align-items: center; gap: 12px; max-width: 92%;
@@ -977,7 +974,7 @@ select {
 }
 .editor-draft button { min-height: 34px; padding: 0 14px; font-size: 13px; }
 
-/* Tourner au doigt, faute de molette. Il n'apparaît que quand il sert. */
+/* Rotating with a thumb, for want of a wheel. It only appears when it is of use. */
 .editor-turn {
   position: absolute; right: 16px; bottom: 16px; z-index: 5;
   width: 52px; height: 52px; min-height: 52px; padding: 0; justify-content: center;
@@ -1013,13 +1010,13 @@ select {
 }
 
 /*
- * Les objets les plus produits, en pastilles cliquables au-dessus du filtre.
+ * The most produced items, as clickable chips above the filter.
  *
- * Un `<select>` natif ne porte pas d'image dans ses `<option>` : c'est une limite du
- * controle. Le remplacer par une liste dessinee aurait coute le clavier, la recherche par
- * frappe, Echap, l'annonce au lecteur d'ecran et le selecteur natif du telephone, sur le
- * controle de recherche principal du site. Ces pastilles donnent l'image sans rien retirer,
- * et ce sont des liens : accessibles gratuitement, et chacune a son adresse.
+ * A native `<select>` carries no image inside its `<option>`s: that is a limit of the
+ * control. Replacing it with a drawn list would have cost the keyboard, type-ahead search,
+ * Escape, the announcement to a screen reader and the phone's native picker, on the site's
+ * main search control. These chips give the image without taking anything away, and they
+ * are links: accessible for free, and each one has its own address.
  */
 .vitrine-pastilles { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
 
@@ -1035,26 +1032,26 @@ select {
   border-color: var(--accent); background: var(--raised); color: var(--accent);
 }
 
-/* La vitrine de l'accueil, et l'etagere des outils.
+/* The home page's showcase, and the tools shelf.
 
-   En fin de fichier et sans toucher une regle existante : plusieurs sessions ecrivent dans
-   ce fichier en meme temps, et deux ajouts en queue fusionnent la ou deux modifications au
-   milieu se disputent. */
+   At the end of the file and without touching an existing rule: several sessions write into
+   this file at once, and two additions at the tail merge where two edits in the middle
+   conflict. */
 
 .vitrine-accueil { margin-top: 34px; }
 .vitrine-accueil h2 { margin: 0 0 6px; font-size: 19px; }
 .vitrine-accueil .hint-line { margin: 0 0 14px; }
 
-/* Trois par rangee, puis deux, puis une. `auto-fill` plutot qu'un nombre fixe : les six
-   tuiles n'ont pas a savoir combien de place elles ont, et une largeur minimale de 220 px
-   est ce en dessous de quoi un plan de 30 tuiles de large n'est plus lisible. */
+/* Three to a row, then two, then one. `auto-fill` rather than a fixed number: the six tiles
+   have no business knowing how much room they have, and a minimum width of 220 px is what a
+   30 tile wide plan stops being readable below. */
 .plans {
   list-style: none; margin: 0; padding: 0;
   display: grid; gap: 14px;
-  /* Trois par rangee sur un ecran large, ce qui range six tuiles en deux rangees pleines.
-     `auto-fill` a 220 px en donnait quatre, donc une derniere rangee de deux qui se lisait
-     comme un reste. La largeur minimale est ce qui decide du nombre de colonnes ici, pas un
-     nombre fixe : sous 640 px il en reste deux, puis une. */
+  /* Three to a row on a wide screen, which lays six tiles out in two full rows. `auto-fill`
+     at 220 px gave four, so a last row of two that read as a leftover. The minimum width is
+     what decides the number of columns here, not a fixed number: under 640 px two are left,
+     then one. */
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 .plan-tuile {
@@ -1065,10 +1062,10 @@ select {
 .plan-tuile a:hover { text-decoration: none; }
 .plan-tuile a:hover .plan-nom { color: var(--accent); }
 
-/* Le plateau sur lequel `apercu.js` dessine. La hauteur est fixe et la largeur suit la
-   colonne : sans hauteur, le cadre vaut zero pixel au moment ou le module mesure la place
-   dont il dispose, et le plan sort a un pixel de haut. Mesure sur la liste des schemas,
-   ou le meme piege existe. */
+/* The board `apercu.js` draws on. The height is fixed and the width follows the column:
+   with no height, the frame is zero pixels at the moment the module measures the room it
+   has, and the plan comes out one pixel tall. Measured on the schematics list, where the
+   same trap exists. */
 .plan-cadre {
   background: var(--stage); border-radius: 6px;
   height: 150px; display: flex; align-items: center; justify-content: center;
@@ -1083,8 +1080,8 @@ select {
   margin: 0; color: var(--dim); font-size: 13px; line-height: 1.5;
   display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
 }
-/* L'image du produit s'aligne sur le texte plutot que sur la ligne de base, sans quoi un
-   sprite de 18 px pousse l'interligne de la rangee entiere. */
+/* The product's image lines up on the text rather than on the baseline, without which an
+   18 px sprite pushes the leading of the whole row. */
 .plan-chiffres .icone { vertical-align: middle; flex: none; }
 
 .outils { margin-top: 34px; }
@@ -1094,13 +1091,13 @@ select {
   display: grid; gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
-/* Le sprite au-dessus du texte, pas a cote.
+/* The sprite above the text, not beside it.
 
-   A cote, en 32 px dans une colonne de 32, il laissait 130 px a la phrase : chaque carte
-   devenait six lignes de deux mots, et le sprite lui-meme etait trop petit pour qu'on
-   reconnaisse le bloc. Or c'est lui qui dit de quoi l'outil parle, avant le nom.
+   Beside it, at 32 px in a 32 wide column, it left 130 px for the sentence: every card
+   became six lines of two words, and the sprite itself was too small to recognise the block
+   by. Yet it is the sprite that says what the tool is about, before the name.
 
-   Empile, il double de taille et la phrase recupere toute la largeur de la carte. */
+   Stacked, it doubles in size and the sentence gets the card's whole width back. */
 .outils-liste a {
   display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
   height: 100%; padding: 14px; border-radius: var(--radius);
@@ -1109,8 +1106,8 @@ select {
 .outils-liste a:hover {
   background: var(--raised-hover); border-color: var(--accent); text-decoration: none;
 }
-/* `pixelated` parce que ce sont des sprites de jeu : lisses, ils bavent au lieu de grandir.
-   Le fond leur donne la meme assise que sur le plateau d'un plan. */
+/* `pixelated` because these are game sprites: smoothed, they smear instead of growing. The
+   background gives them the same footing as on a plan's own board. */
 .outils-liste img {
   image-rendering: pixelated;
   background: var(--stage); border-radius: 6px; padding: 4px;
@@ -1123,10 +1120,10 @@ select {
 @media (max-width: 520px) {
   .plan-cadre { height: 170px; }
 }
-/* Le panneau de contraintes de la vitrine.
+/* The showcase's constraints panel.
 
-   Replie mais jamais cache : il s'ouvre de lui-meme quand une contrainte est active, sinon
-   un lecteur arrivant par un lien partage verrait une liste filtree sans voir par quoi. */
+   Folded but never hidden: it opens by itself when a constraint is active, otherwise a
+   reader arriving by a shared link would see a filtered list without seeing what by. */
 .contraintes { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 4px; }
 .contraintes summary { cursor: pointer; color: var(--dim); font-size: 13px; padding: 6px 0; }
 .contraintes summary:hover { color: var(--ink); }
@@ -1137,10 +1134,11 @@ select {
 .contraintes .coche { display: flex; align-items: center; gap: 6px; color: var(--dim); font-size: 13px; }
 .contraintes .coche input { width: auto; min-height: 0; }
 
-/* Le choisisseur de produit : une seule commande, et c'est elle qui porte les images.
+/* The product picker: one control, and it is the one that carries the images.
 
-   Un `<details>` de liens plutot qu'une liste dessinee. Le clavier, Echap et l'annonce au
-   lecteur d'ecran viennent du navigateur ; chaque choix garde une adresse partageable. */
+   A `<details>` of links rather than a drawn list. The keyboard, Escape and the
+   announcement to a screen reader come from the browser; every choice keeps a shareable
+   address. */
 .choisisseur { margin: 0 0 12px; position: relative; }
 .choisisseur > summary {
   list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 9px;
@@ -1169,17 +1167,17 @@ select {
 .ch-eclair { font-size: 18px; color: var(--warn); line-height: 24px; }
 .ch-tout { grid-column: span 4; flex-direction: row; justify-content: center; }
 
-/* Le classement en onglets : les six facons de classer se voient sans un clic, la ou un
-   deroulant demandait de l'ouvrir pour savoir ce qu'il offrait. */
+/* Sorting as tabs: the six ways of sorting are visible without a click, where a drop-down
+   had to be opened to find out what it offered. */
 .tris { display: flex; flex-wrap: wrap; gap: 2px; margin: 0 0 14px; border-bottom: 1px solid var(--line); }
 .tris .tri { padding: 8px 12px; font-size: 13px; color: var(--dim); border-bottom: 2px solid transparent; }
 .tris .tri:hover { text-decoration: none; color: var(--ink); }
 .tris .tri.on { color: var(--accent); border-bottom-color: var(--accent); }
-/* Visible mais marque : un tri qui compare des productions n'a rien a comparer tant
-   qu'aucun objet n'est choisi. Le cacher ferait disparaitre la raison de son absence. */
+/* Visible but marked: a sort that compares outputs has nothing to compare while no item is
+   chosen. Hiding it would make the reason for its absence disappear too. */
 .tris .tri.gris { opacity: .45; }
 
-/* Lequel gagne sur quoi : quatre questions nommees, avant la grille. */
+/* Which one wins at what: four named questions, before the grid. */
 .verdicts {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 1px;
   background: var(--line); border: 1px solid var(--line); border-radius: 8px;
@@ -1190,7 +1188,7 @@ select {
 .v-nom { font-size: 14px; color: var(--ink); }
 .v-chiffre { color: var(--accent); font-size: 12.5px; }
 
-/* Les remarques d'une tuile : une conclusion, et le chiffre qui la fonde juste dessous. */
+/* A tile's remarks: a conclusion, and the figure it rests on just underneath. */
 .remarques { list-style: none; margin: 9px 0 0; padding: 8px 0 0; border-top: 1px solid var(--line); }
 .remarques li {
   display: flex; flex-direction: column; gap: 1px; padding: 3px 0 3px 8px;
@@ -1202,7 +1200,7 @@ select {
 .remarques .r-petit, .remarques .r-tot, .remarques .r-autonome { border-left-color: var(--good); }
 .remarques .r-tard { border-left-color: var(--warn); }
 
-/* Les puces : ce que la recherche porte, et de quoi le retirer d'un clic. */
+/* The chips: what the search carries, and the means to take it off in one click. */
 .puces { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 14px; }
 .puces-t { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
 .puce {
@@ -1214,18 +1212,18 @@ select {
 .puce b { color: var(--dim); font-weight: 400; }
 .puce.vide { background: transparent; border-style: dashed; color: var(--dim); }
 
-/* L'encombrement dessine, a l'echelle commune de la page. */
+/* The footprint drawn, at the page's own shared scale. */
 .silh {
   display: inline-grid; place-items: center; width: 28px; height: 28px;
   vertical-align: middle; background: #101216; border: 1px solid var(--line);
   border-radius: 4px; margin-right: 2px;
 }
 .silh-r { display: block; background: #2e3a4d; border: 1px solid var(--accent); min-width: 1px; min-height: 1px; }
-/* Le dessin et son chiffre ne se separent jamais : une coupure de ligne entre les deux
-   collerait le rectangle au nombre de la ligne precedente. */
+/* The drawing and its figure never part: a line break between the two would stick the
+   rectangle onto the number from the previous line. */
 .taille { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 
-/* Comparer depuis la liste, en deux clics et sans script. */
+/* Comparing from the list, in two clicks and without a script. */
 .compare-en-cours {
   margin: 0 0 14px; padding: 9px 13px; border: 1px solid var(--accent);
   border-radius: 8px; font-size: 13px; color: var(--dim);
@@ -1239,7 +1237,7 @@ select {
 .t-comparer.on { border-color: var(--accent); color: var(--accent); }
 .t-comparer.tenu { border-style: dashed; }
 
-/* La recherche ecrite comme une phrase, avec ses champs dedans. */
+/* The search written as a sentence, with its fields inside it. */
 .phrase { margin: 0; font-size: 17px; line-height: 2.4; color: var(--dim); }
 .phrase .ph-suite { color: var(--ink); }
 .phrase .ph-unite { font-size: 12.5px; color: var(--dim); }
@@ -1258,8 +1256,8 @@ select {
 .champ.court input { width: 46px; }
 .champ select { width: auto; text-align: left; }
 .phrase .primary { margin-left: 8px; vertical-align: middle; }
-/* La virgule appartient a ce qui la precede : un saut de ligne de gabarit devient une
-   espace a l'affichage, et « tuiles , sur » se lit comme une faute de frappe. */
+/* The comma belongs to what comes before it: a line break in the template becomes a space
+   on screen, and "tuiles , sur" reads as a typo. */
 .phrase .ph-virgule { color: var(--dim); margin-right: 3px; }
 
 /* The ground grid, a swatch grid rather than a list of text chips: a texture is recognised

@@ -27,9 +27,9 @@
 .bloc-tile .bloc-name { display: block; font-size: 13px; margin-top: 7px; line-height: 1.3; }
 .bloc-tile .bloc-id { display: block; color: var(--dim); font-size: 11px; font-family: var(--mono); }
 
-/* Les vignettes et le portrait viennent de `/icone/{famille}/{nom}.png`, une image par
-   bloc, et portent la classe `.icone` partagee de `forge.css`. Il n'y a plus de fenetre
-   sur la feuille : elle pesait 1 311 ko sur une page qui en telecharge 58. */
+/* The thumbnails and the portrait come from `/icone/{famille}/{nom}.png`, one image per
+   block, and carry the shared `.icone` class from `forge.css`. There is no window onto the
+   sheet any more: it weighed 1,311 kB on a page that downloads 58 of them. */
 .bloc-tile-image { display: block; margin: 0 auto; }
 .bloc-portrait { flex: none; }
 
@@ -65,20 +65,20 @@
 .bloc-links .bloc-of { color: var(--dim); font-size: 12.5px; }
 
 /*
- * Les liens de ces listes sont des cibles, pas de la prose.
+ * The links in these lists are targets, not prose.
  *
- * Ils etaient enchainees par des virgules, ce qui donnait, sur la page du four a silicium,
- * dix-neuf liens de quinze pixels de haut formant un pave de huit lignes ou viser « Mender »
- * sans toucher « Overdrive dome » tenait de la chance. Vu a l'ecran en 390 px : le chiffre
- * disait « quinze pixels », l'oeil disait « slab illisible », et c'est le second qui a
- * decide de la forme.
+ * They were strung together with commas, which gave, on the silicon smelter's page,
+ * nineteen links fifteen pixels tall forming an eight line slab where hitting "Mender"
+ * without touching "Overdrive dome" was down to luck. Seen on screen at 390 px: the figure
+ * said "fifteen pixels", the eye said "unreadable slab", and it is the second that decided
+ * the shape.
  *
- * Encadres, ils deviennent atteignables au doigt et surtout lisibles un par un. La virgule
- * disparait du gabarit avec eux : deux separateurs pour une seule liste, c'est un de trop.
+ * Boxed, they become reachable with a thumb and above all readable one by one. The comma
+ * goes out of the template with them: two separators for one list is one too many.
  *
- * La regle porte sur `.bloc-links a` et pas sur `a` : un lien dans une phrase doit rester
- * dans la phrase, et une hauteur minimale posee sur tous les liens defoncerait l'interligne
- * de chaque note du site. C'est le role qui decide, pas l'apparence.
+ * The rule applies to `.bloc-links a` and not to `a`: a link inside a sentence has to stay
+ * inside the sentence, and a minimum height set on every link would blow out the leading of
+ * every note on the site. The role decides, not the appearance.
  */
 .bloc-links a {
   display: inline-flex; align-items: center;
@@ -89,7 +89,7 @@
 }
 .bloc-links a:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
 
-/* Le retour vers l'index est la seule navigation de la page : il merite une cible. */
+/* The way back to the index is the page's only navigation: it deserves a target. */
 .bloc-retour a {
   display: inline-flex; align-items: center; min-height: 44px;
   touch-action: manipulation;
@@ -98,11 +98,11 @@
 .bloc-none { color: var(--dim); font-size: 12.5px; margin: 4px 0 0; }
 
 /*
- * Le choix du monde, en tete de la page des blocs.
+ * The world picker, at the head of the blocks page.
  *
- * Des liens et non des boutons : chaque monde a son adresse, qui se partage et s'indexe, et
- * la page reste entiere sans JavaScript. Assez gros pour etre la premiere chose qu'on voit
- * et pour etre vise au doigt, ce qui est aussi la regle des 44 pixels.
+ * Links and not buttons: each world has its own address, which can be shared and indexed,
+ * and the page stays whole without JavaScript. Large enough to be the first thing seen and
+ * to be hit with a thumb, which is also the 44 pixel rule.
  */
 .bloc-mondes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
 

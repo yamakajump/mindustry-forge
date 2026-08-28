@@ -15,9 +15,9 @@ import { ready, t } from "./i18n.js";
 const token = () => decodeURIComponent(
   (document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || "");
 
-/* Deux noms, un seul geste. `data-kind` dit lequel ; un second module pour la meme
-   mecanique sur un autre objet serait une seconde chose a reparer le jour ou le geste est
-   faux. */
+/* Two names, one gesture. `data-kind` says which one; a second module for the same
+   mechanism on another object would be a second thing to fix the day the gesture is
+   wrong. */
 const ROOTS = { schema: "schematiques", dossier: "dossiers" };
 
 async function send(kind, slug, what, method) {

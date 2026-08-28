@@ -131,7 +131,7 @@ export function withBridges(plans, { blocked, reach, bridge, hasJunction = false
       for (let j = i - 2; j >= 0; j--) {
         const other = plans[j];
         const far = Math.max(Math.abs(here.x - other.x), Math.abs(here.y - other.y));
-        if (far > reach) break;   // plus loin en arrière ne sera pas plus proche
+        if (far > reach) break;   // further back will not be any closer
         if (free(other)) {
           const through = cost[n + j] + BRIDGE_COST + emptyPenalty;
           if (cost[n + i] > through) {
