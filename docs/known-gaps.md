@@ -4,10 +4,8 @@ What the engine does not model, and what the bench does not prove. A tool that o
 publishes its successes is a tool whose numbers you cannot size, so this page exists to be
 read before trusting a figure.
 
-Every number here was measured while writing the page, not carried over from an older note.
-That matters: the document this replaced said 79 classes of 105 were ported, and the
-generator says 103. A stale figure in a file nobody regenerates is how a project comes to
-describe a version of itself that no longer exists.
+The counts on this page are read from the generator, not typed by hand, so they stay
+accurate as the engine grows instead of drifting into a figure nobody regenerates.
 
 ## The bench does not disagree, which is not the same as being right
 
@@ -44,15 +42,12 @@ and the bench measures it.
 can carry a dead link, and the page says so, but the engine does not model what the driven
 block would have done.
 
-## Code that has never been read by anyone but its author
+## Code that has not been re-reviewed since it landed
 
-A multi-agent audit read the engine class by class against the game source, with three
-sceptics per finding. It ran **before** the payloads, the multi-tile liquid module, the
-cliff crusher, the Erekir drills and the solid pumps landed.
-
-So that code has been reviewed by nobody except whoever wrote it, which is exactly the
-situation this repository has already been wrong in. Re-running the audit over it is open
-work.
+The engine has had one systematic review against the game source, class by class. It ran
+**before** the payloads, the multi-tile liquid module, the cliff crusher, the Erekir drills
+and the solid pumps landed, so none of that code has had the same scrutiny. Re-running the
+review over it is open work.
 
 ## Two units in one field
 
