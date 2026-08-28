@@ -56,8 +56,8 @@ export function rotateBy(tiles, quarters, catalogue) {
       const rx = cx - box.left;
       const ry = cy - box.bottom;
       /* Anticlockwise: the column becomes the row, and the row becomes the column counted
-         depuis l'autre bord. Le `- (size - 1)` prend l'empreinte par son autre coin, celui
-         qui devient le coin bas gauche après le quart de tour. */
+         from the other edge. The `- (size - 1)` takes the footprint by its other corner,
+         the one that becomes the bottom left corner after the quarter turn. */
       const nx = box.height - 1 - (ry + size - 1);
       const ny = rx;
       return {

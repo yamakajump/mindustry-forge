@@ -1,20 +1,20 @@
 /**
- * Le mode édition : le plateau, la souris, le clavier.
+ * Editing mode: the board, the mouse, the keyboard.
  *
- * Il n'y a pas de barre d'outils pour bâtir, et c'est voulu. Le jeu n'en a pas : un bloc en
- * main pose, le clic droit casse. Ajouter des boutons de mode reviendrait à inventer une
- * ergonomie que le joueur devrait désapprendre pour retrouver la sienne.
+ * There is no toolbar for building, and that is deliberate. The game has none: a block in
+ * hand places, right click breaks. Adding mode buttons would amount to inventing an
+ * interface the player would have to unlearn to get their own back.
  *
- * Les raccourcis sont relevés dans `Binding` de la v159.7, pas choisis : molette pour
- * tourner, ctrl pour le placement diagonal, F pour sélectionner, Z et X pour les miroirs,
- * clic milieu pour reprendre un bloc, R maintenu pour en tourner un déjà posé. Un joueur
- * qui arrive ici a déjà ces gestes dans les doigts, et lui en imposer d'autres serait lui
- * demander de désapprendre les siens pour se servir d'un outil qui parle de son jeu.
+ * The shortcuts are read off `Binding` in v159.7 rather than chosen: the wheel rotates,
+ * ctrl places diagonally, F selects, Z and X mirror, middle click picks a block up, R held
+ * rotates one already placed. A player arriving here already has those gestures in their
+ * fingers, and imposing others would be asking them to unlearn their own to use a tool
+ * that talks about their game.
  *
- * Les écarts sont tous listés dans le panneau d'aide plutôt que cachés : la molette zoome
- * quand la main est vide, la vue se déplace au clic milieu glissé, Q reprend le sol survolé
- * au lieu de vider une file de construction qui n'existe pas ici, et les cadres n'ont pas
- * d'équivalent dans le jeu puisque son plateau n'est jamais plus grand qu'une schématique.
+ * The departures are all listed in the help panel rather than hidden: the wheel zooms when
+ * the hand is empty, a middle click drag pans the view, Q picks up the ground under the
+ * cursor instead of emptying a build queue that does not exist here, and frames have no
+ * equivalent in the game, whose board is never larger than a schematic.
  */
 
 import { draw, itemIcon, spriteOf } from "../render.js";
@@ -71,19 +71,19 @@ const SHELL = `
   </div>`;
 
 /**
- * Monte l'éditeur dans `host`.
+ * Mount the editor into `host`.
  *
- * `onAnalyse` est appelé avec le plateau quand le joueur repasse sur l'analyse. Le plateau
- * n'est pas détruit à ce moment là : revenir en édition et faire ctrl+Z doit encore marcher,
- * sinon la bascule coûte l'historique et personne ne bascule.
+ * `onAnalyse` is called with the board when the player switches back to the analysis. The
+ * board is not destroyed at that point: coming back to editing and pressing ctrl+Z has to
+ * still work, otherwise the switch costs the history and nobody switches.
  */
 export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
                               catalogue, onAnalyse }) {
   const sizeOf = (name) => catalogue.blocks[name]?.size || 1;
   const roleOf = (name) => catalogue.blocks[name]?.role || "";
-  /* Un plateau peut être rendu plutôt que reconstruit, et c'est ce qui fait que revenir en
-     édition n'efface pas l'historique : reconstruire depuis les blocs perd ce qui n'est
-     plus dans les blocs, c'est à dire tout ce qu'on pourrait défaire. */
+  /* A board can be handed back rather than rebuilt, and that is what makes coming back to
+     editing keep the history: rebuilding from the blocks loses everything that is no
+     longer in the blocks, which is to say everything there was to undo. */
   const board = kept || createBoard({ tiles, ground, sizeOf });
   const escapeText = (s) => String(s).replace(/[<>&"]/g, (c) =>
     ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]));
@@ -155,75 +155,75 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   document.addEventListener("click", closeSiteMenu);
 
   const camera = createCamera({ scale: 24 });
-  /* Le chantier entier d'un coup quand des cadres existent : cadrer sur le seul cadre actif
-     laisserait les autres hors champ à l'ouverture, comme si on les avait perdus. */
+  /* The whole worksite at once when frames exist: framing on the active frame alone would
+     leave the others off screen at open, as if they had been lost. */
   if (board.frames.length) camera.frame(board.framesBox(), viewportOf());
   else if (board.tiles.length) camera.frame(board.box(), viewportOf());
 
   let held = null;
   let rotation = 0;
-  /** Ce que le bloc en main retient, quand la pipette l'a rapporté avec. */
+  /** What the block in hand carries, when the pipette brought it along. */
   let heldConfig = null;
   let cursor = null;
   let refusal = null;
   let panning = null;
   let spacing = false;
-  /** La case où un glissé a commencé, tant qu'il dure. */
+  /** The tile a drag started on, for as long as it lasts. */
   let drawing = null;
-  /** Le coin où une casse en rectangle a commencé, tant qu'elle dure. */
+  /** The corner a rectangular break started from, for as long as it lasts. */
   let erasing = null;
-  /** Le coin d'une sélection en cours, puis la boîte retenue. */
+  /** The corner of a selection being drawn, then the box that was kept. */
   let picking = null;
   let selection = null;
-  /** Ce qui a été copié, et ce qui attend d'être posé au prochain clic. */
+  /** What has been copied, and what is waiting to be dropped on the next click. */
   let clipboard = null;
   let pasting = null;
-  /* Les touches maintenues qui changent le sens d'un geste, aux touches du jeu :
-     ctrl pour le placement diagonal, F pour sélectionner, R pour tourner un bloc posé. */
+  /* The held keys that change what a gesture means, on the game's own keys:
+     ctrl for diagonal placement, F to select, R to rotate a block already placed. */
   let diagonal = false;
   let selecting = false;
   let turning = false;
-  /* C tenu dessine un cadre, exactement comme F dessine une sélection : le jeu n'a pas ce
-     geste, mais lui donner la même forme que ceux qu'il a déjà évite d'en inventer une
-     ergonomie de plus. */
+  /* C held draws a frame, exactly as F draws a selection: the game does not have this
+     gesture, but giving it the same shape as the ones it does have avoids inventing one
+     more interface. */
   let framing = false;
-  /** Le coin où un cadre a commencé à se dessiner, tant que le geste dure. */
+  /** The corner a frame started being drawn from, for as long as the gesture lasts. */
   let drawingFrame = null;
-  /** Le cadre actif : celui que la jauge du haut mesure, et que l'assombrissement épargne.
-      Suivi par identifiant plutôt que par référence, parce que renommer, déplacer ou
-      redimensionner un cadre le remplace par un autre objet portant le même id. */
+  /** The active frame: the one the top gauge measures, and the one the dimming spares.
+      Tracked by identifier rather than by reference, because renaming, moving or resizing
+      a frame replaces it with another object carrying the same id. */
   let activeFrameId = null;
-  /** Un bloc posé hors de tout cadre ne se dit qu une fois, pas à chaque geste qui en pose
-      un autre : c est ce que dit un rappel, pas ce que dit une alarme. */
+  /** A block placed outside every frame is said once, not on every gesture that places
+      another: that is what a reminder says, not what an alarm says. */
   let orphanWarned = false;
-  /** Un déplacement de sélection en cours : d'où il est parti, et ce qu'il emporte. */
+  /** A selection move in progress: where it started from, and what it carries. */
   let moving = null;
-  /** Le pont qu'on est en train de recibler, tant qu'on n'a pas désigné sa cible. */
+  /** The bridge being re-aimed, for as long as its target has not been named. */
   let linking = null;
-  /** L'onglet sol est-il ouvert, et avec quel pinceau. */
+  /** Whether the ground tab is open, and with which brush. */
   let painting = false;
   let brush = { layer: "floor", block: null, tool: "pencil", size: 1 };
-  /** Ce qu'un trait de pinceau a déjà peint, pour n'en faire qu'un geste d'historique. */
+  /** What one brush stroke has already painted, so it counts as a single undo step. */
   let stroke = null;
-  /** À quel point les blocs s'effacent, pour voir le sol dessous. */
+  /** How far the blocks fade out, to see the ground underneath. */
   let opacity = 1;
 
   /**
-   * Les plans : les plateaux qu'un compte garde côté serveur, un cran au dessus du
-   * brouillon local de `draft.js`.
+   * Plans: the boards an account keeps on the server, one step above the local draft of
+   * `draft.js`.
    *
-   * Un visiteur anonyme ne voit jamais ce menu : `spacesApi.whoAmI()` répond `null`, et il
-   * garde exactement ce qu'il avait avant cette fonctionnalité, le brouillon local seul, à
-   * une machine, sept jours. Se connecter est ce qui achète les plans ; rien ici ne
-   * conditionne l'éditeur lui même, qui bâtit pareil dans les deux cas.
+   * An anonymous visitor never sees this menu: `spacesApi.whoAmI()` answers `null`, and
+   * they keep exactly what they had before this feature, the local draft alone, on one
+   * machine, for seven days. Signing in is what buys the plans; nothing here gates the
+   * editor itself, which builds the same either way.
    */
   const spacesMenu = host.querySelector(".editor-spaces");
   const spacesMenuList = spacesMenu.querySelector(".menu-list");
   const spacesSummary = spacesMenu.querySelector("summary");
 
-  /** L'espace ouvert, ou rien tant qu'aucun n'a été choisi : le brouillon local sert alors. */
+  /** The open space, or nothing while none has been chosen: the local draft serves then. */
   let currentSpace = null;
-  /** Le sauvegardeur différé de l'espace ouvert, arrêté et remplacé à chaque bascule. */
+  /** The open space's deferred saver, stopped and replaced on every switch. */
   let saver = null;
 
   function spaceStatusWord(status, detail) {
@@ -232,8 +232,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     return "enregistré";
   }
 
-  /** Le résumé du menu porte l'état de sauvegarde : une sauvegarde qui échoue en silence
-      sur une connexion capricieuse coûterait un après midi de travail à quelqu'un. */
+  /** The menu's summary carries the save state: a save that fails silently on a flaky
+      connection would cost somebody an afternoon of work. */
   function updateSpacesSummary(status, detail) {
     spacesSummary.textContent = currentSpace
       ? `${currentSpace.name} · ${spaceStatusWord(status, detail)}`
@@ -246,8 +246,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     try {
       mine = await spacesApi.listSpaces();
     } catch {
-      /* Hors ligne, ou une session expirée entre temps : le menu s'ouvre quand même, vide
-         plutôt qu'en échec bruyant pour une simple liste. */
+      /* Offline, or a session that expired in the meantime: the menu opens anyway, empty
+         rather than failing loudly over a mere list. */
     }
     spacesMenuList.innerHTML = `<button type="button" class="space-new" data-space="new">
         + Nouveau plan</button>`
@@ -262,14 +262,14 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   spacesMenu.addEventListener("toggle", () => { if (spacesMenu.open) renderSpacesMenu(); });
 
-  /* Même raison que `closeSiteMenu` juste au dessus : `<details>` ne se ferme pas tout
-     seul au clic dehors. */
+  /* Same reason as `closeSiteMenu` just above: `<details>` does not close itself on an
+     outside click. */
   const closeSpacesMenu = (event) => {
     if (spacesMenu.open && !spacesMenu.contains(event.target)) spacesMenu.open = false;
   };
   document.addEventListener("click", closeSpacesMenu);
 
-  /** Charger un espace dans l'éditeur déjà monté, sans le démonter puis le remonter. */
+  /** Load a space into the already mounted editor, without unmounting and remounting it. */
   async function openSpaceBySlug(slug) {
     saver?.stop();
     let opened;
@@ -282,8 +282,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     board.load(opened.board);
     currentSpace = { slug: opened.slug, name: opened.name };
     saver = spacesApi.autosave(slug, { onStatus: updateSpacesSummary });
-    /* Un espace ouvert est un contexte neuf : la sélection, le cadre actif et l'avertissement
-       d'orphelin d'un autre plan n'ont rien à dire sur celui-ci. */
+    /* An opened space is a fresh context: the selection, the active frame and the orphan
+       warning from another plan have nothing to say about this one. */
     activeFrameId = null;
     selection = null;
     picking = null;
@@ -295,7 +295,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     paint();
   }
 
-  /** Sauvegarder le plateau actuel comme un nouveau plan, puis l'ouvrir. */
+  /** Save the current board as a new plan, then open it. */
   async function createSpaceFromCurrent() {
     const name = window.prompt("Nom du plan", currentSpace?.name || "sans nom");
     if (!name) return;
@@ -327,8 +327,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   async function deleteSpaceBySlug(slug, row) {
-    // Demandé une fois, parce que c'est définitif : la même prudence que la suppression
-    // d'un schéma ailleurs sur ce site.
+    // Asked once, because it is final: the same caution as deleting a schematic elsewhere
+    // on this site.
     if (!window.confirm("Supprimer ce plan ? C'est définitif.")) return;
     try {
       await spacesApi.deleteSpace(slug);
@@ -357,7 +357,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (action !== "rename" && action !== "delete") spacesMenu.open = false;
   });
 
-  /** Enregistrer maintenant plutôt que d'attendre le délai, pour l'onglet qui se ferme. */
+  /** Save now rather than waiting out the delay, for the tab that is closing. */
   const onBeforeUnload = () => { if (currentSpace) saver?.flush(board.snapshot()); };
   window.addEventListener("beforeunload", onBeforeUnload);
 
@@ -379,9 +379,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     onTab(which, fade) {
       painting = which === "ground";
       opacity = fade;
-      /* Passer sur le sol repose ce qu'on tenait : garder un bloc en main pendant qu'on
-         peint donnerait un fantôme de convoyeur au dessus du pinceau, et un clic gauche qui
-         ne sait plus lequel des deux il sert. */
+      /* Moving to the ground tab puts down whatever was held: keeping a block in hand
+         while painting would give a conveyor ghost on top of the brush, and a left click
+         that no longer knows which of the two it serves. */
       if (painting && held) {
         held = null;
         rail.setHeld(null);
@@ -404,7 +404,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     },
   });
 
-  /** La barre d'état dit les gestes du moment, pas tous les gestes possibles. */
+  /** The status bar says the gestures of the moment, not every gesture there is. */
   function say() {
     if (linking) {
       hints.innerHTML = isNode(linking)
@@ -459,54 +459,54 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Ce que le geste en cours poserait.
+   * What the gesture in progress would place.
    *
-   * Un clic sans glissé et un glissé sont le même geste vu à deux instants : tant que le
-   * bouton n'est pas relâché, la ligne se recalcule sous le curseur. Les traiter séparément
-   * donnait deux chemins de code pour une seule intention, et l'un des deux finit toujours
-   * par diverger de l'autre.
+   * A click without a drag and a drag are the same gesture seen at two moments: as long as
+   * the button is not released, the line is recomputed under the cursor. Treating them
+   * separately gave two code paths for one intention, and one of the two always ends up
+   * diverging from the other.
    */
   function pending() {
     if (!held || !cursor) return [];
     const from = drawing || cursor;
     const plans = lineOf(from, cursor, held, catalogue, rotation, { diagonal, board });
     if (!heldConfig) return plans;
-    /* La configuration ne suit que les blocs restés du type qu'on tient : un glissé peut
-       avoir transformé certains plans en jonctions ou en ponts, et leur coller la
-       configuration d'un trieur écrirait n'importe quoi dans le fichier. */
+    /* The configuration only follows the blocks still of the type being held: a drag can
+       have turned some plans into junctions or bridges, and pasting a sorter's
+       configuration onto those would write nonsense into the file. */
     return plans.map((plan) => (plan.block === held ? { ...plan, config: heldConfig } : plan));
   }
 
-  /** Ce qu'un déplacement de sélection poserait, à sa nouvelle place. */
+  /** What a selection move would place, at its new position. */
   function moved() {
     if (!moving || !cursor) return [];
     return translate(moving.tiles, cursor.x - moving.from.x, cursor.y - moving.from.y);
   }
 
   /* ------------------------------------------------------------------------------------
-     Les cadres : un rectangle nommé, dessiné à la main, d'au plus 64 par 64.
+     Frames: a named rectangle, drawn by hand, of at most 64 by 64.
 
-     Sans aucun cadre, le plateau entier en tient lieu, plafonné à 64 exactement comme
-     avant cette fonctionnalité : le joueur qui bâtit une seule chose ne rencontre jamais
-     le mot « cadre ». Dès qu'un cadre existe, poser un bloc n'est plus borné à 64 nulle
-     part sur le plateau : ce plafond porte désormais sur le cadre lui-même, vérifié au
-     tracé et jamais à la pose, et le plateau devient l'unité bornée, à 256.
+     With no frame at all, the whole board stands in for one, capped at 64 exactly as
+     before this feature: a player building a single thing never meets the word "cadre".
+     As soon as a frame exists, placing a block is no longer bounded at 64 anywhere on the
+     board: that ceiling now applies to the frame itself, checked while drawing and never
+     while placing, and the board becomes the bounded unit, at 256.
      ------------------------------------------------------------------------------------ */
 
-  /** Le cadre que la jauge et l'assombrissement doivent montrer : l'actif, ou à défaut le
-      dernier tracé, pour que la jauge ne reste jamais vide dès qu'un cadre existe. */
+  /** The frame the gauge and the dimming should show: the active one, or failing that the
+      last drawn, so the gauge is never left empty once a frame exists. */
   function currentFrame() {
     return board.frames.find((frame) => frame.id === activeFrameId)
       || board.frames[board.frames.length - 1]
       || null;
   }
 
-  /** Un identifiant qui survit à un rechargement de la page n'a aucun intérêt ici : il ne
-      sert qu'à retrouver un cadre à travers ses propres renommages, le temps d'une session. */
+  /** An identifier that survives a page reload is of no use here: it only serves to find a
+      frame again across its own renamings, for the length of one session. */
   const nextFrameId = () => `cadre-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 
-  /** Terminer le tracé d'un cadre : refus dur au delà de 64 par 64, comme le jeu le ferait
-      à l'ouverture d'une schématique de cette taille. */
+  /** Finish drawing a frame: a hard refusal beyond 64 by 64, as the game would do on
+      opening a schematic that size. */
   function finishFrame(rect) {
     if (!legalFrame(rect)) {
       flash(`${MAX_SIZE} tuiles de côté au plus pour un cadre`);
@@ -517,9 +517,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     activeFrameId = created.id;
   }
 
-  /** Retirer, renommer, déplacer ou redimensionner un cadre passent tous par retirer puis
-      reposer, comme un bloc qu'on remplace : il n'y a pas d'édition en place, et l'identité
-      du cadre ne survit qu à travers son `id`. */
+  /** Removing, renaming, moving or resizing a frame all go through remove then put back,
+      like a block being replaced: there is no editing in place, and the frame's identity
+      only survives through its `id`. */
   function replaceFrame(frame, changes) {
     const after = { ...frame, ...changes };
     commit({ removeFrames: [frame], addFrames: [after] });
@@ -527,15 +527,15 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /* ------------------------------------------------------------------------------------
-     Peindre le sol.
+     Painting the ground.
 
-     Un trait de pinceau est **un** geste d'historique, comme une ligne de convoyeurs : on
-     accumule les cases touchées pendant que le bouton est tenu et on applique tout au
-     relâchement. Appliquer case par case remplirait l'historique de trois cents entrées
-     pour un seul mouvement de la main.
+     One brush stroke is **one** undo step, like a line of conveyors: the tiles touched
+     are accumulated while the button is held and applied all at once on release. Applying
+     them tile by tile would fill the history with three hundred entries for a single
+     movement of the hand.
      ------------------------------------------------------------------------------------ */
 
-  /** Les cases qu'un coup de crayon couvre, centré sur le curseur. */
+  /** The tiles one stroke of the pencil covers, centred on the cursor. */
   function dab(point) {
     const reach = Math.floor(brush.size / 2);
     const cells = [];
@@ -545,7 +545,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     return cells;
   }
 
-  /** Les cases d'un rectangle, bornes comprises. */
+  /** The tiles of a rectangle, bounds included. */
   function area(from, to) {
     const cells = [];
     for (let x = Math.min(from.x, to.x); x <= Math.max(from.x, to.x); x++) {
@@ -555,11 +555,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Le pot de peinture : la zone contiguë qui porte le même sol que la case visée.
+   * The paint bucket: the contiguous area carrying the same floor as the tile clicked.
    *
-   * Bornée à la boîte du schéma élargie de vingt cases. Sans borne, un pot cliqué sur du
-   * vide part remplir un plan infini et ne revient jamais : le terrain n'a pas de bord,
-   * contrairement à une carte du jeu.
+   * Bounded to the schematic's box widened by twenty tiles. Without a bound, a bucket
+   * clicked on empty space sets off to fill an infinite plane and never returns: the
+   * terrain has no edge, unlike a map in the game.
    */
   function fill(point) {
     const box = board.box();
@@ -587,15 +587,15 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     return cells;
   }
 
-  /** Ce que peindre ces cases changerait, dans la forme que `board.apply` attend. */
+  /** What painting these tiles would change, in the shape `board.apply` expects. */
   function strokeOf(cells) {
     const out = {};
     for (const [x, y] of cells) {
       const key = `${x},${y}`;
       if (brush.tool === "eraser") { out[key] = null; continue; }
       if (!brush.block) continue;
-      /* Un minerai posé sur une case nue emmène de la pierre avec lui : le jeu n'a pas de
-         minerai flottant, et une surcouche sans sol dessous n'existe pas. */
+      /* Ore dropped on a bare tile brings stone along with it: the game has no floating
+         ore, and an overlay with no floor under it does not exist. */
       const under = board.ground[key];
       out[key] = brush.layer === "overlay" && !under?.floor
         ? { floor: "stone", overlay: brush.block }
@@ -604,17 +604,17 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     return out;
   }
 
-  /** La case est-elle dans la sélection retenue ? */
+  /** Is the tile inside the selection that was kept? */
   const insideSelection = (point) => selection && point
     && point.x >= selection.left && point.x < selection.left + selection.width
     && point.y >= selection.bottom && point.y < selection.bottom + selection.height;
 
   /**
-   * Le plus long début d'une fournée qui tient encore dans les 64 × 64.
+   * The longest start of a batch that still fits inside the 64 by 64.
    *
-   * Par dichotomie plutôt qu'en retirant un bloc à la fois : mesurer la boîte coûte un
-   * parcours de tout le plateau, et un glissé de cent blocs sur une base de quatre mille
-   * ferait cent parcours là où sept suffisent.
+   * By bisection rather than by dropping one block at a time: measuring the box costs a
+   * walk of the whole board, and a hundred-block drag on a four thousand block base would
+   * take a hundred walks where seven are enough.
    */
   function fitting(plans) {
     if (board.fits(plans)) return plans.length;
@@ -629,18 +629,18 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Le verdict de chaque bloc d'une fournée.
+   * The verdict on each block of a batch.
    *
-   * Un glissé trop long pose ce qui tient et refuse le reste, au lieu de tout refuser en
-   * bloc. Tout refuser était le premier comportement, et sur un glissé de cent cases il
-   * rendait la main vide sans rien expliquer : le joueur a fait un geste, il doit obtenir
-   * ce que ce geste avait de légal.
+   * A drag that runs too long places what fits and refuses the rest, instead of refusing
+   * the lot. Refusing everything was the first behaviour, and on a hundred-tile drag it
+   * gave back an empty hand explaining nothing: the player made a gesture, and they should
+   * get whatever was legal in it.
    */
   function judge(plans, ignore = null) {
-    /* Les blocs qu'un déplacement emporte sont retirés du plateau le temps du jugement.
-       Sans ça, bouger une sélection d'une seule case la déclare illégale d'un bout à
-       l'autre : chaque bloc bute sur l'exemplaire de lui-même qu'il est en train de
-       quitter, et le fantôme est rouge partout sans qu'on comprenne pourquoi. */
+    /* The blocks a move carries away are taken off the board for the length of the
+       judgement. Without that, moving a selection by a single tile declares it illegal
+       from end to end: every block trips over the copy of itself it is in the process of
+       leaving, and the ghost is red everywhere with no way to tell why. */
     const kept = board.tiles;
     if (ignore && ignore.length) {
       const leaving = new Set(ignore);
@@ -661,16 +661,16 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Redonner à chaque pont la case qu'il vise, pour que le rendu dessine la travée.
+   * Give every bridge back the tile it aims at, so the renderer draws the span.
    *
-   * `render.js` ne dessine un pont que s'il porte un champ `link` en coordonnées absolues,
-   * et il refuse volontairement de le déduire du décalage brut : dans de vraies
-   * schématiques, cinq ponts prétendaient porter à 365 cases et se dessinaient en barres
-   * d'un bout à l'autre de l'image. L'analyse le valide donc contre la portée du bloc.
+   * `render.js` only draws a bridge if it carries a `link` field in absolute coordinates,
+   * and it deliberately refuses to infer one from the raw offset: in real schematics, five
+   * bridges claimed to reach 365 tiles and drew as bars across the whole image. The
+   * analysis therefore validates it against the block's own reach.
    *
-   * Ici l'éditeur crée le lien lui-même, mais il ne suffit pas de le poser une fois : un
-   * pont qu'on déplace, qu'on tourne ou qu'on annule garderait un lien vers une case où il
-   * n'y a plus rien. Recalculé à chaque image, contre la portée, il ne peut pas mentir.
+   * Here the editor creates the link itself, but setting it once is not enough: a bridge
+   * that is moved, rotated or undone would keep a link to a tile where there is nothing
+   * left. Recomputed every frame, against the reach, it cannot lie.
    */
   function relink() {
     for (const tile of board.tiles) {
@@ -687,11 +687,12 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Où va la sauvegarde continue : le plan ouvert s'il y en a un, le brouillon local sinon.
+   * Where the continuous save goes: the open plan if there is one, the local draft
+   * otherwise.
    *
-   * Jamais les deux à la fois. Écrire aussi dans le brouillon local pendant qu'un plan est
-   * ouvert referait proposer, à la prochaine visite, "reprendre ce brouillon" pour un
-   * contenu déjà en sûreté dans un plan nommé : une offre qui n'aurait aucun sens.
+   * Never both at once. Writing to the local draft as well while a plan is open would, on
+   * the next visit, offer to pick that draft back up for content already safe in a named
+   * plan: an offer that would make no sense.
    */
   function saveProgress() {
     if (currentSpace) saver?.schedule(board.snapshot());
@@ -699,19 +700,19 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Tout ce qui change le plateau passe par ici.
+   * Everything that changes the board goes through here.
    *
-   * Un seul point d'entrée pour appliquer un geste, et donc un seul endroit où le brouillon
-   * se met à jour. Éparpiller la sauvegarde sur les quinze appels à `board.apply`
-   * garantirait qu'on en oublie un, et que le brouillon mente sur ce cas là précisément.
+   * A single entry point for applying a gesture, and therefore a single place where the
+   * draft is updated. Scattering the save across the fifteen calls to `board.apply` would
+   * guarantee that one gets forgotten, and that the draft lies about exactly that case.
    */
   function commit(change) {
     const done = board.apply(change);
     if (done) {
       saveProgress();
-      /* Dit une fois, au premier bloc qui se retrouve hors de tout cadre, jamais plus :
-         c'est un rappel, pas une alarme qui reviendrait à chaque geste qui en pose un
-         autre. Sans aucun cadre le plateau entier en tient lieu, et rien n'est orphelin. */
+      /* Said once, on the first block that lands outside every frame, never again: it is a
+         reminder, not an alarm coming back on every gesture that places another. With no
+         frame at all the whole board stands in for one, and nothing is orphaned. */
       if (change.place?.length && !orphanWarned && board.orphans().length) {
         orphanWarned = true;
         flash("un bloc hors de tout cadre ne s'exportera pas");
@@ -726,9 +727,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     draw(canvas, board.tiles, sizeOf, roleOf, {
       camera, viewport, ground: board.ground, grid: true, opacity,
     });
-    /* Sans aucun cadre, la jauge mesure le plateau entier, exactement comme avant cette
-       fonctionnalité. Dès qu'un cadre existe, elle mesure ce qu'il contient, pas ce qu'il
-       a été tracé pour contenir : c'est la boîte utile, pas la boîte dessinée. */
+    /* With no frame at all, the gauge measures the whole board, exactly as before this
+       feature. As soon as a frame exists, it measures what the frame holds, not what it
+       was drawn to hold: the useful box, not the drawn box. */
     const active = board.frames.length ? currentFrame() : null;
     updateGauge(active ? board.frameBox(active) : board.box(), MAX_SIZE, active?.name || null);
     dimAroundFrame(viewport, active);
@@ -744,8 +745,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Le plateau assombri autour du cadre actif, pour qu'il se distingue des autres
-   * chantiers sans qu'ils disparaissent : ils restent visibles, seulement plus ternes.
+   * The board dimmed around the active frame, so it stands out from the other worksites
+   * without them disappearing: they stay visible, only duller.
    */
   function dimAroundFrame(viewport, active) {
     if (!active) return;
@@ -764,7 +765,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     context.restore();
   }
 
-  /** Le contour de chaque cadre, nommé, l'actif marqué plus fort que les autres. */
+  /** The outline of every frame, named, the active one marked harder than the others. */
   function drawFrames(viewport, active) {
     if (!board.frames.length) return;
     const context = canvas.getContext("2d");
@@ -784,7 +785,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     context.restore();
   }
 
-  /** Le cadre en cours de tracé, tant que C est tenu et que le bouton l'est aussi. */
+  /** The frame being drawn, for as long as C is held and the button is too. */
   function frameGhost(viewport) {
     if (!drawingFrame || !cursor) return;
     const zone = rectOf(drawingFrame, cursor);
@@ -805,11 +806,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * La boîte du schéma, en pointillés.
+   * The schematic's box, dashed.
    *
-   * Sans elle, la limite de 64 n'existe qu'en chiffres dans un coin de l'écran, et on
-   * découvre qu'on l'a atteinte au moment où une pose est refusée. Avec elle, on voit son
-   * schéma grandir vers son cadre.
+   * Without it, the limit of 64 exists only as figures in a corner of the screen, and you
+   * find out you have reached it at the moment a placement is refused. With it, you watch
+   * your schematic grow towards its frame.
    */
   function outline(viewport) {
     if (!board.tiles.length) return;
@@ -829,11 +830,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Les fantômes de ce que le geste poserait, dessinés par dessus le rendu.
+   * The ghosts of what the gesture would place, drawn over the render.
    *
-   * Vert ou rouge, un par bloc, et la raison du refus juste sous le curseur. Un refus muet
-   * est ce que l'éditeur d'avant faisait, et personne ne devinait qu'une case occupée
-   * refusait la pose.
+   * Green or red, one per block, and the reason for the refusal just under the cursor. A
+   * silent refusal is what the previous editor did, and nobody guessed that an occupied
+   * tile was refusing the placement.
    */
   function ghost(viewport) {
     if (picking || selection) frame(viewport);
@@ -874,8 +875,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       context.lineWidth = 2;
       context.strokeRect(px + 1, py + 1, span - 2, span - 2);
 
-      // La flèche du jeu, pour les blocs qui ont un sens. Sur une ligne tracée, elle dit
-      // le sens de chaque segment, coude compris.
+      // The game's own arrow, for blocks that have a direction. On a drawn line it says
+      // the direction of every segment, corners included.
       if (catalogue.blocks[plan.block]?.rotate && camera.scale >= 12) {
         context.fillStyle = verdict.ok ? "#84d98b" : "#ff8b8b";
         context.font = `${Math.max(10, camera.scale * 0.6)}px sans-serif`;
@@ -889,7 +890,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     showWhy(why);
   }
 
-  /** Le cadre ambre de la sélection, en cours de tracé ou retenue. */
+  /** The selection's amber box, whether being drawn or already kept. */
   function frame(viewport) {
     const zone = picking ? rectOf(picking, cursor) : selection;
     if (!zone) return;
@@ -908,10 +909,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * L'empreinte du pinceau, sous le curseur.
+   * The brush's footprint, under the cursor.
    *
-   * Un pinceau qu'on ne voit pas est un pinceau qu'on utilise au jugé : la taille réglable
-   * ne sert à rien si on ne sait pas ce qu'elle couvre avant de cliquer.
+   * A brush you cannot see is a brush used by guesswork: an adjustable size is worth
+   * nothing if you do not know what it covers before clicking.
    */
   function brushGhost(viewport) {
     if (!cursor) return;
@@ -931,8 +932,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       const { px, py, size } = camera.rectOf(x, y, viewport);
       context.fillRect(px, py, size, size);
     }
-    // Le contour ne suit que le tour du geste, pas chaque case : un quadrillage ambre sur
-    // trois cents cases est illisible.
+    // The outline only follows the edge of the gesture, not every tile: an amber grid over
+    // three hundred tiles is unreadable.
     if (cells.length <= 81) {
       for (const [x, y] of cells) {
         const { px, py, size } = camera.rectOf(x, y, viewport);
@@ -942,7 +943,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     context.restore();
   }
 
-  /** L'aperçu rouge d'une casse en rectangle, tant que le bouton droit est tenu. */
+  /** The red preview of a rectangular break, for as long as the right button is held. */
   function erased(viewport) {
     const context = canvas.getContext("2d");
     const dpr = canvas.width / (viewport.width || 1);
@@ -975,9 +976,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     const viewport = viewportOf();
     const { px, py } = camera.rectOf(cursor.x, cursor.y, viewport);
 
-    /* La bulle bascule de l'autre côté du curseur quand elle sortirait de la vue. Sans ça,
-       le refus le plus utile, celui qu'on déclenche en poussant vers le bord, est aussi le
-       seul qu'on ne peut pas lire. */
+    /* The bubble flips to the other side of the cursor when it would leave the view.
+       Without that, the most useful refusal, the one triggered by pushing towards the
+       edge, is also the only one that cannot be read. */
     const width = refusal.offsetWidth || 200;
     const height = refusal.offsetHeight || 24;
     const flipX = px + width + 28 > viewport.width;
@@ -986,7 +987,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     refusal.style.top = `${flipY ? py - height - 28 : py}px`;
   }
 
-  /** La boîte entre deux cases, bornes comprises, quel que soit le sens du glissé. */
+  /** The box between two tiles, bounds included, whichever way the drag went. */
   function rectOf(a, b) {
     const left = Math.min(a.x, b.x);
     const bottom = Math.min(a.y, b.y);
@@ -997,7 +998,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     };
   }
 
-  /** Tout ce qu'une zone touche, même d'une seule case d'un gros bloc. */
+  /** Everything an area touches, even by a single tile of a large block. */
   function inside(zone) {
     return board.tiles.filter((tile) => footprint(tile, sizeOf).some(([x, y]) =>
       x >= zone.left && x < zone.left + zone.width
@@ -1009,20 +1010,20 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     return camera.toTile(event.clientX - rect.left, event.clientY - rect.top, viewportOf());
   };
 
-  /* Poser, casser, déplacer. Le bouton du milieu déplace la vue, le droit casse, le gauche
-     pose : c'est la répartition du jeu, moins la molette qui zoome ici. */
+  /* Place, break, move. The middle button pans the view, the right one breaks, the left
+     one places: the game's own split, minus the wheel, which zooms here. */
   canvas.addEventListener("pointerdown", (event) => {
     canvas.setPointerCapture(event.pointerId);
-    /* Rendre la main au plateau. Cliquer un élément non focusable ne déplace pas le focus :
-       après avoir tapé trois lettres dans la recherche, il y restait, et le garde-fou « ne
-       pas intercepter les touches dans un champ de saisie » tuait alors **tous** les
-       raccourcis sans que rien ne le dise. */
+    /* Hand control back to the board. Clicking a non-focusable element does not move the
+       focus: after typing three letters into the search box, it stayed there, and the
+       guard "do not intercept keys inside a text field" then killed **every** shortcut
+       with nothing saying so. */
     canvas.focus({ preventScroll: true });
     cursor = tileUnder(event);
 
-    /* Le clic milieu fait deux choses selon qu'il glisse ou non : appuyé et relâché sur
-       place il reprend le bloc visé, appuyé et tiré il déplace la vue. C'est ce que fait le
-       jeu, et ça évite une touche de plus pour la pipette. */
+    /* The middle click does two things depending on whether it drags: pressed and released
+       in place it picks up the block under it, pressed and pulled it pans the view. That is
+       what the game does, and it saves one more key for the pipette. */
     if (event.button === 1 || spacing) {
       panning = { x: event.clientX, y: event.clientY, moved: false };
       return;
@@ -1039,8 +1040,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       pipetteGround();
       return;
     }
-    /* Le pinceau passe avant tout le reste quand l'onglet sol est ouvert : là, un clic
-       gauche peint, et rien d'autre. */
+    /* The brush comes before everything else while the ground tab is open: there, a left
+       click paints, and nothing else. */
     if (painting && event.button === 0 && (brush.block || brush.tool === "eraser")) {
       if (brush.tool === "bucket") {
         commit({ paint: strokeOf(fill(cursor)) });
@@ -1055,14 +1056,14 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       const posable = pastedAt().filter((plan) =>
         canPlace(board, plan, catalogue, pastedAt()).ok);
       if (posable.length) commit({ place: posable });
-      if (!event.shiftKey) pasting = null;   // shift maintenu : coller en série
+      if (!event.shiftKey) pasting = null;   // shift held: paste repeatedly
       say();
       paint();
       return;
     }
-    /* Attraper la sélection elle-même la déplace. C'est le geste attendu partout ailleurs
-       et il manquait : on pouvait tourner et retourner une sélection, mais pas la bouger,
-       ce qui est pourtant la raison numéro un d'en faire une. */
+    /* Grabbing the selection itself moves it. That is the gesture expected everywhere else
+       and it was missing: a selection could be turned and mirrored, but not moved, which
+       is the number one reason to make one. */
     if (event.button === 0 && !selecting && insideSelection(cursor)) {
       moving = { from: cursor, tiles: picked() };
       paint();
@@ -1098,8 +1099,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     const was = cursor;
     cursor = tileUnder(event);
     if (was && was.x === cursor.x && was.y === cursor.y) return;
-    /* Le crayon accumule pendant le trait ; le rectangle, lui, se recalcule à chaque
-       mouvement puisque sa forme entière dépend de là où on en est. */
+    /* The pencil accumulates as the stroke goes; the rectangle recomputes on every move,
+       since its whole shape depends on where the cursor is now. */
     if (stroke && brush.tool !== "rect") stroke.cells.push(...dab(cursor));
     paint();
   });
@@ -1124,8 +1125,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       const after = moved();
       const before = moving.tiles;
       moving = null;
-      /* Retirer et reposer en un seul geste : sinon un déplacement d'une case retire les
-         blocs puis les repose sur eux-mêmes, et l'annulation en demande deux. */
+      /* Remove and place back in a single gesture: otherwise a one-tile move takes the
+         blocks off and puts them back on themselves, and undoing it takes two. */
       if (after.length) {
         commit({ remove: before, place: after });
         selection = boxAround(after);
@@ -1159,8 +1160,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       return;
     }
     if (drawing) {
-      /* Toute la ligne part en un seul geste, donc en une seule entrée d'historique : un
-         glissé de trente convoyeurs se défait d'un ctrl+Z, pas de trente. */
+      /* The whole line goes down as one gesture, and so as one history entry: a drag of
+         thirty conveyors comes back with one ctrl+Z, not thirty. */
       const posable = judge(pending())
         .filter(({ verdict }) => verdict.ok)
         .map(({ plan }) => plan);
@@ -1183,20 +1184,20 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     paint();
   });
 
-  /* Sans ça, casser un bloc ouvre le menu contextuel du navigateur par dessus le plateau. */
+  /* Without this, breaking a block opens the browser's context menu over the board. */
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 
   /**
-   * La molette, qui fait deux choses selon ce qu'on tient.
+   * The wheel, which does two things depending on what is held.
    *
-   * C'est le jeu qui en décide ainsi et c'est bien vu : `Binding.rotate` et `Binding.zoom`
-   * sont **tous les deux** sur la molette, et `DesktopInput` tranche en regardant si un bloc
-   * orientable est en main. Tourner est le geste qu'on fait cent fois en construisant ;
-   * zoomer, celui qu'on fait entre deux constructions.
+   * The game decides it that way and it is well judged: `Binding.rotate` and `Binding.zoom`
+   * are **both** on the wheel, and `DesktopInput` settles it by looking at whether a
+   * rotatable block is in hand. Rotating is the gesture made a hundred times while
+   * building; zooming, the one made between two builds.
    *
-   * Ctrl force le zoom, exactement comme dans le jeu, pour reculer sans reposer ce qu'on
-   * tient. Et R maintenu au dessus d'un bloc posé le tourne sur place, ce que le jeu appelle
-   * `rotatePlaced` et qui ne marche que sur les blocs `quickRotate`.
+   * Ctrl forces the zoom, exactly as in the game, to pull back without putting down what
+   * is held. And R held over a placed block rotates it in place, which the game calls
+   * `rotatePlaced` and which only works on `quickRotate` blocks.
    */
   canvas.addEventListener("wheel", (event) => {
     event.preventDefault();
@@ -1229,16 +1230,16 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }, { passive: false });
 
   /* ----------------------------------------------------------------------------------
-     La sélection : ctrl+glisser, puis une barre flottante posée à côté d'elle.
+     The selection: ctrl and drag, then a floating bar set down beside it.
 
-     À côté d'elle et non dans le rail : une barre à l'autre bout de l'écran oblige à
-     quitter des yeux ce sur quoi elle agit, et à traverser mille pixels pour chaque quart
-     de tour.
+     Beside it rather than in the rail: a bar at the other end of the screen forces you to
+     look away from what it acts on, and to cross a thousand pixels for every quarter
+     turn.
      ---------------------------------------------------------------------------------- */
 
   const picked = () => (selection ? inBox(board.tiles, selection, sizeOf) : []);
 
-  /** Remplacer la sélection par sa version transformée, en un seul geste d'historique. */
+  /** Replace the selection with its transformed version, as one history entry. */
   function reshape(change) {
     const before = picked();
     if (!before.length) return;
@@ -1248,7 +1249,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     paint();
   }
 
-  /** La boîte d'un groupe de blocs, empreintes comprises. */
+  /** The box around a group of blocks, footprints included. */
   function boxAround(tiles) {
     if (!tiles.length) return null;
     let left = Infinity, bottom = Infinity, right = -Infinity, top = -Infinity;
@@ -1262,20 +1263,20 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Copier des blocs, dans l'éditeur et dans le presse-papiers du système.
+   * Copy blocks, into the editor and into the system clipboard.
    *
-   * Les deux, parce que ce sont deux usages : recoller ailleurs sur le même plateau, et
-   * coller dans le jeu. Le second est ce qui fait de cet éditeur autre chose qu'un jouet,
-   * et `schematic.js` sait déjà écrire le format que le jeu lit. Partagée entre la
-   * sélection et un cadre : les deux ne sont qu'une liste de blocs à écrire, et un nom
-   * à mettre sur l'étiquette.
+   * Both, because they are two uses: pasting elsewhere on the same board, and pasting into
+   * the game. The second is what makes this editor something other than a toy, and
+   * `schematic.js` already knows how to write the format the game reads. Shared between a
+   * selection and a frame: both are only a list of blocks to write, and a name to put on
+   * the label.
    */
   async function copyTiles(chosen, tag) {
     if (!chosen.length) return;
     clipboard = chosen.map((tile) => ({ ...tile }));
-    /* L'écriture est courue contre une seconde : elle est normalement accordée dans un
-       geste utilisateur, mais un refus qui ne vient jamais ne doit pas laisser le joueur
-       devant une interface qui ne répond plus. */
+    /* The write is raced against one second: it is normally granted inside a user gesture,
+       but a refusal that never comes must not leave the player in front of an interface
+       that has stopped answering. */
     try {
       const code = await toBase64(clipboard, {
         tags: { name: tag },
@@ -1296,17 +1297,17 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   const copyFrame = (frame) => copyTiles(board.tilesIn(frame), frame.name);
 
   /**
-   * Coller ce qu'on a copié, dans l'éditeur ou dans le jeu.
+   * Paste what was copied, from the editor or from the game.
    *
-   * Le presse-papiers du système arrive par l'événement `paste` du navigateur, plus bas, et
-   * non par `navigator.clipboard.readText()`. La différence n'est pas cosmétique : la
-   * lecture directe demande une permission, et là où elle n'est ni accordée ni refusée elle
-   * **suspend la promesse indéfiniment**. Mesuré ici : le premier essai figeait la page à
-   * chaque ctrl+V. L'événement `paste`, lui, ne demande rien, parce que c'est l'utilisateur
-   * qui l'a déclenché.
+   * The system clipboard arrives through the browser's `paste` event, further down, and
+   * not through `navigator.clipboard.readText()`. The difference is not cosmetic: the
+   * direct read asks for a permission, and where it is neither granted nor refused it
+   * **hangs the promise indefinitely**. Measured here: the first attempt froze the page on
+   * every ctrl+V. The `paste` event asks for nothing, because the user is the one who
+   * triggered it.
    *
-   * Cette fonction-ci ne sert donc qu'au repli : recoller ce qu'on avait copié dans
-   * l'éditeur, quand le presse-papiers du système n'a rien pour nous.
+   * This function therefore only serves as the fallback: pasting back what was copied
+   * inside the editor, when the system clipboard has nothing for us.
    */
   function paste(coming = clipboard) {
     if (!coming || !coming.length) {
@@ -1320,7 +1321,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     paint();
   }
 
-  /** Ce que le collage poserait, ramené sous le curseur. */
+  /** What the paste would place, brought back under the cursor. */
   function pastedAt() {
     if (!pasting || !cursor) return [];
     const box = boxAround(pasting);
@@ -1361,18 +1362,18 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   });
 
   /**
-   * La barre d'actions de chaque cadre : analyser, copier, renommer, supprimer, posée à
-   * côté de lui plutôt que dans un panneau à part. À côté et pas ailleurs, pour la même
-   * raison que la barre de sélection : quitter des yeux ce sur quoi on agit coûte plus
-   * cher qu'un bouton de plus à l'écran.
+   * Each frame's action bar: analyse, copy, rename, delete, set down beside it rather than
+   * in a panel of its own. Beside it and nowhere else, for the same reason as the
+   * selection bar: looking away from what you are acting on costs more than one more
+   * button on screen.
    */
   function showFrameBars(viewport) {
     const active = currentFrame();
     frameBars.innerHTML = board.frames.map((frame) => {
       const { px, py } = camera.rectOf(frame.left, frame.bottom + frame.height - 1, viewport);
-      /* `editor-pick` est réutilisée telle quelle : c'est déjà la barre flottante posée
-         contre une sélection, et un cadre n'a besoin de rien d'autre qu'un deuxième
-         habillage du même genre plutôt que d'une feuille de style de plus. */
+      /* `editor-pick` is reused as it stands: it is already the floating bar set against a
+         selection, and a frame needs nothing more than a second dressing of the same kind
+         rather than one more stylesheet. */
       return `<div class="editor-pick editor-frame-bar${frame === active ? " active" : ""}"
           style="position:absolute;left:${Math.max(4, px)}px;top:${Math.max(4, py - 32)}px">
         <button type="button" data-frame="${frame.id}" data-frame-do="focus"
@@ -1390,9 +1391,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Analyser un cadre passe par un plateau neuf, fait juste de ce que ce cadre contient :
-   * `onAnalyse` n'a jamais connu qu'un plateau entier, et un plateau neuf, valide de la
-   * même façon que celui de l'éditeur, est ce qui lui permet de continuer à l'ignorer.
+   * Analysing a frame goes through a fresh board, made only of what that frame holds:
+   * `onAnalyse` has only ever known a whole board, and a fresh board, valid the same way
+   * as the editor's own, is what lets it go on not knowing.
    */
   function analyseFrame(frame) {
     const scoped = createBoard({
@@ -1429,7 +1430,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (what === "delete") deleteFrame(frame);
   });
 
-  /** Un mot dans la barre d'état, qui s'efface tout seul. */
+  /** A word in the status bar, which clears itself. */
   let fading = null;
   function flash(message) {
     hints.innerHTML = `<strong>${message}</strong>`;
@@ -1438,26 +1439,26 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /* ----------------------------------------------------------------------------------
-     Recibler un pont, comme dans le jeu.
+     Re-aiming a bridge, as in the game.
 
-     Cliquer un pont posé, main vide, l'arme ; le clic suivant sur un pont du même type et
-     à portée écrit la liaison. Recliquer le même pont la coupe. C'est le geste du jeu, et
-     sans lui on ne pouvait ni voir qui parle à qui, ni le changer : une chaîne posée d'un
-     glissé était figée pour toujours.
+     Clicking a placed bridge with an empty hand arms it; the next click on a bridge of the
+     same type and within reach writes the link. Clicking the same bridge again cuts it.
+     That is the game's own gesture, and without it there was no way to see which one talks
+     to which, nor to change it: a chain laid down in one drag was frozen forever.
      ---------------------------------------------------------------------------------- */
 
-  /** Un pylône, qui relie plusieurs voisins au lieu d'en viser un seul. */
+  /** A node, which links several neighbours instead of aiming at a single one. */
   const isNode = (tile) => {
     const kind = catalogue.blocks[tile?.block]?.kind;
     return kind === "PowerNode" || kind === "BeamNode";
   };
 
   /**
-   * Les cases qu'un bloc armé peut viser.
+   * The tiles an armed block can aim at.
    *
-   * Un pont vise un pont du même type ; un pylône vise **tout ce qui consomme ou produit du
-   * courant**, ce qui est la moitié du jeu. C'est la différence entre viser son jumeau et
-   * relier un réseau, et elle change ce qu'on propose au joueur.
+   * A bridge aims at a bridge of the same type; a node aims at **anything that consumes or
+   * produces power**, which is half the game. That is the difference between aiming at a
+   * twin and wiring a network, and it changes what the player is offered.
    */
   function targetsFor(tile) {
     const reach = reachOf(catalogue.blocks[tile.block]);
@@ -1474,16 +1475,15 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       && near(other));
   }
 
-  /** Une position empaquetée comme le format la range : `(x << 16) | (y & 0xFFFF)`. */
+  /** A position packed the way the format stores it: `(x << 16) | (y & 0xFFFF)`. */
   const packed = (tile) => ((tile.x << 16) | (tile.y & 0xFFFF));
 
   /**
-   * Régler ce qu'un bloc retient : l'objet d'un trieur, le liquide d'une source.
+   * Set what a block holds: a sorter's item, a source's liquid.
    *
-   * Une petite palette flottante posée contre le bloc, avec l'icône de chaque objet. Un
-   * deuxième clic sur le même bloc efface sa configuration, ce que le jeu appelle
-   * `clearOnDoubleTap` et qui est la seule façon de remettre un trieur à zéro sans le
-   * casser.
+   * A small floating palette set against the block, with each item's icon. A second click
+   * on the same block clears its configuration, which the game calls `clearOnDoubleTap`
+   * and which is the only way to reset a sorter without breaking it.
    */
   function offerContent(tile) {
     const choices = choicesFor(catalogue.blocks[tile.block], catalogue);
@@ -1518,16 +1518,16 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       .find((choice) => choice.name === button.dataset.pickContent);
     commit({
       remove: [tile],
-      /* `raw` est effacé en même temps : il porte les octets d'origine relus d'un fichier,
-         et les laisser ferait rejouer l'ancienne configuration à l'écriture, par dessus
-         celle qu'on vient de choisir. */
+      /* `raw` is cleared at the same time: it carries the original bytes read back from a
+         file, and leaving them would replay the old configuration on write, over the one
+         just chosen. */
       place: [{ ...tile, raw: undefined, config: chosen ? configFor(chosen) : null }],
     });
     say();
     paint();
   });
 
-  /** Le clic gauche, main vide, sur un bloc posé. */
+  /** A left click, with an empty hand, on a placed block. */
   function poke(point) {
     const under = board.at(point.x, point.y);
     picker.hidden = true;
@@ -1539,8 +1539,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       const armed = linking;
       linking = null;
       if (!under || under === armed) {
-        /* Recliquer le pont qu'on venait d'armer coupe sa liaison, ce qui est la seule
-           façon de défaire un lien sans casser le pont. */
+        /* Clicking again on the bridge just armed cuts its link, which is the only way to
+           undo a link without breaking the bridge. */
         if (under === armed && armed.config) {
           commit({ remove: [armed], place: [{ ...armed, config: null, link: null }] });
         }
@@ -1550,9 +1550,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       }
       if (targetsFor(armed).includes(under)) {
         if (isNode(armed)) {
-          /* Un pylône garde une **liste** : cliquer un voisin l'ajoute, recliquer le même
-             le retire. Un réseau se construit voisin par voisin, pas en désignant un
-             unique élu comme le fait un pont. */
+          /* A node keeps a **list**: clicking a neighbour adds it, clicking the same one
+             again removes it. A network is built neighbour by neighbour, not by naming a
+             single chosen one the way a bridge does. */
           const links = [...(armed.config?.type === 8 ? armed.config.links : [])];
           const at = links.indexOf(packed(under));
           if (at >= 0) links.splice(at, 1);
@@ -1562,8 +1562,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
             place: [{ ...armed, raw: undefined,
                       config: links.length ? { type: 8, links } : null }],
           });
-          /* On reste armé : relier un pylône à six machines demanderait six fois le geste
-             d'armement, ce qui est six fois trop. */
+          /* It stays armed: wiring a node to six machines would take the arming gesture
+             six times, which is six times too many. */
           linking = board.at(armed.x, armed.y);
           say();
           paint();
@@ -1589,7 +1589,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
   }
 
-  /** Les cibles possibles et le trait vers le curseur, tant qu'un pont est armé. */
+  /** The possible targets and the line to the cursor, while a bridge is armed. */
   function linkable(viewport) {
     if (!linking) return;
     const context = canvas.getContext("2d");
@@ -1602,7 +1602,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       return [px + size / 2, py + size / 2];
     };
 
-    // La portée, en carré, comme le jeu la mesure.
+    // The reach, as a square, the way the game measures it.
     const reach = reachOf(catalogue.blocks[linking.block]);
     const corner = camera.rectOf(linking.x - reach, linking.y + reach, viewport);
     context.strokeStyle = "rgba(255, 211, 127, .35)";
@@ -1637,10 +1637,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Reprendre en main un bloc déjà posé, avec sa rotation.
+   * Pick a block already placed back into the hand, with its rotation.
    *
-   * Le geste qui fait gagner le plus de temps quand on réplique une structure : sans lui il
-   * faut retrouver le bloc dans une palette de 245, puis le retourner dans le bon sens.
+   * The gesture that saves the most time when replicating a structure: without it the
+   * block has to be found again in a palette of 245, then turned the right way round.
    */
   function pipette() {
     /* Gated on the ground tab: nothing is held there (`onTab` above already puts a held
@@ -1651,9 +1651,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (!under) return;
     held = under.block;
     rotation = under.rotation || 0;
-    /* `copyConfig` : le jeu ramene la configuration avec le bloc, et 390 blocs l autorisent.
-       Reprendre un trieur regle sur du cuivre pour le reposer vide serait reprendre autre
-       chose que ce qu on a vise. */
+    /* `copyConfig`: the game brings the configuration along with the block, and 390 blocks
+       allow it. Picking up a sorter set to copper only to put it back empty would be
+       picking up something other than what was aimed at. */
     heldConfig = catalogue.blocks[under.block]?.copy_config ? under.config || null : null;
     rail.setHeld(held, rotation);
     say();
@@ -1683,9 +1683,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     const key = event.key.toLowerCase();
 
     if (event.code === "Space") { spacing = true; event.preventDefault(); return; }
-    /* Les touches maintenues, relevées dans `Binding` de la v159.7 plutôt que choisies :
-       ctrl pour la diagonale, F pour sélectionner, R pour tourner un bloc posé. Un joueur
-       qui arrive ici a déjà ces gestes dans les doigts. */
+    /* The held keys, read off `Binding` in v159.7 rather than chosen: ctrl for the
+       diagonal, F to select, R to rotate a placed block. A player arriving here already
+       has those gestures in their fingers. */
     if ((event.key === "Control" || event.key === "Meta") && !diagonal) {
       diagonal = true;
       paint();
@@ -1695,8 +1695,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (key === "r" && !turning) { turning = true; say(); return; }
     if (key === "c" && !framing && !ctrl) { framing = true; say(); return; }
 
-    /* Z et X retournent la sélection, comme `schematicFlipX` et `schematicFlipY`. Sans
-       sélection ils ne font rien, plutôt que de retourner tout le plateau. */
+    /* Z and X mirror the selection, like `schematicFlipX` and `schematicFlipY`. With no
+       selection they do nothing, rather than mirroring the whole board. */
     if (key === "z" && !ctrl && selection) {
       reshape((tiles) => flip(tiles, "x", catalogue));
       return;
@@ -1748,12 +1748,12 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     if (key === "q" && painting) { pipetteGround(); return; }
   };
   /**
-   * Ce qu'il faut oublier quand le plateau bouge sous nos pieds.
+   * What has to be forgotten when the board moves under your feet.
    *
-   * Une annulation remet les blocs où ils étaient, mais la sélection, elle, était restée où
-   * on venait de les traîner : le cadre ambre survivait autour d'une case vide, avec sa
-   * barre d'actions qui n'agissait plus sur rien. Un pont armé a le même problème s'il
-   * disparaît entre temps.
+   * An undo puts the blocks back where they were, but the selection stayed where they had
+   * just been dragged: the amber box survived around an empty tile, with its action bar
+   * acting on nothing at all. An armed bridge has the same problem if it disappears in the
+   * meantime.
    */
   function settle() {
     saveProgress();
@@ -1777,11 +1777,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   };
 
   /**
-   * Ce que le joueur colle, venu du jeu ou d'ailleurs.
+   * What the player pastes, from the game or from anywhere else.
    *
-   * C'est le seul canal qui marche sans permission, et c'est aussi celui qui rend la
-   * passerelle avec le jeu réelle : copier une schématique dans Mindustry, faire ctrl+V
-   * ici, et la voir apparaître sous le curseur.
+   * It is the only channel that works without a permission, and it is also the one that
+   * makes the bridge to the game real: copy a schematic in Mindustry, press ctrl+V here,
+   * and watch it appear under the cursor.
    */
   const onPaste = async (event) => {
     if (/^(INPUT|TEXTAREA)$/.test(event.target.tagName)) return;
@@ -1791,8 +1791,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     try {
       paste((await fromBase64(text)).tiles);
     } catch {
-      /* Un presse-papiers qui contient autre chose qu'une schématique n'est pas une erreur
-         du joueur : il avait peut-être copié un lien. On repose ce qu'on avait. */
+      /* A clipboard holding something other than a schematic is not the player's mistake:
+         they may have copied a link. What was already held goes back down. */
       paste();
     }
   };
@@ -1805,8 +1805,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   host.querySelector('[data-do="redo"]').onclick = () => { board.redo(); settle(); };
   host.querySelector('[data-mode="analyse"]').onclick = () => onAnalyse(board);
   host.querySelector('[data-do="help"]').onclick = () => showHelp(host);
-  /* Le bouton de rotation du tactile, sans molette pour le remplacer. Il n'apparaît que
-     quand il sert, c'est à dire quand on tient un bloc qui tourne. */
+  /* The rotation button for touch, where there is no wheel to stand in for it. It only
+     appears when it is of use, which is while a rotatable block is held. */
   const turnButton = host.querySelector('[data-do="turn-held"]');
   turnButton.onclick = () => {
     rotation = (rotation + 1) % 4;
@@ -1818,16 +1818,16 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   resize?.observe(stage);
 
   /**
-   * Le brouillon d'une session précédente, proposé et jamais imposé.
+   * The draft from a previous session, offered and never imposed.
    *
-   * Écraser d'office ce que quelqu'un vient de coller par un brouillon vieux de trois jours
-   * est pire que de perdre le brouillon : dans un cas on perd du travail qu'on savait avoir,
-   * dans l'autre on perd celui qu'on croyait avoir devant les yeux.
+   * Overwriting what somebody has just pasted with a three day old draft is worse than
+   * losing the draft: in one case work you knew you had is lost, in the other the work you
+   * thought was in front of your eyes is.
    *
-   * `signedIn` n'ajoute qu'un troisième choix, jamais un comportement différent des deux
-   * premiers : un compte peut en plus transformer ce brouillon en un plan qui survivra sur
-   * un autre appareil. Offert, comme le reste de cette barre, jamais fait tout seul à la
-   * connexion : voir le mot du module `draft.js` en tête de ce fichier, il tient encore ici.
+   * `signedIn` only adds a third choice, never a different behaviour from the first two:
+   * an account can additionally turn that draft into a plan that will survive on another
+   * device. Offered, like the rest of this bar, never done on its own at sign-in: see
+   * `draft.js`'s module note at the head of that file, it still holds here.
    */
   function offerDraft(signedIn) {
     if (board.tiles.length || Object.keys(board.ground).length || board.frames.length) return;
@@ -1871,30 +1871,30 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Qui est connecté, et donc si les plans ont leur place dans cette session.
+   * Who is signed in, and therefore whether plans have a place in this session.
    *
-   * Un visiteur anonyme sort d'ici exactement comme avant cette fonctionnalité : le menu
-   * reste caché, et `offerDraft` ne propose que ses deux choix d'origine. L'éditeur
-   * lui même n'est jamais conditionné par cette réponse, seule cette barre du haut l'est.
+   * An anonymous visitor comes out of here exactly as before this feature: the menu stays
+   * hidden, and `offerDraft` offers only its two original choices. The editor itself is
+   * never gated on this answer, only this top bar is.
    */
   async function initSpaces() {
     let me = null;
     try {
       me = await spacesApi.whoAmI();
     } catch {
-      /* Hors ligne au moment du montage : reste anonyme pour cette session plutôt que de
-         bloquer l'éditeur sur une requête qui ne sert que ce menu. */
+      /* Offline at mount time: stay anonymous for this session rather than holding the
+         editor up on a request that serves only this menu. */
     }
     spacesMenu.hidden = !me;
     offerDraft(!!me);
   }
 
   /* ------------------------------------------------------------------------------------
-     Le tactile.
+     Touch.
 
-     Ce ne sera pas le confort du bureau, et ça n'a pas à l'être : ce qui compte est que
-     rien ne soit cassé. Un doigt pose, un appui long casse, deux doigts déplacent et
-     zooment. Le reste passe par les boutons.
+     This will not be the comfort of a desktop, and it does not have to be: what matters is
+     that nothing is broken. One finger places, a long press breaks, two fingers pan and
+     zoom. The rest goes through the buttons.
      ------------------------------------------------------------------------------------ */
 
   let longPress = null;
@@ -1908,8 +1908,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
         x: (a.clientX + b.clientX) / 2,
         y: (a.clientY + b.clientY) / 2,
       };
-      /* Un pincement annule ce qu'un doigt avait commencé : sans ça, écarter deux doigts
-         pour zoomer trace une ligne de convoyeurs jusqu'au bord de l'écran. */
+      /* A pinch cancels what one finger had started: without that, spreading two fingers
+         to zoom draws a line of conveyors out to the edge of the screen. */
       drawing = null;
       stroke = null;
       longPress = clearTimeout(longPress) || null;
