@@ -122,6 +122,23 @@ return [
      * existe et qui marche ». Une liste personnelle repond a « qu'est-ce que j'ai garde », et
      * la reponse ne se discute pas.
      */
+    /*
+     * Ce que dit une liste vide, qui n'est pas la meme phrase selon la question posee.
+     *
+     * « Rien de publié qui corresponde, analyse un schéma et publie-le » est juste sous une
+     * recherche du catalogue et faux sous mes favoris : il n'y a rien a publier, il n'y a
+     * rien de garde, et la page envoyait analyser un plan pour resoudre ca. Une phrase
+     * exacte, posee la ou on demande autre chose.
+     */
+    'vide' => [
+        'catalogue' => 'Rien de publié qui corresponde. Analyse un schéma et publie-le.',
+        'favoris' => "Tu n'as encore rien gardé. Le bouton se trouve sur la page d'un schéma.",
+        'aimes' => "Tu n'as encore aimé aucun schéma.",
+        'miens' => "Tu n'as encore rien publié.",
+        'parcourir' => 'Parcourir les schémas',
+        'analyser' => 'Analyser un schéma',
+    ],
+
     'a-moi' => [
         'titre' => 'À moi',
         'favoris' => 'mes favoris',

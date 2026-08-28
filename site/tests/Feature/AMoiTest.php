@@ -212,3 +212,42 @@ it('laisse mes favoris se filtrer comme le reste du catalogue', function () {
 it('envoie un visiteur sans compte se connecter plutôt que sur une liste vide', function () {
     $this->get('/mes-favoris')->assertRedirect('/auth/discord');
 });
+
+/*
+ * Ce que la page dit quand la liste personnelle est vide, et quand elle est filtree.
+ *
+ * Deux phrases exactes posees la ou on demandait autre chose, trouvees en ouvrant la page
+ * et non en lisant une sortie de commande.
+ */
+it('dit que je n ai rien gardé, plutôt que de m envoyer publier', function () {
+    $me = User::factory()->create();
+    publie('Existe ailleurs');
+
+    $page = $this->actingAs($me)->get('/mes-favoris')->assertOk();
+
+    // Sans l'apostrophe : Blade la rend en `&#039;`, donc une assertion qui la porte
+    // echouerait sur l'echappement et non sur la phrase.
+    $page->assertSee('encore rien gardé')
+        // La phrase du catalogue serait exacte et hors sujet : il n'y a rien a publier, il
+        // n'y a rien de garde, et elle envoyait analyser un plan pour resoudre ca.
+        ->assertDontSee('Rien de publié qui corresponde');
+});
+
+it('dit dans une puce que la liste est filtrée sur mes favoris', function () {
+    $me = User::factory()->create();
+    $kept = publie('Garde');
+    Favorite::create(['user_id' => $me->id, 'schematic_id' => $kept->id]);
+
+    // Sans cette puce, le panneau qui porte les cases est replie et le titre est celui du
+    // catalogue : un lecteur voit une vitrine anormalement courte, pas ses favoris.
+    $this->actingAs($me)->get('/mes-favoris')
+        ->assertOk()
+        ->assertSee('Recherche en cours')
+        ->assertSee('mes favoris');
+});
+
+it('garde la phrase du catalogue quand la recherche est celle du catalogue', function () {
+    $this->get('/schemas?produit=silicon')
+        ->assertOk()
+        ->assertSee('Rien de publié qui corresponde');
+});
