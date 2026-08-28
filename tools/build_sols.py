@@ -14,10 +14,10 @@ import json
 import zipfile
 from pathlib import Path
 
-# Which floor kinds have numbered art that is not a texture variant, and why: see
-# `floor_kinds.py`. A count here for one of these would promise the browser a sprite
-# `build_sprites.py` never packs.
-from floor_kinds import NOT_TEXTURE_VARIANTS
+# How a floor's numbered art is enumerated, and which kinds have none, shared with
+# `build_sprites.py`: see `floor_kinds.py`. A count here that the packer does not agree with
+# promises the browser a sprite nobody ever packs.
+from floor_kinds import NOT_TEXTURE_VARIANTS, variant_names
 
 JAR = Path("mindustry-forge/assets-v159.7.jar")
 SOURCE = Path("bench/data/blocks.json")
@@ -31,14 +31,15 @@ def main() -> None:
                for name in archive.namelist()
                if "/environment/" in name and name.endswith(".png")}
 
+    named = {name for name, entry in raw["blocks"].items() if entry.get("floor")}
+
     floors = {}
     for name, entry in raw["blocks"].items():
         if not entry.get("floor"):
             continue
         variants = 0
         if entry.get("kind") not in NOT_TEXTURE_VARIANTS:
-            while f"{name}{variants + 1}" in art:
-                variants += 1
+            variants = sum(1 for _ in variant_names(name, art, named))
         # Whose edge sheet this floor bleeds with.
         #
         # `Floor.edges()` is `blendGroup.asFloor().edges`, not the floor's own, and the

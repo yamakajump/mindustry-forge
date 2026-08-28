@@ -27,10 +27,11 @@ from pathlib import Path
 
 from PIL import Image
 
-# Which floor kinds have numbered art that is not a texture variant, and why: see
-# `floor_kinds.py`. Shared with `build_sols.py`, which must not promise the browser a
-# sprite this script never packs.
-from floor_kinds import NOT_TEXTURE_VARIANTS
+# How a floor's numbered art is enumerated, and which kinds have none, shared with
+# `build_sols.py`: see `floor_kinds.py`. `build_sols.py` must not promise the browser a
+# sprite this script never packs, and one enumeration imported by both is what makes that
+# a fact rather than a hope.
+from floor_kinds import NOT_TEXTURE_VARIANTS, variant_names
 
 JAR = Path("mindustry-forge/assets-v159.7.jar")
 CATALOGUE = Path("site/public/forge/blocks.json")
@@ -179,6 +180,7 @@ def main() -> None:
     #
     # The bare `floor/<name>` key stays, and stays first: it is what a caller with no
     # position to hash asks for, and what a floor with a single sprite has.
+    named = {name for name, entry in catalogue["blocks"].items() if entry.get("floor")}
     for name, entry in catalogue["blocks"].items():
         if not entry.get("floor"):
             continue
@@ -187,13 +189,8 @@ def main() -> None:
             wanted.append((f"floor/{name}", path))
         if entry.get("kind") in NOT_TEXTURE_VARIANTS:
             continue
-        n = 1
-        while True:
-            variant = sprites.get(f"{name}{n}")
-            if not variant:
-                break
-            wanted.append((f"floor/{name}#{n}", variant))
-            n += 1
+        for n, variant in enumerate(variant_names(name, sprites, named), 1):
+            wanted.append((f"floor/{name}#{n}", sprites[variant]))
 
         # The 96 by 96 sheet the game blends a boundary with: nine 32 pixel cells, which
         # `Floor.edge(x, y, i, j)` reads as `edges[i][2 - j]`. 55 of the 107 floors ship
