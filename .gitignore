@@ -37,3 +37,8 @@ site/bootstrap/cache/*
 
 # Fiches projet : contexte de travail, pas du code.
 .claude/projet/
+
+# Session working notes: plans, reviews and handovers. They are written for
+# whoever is holding the work today, not for a contributor, and they date fast.
+# Keep them under .claude/projet/, which is already ignored above.
+docs/plans/
