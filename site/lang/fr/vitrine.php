@@ -113,6 +113,23 @@ return [
             sable que j'ai gardé, je le revois.",
     ],
 
+    /*
+     * Comparer deux plans depuis la liste, sans une ligne de JavaScript.
+     *
+     * `/comparer` existait et la vitrine ne l'alimentait pas. Des cases a cocher auraient
+     * demande un script, et sans lui elles n'auraient rien fait, ce qui est pire qu'une
+     * absence. Un parametre d'adresse fait le meme travail : le premier clic retient, le
+     * second compare, et chaque etape se partage.
+     */
+    'comparer' => [
+        'retenir' => 'Comparer',
+        'retenu' => 'À comparer avec',
+        'choisis-le-second' => 'Choisis le second ci-dessous.',
+        'avec-celui-ci' => 'Comparer avec celui-ci',
+        'tenu' => 'retenu',
+        'annuler' => 'Annuler',
+    ],
+
     'puces' => [
         'titre' => 'Recherche en cours',
         'retirer' => 'Retirer cette contrainte',

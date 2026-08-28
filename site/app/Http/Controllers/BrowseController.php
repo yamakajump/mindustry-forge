@@ -158,6 +158,23 @@ class BrowseController extends Controller
             $eats = '';
         }
 
+        /* Comparer deux plans, en deux clics et sans une ligne de JavaScript.
+
+           `/comparer` existe depuis longtemps et la vitrine ne l'alimentait pas : un joueur
+           qui voulait opposer deux resultats devait ouvrir deux onglets et recopier deux
+           adresses. Des cases a cocher auraient demande un script, et sans lui elles
+           n'auraient rien fait du tout, ce qui est pire qu'une absence.
+
+           Alors c'est un parametre. Le premier clic retient un schema dans l'adresse, le
+           second part vers la comparaison. Chaque etape a son adresse, donc elle se partage,
+           se met en favori et revient par le bouton precedent. */
+        $against = (string) $request->query('comparer', '');
+        $held = $against === '' ? null
+            : Schematic::query()->listed()->where('slug', $against)->first();
+        if ($held === null) {
+            $against = '';
+        }
+
         $me = $request->user();
         $favorites = $me !== null && $request->query('favoris') === 'oui';
         $liked = $me !== null && $request->query('aimes') === 'oui';
@@ -491,6 +508,8 @@ class BrowseController extends Controller
             'signedIn' => $me !== null,
             'eats' => $eats,
             'eatsOnOffer' => $eatsOnOffer,
+            'against' => $against,
+            'held' => $held,
             'chips' => $chips,
         ]);
     }

@@ -313,6 +313,20 @@
        trou dans sa base, celui qui compte son cuivre et celui qui veut du debit brut ne
        demandent pas la meme chose, et un seul classement ne peut pas repondre aux trois.
        Qu'un meme schema en gagne deux est une reponse, pas un defaut. --}}
+  {{-- Ce qui est retenu pour la comparaison, dit et annulable.
+
+       Sans cette phrase, un lecteur revenu sur la page par un lien partage verrait chaque
+       tuile proposer « celui-ci » sans savoir contre quoi. --}}
+  @if($held !== null)
+    <p class="compare-en-cours">
+      {{ __('vitrine.comparer.retenu') }}
+      <strong>{{ $held->displayName() }}</strong>.
+      {{ __('vitrine.comparer.choisis-le-second') }}
+      <a href="{{ request()->fullUrlWithQuery(['comparer' => null]) }}">{{
+        __('vitrine.comparer.annuler') }}</a>
+    </p>
+  @endif
+
   @if($winners !== [])
     <div class="verdicts">
       @foreach($winners as $win)
@@ -438,6 +452,19 @@
              bien », toujours « le plus rentable a la surface, 2,3 fois la mediane de cette
              liste » : un lecteur peut etre en desaccord avec le second, ce qui est la seule
              facon honnete d'ecrire le premier. --}}
+        {{-- Le premier clic retient, le second compare. Un lien et non une case : une case
+             sans script ne fait rien, et un lien garde une adresse par etape. --}}
+        @if($held === null)
+          <a class="t-comparer" href="{{ request()->fullUrlWithQuery([
+              'comparer' => $schematic->slug, 'page' => null]) }}">{{
+            __('vitrine.comparer.retenir') }}</a>
+        @elseif($held->slug !== $schematic->slug)
+          <a class="t-comparer on" href="/comparer?a={{ $held->slug }}&amp;b={{ $schematic->slug }}">{{
+            __('vitrine.comparer.avec-celui-ci') }}</a>
+        @else
+          <span class="t-comparer tenu">{{ __('vitrine.comparer.tenu') }}</span>
+        @endif
+
         @if(($notes[$schematic->id] ?? []) !== [])
           <ul class="remarques">
             @foreach($notes[$schematic->id] as $note)
