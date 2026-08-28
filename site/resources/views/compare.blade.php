@@ -19,17 +19,17 @@
   $number = fn ($value) => Figure::short((float) $value);
   $sign = fn ($value) => $value > 0 ? '+' : ($value < 0 ? '-' : '');
 
-  /* Le nom du jeu et son image, pas l'identifiant anglais. La page affichait
-     `blast-compound` a un joueur francophone, sous une image qu'elle avait deja les moyens
-     de servir : la vitrine et le wiki des blocs tirent tous les deux de `/icone/`. */
+  /* The game's name and its image, not the English identifier. The page was showing
+     `blast-compound` to a French-speaking player, under an image it already had the means
+     to serve: the catalogue and the block wiki both pull from `/icone/`. */
   $thing = fn ($item) => $item === SchematicItem::POWER
       ? __('schema.comparer.energie') : Thing::name($item);
 
-  /* Ce qu'il faut a un panneau pour dessiner son plan. Le code voyage dans la page tant
-     qu'il est petit, comme sur la vitrine ; au-dela le panneau le demande lui-meme, et
-     seulement quand il approche de l'ecran. Un seul schema de 512 ko n'a rien a faire dans
-     une page qui en montre dix. Le seuil est celui de la vitrine, mesure a 44 ko pour
-     vingt-quatre tuiles sur le catalogue en ligne. */
+  /* What a panel needs to draw its plan. The code travels inside the page while it is
+     small, as on the catalogue; past that the panel asks for it itself, and only once it
+     comes near the screen. A single 512 kB schematic has no business in a page showing ten
+     of them. The threshold is the catalogue's, measured at 44 kB for twenty-four tiles on
+     the live listing. */
   $porte = 16384;
   $planned = fn ($schematic) => strlen((string) $schematic->code) <= $porte
       ? 'data-code="'.e($schematic->code).'"'
@@ -40,22 +40,22 @@
 <h1 class="title">{{ __('schema.comparer.titre') }}</h1>
 <p class="sub">{{ __('schema.comparer.sous-titre') }}</p>
 
-{{-- Les deux cotes, cote a cote, et leur plan dessine des qu'ils sont remplis.
+{{-- The two sides, side by side, with their plan drawn as soon as they are filled in.
 
-     C'etait deux champs de texte au-dessus d'une liste de noms : une page dont le sujet
-     entier est deux images n'en montrait aucune, a aucun moment. Le mot de Corentin :
-     « tu ne vois pas les schemas, c'est pas du tout intuitif ».
+     It used to be two text fields above a list of names: a page whose entire subject is
+     two pictures showed neither, at any point. Corentin's words: "you cannot see the
+     schematics, it is not intuitive at all".
 
-     Reste un formulaire GET, et un seul. Choisir dans la liste deroulante est un lien vers
-     cette meme adresse, donc le retour arriere marche, une comparaison se colle dans un fil
-     Discord, et la page fonctionne entierement sans JavaScript : le champ et son bouton font
-     ce qu'ils ont toujours fait. Le script n'ajoute que les resultats pendant la frappe. --}}
+     What is left is a GET form, and only one. Picking from the dropdown is a link to that
+     same address, so the back button works, a comparison pastes into a Discord thread, and
+     the page works entirely without JavaScript: the field and its button do what they have
+     always done. The script only adds the results while you type. --}}
 <form method="get" class="cmp-arene" id="cmp-arene">
   @foreach(['a' => $left, 'b' => $right] as $side => $chosen)
     @if($side === 'b')
-      {{-- Entre les deux, parce que c'est entre les deux que le geste a lieu. Un lien et
-           non un bouton : il a une adresse, donc le clavier et le lecteur d'ecran l'ont
-           gratuitement, et il marche sans script. --}}
+      {{-- Between the two, because between the two is where the gesture happens. A link
+           and not a button: it has an address, so the keyboard and the screen reader get
+           it for free, and it works without a script. --}}
       <div class="cmp-milieu">
         @if($asked['a'] !== '' || $asked['b'] !== '')
           <a class="cmp-echanger" href="?a={{ $asked['b'] }}&b={{ $asked['a'] }}"
@@ -92,8 +92,9 @@
           <p class="empty">{{ __('schema.comparer.dessin') }}</p>
         </div>
         <p class="cmp-nom"><a href="/s/{{ $chosen->slug }}">{{ $chosen->displayName() }}</a></p>
-        {{-- Le chiffre reste hors de la chaine traduite : une cle manquante rendrait la cle
-             sans substituer, et c'est le nombre qui disparaitrait, pas le mot. --}}
+        {{-- The figure stays outside the translated string: a missing key would render the
+             key without substituting, and it is the number that would disappear, not the
+             word. --}}
         <p class="meta">{{ __('schema.comparer.par') }} {{ $chosen->credit() }}
           @if($chosen->blocks > 0)
             &middot; {{ $chosen->blocks }} {{ __('schema.comparer.blocs') }}
@@ -110,8 +111,8 @@
         </div>
         <div class="cmp-champ">
           <label class="cmp-cache" for="{{ $side }}">{{ $role }}</label>
-          {{-- La valeur reste ce qui a ete tape et pas le slug trouve : corriger sa
-               recherche demanderait sinon de la retaper entiere. --}}
+          {{-- The value stays what was typed and not the slug that was found: otherwise
+               correcting a search would mean typing the whole thing again. --}}
           <input id="{{ $side }}" name="{{ $side }}" value="{{ $asked[$side] }}" maxlength="120"
                  spellcheck="false" autocomplete="off" role="combobox" aria-expanded="false"
                  aria-controls="cmp-liste-{{ $side }}" aria-autocomplete="list"
@@ -119,10 +120,10 @@
           <button class="primary" type="submit">{{ __('schema.comparer.comparer') }}</button>
         </div>
 
-        {{-- Ce qu'un nom a trouve, rendu par le serveur. Le script le remplace pendant la
-             frappe, mais sans lui c'est encore cette liste-la qui repond, et repondre a une
-             recherche par un formulaire vide se lit comme « ce schema n'existe pas » alors
-             que ce qui s'est passe est qu'on ne l'a jamais cherche. --}}
+        {{-- What a name found, rendered by the server. The script replaces it while you
+             type, but without the script this is still the list that answers, and
+             answering a search with an empty form reads as "this schematic does not exist"
+             when what happened is that nobody ever looked for it. --}}
         <div class="cmp-resultats" id="cmp-liste-{{ $side }}" role="listbox"
              aria-label="{{ __('schema.comparer.trouves') }}">
           @if($matches[$side] !== null)
@@ -135,9 +136,9 @@
                   <span class="cmp-mini" {!! $planned($one) !!}></span>
                   <span class="cmp-resultat-texte">
                     <span class="cmp-resultat-nom">{{ $one->displayName() }}</span>
-                    {{-- La taille seulement quand elle est connue : un schema de zero bloc
-                         n'existe pas, et l'ecrire serait affirmer a la place de se taire sur
-                         une ligne que l'analyse n'a pas encore reprise. --}}
+                    {{-- The size only when it is known: a zero-block schematic does not
+                         exist, and writing one would be asserting instead of staying
+                         silent on a row the analysis has not gone over yet. --}}
                     <span class="cmp-resultat-de">@if($one->blocks > 0){{ $one->blocks }}
                       {{ __('schema.comparer.blocs') }} &middot; @endif{{
                       __('schema.comparer.par') }} {{ $one->credit() }}</span>
@@ -152,33 +153,33 @@
   @endforeach
 </form>
 
-{{-- Seulement tant qu'il reste un champ ou taper. Les deux cotes remplis, la page n'a plus
-     de boite de recherche, et une phrase qui explique quoi y taper flotte au-dessus d'une
-     comparaison sans rien a quoi se rattacher. --}}
+{{-- Only while a field is left to type into. With both sides filled, the page has no
+     search box any more, and a sentence explaining what to type into it floats above a
+     comparison with nothing to attach itself to. --}}
 @if(! $left || ! $right)
   <p class="hint-line cmp-aide">{{ __('schema.comparer.aide') }}</p>
 @endif
 
 @php
-  // Ne pas proposer huit schemas au hasard sous huit resultats de recherche. Qui a tape un
-  // nom a deja choisi ce qu'il cherche ; la liste generique n'est alors qu'une deuxieme
-  // liste a lire. Elle reste quand la recherche n'a rien rendu, parce que la page a encore
-  // quelque chose d'utile a offrir.
+  // Do not offer eight random schematics under eight search results. Whoever typed a name
+  // has already chosen what they are looking for; the generic list is then only a second
+  // list to read. It stays when the search returned nothing, because the page still has
+  // something useful to offer.
   $trouve = collect($matches)->filter()->contains(fn ($found) => $found->isNotEmpty());
 @endphp
 
-{{-- Deux questions distinctes, et les melanger a casse la page une fois : la liste
-     generique depend de la recherche, la comparaison ne depend que d'avoir les deux
-     schemas. Une seule condition pour les deux envoyait le @else afficher une comparaison
-     dont les deux cotes etaient nuls. --}}
+{{-- Two distinct questions, and mixing them broke the page once: the generic list depends
+     on the search, the comparison only depends on having both schematics. A single
+     condition for both sent the @else off to render a comparison whose two sides were
+     null. --}}
 @if(! $comparison)
   @if(! $trouve)
-    {{-- Arriver par le menu sans rien choisi est le cas courant, et une page vide serait une
-         impasse. Huit recents plutot que le catalogue entier : quinze mille options dans une
-         liste deroulante ne sont pas un choix, ce sont des kilometres.
+    {{-- Arriving from the menu with nothing chosen is the common case, and an empty page
+         would be a dead end. Eight recent ones rather than the whole catalogue: fifteen
+         thousand options in a dropdown are not a choice, they are miles of scrolling.
 
-         Avec leur plan, et c'est tout le changement : huit lignes de texte appelees
-         « Silicon » sont huit lignes identiques, huit plans ne le sont jamais. --}}
+         With their plan, and that is the whole change: eight lines of text all called
+         "Silicon" are eight identical lines, eight plans never are. --}}
     <h2 class="cmp-titre">{{ __('schema.comparer.a-choisir') }}</h2>
     @if($recent->isEmpty())
       <p class="empty">{{ __('schema.comparer.rien-a-comparer') }}</p>
@@ -186,10 +187,10 @@
       <div class="grid cmp-propositions">
         @foreach($recent as $one)
           <article class="tile">
-            {{-- Le plan mene a la page du schema, les deux boutons remplissent un cote.
-                 La liste menait a `/s/` et rien d'autre, donc cliquer une proposition dans
-                 le selecteur emmenait ailleurs et il fallait revenir avec l'identifiant en
-                 tete. --}}
+            {{-- The plan leads to the schematic's page, the two buttons fill a side.
+                 The list led to `/s/` and nothing else, so clicking a suggestion in the
+                 picker took you somewhere else and you had to come back with the
+                 identifier in your head. --}}
             <a href="/s/{{ $one->slug }}" title="{{ __('schema.comparer.ouvrir') }}">
               <span class="noimg" {!! $planned($one) !!}></span>
               <h3>{{ $one->displayName() }}</h3>
@@ -214,10 +215,10 @@
   @endif
 @else
 
-  {{-- L'origine des chiffres avant les chiffres. Un plafond et une mesure ne se comparent
-       pas, et la majorite du catalogue est au plafond faute de marquage : le taire
-       reviendrait a presenter une estimation comme une mesure, ce qui est la seule chose que
-       ce site vend. --}}
+  {{-- Where the figures come from, before the figures. A cap and a measurement do not
+       compare, and most of the catalogue sits at the cap for want of marking: keeping
+       quiet about it would amount to presenting an estimate as a measurement, and a
+       measurement is the one thing this site sells. --}}
   @if($comparison->mixedKinds())
     <div class="card notice">
       <p>{{ __('schema.comparer.kinds-melanges') }}</p>
@@ -229,21 +230,21 @@
   @endif
 
   @if(! $comparison->comparable())
-    {{-- Deux schemas qui ne font pas la meme chose n'ont pas de vainqueur. Classer quarante
-         graphite/min contre vingt-cinq silicium/min reviendrait a decreter qu'un graphite
-         vaut un silicium, ce qui est faux et serait invisible. --}}
+    {{-- Two schematics that do not do the same thing have no winner. Ranking forty
+         graphite/min against twenty-five silicon/min would amount to declaring that one
+         graphite is worth one silicon, which is false and would be invisible. --}}
     <div class="card notice">
       <p>{{ __('schema.comparer.rien-en-commun') }}</p>
     </div>
   @endif
 
-  {{-- Qui est qui, colle en haut de l'ecran.
+  {{-- Who is who, stuck to the top of the screen.
 
-       Les tableaux repetaient les deux noms dans chacun de leurs en-tetes, tronques a la
-       largeur d'une colonne de chiffres. Des qu'on descendait dans les ecarts, les plans
-       etaient sortis de l'ecran et il ne restait que « Thor 5.37 e... » contre « 7 plast
-       (4... » pour se souvenir de quel cote on regardait. Une seule barre, qui suit, et les
-       colonnes des cartes en dessous s'alignent dessus. --}}
+       The tables repeated both names in every one of their headers, truncated to the width
+       of a column of figures. As soon as you went down into the gaps, the plans had left
+       the screen and all that was left was "Thor 5.37 e..." against "7 plast (4..." to
+       remember which side you were looking at. One single bar, which follows, and the
+       columns of the cards below line up on it. --}}
   <div class="cmp-collant">
     <div class="cmp-ligne">
       <span class="cmp-quoi"></span>
@@ -267,10 +268,10 @@
       <h2>{{ __('schema.comparer.ce-quils-font') }}</h2>
       @foreach($shared as $row)
         @php
-          /* La barre n'existe que sur une ligne comparable : meme objet, meme nature de
-             chiffre. Elle est la proportion des deux valeurs entre elles et rien d'autre,
-             jamais d'une ligne a la suivante. Un graphite et un silicium sur une meme
-             echelle serait le score global que cette page refuse de calculer. */
+          /* The bar only exists on a comparable row: same item, same kind of figure. It is
+             the proportion of the two values against each other and nothing else, never
+             from one row to the next. A graphite and a silicon on the same scale would be
+             the overall score this page refuses to compute. */
           $top = max((float) $row['left']->rate, (float) $row['right']->rate);
           $part = fn ($rate) => $top > 0 ? round(($rate / $top) * 100) : 0;
         @endphp
@@ -326,9 +327,9 @@
     </div>
   @endif
 
-  {{-- La place, l'emprise et le courant : les seuls axes ou moins vaut mieux sans qu'aucune
-       ponderation soit necessaire. C'est pour ca qu'ils sont dits en ecart et pas en deux
-       colonnes que le lecteur soustrait de tete. --}}
+  {{-- Space, footprint and current: the only axes where less is better with no weighting
+       needed. That is why they are given as a gap and not as two columns the reader
+       subtracts in their head. --}}
   @php
     $sizes = $comparison->sizes();
   @endphp
@@ -408,9 +409,9 @@
     </div>
   @endif
 
-  {{-- Et pas de verdict. Un schema qui produit plus et coute trois fois plus cher n'est pas
-       meilleur, c'est un autre marche, et le lecteur est le seul a savoir lequel il veut. Le
-       site enonce chaque ecart et s'arrete la. --}}
+  {{-- And no verdict. A schematic that produces more and costs three times as much is not
+       better, it is a different trade, and the reader is the only one who knows which
+       trade they want. The site states every gap and stops there. --}}
   <p class="hint-line">{{ __('schema.comparer.pas-de-verdict') }}</p>
 @endif
 @endsection

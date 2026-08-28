@@ -32,17 +32,16 @@
   <button class="primary" type="submit">{{ __('blocs.index.filtrer') }}</button>
 </form>
 
-{{-- Le monde en tete, et en gros.
+{{-- The world at the top, and in large type.
 
-     On joue Serpulo ou Erekir, jamais les deux a la fois, et les deux arbres ne partagent
-     presque rien : melanges, les 254 blocs mettent un convoyeur a cote d'une gaine
-     renforcee. Ce choix etait une entree parmi d'autres dans une liste deroulante, reglee
-     sur « les deux » ; c'est la premiere question qu'un joueur se pose, donc elle passe
-     devant les autres.
+     You play Serpulo or Erekir, never both at once, and the two trees share almost
+     nothing: mixed together, the 254 blocks put a conveyor next to a reinforced conduit.
+     That choice used to be one entry among others in a dropdown, set to "both"; it is the
+     first question a player asks, so it comes ahead of the others.
 
-     Des liens et non des boutons : chaque monde a son adresse, elle se partage et
-     s'indexe, et la page marche sans JavaScript. Les comptes sont dits parce qu'un choix
-     qui retire cent blocs doit annoncer combien il retire. --}}
+     Links and not buttons: each world has its own address, it shares and indexes, and the
+     page works without JavaScript. The counts are said because a choice that removes a
+     hundred blocks has to announce how many it removes. --}}
 <nav class="bloc-mondes" aria-label="{{ __('blocs.index.planete') }}">
   @foreach([\App\Http\Controllers\BlockController::DEFAULT_PLANET, 'erekir'] as $monde)
     <a href="?planete={{ $monde }}{{ $chosen ? '&categorie='.$chosen : '' }}"
@@ -71,15 +70,16 @@
   <div class="bloc-grid">
     @foreach($blocks as $name => $block)
       <a class="bloc-tile" href="/blocs/{{ $name }}">
-        {{-- Une image par bloc plutot que la feuille entiere en fond.
+        {{-- One image per block rather than the whole sheet as a background.
 
-             Mesure sur cette page : elle telechargeait 1 393 ko, dont 1 311 pour `atlas.png`,
-             soit 94 % du poids pour montrer 254 vignettes. Chaque icone servie a l'unite pese
-             environ un kilooctet, et `loading="lazy"` fait que seules celles a l'ecran
-             partent : personne ne regarde 254 vignettes a la fois.
+             Measured on this page: it used to download 1,393 kB, of which 1,311 for
+             `atlas.png`, that is 94 % of the weight to show 254 thumbnails. Each icon
+             served on its own weighs about a kilobyte, and `loading="lazy"` means only the
+             ones on screen go out: nobody looks at 254 thumbnails at once.
 
-             `t=32` et pas 64 : ces sprites sont nativement en 32 pixels, et `pixelated`
-             agrandit sans rien perdre. Demander 64 doublerait le poids pour les memes pixels. --}}
+             `t=32` and not 64: these sprites are natively 32 pixels, and `pixelated`
+             enlarges them without losing anything. Asking for 64 would double the weight
+             for the same pixels. --}}
         <img class="icone bloc-tile-image" src="/icone/bloc/{{ $name }}.png?t=32"
              width="48" height="48" loading="lazy" decoding="async" alt="">
         <span class="bloc-name">{{ $block->title() }}</span>
