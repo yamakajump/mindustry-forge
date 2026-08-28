@@ -62,7 +62,12 @@ jobs:
           extensions: mbstring, sqlite3, pdo_sqlite, zip, gd
           coverage: none
 
-      - run: composer validate --no-check-publish --no-check-lock
+      # --no-check-lock was here, and it switched off the one check that catches the
+      # lock drifting from composer.json. It had drifted: composer.json's content hash
+      # no longer matched the one recorded in composer.lock, so `composer install`
+      # warned and installed from the lock anyway, which is a warning nobody reads in
+      # CI output. --no-check-publish stays, since this package is never published.
+      - run: composer validate --no-check-publish
 
       - name: Cache the Composer dependencies
         uses: actions/cache@v4
