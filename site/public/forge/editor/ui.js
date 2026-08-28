@@ -112,6 +112,7 @@ const TOOLS = [
   { key: "rect", label: "Rectangle", hint: "remplir une zone d'un glissé" },
   { key: "bucket", label: "Pot", hint: "remplir la zone contiguë de même sol" },
   { key: "eraser", label: "Gomme", hint: "effacer le sol peint" },
+  { key: "pipette", label: "Pipette", hint: "reprendre le sol, le minerai ou le mur cliqué" },
 ];
 
 /**
@@ -174,6 +175,30 @@ export function grounds(catalogue) {
       .map(([name]) => name)
       .sort(),
   }));
+}
+
+/**
+ * Which layer a pipette takes off a stacked tile: the wall, then the ore, then the floor.
+ *
+ * Not assumed: `EditorTool.pick` in `mindustry.editor`, v159.7, reads a tile in exactly
+ * this order, falling through only when the layer above is empty.
+ *
+ *     editor.drawBlock = tile.block() == Blocks.air || !tile.block().inEditor
+ *       ? (tile.overlay() == Blocks.air ? tile.floor() : tile.overlay())
+ *       : tile.block();
+ *
+ * https://github.com/Anuken/Mindustry/blob/v159.7/core/src/mindustry/editor/EditorTool.java
+ *
+ * Pure, so this is the one line of the pipette a test watches rather than a click: the
+ * event handling around it stays untested, the way `pipette()` in `mount.js` already does
+ * for the build side.
+ */
+export function pipetteLayerOf(layers) {
+  if (!layers) return null;
+  if (layers.wall) return { layer: "wall", block: layers.wall };
+  if (layers.overlay) return { layer: "overlay", block: layers.overlay };
+  if (layers.floor) return { layer: "floor", block: layers.floor };
+  return null;
 }
 
 /**
@@ -652,6 +677,25 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   });
 
   groundPanel.querySelector(".wipe").addEventListener("click", () => onBrush?.(brush, "wipe"));
+
+  /**
+   * The ground pipette: `tileLayers` is a board tile's raw `{ floor, overlay, wall }`,
+   * `mount.js`'s own shape for it. `pipetteLayerOf` decides which of the three the pipette
+   * takes; this only has to turn that storage layer back into the family a floor's own
+   * swatch is filed under, since a liquid floor and a solid one share the `floor` slot on
+   * the board (see `storageLayerOf`) but not a family in this rail.
+   *
+   * Returns whether anything was picked, so a caller on an undescribed tile can say so
+   * rather than silently doing nothing.
+   */
+  rail.pipetteGround = (tileLayers) => {
+    const picked = pipetteLayerOf(tileLayers);
+    if (!picked) return false;
+    const family = picked.layer === "floor" && catalogue.blocks[picked.block]?.floor_liquid
+      ? "floor-liquid" : picked.layer;
+    selectGround(picked.block, family);
+    return true;
+  };
 
   rail.brush = brush;
   paint();

@@ -12,8 +12,8 @@
  * demander de désapprendre les siens pour se servir d'un outil qui parle de son jeu.
  *
  * Trois écarts seulement, tous listés dans le panneau d'aide plutôt que cachés : la molette
- * zoome quand la main est vide, la vue se déplace au clic milieu glissé, et Q ne fait rien
- * faute de file de construction à vider.
+ * zoome quand la main est vide, la vue se déplace au clic milieu glissé, et Q, qui vide une
+ * file de construction absente ici, reprend plutôt le sol survolé sur l'onglet sol.
  */
 
 import { draw, itemIcon, spriteOf } from "../render.js";
@@ -654,6 +654,13 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
+    /* The pipette tool takes over the left click the same way the brush does below, and has
+       to be checked first: it needs neither `brush.block` nor the eraser to be armed, which
+       is exactly what the check below requires. */
+    if (painting && event.button === 0 && brush.tool === "pipette") {
+      pipetteGround();
+      return;
+    }
     /* Le pinceau passe avant tout le reste quand l'onglet sol est ouvert : là, un clic
        gauche peint, et rien d'autre. */
     if (painting && event.button === 0 && (brush.block || brush.tool === "eraser")) {
@@ -1170,7 +1177,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * faut retrouver le bloc dans une palette de 245, puis le retourner dans le bon sens.
    */
   function pipette() {
-    if (!cursor) return;
+    /* Gated on the ground tab: nothing is held there (`onTab` above already puts a held
+       block down on the way in), and this used to fire regardless, quietly re-arming a
+       phantom build block and, since Task 3, overwriting the ground status bar with it. */
+    if (painting || !cursor) return;
     const under = board.at(cursor.x, cursor.y);
     if (!under) return;
     held = under.block;
@@ -1182,6 +1192,21 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     rail.setHeld(held, rotation);
     say();
     paint();
+  }
+
+  /**
+   * The ground pipette: samples whatever is stacked on the cursor's tile and hands it to
+   * the rail, which decides which of the wall, the ore or the floor a pipette takes
+   * (`pipetteLayerOf` in `ui.js`) and updates the brush, the swatches and the status bar.
+   * `say()` picks the new floor up in its own hints through `brush`, already shared with
+   * `mount.js` by reference.
+   */
+  function pipetteGround() {
+    if (!cursor) return;
+    if (rail.pipetteGround(board.ground[`${cursor.x},${cursor.y}`])) {
+      say();
+      paint();
+    }
   }
 
   const onKey = (event) => {
@@ -1249,8 +1274,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       paint();
       return;
     }
-    /* Q ne fait rien, et c'est voulu : le jeu s'en sert pour vider la file de construction.
-       La pipette reste sur le clic milieu, comme `Binding.pick`. */
+    /* Q is idle in the game here, its own job (clearing a build queue) does not exist in
+       this editor, so it is free to take the ground pipette: the wall, the ore or the floor
+       under the cursor, wall first, in the order `ui.js`'s `pipetteLayerOf` reads a tile.
+       Only on the ground tab, the one place a ground brush has anything to fill. */
+    if (key === "q" && painting) { pipetteGround(); return; }
   };
   /**
    * Ce qu'il faut oublier quand le plateau bouge sous nos pieds.
