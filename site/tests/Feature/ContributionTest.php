@@ -230,3 +230,22 @@ it('keeps a declared throughput out of the ceiling ranking', function () {
         ->assertOk()
         ->assertDontSee('Declaree seulement');
 });
+
+it('says the list is on declared throughputs when it is', function () {
+    for ($i = 0; $i < 24; $i++) {
+        imported()->items()->create([
+            'item' => 'graphite', 'sens' => SchematicItem::PRODUIT,
+            'kind' => SchematicItem::DECLARE, 'rate' => 90.0, 'rate_per_block' => 3.0,
+        ]);
+    }
+
+    // La phrase qui coiffe la liste repond a la meme question que le classement. Laisser
+    // « ce sont des plafonds » au-dessus d'un tri sur des debits declares serait un texte
+    // juste au-dessus de chiffres qui disent autre chose.
+    $this->get('/schemas?produit=graphite&tri=declare')->assertOk()
+        ->assertSee('débits déclarés', false)
+        ->assertDontSee('Ce sont des plafonds', false);
+
+    $this->get('/schemas?produit=graphite&tri=output')->assertOk()
+        ->assertSee('Ce sont des plafonds', false);
+});

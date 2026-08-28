@@ -65,8 +65,8 @@ class BrowseController extends Controller
         'garde' => 'Dans l ordre ou je les ai gardés',
     ];
 
-    /** The two that compare schematics on their output, so the two that need an item. */
-    private const NEEDS_AN_ITEM = ['best', 'dense', 'output'];
+    /** The four that compare schematics on their output, so the four that need an item. */
+    private const NEEDS_AN_ITEM = ['best', 'dense', 'output', 'declare'];
 
     /**
      * How many fit on one page, and the size of the crowd a leaderboard needs.
@@ -83,18 +83,6 @@ class BrowseController extends Controller
 
     /** The widest a schematic can be, matching the column the analysis writes into. */
     private const MAX_SIDE = 4096;
-    /** The three that compare schematics on their output, so the three that need an item. */
-    private const NEEDS_AN_ITEM = ['best', 'output', 'declare'];
-
-    /**
-     * How many declared throughputs there have to be before the sort is offered at all.
-     *
-     * One page. Below it the ranking cannot fill its own first screen, and a menu entry
-     * promising "the biggest producers" over eleven rows is the defect this repository has
-     * written down seven times. The likes work applies the same threshold for the same
-     * reason.
-     */
-    private const DECLARED_BEFORE_OFFERED = 24;
 
     /** What an item name is allowed to look like, so a filter cannot be a paragraph. */
     private const ITEM = '/^[a-z][a-z-]{0,39}$/';
@@ -106,13 +94,7 @@ class BrowseController extends Controller
             $makes = '';
         }
 
-        $offered = self::ORDERS;
-        if (SchematicItem::where('kind', SchematicItem::DECLARE)->distinct()
-            ->count('schematic_id') < self::DECLARED_BEFORE_OFFERED) {
-            unset($offered['declare']);
-        }
-
-        $order = array_key_exists($request->query('tri'), $offered)
+        $order = array_key_exists($request->query('tri'), self::ORDERS)
             ? $request->query('tri') : 'best';
 
         // Nothing to rank output against, so do not pretend to. Falling back to date is
@@ -235,9 +217,19 @@ class BrowseController extends Controller
         $leaderboard = Schematic::query()->listed()->where('likes', '>', 0)->count()
             >= self::PER_PAGE;
 
+        /* Meme regle pour le debit declare, et elle vient de la meme phrase : un tri qui
+           ne peut pas remplir son premier ecran n'est pas un tri. Compte sur les
+           schematiques distinctes et non sur les lignes, parce qu'un plan qui declare
+           quatre objets en pose quatre et remplirait le seuil a lui seul. */
+        $declared = SchematicItem::where('kind', SchematicItem::DECLARE)
+            ->distinct()->count('schematic_id') >= self::PER_PAGE;
+
         $offered = self::ORDERS;
         if (! $leaderboard) {
             unset($offered['aimes']);
+        }
+        if (! $declared) {
+            unset($offered['declare']);
         }
         if (! $favorites) {
             unset($offered['garde']);
@@ -358,13 +350,15 @@ class BrowseController extends Controller
                  * chaque tuile le repete a cote de son chiffre.
                  */
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
-                ->where('schematic_items.kind', Vitrine::NATURE)
-                // Le tri decide la nature, et une seule a la fois. `declare` lit ce qu'un
-                // joueur a marque, les autres lisent le plafond ; aucune requete ne melange
-                // les deux, ce qui est la seule facon de tenir la promesse ci-dessus.
+                /* Le tri decide la nature, et une seule a la fois : `declare` lit ce qu'un
+                   joueur a marque, tous les autres lisent le plafond de `Vitrine::NATURE`.
+                   Une seule clause, parce que deux se conjuguent : `kind = plafond` et
+                   `kind = declare` posees cote a cote ne ramenent rien, et une liste vide
+                   sous un tri actif se lit comme un catalogue sans reponse plutot que comme
+                   une requete qui se contredit. */
                 ->where('schematic_items.kind', $order === 'declare'
                     ? SchematicItem::DECLARE
-                    : SchematicItem::PLAFOND)
+                    : Vitrine::NATURE)
                 ->select('schematics.*');
 
             /* "At least a hundred a minute", which only means anything once a thing is
