@@ -19,7 +19,9 @@ This plan implements section 2 of `docs/plans/2026-08-28-mode-edition-refonte-de
 - **`site/public/forge/blocks.json` must come out of this plan byte-identical.** It is hashed by `EngineVersion` and fifteen thousand stored analyses depend on it. Task 3 verifies this with a checksum, and a mismatch stops the task.
 - Work happens in the worktree `C:/Users/coren/Projets/_worktrees/forge-editeur` on `feat/mode-edition`. Four other sessions are live on this repository.
 - Do not open `site/public/index.html`: another session holds it until it merges. Nothing in this plan needs it.
-- `git commit -- <paths>` rather than `git add` then `git commit`, and never `git add -A`.
+- Stage by explicit path: `git add <the files this task names>` then `git commit -m`.
+  **Never `git add -A`.** This worktree is yours alone, but the habit is what keeps a
+  commit honest about what it contains.
 - Run `npm test` before every commit. It must pass, not merely "not obviously break".
 
 ## The jar this plan reads
@@ -203,8 +205,8 @@ that is Task 2, and seeing them now is the point of doing this task on its own.
 - [ ] **Step 7: Commit**
 
 ```bash
-git commit -- site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/render.js \
-  -m "fix(render): make two ground tiles meet on the same pixel
+git add site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/render.js \
+  && git commit -m "fix(render): make two ground tiles meet on the same pixel
 
 A tile was placed at x * scale and drawn scale wide, so at any zoom that
 was not a whole number of pixels its right edge and its neighbour's left
@@ -413,9 +415,8 @@ tile for tile, and Step 3's comment says why.
 - [ ] **Step 9: Commit**
 
 ```bash
-git commit -- tools/build_sprites.py site/public/forge/tiling.js tests/js/tiling.test.js \
-  site/public/forge/render.js site/public/forge/atlas.png site/public/forge/atlas.json \
-  -m "feat(render): give a floor the variants the game ships
+git add tools/build_sprites.py site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/render.js site/public/forge/atlas.png site/public/forge/atlas.json \
+  && git commit -m "feat(render): give a floor the variants the game ships
 
 The atlas kept grass1 and dropped grass2 and grass3, so every tile of a
 painted patch carried the same 32 pixel image and its diagonal pattern
@@ -503,8 +504,8 @@ dump.
 - [ ] **Step 5: Commit**
 
 ```bash
-git commit -- bench/src/mindustryforge/DumpBlocks.java bench/data/blocks.json \
-  -m "feat(bench): dump what decides whether two floors blend
+git add bench/src/mindustryforge/DumpBlocks.java bench/data/blocks.json \
+  && git commit -m "feat(bench): dump what decides whether two floors blend
 
 Floor.doEdge compares blendId across a boundary and drawEdges skips a
 neighbour whose drawEdgeOut is false. Neither is in the dump and neither
@@ -679,9 +680,8 @@ Expected: PASS. Record the new sprite count and file size beside the ones from T
 - [ ] **Step 7: Commit**
 
 ```bash
-git commit -- tools/build_sols.py tools/build_sprites.py site/public/forge/sols.json \
-  tests/js/sols.test.js site/public/forge/atlas.png site/public/forge/atlas.json \
-  -m "feat(sol): put blending data beside the catalogue, not in it
+git add tools/build_sols.py tools/build_sprites.py site/public/forge/sols.json tests/js/sols.test.js site/public/forge/atlas.png site/public/forge/atlas.json \
+  && git commit -m "feat(sol): put blending data beside the catalogue, not in it
 
 How two patches of ground meet decides how a page looks and no figure the
 analyser reports, so it goes in sols.json. blocks.json is hashed by
@@ -932,8 +932,8 @@ straight line where the game has none, but it does not get written up as "verifi
 - [ ] **Step 7: Commit**
 
 ```bash
-git commit -- site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/render.js \
-  -m "feat(render): blend the boundary between two floors
+git add site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/render.js \
+  && git commit -m "feat(render): blend the boundary between two floors
 
 Two patches met on a straight line, which the game never draws. This
 follows Floor.drawEdges of v159.7, decompiled from server-release.jar:
@@ -976,8 +976,8 @@ sheets are what gets reconsidered, and that is a decision to take with the numbe
 - [ ] **Step 3: Commit**
 
 ```bash
-git commit -- docs/plans/2026-08-28-mode-edition-refonte-design.md \
-  -m "docs(sol): replace the atlas estimate with what it weighed
+git add docs/plans/2026-08-28-mode-edition-refonte-design.md \
+  && git commit -m "docs(sol): replace the atlas estimate with what it weighed
 
 The design said the byte cost would be measured after the build rather
 than predicted from the pixel area. This is that measurement, written in
