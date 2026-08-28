@@ -47,3 +47,6 @@ site/bootstrap/cache/*
 # repository keeps paying for. They come out when the work they describe lands.
 # This line stops the next one from arriving.
 docs/plans/
+
+# The log tooled sessions keep as they work: drafts, not code.
+.superpowers/
