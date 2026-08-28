@@ -12,9 +12,44 @@
  *
  * The limit of 64 is `Vars.maxSchematicSize` in v159.7. It applies to the bounding box, the
  * walls of large blocks included, and not to the number of blocks.
+ *
+ * That limit used to sit on the whole board, because the whole board was the schematic.
+ * Now that a board can hold several named frames, the 64 cap moves onto each frame: a
+ * frame is a rectangle of at most 64 by 64, drawn by hand, and it is the frame's bounding
+ * box that the game refuses past 64, not the board's. The board itself grows to 256, fixed
+ * and not growable, so several 64-square work sites fit side by side with room between
+ * them. As long as no frame exists, the board stays the schematic exactly as before, and
+ * the 64 cap keeps applying to it directly: that is the case that must never see the word
+ * "frame".
  */
 
 export const MAX_SIZE = 64;
+export const BOARD_SIZE = 256;
+
+/**
+ * Is this rectangle a frame the game would accept?
+ *
+ * A hard refusal, not a warning: `Vars.maxSchematicSize` does not negotiate. Anything drawn
+ * past 64 in either direction is not a frame, it is two frames waiting to be told so.
+ */
+export function legalFrame(rect) {
+  return Number.isInteger(rect.width) && Number.isInteger(rect.height)
+    && rect.width >= 1 && rect.width <= MAX_SIZE
+    && rect.height >= 1 && rect.height <= MAX_SIZE;
+}
+
+/**
+ * Does `tile`'s whole footprint sit inside `frame`?
+ *
+ * Whole, not "any of it": a block that pokes one tile past the edge does not join the
+ * frame it mostly sits in, it stays an orphan. A frame is a claim about what is inside it,
+ * and a claim proved by three quarters of a block is not proved.
+ */
+export function frameHolds(frame, tile, sizeOf) {
+  return footprint(tile, sizeOf).every(([x, y]) =>
+    x >= frame.left && x < frame.left + frame.width
+    && y >= frame.bottom && y < frame.bottom + frame.height);
+}
 
 /**
  * Every tile a block covers.
@@ -53,10 +88,14 @@ export function boxOf(tiles, sizeOf) {
 
 const key = (x, y) => `${x},${y}`;
 
-export function createBoard({ tiles = [], ground = {}, sizeOf }) {
+export function createBoard({ tiles = [], ground = {}, frames = [], sizeOf }) {
   const board = {
     tiles: tiles.map((tile) => ({ rotation: 0, ...tile })),
     ground: { ...ground },
+    /* Absent on a draft written before frames existed, and that absence is not a version
+       to migrate: it is exactly the "no frame at all" case, which already means something
+       on its own. Defaulting it to an empty list is the whole of the compatibility work. */
+    frames: frames.map((frame) => ({ ...frame })),
     /* What has been done, and what has been undone and could be redone. */
     done: [],
     undone: [],
@@ -70,17 +109,44 @@ export function createBoard({ tiles = [], ground = {}, sizeOf }) {
 
   board.box = () => boxOf(board.tiles, sizeOf);
 
+  /** The frame covering a point, if any. Bounds work like `box`: the top and right edges
+      are excluded, the same way a tile at x=64 is outside a box 64 wide starting at 0. */
+  board.frameAt = (x, y) => board.frames.find((frame) =>
+    x >= frame.left && x < frame.left + frame.width
+    && y >= frame.bottom && y < frame.bottom + frame.height) || null;
+
+  /** The blocks a frame can prove are its own: the ones it holds whole. */
+  board.tilesIn = (frame) => board.tiles.filter((tile) => frameHolds(frame, tile, sizeOf));
+
+  /** What a frame currently occupies, measured on its blocks rather than on its drawn
+      rectangle: a frame drawn at 20 by 20 with one conveyor in the corner has a used size
+      of 1 by 1, and that is the number the gauge and the export both care about. */
+  board.frameBox = (frame) => boxOf(board.tilesIn(frame), sizeOf);
+
+  /** The blocks that belong to no frame, and so will not export. Empty as long as no frame
+      exists at all: the board is then the one implicit frame, and nothing sits outside it. */
+  board.orphans = () => board.frames.length
+    ? board.tiles.filter((tile) => !board.frames.some((frame) => frameHolds(frame, tile, sizeOf)))
+    : [];
+
   /**
-   * Does placing this keep the box within 64 by 64?
+   * Does placing this keep the board within its cap?
    *
    * Takes one block or a whole batch, and the batch is not the sum of the blocks: a drag of
    * a hundred conveyors on an empty board sees each of its blocks fit on its own, since each
    * measured alone is one tile wide. It is together that they overflow.
+   *
+   * The cap itself moves with whether a frame exists. No frame at all means the board is
+   * the schematic, exactly as before this feature, capped at 64. Once a frame exists,
+   * placement is free of the 64 cap (a frame carries that cap on its own, checked when it
+   * is drawn, not when a block lands near it) and the board's own bound becomes 256, wide
+   * enough to hold several 64-square frames with room between them.
    */
   board.fits = (plans) => {
     const batch = Array.isArray(plans) ? plans : [plans];
     const box = boxOf([...board.tiles, ...batch], sizeOf);
-    return box.width <= MAX_SIZE && box.height <= MAX_SIZE;
+    const cap = board.frames.length ? BOARD_SIZE : MAX_SIZE;
+    return box.width <= cap && box.height <= cap;
   };
 
   /**
@@ -92,8 +158,15 @@ export function createBoard({ tiles = [], ground = {}, sizeOf }) {
    *
    * Returns `false` when the gesture changed nothing, in which case nothing is pushed: a
    * click that did nothing must not consume a ctrl+Z.
+   *
+   * `addFrames` and `removeFrames` are frames rather than tiles, but they ride the same
+   * gesture and the same history: drawing, renaming, moving and deleting a frame are
+   * gestures too, and a ctrl+Z that skips them is a ctrl+Z somebody stops trusting.
+   * Renaming, moving and resizing all go through remove-then-add, exactly like replacing a
+   * tile: there is no separate "edit a frame in place", so a frame's identity survives a
+   * mutation only through its `id`, never through object identity.
    */
-  board.apply = ({ place = [], remove = [], paint = null }) => {
+  board.apply = ({ place = [], remove = [], paint = null, addFrames = [], removeFrames = [] }) => {
     const plans = place.map((plan) => ({ rotation: 0, ...plan }));
 
     /* What a placement displaces: everything its footprint touches, and not only the block
@@ -110,12 +183,15 @@ export function createBoard({ tiles = [], ground = {}, sizeOf }) {
       for (const cell of Object.keys(paint)) before[cell] = board.ground[cell];
     }
 
-    if (!plans.length && !removed.length && !paint) return false;
+    if (!plans.length && !removed.length && !paint && !addFrames.length && !removeFrames.length) {
+      return false;
+    }
 
     board.tiles = board.tiles.filter((tile) => !removed.includes(tile)).concat(plans);
     if (paint) applyPaint(board.ground, paint);
+    board.frames = board.frames.filter((frame) => !removeFrames.includes(frame)).concat(addFrames);
 
-    board.done.push({ removed, added: plans, before, paint });
+    board.done.push({ removed, added: plans, before, paint, removedFrames: removeFrames, addedFrames: addFrames });
     board.undone.length = 0;
     return true;
   };
@@ -127,6 +203,9 @@ export function createBoard({ tiles = [], ground = {}, sizeOf }) {
       .filter((tile) => !entry.added.includes(tile))
       .concat(entry.removed);
     restore(board.ground, entry.before);
+    board.frames = board.frames
+      .filter((frame) => !entry.addedFrames.includes(frame))
+      .concat(entry.removedFrames);
     board.undone.push(entry);
     return true;
   };
@@ -138,6 +217,9 @@ export function createBoard({ tiles = [], ground = {}, sizeOf }) {
       .filter((tile) => !entry.removed.includes(tile))
       .concat(entry.added);
     if (entry.paint) applyPaint(board.ground, entry.paint);
+    board.frames = board.frames
+      .filter((frame) => !entry.removedFrames.includes(frame))
+      .concat(entry.addedFrames);
     board.done.push(entry);
     return true;
   };
