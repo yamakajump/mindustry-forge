@@ -34,20 +34,34 @@ Decompiled. In the game, drawing one floor tile is:
 3. `drawOverlay(tile)`, the tile's overlay (ore, a spawn marker, and so on) drawn over the
    floor and its boundary.
 4. A second `drawMain(tile)` at `1 - overlayAlpha`, **only when this floor is a liquid
-   carrying an overlay**. `overlayAlpha` defaults to 0.65, so the liquid is redrawn over its
-   own overlay at 0.35 alpha, which is what makes ore under water read as lying beneath the
-   surface rather than floating on it.
+   carrying an overlay**, which is what makes ore under water read as lying beneath the
+   surface rather than floating on it. In bytecode the guard is
+   `tile.overlay() != Blocks.air && tile.floor() == this && isLiquid`, then
+   `Draw.alpha(1f - overlayAlpha)`, `drawMain(tile)`, `Draw.color()`.
 
-`render.js` implements the first three, in that order, in the ground loop (around line
-517). Ore drawn before the boundary put a neighbour's material on top of an ore patch
-instead of underneath it, which is the one place a player is looking, so the boundary is
-drawn between the floor and the overlay rather than after both.
+`render.js` implements all four, in that order, in the ground loop. Ore drawn before the
+boundary put a neighbour's material on top of an ore patch instead of underneath it, which
+is the one place a player is looking, so the boundary is drawn between the floor and the
+overlay rather than after both.
 
-**The fourth statement is deliberately not implemented.** The gap is visible: on this site
-a liquid's own overlay sits crisp on top of it, ore looking like it floats on water instead
-of lying under it. Eleven floors in the catalogue are liquids. Closing this is its own
-piece of work, named here rather than silently skipped, because it is a change nobody can
-accept without looking at the result first.
+The fourth is `veilAt` in `tiling.js`, deciding the alpha, and three lines in `render.js`
+setting `globalAlpha` around a second `paintLayer` of the same floor. The middle condition
+of the guard costs nothing here: the renderer reaches that point only while drawing a
+tile's own floor.
+
+**`overlayAlpha` is per floor and its default is not the whole answer.** `Floor`'s
+constructor sets 0.65, and exactly one class in `server-release.jar` writes the field
+afterwards: `mindustry.content.Blocks$10`, the anonymous `Floor` the content class builds as
+`new Blocks$10("pooled-cryofluid")`, which sets 0.35. So ten of the eleven liquid floors
+come back over their overlay at 0.35 alpha and pooled cryofluid at 0.65. A single 0.35
+written into the renderer, which is the obvious way to write this, draws one floor in eleven
+wrong, and wrong in the way nobody reports: plausibly.
+
+`sols.json` carries the subtraction already done, per floor, as `veil`, `null` for the
+ninety-six floors that are not liquids. `bench/data/blocks.json` gates it: `isLiquid` is
+already dumped there as `floor_liquid`. It does not carry `overlayAlpha`, so that value is
+written into `build_sols.py` with its citation until a re-dump brings it; the lookup there
+prefers the dump the day it does.
 
 A second departure from `drawBase`, worth stating because it looks like a second edge pass
 and is not one: `drawOverlay` calls `drawBase` again, on the tile's overlay block. Every
@@ -137,12 +151,13 @@ assertions against numbers that no longer describe the sheet.
 
 ## Reading this against the code
 
-- `site/public/forge/tiling.js`: `D8`, `contributorAt`, `blendersAt`, `edgeCell`, each with
-  the game-source citation for the rule it implements.
-- `site/public/forge/render.js`: the ground loop, around the comment that names the three
-  implemented statements of `drawBase` and the one that is not.
-- `tests/js/tiling.test.js`: the neighbour-selection tests against `blendersAt`, and the
-  pixel-measured cell tests against `edgeCell`.
+- `site/public/forge/tiling.js`: `D8`, `contributorAt`, `blendersAt`, `edgeCell`, `veilAt`,
+  each with the game-source citation for the rule it implements.
+- `site/public/forge/render.js`: the ground loop, around the comment that names the four
+  statements of `drawBase` and the order they are drawn in.
+- `tests/js/tiling.test.js`: the neighbour-selection tests against `blendersAt`, the
+  pixel-measured cell tests against `edgeCell`, and the alpha tests against `veilAt`.
+- `tests/js/sols.test.js`: which eleven floors are veiled, and at what alpha each.
 - `bench/src/mindustryforge/DumpBlocks.java`, `describeFloor`: where `blend_id`,
   `draw_edge_in`, `draw_edge_out`, `blend_group` and `cache_layer` are read off the live
   game and dumped. These stop at `bench/data/blocks.json`; they decide how the ground looks

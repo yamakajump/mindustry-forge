@@ -348,3 +348,71 @@ test("the centre cell is the whole texture, and no direction ever picks it", () 
   }
   assert.equal(seen.size, 8, "two directions were sent to the same cell");
 });
+
+import { veilAt } from "../../site/public/forge/tiling.js";
+
+/* Floors as `sols.json` records them for the fourth statement of `drawBase`. `veil` is the
+   subtraction already done, `1 - overlayAlpha`, and `null` for the ninety-six floors that
+   are not liquids and are never drawn a second time.
+
+   The two values below are the only two v159.7 has, and they are not interchangeable: they
+   belong to different floors, and swapping them makes one of the eleven wrong. */
+const veiling = {
+  "deep-water": { id: 21, blend: 5, in: true, out: true, layer: "water", variants: 1,
+                  sheet: "deep-water", veil: 0.35 },
+  /* The one floor in the game that overrides `overlayAlpha`, to 0.35, so it is the one that
+     comes back over its overlay at 0.65 instead. `Floor`'s constructor sets the field to
+     0.65, and `mindustry.content.Blocks$10`, the anonymous floor built as
+     `new Blocks$10("pooled-cryofluid")`, is the only class in the jar that writes it after. */
+  "pooled-cryofluid": { id: 29, blend: 29, in: true, out: true, layer: "cryofluid",
+                        variants: 0, sheet: "pooled-cryofluid", veil: 0.65 },
+  "sand-floor": { id: 39, blend: 39, in: true, out: true, layer: "normal", variants: 3,
+                  sheet: "sand-floor", veil: null },
+  "ore-copper": { id: 90, blend: 45, in: true, out: true, layer: "normal", variants: 1,
+                  sheet: null, veil: null },
+};
+
+test("a liquid carrying an overlay is drawn back over it", () => {
+  /* The whole of the statement: `drawMain` a second time at `1 - overlayAlpha`, which is what
+     makes ore under water read as lying beneath the surface instead of floating on it. */
+  const board = { "0,0": { floor: "deep-water", overlay: "ore-copper" } };
+  assert.equal(veilAt(board, 0, 0, veiling), 0.35);
+});
+
+test("a liquid with nothing on it is drawn once", () => {
+  /* `tile.overlay() != Blocks.air` is the game's first condition and it is not decoration:
+     without it every water tile is painted twice, the second time at 0.35 over itself, and a
+     plain sheet of water comes out visibly darker than the game's with nothing on screen to
+     say why. */
+  const board = { "0,0": { floor: "deep-water" } };
+  assert.equal(veilAt(board, 0, 0, veiling), 0);
+});
+
+test("a floor that is not a liquid keeps its ore crisp", () => {
+  /* `isLiquid` is the third condition. Ore on sand is ore on sand, and dimming it would be
+     this change damaging the ninety-six floors it was never meant to touch. */
+  const board = { "0,0": { floor: "sand-floor", overlay: "ore-copper" } };
+  assert.equal(veilAt(board, 0, 0, veiling), 0);
+});
+
+test("the alpha is the floor's own, not one constant shared by the liquids", () => {
+  /* Cryofluid is the reason `veil` is a field per floor rather than 0.35 written into the
+     renderer. Reading the constructor's default off one liquid and applying it to all eleven
+     draws cryofluid at half the cover the game gives it, which is a wrong picture that looks
+     entirely plausible, and those are the ones nobody reports. */
+  const water = { "0,0": { floor: "deep-water", overlay: "ore-copper" } };
+  const cryo = { "0,0": { floor: "pooled-cryofluid", overlay: "ore-copper" } };
+  assert.equal(veilAt(cryo, 0, 0, veiling), 0.65);
+  assert.notEqual(veilAt(cryo, 0, 0, veiling), veilAt(water, 0, 0, veiling));
+});
+
+test("an unpainted tile and an unknown floor veil nothing", () => {
+  /* The ground loop asks about every tile in the view, most of which carry no ground at all,
+     and `sols.json` is allowed to be missing entirely: a failed fetch of it costs the soft
+     edges between floors, not the ground itself. None of these may throw. */
+  assert.equal(veilAt({}, 0, 0, veiling), 0);
+  assert.equal(veilAt({ "0,0": { overlay: "ore-copper" } }, 0, 0, veiling), 0);
+  assert.equal(
+    veilAt({ "0,0": { floor: "unheard-of", overlay: "ore-copper" } }, 0, 0, veiling), 0);
+  assert.equal(veilAt({ "0,0": { floor: "deep-water", overlay: "ore-copper" } }, 0, 0, {}), 0);
+});

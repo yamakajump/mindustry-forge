@@ -155,3 +155,36 @@ test("the block ids are distinct, because the draw order is sorted on them", () 
     ["stone", "crater-stone", "char", "stone-vent"],
     "the ids that break the blend group's tie are not v159.7's");
 });
+
+test("the eleven liquids carry the alpha the game draws them back at", () => {
+  /* `Floor.drawBase`'s fourth statement redraws a liquid over its own overlay at
+     `1 - overlayAlpha`. Both halves of that are pinned here, because both can be wrong on
+     their own and neither shows up as an error.
+
+     The set: `isLiquid` reaches the dump as `floor_liquid` and eleven floors set it. A gate
+     read off something adjacent, `cache_layer` or `deep`, would name a different set: thirteen
+     floors have a layer of their own, `space` and `mud` among them, and only six of the eleven
+     are deep.
+
+     The value: `Floor`'s constructor sets `overlayAlpha` to 0.65 and exactly one class in
+     `server-release.jar` writes the field afterwards, `mindustry.content.Blocks$10`, which
+     the content class builds as `new Blocks$10("pooled-cryofluid")` and which sets 0.35. So
+     ten liquids come back at 0.35 and cryofluid at 0.65, and a single constant of 0.35 for
+     all eleven, which is the obvious way to write this, draws cryofluid wrong. */
+  const veiled = Object.fromEntries(Object.entries(sols.floors)
+    .filter(([, floor]) => floor.veil).map(([name, floor]) => [name, floor.veil]));
+  assert.deepEqual(veiled, {
+    "deep-water": 0.35, "shallow-water": 0.35, "tainted-water": 0.35,
+    "deep-tainted-water": 0.35, "darksand-tainted-water": 0.35, "sand-water": 0.35,
+    "darksand-water": 0.35, tar: 0.35, "molten-slag": 0.35, "arkycite-floor": 0.35,
+    "pooled-cryofluid": 0.65,
+  });
+
+  /* Ninety-six floors are drawn once, and a floor drawn twice when the game draws it once
+     paints itself over its own ore for no reason a player can name. `null` rather than a
+     missing key, so a floor that fell out of the build reads as a fault rather than as land. */
+  for (const [name, floor] of Object.entries(sols.floors)) {
+    if (veiled[name]) continue;
+    assert.equal(floor.veil, null, `${name} is not a liquid and must not be veiled`);
+  }
+});

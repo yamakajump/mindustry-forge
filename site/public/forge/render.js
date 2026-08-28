@@ -14,7 +14,7 @@
 import {
   beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
 } from "./live.js";
-import { variantOf, blendersAt, D8, edgeCell } from "./tiling.js";
+import { variantOf, blendersAt, D8, edgeCell, veilAt } from "./tiling.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -521,12 +521,7 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
            neighbour's material on top of an ore patch instead of underneath it, which is
            the one place a player is looking.
 
-           The fourth is NOT implemented, and the gap is visible. `overlayAlpha` is 0.65 by
-           default, so the game drapes a liquid floor back over its own overlay at 0.35
-           alpha, which is what makes ore on water read as lying under the water. Here the
-           same tile is drawn crisp, the ore sitting on top of the liquid instead of
-           beneath it. Eleven floors in the catalogue are liquids. Closing this is its own
-           piece of work, because it is a change nobody can accept without looking at it. */
+           The fourth follows the overlay, below, because that is where the game puts it. */
         paintLayer(layers.floor, x, y, px, py);
 
         /* The boundary, drawn over this tile rather than over its neighbour: the game
@@ -554,6 +549,22 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
         }
 
         paintLayer(layers.overlay, x, y, px, py);
+
+        /* The fourth statement: a liquid drawn back over its own overlay, at the alpha
+           `veilAt` reads off the floor. Ore on water is not ore on water, it is ore seen
+           through water, and a crisp ore sprite on a liquid is the one thing a player who
+           knows the game reads as a rendering fault rather than as a map.
+
+           `globalAlpha` set and put back, rather than `save` and `restore`, because that is
+           what `Draw.alpha` then `Draw.color` amounts to and because this sits inside the
+           loop over every visible tile. Nothing else in the ground pass touches it, so 1 is
+           the value being returned to. */
+        const veil = veilAt(ground, x, y, soils?.floors || {});
+        if (veil) {
+          context.globalAlpha = veil;
+          paintLayer(layers.floor, x, y, px, py);
+          context.globalAlpha = 1;
+        }
       }
     }
   }
