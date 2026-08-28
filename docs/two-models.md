@@ -60,13 +60,13 @@ duct-to-duct hand-off scenario in `bench/data/oracle` (`duct-one`, `duct-two`,
 duct scenarios still fail (`duct-unloader-drains`, `duct-unloader-sorted`), but on
 unloader behaviour, not on hand-off between ducts.
 
-### Open: a junction does not cross — `junction-cross`, and the sorters with it
+### Open: a junction does not cross, and the sorters with it
 
 Two lines crossing at a junction, one carrying copper east and one carrying lead north, one vault at each end. The game puts 193 lead in one and 193 copper in the other. The solve puts **both** items in the same vault and nothing in the other.
 
 The totals are right, which is why this class is counted separately: the flow is conserved, its destination is invented. `sorter-diverts`, `sorter-both-sides` and `router-three-ways` fail the same way.
 
-### Open: Erekir's drills and crushers, mostly producing nothing — 6 scenarios
+### Open: Erekir's drills and crushers deliver almost nothing
 
 `bore-boosted`, `bore-one-line`, `bore-two-lines`, `crusher-carbon` and `crusher-dune`
 deliver zero where the game delivers between 0.37 and 2.17 a second.

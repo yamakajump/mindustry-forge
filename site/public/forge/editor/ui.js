@@ -341,7 +341,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   const blockSwatch = (name, block) => {
     const src = iconOf(name);
     return `<button type="button" data-block="${escape(name)}"
-      title="${escape(name)} — ${escape(costOf(block))}"
+      title="${escape(name)} · ${escape(costOf(block))}"
       aria-pressed="false">${
       src ? `<img src="${src}" alt="${escape(name)}">` : escape(name.slice(0, 3))}</button>`;
   };
@@ -384,7 +384,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     <div class="editor-ground" hidden>
       <div class="tools">
         ${TOOLS.map((tool, i) => `<button type="button" class="tool" data-tool="${tool.key}"
-          title="${escape(tool.label)} — ${escape(tool.hint)}" aria-label="${escape(tool.label)}"
+          title="${escape(tool.label)} · ${escape(tool.hint)}" aria-label="${escape(tool.label)}"
           aria-pressed="${i === 0}"><svg class="i" aria-hidden="true" viewBox="0 0 24 24">${
           tool.icon}</svg></button>`).join("")}
       </div>
