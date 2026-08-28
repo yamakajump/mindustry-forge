@@ -2,7 +2,7 @@
 #
 # Set up an isolated lane of work, for one session.
 #
-#     tools/nouvelle-voie.sh nav feat/nav
+#     tools/new-lane.sh nav feat/nav
 #
 # Several sessions work on this repository at the same time. As long as they share one
 # directory, they also share one git index and one HEAD: a `git checkout` in one changes
@@ -26,8 +26,8 @@ BRANCHE="${2:-}"
 DEPUIS="${3:-origin/main}"
 
 if [ -z "$NOM" ] || [ -z "$BRANCHE" ]; then
-    echo "usage: tools/nouvelle-voie.sh <short-name> <branch> [starting-branch]" >&2
-    echo "example: tools/nouvelle-voie.sh nav feat/nav" >&2
+    echo "usage: tools/new-lane.sh <short-name> <branch> [starting-branch]" >&2
+    echo "example: tools/new-lane.sh nav feat/nav" >&2
     exit 1
 fi
 
