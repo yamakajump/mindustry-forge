@@ -233,7 +233,13 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
      dire. -->
 <!-- The skeleton is what a visitor to /editer sees while the guard above is keeping
      <main> off screen: mountEditor() overwrites this element's innerHTML the moment it
-     has what it needs (see mount.js), so nothing here has to be cleaned up by hand. -->
+     has what it needs (see mount.js), so nothing here has to be cleaned up by hand.
+
+     No caption on it. The header above stays on screen and clickable for the whole
+     wait (see forge.css), so a visitor already has the brand and the nav telling them
+     what site this is; a shimmering box sitting where the board will be is the same
+     "something is coming" signal the report skeleton already gives on this same page,
+     and a French sentence next to it would only repeat what the shimmer already says. -->
 <div id="editor"><div class="skeleton"></div></div>
 
 <script type="module">

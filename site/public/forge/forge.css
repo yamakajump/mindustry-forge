@@ -191,15 +191,21 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 
 /* Set by the inline guard in index.html's <head> while this document is serving
    /editer, so <main> never paints on the way to the editor: enterEditor() still has to
-   fetch the catalogue and the sprite atlas before it has anything to mount. #editor
-   is excluded once mountEditor() gives it its own "editor" class (see mount.js):
-   without that guard this rule would outrank .editor by specificity and break its
-   fixed full-viewport layout for as long as the editor stays open. */
+   fetch the catalogue and the sprite atlas before it has anything to mount. #editor is
+   excluded once mountEditor() gives it its own "editor" class (see mount.js): the fixed
+   full-viewport overlay that class installs is untouched here, on purpose.
+
+   Before that, #editor stays in the document's normal flow, under the header, rather
+   than covering it: the first version of this fix gave #editor that same fixed overlay
+   pre-mount, which put a grey rectangle over the brand and the nav for the whole wait --
+   nine and a half seconds on a slow connection, measured -- with nothing on screen to
+   say what site this even is. Filled by flex rather than by a fixed height taken from
+   the header: the header wraps onto two lines on a narrow screen, and a number copied
+   from one measurement would drift the day that height changes. */
 .route-editeur main { display: none; }
+.route-editeur body { display: flex; flex-direction: column; min-height: 100vh; }
 .route-editeur #editor:not(.editor) {
-  position: fixed; inset: 0; z-index: 60;
-  display: flex; align-items: center; justify-content: center; padding: 24px;
-  background: var(--bg) url("./plate.png") repeat; background-size: 96px 96px;
+  flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px;
 }
 .route-editeur #editor:not(.editor) .skeleton {
   width: 100%; height: 100%; max-width: 1200px; max-height: 720px;
