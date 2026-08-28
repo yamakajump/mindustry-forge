@@ -27,7 +27,9 @@ test("blending data stays out of the hashed catalogue", () => {
      the check that stops that from happening by accident, since the rule alone is an
      intention. */
   for (const block of Object.values(catalogue.blocks)) {
-    for (const forbidden of ["blend_id", "draw_edge_out", "blend_group"]) {
+    const forbiddenFields = ["blend_id", "draw_edge_in", "draw_edge_out", "blend_group",
+                             "cache_layer"];
+    for (const forbidden of forbiddenFields) {
       assert.ok(!(forbidden in block), `${forbidden} leaked into blocks.json`);
     }
   }

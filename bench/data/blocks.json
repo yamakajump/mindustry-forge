@@ -710,6 +710,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 21,
+      "cache_layer": "water",
       "floor_liquid": true,
       "drops_liquid": "water",
       "liquid_multiplier": 1.5,
@@ -747,6 +748,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 22,
+      "cache_layer": "water",
       "floor_liquid": true,
       "drops_liquid": "water",
       "liquid_multiplier": 1,
@@ -783,6 +785,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 23,
+      "cache_layer": "water",
       "attributes":{
         "spores": 0.15
       },
@@ -822,6 +825,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 24,
+      "cache_layer": "water",
       "attributes":{
         "spores": 0.15
       },
@@ -862,6 +866,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 25,
+      "cache_layer": "water",
       "attributes":{
         "spores": 0.1
       },
@@ -901,6 +906,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 26,
+      "cache_layer": "water",
       "floor_liquid": true,
       "drops_liquid": "water",
       "liquid_multiplier": 1,
@@ -937,6 +943,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 27,
+      "cache_layer": "water",
       "floor_liquid": true,
       "drops_liquid": "water",
       "liquid_multiplier": 1,
@@ -973,6 +980,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 28,
+      "cache_layer": "tar",
       "floor_liquid": true,
       "drops_liquid": "oil",
       "liquid_multiplier": 1,
@@ -1010,6 +1018,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 29,
+      "cache_layer": "cryofluid",
       "floor_liquid": true,
       "drops_liquid": "cryofluid",
       "liquid_multiplier": 0.5,
@@ -1047,6 +1056,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 30,
+      "cache_layer": "slag",
       "attributes":{
         "heat": 0.85
       },
@@ -1090,6 +1100,7 @@
       "floor": true,
       "blend_id": 31,
       "draw_edge_out": false,
+      "cache_layer": "space",
       "buildable": false
     },
     "empty":{
@@ -1484,6 +1495,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 42,
+      "cache_layer": "mud",
       "attributes":{
         "water": 1
       },
@@ -2083,6 +2095,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 59,
+      "cache_layer": "arkycite",
       "floor_liquid": true,
       "drops_liquid": "arkycite",
       "liquid_multiplier": 1,
@@ -4836,6 +4849,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 143,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -4870,6 +4884,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 144,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -4904,6 +4919,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 145,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -4938,6 +4954,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 146,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -4972,6 +4989,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 147,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -5006,6 +5024,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 148,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -5040,6 +5059,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 149,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -5074,6 +5094,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 150,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -5108,6 +5129,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 151,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -5142,6 +5164,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 152,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -5176,6 +5199,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 153,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -5210,6 +5234,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 154,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -5244,6 +5269,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 155,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
@@ -5378,6 +5404,7 @@
       "power": 0,
       "floor": true,
       "blend_id": 159,
+      "draw_edge_in": false,
       "draw_edge_out": false,
       "buildable": true
     },
