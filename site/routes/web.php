@@ -5,6 +5,7 @@ use App\Http\Controllers\BlockCardController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BrowseController;
 use App\Http\Controllers\CompareController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IconController;
 use App\Http\Controllers\LikeController;
@@ -161,6 +162,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/schematiques/{schematic}/aime', [LikeController::class, 'store'])
         ->middleware('throttle:60,1');
     Route::delete('/api/schematiques/{schematic}/aime', [LikeController::class, 'destroy'])
+        ->middleware('throttle:60,1');
+
+    Route::post('/api/schematiques/{schematic}/favori', [FavoriteController::class, 'store'])
+        ->middleware('throttle:60,1');
+    Route::delete('/api/schematiques/{schematic}/favori', [FavoriteController::class, 'destroy'])
         ->middleware('throttle:60,1');
 });
 
