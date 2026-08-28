@@ -14,6 +14,7 @@
 import {
   beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
 } from "./live.js";
+import { tileRect } from "./tiling.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -426,11 +427,13 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
       if (y < box.bottom || y >= box.bottom + box.height) continue;
       painted.add(at);
 
-      const px = (x - box.left) * scale;
-      const py = (box.height - (y - box.bottom) - 1) * scale;
+      const rect = tileRect(x, y, box, scale);
       for (const name of [layers.floor, layers.overlay]) {
         const art = name && atlas?.sprites?.[`floor/${name}`];
-        if (art) context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
+        if (art) {
+          context.drawImage(sheet, art.x, art.y, art.w, art.h,
+                            rect.x, rect.y, rect.w, rect.h);
+        }
       }
     }
   }
