@@ -31,8 +31,11 @@ OUT = ROOT / "bench" / "data" / "blocks.json"
 
 
 def main() -> None:
-    gradlew = "gradlew.bat" if sys.platform == "win32" else "./gradlew"
-    subprocess.run([gradlew, "jar"], cwd=ROOT / "bench", check=True)
+    # An absolute path, not a bare "gradlew.bat": Windows resolves a name with no path
+    # separator against PATH and the parent process's own directory, never against the
+    # `cwd=` given to subprocess.run, so the obvious spelling is never found here.
+    gradlew = ROOT / "bench" / ("gradlew.bat" if sys.platform == "win32" else "gradlew")
+    subprocess.run([str(gradlew), "jar"], cwd=ROOT / "bench", check=True)
 
     server_dir = setup_server(RUN)
     install_plugin(server_dir, JAR)
