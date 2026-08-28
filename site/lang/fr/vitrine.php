@@ -226,6 +226,34 @@ return [
         'etiquette' => 'bac a sable',
     ],
 
+    /*
+     * Le titre d'une liste filtree, et sa description.
+     *
+     * Le nom de l'objet ou du bloc est pose par la vue avant la phrase, jamais dans un
+     * placeholder : une cle manquante rendrait la cle sans substituer, et c'est justement
+     * le nom qui porte toute l'information du titre. « Graphite vitrine.titre-page.produit »
+     * se signale ; un titre ou le mot Graphite a disparu ne se signale pas.
+     *
+     * La phrase commence par le nom pour la meme raison qu'un titre de page commence par ce
+     * qu'on cherche : c'est le premier mot que lit quelqu'un qui parcourt une liste de
+     * resultats, et le seul qui distingue cette page des dix mille autres listes.
+     *
+     * Tournure sans article (« qui en produisent » et non « qui produisent du graphite »)
+     * parce que l'article depend de l'objet, que la table qui les porte vit dans
+     * `forge/editor/ui.js`, et qu'en ecrire une deuxieme ici donnerait deux tables a se
+     * contredire.
+     */
+    'titre-page' => [
+        'produit' => 'schémas Mindustry qui en produisent',
+        'consomme' => 'schémas Mindustry qui en consomment',
+        'bloc' => 'schémas Mindustry qui en utilisent',
+        'planete' => 'schémas Mindustry',
+        /* Ni « mesure » ni « mesures » : une liste peut porter des debits declares, et
+           `ContributionTest` refuse le mot sur une page qui en montre. La phrase dit ce qui
+           est vrai des deux, que le chiffre sort du plan et non d'une etiquette. */
+        'analyses' => 'schémas analysés, chiffres tirés du plan lui-même.',
+    ],
+
     'pagination' => [
         /* Words, not arrows. They translate, they need no stylesheet to come out the
            right size, and a screen reader reads them. The default view's chevron drew
