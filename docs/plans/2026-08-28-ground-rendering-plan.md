@@ -1,0 +1,994 @@
+# Ground rendering implementation plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** A painted patch of ground stops reading as corduroy: tiles meet with no joint, repeat with the game's own variants, and blend at the boundary between two floors the way `Floor.drawEdges` blends them.
+
+**Architecture:** A new pure module `site/public/forge/tiling.js` holds the three decisions that can be tested without a canvas - where a tile's rectangle lands, which variant a tile takes, and which neighbouring floors bleed onto it. `render.js` keeps the `drawImage` calls and gains nothing else. The data the last decision needs (`blend_id`, `draw_edge_out`, variant counts) is dumped from the game into `bench/data/blocks.json` and lands in a new `site/public/forge/sols.json`, never in the hashed `site/public/forge/blocks.json`.
+
+**Tech Stack:** Vanilla ES modules, `node --test` (no framework, no dependency), Python 3 with Pillow for the atlas, Java 17 and Gradle for the block dump.
+
+This plan implements section 2 of `docs/plans/2026-08-28-mode-edition-refonte-design.md`. Read that first: it carries the reasoning, this file carries the steps. It is the first of five plans for that design; the palette, the board and frames, the work spaces and the separate editor page follow in their own files.
+
+## Global Constraints
+
+- Repository language: **English** for code, comments, commit subjects and PR text. French only in `site/lang/` and `site/public/forge/lang/`.
+- **No em dash (U+2014) anywhere.** Use a comma, a colon, a full stop or a short hyphen.
+- Commit subjects: conventional, imperative, 50 characters maximum. Body explains *why*.
+- Accented characters are written out in French strings. The font carries them.
+- **`site/public/forge/blocks.json` must come out of this plan byte-identical.** It is hashed by `EngineVersion` and fifteen thousand stored analyses depend on it. Task 3 verifies this with a checksum, and a mismatch stops the task.
+- Work happens in the worktree `C:/Users/coren/Projets/_worktrees/forge-editeur` on `feat/mode-edition`. Four other sessions are live on this repository.
+- Do not open `site/public/index.html`: another session holds it until it merges. Nothing in this plan needs it.
+- `git commit -- <paths>` rather than `git add` then `git commit`, and never `git add -A`.
+- Run `npm test` before every commit. It must pass, not merely "not obviously break".
+
+## The jar this plan reads
+
+`tools/build_sprites.py` and Task 3 need `mindustry-forge/assets-v159.7.jar` and
+`mindustry-forge/server-release.jar`. The `mindustry-forge/` directory is gitignored, so a
+fresh worktree does not have it. Before Task 2, make it visible from the worktree root:
+
+```bash
+cmd //c mklink //J "C:\Users\coren\Projets\_worktrees\forge-editeur\mindustry-forge" "C:\Users\coren\Projets\mindustry-forge\mindustry-forge"
+```
+
+A junction rather than a copy: the jars are 35 MB and 40 MB, and a copy is a second thing
+that can drift from the pinned build. Verify with `ls mindustry-forge/*.jar` from the
+worktree root before starting Task 2.
+
+---
+
+### Task 1: Tiles that meet with no joint
+
+Today `site/public/forge/render.js:429` computes `const px = (x - box.left) * scale` and
+draws `scale` wide. At a fractional zoom two neighbours land either side of a half pixel
+and the background shows through the seam. This is the grid of dark lines visible on a
+solid patch of grass, and it is separate from the variant problem: fixing variants without
+this leaves the grid.
+
+**Files:**
+- Create: `site/public/forge/tiling.js`
+- Create: `tests/js/tiling.test.js`
+- Modify: `site/public/forge/render.js:419-435`
+
+**Interfaces:**
+- Consumes: nothing.
+- Produces: `tileRect(x, y, box, scale) -> {x, y, w, h}`, all four integers. `box` is the
+  object `bounds()` already returns: `{left, bottom, width, height}`.
+
+- [ ] **Step 1: Write the failing test**
+
+Create `tests/js/tiling.test.js`:
+
+```js
+/**
+ * Where a tile lands on the canvas, which is a question about the joint between two of
+ * them rather than about either one.
+ */
+
+import test from "node:test";
+import assert from "node:assert/strict";
+
+import { tileRect } from "../../site/public/forge/tiling.js";
+
+const box = { left: 0, bottom: 0, width: 8, height: 8 };
+
+test("neighbouring tiles share an edge exactly, at a fractional scale", () => {
+  /* The defect this replaces: `x * scale` for both, drawn `scale` wide. At 13.7 pixels a
+     tile the right edge of one landed 0.7 of a pixel short of its neighbour's left edge,
+     and with smoothing off the canvas rounded the two apart. */
+  const scale = 13.7;
+  for (let x = 0; x < 7; x++) {
+    const here = tileRect(x, 0, box, scale);
+    const next = tileRect(x + 1, 0, box, scale);
+    assert.equal(here.x + here.w, next.x, `joint after column ${x}`);
+  }
+});
+
+test("stacked tiles share an edge exactly too", () => {
+  const scale = 13.7;
+  for (let y = 0; y < 7; y++) {
+    const lower = tileRect(0, y, box, scale);
+    const upper = tileRect(0, y + 1, box, scale);
+    assert.equal(upper.y + upper.h, lower.y, `joint above row ${y}`);
+  }
+});
+
+test("every rectangle is whole pixels", () => {
+  const rect = tileRect(3, 5, box, 13.7);
+  for (const side of ["x", "y", "w", "h"]) {
+    assert.equal(rect[side], Math.trunc(rect[side]), `${side} is not an integer`);
+  }
+});
+
+test("a tile is never zero wide, however small the zoom", () => {
+  /* A schematic zoomed out to fit a thumbnail still has to show its ground. Rounding two
+     boundaries independently can collapse a tile to nothing; the game shows a pixel. */
+  for (const scale of [0.4, 0.7, 1, 1.3]) {
+    const rect = tileRect(2, 2, box, scale);
+    assert.ok(rect.w >= 1 && rect.h >= 1, `${scale} gave ${rect.w}x${rect.h}`);
+  }
+});
+
+test("y is measured downwards, because a canvas is", () => {
+  /* The board's y grows upwards and the canvas's grows downwards. Getting this backwards
+     draws the ground mirrored under a schematic that is not, which reads as a rendering
+     bug nobody can name. */
+  const bottom = tileRect(0, 0, box, 10);
+  const top = tileRect(0, 7, box, 10);
+  assert.equal(bottom.y, 70);
+  assert.equal(top.y, 0);
+});
+```
+
+- [ ] **Step 2: Run it and watch it fail**
+
+Run: `npm test`
+Expected: FAIL, `Cannot find module '.../site/public/forge/tiling.js'`.
+
+- [ ] **Step 3: Write `tiling.js`**
+
+Create `site/public/forge/tiling.js`:
+
+```js
+/**
+ * The three decisions behind drawing the ground, kept out of the canvas so they can be
+ * tested.
+ *
+ * `render.js` owns the `drawImage` calls and nothing else. What is here is arithmetic: a
+ * canvas is not needed to be sure two tiles meet, and a test that needs one would not have
+ * been written.
+ */
+
+/**
+ * Where one tile lands, in whole pixels, with its neighbours.
+ *
+ * Both edges are rounded from the same expression, so tile `x`'s right edge is computed as
+ * `round((x + 1) * scale)` and tile `x + 1`'s left edge is the same number. Rounding a
+ * position and then adding a rounded width does not have that property, and that is the
+ * defect this replaces: a one pixel gap between every pair of tiles at any zoom that was
+ * not a whole number of pixels.
+ */
+export function tileRect(x, y, box, scale) {
+  const left = Math.round((x - box.left) * scale);
+  const right = Math.round((x - box.left + 1) * scale);
+  const top = Math.round((box.height - (y - box.bottom) - 1) * scale);
+  const bottom = Math.round((box.height - (y - box.bottom)) * scale);
+  return {
+    x: left,
+    y: top,
+    // A tile rounded out of existence is a hole in the ground. One pixel is the least a
+    // canvas can show, and a thumbnail is exactly where this happens.
+    w: Math.max(1, right - left),
+    h: Math.max(1, bottom - top),
+  };
+}
+```
+
+- [ ] **Step 4: Run the tests**
+
+Run: `npm test`
+Expected: PASS, the five new tests included.
+
+- [ ] **Step 5: Use it in `render.js`**
+
+In `site/public/forge/render.js`, add to the imports at the top:
+
+```js
+import { tileRect } from "./tiling.js";
+```
+
+Replace the body of the ground loop (currently lines 426-434, from `const px =` through the
+closing brace of the `for (const name of ...)` loop) with:
+
+```js
+      const rect = tileRect(x, y, box, scale);
+      for (const name of [layers.floor, layers.overlay]) {
+        const art = name && atlas?.sprites?.[`floor/${name}`];
+        if (art) {
+          context.drawImage(sheet, art.x, art.y, art.w, art.h,
+                            rect.x, rect.y, rect.w, rect.h);
+        }
+      }
+```
+
+- [ ] **Step 6: Look at it**
+
+Run: `cd site && php artisan serve --port=8770`, open `http://localhost:8770/editer`, paint
+a patch of grass 20 tiles wide, and zoom with the wheel through several non-integer steps.
+
+Expected: no dark grid between tiles at any zoom. The diagonal streaks are still there:
+that is Task 2, and seeing them now is the point of doing this task on its own.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git commit -- site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/render.js \
+  -m "fix(render): make two ground tiles meet on the same pixel
+
+A tile was placed at x * scale and drawn scale wide, so at any zoom that
+was not a whole number of pixels its right edge and its neighbour's left
+edge rounded to different columns, and the background showed through the
+gap. On a solid patch of one floor that reads as a grid nobody drew.
+
+Both edges now come from the same rounded expression, which is what makes
+them equal rather than merely close."
+```
+
+---
+
+### Task 2: The variants the game ships and the atlas throws away
+
+`tools/build_sprites.py:171` takes `grass1` and skips `grass2` and `grass3`. Every tile of
+grass is therefore the same 32 pixel image, and its diagonal pattern lines up from tile to
+tile into stripes. 67 of the catalogue's 107 floors have unused variants in the jar.
+
+**Files:**
+- Modify: `tools/build_sprites.py:170-178`
+- Modify: `site/public/forge/tiling.js`
+- Modify: `tests/js/tiling.test.js`
+- Modify: `site/public/forge/render.js` (the ground loop from Task 1)
+
+**Interfaces:**
+- Consumes: `tileRect` from Task 1.
+- Produces: `variantOf(x, y, count) -> integer in [0, count)`. Atlas keys gain
+  `floor/<name>#<n>` for n from 1, alongside the existing `floor/<name>`.
+
+- [ ] **Step 1: Write the failing test**
+
+Append to `tests/js/tiling.test.js`:
+
+```js
+import { variantOf } from "../../site/public/forge/tiling.js";
+
+test("a floor with one sprite always takes it", () => {
+  for (const [x, y] of [[0, 0], [7, 3], [-4, 19]]) {
+    assert.equal(variantOf(x, y, 1), 0);
+    assert.equal(variantOf(x, y, 0), 0);
+  }
+});
+
+test("the variant is in range and never moves", () => {
+  for (let x = -20; x < 20; x++) {
+    for (let y = -20; y < 20; y++) {
+      const first = variantOf(x, y, 3);
+      assert.ok(first >= 0 && first < 3, `${x},${y} gave ${first}`);
+      assert.equal(variantOf(x, y, 3), first, "not stable across calls");
+    }
+  }
+});
+
+test("the variant depends on both coordinates, which is the whole point", () => {
+  /* A hash of x alone stripes the board vertically, a hash of y alone stripes it
+     horizontally, and either one is the defect this replaces wearing a different hat. So
+     the check is not "it varies" but "it varies along both axes". */
+  const alongX = new Set();
+  const alongY = new Set();
+  for (let i = 0; i < 40; i++) {
+    alongX.add(variantOf(i, 0, 3));
+    alongY.add(variantOf(0, i, 3));
+  }
+  assert.ok(alongX.size > 1, "a whole row took the same variant");
+  assert.ok(alongY.size > 1, "a whole column took the same variant");
+});
+
+test("the three variants come up about as often as each other", () => {
+  /* 4096 tiles is the largest board this editor allows, so this is the real population
+     rather than a sample of it. A hash that is technically in range but favours one
+     variant four to one looks, on a painted patch, exactly like no variants at all. */
+  const seen = [0, 0, 0];
+  for (let x = 0; x < 64; x++) {
+    for (let y = 0; y < 64; y++) seen[variantOf(x, y, 3)]++;
+  }
+  const expected = 4096 / 3;
+  for (const [n, count] of seen.entries()) {
+    assert.ok(Math.abs(count - expected) < expected * 0.15,
+      `variant ${n} came up ${count} times, expected about ${Math.round(expected)}`);
+  }
+});
+
+test("neighbours usually differ, which is what kills the stripes", () => {
+  let same = 0;
+  for (let x = 0; x < 63; x++) {
+    for (let y = 0; y < 64; y++) {
+      if (variantOf(x, y, 3) === variantOf(x + 1, y, 3)) same++;
+    }
+  }
+  // A third of neighbours matching is what three variants picked independently gives.
+  assert.ok(same < 63 * 64 * 0.45, `${same} of ${63 * 64} horizontal neighbours matched`);
+});
+```
+
+- [ ] **Step 2: Run it and watch it fail**
+
+Run: `npm test`
+Expected: FAIL, `variantOf is not a function`.
+
+- [ ] **Step 3: Write `variantOf`**
+
+Append to `site/public/forge/tiling.js`:
+
+```js
+/**
+ * Which of a floor's sprites this tile takes.
+ *
+ * The game asks `Mathf.randomSeed(Point2.pack(x, y), 0, variants - 1)`, and this is
+ * deliberately not that. The game seeds on a position in a real map; a schematic's tiles
+ * are at local coordinates and do not know where they will be pasted, so an exact port
+ * would produce a different pattern from the one the player saw in game anyway. There is no
+ * accuracy on offer here, only the absence of repetition, and any well spread hash gives
+ * that. Said plainly because "this follows the game's formula" is a claim this repository
+ * makes seriously, and it would be false here.
+ *
+ * The mixing is the finalising half of murmur3, over a pair of odd multipliers, which
+ * spreads adjacent inputs rather than merely distinguishing them. `x % count` on a plain
+ * sum does distinguish them and stripes the board diagonally, which is the defect wearing
+ * a different hat.
+ */
+export function variantOf(x, y, count) {
+  if (count <= 1) return 0;
+  let h = Math.imul(x | 0, 0x27d4eb2d) ^ Math.imul(y | 0, 0x165667b1);
+  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b);
+  h ^= h >>> 13;
+  return (h >>> 0) % count;
+}
+```
+
+- [ ] **Step 4: Run the tests**
+
+Run: `npm test`
+Expected: PASS.
+
+- [ ] **Step 5: Pack the variants into the atlas**
+
+In `tools/build_sprites.py`, replace the ground block at lines 170-178 with:
+
+```python
+    # The ground. Every variant the game ships, not just the first: `grass1`, `grass2` and
+    # `grass3` exist, the game picks one per tile, and packing only `grass1` made a painted
+    # patch line its diagonal pattern up from tile to tile into stripes.
+    #
+    # The bare `floor/<name>` key stays, and stays first: it is what a caller with no
+    # position to hash asks for, and what a floor with a single sprite has.
+    for name, entry in catalogue["blocks"].items():
+        if not entry.get("floor"):
+            continue
+        path = sprites.get(name) or sprites.get(f"{name}1")
+        if path:
+            wanted.append((f"floor/{name}", path))
+        for n in range(1, 10):
+            variant = sprites.get(f"{name}{n}")
+            if variant:
+                wanted.append((f"floor/{name}#{n}", variant))
+```
+
+- [ ] **Step 6: Rebuild the atlas and read what it says**
+
+Run: `python tools/build_sprites.py`
+Expected: the printed sprite count rises by about 230 and the printed size rises. Write both
+numbers down, before and after: Task 6 needs them and an unrecorded measurement is an
+estimate by the time anybody asks.
+
+- [ ] **Step 7: Draw the variant in `render.js`**
+
+Import `variantOf` beside `tileRect`, and replace the ground loop body from Task 1 with:
+
+```js
+      const rect = tileRect(x, y, box, scale);
+      for (const name of [layers.floor, layers.overlay]) {
+        if (!name) continue;
+        /* How many sprites this floor has, counted once per floor rather than per tile: a
+           64 by 64 board asks this 4096 times a frame. */
+        let count = variantCounts.get(name);
+        if (count === undefined) {
+          count = 0;
+          while (atlas?.sprites?.[`floor/${name}#${count + 1}`]) count++;
+          variantCounts.set(name, count);
+        }
+        const art = count > 1
+          ? atlas.sprites[`floor/${name}#${variantOf(x, y, count) + 1}`]
+          : atlas?.sprites?.[`floor/${name}`];
+        if (art) {
+          context.drawImage(sheet, art.x, art.y, art.w, art.h,
+                            rect.x, rect.y, rect.w, rect.h);
+        }
+      }
+```
+
+Declare the cache next to the `atlas` module variable near the top of `render.js`, beside
+the existing `let atlas = null;`:
+
+```js
+/** How many sprites each floor has, filled on first sight and kept for the page's life. */
+const variantCounts = new Map();
+```
+
+- [ ] **Step 8: Look at it**
+
+Serve the site, open `/editer`, paint a patch of grass 20 tiles wide.
+Expected: the surface is irregular, with no diagonal stripe crossing more than a tile or
+two. Compare against the same floor in the game if a screenshot is handy; it will not match
+tile for tile, and Step 3's comment says why.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git commit -- tools/build_sprites.py site/public/forge/tiling.js tests/js/tiling.test.js \
+  site/public/forge/render.js site/public/forge/atlas.png site/public/forge/atlas.json \
+  -m "feat(render): give a floor the variants the game ships
+
+The atlas kept grass1 and dropped grass2 and grass3, so every tile of a
+painted patch carried the same 32 pixel image and its diagonal pattern
+lined up across tiles into stripes. 67 of 107 floors had variants sitting
+unused in the jar.
+
+The per-tile choice is a local hash, not the game's Mathf.randomSeed: the
+game seeds on a map position and a schematic has none, so there is no
+pattern to match, only repetition to break."
+```
+
+---
+
+### Task 3: Dump what blending needs, without touching the hashed catalogue
+
+`Floor.doEdge` decides blending on `blendId`, and `drawEdges` skips a floor whose
+`drawEdgeOut` is false. Neither is in `bench/data/blocks.json`, and neither can be guessed:
+they are assigned in the game's own content definitions.
+
+They must **not** reach `site/public/forge/blocks.json`, which `EngineVersion` hashes.
+`tools/build_catalogue.py:133` filters every block through the `KEEP` tuple, so adding a
+field to the dump does not reach the catalogue unless `KEEP` names it. This task relies on
+that and proves it with a checksum.
+
+**Files:**
+- Modify: `bench/src/mindustryforge/DumpBlocks.java:1711-1738`
+- Regenerate: `bench/data/blocks.json`
+- Verify unchanged: `site/public/forge/blocks.json`
+
+**Interfaces:**
+- Consumes: nothing.
+- Produces: in `bench/data/blocks.json`, each floor gains `blend_id` (integer),
+  `draw_edge_out` (boolean, omitted when true) and `blend_group` (string, omitted when the
+  floor is its own group).
+
+- [ ] **Step 1: Record the checksum before anything moves**
+
+```bash
+sha256sum site/public/forge/blocks.json | tee /tmp/blocks-before.txt
+```
+
+- [ ] **Step 2: Add the three fields to the dump**
+
+In `bench/src/mindustryforge/DumpBlocks.java`, inside the `if (!(block instanceof Floor
+floor))` branch that starts at line 1711, after `entry.put("floor", true);`:
+
+```java
+        /* What decides whether two floors bleed into each other, read from the game rather
+           than inferred. `Floor.doEdge` compares `realBlendId` on both sides and the higher
+           one wins; `drawEdges` skips a neighbour whose `drawEdgeOut` is false.
+           
+           These three go to the bench dump and stop there. `build_catalogue.py` filters on
+           its KEEP tuple, so they do not reach `site/public/forge/blocks.json`, which
+           `EngineVersion` hashes. They decide how a page looks and no answer it gives, and
+           the day they enter the catalogue is the day fifteen thousand analyses go stale
+           for the sake of presentation. */
+        entry.put("blend_id", floor.blendId);
+        if (!floor.drawEdgeOut) entry.put("draw_edge_out", false);
+        if (floor.blendGroup != floor) entry.put("blend_group", floor.blendGroup.name);
+```
+
+- [ ] **Step 3: Rebuild the dump**
+
+Run: `cd bench && ./gradlew dumpBlocks` (check the task name with `./gradlew tasks` first;
+the plugin exposes `dump-blocks` as noted in `CLAUDE.md`).
+
+Expected: `bench/data/blocks.json` is rewritten and now contains `blend_id` on floors. Check
+one: `python -c "import json;print(json.load(open('bench/data/blocks.json'))['blocks']['grass'])"`.
+
+- [ ] **Step 4: Rebuild the catalogue and prove it did not move**
+
+```bash
+python tools/build_catalogue.py
+sha256sum site/public/forge/blocks.json
+diff <(cat /tmp/blocks-before.txt | cut -d' ' -f1) <(sha256sum site/public/forge/blocks.json | cut -d' ' -f1)
+```
+
+Expected: identical, `diff` silent, exit code 0.
+
+**If it differs, stop.** Do not commit, do not carry on to Task 4. A changed checksum means
+a field leaked past `KEEP` into the hashed catalogue and every stored analysis has just been
+marked stale. Find which field, and take it out of the catalogue rather than out of the
+dump.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git commit -- bench/src/mindustryforge/DumpBlocks.java bench/data/blocks.json \
+  -m "feat(bench): dump what decides whether two floors blend
+
+Floor.doEdge compares blendId across a boundary and drawEdges skips a
+neighbour whose drawEdgeOut is false. Neither is in the dump and neither
+can be inferred: the game assigns them in its content definitions.
+
+They stop at the bench dump. build_catalogue.py filters on KEEP, so they
+do not reach the catalogue EngineVersion hashes; its checksum is
+unchanged, which is the whole reason they were added here rather than
+there. They decide how a page looks, not what an answer is."
+```
+
+---
+
+### Task 4: `sols.json`, and the edge sheets in the atlas
+
+**Files:**
+- Create: `tools/build_sols.py`
+- Create: `site/public/forge/sols.json`
+- Modify: `tools/build_sprites.py`
+- Create: `tests/js/sols.test.js`
+
+**Interfaces:**
+- Consumes: `bench/data/blocks.json` with the fields from Task 3.
+- Produces: `site/public/forge/sols.json` shaped
+  `{"floors": {"<name>": {"blend": <int>, "out": <bool>, "variants": <int>, "edges": <bool>}}}`,
+  and atlas keys `floor/<name>#edge`.
+
+- [ ] **Step 1: Write `tools/build_sols.py`**
+
+```python
+"""What the browser needs to draw the ground, beside the catalogue rather than inside it.
+
+    python tools/build_sols.py
+
+Blending data decides how a patch of ground looks and decides no figure the analyser
+reports. `site/public/forge/blocks.json` is hashed by `EngineVersion`, so a field added
+there marks every stored analysis stale; a field added here marks nothing. That boundary is
+written down in CLAUDE.md and this file is on the presentation side of it.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import zipfile
+from pathlib import Path
+
+JAR = Path("mindustry-forge/assets-v159.7.jar")
+SOURCE = Path("bench/data/blocks.json")
+TARGET = Path("site/public/forge/sols.json")
+
+
+def main() -> None:
+    raw = json.loads(SOURCE.read_text(encoding="utf-8"))
+    with zipfile.ZipFile(JAR) as archive:
+        art = {name.rsplit("/", 1)[1][:-4]
+               for name in archive.namelist()
+               if "/environment/" in name and name.endswith(".png")}
+
+    floors = {}
+    for name, entry in raw["blocks"].items():
+        if not entry.get("floor"):
+            continue
+        variants = 0
+        while f"{name}{variants + 1}" in art:
+            variants += 1
+        floors[name] = {
+            "blend": entry.get("blend_id", 0),
+            # Absent means true in the dump, which is how the game's own default reads.
+            "out": entry.get("draw_edge_out", True),
+            "variants": variants,
+            "edges": f"{name}-edge" in art,
+        }
+
+    TARGET.write_text(json.dumps({"floors": floors}, separators=(",", ":")),
+                      encoding="utf-8")
+    with_edges = sum(1 for f in floors.values() if f["edges"])
+    print(f"{len(floors)} sols, {with_edges} avec raccords, "
+          f"{sum(1 for f in floors.values() if f['variants'] > 1)} avec variantes")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+- [ ] **Step 2: Run it**
+
+Run: `python tools/build_sols.py`
+Expected: prints about `107 sols, 55 avec raccords, 67 avec variantes`.
+
+- [ ] **Step 3: Write the test that keeps the two files apart**
+
+Create `tests/js/sols.test.js`:
+
+```js
+/**
+ * The floor data that decides how the ground looks, and the promise that it is not in the
+ * file that decides what the analyser answers.
+ */
+
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const read = (name) => JSON.parse(
+  readFileSync(new URL(`../../site/public/forge/${name}`, import.meta.url), "utf8"));
+
+const sols = read("sols.json");
+const catalogue = read("blocks.json");
+
+test("every floor in the catalogue has an entry", () => {
+  const floors = Object.entries(catalogue.blocks)
+    .filter(([, block]) => block.floor).map(([name]) => name);
+  for (const name of floors) {
+    assert.ok(sols.floors[name], `${name} is missing from sols.json`);
+  }
+});
+
+test("blending data stays out of the hashed catalogue", () => {
+  /* `EngineVersion` hashes blocks.json. A blend id in there would mark fifteen thousand
+     stored analyses stale for the sake of a boundary between two patches of grass. This is
+     the check that stops that from happening by accident, since the rule alone is an
+     intention. */
+  for (const block of Object.values(catalogue.blocks)) {
+    for (const forbidden of ["blend_id", "draw_edge_out", "blend_group"]) {
+      assert.ok(!(forbidden in block), `${forbidden} leaked into blocks.json`);
+    }
+  }
+});
+
+test("a floor that says it has edges has them in the atlas", () => {
+  const atlas = read("atlas.json");
+  for (const [name, floor] of Object.entries(sols.floors)) {
+    if (!floor.edges) continue;
+    assert.ok(atlas.sprites[`floor/${name}#edge`], `no edge sheet packed for ${name}`);
+  }
+});
+
+test("a floor that says it has variants has them in the atlas", () => {
+  const atlas = read("atlas.json");
+  for (const [name, floor] of Object.entries(sols.floors)) {
+    for (let n = 1; n <= floor.variants; n++) {
+      assert.ok(atlas.sprites[`floor/${name}#${n}`], `no variant ${n} packed for ${name}`);
+    }
+  }
+});
+```
+
+- [ ] **Step 4: Run it and watch the atlas tests fail**
+
+Run: `npm test`
+Expected: the first two tests pass, "a floor that says it has edges" fails: the sheets are
+not packed yet.
+
+- [ ] **Step 5: Pack the edge sheets**
+
+In `tools/build_sprites.py`, in the ground block from Task 2, after the variant loop:
+
+```python
+        # The 96 by 96 sheet the game blends a boundary with: nine 32 pixel cells, which
+        # `Floor.edge(x, y, i, j)` reads as `edges[i][2 - j]`. 55 of the 107 floors ship
+        # one; the rest do not blend, and a hard edge decided in code beats a guess.
+        if f"{name}-edge" in sprites:
+            wanted.append((f"floor/{name}#edge", sprites[f"{name}-edge"]))
+```
+
+- [ ] **Step 6: Rebuild and run the tests**
+
+Run: `python tools/build_sprites.py && npm test`
+Expected: PASS. Record the new sprite count and file size beside the ones from Task 2.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git commit -- tools/build_sols.py tools/build_sprites.py site/public/forge/sols.json \
+  tests/js/sols.test.js site/public/forge/atlas.png site/public/forge/atlas.json \
+  -m "feat(sol): put blending data beside the catalogue, not in it
+
+How two patches of ground meet decides how a page looks and no figure the
+analyser reports, so it goes in sols.json. blocks.json is hashed by
+EngineVersion and a field added there would mark fifteen thousand stored
+analyses stale for the sake of presentation.
+
+The rule was already written down; the test that blocks.json carries none
+of the three fields is what turns it from an intention into a check."
+```
+
+---
+
+### Task 5: The boundary between two floors
+
+`Floor.drawEdges`, decompiled from `mindustry/world/blocks/environment/Floor.class` in
+`mindustry-forge/server-release.jar` with `javap -p -c`. Verify it rather than trusting this
+summary:
+
+```bash
+cd /tmp && unzip -o -q "<repo>/mindustry-forge/server-release.jar" \
+  "mindustry/world/blocks/environment/Floor.class" && javap -p -c \
+  mindustry/world/blocks/environment/Floor.class | less
+```
+
+What it does, for one tile:
+
+1. For each of the eight neighbours in `Geometry.d8` order.
+2. The neighbour's contributing floor is its **overlay** when the overlay is not air and
+   the neighbour's floor differs from this tile's floor, otherwise its **floor**.
+3. Skip it unless that floor's `drawEdgeOut` is true.
+4. Skip it unless `doEdge`, which is
+   `other.blendId > this.blendId || this.edges === null`. So a floor with no sheet of its
+   own is bled onto by any neighbour that has one.
+5. Skip it unless that floor has an edge sheet.
+6. Collect the distinct contributing floors, and remember which of the eight directions each
+   one came from.
+7. Sort them by block id ascending, and draw each one's sheet cell for each of its
+   directions.
+
+**Files:**
+- Modify: `site/public/forge/tiling.js`
+- Modify: `tests/js/tiling.test.js`
+- Modify: `site/public/forge/render.js`
+
+**Interfaces:**
+- Consumes: `sols.json` shape from Task 4, `tileRect` and `variantOf` from Tasks 1 and 2.
+- Produces: `blendersAt(ground, x, y, floors) -> [{name, dirs}]`, sorted, where `dirs` is an
+  array of indices into `D8`. Also exports `D8`, the eight offsets in the game's order.
+
+- [ ] **Step 1: Write the failing test**
+
+Append to `tests/js/tiling.test.js`:
+
+```js
+import { blendersAt, D8 } from "../../site/public/forge/tiling.js";
+
+/* Two floors, one that blends over the other. Written here rather than read out of
+   sols.json so the test says what it depends on. */
+const floors = {
+  stone: { blend: 10, out: true, variants: 3, edges: true },
+  grass: { blend: 20, out: true, variants: 3, edges: true },
+  // A floor the game tells not to bleed outwards, which is the one case where a higher
+  // blend id still draws nothing.
+  shale: { blend: 30, out: false, variants: 1, edges: true },
+  // A floor with no sheet: it cannot bleed, and it gets bled onto by anything.
+  sand: { blend: 5, out: true, variants: 3, edges: false },
+};
+
+const ground = (cells) => Object.fromEntries(
+  Object.entries(cells).map(([at, floor]) => [at, { floor }]));
+
+test("the eight directions are the game's, in the game's order", () => {
+  assert.equal(D8.length, 8);
+  // Geometry.d8 starts at (-1,-1) and turns; what matters is that every neighbour appears
+  // exactly once and the centre never does.
+  const seen = new Set(D8.map(([dx, dy]) => `${dx},${dy}`));
+  assert.equal(seen.size, 8);
+  assert.ok(!seen.has("0,0"));
+});
+
+test("a higher blend id bleeds onto a lower one", () => {
+  const board = ground({ "0,0": "stone", "1,0": "grass" });
+  const found = blendersAt(board, 0, 0, floors);
+  assert.deepEqual(found.map((b) => b.name), ["grass"]);
+});
+
+test("a lower blend id does not bleed onto a higher one", () => {
+  const board = ground({ "0,0": "grass", "1,0": "stone" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
+
+test("the same floor on both sides is not a boundary", () => {
+  const board = ground({ "0,0": "grass", "1,0": "grass", "0,1": "grass" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
+
+test("drawEdgeOut false means it never bleeds, whatever its id", () => {
+  const board = ground({ "0,0": "stone", "1,0": "shale" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
+
+test("a floor with no sheet of its own is bled onto by a lower id", () => {
+  /* doEdge is `other.blendId > this.blendId || this.edges === null`. Sand has no sheet, so
+     stone bleeds onto it although stone's id is higher, and grass would too. Without this
+     clause a patch of sand next to anything reads as a cut-out. */
+  const board = ground({ "0,0": "sand", "1,0": "stone" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors).map((b) => b.name), ["stone"]);
+});
+
+test("one neighbour contributes once, with every direction it came from", () => {
+  const board = ground({ "0,0": "stone", "1,0": "grass", "0,1": "grass", "1,1": "grass" });
+  const found = blendersAt(board, 0, 0, floors);
+  assert.equal(found.length, 1, "grass was listed more than once");
+  assert.equal(found[0].dirs.length, 3, "not every direction was recorded");
+});
+
+test("blenders come out sorted, so two of them stack the same way every frame", () => {
+  const board = ground({ "0,0": "sand", "1,0": "grass", "0,1": "stone" });
+  const found = blendersAt(board, 0, 0, floors);
+  assert.deepEqual(found.map((b) => b.name), ["stone", "grass"]);
+});
+
+test("an unpainted neighbour is not a floor and contributes nothing", () => {
+  /* The board is mostly empty and stays that way: a tile nobody painted has no floor, and
+     reading it as one would draw a boundary around every patch against nothing. */
+  const board = ground({ "0,0": "stone" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
+```
+
+- [ ] **Step 2: Run it and watch it fail**
+
+Run: `npm test`
+Expected: FAIL, `blendersAt is not a function`.
+
+- [ ] **Step 3: Write `blendersAt`**
+
+Append to `site/public/forge/tiling.js`:
+
+```js
+/**
+ * The eight neighbours, in `arc.math.geom.Geometry.d8` order.
+ *
+ * The order matters and is not cosmetic: it is the index into a floor's edge sheet, so
+ * turning it changes which cell of the 96 pixel sheet is drawn on which side.
+ */
+export const D8 = [
+  [-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1],
+];
+
+/** The floor a tile contributes to its neighbour: its overlay when it has one, else itself. */
+function contributorAt(ground, x, y, mine) {
+  const layers = ground[`${x},${y}`];
+  if (!layers?.floor) return null;
+  return layers.overlay && layers.floor !== mine ? layers.overlay : layers.floor;
+}
+
+/**
+ * Which neighbouring floors bleed onto this tile, and from which sides.
+ *
+ * `Floor.drawEdges` of v159.7, decompiled from `server-release.jar` rather than read off a
+ * wiki. The clause worth naming is `doEdge`: a neighbour bleeds when its blend id is higher
+ * **or when this tile's floor has no edge sheet at all**. Drop the second half and every
+ * patch of a sheetless floor reads as a cut-out with hard borders, which is the state this
+ * replaces rather than an improvement on it.
+ *
+ * Returns one entry per distinct floor, sorted by blend id ascending so that two of them
+ * stack the same way on every frame, each carrying the directions it came from.
+ */
+export function blendersAt(ground, x, y, floors) {
+  const mine = ground[`${x},${y}`]?.floor;
+  const here = mine ? floors[mine] : null;
+  const found = new Map();
+
+  for (const [index, [dx, dy]] of D8.entries()) {
+    const name = contributorAt(ground, x + dx, y + dy, mine);
+    if (!name || name === mine) continue;
+
+    const other = floors[name];
+    if (!other?.out || !other.edges) continue;
+    // `doEdge`: a higher id wins, and a floor with no sheet of its own loses to everything.
+    if (here?.edges && other.blend <= (here.blend ?? 0)) continue;
+
+    const already = found.get(name);
+    if (already) already.dirs.push(index);
+    else found.set(name, { name, dirs: [index] });
+  }
+
+  return [...found.values()].sort((a, b) => floors[a.name].blend - floors[b.name].blend);
+}
+```
+
+- [ ] **Step 4: Run the tests**
+
+Run: `npm test`
+Expected: PASS, all nine new tests.
+
+- [ ] **Step 5: Draw the edges in `render.js`**
+
+Extend the import line added in Task 1, which now reads:
+
+```js
+import { tileRect, variantOf, blendersAt, D8 } from "./tiling.js";
+```
+
+`sols.json` has to be loaded beside the atlas. In `render.js`, extend the existing
+`loadSprites` fetch block (around line 27) to fetch it too, and keep it in a module
+variable `let soils = null;` beside `let atlas = null;`.
+
+Then, in the ground loop, after the floor and overlay are drawn for this tile:
+
+```js
+      /* The boundary, drawn over this tile rather than over its neighbour: the game bleeds
+         inwards, so a patch of grass beside stone has grass creeping onto the stone tile. */
+      if (soils) {
+        for (const blender of blendersAt(ground, x, y, soils.floors)) {
+          const edgeArt = atlas?.sprites?.[`floor/${blender.name}#edge`];
+          if (!edgeArt) continue;
+          // Nine cells in a 96 pixel sheet, so a cell is a third of its width.
+          const cell = edgeArt.w / 3;
+          for (const dir of blender.dirs) {
+            const [dx, dy] = D8[dir];
+            // `Floor.edge(x, y, i, j)` is `edges[i][2 - j]`: column from dx, row flipped
+            // because the board's y grows upwards and the sheet's grows downwards.
+            const col = dx + 1;
+            const row = 2 - (dy + 1);
+            context.drawImage(sheet,
+              edgeArt.x + col * cell, edgeArt.y + row * cell, cell, cell,
+              rect.x, rect.y, rect.w, rect.h);
+          }
+        }
+      }
+```
+
+- [ ] **Step 6: Look at it, which is the only check there is**
+
+Serve the site, open `/editer`, paint a patch of grass and a patch of stone that touch.
+
+Expected: the higher-id floor creeps over the boundary in a soft, irregular edge rather than
+stopping at a straight line.
+
+**Say plainly what this step is not.** The bench runs a headless server and renders nothing,
+so there is no oracle for this and no measurement to hold it against. Fidelity here is
+judged by eye against the game's own art, and that is a weaker claim than the rest of this
+repository makes about its numbers. It is worth making anyway, because the alternative is a
+straight line where the game has none, but it does not get written up as "verified".
+
+- [ ] **Step 7: Commit**
+
+```bash
+git commit -- site/public/forge/tiling.js tests/js/tiling.test.js site/public/forge/render.js \
+  -m "feat(render): blend the boundary between two floors
+
+Two patches met on a straight line, which the game never draws. This
+follows Floor.drawEdges of v159.7, decompiled from server-release.jar:
+eight neighbours in Geometry.d8 order, a neighbour bleeds when its blend
+id is higher, and the sheet is nine cells read as edges[i][2 - j].
+
+The clause that is easy to drop is the second half of doEdge, where a
+floor with no sheet of its own is bled onto by everything. Without it a
+patch of any sheetless floor reads as a cut-out."
+```
+
+---
+
+### Task 6: Weigh what this cost
+
+The design says the byte cost is measured after the build and not predicted from the pixel
+area, and names +400 KB as the figure above which the edge sheets get reconsidered. An
+estimate that never gets replaced by a measurement is the defect this repository keeps
+paying for.
+
+**Files:**
+- Modify: `docs/plans/2026-08-28-mode-edition-refonte-design.md`
+
+- [ ] **Step 1: Measure**
+
+```bash
+git show HEAD~4:site/public/forge/atlas.png | wc -c    # before Task 2
+ls -l site/public/forge/atlas.png                       # now
+```
+
+Adjust `HEAD~4` to whichever commit precedes Task 2's.
+
+- [ ] **Step 2: Write the number into the design, replacing the estimate**
+
+In the "The cost, measured rather than estimated" paragraph, append a sentence giving the
+measured before and after in bytes and the difference. If the difference exceeds 400 KB,
+stop and raise it rather than carrying on: the decision the design records is that the edge
+sheets are what gets reconsidered, and that is a decision to take with the number in hand.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git commit -- docs/plans/2026-08-28-mode-edition-refonte-design.md \
+  -m "docs(sol): replace the atlas estimate with what it weighed
+
+The design said the byte cost would be measured after the build rather
+than predicted from the pixel area. This is that measurement, written in
+the same paragraph so the estimate cannot be read as one."
+```
+
+---
+
+## What this plan does not do
+
+The palette, the board and its frames, the work spaces and the separate editor page are the
+other four plans of this design. Nothing here touches `site/public/index.html`,
+`site/public/forge/editor/`, the database or the routes, which is what lets it run while
+another session holds the home page.
