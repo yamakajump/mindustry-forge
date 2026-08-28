@@ -54,7 +54,14 @@ class AuthController extends Controller
 
         $user = User::updateOrCreate(
             ['discord_id' => $profile['id']],
-            ['name' => $profile['name'], 'avatar' => $profile['avatar']],
+            [
+                'name' => $profile['name'],
+                'avatar' => $profile['avatar'],
+                // Written on every sign-in rather than only at creation, so the accounts
+                // that existed before this column did fill it in the first time they come
+                // back, without a backfill that would have to parse the same ids anyway.
+                'discord_created_at' => User::discordCreatedAt($profile['id']),
+            ],
         );
 
         Auth::login($user, remember: true);

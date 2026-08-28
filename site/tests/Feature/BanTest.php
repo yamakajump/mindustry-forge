@@ -141,3 +141,11 @@ it('lifts a temporary ban on its own', function () {
 
     expect(Ban::refuses('4242'))->toBeFalse();
 });
+
+it('records when the discord account was created, on the way in', function () {
+    signInWith('175928847299117063');
+
+    // To the second: the column is a timestamp, and the milliseconds the snowflake carries
+    // do not survive the round trip. Nothing here needs them, the gate is thirty days wide.
+    expect(auth()->user()->discord_created_at->getTimestamp())->toBe(1462015105);
+});
