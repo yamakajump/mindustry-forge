@@ -1,3 +1,7 @@
+{{-- One folder's page, public or private depending on who is looking. Route GET
+     /d/{folder}, fed by FolderController::show.
+
+     Scope: folder, mine, ancestors, children, schematics, withheld, aime. --}}
 @extends('layout')
 
 @section('title', $folder->name.' - Mindustry Forge')

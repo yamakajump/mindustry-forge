@@ -1,3 +1,8 @@
+{{-- Two schematics side by side. Route GET /comparer, fed by CompareController::index.
+     Both slots come from query parameters, so the page renders with neither, one, or both
+     filled in.
+
+     Scope: left, right, asked, comparison, matches, recent. --}}
 @extends('layout')
 @section('title', __('schema.comparer.titre').' - Mindustry Forge')
 

@@ -1,3 +1,8 @@
+{{-- The signed-in member's own folders. Route GET /mes-dossiers (behind auth), fed by
+     FolderController::mine. Distinct from folders/index.blade.php, which is the public
+     gallery of everyone's shared folders at /dossiers.
+
+     Scope: folders, icons. --}}
 @extends('layout')
 
 @section('title', __('dossiers.page.les-miens').' - Mindustry Forge')

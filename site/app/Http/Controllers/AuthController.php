@@ -10,6 +10,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
+/**
+ * The only door into an account. Discord OAuth, and nothing beside it.
+ *
+ * There is no password to steal and no registration form to spam, because there is no
+ * local credential at all: `start()` sends the visitor to Discord, `callback()` trusts
+ * only what Discord hands back, and `User::updateOrCreate` keys on the Discord id rather
+ * than on anything the visitor typed. That also means a ban keyed on the same id cannot be
+ * shed by signing up again, which is why `callback()` checks `Ban::refuses` before the user
+ * row exists rather than after.
+ *
+ * The state parameter is generated in `start()`, stored in the session, and compared in
+ * `callback()` with `hash_equals`. Skipping the comparison would leave the redirect to
+ * Discord as ceremony with no protection behind it: the whole point of the round trip is
+ * that the callback can tell its own request from one somebody else forged.
+ */
 class AuthController extends Controller
 {
     public function start(Request $request): RedirectResponse
