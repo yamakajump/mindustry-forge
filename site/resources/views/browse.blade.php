@@ -307,9 +307,28 @@
 </form>
 
 @if($schematics->isEmpty())
+  {{-- Le vide repond a la question qui a ete posee, et pas a celle du catalogue.
+
+       « Rien de publié qui corresponde, analyse un schéma et publie-le » est juste sous une
+       recherche du catalogue et faux sous mes favoris : je n'ai rien a publier, j'ai
+       simplement rien garde encore, et la page m'envoyait analyser un plan pour resoudre ca.
+       Une phrase exacte, posee la ou on demande autre chose. --}}
   <div class="card">
-    <p class="empty">Rien de publie qui corresponde. Analyse un schéma et publie-le.</p>
-    <p class="row"><a class="button primary" href="/">Analyser un schéma</a></p>
+    @if($favorites)
+      <p class="empty">{{ __('vitrine.vide.favoris') }}</p>
+      <p class="row"><a class="button primary" href="/schemas">{{
+        __('vitrine.vide.parcourir') }}</a></p>
+    @elseif($liked)
+      <p class="empty">{{ __('vitrine.vide.aimes') }}</p>
+      <p class="row"><a class="button primary" href="/schemas">{{
+        __('vitrine.vide.parcourir') }}</a></p>
+    @elseif($mine)
+      <p class="empty">{{ __('vitrine.vide.miens') }}</p>
+      <p class="row"><a class="button primary" href="/">{{ __('vitrine.vide.analyser') }}</a></p>
+    @else
+      <p class="empty">{{ __('vitrine.vide.catalogue') }}</p>
+      <p class="row"><a class="button primary" href="/">{{ __('vitrine.vide.analyser') }}</a></p>
+    @endif
   </div>
 @else
   {{-- Lequel gagne sur quoi, avant la grille.
