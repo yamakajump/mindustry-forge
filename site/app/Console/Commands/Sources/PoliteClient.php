@@ -10,34 +10,35 @@ use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * Le client HTTP du collecteur : lent expres, et qui dit qui il est.
+ * The collector's HTTP client: deliberately slow, and one that says who it is.
  *
- * Les deux catalogues qu'on ingere sont tenus par des gens seuls, sur des serveurs
- * gratuits, et il y a quinze mille entrees a prendre. Taper aussi vite que la machine le
- * permet, c'est se faire couper au bout de dix minutes, et il n'y aura pas de deuxieme
- * chance : le site principal est deja derriere Cloudflare, seule son API ne l'est pas
- * encore. La pause entre deux appels n'est donc pas un reglage de confort, c'est la
- * condition pour que la collecte aille au bout.
+ * The two catalogues we ingest are each run by a single person, on free
+ * servers, and there are fifteen thousand entries to take. Hitting them as fast as the
+ * machine allows means getting cut off within ten minutes, and there will be no second
+ * chance: the main site is already behind Cloudflare, only its API is not
+ * yet. The pause between two calls is therefore not a comfort setting, it is the
+ * condition for the collection to make it to the end.
  *
- * L'agent s'annonce sous le nom du site plutot que sous celui d'un Chrome. Se deguiser en
- * visiteur marcherait mieux et vaudrait exactement ce que ca a l'air de valoir le jour ou
- * on ecrit au mainteneur d'en face pour lui annoncer l'agregateur. Un agent nommable est
- * aussi un agent qu'on peut bloquer proprement, ce qui est le droit du serveur d'en face.
+ * The agent announces itself under the site's own name rather than under a Chrome's.
+ * Disguising itself as a visitor would work better and would be worth exactly what it
+ * looks like it is worth the day we write to the maintainer on the other end to tell
+ * them about the aggregator. An agent that can be named is also an agent that can be
+ * cleanly blocked, which is the other server's right.
  */
 class PoliteClient
 {
-    /** Qui passe, et ou ecrire pour s'en plaindre. */
+    /** Who is passing through, and where to write to complain about it. */
     public const AGENT = 'mindustry-forge/1.0 (+https://mindustryforge.com)';
 
-    /** Au-dela, la lenteur n'est plus de la politesse : le serveur est tombe. */
+    /** Beyond this, the slowness is no longer politeness: the server is down. */
     private const MAX_BACKOFF_MS = 60_000;
 
     private float $lastCall = 0.0;
 
     /**
-     * @param  int  $pauseMs  Le creux minimum entre deux appels, quel qu'en soit le sort.
-     * @param  int  $tries  Combien de fois on insiste avant d'abandonner un appel.
-     * @param  ?Closure  $tell  De quoi raconter les attentes a qui regarde tourner.
+     * @param  int  $pauseMs  The minimum gap between two calls, whatever their outcome.
+     * @param  int  $tries  How many times to insist before giving up on a call.
+     * @param  ?Closure  $tell  Something to report the waits to whoever is watching it run.
      */
     public function __construct(
         private int $pauseMs = 1000,
@@ -50,11 +51,11 @@ class PoliteClient
     ) {}
 
     /**
-     * Le JSON decode, ou null si la source dit qu'il n'y a rien la.
+     * The decoded JSON, or null if the source says there is nothing there.
      *
-     * Le type de retour est volontairement large : `/schematics/count` repond un entier nu,
-     * pas un objet, et le forcer en tableau ici obligerait l'appelant a defaire la
-     * conversion pour lire le nombre.
+     * The return type is deliberately wide: `/schematics/count` answers a bare integer,
+     * not an object, and forcing it into an array here would force the caller to undo
+     * the conversion just to read the number.
      */
     public function json(string $url): mixed
     {
@@ -62,10 +63,10 @@ class PoliteClient
     }
 
     /**
-     * Le corps brut, pour les sources qui servent le `.msch` tel que le jeu l'ecrit.
+     * The raw body, for sources that serve the `.msch` exactly as the game writes it.
      *
-     * Rendu en base64, parce que c'est sous cette forme que le reste du site le tient : la
-     * colonne `code` est la chaine que le joueur colle dans le jeu, pas des octets.
+     * Rendered in base64, because that is the form the rest of the site holds it in: the
+     * `code` column is the string the player pastes into the game, not bytes.
      */
     public function base64(string $url): ?string
     {
@@ -150,15 +151,16 @@ class PoliteClient
                 continue;
             }
 
-            // Ce qui n'existe pas n'est pas une panne. Une entree retiree du catalogue
-            // entre le listing et le detail est une chose ordinaire sur douze mille, et
-            // arreter la collecte pour ca serait la rendre impossible a terminer.
+            // What does not exist is not a failure. An entry removed from the catalogue
+            // between the listing and the detail is an ordinary thing across twelve
+            // thousand, and stopping the collection for that would make it impossible to
+            // ever finish.
             if ($answer->status() === 404) {
                 return null;
             }
 
-            // Trop vite, ou en panne : les deux se soignent en attendant. Le reste des 4xx
-            // ne se soigne pas en reessayant, donc on ne reessaie pas.
+            // Too fast, or down: both are cured by waiting. The rest of the 4xx family
+            // is not cured by retrying, so we do not retry it.
             if ($answer->status() === 429 || $answer->serverError()) {
                 $this->waitOut($attempt, $url, "HTTP {$answer->status()}");
 
@@ -166,16 +168,16 @@ class PoliteClient
             }
 
             if ($answer->clientError()) {
-                throw new RuntimeException("{$url} repond HTTP {$answer->status()}");
+                throw new RuntimeException("{$url} answers HTTP {$answer->status()}");
             }
 
             return $answer;
         }
 
-        throw new RuntimeException("{$url} n'a pas repondu en {$this->tries} tentatives");
+        throw new RuntimeException("{$url} did not answer within {$this->tries} attempts");
     }
 
-    /** Ne jamais rappeler avant que la pause demandee se soit ecoulee. */
+    /** Never call again before the requested pause has elapsed. */
     private function breathe(): void
     {
         if ($this->pauseMs <= 0) {
@@ -190,18 +192,18 @@ class PoliteClient
     }
 
     /**
-     * Reculer, de plus en plus loin.
+     * Back off, further and further.
      *
-     * Un serveur qui repond 429 le repondra encore dans une seconde. Doubler l'attente a
-     * chaque fois est ce qui fait la difference entre attendre qu'il respire et l'aider a
-     * suffoquer.
+     * A server answering 429 will still answer it a second later. Doubling the wait
+     * each time is what makes the difference between waiting for it to breathe and
+     * helping it suffocate.
      */
     private function waitOut(int $attempt, string $url, string $why): void
     {
-        // Adosse a la pause demandee plutot qu'a une constante : une collecte reglee
-        // lentement recule lentement, et une suite de tests reglee a zero n'attend pas.
+        // Anchored to the requested pause rather than to a constant: a collection set
+        // to run slowly backs off slowly, and a test suite set to zero does not wait.
         $wait = min(self::MAX_BACKOFF_MS, max(1, $this->pauseMs) * (2 ** $attempt));
-        ($this->tell ?? fn () => null)("{$url} : {$why}, nouvelle tentative dans ".round($wait / 1000).' s');
+        ($this->tell ?? fn () => null)("{$url}: {$why}, retrying in ".round($wait / 1000).' s');
         usleep($wait * 1000);
     }
 }

@@ -139,9 +139,9 @@ class Comparison
      */
     public function sizes(): array
     {
-        // Chaque cle ecrite en toutes lettres plutot qu'un prefixe suivi d'un nom d'axe :
-        // une cle assemblee au rendu est une cle qu'aucun controle ne voit, donc le jour
-        // ou un axe s'ajoute, la page imprime la cle brute et rien ne le signale.
+        // Each key written out in full rather than a prefix followed by an axis name: a
+        // key assembled at render time is a key no check sees, so the day an axis is
+        // added, the page prints the raw key and nothing flags it.
         return array_values(array_filter([
             $this->measure('schema.comparer.mesure-blocs',
                 (float) $this->left->blocks, (float) $this->right->blocks),

@@ -5,49 +5,49 @@ namespace App\Console\Commands\Sources;
 use App\Models\Schematic;
 
 /**
- * mindustry-tool.com, le gros des deux.
+ * mindustry-tool.com, the bigger of the two.
  *
- * Douze mille cinq cents schematiques derriere une API v4 sans quota ni authentification.
- * Trois adresses par entree, relevees sur pieces le 27 aout 2026 :
+ * Twelve thousand five hundred schematics behind a v4 API with no quota and no
+ * authentication. Three addresses per entry, read off the source on 27 August 2026:
  *
- *     /schematics?page=N&size=S   le listing : id, nom, likes, telechargements
- *     /schematics/{id}            le detail : description, dimensions, auteur, leurs chiffres
- *     /schematics/{id}/data       le `.msch` en octets, `application/octet-stream`
+ *     /schematics?page=N&size=S   the listing: id, name, likes, downloads
+ *     /schematics/{id}            the detail: description, dimensions, author, their figures
+ *     /schematics/{id}/data       the `.msch` in bytes, `application/octet-stream`
  *
- * Le detail vaut ses deux cent millisecondes : il porte `meta.powerConsumption` et
- * `meta.powerProduction`, c'est-a-dire leur reponse a une question que ce depot pose
- * autrement. Douze mille comparaisons gratuites contre notre moteur, gardees dans
- * `source_meta` : partout ou les deux divergent, l'un des deux a tort, et ce depot tient
- * un banc capable de dire lequel.
+ * The detail earns its two hundred milliseconds: it carries `meta.powerConsumption` and
+ * `meta.powerProduction`, that is, their own answer to a question this repository asks
+ * another way. Twelve thousand free comparisons against our engine, kept in
+ * `source_meta`: everywhere the two diverge, one of them is wrong, and this repository
+ * holds a bench able to say which.
  *
- * A une reserve, verifiee sur les quarante premieres entrees avant qu'elle ne coute une
- * demi-journee a quelqu'un : **leurs chiffres sont par tick, les notres par seconde**.
- * Leur reacteur au thorium annonce 15 la ou nous en disons 900, et 900 = 15 x 60. Les deux
- * catalogues font pareil. Une comparaison qui oublie le facteur soixante croit avoir
- * trouve douze mille desaccords ; il n'y en a aucun.
+ * With one caveat, verified on the first forty entries before it cost someone a
+ * half day: **their figures are per tick, ours are per second**. Their thorium reactor
+ * announces 15 where we say 900, and 900 = 15 x 60. Both catalogues do the same. A
+ * comparison that forgets the factor of sixty thinks it has found twelve thousand
+ * disagreements; there are none.
  *
- * La pagination est un decalage sur une liste rangee du plus recent au plus ancien, donc
- * une entree deposee pendant la collecte decale la fenetre. Ca ne se repare pas : ca se
- * relance. La contrainte d'unicite absorbe les doublons, et ce qui a glisse entre deux
- * pages sera pris au prochain passage.
+ * Pagination is an offset over a list sorted from newest to oldest, so an entry
+ * submitted during the collection shifts the window. That is not fixed: it is
+ * restarted. The uniqueness constraint absorbs the duplicates, and whatever slipped
+ * between two pages will be picked up on the next pass.
  */
 class MindustryTool extends Catalogue
 {
     private const BASE = 'https://api.mindustry-tool.com/api/v4';
 
-    /** Combien d'entrees par page de listing. Cent passe, et divise le trafic par cinq. */
+    /** How many entries per listing page. A hundred goes through, and divides traffic by five. */
     private const SIZE = 100;
 
     /**
-     * De quoi arreter une boucle que la source ne fermerait pas.
+     * Something to stop a loop the source would not close on its own.
      *
-     * `pages()` s'arrete normalement sur une page vide. Une API qui repondrait la meme
-     * page indefiniment tournerait sans fin, et une collecte sans fin sur le serveur de
-     * quelqu'un d'autre est exactement ce qu'on s'est promis d'eviter.
+     * `pages()` normally stops on an empty page. An API that answered the same
+     * page indefinitely would loop forever, and a collection running forever on someone
+     * else's server is exactly what we promised ourselves to avoid.
      */
     private const MAX_PAGES = 1000;
 
-    /** Les noms d'auteurs deja resolus, pour ne pas redemander mille fois le meme. */
+    /** The author names already resolved, so as not to ask for the same one a thousand times. */
     private array $names = [];
 
     public function source(): string
@@ -90,8 +90,8 @@ class MindustryTool extends Catalogue
             return null;
         }
 
-        // Le seul appel qui rapporte la schematique elle-meme. Sans lui il n'y a rien a
-        // garder : le detail ne porte que ce qu'on dit d'elle.
+        // The only call that brings back the schematic itself. Without it there is nothing
+        // to keep: the detail only carries what is said about it.
         $code = $this->http->base64(self::BASE."/schematics/{$id}/data");
         if ($code === null || $code === '') {
             return null;
@@ -165,12 +165,12 @@ class MindustryTool extends Catalogue
     }
 
     /**
-     * Le pseudo derriere l'identifiant que le detail donne.
+     * The username behind the identifier the detail gives.
      *
-     * Le detail ne nomme pas l'auteur, il le numerote. Un credit qu'on ne peut pas lire
-     * n'est pas un credit, donc on paie l'appel, une fois par personne : sur douze mille
-     * schematiques il y a quelques centaines d'auteurs, et redemander a chaque ligne
-     * ferait le tiers du trafic de la collecte pour rien.
+     * The detail does not name the author, it numbers them. A credit that cannot be read
+     * is not a credit, so the call is paid for, once per person: across twelve thousand
+     * schematics there are a few hundred authors, and asking again on every row
+     * would make a third of the collection's traffic for nothing.
      */
     private function nameOf(?string $who): ?string
     {

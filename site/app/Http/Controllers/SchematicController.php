@@ -28,10 +28,10 @@ class SchematicController extends Controller
     private const MAX_CODE = 512 * 1024;
 
     /**
-     * Le sol ne peut pas être plus grand que la schématique qu'il porte.
+     * The ground cannot be larger than the schematic it carries.
      *
-     * 64 × 64 est la limite du jeu, donc 4 096 cases, et une de plus est soit un bug soit
-     * quelqu'un qui essaie de remplir la base de données par la porte de derrière.
+     * 64 x 64 is the game's limit, so 4,096 tiles, and one more is either a bug or
+     * somebody trying to fill the database through the back door.
      */
     private const MAX_GROUND = 4096;
 
@@ -88,8 +88,8 @@ class SchematicController extends Controller
             'visibility' => $schematic->visibility,
             'mine' => $schematic->managedBy($request->user()),
             'marked' => (array) ($schematic->analysis['marked'] ?? []),
-            // Le terrain sur lequel elle a été conçue. Sans lui, rouvrir une schématique
-            // rendait ses foreuses muettes : « au mieux, sur une tache pleine ».
+            // The ground it was designed on. Without it, reopening a schematic left
+            // its drills mute: "at best, on a full patch".
             'ground' => (array) ($schematic->ground ?? []),
             'kept' => $schematic->created_at?->format('d/m/Y'),
         ]);
@@ -155,10 +155,10 @@ class SchematicController extends Controller
         abort_unless($schematic->visibleTo(auth()->user()), 404);
         $schematic->increment('views');
 
-        /* Deux lectures, et seulement pour qui est connecte : le compteur est public et
-           vaut la meme chose pour tout le monde, mais l'etat des deux boutons est celui de
-           cette personne-la. Prendre l'un pour l'autre montrerait le bouton presse a qui
-           n'a rien presse. */
+        /* Two reads, and only for whoever is logged in: the counter is public and
+           reads the same for everyone, but the state of the two buttons belongs to
+           this particular person. Mixing the two up would show a pressed button to
+           somebody who pressed nothing. */
         $user = auth()->user();
 
         return view('schematic', [
@@ -167,9 +167,9 @@ class SchematicController extends Controller
                 ->where('schematic_id', $schematic->id)->exists(),
             'favori' => $user !== null && Favorite::where('user_id', $user->id)
                 ->where('schematic_id', $schematic->id)->exists(),
-            /* Ses dossiers a elle, et lesquels contiennent deja ce schema : sans le second,
-               la liste proposerait de ranger une chose deja rangee, et la personne ne
-               saurait pas ou elle l'a mise. */
+            /* Their own folders, and which of them already hold this schematic: without
+               the second part, the list would offer to file something already filed,
+               and the person would not know where they had put it. */
             'note' => $user === null ? null : SchematicNote::where('user_id', $user->id)
                 ->where('schematic_id', $schematic->id)->value('body'),
             'folders' => $user === null ? collect() : Folder::query()
