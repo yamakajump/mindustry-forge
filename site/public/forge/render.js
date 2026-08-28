@@ -14,19 +14,21 @@
 import {
   beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
 } from "./live.js";
-import { variantOf } from "./tiling.js";
+import { variantOf, blendersAt, D8 } from "./tiling.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
 let atlas = null;
 let sheet = null;
+/** The blend group data from `sols.json`: which floor bleeds onto which, and with what sheet. */
+let soils = null;
 /** How many sprites each floor has, filled on first sight and kept for the page's life. */
 const variantCounts = new Map();
 
 export async function loadSprites(base = "./forge/") {
   if (atlas && sheet) return { atlas, sheet };
-  const [index, image] = await Promise.all([
+  const [index, image, blends] = await Promise.all([
     fetch(base + "atlas.json").then((r) => {
       if (!r.ok) throw new Error("atlas introuvable");
       return r.json();
@@ -37,9 +39,14 @@ export async function loadSprites(base = "./forge/") {
       img.onerror = () => reject(new Error("sprites introuvables"));
       img.src = base + "atlas.png";
     }),
+    // A missing sols.json must not break the page: the report and the editor drew ground
+    // fine before boundary blending existed, so a failed fetch here costs the soft edges
+    // between floors, not the ground itself.
+    fetch(base + "sols.json").then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   atlas = index;
   sheet = image;
+  soils = blends;
   return { atlas, sheet };
 }
 
@@ -446,6 +453,27 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
           : atlas?.sprites?.[`floor/${name}`];
         if (art) {
           context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
+        }
+      }
+
+      /* The boundary, drawn over this tile rather than over its neighbour: the game bleeds
+         inwards, so a patch of grass beside stone has grass creeping onto the stone tile. */
+      if (soils) {
+        for (const blender of blendersAt(ground, x, y, soils.floors)) {
+          const edgeArt = atlas?.sprites?.[`floor/${blender.sheet}#edge`];
+          if (!edgeArt) continue;
+          // Nine cells in a 96 pixel sheet, so a cell is a third of its width.
+          const cell = edgeArt.w / 3;
+          for (const dir of blender.dirs) {
+            const [dx, dy] = D8[dir];
+            // `Floor.edge(x, y, i, j)` is `edges[i][2 - j]`: column from dx, row flipped
+            // because the board's y grows upwards and the sheet's grows downwards.
+            const col = dx + 1;
+            const row = 2 - (dy + 1);
+            context.drawImage(sheet,
+              edgeArt.x + col * cell, edgeArt.y + row * cell, cell, cell,
+              px, py, scale, scale);
+          }
         }
       }
     }

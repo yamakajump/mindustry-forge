@@ -76,3 +76,89 @@ test("the variant is not constant along a diagonal either", () => {
   assert.ok(alongSum.size > 1, "a whole x + y diagonal took the same variant");
   assert.ok(alongDiff.size > 1, "a whole x - y diagonal took the same variant");
 });
+
+import { blendersAt, D8 } from "../../site/public/forge/tiling.js";
+
+/* Two floors, one that blends over the other. Written here rather than read out of
+   sols.json so the test says what it depends on. */
+const floors = {
+  stone: { blend: 10, out: true, variants: 3, sheet: "stone" },
+  grass: { blend: 20, out: true, variants: 3, sheet: "grass" },
+  // A floor the game tells not to bleed outwards, which is the one case where a higher
+  // blend id still draws nothing.
+  shale: { blend: 30, out: false, variants: 1, sheet: "shale" },
+  // A floor with no sheet anywhere, neither its own nor its group's: it cannot bleed, and
+  // anything bleeds onto it.
+  sand: { blend: 5, out: true, variants: 3, sheet: null },
+  // A vent, which ships no sheet and borrows its group's. Fourteen real floors are shaped
+  // like this, and reading `<name>-edge` alone drops every one of them.
+  "stone-vent": { blend: 12, out: true, variants: 3, sheet: "stone" },
+};
+
+const ground = (cells) => Object.fromEntries(
+  Object.entries(cells).map(([at, floor]) => [at, { floor }]));
+
+test("the eight directions are the game's, in the game's order", () => {
+  assert.equal(D8.length, 8);
+  // Geometry.d8 starts at (-1,-1) and turns; what matters is that every neighbour appears
+  // exactly once and the centre never does.
+  const seen = new Set(D8.map(([dx, dy]) => `${dx},${dy}`));
+  assert.equal(seen.size, 8);
+  assert.ok(!seen.has("0,0"));
+});
+
+test("a higher blend id bleeds onto a lower one", () => {
+  const board = ground({ "0,0": "stone", "1,0": "grass" });
+  const found = blendersAt(board, 0, 0, floors);
+  assert.deepEqual(found.map((b) => b.name), ["grass"]);
+});
+
+test("a lower blend id does not bleed onto a higher one", () => {
+  const board = ground({ "0,0": "grass", "1,0": "stone" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
+
+test("the same floor on both sides is not a boundary", () => {
+  const board = ground({ "0,0": "grass", "1,0": "grass", "0,1": "grass" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
+
+test("drawEdgeOut false means it never bleeds, whatever its id", () => {
+  const board = ground({ "0,0": "stone", "1,0": "shale" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
+
+test("a floor with no sheet at all is bled onto by a lower id", () => {
+  /* doEdge is `other.blendId > this.blendId || this.edges === null`. Sand has no sheet, so
+     stone bleeds onto it although stone's id is higher, and grass would too. Without this
+     clause a patch of sand next to anything reads as a cut-out. */
+  const board = ground({ "0,0": "sand", "1,0": "stone" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors).map((b) => b.name), ["stone"]);
+});
+
+test("a vent bleeds, and does it with its group's sheet", () => {
+  const board = ground({ "0,0": "sand", "1,0": "stone-vent" });
+  const found = blendersAt(board, 0, 0, floors);
+  assert.deepEqual(found.map((b) => b.name), ["stone-vent"]);
+  assert.equal(found[0].sheet, "stone", "a vent must draw its group's sheet, not its own");
+});
+
+test("one neighbour contributes once, with every direction it came from", () => {
+  const board = ground({ "0,0": "stone", "1,0": "grass", "0,1": "grass", "1,1": "grass" });
+  const found = blendersAt(board, 0, 0, floors);
+  assert.equal(found.length, 1, "grass was listed more than once");
+  assert.equal(found[0].dirs.length, 3, "not every direction was recorded");
+});
+
+test("blenders come out sorted, so two of them stack the same way every frame", () => {
+  const board = ground({ "0,0": "sand", "1,0": "grass", "0,1": "stone" });
+  const found = blendersAt(board, 0, 0, floors);
+  assert.deepEqual(found.map((b) => b.name), ["stone", "grass"]);
+});
+
+test("an unpainted neighbour is not a floor and contributes nothing", () => {
+  /* The board is mostly empty and stays that way: a tile nobody painted has no floor, and
+     reading it as one would draw a boundary around every patch against nothing. */
+  const board = ground({ "0,0": "stone" });
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
+});
