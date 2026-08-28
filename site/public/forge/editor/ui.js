@@ -211,6 +211,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       <label class="fade">Transparence des blocs
         <input type="range" min="0" max="100" value="35">
         <span class="num">35 %</span></label>
+      <p class="empty ground-empty" hidden>Aucun sol ne répond à ça.</p>
       ${layers.map((layer) => `<section data-layer="${layer.key}">
         <h3>${escape(layer.label)} <span class="num">${layer.blocks.length}</span></h3>
         <div class="swatches"></div>
@@ -223,8 +224,8 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   const held = host.querySelector(".editor-held");
   const search = host.querySelector(".search input");
   const groundPanel = host.querySelector(".editor-ground");
+  const groundEmpty = groundPanel.querySelector(".ground-empty");
   const filters = host.querySelector(".editor-filters");
-  const searchRow = host.querySelector(".search");
   const recentsRow = host.querySelector(".editor-recents");
   const recentsBox = recentsRow.querySelector(".swatches");
   let holding = null;
@@ -265,6 +266,36 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     recentsRow.hidden = !onGroundTab || recents.length === 0;
   }
   paintRecents();
+
+  /**
+   * Filter the ground swatches by the search box, matched on the block's own game name.
+   *
+   * A floor's French name, once one exists, belongs in this match too, so that both
+   * spellings find it. None do yet: the catalogue carries no French floor names at the
+   * time of this pass, so there is nothing to look up. This only needs to keep reading
+   * `name`, unmodified, when that lookup arrives.
+   *
+   * A swatch hides rather than leaves the grid, so nothing is redrawn on every keystroke,
+   * and a family with no match left hides its own heading rather than showing an empty
+   * count.
+   */
+  function paintGround() {
+    let anyShown = false;
+    for (const layer of layers) {
+      const section = groundPanel.querySelector(`[data-layer="${layer.key}"]`);
+      const box = section.querySelector(".swatches");
+      let shownInLayer = 0;
+      for (const chip of box.children) {
+        const match = !needle || chip.dataset.ground.includes(needle);
+        chip.hidden = !match;
+        if (match) shownInLayer++;
+      }
+      section.hidden = shownInLayer === 0;
+      anyShown ||= shownInLayer > 0;
+    }
+    groundEmpty.hidden = anyShown;
+  }
+  paintGround();
 
   const paint = () => {
     const shown = all.filter(({ name, block }) =>
@@ -343,7 +374,11 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
 
   search.addEventListener("input", (event) => {
     needle = event.target.value.trim().toLowerCase();
+    /* Both tabs share one search box, so both are repainted: the one that is hidden costs
+       nothing to keep correct, and it is what stays correct across a tab switch without a
+       second hook to remember. */
     paint();
+    paintGround();
   });
 
   /* ------------------------------------------------------------------------------------
@@ -368,8 +403,13 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     groundPanel.hidden = !onGround;
     grid.hidden = onGround;
     filters.hidden = onGround;
-    searchRow.hidden = onGround;
     held.hidden = onGround;
+    /* The search box is shared: only what it searches, and what it says while empty,
+       changes with the tab. There is no world filter on the ground side (see the plan for
+       this branch), so the search is the only narrowing tool it has. */
+    search.placeholder = onGround
+      ? "Chercher un sol, un minerai ou un mur" : `Chercher dans ${all.length} blocs`;
+    search.setAttribute("aria-label", onGround ? "Chercher dans le sol" : "Chercher un bloc");
     paintRecents();
     /* The fade switches on its own: moving to the ground tab melts the blocks so that what
        is being painted can be seen, and coming back makes them solid again. That is what
