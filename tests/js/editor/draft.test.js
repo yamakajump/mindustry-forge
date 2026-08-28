@@ -9,7 +9,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { ageOf, dropDraft, keepDraft, readDraft }
+import { ageOf, describeDraft, dropDraft, keepDraft, readDraft }
   from "../../../site/public/forge/editor/draft.js";
 
 /** Un `localStorage` de comptoir, puisque Node n en a pas. */
@@ -84,4 +84,96 @@ test("l age se dit comme on le dirait a voix haute", () => {
   assert.equal(ageOf(0, 5 * minute), "il y a 5 minutes");
   assert.equal(ageOf(0, 61 * minute), "il y a 1 heure");
   assert.equal(ageOf(0, 50 * 60 * minute), "il y a 2 jours");
+});
+
+/* --------------------------------------------------------------------------------------
+   Les cadres dans le brouillon.
+
+   Un brouillon d hier n a jamais entendu parler de cadres : il porte `tiles` et `ground`,
+   pas de cle `frames`, et ca ne demande aucune migration puisque l absence de cadre est
+   deja un etat que ce plateau connait. A partir d aujourd hui, un brouillon garde aussi
+   les cadres, pour qu ouvrir un onglet ferme par erreur ne fasse pas perdre le travail
+   de nommer et de tracer des chantiers, pas seulement celui de les remplir.
+   -------------------------------------------------------------------------------------- */
+
+const cadre = { id: "a", name: "fonderie", left: 0, bottom: 0, width: 10, height: 8 };
+
+test("un cadre se garde et se relit avec le reste", () => {
+  comptoir();
+  keepDraft({ tiles: [bande], ground: {}, frames: [cadre] }, 1000);
+  const kept = readDraft(1000);
+  assert.equal(kept.frames.length, 1);
+  assert.deepEqual(kept.frames[0], cadre);
+});
+
+test("un plateau qui n a qu un cadre, sans bloc, vaut quand meme la peine d etre garde", () => {
+  const box = comptoir();
+  keepDraft({ tiles: [], ground: {}, frames: [cadre] }, 1000);
+  assert.ok(box.size > 0);
+  assert.equal(readDraft(1000).frames.length, 1);
+});
+
+test("un brouillon d hier, sans cle frames, se relit quand meme : la liste est vide", () => {
+  comptoir();
+  // Ecrit a la main, comme l aurait fait la version d avant les cadres : pas de `frames`.
+  globalThis.localStorage.setItem("forge:brouillon",
+    JSON.stringify({ at: 1000, tiles: [bande], ground: {} }));
+  const kept = readDraft(2000);
+  assert.deepEqual(kept.tiles, [bande]);
+  assert.deepEqual(kept.frames ?? [], []);
+});
+
+/* --------------------------------------------------------------------------------------
+   Dire ce qu un brouillon garde, pas un chiffre qui repond a une autre question.
+
+   Un brouillon se garde des qu une seule de ses trois parts n est pas vide (voir plus
+   haut). "Un brouillon de 0 blocs" pour un brouillon qui n a que du sol peint est le
+   defaut que ce depot debusque par son nom : un chiffre exact, a cote de sa question.
+   -------------------------------------------------------------------------------------- */
+
+test("un seul bloc se dit au singulier", () => {
+  assert.equal(describeDraft({ tiles: [bande], ground: {}, frames: [] }), "1 bloc");
+});
+
+test("plusieurs blocs se disent au pluriel", () => {
+  assert.equal(describeDraft({ tiles: [bande, bande], ground: {}, frames: [] }), "2 blocs");
+});
+
+test("du sol peint sans aucun bloc se dit pour ce qu il est, pas 0 blocs", () => {
+  const dit = describeDraft({ tiles: [], ground: { "0,0": { floor: "stone" } }, frames: [] });
+  assert.equal(dit, "1 case de sol peinte");
+});
+
+test("plusieurs cases de sol peintes se disent au pluriel", () => {
+  const dit = describeDraft({
+    tiles: [], ground: { "0,0": { floor: "stone" }, "1,0": { floor: "sand" } }, frames: [],
+  });
+  assert.equal(dit, "2 cases de sol peintes");
+});
+
+test("un seul cadre, sans bloc ni sol, se dit pour ce qu il est", () => {
+  assert.equal(describeDraft({ tiles: [], ground: {}, frames: [cadre] }), "1 cadre");
+});
+
+test("plusieurs cadres se disent au pluriel", () => {
+  assert.equal(describeDraft({ tiles: [], ground: {}, frames: [cadre, { ...cadre, id: "b" }] }),
+    "2 cadres");
+});
+
+test("deux parts se joignent par et, sans virgule avant", () => {
+  const dit = describeDraft({ tiles: [bande], ground: {}, frames: [cadre] });
+  assert.equal(dit, "1 bloc et 1 cadre");
+});
+
+test("les trois parts ensemble se disent virgule, virgule, et", () => {
+  const dit = describeDraft({
+    tiles: [bande, bande, bande],
+    ground: { "0,0": { floor: "stone" } },
+    frames: [cadre],
+  });
+  assert.equal(dit, "3 blocs, 1 case de sol peinte et 1 cadre");
+});
+
+test("un brouillon d hier sans cle frames ne dit pas de cadre", () => {
+  assert.equal(describeDraft({ tiles: [bande], ground: {} }), "1 bloc");
 });

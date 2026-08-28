@@ -14,16 +14,21 @@
 import {
   beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
 } from "./live.js";
+import { variantOf, blendersAt, D8, edgeCell } from "./tiling.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
 let atlas = null;
 let sheet = null;
+/** The blend group data from `sols.json`: which floor bleeds onto which, and with what sheet. */
+let soils = null;
+/** How many sprites each floor has, filled on first sight and kept for the page's life. */
+const variantCounts = new Map();
 
 export async function loadSprites(base = "./forge/") {
   if (atlas && sheet) return { atlas, sheet };
-  const [index, image] = await Promise.all([
+  const [index, image, blends] = await Promise.all([
     fetch(base + "atlas.json").then((r) => {
       if (!r.ok) throw new Error("atlas introuvable");
       return r.json();
@@ -34,9 +39,14 @@ export async function loadSprites(base = "./forge/") {
       img.onerror = () => reject(new Error("sprites introuvables"));
       img.src = base + "atlas.png";
     }),
+    // A missing sols.json must not break the page: the report and the editor drew ground
+    // fine before boundary blending existed, so a failed fetch here costs the soft edges
+    // between floors, not the ground itself.
+    fetch(base + "sols.json").then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   atlas = index;
   sheet = image;
+  soils = blends;
   return { atlas, sheet };
 }
 
@@ -419,18 +429,89 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
      floor rather than instead of it, exactly as the game stacks them. */
   const ground = options.ground || null;
   const painted = new Set();
-  if (ground && sheet) {
-    for (const [at, layers] of Object.entries(ground)) {
-      const [x, y] = at.split(",").map(Number);
-      if (x < box.left || x >= box.left + box.width) continue;
-      if (y < box.bottom || y >= box.bottom + box.height) continue;
-      painted.add(at);
 
-      const px = (x - box.left) * scale;
-      const py = (box.height - (y - box.bottom) - 1) * scale;
-      for (const name of [layers.floor, layers.overlay]) {
-        const art = name && atlas?.sprites?.[`floor/${name}`];
-        if (art) context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
+  /* One layer of ground on one tile, floor or overlay, with the variant this position takes.
+     Hoisted out of the loop rather than written inline twice: a 64 by 64 board runs it 8192
+     times a frame and it is the same six lines either way. */
+  const paintLayer = (name, x, y, px, py) => {
+    if (!name) return;
+    /* How many sprites this floor has, counted once per floor rather than per tile. */
+    let count = variantCounts.get(name);
+    if (count === undefined) {
+      count = 0;
+      while (atlas?.sprites?.[`floor/${name}#${count + 1}`]) count++;
+      variantCounts.set(name, count);
+    }
+    const art = count > 1
+      ? atlas.sprites[`floor/${name}#${variantOf(x, y, count) + 1}`]
+      : atlas?.sprites?.[`floor/${name}`];
+    if (art) context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
+  };
+
+  /* Walked by the visible tile range and looked up by key, not by `Object.entries(ground)`
+     filtered afterwards. The board this editor paints on is fixed at 256 by 256 now, so a
+     player flooding it with a bucket fill can hold up to 65536 painted cells; filtering all
+     of them on every pointer event during a drag measured at 36 ms a call on a fully painted
+     board, three frame budgets at 60 fps, against 1.1 ms before the board grew. Walking the
+     box costs what is on screen instead, whatever has ever been painted: measured at 8.5,
+     8.4 and 7.8 ms for boards of 4096, 16384 and 65536 painted cells, all viewed the same
+     way, which is the same number three times. */
+  if (ground && sheet) {
+    const fromX = Math.floor(box.left);
+    const uptoX = Math.ceil(box.left + box.width);
+    const fromY = Math.floor(box.bottom);
+    const uptoY = Math.ceil(box.bottom + box.height);
+    for (let x = fromX; x < uptoX; x++) {
+      for (let y = fromY; y < uptoY; y++) {
+        const at = `${x},${y}`;
+        const layers = ground[at];
+        if (!layers) continue;
+        painted.add(at);
+
+        const px = (x - box.left) * scale;
+        const py = (box.height - (y - box.bottom) - 1) * scale;
+
+        /* `Floor.drawBase` has four statements: `drawMain`, then `drawEdges` when
+           `drawEdgeIn` is set, then `drawOverlay`, then a redraw of `drawMain` at
+           `1 - overlayAlpha` when this floor is a liquid carrying an overlay. The first
+           three are the order used here: the floor goes down first, the boundary over it,
+           the tile's own overlay over both. Drawing the overlay before the boundary put a
+           neighbour's material on top of an ore patch instead of underneath it, which is
+           the one place a player is looking.
+
+           The fourth is NOT implemented, and the gap is visible. `overlayAlpha` is 0.65 by
+           default, so the game drapes a liquid floor back over its own overlay at 0.35
+           alpha, which is what makes ore on water read as lying under the water. Here the
+           same tile is drawn crisp, the ore sitting on top of the liquid instead of
+           beneath it. Eleven floors in the catalogue are liquids. Closing this is its own
+           piece of work, because it is a change nobody can accept without looking at it. */
+        paintLayer(layers.floor, x, y, px, py);
+
+        /* The boundary, drawn over this tile rather than over its neighbour: the game
+           bleeds inwards, so a patch of grass beside stone has grass creeping onto the
+           stone tile.
+
+           `soils?.floors` rather than a truth test on `soils`: a sols.json that parses as
+           `{}` would otherwise throw here and take the whole drawing down with it, when the
+           only thing that should be lost is the blending. */
+        if (soils?.floors) {
+          for (const blender of blendersAt(ground, x, y, soils.floors)) {
+            const edgeArt = atlas?.sprites?.[`floor/${blender.sheet}#edge`];
+            if (!edgeArt) continue;
+            // Nine cells in a 96 pixel sheet, so a cell is a third of its width.
+            const cell = edgeArt.w / 3;
+            for (const dir of blender.dirs) {
+              const [dx, dy] = D8[dir];
+              // Which cell holds the material for this side: see edgeCell in tiling.js.
+              const { col, row } = edgeCell(dx, dy);
+              context.drawImage(sheet,
+                edgeArt.x + col * cell, edgeArt.y + row * cell, cell, cell,
+                px, py, scale, scale);
+            }
+          }
+        }
+
+        paintLayer(layers.overlay, x, y, px, py);
       }
     }
   }

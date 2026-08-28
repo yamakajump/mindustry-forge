@@ -117,6 +117,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": -1,
       "buildable": true
     },
     "spawn":{
@@ -149,6 +150,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 1,
       "overlay": true,
       "buildable": true
     },
@@ -212,6 +214,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 3,
       "overlay": true,
       "buildable": true
     },
@@ -706,6 +709,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 21,
+      "cache_layer": "water",
       "floor_liquid": true,
       "drops_liquid": "water",
       "liquid_multiplier": 1.5,
@@ -742,6 +747,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 22,
+      "cache_layer": "water",
       "floor_liquid": true,
       "drops_liquid": "water",
       "liquid_multiplier": 1,
@@ -777,6 +784,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 23,
+      "cache_layer": "water",
       "attributes":{
         "spores": 0.15
       },
@@ -815,6 +824,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 24,
+      "cache_layer": "water",
       "attributes":{
         "spores": 0.15
       },
@@ -854,6 +865,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 25,
+      "cache_layer": "water",
       "attributes":{
         "spores": 0.1
       },
@@ -892,6 +905,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 26,
+      "cache_layer": "water",
       "floor_liquid": true,
       "drops_liquid": "water",
       "liquid_multiplier": 1,
@@ -927,6 +942,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 27,
+      "cache_layer": "water",
       "floor_liquid": true,
       "drops_liquid": "water",
       "liquid_multiplier": 1,
@@ -962,6 +979,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 28,
+      "cache_layer": "tar",
       "floor_liquid": true,
       "drops_liquid": "oil",
       "liquid_multiplier": 1,
@@ -998,6 +1017,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 29,
+      "cache_layer": "cryofluid",
       "floor_liquid": true,
       "drops_liquid": "cryofluid",
       "liquid_multiplier": 0.5,
@@ -1034,6 +1055,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 30,
+      "cache_layer": "slag",
       "attributes":{
         "heat": 0.85
       },
@@ -1075,6 +1098,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 31,
+      "draw_edge_out": false,
+      "cache_layer": "space",
       "buildable": false
     },
     "empty":{
@@ -1109,6 +1135,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 32,
+      "draw_edge_out": false,
       "buildable": false
     },
     "stone":{
@@ -1141,6 +1169,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 33,
       "buildable": true
     },
     "crater-stone":{
@@ -1173,6 +1202,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 33,
+      "blend_group": "stone",
       "buildable": true
     },
     "char":{
@@ -1205,6 +1236,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 33,
+      "blend_group": "stone",
       "attributes":{
         "water": -0.25
       },
@@ -1240,6 +1273,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 36,
       "attributes":{
         "water": -0.25
       },
@@ -1275,6 +1309,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 36,
+      "blend_group": "basalt",
       "attributes":{
         "heat": 0.5,
         "water": -0.5
@@ -1311,6 +1347,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 36,
+      "blend_group": "basalt",
       "attributes":{
         "heat": 0.75,
         "water": -0.75
@@ -1347,6 +1385,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 39,
       "attributes":{
         "oil": 0.7
       },
@@ -1384,6 +1423,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 40,
       "attributes":{
         "oil": 1.5
       },
@@ -1421,6 +1461,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 41,
       "buildable": true
     },
     "mud":{
@@ -1453,6 +1494,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 42,
+      "cache_layer": "mud",
       "attributes":{
         "water": 1
       },
@@ -1488,6 +1531,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 43,
       "buildable": true
     },
     "rhyolite":{
@@ -1520,6 +1564,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 44,
       "attributes":{
         "water": -1
       },
@@ -1555,6 +1600,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 44,
+      "blend_group": "rhyolite",
       "attributes":{
         "water": -1
       },
@@ -1590,6 +1637,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 46,
       "attributes":{
         "water": -1
       },
@@ -1625,6 +1673,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 47,
       "attributes":{
         "water": -1
       },
@@ -1660,6 +1709,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 48,
       "attributes":{
         "water": -1
       },
@@ -1695,6 +1745,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 49,
       "attributes":{
         "water": -1
       },
@@ -1730,6 +1781,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 50,
       "attributes":{
         "water": -1
       },
@@ -1765,6 +1817,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 50,
+      "blend_group": "ferric-stone",
       "attributes":{
         "water": -1
       },
@@ -1800,6 +1854,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 52,
       "buildable": true
     },
     "crystalline-stone":{
@@ -1832,6 +1887,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 53,
       "buildable": true
     },
     "crystal-floor":{
@@ -1864,6 +1920,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 54,
       "buildable": true
     },
     "yellow-stone-plates":{
@@ -1896,6 +1953,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 55,
       "buildable": true
     },
     "red-stone":{
@@ -1928,6 +1986,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 56,
       "attributes":{
         "water": -1
       },
@@ -1963,6 +2022,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 57,
       "attributes":{
         "water": -1
       },
@@ -1998,6 +2058,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 58,
       "attributes":{
         "water": 0.4
       },
@@ -2033,6 +2094,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 59,
+      "cache_layer": "arkycite",
       "floor_liquid": true,
       "drops_liquid": "arkycite",
       "liquid_multiplier": 1,
@@ -2069,6 +2132,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 60,
       "buildable": true
     },
     "rhyolite-vent":{
@@ -2101,6 +2165,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 44,
+      "blend_group": "rhyolite",
       "attributes":{
         "steam": 1
       },
@@ -2136,6 +2202,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 49,
+      "blend_group": "carbon-stone",
       "attributes":{
         "steam": 1
       },
@@ -2171,6 +2239,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 60,
+      "blend_group": "arkyic-stone",
       "attributes":{
         "steam": 1
       },
@@ -2206,6 +2276,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 48,
+      "blend_group": "yellow-stone",
       "attributes":{
         "steam": 1
       },
@@ -2241,6 +2313,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 57,
+      "blend_group": "dense-red-stone",
       "attributes":{
         "steam": 1
       },
@@ -2276,6 +2350,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 53,
+      "blend_group": "crystalline-stone",
       "attributes":{
         "steam": 1
       },
@@ -2311,6 +2387,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 33,
+      "blend_group": "stone",
       "attributes":{
         "steam": 1
       },
@@ -2346,6 +2424,8 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 36,
+      "blend_group": "basalt",
       "attributes":{
         "steam": 1
       },
@@ -2381,6 +2461,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 69,
       "buildable": true
     },
     "bluemat":{
@@ -2413,6 +2494,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 70,
       "buildable": true
     },
     "grass":{
@@ -2445,6 +2527,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 71,
       "attributes":{
         "water": 0.1
       },
@@ -2480,6 +2563,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 72,
       "attributes":{
         "water": -0.3,
         "oil": 0.3
@@ -2516,6 +2600,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 73,
       "attributes":{
         "water": 0.2
       },
@@ -2551,6 +2636,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 74,
       "attributes":{
         "water": 0.4
       },
@@ -2586,6 +2672,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 75,
       "attributes":{
         "water": 0.3
       },
@@ -2621,6 +2708,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 76,
       "attributes":{
         "oil": 2
       },
@@ -2656,6 +2744,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 77,
       "attributes":{
         "spores": 0.15
       },
@@ -2691,6 +2780,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 78,
       "buildable": true
     },
     "spore-moss":{
@@ -2723,6 +2813,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 79,
       "attributes":{
         "spores": 0.3
       },
@@ -4328,6 +4419,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 130,
       "buildable": true
     },
     "metal-floor-damaged":{
@@ -4360,6 +4452,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 131,
       "buildable": true
     },
     "metal-floor-2":{
@@ -4392,6 +4485,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 132,
       "buildable": true
     },
     "metal-floor-3":{
@@ -4424,6 +4518,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 133,
       "buildable": true
     },
     "metal-floor-4":{
@@ -4456,6 +4551,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 134,
       "buildable": true
     },
     "metal-floor-5":{
@@ -4488,6 +4584,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 135,
       "buildable": true
     },
     "dark-panel-1":{
@@ -4520,6 +4617,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 136,
       "buildable": true
     },
     "dark-panel-2":{
@@ -4552,6 +4650,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 137,
       "buildable": true
     },
     "dark-panel-3":{
@@ -4584,6 +4683,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 138,
       "buildable": true
     },
     "dark-panel-4":{
@@ -4616,6 +4716,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 139,
       "buildable": true
     },
     "dark-panel-5":{
@@ -4648,6 +4749,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 140,
       "buildable": true
     },
     "dark-panel-6":{
@@ -4680,6 +4782,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 141,
       "buildable": true
     },
     "dark-metal":{
@@ -4745,6 +4848,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 143,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-2":{
@@ -4777,6 +4883,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 144,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-3":{
@@ -4809,6 +4918,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 145,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-4":{
@@ -4841,6 +4953,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 146,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-5":{
@@ -4873,6 +4988,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 147,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-6":{
@@ -4905,6 +5023,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 148,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-7":{
@@ -4937,6 +5058,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 149,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-8":{
@@ -4969,6 +5093,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 150,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-9":{
@@ -5001,6 +5128,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 151,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-10":{
@@ -5033,6 +5163,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 152,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-11":{
@@ -5065,6 +5198,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 153,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-12":{
@@ -5097,6 +5233,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 154,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-tiles-13":{
@@ -5129,6 +5268,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 155,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "metal-wall-1":{
@@ -5261,6 +5403,9 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 159,
+      "draw_edge_in": false,
+      "draw_edge_out": false,
       "buildable": true
     },
     "colored-wall":{
@@ -5328,6 +5473,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 161,
       "overlay": true,
       "buildable": true
     },
@@ -5362,6 +5508,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 162,
       "overlay": true,
       "buildable": true
     },
@@ -5396,6 +5543,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 163,
       "overlay": true,
       "buildable": true
     },
@@ -5430,6 +5578,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 164,
       "overlay": true,
       "buildable": true
     },
@@ -5463,6 +5612,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 165,
       "overlay": true,
       "buildable": true
     },
@@ -5496,6 +5646,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 166,
       "overlay": true,
       "buildable": true
     },
@@ -5529,6 +5680,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 167,
       "overlay": true,
       "drops": "copper",
       "buildable": true
@@ -5563,6 +5715,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 168,
       "overlay": true,
       "drops": "lead",
       "buildable": true
@@ -5597,6 +5750,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 169,
       "overlay": true,
       "drops": "scrap",
       "buildable": true
@@ -5631,6 +5785,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 170,
       "overlay": true,
       "drops": "coal",
       "buildable": true
@@ -5665,6 +5820,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 171,
       "overlay": true,
       "drops": "titanium",
       "buildable": true
@@ -5699,6 +5855,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 172,
       "overlay": true,
       "drops": "thorium",
       "buildable": true
@@ -5733,6 +5890,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 173,
       "overlay": true,
       "drops": "beryllium",
       "buildable": true
@@ -5767,6 +5925,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 174,
       "overlay": true,
       "drops": "tungsten",
       "buildable": true
@@ -5801,6 +5960,7 @@
       "cost":{},
       "power": 0,
       "floor": true,
+      "blend_id": 175,
       "overlay": true,
       "drops": "thorium",
       "buildable": true
@@ -5836,6 +5996,7 @@
       "power": 0,
       "wall_ore": true,
       "floor": true,
+      "blend_id": 176,
       "overlay": true,
       "drops": "thorium",
       "buildable": true
@@ -5871,6 +6032,7 @@
       "power": 0,
       "wall_ore": true,
       "floor": true,
+      "blend_id": 177,
       "overlay": true,
       "drops": "beryllium",
       "buildable": true
@@ -5940,6 +6102,7 @@
       "power": 0,
       "wall_ore": true,
       "floor": true,
+      "blend_id": 179,
       "overlay": true,
       "drops": "graphite",
       "buildable": true
@@ -5975,6 +6138,7 @@
       "power": 0,
       "wall_ore": true,
       "floor": true,
+      "blend_id": 180,
       "overlay": true,
       "drops": "tungsten",
       "buildable": true
