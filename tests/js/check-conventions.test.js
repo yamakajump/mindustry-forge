@@ -7,6 +7,13 @@
  * functions are tested first, because that is where the rules actually live; the last few
  * tests spawn the script itself, to prove the command line surface a contributor runs by
  * hand behaves the same way.
+ *
+ * ONE THING TO KNOW BEFORE IT COSTS YOU AN HOUR: this file tests em-dash detection, so it
+ * needs em dashes in its own fixtures. Written as the literal glyph, every one of them
+ * would be an added line in the pull request that introduces this file, and the workflow
+ * this file exists to prove out would fail on its own test suite. `EM_DASH` below is
+ * built from its code point for exactly that reason; use it instead of typing the
+ * character.
  */
 
 import test from "node:test";
@@ -22,6 +29,8 @@ import {
 } from "../../tools/check-conventions.mjs";
 
 const SCRIPT = fileURLToPath(new URL("../../tools/check-conventions.mjs", import.meta.url));
+
+const EM_DASH = String.fromCharCode(0x2014);
 
 /** A scratch file, since the script reads its JSON and diff input from paths, not stdin. */
 function tempFile(name, content) {
@@ -68,14 +77,14 @@ test("a subject exactly at fifty characters passes the length check", () => {
 });
 
 test("an em dash fails even in an otherwise well-formed subject", () => {
-  const [error] = checkSubjectLine("fix(vitrine): show the plafond — not the mesure");
+  const [error] = checkSubjectLine(`fix(vitrine): show the plafond ${EM_DASH} not the mesure`);
   assert.match(error, /em dash/);
-  assert.ok(error.includes("—"));
+  assert.ok(error.includes(EM_DASH));
 });
 
 test("a subject can fail more than one rule at once", () => {
   const tooLong = "z".repeat(60);
-  const errors = checkSubjectLine(`nope: ${tooLong} — still going`);
+  const errors = checkSubjectLine(`nope: ${tooLong} ${EM_DASH} still going`);
   assert.equal(errors.length, 3, "wrong format, too long, and an em dash");
 });
 
@@ -89,7 +98,7 @@ test("addedLines numbers only what a diff actually adds", () => {
     " line one",
     "-old line",
     "+new line",
-    "+another new line — with an em dash",
+    `+another new line ${EM_DASH} with an em dash`,
     " line four",
     "",
   ].join("\n");
@@ -97,7 +106,7 @@ test("addedLines numbers only what a diff actually adds", () => {
   const added = addedLines(diff);
   assert.deepEqual(added, [
     { file: "site/example.js", line: 2, text: "new line" },
-    { file: "site/example.js", line: 3, text: "another new line — with an em dash" },
+    { file: "site/example.js", line: 3, text: `another new line ${EM_DASH} with an em dash` },
   ]);
 });
 
@@ -107,8 +116,8 @@ test("an em dash in a removed or context line does not fail the diff check", () 
     "--- a/docs/notes.md",
     "+++ b/docs/notes.md",
     "@@ -1,2 +1,2 @@",
-    " a line that already had — an em dash before this diff",
-    "-removed — with a dash too",
+    ` a line that already had ${EM_DASH} an em dash before this diff`,
+    `-removed ${EM_DASH} with a dash too`,
     "+a clean added line",
     "",
   ].join("\n");
@@ -123,7 +132,7 @@ test("an em dash in an added line names the file, the line, and the text", () =>
     "+++ b/docs/notes.md",
     "@@ -1,1 +1,1 @@",
     "-a clean line",
-    "+a line with an em dash — right here",
+    `+a line with an em dash ${EM_DASH} right here`,
     "",
   ].join("\n");
 
@@ -202,7 +211,7 @@ test("CLI: --diff-file with an added em dash fails the process", () => {
     "+++ b/README.md",
     "@@ -1,1 +1,1 @@",
     "-fine",
-    "+not fine — has a dash",
+    `+not fine ${EM_DASH} has a dash`,
     "",
   ].join("\n");
   const path = tempFile("diff.patch", diff);

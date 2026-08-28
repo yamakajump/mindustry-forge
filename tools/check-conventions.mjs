@@ -41,7 +41,9 @@ export const ALLOWED_TYPES = [
 
 export const MAX_SUBJECT_LENGTH = 50;
 
-const EM_DASH = "—";
+// Written as an escape, not the literal glyph: the diff-added-line check below would
+// otherwise flag this very file for the character it exists to look for.
+const EM_DASH = String.fromCharCode(0x2014);
 
 /** `type(scope)!: subject`, scope and the breaking-change `!` both optional. */
 const SUBJECT_PATTERN = new RegExp(`^(?:${ALLOWED_TYPES.join("|")})(?:\\([^)]+\\))?!?: .+$`);
