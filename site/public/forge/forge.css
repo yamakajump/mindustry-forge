@@ -136,6 +136,17 @@ header nav a:hover { color: var(--ink); }
 .menu-list a { padding: 8px 10px; border-radius: 5px; white-space: nowrap; }
 .menu-list a:hover { background: var(--panel); color: var(--ink); text-decoration: none; }
 
+/* Un menu deroulant a plat, sans sous-menu : la section qui portait un `<details>` dans
+   `#nav` (Schematiques, Outils) devient ici un intitule non cliquable suivi de ses liens,
+   plutot qu un `<details>` imbrique dans un autre. C est ce que l entete de l editeur en
+   fait, voir `mount.js`. */
+.menu-heading {
+  display: block; margin: 6px 0 0; padding: 4px 10px; font-size: 11px;
+  letter-spacing: .6px; text-transform: uppercase; color: var(--dim);
+}
+.menu-heading:first-child { margin-top: 0; }
+.menu-list a.sub { padding-left: 18px; }
+
 /* Le bouton qui deplie, sur telephone. Pose `hidden` dans le document et revele par
    `nav.js` : sans script il n y a rien pour rouvrir la barre, donc elle reste depliee et
    passe a la ligne, ce qu elle faisait deja avant qu il y ait des menus. */
@@ -574,7 +585,24 @@ select {
   grid-area: bar; display: flex; align-items: center; gap: 14px;
   padding: 8px 16px; background: var(--panel); border-bottom: 2px solid var(--edge);
 }
-.editor-bar .brand { font-size: 17px; }
+/* La marque redevient un lien ici : c'est la sortie de l'editeur vers le site, pas une
+   decoration. `header .brand::after`, plus haut, ne s'applique qu'a `header .brand` -- ce
+   lien-la n'est pas dans un `<header>` -- donc la meme cible de 44 px est redonnee ici,
+   sur `.editor-bar .brand` elle-meme plutot que par un pseudo-element : la barre n'a pas
+   la ligne de trop que l'entete du site avait pour se le permettre. */
+.editor-bar .brand { font-size: 17px; min-height: 36px; }
+
+/* Le menu qui donne acces au reste du site : voir le commentaire de `mount.js` sur
+   pourquoi son contenu n'est pas ecrit ici, mais lu dans `#nav`. `.menu-list` s'aligne par
+   defaut sur la droite de son declencheur (pense pour l'entete du site, ou les menus sont
+   colles a droite) ; celui-ci est pres du bord gauche de la barre, donc l'inverse. */
+.editor-site summary {
+  min-height: 36px; padding: 0 10px; border-radius: 6px; border: 2px solid var(--edge);
+  font-size: 13px;
+}
+.editor-site summary:hover { background: var(--raised-hover); }
+.editor-site .menu-list { left: 0; right: auto; }
+
 .editor-modes { display: flex; gap: 0; margin-left: 6px; }
 .editor-modes button {
   min-height: 36px; padding: 0 16px; border-radius: 0; border-right-width: 1px;
@@ -687,14 +715,16 @@ select {
  * jour ou une traduction rallonge un libelle ou qu'un bouton s'ajoute.
  *
  * Le reste est ce qui evite d'avoir besoin du filet. Le bloc de marque mangeait 194 px des
- * 386 disponibles, la moitie de la barre pour une decoration : dans l'editeur c'est un
- * `span`, il ne mene nulle part, et le selecteur de mode ramene deja a l'analyseur. Et la
- * jauge de taille est un temoin, pas une commande, donc elle se lit aussi bien courte.
- * Ensemble, la barre retombe a 372 px et tient sur une ligne en francais a 390.
+ * 386 disponibles, la moitie de la barre : a l'epoque c'etait un `<span>`, qui ne menait
+ * nulle part, et le cacher ne coutait donc rien. Ce n'est plus vrai : la marque est
+ * maintenant le lien vers le site, et le menu Site a cote d'elle est le seul acces aux
+ * schematiques, aux outils et aux blocs pendant que l'editeur est ouvert (voir `mount.js`).
+ * Les cacher sur telephone retirerait la sortie la ou l'ecran est le plus a l'etroit, donc
+ * ils restent, et c'est `flex-wrap` seul qui absorbe le depassement desormais. La jauge de
+ * taille, elle, reste un temoin plutot qu'une commande, donc elle se lit aussi bien courte.
  */
 @media (max-width: 560px) {
   .editor-bar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
-  .editor-bar .brand { display: none; }
   .editor-modes { margin-left: 0; }
   /* Pas `margin-left: auto` ici : sur une barre qui passe a la ligne, la marge automatique
      mange tout l'espace libre et pousse la jauge sur une ligne a elle, calee a droite,

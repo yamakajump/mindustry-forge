@@ -29,7 +29,11 @@ import { ageOf, dropDraft, keepDraft, readDraft } from "./draft.js";
 
 const SHELL = `
   <div class="editor-bar">
-    <span class="brand"><svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>Mindustry <span>Forge</span></span>
+    <a class="brand" href="/"><svg class="signe" viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M6 6h4v20H6z"/><path d="M10 6h12v4H10z"/><path d="M22 4l5 4-5 4z"/><path d="M10 14h10v4H10z"/></svg>Mindustry <span>Forge</span></a>
+    <details class="menu editor-site">
+      <summary>Site</summary>
+      <div class="menu-list"></div>
+    </details>
     <span class="editor-modes">
       <button type="button" data-mode="analyse" aria-pressed="false">Analyser</button>
       <button type="button" data-mode="edit" aria-pressed="true">Éditer</button>
@@ -82,6 +86,61 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   const canvas = host.querySelector("canvas");
   const hints = host.querySelector(".hints");
   const updateGauge = sizeGauge(host.querySelector(".editor-size"), MAX_SIZE);
+
+  /*
+   * The way out.
+   *
+   * `.editor` sits fixed over the whole document (see `.editor` in forge.css), so the
+   * site's own `<header>` and its `<nav id="nav">` are still in the page, only covered.
+   * `NavigationTest` holds `config/nav.php` against two hand-written mirrors already
+   * (`public/index.html` and the tool pages); a third one, typed out here, is exactly what
+   * that test's own comment says it exists to prevent. So this menu carries no entry of its
+   * own: it reads the real `#nav` out of the document and rebuilds its links from it, on
+   * every open rather than once at mount, so a reader who signs in mid-session still sees
+   * "Mes schémas" the moment they check.
+   */
+  const siteMenu = host.querySelector(".editor-site");
+  const siteMenuList = siteMenu.querySelector(".menu-list");
+
+  function siteLinkFrom(source) {
+    const link = document.createElement("a");
+    link.href = source.getAttribute("href");
+    link.textContent = source.textContent.trim();
+    return link;
+  }
+
+  function renderSiteMenu() {
+    siteMenuList.replaceChildren();
+    const nav = document.getElementById("nav");
+    if (!nav) return;
+    for (const child of nav.children) {
+      if (child.tagName === "A") {
+        siteMenuList.appendChild(siteLinkFrom(child));
+      } else if (child.tagName === "DETAILS") {
+        const summary = child.querySelector("summary");
+        if (!summary) continue;
+        const heading = document.createElement("span");
+        heading.className = "menu-heading";
+        heading.textContent = summary.textContent.trim();
+        siteMenuList.appendChild(heading);
+        for (const link of child.querySelectorAll(".menu-list a")) {
+          const sub = siteLinkFrom(link);
+          sub.classList.add("sub");
+          siteMenuList.appendChild(sub);
+        }
+      }
+    }
+  }
+
+  siteMenu.addEventListener("toggle", () => { if (siteMenu.open) renderSiteMenu(); });
+
+  /* Native `<details>` does not close itself on an outside click, unlike the real header's
+     own menus (see `nav.js`); this one is not inside `#nav`, so that behaviour is repeated
+     here rather than reached for. */
+  const closeSiteMenu = (event) => {
+    if (siteMenu.open && !siteMenu.contains(event.target)) siteMenu.open = false;
+  };
+  document.addEventListener("click", closeSiteMenu);
 
   const camera = createCamera({ scale: 24 });
   if (board.tiles.length) camera.frame(board.box(), viewportOf());
@@ -1454,6 +1513,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("keyup", onKeyUp);
       document.removeEventListener("paste", onPaste);
+      document.removeEventListener("click", closeSiteMenu);
       clearTimeout(fading);
       resize?.disconnect();
       clearTimeout(longPress);
