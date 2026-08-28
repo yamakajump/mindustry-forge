@@ -1,3 +1,8 @@
+{{-- The moderation queue: reports, heaviest first. Route GET /moderation (behind auth,
+     moderators only; ModerationController::index answers 404 rather than 403 to anybody
+     else so the page's existence is not announced to a stranger).
+
+     Scope: waiting, schematics, reasons. --}}
 @extends('layout')
 @section('title', 'Moderation - Mindustry Forge')
 

@@ -1,3 +1,10 @@
+{{-- The catalogue: every listed schematic, filterable and sortable. Route GET /schemas,
+     fed by BrowseController::index. GET /mes-favoris renders this same view too, through
+     the same controller with the favourites filter forced on, rather than a second listing
+     page with its own query.
+
+     Scope: schematics, winners, notes, makes, order, creative, setAside, orders, items,
+     holds, blocks, powerKey, and more filter state BrowseController::index builds up. --}}
 @extends('layout')
 @section('title', 'Schémas - Mindustry Forge')
 

@@ -1,3 +1,9 @@
+{{-- A single schematic's public page, and also what a pasted /s/ link unfurls into on
+     Discord. Route GET /s/{schematic}, fed by SchematicController::show.
+
+     Scope: schematic, aime, favori, note, folders, inFolders. The last four are only
+     meaningful when a member is signed in; SchematicController::show leaves them null or
+     empty for an anonymous visitor. --}}
 @extends('layout')
 @section('title', $schematic->displayName().' - Mindustry Forge')
 

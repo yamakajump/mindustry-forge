@@ -1,3 +1,9 @@
+{{-- A member's public page. Route GET /u/{user}, fed by ProfileController::show. Accounts
+     only, no anonymous profiles: the imported catalogue credits author names with no
+     account behind most of them.
+
+     Scope: member, posted, postedCount, views, documented, byResource, measured, standing
+     (standing is null unless the visitor is viewing their own page). --}}
 @extends('layout')
 @section('title', $member->name.' - Mindustry Forge')
 

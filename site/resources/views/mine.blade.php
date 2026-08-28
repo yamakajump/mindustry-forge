@@ -1,3 +1,7 @@
+{{-- The signed-in member's own schematics, published and unpublished together. Route GET
+     /mes-schemas (behind auth), fed by SchematicController::mine.
+
+     Scope: schematics. --}}
 @extends('layout')
 @section('title', 'Mes schémas - Mindustry Forge')
 
