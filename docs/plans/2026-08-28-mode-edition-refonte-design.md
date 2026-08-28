@@ -115,6 +115,16 @@ predictable from that and is **measured after the build, not before**: PNG compr
 a ground texture compresses worse than a block sprite. If it lands above +400 KB, the edge
 sheets are the part to reconsider, since they are two thirds of the added area.
 
+**Measured, 28/08/2026: 1 310 669 to 1 544 912 bytes, so +234 243 bytes, +17.9 %.** Inside
+the +400 KB line, and a little over half of it, so the edge sheets stay. The +14.5 % of
+surface predicted +17.9 % of bytes, which is close enough to be luck rather than a method:
+the paragraph above is still right to refuse to predict it.
+
+The atlas grew in two steps and the second is the cheap one, which is worth knowing before
+anybody trims. The variants across 67 floors cost 66 860 bytes; the 55 edge sheets, three
+times their pixel area, cost 167 383. Both together are less than an eighth of the picture
+the page already downloads for its schematics.
+
 None of `render.js`, `ui.js`, `editor/*` or the atlas is in `EngineVersion::SOURCES`.
 Verified in `site/app/Services/EngineVersion.php`. **No stored analysis goes stale.**
 
