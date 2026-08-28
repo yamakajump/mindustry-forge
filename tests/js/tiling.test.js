@@ -88,23 +88,33 @@ const floors = {
   // blend id still draws nothing.
   shale: { blend: 30, out: false, variants: 1, sheet: "shale" },
   // A floor with no sheet anywhere, neither its own nor its group's: it cannot bleed, and
-  // anything bleeds onto it.
-  sand: { blend: 5, out: true, variants: 3, sheet: null },
+  // anything bleeds onto it. Its blend id (40) is deliberately higher than every sheeted
+  // floor below, so a test using it exercises the sheetless clause of doEdge rather than
+  // the ordinary id comparison, which a lower id would have satisfied on its own and hidden
+  // the clause's absence.
+  sand: { blend: 40, out: true, variants: 3, sheet: null },
   // A vent, which ships no sheet and borrows its group's. Fourteen real floors are shaped
   // like this, and reading `<name>-edge` alone drops every one of them.
   "stone-vent": { blend: 12, out: true, variants: 3, sheet: "stone" },
+  // An ore overlay, so the overlay branch of contributorAt has something realistic to
+  // exercise: ores are overlays in this catalogue, drawn over whatever floor is beneath.
+  "ore-copper": { blend: 45, out: true, variants: 1, sheet: "ore-copper" },
 };
 
 const ground = (cells) => Object.fromEntries(
   Object.entries(cells).map(([at, floor]) => [at, { floor }]));
 
 test("the eight directions are the game's, in the game's order", () => {
-  assert.equal(D8.length, 8);
-  // Geometry.d8 starts at (-1,-1) and turns; what matters is that every neighbour appears
-  // exactly once and the centre never does.
+  // Decompiled from the pinned jar's arc.math.geom.Geometry.d8. Asserted as an exact
+  // sequence, not just as a set, so that changing it is a deliberate act rather than an
+  // accident: the order is not load-bearing for how a boundary is drawn (see the comment
+  // on D8), but it is still the claim this file makes about following the game.
+  assert.deepEqual(D8, [
+    [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1],
+  ]);
   const seen = new Set(D8.map(([dx, dy]) => `${dx},${dy}`));
-  assert.equal(seen.size, 8);
-  assert.ok(!seen.has("0,0"));
+  assert.equal(seen.size, 8, "a neighbour appeared twice");
+  assert.ok(!seen.has("0,0"), "the centre must never appear");
 });
 
 test("a higher blend id bleeds onto a lower one", () => {
@@ -129,9 +139,12 @@ test("drawEdgeOut false means it never bleeds, whatever its id", () => {
 });
 
 test("a floor with no sheet at all is bled onto by a lower id", () => {
-  /* doEdge is `other.blendId > this.blendId || this.edges === null`. Sand has no sheet, so
-     stone bleeds onto it although stone's id is higher, and grass would too. Without this
-     clause a patch of sand next to anything reads as a cut-out. */
+  /* doEdge is `other.blendId > this.blendId || this.edges === null`. Sand's blend (40) is
+     higher than stone's (10), so the ordinary id comparison alone would keep stone from
+     bleeding onto it here; only the second half of doEdge, dropped when this tile's own
+     floor has no sheet, lets a lower id still bleed. Removing the `here?.sheet` guard from
+     blendersAt makes this assertion fail; see the fix report for the observed failure.
+     Without the clause, a patch of sand next to anything reads as a cut-out. */
   const board = ground({ "0,0": "sand", "1,0": "stone" });
   assert.deepEqual(blendersAt(board, 0, 0, floors).map((b) => b.name), ["stone"]);
 });
@@ -141,6 +154,31 @@ test("a vent bleeds, and does it with its group's sheet", () => {
   const found = blendersAt(board, 0, 0, floors);
   assert.deepEqual(found.map((b) => b.name), ["stone-vent"]);
   assert.equal(found[0].sheet, "stone", "a vent must draw its group's sheet, not its own");
+});
+
+test("a neighbour's overlay contributes when its floor differs from this tile's", () => {
+  /* Ores are overlays in this catalogue: copper ore sits on stone here, and this tile is
+     grass, so contributorAt must offer the overlay rather than the stone underneath it,
+     exactly as the game draws the layer actually on top. */
+  const board = {
+    "0,0": { floor: "grass" },
+    "1,0": { floor: "stone", overlay: "ore-copper" },
+  };
+  const found = blendersAt(board, 0, 0, floors);
+  assert.deepEqual(found.map((b) => b.name), ["ore-copper"]);
+});
+
+test("a neighbour's overlay does not override a floor matching this tile's", () => {
+  /* The ore sits on grass here, the same floor as this tile, so contributorAt must fall
+     back to the floor, which equals mine and is not a boundary. A version that returned
+     the overlay whenever one is present, without checking the floor beneath it, would
+     report ore-copper here too, since the overlay itself differs from grass and clears
+     every other check on its own. */
+  const board = {
+    "0,0": { floor: "grass" },
+    "1,0": { floor: "grass", overlay: "ore-copper" },
+  };
+  assert.deepEqual(blendersAt(board, 0, 0, floors), []);
 });
 
 test("one neighbour contributes once, with every direction it came from", () => {

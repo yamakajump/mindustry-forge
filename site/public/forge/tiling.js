@@ -30,13 +30,18 @@ export function variantOf(x, y, count) {
 }
 
 /**
- * The eight neighbours, in `arc.math.geom.Geometry.d8` order.
+ * The eight neighbours, in `arc.math.geom.Geometry.d8` order as decompiled from the pinned
+ * jar.
  *
- * The order matters and is not cosmetic: it is the index into a floor's edge sheet, so
- * turning it changes which cell of the 96 pixel sheet is drawn on which side.
+ * The order is kept faithful to the game because this file follows the game elsewhere and
+ * a silent departure here would be one more thing for a reader to have to notice. It is
+ * NOT load-bearing: `edgeCell` derives its cell from the `(dx, dy)` offsets themselves
+ * rather than from a position in this array, so `blendersAt` and `render.js` only need the
+ * array to be a self-consistent bookkeeping key between the two of them, and reordering it
+ * would change nothing either would draw.
  */
 export const D8 = [
-  [-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1],
+  [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1],
 ];
 
 /** The floor a tile contributes to its neighbour: its overlay when it has one, else itself. */
