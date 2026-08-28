@@ -189,6 +189,22 @@ a.discord:hover { background: var(--discord-hover); text-decoration: none; }
 
 main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 
+/* Set by the inline guard in index.html's <head> while this document is serving
+   /editer, so <main> never paints on the way to the editor: enterEditor() still has to
+   fetch the catalogue and the sprite atlas before it has anything to mount. #editor
+   is excluded once mountEditor() gives it its own "editor" class (see mount.js):
+   without that guard this rule would outrank .editor by specificity and break its
+   fixed full-viewport layout for as long as the editor stays open. */
+.route-editeur main { display: none; }
+.route-editeur #editor:not(.editor) {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: var(--bg) url("./plate.png") repeat; background-size: 96px 96px;
+}
+.route-editeur #editor:not(.editor) .skeleton {
+  width: 100%; height: 100%; max-width: 1200px; max-height: 720px;
+}
+
 /* ------------------------------------------------------------------------------------
    L'accueil d'une page vide.
 
