@@ -6,6 +6,17 @@
 
 # Mindustry Forge
 
+<p align="center">
+  <a href="https://github.com/yamakajump/mindustry-forge/actions/workflows/site.yml"><img
+     src="https://github.com/yamakajump/mindustry-forge/actions/workflows/site.yml/badge.svg" alt="tests du site"></a>
+  <a href="https://github.com/yamakajump/mindustry-forge/actions/workflows/tests.yml"><img
+     src="https://github.com/yamakajump/mindustry-forge/actions/workflows/tests.yml/badge.svg" alt="tests des formats"></a>
+  <a href="https://github.com/yamakajump/mindustry-forge/actions/workflows/conventions.yml"><img
+     src="https://github.com/yamakajump/mindustry-forge/actions/workflows/conventions.yml/badge.svg" alt="conventions de commit"></a>
+  <a href="https://github.com/yamakajump/mindustry-forge/actions/workflows/dependency-audit.yml"><img
+     src="https://github.com/yamakajump/mindustry-forge/actions/workflows/dependency-audit.yml/badge.svg" alt="audit des dependances"></a>
+</p>
+
 **Colle une schématique. Sache ce qu'elle fait vraiment.**
 
 Tous les calculateurs Mindustry du web répondent à la même question : combien de machines
