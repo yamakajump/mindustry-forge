@@ -186,10 +186,26 @@ held back, and the pull request goes on accumulating commits and moving its own 
 Once it is merged and the tag is published, the tag and the GitHub release are names and
 change no behaviour, because nothing is deployed by either. If they have to go:
 
+A ruleset named "Release tags are permanent" refuses the deletion, so the push is declined
+before anything happens:
+
+```
+remote: error: GH013: Repository rule violations found for refs/tags/vX.Y.Z
+```
+
+That refusal is the point. Deleting a published tag has to be a deliberate act, so the
+ruleset is disabled for the minute it takes and turned back on:
+
 ```bash
+gh api -X PUT repos/OWNER/REPO/rulesets/<id> -f enforcement=disabled
 gh release delete vX.Y.Z
 git push origin :refs/tags/vX.Y.Z
+gh api -X PUT repos/OWNER/REPO/rulesets/<id> -f enforcement=active
 ```
+
+`gh api repos/OWNER/REPO/rulesets` gives the id. The ruleset forbids deletion and
+non-fast-forward on `refs/tags/v*` and nothing else, so it never stands in the way of
+release-please creating the next one.
 
 `.release-please-manifest.json` and `version.txt` still hold `X.Y.Z` on `main` afterwards,
 so the tool would compute the next release from a version that no longer exists. Putting
