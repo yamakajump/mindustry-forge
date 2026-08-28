@@ -22,6 +22,13 @@
      for the whole site belongs to no screen; dropping it into another lane's domain file is
      what that directory's README asks nobody to do. --}}
 <meta name="description" content="@yield('og-description', $baseline)">
+{{-- The one address this page wants to be known by. /schemas answers 200 to every
+     combination of its sixteen query parameters, so without this the same twenty-four tiles
+     are a practically unbounded number of pages competing with each other, and a crawler
+     spends itself there rather than on the four thousand schematic pages behind them.
+     App\Support\Canonical says which parameters name a different set and which only
+     reorder one. --}}
+<link rel="canonical" href="{{ \App\Support\Canonical::of(request()) }}">
 {{-- Three icon formats, because three families of client ask for one differently: the
      .ico for whatever hits /favicon.ico without reading the head, the SVG for any current
      browser, the square PNG for the iOS home screen. --}}
