@@ -97,6 +97,57 @@ const TOOLS = [
   { key: "eraser", label: "Gomme", hint: "effacer le sol peint" },
 ];
 
+/**
+ * How many floors the recents row remembers.
+ *
+ * Six, because that is one full row of the grid the swatches are drawn in (Task 1 of the
+ * palette rebuild measured six across at 280px). A seventh would spill onto a second row
+ * and start pushing the families themselves down the page, which is the thing this row
+ * exists to avoid doing.
+ */
+const RECENTS_CAP = 6;
+
+const RECENTS_KEY = "forge:sol-recents";
+
+/**
+ * Move `entry` to the front of `list`, matched by name.
+ *
+ * Painting the same floor twice must move it to the front rather than duplicate it, and
+ * the list never grows past `cap`: past it, the oldest entry (the last one) falls off.
+ *
+ * Pure on purpose, so the three rules above are each a one-line test rather than a click
+ * nobody watches fail first.
+ */
+export function pushRecent(list, entry, cap = RECENTS_CAP) {
+  return [entry, ...list.filter((item) => item.name !== entry.name)].slice(0, cap);
+}
+
+/**
+ * The recents row, kept in the browser across a reload.
+ *
+ * Same storage as the draft, same failure handling: a browser that refuses to write
+ * (private mode, a full quota) loses the row, which is a nuisance, not a reason to bring
+ * the editor down.
+ */
+export function readRecents() {
+  try {
+    const kept = JSON.parse(localStorage.getItem(RECENTS_KEY) || "[]");
+    return Array.isArray(kept)
+      ? kept.filter((entry) => entry && typeof entry.name === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function writeRecents(list) {
+  try {
+    localStorage.setItem(RECENTS_KEY, JSON.stringify(list));
+  } catch {
+    /* See readRecents: losing the row is fine, losing the editor is not. */
+  }
+}
+
 /** What the catalogue offers to paint with, filed by layer. */
 export function grounds(catalogue) {
   return LAYERS.map((layer) => ({
@@ -126,6 +177,10 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     <div class="editor-tabs">
       <button type="button" data-tab="build" aria-pressed="true">BÂTIR</button>
       <button type="button" data-tab="ground" aria-pressed="false">SOL</button>
+    </div>
+    <div class="editor-recents" hidden>
+      <h3>Récents</h3>
+      <div class="swatches"></div>
     </div>
     <div class="search">
       <input type="search" placeholder="Chercher dans ${all.length} blocs"
@@ -170,13 +225,19 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   const groundPanel = host.querySelector(".editor-ground");
   const filters = host.querySelector(".editor-filters");
   const searchRow = host.querySelector(".search");
+  const recentsRow = host.querySelector(".editor-recents");
+  const recentsBox = recentsRow.querySelector(".swatches");
   let holding = null;
   let needle = "";
   let planet = "";
   let category = "";
+  let onGroundTab = false;
 
   /** What the brush holds: which layer, which block, which tool, which size. */
   const brush = { layer: "floor", block: null, tool: "pencil", size: 1 };
+
+  /** What was painted with last, most recent first. Kept across a reload. */
+  let recents = readRecents();
 
   /**
    * A swatch: the sprite and nothing else. No text in the button, on purpose: a texture is
@@ -191,12 +252,19 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       src ? `<img src="${src}" alt="">` : ""}</button>`;
   };
 
-  /* The ground swatches, drawn once per family: they do not move, only `hidden` toggles
-     under a search. */
+  /* The ground swatches, drawn once per family: they do not move. */
   for (const layer of layers) {
     const box = groundPanel.querySelector(`[data-layer="${layer.key}"] .swatches`);
     box.innerHTML = layer.blocks.map((name) => groundSwatch(name, layer.key)).join("");
   }
+
+  /** Redraw the recents row from `recents`, and decide whether it is worth showing at all:
+      empty on a fresh visit, and hidden outside the ground tab regardless. */
+  function paintRecents() {
+    recentsBox.innerHTML = recents.map(({ name, layer }) => groundSwatch(name, layer)).join("");
+    recentsRow.hidden = !onGroundTab || recents.length === 0;
+  }
+  paintRecents();
 
   const paint = () => {
     const shown = all.filter(({ name, block }) =>
@@ -293,6 +361,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
 
   function showTab(which) {
     const onGround = which === "ground";
+    onGroundTab = onGround;
     for (const tab of host.querySelectorAll("[data-tab]")) {
       tab.setAttribute("aria-pressed", String(tab.dataset.tab === which));
     }
@@ -301,6 +370,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     filters.hidden = onGround;
     searchRow.hidden = onGround;
     held.hidden = onGround;
+    paintRecents();
     /* The fade switches on its own: moving to the ground tab melts the blocks so that what
        is being painted can be seen, and coming back makes them solid again. That is what
        removes painting blind without asking for one more gesture, and it was the main defect
@@ -324,17 +394,34 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     onBrush?.(brush);
   });
 
-  groundPanel.addEventListener("click", (event) => {
-    const chip = event.target.closest("[data-ground]");
-    if (!chip) return;
-    const same = brush.block === chip.dataset.ground;
-    brush.block = same ? null : chip.dataset.ground;
-    brush.layer = chip.dataset.of;
-    for (const other of groundPanel.querySelectorAll("[data-ground]")) {
-      other.setAttribute("aria-pressed", String(!same && other === chip));
+  /**
+   * Pick (or put down) a ground swatch, wherever it was clicked from: a family section or
+   * the recents row draw the same buttons, so one function decides for both. Every copy of
+   * the picked name, in either place, is kept in sync by value rather than by node, because
+   * a floor just painted can be showing in both places at once.
+   */
+  function pickGround(name, layerKey) {
+    const same = brush.block === name;
+    brush.block = same ? null : name;
+    brush.layer = layerKey;
+    for (const chip of host.querySelectorAll("[data-ground]")) {
+      chip.setAttribute("aria-pressed", String(chip.dataset.ground === brush.block));
+    }
+    if (!same) {
+      recents = pushRecent(recents, { name, layer: layerKey }, RECENTS_CAP);
+      writeRecents(recents);
+      paintRecents();
     }
     onBrush?.(brush);
-  });
+  }
+
+  for (const zone of [groundPanel, recentsBox]) {
+    zone.addEventListener("click", (event) => {
+      const chip = event.target.closest("[data-ground]");
+      if (!chip) return;
+      pickGround(chip.dataset.ground, chip.dataset.of);
+    });
+  }
 
   sizeRange.addEventListener("input", () => {
     brush.size = Number(sizeRange.value);
