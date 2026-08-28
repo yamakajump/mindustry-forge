@@ -8,24 +8,24 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * La vignette d'une schematique, composee a la demande et gardee sur disque.
+ * A schematic's social card, composed on demand and kept on disk.
  *
- * A la demande plutot qu'a l'enregistrement, pour trois raisons. Les schematiques deja en
- * base en profitent sans qu'on ait a rejouer quoi que ce soit. Changer la mise en page de
- * la carte ne demande pas de migration, seulement de vider un dossier. Et surtout, ces
- * cartes ne sont demandees que par les services qui deplient un lien : en fabriquer une
- * pour chaque schematique importee serait des milliers d'images que personne ne regarde.
+ * On demand rather than on save, for three reasons. Schematics already in the database
+ * benefit from it without anything needing to be replayed. Changing the card's layout
+ * needs no migration, only clearing a folder. And above all, these cards are only ever
+ * requested by the services that unfurl a link: building one for every imported
+ * schematic would be thousands of images nobody looks at.
  */
 class SocialCardController extends Controller
 {
-    /** Ou vivent les cartes deja composees, sous le disque public deja monte. */
+    /** Where already composed cards live, under the public disk already mounted. */
     private const CACHE = 'cartes';
 
     public function show(Schematic $schematic): Response
     {
-        /* Un deplieur de lien n'est jamais authentifie : il arrive avec le lien et rien
-           d'autre. `visibleTo(null)` laisse donc passer le public et le non-liste, qui est
-           exactement ce qu'un lien partage doit montrer, et refuse le prive. */
+        /* A link unfurler is never authenticated: it arrives with the link and nothing
+           else. `visibleTo(null)` therefore lets public and unlisted through, which is
+           exactly what a shared link should show, and refuses private. */
         abort_unless($schematic->visibleTo(null), 404);
 
         $disk = Storage::disk('public');
@@ -37,19 +37,19 @@ class SocialCardController extends Controller
 
         return response($disk->get($path), 200, [
             'Content-Type' => 'image/jpeg',
-            /* Une semaine, et pas plus : l'adresse ne porte pas d'empreinte, donc une
-               schematique renommee garderait sinon son ancienne vignette dans les caches
-               de Discord bien apres qu'on ait cesse de comprendre pourquoi. */
+            /* A week, and no more: the address carries no fingerprint, so a renamed
+               schematic would otherwise keep its old thumbnail in Discord's caches long
+               after anybody understood why. */
             'Cache-Control' => 'public, max-age=604800',
         ]);
     }
 
     /**
-     * Si la carte gardee est encore d'accord avec la schematique.
+     * Whether the kept card still agrees with the schematic.
      *
-     * Comparee a `updated_at` plutot qu'a une simple existence : un nom corrige ou une
-     * analyse refaite doit se voir dans la vignette, et une carte qui ne se regenere jamais
-     * est une carte qui finit par annoncer un debit que la page ne dit plus.
+     * Compared against `updated_at` rather than mere existence: a corrected name or a
+     * redone analysis has to show in the thumbnail, and a card that never regenerates
+     * is a card that ends up announcing a throughput the page no longer states.
      */
     private function fresh(Schematic $schematic, string $path): bool
     {

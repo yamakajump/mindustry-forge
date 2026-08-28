@@ -24,7 +24,7 @@ class FolderController extends Controller
         'aimes' => 'Les plus aimés',
     ];
 
-    /** La taille d'une page, et donc le seuil : voir `index()`. */
+    /** The size of a page, and so the threshold: see `index()`. */
     private const PER_PAGE = 24;
 
     /**
@@ -57,10 +57,10 @@ class FolderController extends Controller
         };
 
         return view('folders.index', [
-            /* Un dernier depart, pour que l'ordre soit total : des milliers de dossiers
-               seront a zero schema ou a un j'aime, et deux lignes egales reviennent dans
-               l'ordre qui arrange la base, qui n'a aucune raison de choisir le meme deux
-               fois. Sans ca, une page montre un dossier deux fois et un autre jamais. */
+            /* A last tiebreaker, so the ordering is total: thousands of folders will sit
+               at zero schematics or one like, and two equal rows come back in whatever
+               order suits the database, which has no reason to pick the same one twice.
+               Without it, a page shows one folder twice and another never at all. */
             'folders' => $public->withCount(['schematics', 'children'])
                 ->with('user')->orderByDesc('id')
                 ->paginate(self::PER_PAGE)->withQueryString(),
@@ -78,11 +78,10 @@ class FolderController extends Controller
                 ->withCount(['children', 'schematics'])
                 ->orderBy('name')
                 ->paginate(24),
-            /* Les icones offertes plutot que tapees : la personne choisit un nom qui
-               existe au lieu d'en deviner l'orthographe, exactement comme la vitrine offre
-               ses objets et ses blocs. Les objets seulement, pas les quatre cents blocs :
-               une liste deroulante que personne ne fait defiler au-dela du premier ecran
-               est une liste qui n'aide pas. */
+            /* Icons offered rather than typed: the person picks a name that exists instead
+               of guessing how it is spelled, exactly as the showcase offers its items and
+               blocks. Items only, not the four hundred blocks: a dropdown nobody scrolls
+               past the first screen is a list that does not help. */
             'icons' => array_keys(BlockCatalogue::items()),
         ]);
     }

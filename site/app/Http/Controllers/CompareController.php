@@ -139,10 +139,10 @@ class CompareController extends Controller
             ->orderByRaw('length(name) asc')
             ->limit(self::OFFERED)
             ->with('user')
-            /* `code` en fait partie, sinon la colonne n'est pas chargee et chaque
-               proposition affiche « pas de code enregistre » sous un plan vide. Une liste
-               de noms se choisissait au hasard : ce sont les plans qui distinguent huit
-               resultats appeles « Silicon », donc ils sont ce que la page va chercher. */
+            /* `code` is one of them, otherwise the column is not loaded and every
+               suggestion shows "no code recorded" under an empty plan. A list of names
+               would be chosen at random: it is the plans that distinguish eight results
+               all called "Silicon", so they are what the page goes and fetches. */
             ->get(['id', 'user_id', 'slug', 'name', 'blocks', 'author', 'code']);
     }
 
@@ -163,10 +163,10 @@ class CompareController extends Controller
             ->orderByDesc('id')
             ->limit(self::OFFERED)
             ->with('user')
-            /* `code` en fait partie, sinon la colonne n'est pas chargee et chaque
-               proposition affiche « pas de code enregistre » sous un plan vide. Une liste
-               de noms se choisissait au hasard : ce sont les plans qui distinguent huit
-               resultats appeles « Silicon », donc ils sont ce que la page va chercher. */
+            /* `code` is one of them, otherwise the column is not loaded and every
+               suggestion shows "no code recorded" under an empty plan. A list of names
+               would be chosen at random: it is the plans that distinguish eight results
+               all called "Silicon", so they are what the page goes and fetches. */
             ->get(['id', 'user_id', 'slug', 'name', 'blocks', 'author', 'code']);
     }
 }
