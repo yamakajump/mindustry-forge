@@ -418,6 +418,21 @@ export class Grid {
     this.coverage = 0;
     this.made = 0;
     this.needed = 0;
+    /**
+     * Whether this grid is plugged into a base that carries the current.
+     *
+     * Off here, and off on the bench, which is the point: a measurement is of the blocks in
+     * the schematic and of nothing else. The page's own simulation turns it on for a grid
+     * with no producer, because the report above it already answers on that assumption -
+     * "une fois nourrie a fond" prints what the machines make at full tilt and lists the
+     * draw beside it. Watching the same schematic do nothing at all, for a reason stated
+     * nowhere, is the two halves of one page disagreeing.
+     *
+     * Only ever a source of last resort, never a floor: a schematic that carries its own
+     * generators keeps browning out on its own current, and that behaviour is measured
+     * against a real server.
+     */
+    this.mains = false;
   }
 
   get capacity() {
@@ -461,6 +476,12 @@ export class Grid {
         ? 1e18
         : askedBy(build) * build.delta(step);
     }
+
+    /* The base behind the schematic, if this grid was told there is one and it makes
+       nothing itself. Applied after `needed` is known rather than as a fixed figure: what
+       a plugged-in grid supplies is what its consumers ask for, which changes every frame
+       as machines start and stop. */
+    if (this.mains && !this.producers.length) made = needed;
 
     this.made = made;
     this.needed = needed;

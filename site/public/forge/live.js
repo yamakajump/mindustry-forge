@@ -509,6 +509,23 @@ export class Live {
       for (const [item, count] of Object.entries(held)) build.items.add(item, count);
     }
 
+    /* Plugged in, where the schematic brought no generator of its own.
+
+       Without this, pressing "Faire tourner" on a perfectly good silicon plant showed a
+       factory doing nothing: every machine on a dead grid runs at zero efficiency, and the
+       only hint on the page was a line, three cards down, saying it consumes power without
+       making any - which reads as a remark about the design rather than as the reason the
+       picture is frozen.
+
+       A grid that has a producer is left alone, so a layout that browns out on its own
+       current still browns out, exactly as the bench measures it. */
+    this.plugged = [];
+    for (const grid of this.world.grids || []) {
+      if (grid.producers.length || !grid.consumers.length) continue;
+      grid.mains = true;
+      this.plugged.push(grid);
+    }
+
     /* Where the design delivers. Without these a belt pointing out of the schematic fills
        up, backs up into the machines behind it and the whole thing seizes after a few
        seconds: what a player watched was a factory choking on its own output, which is not
