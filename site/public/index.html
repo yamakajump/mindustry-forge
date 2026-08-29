@@ -297,6 +297,18 @@ const blockIcon = (name, size = 16, folder = "") => {
   return src ? `<img src="${src}" alt="" width="${size}" height="${size}">` : "";
 };
 
+/**
+ * The mark for power.
+ *
+ * Neither an item nor a liquid, so `itemIcon` has nothing to serve for it: the atlas holds
+ * power blocks and no icon, and the game keeps its own among UI sprites this repository
+ * does not dump. Drawn here, and a second time in `resources/views/partials/eclair.blade.php`
+ * for the server-rendered pages, which cannot read this file. `EclairTest` holds the two
+ * paths together.
+ */
+const BOLT = (size = 18) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"
+  style="width:${size}px;height:${size}px;fill:currentColor;stroke:none"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>`;
+
 const withIcon = (item, size = 18) => {
   const src = itemIcon(item, size * 2);
   return src ? `<img src="${src}" alt="" width="${size}" height="${size}">` : "";
@@ -315,8 +327,7 @@ function render(report) {
      intermediates it eats itself, while the electricity it exists to make went unmentioned
      and was in its own name. */
   const power = report.power || { made: 0, spent: 0, net: 0 };
-  const bolt = `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"
-    style="width:20px;height:20px;fill:currentColor;stroke:none"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>`;
+  const bolt = BOLT(20);
 
   /* Where it plugs in, asked rather than assumed.
 
@@ -458,11 +469,11 @@ function render(report) {
                : "analyse.plafond.marque-tes-entrees"))}</p>`
         : ""}
       ${full.made > 0.01
-        ? `<div class="line"><span>${escape(t("analyse.plafond.produit"))}</span>
+        ? `<div class="line"><span>${BOLT()} ${escape(t("analyse.plafond.produit"))}</span>
              <span class="num good">${rate(full.made)} ${
                escape(t("analyse.unite.energie-par-seconde"))}</span></div>` : ""}
       ${full.spent > 0.01
-        ? `<div class="line"><span>${escape(t("analyse.plafond.consomme"))}</span>
+        ? `<div class="line"><span>${BOLT()} ${escape(t("analyse.plafond.consomme"))}</span>
              <span class="num warn">${rate(full.spent)} ${
                escape(t("analyse.unite.energie-par-seconde"))}</span></div>` : ""}
       ${full.made > 0.01
@@ -491,7 +502,7 @@ function render(report) {
       : ""
   }${
     power.made <= 0.01 && power.spent > 0.01
-      ? `<div class="line"><span>Consomme de l'energie sans en produire</span>
+      ? `<div class="line"><span>${BOLT()} Consomme de l'energie sans en produire</span>
          <span class="num warn">${rate(power.spent)} / s</span></div>`
       : ""
   }</div>`);

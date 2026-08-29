@@ -250,3 +250,22 @@ it('paints only Forge in amber, not the whole brand', function () {
         expect($bloc[0])->toContain('<span>Forge</span>');
     }
 });
+
+it('draws power with one mark, not two', function () {
+    /* The bolt exists twice: `partials/eclair.blade.php` for the pages a server renders and
+       `BOLT` in `public/index.html`, which is served as a file and never meets Blade. Same
+       reason as the header above, and the same failure mode: a hand-kept copy nobody
+       watches ends up drifting, and the site shows power one way here and another there.
+
+       Compared on the path, which is the geometry. The rest of the tag - the size, the
+       class, whether the style is an attribute - is each engine's own business. */
+    $path = fn (string $svg) => preg_match('/<path d="([^"]+)"/', $svg, $m) ? $m[1] : null;
+
+    $blade = $path(File::get(resource_path('views/partials/eclair.blade.php')));
+    $page = File::get(public_path('index.html'));
+    $inline = preg_match('/const BOLT = .*?<path d="([^"]+)"/s', $page, $m) ? $m[1] : null;
+
+    expect($blade)->not->toBeNull('the partial no longer holds a path');
+    expect($inline)->not->toBeNull('index.html no longer holds a BOLT path');
+    expect($inline)->toBe($blade, 'the two copies of the power mark have drifted apart');
+});

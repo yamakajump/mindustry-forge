@@ -145,7 +145,11 @@
                 <img class="icone" src="/icone/{{ \App\Support\Thing::family($item) }}/{{ $item }}.png?t=32"
                      width="24" height="24" loading="lazy" decoding="async" alt="">
               @else
-                <span class="ch-eclair" aria-hidden="true">&#9889;</span>
+                {{-- The same mark as everywhere else, rather than the emoji that used to
+                     be here: a font's own glyph renders differently on every machine and
+                     ignored the palette, so power was yellow on Windows, blue on a Mac and
+                     never the site's amber. --}}
+                <span class="ch-eclair">@include('partials.eclair', ['size' => 20])</span>
               @endif
               <span>{{ $item === $powerKey ? 'énergie' : \App\Support\Thing::name($item) }}</span>
             </a>
@@ -442,7 +446,8 @@
             <span class="warn">{{ __('schema.page.bac-a-sable-court') }}</span> &middot;
           @else
             @if($power > 0.5)
-              <span class="good">{{ number_format($power, 0, ',', ' ') }} energie/s</span>
+              <span class="good">@include('partials.eclair', ['size' => 14]) {{
+                number_format($power, 0, ',', ' ') }} {{ __('schema.unite.energie-seconde') }}</span>
               <span class="hint-line">{{ __('schema.page.au-mieux') }}</span> &middot;
             @endif
             {{-- The cap, because the cap is what the page ranks on: showing the measurement

@@ -244,7 +244,10 @@
     @if($schematic->needs || $schematic->powerNeeded() > 0.5)
       <div class="card"><h2>Il lui faut</h2>
         @if($schematic->powerNeeded() > 0.5)
-          <div class="line"><span>electricite</span>
+          {{-- The mark and the word from the dictionary. It said "electricite", written
+               into the markup and without its accent, on a site whose own rule is that a
+               player-facing string lives in `site/lang/` and that accents are written. --}}
+          <div class="line"><span>@include('partials.eclair') {{ __('schema.unite.energie') }}</span>
             <span class="num warn">{{
               number_format($schematic->powerNeeded(), 0, ',', ' ') }} / s</span></div>
         @endif
