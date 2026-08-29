@@ -132,3 +132,17 @@ it('leaves the management card alone', function () {
     $slugs = substr_count($html, 'data-slug=');
     expect($slugs)->toBe(0);
 });
+
+it('draws the plans on the member own list too', function () {
+    Storage::fake('public');
+    $owner = User::factory()->create();
+    $mine = schema(['user_id' => $owner->id, 'visibility' => Schematic::PRIVATE]);
+
+    $html = $this->actingAs($owner)->get('/mes-schemas')->assertOk()->getContent();
+
+    /* Nothing imported carries a stored preview, and a member's own list is exactly where
+       they look for a schematic by its shape. It showed an empty black panel for every one
+       of them: the page carried neither the drawer nor the code it draws from. */
+    expect($html)->toContain('/forge/apercu.js');
+    expect($html)->toContain('data-code="'.$mine->code.'"');
+});

@@ -7,6 +7,10 @@
 
 @push('head')
   <script src="/forge/manage.js" type="module" defer></script>
+  {{-- The drawer. `data-slug` is its contract and the management card no longer claims it:
+       it announces itself with `data-schema` since the day this script ate the whole card
+       on the schematic page. --}}
+  <script src="/forge/apercu.js" type="module" defer></script>
 @endpush
 
 @section('body')
@@ -29,7 +33,19 @@
           @if($preview)
             <img src="{{ asset("storage/apercus/{$schematic->slug}.png") }}" alt="" loading="lazy">
           @else
-            <div class="noimg">pas d'apercu</div>
+            {{-- Drawn in the browser from the schematic's own code, exactly as the catalogue
+                 does it. A stored preview is written when somebody saves their own work from
+                 the analyser; anything imported has none, and this page showed every one of
+                 them as an empty black panel saying "pas d'apercu" - on the page where a
+                 member looks for their own schematics and recognises them by their shape.
+
+                 Same cap as the catalogue: past 16 kB the tile carries its slug and fetches
+                 its own code once it comes into view. --}}
+            @if(strlen($schematic->code) <= 16384)
+              <div class="noimg" data-code="{{ $schematic->code }}">pas d'apercu</div>
+            @else
+              <div class="noimg" data-slug="{{ $schematic->slug }}">pas d'apercu</div>
+            @endif
           @endif
           <h3>{{ $schematic->displayName() }}</h3>
         </a>
