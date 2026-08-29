@@ -206,10 +206,13 @@ it('states the same figure as the catalogue, for the same schematic', function (
         ->firstWhere('nom', 'Turbine');
     $vitrine = $this->get('/schemas')->getContent();
 
-    /* Already per minute: nothing to convert. */
-    expect((float) $accueil['debit'])->toBe(39700.0);
-    expect($accueil['unite'])->toBe('/ min');
-    expect($vitrine)->toContain('39 700');
+    /* 39 700 water a minute is 661.67 a second, which is the figure both pages state now:
+       the column still carries items per minute and the site no longer does. Two decimals
+       on the JSON side, one on the tile, because 661,7 is what fits a tile and 661.67 is
+       what the page has to be able to check itself against. */
+    expect((float) $accueil['debit'])->toBe(662.0);
+    expect($accueil['unite'])->toBe('/ s');
+    expect($vitrine)->toContain('662');
 });
 
 it('states power per second, as everywhere else on the site', function () {

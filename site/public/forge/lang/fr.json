@@ -44,7 +44,7 @@
   "analyse.ports.titre": "Entrees et sorties",
   "analyse.simulation.branche": "Tourne comme branche sur ton reseau : ce schema ne fabrique pas son courant.",
   "analyse.unite.energie-par-seconde": "energie / s",
-  "analyse.unite.par-minute": "/ min",
+  "analyse.unite.par-seconde": "/ s",
   "compte.barre.connexion": "Se connecter avec Discord",
   "dossiers.gestion.legender": "Dire pourquoi il est là",
   "dossiers.gestion.nom": "Nom du dossier",

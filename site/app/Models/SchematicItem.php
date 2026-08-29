@@ -40,6 +40,57 @@ class SchematicItem extends Model
     }
 
     /**
+     * The stored rate, in the unit the site states.
+     *
+     * A number, not a string: the showcase puts it into JSON and a formatted "56 562" cast
+     * back to a float is 56. The formatting lives in `debitAffiche`, which calls this.
+     */
+    public static function parSecondeDe(string $item, float $rate): float
+    {
+        return self::parSeconde($item) ? $rate : $rate / 60;
+    }
+
+    /**
+     * One rate, ready to read, in the unit the whole site now states.
+     *
+     * The game counts in items per second and so does every player, so that is what is
+     * printed. The column does not: `schematic_items.rate` carries power per second and
+     * items per **minute**, which is a dual meaning nothing in its name gives away and
+     * which this repository has already paid for more than once. Converting here rather
+     * than at each call site is the point of the method.
+     *
+     * The decimals matter. A silicon smelter makes 0.67 a second, and one decimal turns
+     * that into 0,7, four percent out on a site whose argument is its arithmetic. So the
+     * smaller the figure, the more of it is kept - the same rule as `perSecond` in
+     * `public/index.html`, which answers the same question on the other side.
+     */
+    public static function debitAffiche(string $item, float $rate): string
+    {
+        return number_format(
+            self::debitArrondi($item, $rate), self::decimales($item, $rate), ',', ' ');
+    }
+
+    /**
+     * The same figure as a number, rounded the same way.
+     *
+     * The showcase puts it into JSON and the catalogue prints it in a tile, and the two
+     * have to say the same thing: a test exists precisely because they once did not, and a
+     * visitor clicking from one to the other was reading two numbers for one schematic.
+     */
+    public static function debitArrondi(string $item, float $rate): float
+    {
+        return round(self::parSecondeDe($item, $rate), self::decimales($item, $rate));
+    }
+
+    /** How much of a rate is worth keeping, which is the more of it the smaller it is. */
+    private static function decimales(string $item, float $rate): int
+    {
+        $size = abs(self::parSecondeDe($item, $rate));
+
+        return $size >= 100 ? 0 : ($size >= 10 ? 1 : 2);
+    }
+
+    /**
      * The name the game gives it, or the word the site uses for energy.
      *
      * `power` is not a game object and therefore has no name in its bundles. The others are

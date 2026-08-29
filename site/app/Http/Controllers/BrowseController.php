@@ -361,12 +361,21 @@ class BrowseController extends Controller
                     : Vitrine::NATURE)
                 ->select('schematics.*');
 
-            /* "At least a hundred a minute", which only means anything once a thing is
+            /* "At least a hundred a second", which only means anything once a thing is
                chosen. Applied here rather than beside the other constraints for that reason:
                out here `schematic_items` is not joined, and a floor on a rate with nothing to
-               rate would silently filter on whatever row the database happened to reach. */
+               rate would silently filter on whatever row the database happened to reach.
+
+               THE FIELD IS PER SECOND AND THE COLUMN IS NOT. `schematic_items.rate` carries
+               power per second and items per minute, a dual meaning nothing in its name
+               gives away; the whole site now states per second, so what somebody types is
+               per second and it is converted here. `?min=` therefore means something
+               different from what it meant before this change - deliberately, since leaving
+               the filter in minutes while every figure around it moved would be the same
+               trap one layer down. */
             if ($atLeast > 0) {
-                $query->where('schematic_items.rate', '>=', $atLeast);
+                $floor = $makes === SchematicItem::POWER ? $atLeast : $atLeast * 60;
+                $query->where('schematic_items.rate', '>=', $floor);
             }
         }
 
@@ -443,14 +452,14 @@ class BrowseController extends Controller
         $unit = $makes === '' ? '' : ($makes === SchematicItem::POWER
             ? __('schema.unite.energie') : Thing::name($makes));
 
-        // The unit follows the thing and not the column: `rate` carries items per minute
-        // and power per second under the same name. Writing "60 power/min" would be
-        // arithmetically correct and wrong everywhere else on this site.
+        // Per second on both sides now. The column still carries items per minute and
+        // power per second under one name, which is why nothing here reads it directly:
+        // `SchematicItem::debitAffiche` is the one place that conversion lives.
         $unitShort = $makes === '' ? '' : ($makes === SchematicItem::POWER
             ? __('vitrine.note.energie-seconde')
-            // Written as one piece: `schema.unite.par-minute` is "/ min", space included,
-            // and concatenating it rendered "Silicon/ min" on every chip.
-            : Thing::name($makes).'/min');
+            // Written as one piece: the key is "/ s", space included, and concatenating it
+            // rendered "Silicon/ s" on every chip.
+            : Thing::name($makes).'/s');
 
         /* What the search currently carries, one chip per constraint, each with the link
            that removes it.
