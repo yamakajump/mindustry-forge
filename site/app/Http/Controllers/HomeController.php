@@ -29,6 +29,12 @@ class HomeController extends Controller
     /** How many to put forward. Enough to look like a catalogue, few enough to stay a taste. */
     private const MIS_EN_AVANT = 6;
 
+    /** Under this many blocks, it is a tap or a curiosity rather than a build. */
+    private const PLANCHER_BLOCS = 20;
+
+    /** And under this share of its own frame, it is a copy accident. */
+    private const PLANCHER_DENSITE = 0.05;
+
     /**
      * How big a code may be before the tile asks for it instead of carrying it.
      *
@@ -119,6 +125,26 @@ class HomeController extends Controller
         foreach (Vitrine::itemsOnOffer(self::MIS_EN_AVANT) as $item) {
             $best = Schematic::query()
                 ->listed()
+                /* Serpulo, because six tiles are a taste rather than a survey and that is
+                   where most people play. */
+                ->onPlanet('serpulo')
+                /* And something a player would actually open.
+
+                   Ranking on rate per block alone put a sandbox tap of one block at the top
+                   of every list it appeared in: the fewer blocks, the better the ratio, so
+                   the front door of this site showed "6 300 energie/s, 127 x 127, 1 blocs"
+                   and "190 800 cryofluide/min". Both are real schematics and neither is a
+                   factory.
+
+                   Two floors rather than one, because they refuse different things. The
+                   count refuses the single block. The density refuses the copy accident: a
+                   frame 127 tiles wide holding one block is not a design, and Mindustry
+                   caps a schematic at 128 a side, so this shape really does come in. Five
+                   percent is deliberately low - a turret line is legitimately sparse, and
+                   this is meant to catch the empty frame, not to have taste. */
+                ->where('schematics.blocks', '>=', self::PLANCHER_BLOCS)
+                ->whereRaw('schematics.blocks >= schematics.width * schematics.height * ?',
+                    [self::PLANCHER_DENSITE])
                 ->join('schematic_items', 'schematic_items.schematic_id', '=', 'schematics.id')
                 ->where('schematic_items.item', $item)
                 ->where('schematic_items.sens', SchematicItem::PRODUIT)
