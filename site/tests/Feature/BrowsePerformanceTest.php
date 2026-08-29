@@ -143,7 +143,8 @@ it('says on the page that it will need to be powered', function () {
     $this->get("/s/{$usine->slug}")
         ->assertOk()
         ->assertSee('Il lui faut')
-        ->assertSee('electricite')
+        // The word comes from the dictionary now, with its accent and its mark beside it.
+        ->assertSee(__('schema.unite.energie'))
         ->assertSee('600')
         ->assertSee('il faudra le brancher sur ton reseau', escape: false)
         // And it must be clear this is not held against it.
