@@ -14,7 +14,7 @@
 import {
   beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
 } from "./live.js";
-import { variantOf, blendersAt, D8, edgeCell, veilAt } from "./tiling.js";
+import { variantOf, blendersAt, D8, edgeCell, tileSpan, veilAt } from "./tiling.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -488,7 +488,7 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   /* One layer of ground on one tile, floor or overlay, with the variant this position takes.
      Hoisted out of the loop rather than written inline twice: a 64 by 64 board runs it 8192
      times a frame and it is the same six lines either way. */
-  const paintLayer = (name, x, y, px, py) => {
+  const paintLayer = (name, x, y, px, py, pw, ph) => {
     if (!name) return;
     /* How many sprites this floor has, counted once per floor rather than per tile. */
     let count = variantCounts.get(name);
@@ -500,7 +500,7 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
     const art = count > 1
       ? atlas.sprites[`floor/${name}#${variantOf(x, y, count) + 1}`]
       : atlas?.sprites?.[`floor/${name}`];
-    if (art) context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, scale, scale);
+    if (art) context.drawImage(sheet, art.x, art.y, art.w, art.h, px, py, pw, ph);
   };
 
   /* Walked by the visible tile range and looked up by key, not by `Object.entries(ground)`
@@ -523,8 +523,11 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
         if (!layers) continue;
         painted.add(at);
 
-        const px = (x - box.left) * scale;
-        const py = (box.height - (y - box.bottom) - 1) * scale;
+        /* Snapped to whole device pixels, and the width taken from where the next tile
+           starts, so neighbours share an edge instead of each rounding their own. See
+           `tileSpan`: without it a painted area is crossed by one-pixel seams. */
+        const [px, pw] = tileSpan(x - box.left, scale, dpr);
+        const [py, ph] = tileSpan(box.height - (y - box.bottom) - 1, scale, dpr);
 
         /* `Floor.drawBase` has four statements: `drawMain`, then `drawEdges` when
            `drawEdgeIn` is set, then `drawOverlay`, then a redraw of `drawMain` at
@@ -535,7 +538,7 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
            the one place a player is looking.
 
            The fourth follows the overlay, below, because that is where the game puts it. */
-        paintLayer(layers.floor, x, y, px, py);
+        paintLayer(layers.floor, x, y, px, py, pw, ph);
 
         /* The boundary, drawn over this tile rather than over its neighbour: the game
            bleeds inwards, so a patch of grass beside stone has grass creeping onto the
@@ -556,12 +559,12 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
               const { col, row } = edgeCell(dx, dy);
               context.drawImage(sheet,
                 edgeArt.x + col * cell, edgeArt.y + row * cell, cell, cell,
-                px, py, scale, scale);
+                px, py, pw, ph);
             }
           }
         }
 
-        paintLayer(layers.overlay, x, y, px, py);
+        paintLayer(layers.overlay, x, y, px, py, pw, ph);
 
         /* The fourth statement: a liquid drawn back over its own overlay, at the alpha
            `veilAt` reads off the floor. Ore on water is not ore on water, it is ore seen
@@ -575,7 +578,7 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
         const veil = veilAt(ground, x, y, soils?.floors || {});
         if (veil) {
           context.globalAlpha = veil;
-          paintLayer(layers.floor, x, y, px, py);
+          paintLayer(layers.floor, x, y, px, py, pw, ph);
           context.globalAlpha = 1;
         }
       }
