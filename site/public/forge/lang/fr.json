@@ -1,4 +1,6 @@
 {
+  "analyse.besoins.au-dessus": "Une {bloc} ne porte que {plafond} : il en faut {compte} pour amener {besoin}.",
+  "analyse.besoins.au-dessus-melange": "Les {support} marques ne portent que {plafond} en tout, moins que les {besoin} demandes.",
   "analyse.besoins.bande": "bande",
   "analyse.besoins.bandes": "bandes",
   "analyse.besoins.combustible": "un combustible quelconque",

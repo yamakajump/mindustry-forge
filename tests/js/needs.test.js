@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 
 import { analyse, buildGraph } from "../../site/public/forge/analyse.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
+import { overCarried } from "../../site/public/forge/needs.js";
 import { demand, fuels, producers } from "../../site/public/forge/needs.js";
 import { loadCatalogue, paste } from "./helpers.js";
 
@@ -229,4 +230,44 @@ test("a reactor that names its ingredients is not a fuel burner", async () => {
   const graph = buildGraph((await fromBase64(paste([[0, 0, "thorium-reactor", 0]]))).tiles);
 
   assert.equal(fuels(graph).size, 0);
+});
+
+/**
+ * The instruction has to be one a player can carry out.
+ *
+ * "1 440 sand a minute, on the belt marked at (3, 0)" is not: a titanium conveyor carries
+ * ten items a second. The flow solver has always known that figure and capped the belt
+ * with it; the shopping list printed beside it did not, so the page asked for something
+ * impossible and then blamed the machine downstream for being fed at 94%.
+ */
+test("says when the marked belts cannot carry what is asked for", () => {
+  const belt = (x) => ({ name: "titanium-conveyor", carries: "item", x, y: 0 });
+
+  // Ten a second is six hundred a minute. One belt, and 1 440 asked for: three of them.
+  const over = overCarried([belt(3)], 1440, known);
+  assert.equal(over.ceiling, 600);
+  assert.equal(over.block, "titanium-conveyor");
+  assert.equal(over.needed, 3);
+
+  // Two belts, 640 between them, which is under the 1 200 they carry: nothing to say.
+  assert.equal(overCarried([belt(3), belt(4)], 640, known), null);
+
+  // The case from the screenshot that opened this: one belt, 640 asked for, 600 carried.
+  assert.equal(overCarried([belt(0)], 640, known).needed, 2);
+});
+
+test("says nothing rather than inventing a ceiling", () => {
+  const belt = { name: "titanium-conveyor", carries: "item", x: 0, y: 0 };
+  const pipe = { name: "conduit", carries: "liquid", x: 1, y: 0 };
+
+  // A pipe is not measured in items a second, and a marking that mixes kinds names no
+  // particular "you need N of them".
+  assert.equal(overCarried([pipe], 100000, known), null);
+  assert.equal(overCarried([belt, pipe], 100000, known), null);
+
+  // A carrier the catalogue gives no rate for must not come back as a ceiling of zero.
+  assert.equal(overCarried([{ name: "invente", carries: "item", x: 0, y: 0 }], 10, known), null);
+
+  // And nothing marked is not a shortfall.
+  assert.equal(overCarried([], 10, known), null);
 });
