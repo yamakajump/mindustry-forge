@@ -189,13 +189,13 @@ class HomeController extends Controller
                to the next: per minute for an item, per second for power. Multiplying
                everything by sixty once gave water sixty times too fast. */
             'produit' => SchematicItem::nomAffiche($item),
-            'debit' => round((float) $s->rate, 1),
+            'debit' => SchematicItem::debitArrondi($item, (float) $s->rate),
             /* Named, every time. A ceiling announced without saying so is a figure that
                lies, and this is the mention the browse tile already carries. */
             'au-mieux' => __('schema.page.au-mieux'),
-            'unite' => __(SchematicItem::parSeconde($item)
-                ? 'schema.unite.par-seconde'
-                : 'schema.unite.par-minute'),
+            /* One unit now, on both sides of that question: the site states per second
+               like the game does, and `debitAffiche` is what converts the column. */
+            'unite' => __('schema.unite.par-seconde'),
             /* Power is neither an item nor a liquid: it has no sprite, and inventing one
                would be drawing something the game does not draw. The tile says so with a
                null rather than with a broken image. */

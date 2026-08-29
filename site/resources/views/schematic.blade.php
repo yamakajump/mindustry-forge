@@ -13,7 +13,7 @@
       ->exists("apercus/{$schematic->slug}.png")
       ? asset("storage/apercus/{$schematic->slug}.png") : null;
   $made = collect($schematic->produces ?? [])
-      ->map(fn ($rate, $item) => number_format($rate, 0, ',', ' ')." {$item}/min")
+      ->map(fn ($rate, $item) => \App\Models\SchematicItem::debitAffiche($item, $rate)." {$item}/s")
       ->values();
   $power = $schematic->power_made - $schematic->power_used;
   /* The summary goes into the `description` tag, into `og:description` and into the social
@@ -208,7 +208,8 @@
         @endif
         @foreach($schematic->produces ?? [] as $item => $itemRate)
           <div class="line"><span>{{ $item }}</span>
-            <span class="num">{{ number_format($itemRate, 1, ',', ' ') }} / min</span></div>
+            <span class="num">{{ \App\Models\SchematicItem::debitAffiche($item, $itemRate) }} {{
+              __('schema.unite.par-seconde') }}</span></div>
         @endforeach
       </div>
     @endif
@@ -253,7 +254,8 @@
         @endif
         @foreach($schematic->needs ?? [] as $item => $needRate)
           <div class="line"><span>{{ $item }}</span>
-            <span class="num">{{ number_format($needRate, 0, ',', ' ') }} / min</span></div>
+            <span class="num">{{ \App\Models\SchematicItem::debitAffiche($item, $needRate) }} {{
+              __('schema.unite.par-seconde') }}</span></div>
         @endforeach
         @if($schematic->powerNeeded() > 0.5)
           <p class="hint-line">

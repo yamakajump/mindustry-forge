@@ -3,6 +3,7 @@
 namespace App\Services\Cards;
 
 use App\Models\Schematic;
+use App\Models\SchematicItem;
 use GdImage;
 
 /**
@@ -54,7 +55,12 @@ class SchematicCard extends Card
         $lines = [];
 
         foreach (collect($schematic->produces ?? [])->sortDesc()->take(2) as $item => $rate) {
-            $lines[] = [$this->number($rate).' '.$item.' / min', self::ACCENT];
+            // Per second, like the page this card links to. `produces` is per minute,
+            // and `debitAffiche` is the one place that difference is dealt with.
+            $lines[] = [
+                SchematicItem::debitAffiche($item, (float) $rate).' '.$item.' / s',
+                self::ACCENT,
+            ];
         }
 
         $power = round($schematic->power_made - $schematic->power_used);

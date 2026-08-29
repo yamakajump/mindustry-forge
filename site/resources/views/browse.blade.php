@@ -161,15 +161,17 @@
     <span class="champ"><input name="min" id="min" inputmode="numeric" autocomplete="off"
       value="{{ $atLeast ? rtrim(rtrim(number_format($atLeast, 2, '.', ''), '0'), '.') : '' }}"
       placeholder="100" aria-label="{{ __('vitrine.contraintes.au-moins') }}"></span>
-    {{-- The unit follows the thing and not the column: items are per minute, power per
-         second. With no item chosen there is no unit to announce, and none is invented. --}}
+    {{-- Per second, like every figure on the site now, and like the game itself. The
+         column underneath still holds items per minute; the conversion is in the
+         controller, next to the comparison. With no item chosen there is no unit to
+         announce, and none is invented. --}}
     <span class="ph-unite">
       @if($makes === '')
-        {{ __('vitrine.contraintes.unite.par-minute') }}
+        {{ __('vitrine.contraintes.unite.par-seconde') }}
       @elseif($makes === $powerKey)
         {{ __('vitrine.note.energie-seconde') }}
       @else
-        {{ \App\Support\Thing::name($makes) }}/min
+        {{ \App\Support\Thing::name($makes) }}/s
       @endif
     </span><span class="ph-virgule">,</span>
     <span class="ph-suite">{{ __('vitrine.phrase.qui-tient-dans') }}</span>
@@ -461,10 +463,10 @@
        ? \App\Models\SchematicItem::DECLARE
        : \App\Models\SchematicItem::PLAFOND; @endphp
             @foreach(array_slice($schematic->chiffresMontres($montre), 0, 2, true) as $item => $chiffre)
-              {{ number_format($chiffre['rate'], 0, ',', ' ') }}
+              {{ \App\Models\SchematicItem::debitAffiche($item, $chiffre['rate']) }}
               {{ $item === $powerKey
-                  ? 'energie/s'
-                  : \App\Support\Thing::name($item).'/min' }}
+                  ? __('schema.unite.energie-seconde')
+                  : \App\Support\Thing::name($item).'/s' }}
               {{-- Each of the two quantities names itself. Leaving the measurement silent
                    would make it read as the cap on the tile next to it, on a page that
                    ranks on caps. --}}

@@ -286,6 +286,23 @@ const parseSupply = (raw) => {
 };
 
 const rate = (n) => n.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+
+/**
+ * A throughput, per second, with enough decimals left to mean something.
+ *
+ * The game counts in items per second and so does every player: a titanium conveyor is
+ * "eleven a second", not "six hundred and sixty a minute". This site answered in minutes
+ * and left the reader to convert, while stating power per second in the same card.
+ *
+ * The decimals are the whole difficulty of the change. A silicon smelter makes 0.67 a
+ * second, and `rate`'s single decimal turns that into 0,7, which is four percent out on a
+ * site that sells its arithmetic. So the smaller the figure, the more of it is kept.
+ */
+const perSecond = (n) => {
+  const size = Math.abs(n);
+  const digits = size >= 100 ? 0 : size >= 10 ? 1 : 2;
+  return n.toLocaleString("fr-FR", { maximumFractionDigits: digits });
+};
 const escape = (s) => String(s).replace(/[<>&]/g, (c) =>
   ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
 
@@ -347,7 +364,7 @@ function render(report) {
     return `<div class="line"><span><span class="pin ${colour}"></span>
       ${escape(port.name)} en (${port.x}, ${port.y})</span>
       <span class="num">${label}${port.rate > 0.001
-        ? ` &nbsp;${rate(port.rate * 60)} / min` : ""}</span></div>`;
+        ? ` &nbsp;${perSecond(port.rate)} / s` : ""}</span></div>`;
   };
 
   if (!answered || inputs.length || outlets.length) {
@@ -397,7 +414,7 @@ function render(report) {
         : `${withIcon(need.resource)}${escape(need.resource)}`;
       const where = sockets[need.resource] || [];
       return `<div class="line"><span>${label}</span>
-        <span class="num">${rate(need.perMinute)} / min</span></div>` + (best.length
+        <span class="num">${perSecond(need.perMinute / 60)} / s</span></div>` + (best.length
         ? `<div class="chips" style="margin:6px 0 8px">${best.map((o) =>
             `<span class="chip"><span class="num">${o.count}</span> ${escape(o.block)}</span>`)
             .join(`<span style="color:var(--dim);align-self:center">${
@@ -412,8 +429,8 @@ function render(report) {
                  compte: `<strong>${where.length}</strong>`,
                  support: escape(t(where[0].carries === "liquid"
                    ? "analyse.besoins.tuyaux" : "analyse.besoins.bandes")),
-                 debit: `${rate(need.perMinute / where.length)} ${
-                   escape(t("analyse.unite.par-minute"))}`,
+                 debit: `${perSecond(need.perMinute / where.length / 60)} ${
+                   escape(t("analyse.unite.par-seconde"))}`,
                })
              : t("analyse.besoins.sur-un-seul", {
                  support: escape(t(where[0].carries === "liquid"
@@ -430,14 +447,14 @@ function render(report) {
           ? `<p class="hint-line warn" style="margin:-4px 0 10px">${over.block
              ? t("analyse.besoins.au-dessus", {
                  bloc: escape(over.block),
-                 plafond: `${rate(over.ceiling)} ${escape(t("analyse.unite.par-minute"))}`,
+                 plafond: `${perSecond(over.ceiling / 60)} ${escape(t("analyse.unite.par-seconde"))}`,
                  compte: `<strong>${over.needed}</strong>`,
-                 besoin: `${rate(need.perMinute)} ${escape(t("analyse.unite.par-minute"))}`,
+                 besoin: `${perSecond(need.perMinute / 60)} ${escape(t("analyse.unite.par-seconde"))}`,
                })
              : t("analyse.besoins.au-dessus-melange", {
                  support: escape(t("analyse.besoins.bandes")),
-                 plafond: `${rate(over.ceiling)} ${escape(t("analyse.unite.par-minute"))}`,
-                 besoin: `${rate(need.perMinute)} ${escape(t("analyse.unite.par-minute"))}`,
+                 plafond: `${perSecond(over.ceiling / 60)} ${escape(t("analyse.unite.par-seconde"))}`,
+                 besoin: `${perSecond(need.perMinute / 60)} ${escape(t("analyse.unite.par-seconde"))}`,
                })}</p>`
           : "")(overCarried(where, need.perMinute, catalogueOf()));
     }).join("")}<p class="hint-line">${escape(t("analyse.besoins.tache-pleine"))}</p></div>`);
@@ -456,8 +473,8 @@ function render(report) {
       ${ceiling.map(([item, n]) => `<div class="line"><span>${
            escape(t("analyse.plafond.au-mieux"))} ${withIcon(item)}
            ${escape(item)}</span>
-         <span class="num good">${rate(n)} ${
-           escape(t("analyse.unite.par-minute"))}</span></div>`).join("")}
+         <span class="num good">${perSecond(n / 60)} ${
+           escape(t("analyse.unite.par-seconde"))}</span></div>`).join("")}
       ${ceiling.length && needs.length
         ? `<p class="hint-line" style="margin:6px 0 10px">${
              escape(t("analyse.plafond.avertissement"))}
@@ -494,7 +511,7 @@ function render(report) {
       : ""
   }${
     made.map(([item, n]) => `<div class="out-rate">${withIcon(item, 22)}
-      <b>${rate(n)}</b><span>${escape(item)} / min</span></div>`).join("")
+      <b>${perSecond(n / 60)}</b><span>${escape(item)} / s</span></div>`).join("")
   }${
     !made.length && power.made <= 0.01
       ? `<p class="empty">Rien tant qu'on ne lui donne rien. Indique un apport
@@ -516,7 +533,7 @@ function render(report) {
     right.push(`<div class="card"><h2>Fabrique et consomme sur place</h2>${
       inside.map(([item, n]) =>
         `<div class="line"><span>${withIcon(item)}${escape(item)}</span>
-          <span class="num">${rate(n * 60)} / min</span></div>`).join("")
+          <span class="num">${perSecond(n)} / s</span></div>`).join("")
     }<p class="hint-line">Ces objets ne sortent pas : ils alimentent les machines du
       schéma lui-meme.</p></div>`);
   }
@@ -530,8 +547,8 @@ function render(report) {
       ${report.throttle ? `<p class="hint-line">${t("analyse.goulot.plafonne", {
         bloc: `<strong>${escape(report.throttle.name)}</strong>`,
         x: report.throttle.x, y: report.throttle.y,
-        plafond: `${rate(report.throttle.ceiling * 60)} ${
-          escape(t("analyse.unite.par-minute"))}`,
+        plafond: `${perSecond(report.throttle.ceiling)} ${
+          escape(t("analyse.unite.par-seconde"))}`,
       })}</p>` : ""}
       <p class="hint-line">C'est ce bloc qui limite toute la ligne. Elargis ce qui
         l'alimente avant d'ajouter des machines derriere.</p>
@@ -567,7 +584,7 @@ function render(report) {
     const rows = [
       ...surplus.map(([item, n]) =>
         `<div class="line"><span>${withIcon(item)}${escape(item)} arrive sans pouvoir etre
-          consomme</span><span class="num warn">+${rate(n * 60)} / min</span></div>`),
+          consomme</span><span class="num warn">+${perSecond(n)} / s</span></div>`),
       ...idle.map(([name, n]) =>
         `<div class="line"><span>${escape(name)} relie a rien</span>
           <span class="num bad">x${n}</span></div>`),
@@ -1196,7 +1213,7 @@ let living = null;
  */
 let haltRun = null;
 
-const rateLine = (label, rates, unit = "/ min", factor = 60) => {
+const rateLine = (label, rates, unit = "/ s", factor = 1) => {
   const rows = Object.entries(rates || {}).filter(([, v]) => v > 0.001);
   if (!rows.length) return "";
   return rows.map(([item, value]) =>
@@ -1228,7 +1245,7 @@ function showBlock(report, tile) {
   if (tile.dug) {
     parts.push(`<div class="line"><span>${withIcon(tile.dug.resource)}
       ${escape(tile.dug.resource)} sorti du sol</span>
-      <span class="num good">${rate(tile.dug.rate * 60)} / min</span></div>`);
+      <span class="num good">${perSecond(tile.dug.rate)} / s</span></div>`);
     if (tile.dug.covered !== undefined) {
       parts.push(`<p class="hint-line" style="margin:2px 0 8px">Couvre
         <strong>${tile.dug.covered}</strong> case${tile.dug.covered > 1 ? "s" : ""}
@@ -1248,12 +1265,12 @@ function showBlock(report, tile) {
   parts.push(rateLine("consomme", tile.needsLiquid, "/ s", 1));
   parts.push(rateLine("consomme", Object.fromEntries(
     Object.entries(tile.needs).map(([k, v]) =>
-      [k, v * (tile.craftTime ? 60 / tile.craftTime : 0)])), "/ min", 60));
+      [k, v * (tile.craftTime ? 60 / tile.craftTime : 0)])), "/ s", 1));
   // A pipe does not produce water, it carries it. The same figure means two different
   // things depending on the block it sits on, and calling it production on a conduit read
   // as the tool having found a spring in the middle of a pipe.
   const makes = ["crafter", "generator", "drill", "pump", "source"].includes(tile.role);
-  parts.push(rateLine(makes ? "produit" : "porte", tile.through, "/ min", 60));
+  parts.push(rateLine(makes ? "produit" : "porte", tile.through, "/ s", 1));
   if (tile.powerOut) {
     parts.push(`<div class="line"><span>Produit</span>
       <span class="num good">${rate(tile.powerOut)} energie / s</span></div>`);

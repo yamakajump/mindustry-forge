@@ -184,12 +184,13 @@ it('names the quantity a tile shows, both ways round', function () {
 
     $page = $this->get('/schemas')->assertOk();
 
-    // The ceiling is shown, and named.
-    $page->assertSee('900');
+    // The ceiling is shown, and named. 900 a minute is 15 a second, which is what the site
+    // states now: the column still carries items per minute and no page does.
+    $page->assertSee('15,0');
     $page->assertSee(__('schema.page.au-mieux'));
 
-    // The measurement too: neither silent, nor disguised as a ceiling.
-    $page->assertSee('39 700');
+    // The measurement too: neither silent, nor disguised as a ceiling. 39 700 a minute.
+    $page->assertSee('662');
     $page->assertSee(__('schema.page.mesuree'), escape: false);
 
     expect($ceiling->chiffresMontres()['silicon']['kind'])->toBe(SchematicItem::PLAFOND);

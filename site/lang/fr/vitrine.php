@@ -76,7 +76,7 @@ return [
         'chercher' => 'Appliquer',
         'unite' => [
             'tuiles' => 'tuiles',
-            'par-minute' => 'par minute',
+            'par-seconde' => 'par seconde',
             'blocs' => 'blocs',
         ],
         /*
