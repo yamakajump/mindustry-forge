@@ -516,6 +516,12 @@ function render(report) {
     right.push(`<div class="card"><h2>Goulot</h2>
       <div class="line"><span>${escape(name)}</span>
         <span class="num bad">nourri a ${Math.round(share * 100)}%</span></div>
+      ${report.throttle ? `<p class="hint-line">${t("analyse.goulot.plafonne", {
+        bloc: `<strong>${escape(report.throttle.name)}</strong>`,
+        x: report.throttle.x, y: report.throttle.y,
+        plafond: `${rate(report.throttle.ceiling * 60)} ${
+          escape(t("analyse.unite.par-minute"))}`,
+      })}</p>` : ""}
       <p class="hint-line">C'est ce bloc qui limite toute la ligne. Elargis ce qui
         l'alimente avant d'ajouter des machines derriere.</p>
     </div>`);

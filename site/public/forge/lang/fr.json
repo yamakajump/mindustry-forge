@@ -15,6 +15,7 @@
   "analyse.energie.aide": "Les debits de cette page sont deja rabattus dans cette proportion. Dans le jeu, une machine sur un reseau a moitie alimente tourne a moitie regime : elle ralentit, elle ne s'arrete pas, et toutes celles du meme reseau ralentissent ensemble. Deux reseaux qui ne se touchent pas sont comptes separement, et c'est le moins bien servi qui est affiche ici.",
   "analyse.energie.couverture": "Le reseau ne couvre que",
   "analyse.energie.titre": "Courant",
+  "analyse.goulot.plafonne": "Ce qui l'alimente plafonne : {bloc} en ({x}, {y}) ne passe que {plafond}.",
   "analyse.logique.aucun-pilote": "Aucun ne pilote de bloc : ils lisent seulement.",
   "analyse.logique.hors-portee": "hors de portee",
   "analyse.logique.hors-portee-aide": "Distance mesuree puis portee du processeur, en cases. Le jeu refuse un lien pose exactement a sa portee, et il ne le dit pas : il l'enregistre, puis n'en tient jamais compte. Un lien dont la cible n'a pas ete copiee avec le schéma n'est pas compte ici.",

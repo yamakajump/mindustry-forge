@@ -642,3 +642,24 @@ test("processors that only watch are named as harmless", async () => {
   assert.deepEqual(logicOf(nodes),
                    { processors: 1, writing: 0, driven: [], unreachable: [] });
 });
+
+test("the bottleneck card names the carrier that is starving the machine", async () => {
+  const coal = { content: 0, id: known.items["coal"].id };
+  /* Two arc furnaces want 4.8 sand a second each. One plain conveyor carries 6.5, so they
+     get two thirds of what they want between them, and it is not the furnaces that are the
+     problem. A router sits in between, which is the point: on any real layout the belt
+     never touches the machine it starves. */
+  const sand = { content: 0, id: known.items["sand"].id };
+  const out = await analyse(paste([
+    [0, 0, "item-source", 0, sand], [1, 0, "conveyor", 0], [2, 0, "router", 0],
+    [4, 0, "silicon-arc-furnace", 0], [2, 3, "silicon-arc-furnace", 0]]));
+
+  assert.equal(out.bottleneck[0], "silicon-arc-furnace");
+  assert.ok(out.bottleneck[1] < 1, "the furnaces are short");
+
+  /* And the reason, two steps upstream: the belt running at exactly what a conveyor
+     carries. Named where the reader is told to widen something. */
+  assert.equal(out.throttle.name, "conveyor");
+  close(out.throttle.ceiling, 6.5, "a conveyor carries six and a half a second");
+  assert.equal(out.throttle.item, "sand");
+});
