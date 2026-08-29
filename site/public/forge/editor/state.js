@@ -277,10 +277,31 @@ export function createBoard({ tiles = [], ground = {}, frames = [], sizeOf }) {
 }
 
 /** Painting: an ore goes **over** the ground, the way the game stacks its layers. */
+/**
+ * `null` for the whole cell wipes it; `null` for one layer drops that layer alone.
+ *
+ * The second is what the eraser needs. Rubbing out an ore used to take the floor painted
+ * under it with it, because the eraser had no way of saying anything narrower than "this
+ * tile goes", and putting the floor back was a job in itself.
+ *
+ * A layer set to null is deleted rather than stored as null: everything downstream tests
+ * the name it finds, so both read the same, and a key that means "nothing" is one more
+ * shape for the draft, the renderer and the analysis to agree about for no gain. A cell
+ * left with no layer at all goes too, so an erased tile is indistinguishable from one
+ * never painted.
+ */
 function applyPaint(ground, paint) {
   for (const [cell, layers] of Object.entries(paint)) {
-    if (layers === null) delete ground[cell];
-    else ground[cell] = { ...ground[cell], ...layers };
+    if (layers === null) {
+      delete ground[cell];
+      continue;
+    }
+    const merged = { ...ground[cell], ...layers };
+    for (const [layer, value] of Object.entries(merged)) {
+      if (value === null || value === undefined) delete merged[layer];
+    }
+    if (Object.keys(merged).length) ground[cell] = merged;
+    else delete ground[cell];
   }
 }
 
