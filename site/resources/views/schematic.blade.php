@@ -210,7 +210,7 @@
           {{-- Named the way the block wiki names it, from the game's own French bundle. It
                printed the identifier, so this page said "copper" three cards above another
                that says "Cuivre". --}}
-          <div class="line"><span>{{ \App\Support\Thing::name($item) }}</span>
+          <div class="line"><span>@include('blocks.partials.thing', ['thing' => $item])</span>
             <span class="num">{{ \App\Models\SchematicItem::debitAffiche($item, $itemRate) }} {{
               __('schema.unite.par-seconde') }}</span></div>
         @endforeach
@@ -257,7 +257,7 @@
               number_format($schematic->powerNeeded(), 0, ',', ' ') }} / s</span></div>
         @endif
         @foreach($schematic->needs ?? [] as $item => $needRate)
-          <div class="line"><span>{{ \App\Support\Thing::name($item) }}</span>
+          <div class="line"><span>@include('blocks.partials.thing', ['thing' => $item])</span>
             <span class="num">{{ \App\Models\SchematicItem::debitAffiche($item, $needRate) }} {{
               __('schema.unite.par-seconde') }}</span></div>
         @endforeach
