@@ -185,3 +185,33 @@ export function veilAt(ground, x, y, floors) {
   if (!layers?.floor || !layers.overlay) return 0;
   return floors?.[layers.floor]?.veil || 0;
 }
+
+/**
+ * Where one tile starts and how wide it is, in whole device pixels.
+ *
+ * A tile used to be drawn at `(x - box.left) * scale`, and the camera's box is fractional
+ * on purpose, so every tile landed on a fractional coordinate. With smoothing off, the
+ * rasteriser resolves each `drawImage` on its own: two neighbours that should share an edge
+ * each round away from it, and a row of background shows between them. On a large area
+ * painted with one floor that reads as a grid of seams, which is a rendering fault where
+ * the game shows a surface.
+ *
+ * Snapping the position alone would not fix it - two tiles can still round to positions a
+ * pixel apart while both keep a width of `scale`. What closes the gap is deriving the width
+ * from the *next* tile's snapped edge, so tile n ends exactly where tile n+1 begins,
+ * whatever the fraction was.
+ *
+ * `dpr` is the device pixel ratio the canvas is scaled by. Snapping in CSS pixels would
+ * leave the seam on any display that is not 1:1, which is most of them.
+ *
+ * @param {number} at where the tile's left (or top) edge falls, in tiles from the origin
+ * @param {number} scale pixels per tile
+ * @param {number} dpr device pixels per CSS pixel
+ * @returns {[number, number]} the edge and the span, in CSS pixels
+ */
+export function tileSpan(at, scale, dpr = 1) {
+  const ratio = dpr > 0 ? dpr : 1;
+  const from = Math.round(at * scale * ratio) / ratio;
+  const to = Math.round((at + 1) * scale * ratio) / ratio;
+  return [from, to - from];
+}

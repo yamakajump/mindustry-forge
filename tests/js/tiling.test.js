@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { variantOf } from "../../site/public/forge/tiling.js";
+import { tileSpan, variantOf } from "../../site/public/forge/tiling.js";
 
 test("a floor with one sprite always takes it", () => {
   for (const [x, y] of [[0, 0], [7, 3], [-4, 19]]) {
@@ -415,4 +415,43 @@ test("an unpainted tile and an unknown floor veil nothing", () => {
   assert.equal(
     veilAt({ "0,0": { floor: "unheard-of", overlay: "ore-copper" } }, 0, 0, veiling), 0);
   assert.equal(veilAt({ "0,0": { floor: "deep-water", overlay: "ore-copper" } }, 0, 0, {}), 0);
+});
+
+/**
+ * Tiles share their edges, whatever the fraction underneath.
+ *
+ * The camera's box is fractional on purpose, so a tile drawn at `(x - box.left) * scale`
+ * lands on a fractional coordinate. With smoothing off, two neighbours can each round away
+ * from the edge they share and leave a row of background between them: on an area painted
+ * with one floor that reads as a grid of seams.
+ */
+test("a tile ends exactly where the next one starts", () => {
+  for (const dpr of [1, 1.25, 1.5, 2]) {
+    for (const scale of [8, 13, 24, 41]) {
+      for (const origin of [0, 0.37, 12.5, -3.14]) {
+        for (let i = 0; i < 40; i++) {
+          const [at, span] = tileSpan(i - origin, scale, dpr);
+          const [next] = tileSpan(i + 1 - origin, scale, dpr);
+          /* To the floating-point epsilon rather than exactly: the edge is snapped in
+             device pixels and handed back in CSS ones, so `from + (to - from)` differs
+             from `to` in the last bits at a ratio of 1.25. A hundred-millionth of a pixel
+             is not a seam. */
+          assert.ok(Math.abs(at + span - next) < 1e-9,
+            `dpr ${dpr}, scale ${scale}, origin ${origin}, tile ${i}`);
+          // And every edge is a whole device pixel, which is what stops the rounding.
+          assert.equal(Math.round(at * dpr), at * dpr);
+        }
+      }
+    }
+  }
+});
+
+test("a span stays the size of a tile, give or take a pixel", () => {
+  /* Snapping moves an edge by less than a device pixel, so a tile is never wider or
+     narrower than a tile by more than that. A test that only checked the shared edge would
+     pass on a function that returned zero. */
+  for (let i = 0; i < 40; i++) {
+    const [, span] = tileSpan(i - 0.37, 24, 1.5);
+    assert.ok(Math.abs(span - 24) <= 1 / 1.5, `span ${span}`);
+  }
 });
