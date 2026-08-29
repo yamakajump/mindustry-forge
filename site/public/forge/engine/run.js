@@ -8,7 +8,7 @@
  * other's check.
  */
 
-import { DIRECTIONS, TICKS, World } from "./core.js";
+import { DIRECTIONS, TICKS, World, placeDrains } from "./core.js";
 import { behaviourOf } from "./carriers.js";
 
 /**
@@ -30,32 +30,6 @@ export function feed(build, item) {
   if (!build.acceptItem(source, item)) return false;
   build.handleItem(source, item);
   return true;
-}
-
-/**
- * Where the line ends, counting what falls off it.
- *
- * A belt with nothing in front of it does not deliver in the game, it fills up and stops,
- * which is correct and useless for measuring. So the empty tile a line points at gets
- * something standing on it that takes everything and writes down what it took: the same
- * thing a player would learn by putting a container there.
- */
-class Drain {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.block = {};
-    this.role = "drain";
-    this.size = 1;
-    this.rotation = 0;
-    this.proximity = [];
-    this.taken = new Map();
-    this.items = { total: 0, counts: new Map(), get: () => 0, has: () => false };
-  }
-  acceptItem() { return true; }
-  handleItem(source, item) { this.taken.set(item, (this.taken.get(item) || 0) + 1); }
-  canDump() { return false; }
-  relativeTo() { return 0; }
 }
 
 class Tap {
@@ -121,19 +95,8 @@ export function simulate(graph, {
     }
   }
 
-  /* A drain on every tile a line points at and nothing occupies. That is where the
-     schematic ends: a belt torn out of a base stops at the edge of what was copied, and
-     what reaches that edge is what the design delivers. */
-  const drains = [];
-  for (const build of world.builds) {
-    if (!build.block.carries || !build.block.rotate) continue;
-    const [dx, dy] = DIRECTIONS[build.rotation];
-    const ahead = [build.x + dx, build.y + dy];
-    if (world.at(ahead[0], ahead[1])) continue;
-    const drain = new Drain(ahead[0], ahead[1]);
-    world.tiles.set(`${ahead[0]},${ahead[1]}`, drain);
-    drains.push(drain);
-  }
+  /* Where the schematic ends. The rule and the reason are in `placeDrains`. */
+  const drains = placeDrains(world);
 
   const total = Math.round((seconds + warmup) * TICKS);
   const after = Math.round(warmup * TICKS);

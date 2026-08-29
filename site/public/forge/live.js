@@ -16,7 +16,7 @@
  * `Conveyor.draw`, `Duct.draw`, `Drill.draw`, `Drawf.liquid`, Mindustry v159.7.
  */
 
-import { DIRECTIONS, TICKS, World } from "./engine/core.js";
+import { DIRECTIONS, TICKS, World, placeDrains } from "./engine/core.js";
 import { behaviourOf } from "./engine/carriers.js";
 
 /** The game's own units: eight pixels to a tile, five to an item. */
@@ -508,6 +508,13 @@ export class Live {
       if (!build) continue;
       for (const [item, count] of Object.entries(held)) build.items.add(item, count);
     }
+
+    /* Where the design delivers. Without these a belt pointing out of the schematic fills
+       up, backs up into the machines behind it and the whole thing seizes after a few
+       seconds: what a player watched was a factory choking on its own output, which is not
+       what that factory does in a base. The bench has had them from the start, so the
+       measured answer and the watched one were running under different rules. */
+    this.drains = placeDrains(this.world);
 
     this.taps = [];
     for (const [index, rates] of Object.entries(feeds)) {

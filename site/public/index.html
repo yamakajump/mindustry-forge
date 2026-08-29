@@ -251,6 +251,7 @@ import { analyse, catalogueOf, loadCatalogue } from "./forge/analyse.js";
 import { fromBase64, toBase64 } from "./forge/schematic.js";
 import { loadSprites, draw, itemIcon, bounds } from "./forge/render.js";
 import { Live } from "./forge/live.js";
+import { overCarried } from "./forge/needs.js";
 import { gridsOf } from "./forge/engine/power.js";
 import { mountEditor } from "./forge/editor/mount.js";
 import { workbenchOf } from "./forge/editor/state.js";
@@ -409,7 +410,25 @@ function render(report) {
                  x: where[0].x, y: where[0].y,
                })}</p>`
         : `<p class="hint-line" style="margin:0 0 10px">${
-           escape(t("analyse.besoins.ou-marquer"))}</p>`);
+           escape(t("analyse.besoins.ou-marquer"))}</p>`)
+        /* And whether that instruction can be carried out at all. The line above says
+           "bring 1 440 a minute here"; a titanium conveyor carries 600, and the solver
+           three cards down already knows it. Said where the instruction is given rather
+           than left for the reader to catch. */
+        + ((over) => over
+          ? `<p class="hint-line warn" style="margin:-4px 0 10px">${over.block
+             ? t("analyse.besoins.au-dessus", {
+                 bloc: escape(over.block),
+                 plafond: `${rate(over.ceiling)} ${escape(t("analyse.unite.par-minute"))}`,
+                 compte: `<strong>${over.needed}</strong>`,
+                 besoin: `${rate(need.perMinute)} ${escape(t("analyse.unite.par-minute"))}`,
+               })
+             : t("analyse.besoins.au-dessus-melange", {
+                 support: escape(t("analyse.besoins.bandes")),
+                 plafond: `${rate(over.ceiling)} ${escape(t("analyse.unite.par-minute"))}`,
+                 besoin: `${rate(need.perMinute)} ${escape(t("analyse.unite.par-minute"))}`,
+               })}</p>`
+          : "")(overCarried(where, need.perMinute, catalogueOf()));
     }).join("")}<p class="hint-line">${escape(t("analyse.besoins.tache-pleine"))}</p></div>`);
   }
 
@@ -497,6 +516,12 @@ function render(report) {
     right.push(`<div class="card"><h2>Goulot</h2>
       <div class="line"><span>${escape(name)}</span>
         <span class="num bad">nourri a ${Math.round(share * 100)}%</span></div>
+      ${report.throttle ? `<p class="hint-line">${t("analyse.goulot.plafonne", {
+        bloc: `<strong>${escape(report.throttle.name)}</strong>`,
+        x: report.throttle.x, y: report.throttle.y,
+        plafond: `${rate(report.throttle.ceiling * 60)} ${
+          escape(t("analyse.unite.par-minute"))}`,
+      })}</p>` : ""}
       <p class="hint-line">C'est ce bloc qui limite toute la ligne. Elargis ce qui
         l'alimente avant d'ajouter des machines derriere.</p>
     </div>`);
