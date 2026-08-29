@@ -11,6 +11,7 @@
 
 import { groundPlanets, itemIcon } from "../render.js";
 import { loadNames, nameOf } from "../noms.js";
+import { recall, recallNumber, remember } from "../settings.js";
 
 /** A block's sprite, cached: the same chip is redrawn on every search. */
 const icons = new Map();
@@ -355,6 +356,18 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
      order, so the grid headings are that list. */
   const planets = [...new Set(all.map(({ block }) => block.planet))].filter(Boolean);
 
+  /* Which of them the panel opens on. See the note beside `planet` below. */
+  const started = recall("editeur.planete",
+    planets.includes("serpulo") ? "serpulo" : "", ["", ...planets]);
+
+  /* And the rest of what the panel is set to. Same rule throughout: a stored value is
+     checked against what exists before anything is built from it, so a tool that was
+     renamed or a size that came back as a string falls back to the default instead of
+     leaving a control nobody can find again. */
+  const startTool = recall("editeur.outil", TOOLS[0].key, TOOLS.map((t) => t.key));
+  const startSize = recallNumber("editeur.taille", 1, 1, 9);
+  const startFade = recallNumber("editeur.transparence", 35, 0, 100);
+
   /* The same question for the ground, out of the one source that can answer it: a floor is
      on no tech tree, so `block.planet` is empty for every one of them (see `onPlanet`). One
      chip row drives both grids, so the two answers have to arrive here together. */
@@ -395,9 +408,10 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     </div>
     <div class="editor-filters">
       <div class="chips planets">
-        <button type="button" class="chip" data-planet="" aria-pressed="true">Tout</button>
+        <button type="button" class="chip" data-planet=""
+                aria-pressed="${started === "" ? "true" : "false"}">Tout</button>
         ${planets.map((p) => `<button type="button" class="chip" data-planet="${escape(p)}"
-           aria-pressed="false">${escape(PLANETS[p] || p)}</button>`).join("")}
+           aria-pressed="${p === started ? "true" : "false"}">${escape(PLANETS[p] || p)}</button>`).join("")}
       </div>
     </div>
     <div class="editor-grid" role="listbox" aria-label="Blocs">
@@ -411,18 +425,18 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       <div class="tools">
         ${TOOLS.map((tool, i) => `<button type="button" class="tool" data-tool="${tool.key}"
           title="${escape(tool.label)} · ${escape(tool.hint)}" aria-label="${escape(tool.label)}"
-          aria-pressed="${i === 0}"><svg class="i" aria-hidden="true" viewBox="0 0 24 24">${
+          aria-pressed="${tool.key === startTool}"><svg class="i" aria-hidden="true" viewBox="0 0 24 24">${
           tool.icon}</svg></button>`).join("")}
       </div>
       <div class="brushes">
         <label class="range size" title="Taille du crayon">
           <span class="tag">Taille</span>
-          <input type="range" min="1" max="9" step="2" value="1">
-          <span class="num">1 × 1</span></label>
+          <input type="range" min="1" max="9" step="2" value="${startSize}">
+          <span class="num">${startSize} × ${startSize}</span></label>
         <label class="range fade" title="Transparence des blocs, sur l'onglet sol">
           <span class="tag">Transparence</span>
-          <input type="range" min="0" max="100" value="35">
-          <span class="num">35 %</span></label>
+          <input type="range" min="0" max="100" value="${startFade}">
+          <span class="num">${startFade} %</span></label>
       </div>
       <p class="empty ground-empty" hidden>Aucun sol ne répond à ça.</p>
       ${layers.map((layer) => `<section data-layer="${layer.key}">
@@ -446,11 +460,21 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   const recentsBox = recentsRow.querySelector(".swatches");
   let holding = null;
   let needle = "";
-  let planet = "";
+  /* Serpulo on a first visit, and whatever was chosen on every one after that.
+     
+     "Tout" was the default and it is the wrong one to arrive on: a player builds on one
+     planet at a time, so the opening view mixed in a whole world's worth of blocks they
+     cannot place, and the first gesture in the editor was a filter they had to find.
+     Serpulo because it is where most people play; the chip to widen it is right there.
+     
+     Validated against the planets the catalogue actually holds, because a stored value is
+     untrusted input: a world that no longer exists would filter the grid down to nothing
+     and leave a player looking at an empty palette. */
+  let planet = started;
   let onGroundTab = false;
 
   /** What the brush holds: which layer, which block, which tool, which size. */
-  const brush = { layer: "floor", block: null, tool: "pencil", size: 1 };
+  const brush = { layer: "floor", block: null, tool: startTool, size: startSize };
 
   /** What was painted with last, most recent first. Kept across a reload. */
   let recents = readRecents();
@@ -588,7 +612,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
       sayCount(onGroundTab ? found : built);
     });
   };
-  wireFilter(".planets", "planet", (v) => { planet = v; });
+  wireFilter(".planets", "planet", (v) => { planet = v; remember("editeur.planete", v); });
 
   const rail = {
     /** What is held, spelled out: nothing teaches the shortcuts to somebody arriving. */
@@ -696,6 +720,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     const button = event.target.closest("[data-tool]");
     if (!button) return;
     brush.tool = button.dataset.tool;
+    remember("editeur.outil", brush.tool);
     for (const other of groundPanel.querySelectorAll("[data-tool]")) {
       other.setAttribute("aria-pressed", String(other === button));
     }
@@ -808,11 +833,13 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   sizeRange.addEventListener("input", () => {
     brush.size = Number(sizeRange.value);
     sizeLabel.textContent = `${brush.size} × ${brush.size}`;
+    remember("editeur.taille", brush.size);
     onBrush?.(brush);
   });
 
   fadeRange.addEventListener("input", () => {
     fadeLabel.textContent = `${fadeRange.value} %`;
+    remember("editeur.transparence", fadeRange.value);
     onTab?.("ground", Number(fadeRange.value) / 100, brush);
   });
 
