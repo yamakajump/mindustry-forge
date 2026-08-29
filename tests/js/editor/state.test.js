@@ -374,3 +374,24 @@ test("loading a snapshot with no frame or ground starts with empty lists, not ga
   assert.deepEqual(plateau.ground, {});
   assert.deepEqual(plateau.frames, []);
 });
+
+test("erasing one layer leaves the others where they were", () => {
+  const plateau = board([], { "0,0": { floor: "sand", overlay: "ore-copper" } });
+
+  /* The eraser used to say nothing narrower than "this tile goes", so rubbing out an ore
+     took the floor painted under it, and correcting one mistake made another. */
+  plateau.apply({ paint: { "0,0": { overlay: null } } });
+  assert.deepEqual(plateau.ground["0,0"], { floor: "sand" });
+
+  plateau.undo();
+  assert.deepEqual(plateau.ground["0,0"], { floor: "sand", overlay: "ore-copper" });
+});
+
+test("a cell erased layer by layer ends up gone, not empty", () => {
+  const plateau = board([], { "0,0": { wall: "stone-wall" } });
+
+  // Indistinguishable from a tile nobody ever painted: everything downstream walks the
+  // painted cells, and one holding an empty object would be walked for nothing.
+  plateau.apply({ paint: { "0,0": { wall: null } } });
+  assert.equal(plateau.ground["0,0"], undefined);
+});
