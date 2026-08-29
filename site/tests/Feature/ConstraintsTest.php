@@ -109,7 +109,11 @@ it('keeps only what puts out at least the rate asked for', function () {
     schemaQuiProduit('Gros', 10, 10, 30, 1200);
     schemaQuiProduit('Petit', 10, 10, 30, 300);
 
-    $this->get('/schemas?produit=silicon&min=1000')
+    /* The field is per second and the column is not: 1 200 a minute is 20 a second, 300 is
+       5, and a floor of 10 keeps the first and drops the second. The site states per second
+       everywhere now, so that is what somebody types; `BrowseController` converts before
+       comparing. */
+    $this->get('/schemas?produit=silicon&min=10')
         ->assertSee('Gros')
         ->assertDontSee('Petit');
 });
@@ -117,7 +121,7 @@ it('keeps only what puts out at least the rate asked for', function () {
 it('does not apply a minimum rate when no item is chosen', function () {
     schemaQuiProduit('Sans objet choisi', 10, 10, 30, 300);
 
-    $this->get('/schemas?min=1000')->assertSee('Sans objet choisi');
+    $this->get('/schemas?min=10')->assertSee('Sans objet choisi');
 });
 
 it('bounds the block count', function () {
@@ -244,7 +248,7 @@ it('combines the rate, the footprint and the block count', function () {
     schemaQuiProduit('Trop faible', 12, 12, 25, 200);
     schemaQuiProduit('Trop de blocs', 12, 12, 300, 1500);
 
-    $this->get('/schemas?produit=silicon&min=1000&large=14&haut=14&blocs=40')
+    $this->get('/schemas?produit=silicon&min=10&large=14&haut=14&blocs=40')
         ->assertSee('Celui qui repond')
         ->assertDontSee('Trop gros')
         ->assertDontSee('Trop faible')

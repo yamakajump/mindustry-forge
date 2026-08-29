@@ -26,7 +26,6 @@ return [
          * qu'une cle ne traverse pas un domaine.
          */
         'energie-seconde' => 'énergie/s',
-        'par-minute' => '/ min',
         // Invariable au pluriel, d'ou une seule cle : « 1 j'aime », « 12 j'aime ».
         'jaime' => "j'aime",
         'blocs' => 'blocs',
