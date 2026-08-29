@@ -3,8 +3,13 @@
      A native dropdown sat in the middle of a page whose every other control is a chunky
      bordered button, and it showed. Three buttons say the same thing, say it without being
      opened, and look like the rest of the site. --}}
+{{-- `data-schema` and not `data-slug`, for the reason spelled out over the like buttons in
+     `schematic.blade.php`: `data-slug` is apercu.js's contract, and it takes every element
+     carrying one for a tile whose plan it must draw, then `replaceChildren`s a canvas into
+     it. It had already eaten those two buttons once; it was eating this whole card, so
+     nobody could change a schematic's visibility or delete it from its own page. --}}
 <div class="manage {{ ($compact ?? false) ? 'compact' : '' }}"
-     data-slug="{{ $schematic->slug }}" data-url="{{ url("/s/{$schematic->slug}") }}">
+     data-schema="{{ $schematic->slug }}" data-url="{{ url("/s/{$schematic->slug}") }}">
   <div class="seg" role="group" aria-label="{{ __('schema.gestion.qui-peut-voir') }}">
     @foreach([
       'private' => 'schema.gestion.privee',
