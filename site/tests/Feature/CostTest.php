@@ -37,7 +37,7 @@ it('shows each resource with its icon', function () {
 
     $page = $this->get("/s/{$kept->slug}")->assertOk();
 
-    $page->assertSee('Ce qu il coute');
+    $page->assertSee('Ce qu&#039;il coûte', escape: false);
     $page->assertSee('/icone/objet/copper.png?t=32', escape: false);
     $page->assertSee('/icone/objet/lead.png?t=32', escape: false);
     $page->assertSee('320');
@@ -50,7 +50,7 @@ it('does not show an empty card when the cost is unknown', function () {
         'visibility' => 'public', 'blocks' => 3, 'analysis' => [],
     ]);
 
-    $this->get("/s/{$kept->slug}")->assertOk()->assertDontSee('Ce qu il coute');
+    $this->get("/s/{$kept->slug}")->assertOk()->assertDontSee('Ce qu&#039;il coûte', escape: false);
 });
 
 it('defends itself against what a browser can send', function () {

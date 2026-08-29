@@ -216,14 +216,14 @@ return [
     ],
 
     'creatif' => [
-        'mise-a-part' => 'schéma de bac a sable est mis à part, parce qu il ne
+        'mise-a-part' => 'schéma de bac à sable est mis à part, parce qu\'il ne
             se pose pas en partie normale.',
-        'mises-a-part' => 'schémas de bac a sable sont mis à part, parce qu ils ne
+        'mises-a-part' => 'schémas de bac à sable sont mis à part, parce qu\'ils ne
             se posent pas en partie normale.',
-        'montrer' => 'Les afficher quand meme',
-        'affichees' => 'Les schémas de bac a sable sont affichés.',
+        'montrer' => 'Les afficher quand même',
+        'affichees' => 'Les schémas de bac à sable sont affichés.',
         'remettre' => 'Revenir a ceux qui se posent en partie',
-        'etiquette' => 'bac a sable',
+        'etiquette' => 'bac à sable',
     ],
 
     /*

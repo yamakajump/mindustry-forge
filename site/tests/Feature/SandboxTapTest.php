@@ -115,7 +115,7 @@ it('does not quote the figure in the catalogue either', function () {
 
     $liste->assertOk();
     $liste->assertSee('Banc a robinet');
-    $liste->assertSee('source de bac a sable');
+    $liste->assertSee('source de bac à sable');
     $liste->assertDontSee('999 971 energie/s');
 });
 
@@ -129,11 +129,11 @@ it('states the tap on the page instead of quoting its value', function () {
     $page = $this->get("/s/{$kept->slug}");
 
     $page->assertOk();
-    $page->assertSee('Alimenté par une source de bac a sable');
+    $page->assertSee('Alimenté par une source de bac à sable');
     $page->assertSee('power-source');
     // The figure that started all this, in both forms the page can give it.
     $page->assertDontSee('479 999');
     $page->assertDontSee('999 999');
     // The form that travels furthest: what social networks and search engines read.
-    $page->assertSee('content="source de bac a sable - 3 blocs"', false);
+    $page->assertSee('content="source de bac à sable - 3 blocs"', false);
 });

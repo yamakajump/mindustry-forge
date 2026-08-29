@@ -56,7 +56,7 @@ it('says how many it sets aside, and offers to show them', function () {
 
     $page = $this->get('/schemas')->assertOk();
 
-    $page->assertSee('2 schémas de bac a sable sont mis à part', escape: false);
+    $page->assertSee('2 schémas de bac à sable sont mis à part', escape: false);
     $page->assertSee('creatif=oui', escape: false);
 });
 
@@ -68,7 +68,7 @@ it('shows them when asked, labelled for what they are', function () {
 
     $page->assertSee('Server lagger');
     $page->assertSee('Four a silicium');
-    $page->assertSee('bac a sable');
+    $page->assertSee('bac à sable');
 });
 
 it('counts what this page sets aside, not what the catalogue sets aside', function () {
@@ -93,7 +93,7 @@ it('counts what this page sets aside, not what the catalogue sets aside', functi
 
     // Without a filter, the only creative one of the batch is counted, and in the singular.
     $toutes = $this->get('/schemas')->assertOk();
-    $toutes->assertSee('1 schéma de bac a sable est mis à part', escape: false);
+    $toutes->assertSee('1 schéma de bac à sable est mis à part', escape: false);
 });
 
 it('never counts private schematics among what is set aside', function () {
