@@ -81,7 +81,7 @@
  * every note on the site. The role decides, not the appearance.
  */
 .bloc-links a {
-  display: inline-flex; align-items: center;
+  display: inline-flex; align-items: center; gap: 6px;
   min-height: 40px; padding: 0 10px;
   border: 1px solid var(--edge); border-radius: 6px;
   background: var(--raised); color: var(--ink);

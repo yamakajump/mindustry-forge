@@ -11,11 +11,20 @@
      A floor has no page: the game does not offer it in the build menu, so it is not one of
      the 254. It is still a valid answer to "where does sand come from", so it is named in
      plain text rather than turned into a dead link. --}}
+{{-- With its sprite, like everywhere else a block or an item is named on this site. A
+     row of five names is read one by one; a row of five sprites is recognised, which is how
+     a player thinks about their game. Same endpoint as `thing.blade.php`, about a kilobyte
+     each, and `alt` empty because the name is written right beside it. --}}
 @php
   $parts = [];
   foreach ($blocks as $blockName => $one) {
-      $parts[] = \App\Services\BlockCatalogue::has($blockName)
-          ? '<a href="/blocs/'.e($blockName).'">'.e($one->title()).'</a>'
+      $known = \App\Services\BlockCatalogue::has($blockName);
+      $icon = $known
+          ? '<img class="icone" src="/icone/bloc/'.e($blockName).'.png?t=32" width="18"'
+            .' height="18" loading="lazy" decoding="async" alt="">'
+          : '';
+      $parts[] = $known
+          ? '<a href="/blocs/'.e($blockName).'">'.$icon.e($one->title()).'</a>'
           : e($one->title());
   }
 @endphp
