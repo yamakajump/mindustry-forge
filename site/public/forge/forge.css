@@ -1228,17 +1228,6 @@ select {
 .puce b { color: var(--dim); font-weight: 400; }
 .puce.vide { background: transparent; border-style: dashed; color: var(--dim); }
 
-/* The footprint drawn, at the page's own shared scale. */
-.silh {
-  display: inline-grid; place-items: center; width: 28px; height: 28px;
-  vertical-align: middle; background: #101216; border: 1px solid var(--line);
-  border-radius: 4px; margin-right: 2px;
-}
-.silh-r { display: block; background: #2e3a4d; border: 1px solid var(--accent); min-width: 1px; min-height: 1px; }
-/* The drawing and its figure never part: a line break between the two would stick the
-   rectangle onto the number from the previous line. */
-.taille { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
-
 /* Comparing from the list, in two clicks and without a script. */
 .compare-en-cours {
   margin: 0 0 14px; padding: 9px 13px; border: 1px solid var(--accent);

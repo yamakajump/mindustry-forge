@@ -400,12 +400,6 @@
     </div>
   @endif
 
-  @php
-    // The scale belongs to the page, not to the tile: two silhouettes only compare if they
-    // share their factor. The largest side shown is 26 px.
-    $widest = max(1, $schematics->max(fn ($s) => max($s->width, $s->height)) ?? 1);
-    $scale = 26 / $widest;
-  @endphp
   <div class="grid">
     @foreach($schematics as $schematic)
       @php
@@ -485,23 +479,13 @@
                too old an engine has no width, and "0x0" reads as a measurement when it is
                an absence. --}}
           @if($schematic->width > 0 && $schematic->height > 0)
-            {{-- The footprint drawn beside its figure, at a scale shared across the page:
-                 two plans then compare by eye, which a pair of numbers does not allow. The
-                 ratio is kept to the pixel, width and height multiplied by the same factor:
-                 a rectangle drawn as a square would be a drawing that contradicts the
-                 number set right beside it. --}}
-            {{-- The drawing and its figure in a single unbreakable box.
-
-                 Separated, the line broke between the two: the rectangle ended up stuck
-                 against the rate on the line above, and the "14x7" went off to the next
-                 one. An accurate drawing, set beside a number that is not its own, which is
-                 this repository's own fault in graphical form. --}}
-            <span class="taille">
-              <span class="silh" aria-hidden="true"><span class="silh-r" style="width:{{
-                round($schematic->width * $scale, 1) }}px;height:{{
-                round($schematic->height * $scale, 1) }}px"></span></span>
-              <strong>{{ $schematic->width }}&times;{{ $schematic->height }}</strong>
-            </span> &middot;
+            {{-- The dimensions alone. There was a rectangle drawn beside them, at a scale
+                 shared across the page so that two plans could be compared by eye. The
+                 scale came from the widest entry in the list, so one 127-tile schematic
+                 collapsed every other drawing to two or three pixels, and even at its best
+                 a 16-pixel block of flat colour said nothing that "15x14" did not say
+                 beside it more precisely. --}}
+            <strong>{{ $schematic->width }}&times;{{ $schematic->height }}</strong> &middot;
           @endif
           {{ $schematic->blocks }} {{ __('schema.unite.blocs') }} &middot; {{ $schematic->credit() }}
           {{-- Said in the list too, not only on the page. Somebody scrolling a hundred
