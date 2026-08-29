@@ -74,9 +74,13 @@
       <!-- A rate that is chosen rather than imposed. A late-game chain is thought about by
            the second, an early-game one by the minute, and converting in your head while
            sizing a factory is exactly the arithmetic this page exists to spare you. -->
+      <!-- The second first, because that is what the game counts in and what the rest of
+           this site now states. The choice stays: a late-game chain is thought about by the
+           second and an early-game one by the minute, and it is remembered from one visit to
+           the next rather than reset to a default nobody picked. -->
       <select id="cadence" aria-label="Cadence">
-        <option value="minute" data-i18n="outils.planificateur.par-minute">par minute</option>
         <option value="seconde" data-i18n="outils.planificateur.par-seconde">par seconde</option>
+        <option value="minute" data-i18n="outils.planificateur.par-minute">par minute</option>
       </select>
       <select id="planete">
         <option value="serpulo">Serpulo</option>
@@ -101,6 +105,7 @@ import { loadCatalogue } from "../forge/analyse.js";
 import { plan } from "../forge/plan.js";
 import { t, translate, ready } from "../forge/i18n.js";
 import { loadNames, nameOf } from "../forge/noms.js";
+import { recall, remember } from "../forge/settings.js";
 
 /* Every assumption named in full, never a prefix followed by a variable. A key glued
    together at render time is a key no check sees, so the day `plan.js` adds one, the page
@@ -377,7 +382,11 @@ function calculer(evenement) {
 }
 
 $("planete").addEventListener("change", () => { remplirObjets(); calculer(); });
-$("cadence").addEventListener("change", () => calculer());
+$("cadence").addEventListener("change", () => {
+  remember("planificateur.cadence", $("cadence").value);
+  calculer();
+});
+$("cadence").value = recall("planificateur.cadence", "seconde", ["seconde", "minute"]);
 $("demande").addEventListener("submit", calculer);
 
 remplirObjets();
