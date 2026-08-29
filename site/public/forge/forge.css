@@ -1179,7 +1179,8 @@ select {
 .ch-case:hover { border-color: var(--accent); text-decoration: none; color: var(--ink); }
 .ch-case.on { border-color: var(--accent); background: #1e222a; color: var(--ink); }
 .ch-case .icone { width: 24px; height: 24px; image-rendering: pixelated; }
-.ch-eclair { font-size: 18px; color: var(--warn); line-height: 24px; }
+/* Holds the mark, which is an inline SVG in `currentColor` rather than a font glyph. */
+.ch-eclair { color: var(--warn); line-height: 0; display: inline-flex; align-items: center; }
 .ch-tout { grid-column: span 4; flex-direction: row; justify-content: center; }
 
 /* Sorting as tabs: the six ways of sorting are visible without a click, where a drop-down
