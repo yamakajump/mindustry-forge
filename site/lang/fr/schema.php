@@ -73,10 +73,10 @@ return [
      * done correctly on it.
      */
     'page' => [
-        'bac-a-sable' => 'Alimenté par une source de bac a sable',
-        'bac-a-sable-court' => 'source de bac a sable',
-        'cout' => 'Ce qu il coute',
-        'cout-aide' => "Ce que le jeu retire de ton noyau quand tu le poses, a l'unite
+        'bac-a-sable' => 'Alimenté par une source de bac à sable',
+        'bac-a-sable-court' => 'source de bac à sable',
+        'cout' => 'Ce qu\'il coûte',
+        'cout-aide' => "Ce que le jeu retire de ton noyau quand tu le poses, à l'unité
             pres : c'est `Block.requirements` additionne bloc par bloc, pas une estimation.",
         /*
          * Le courant affiche vient de `analysis['potential']`, donc du plafond, et le
@@ -104,7 +104,7 @@ return [
          * faux. C'est le défaut que ce dépôt collectionne, et le voici évité en un mot.
          */
         'declaree' => 'déclaré par un joueur',
-        'bac-a-sable-aide' => "Un robinet de bac a sable donne autant qu'on lui demande, donc
+        'bac-a-sable-aide' => "Un robinet de bac à sable donne autant qu'on lui demande, donc
             ce que ce schéma sort n'est pas une mesure de ce que ses blocs font :
             c'est ce qu'un robinet permet. Il reste lisible et analysable, il n'est
             simplement pas classé parmi les producteurs.",
@@ -120,14 +120,14 @@ return [
      * numbers against these words instead.
      */
     'comparer' => [
-        'titre' => 'Comparer deux schemas',
-        'sous-titre' => "Les deux ont ete lus par le meme moteur, donc la difference se
-            soustrait au lieu de se deviner sur deux captures d'ecran.",
+        'titre' => 'Comparer deux schémas',
+        'sous-titre' => "Les deux ont été lus par le même moteur, donc la difference se
+            soustrait au lieu de se deviner sur deux captures d'écran.",
         'gauche' => 'A gauche',
         'droite' => 'A droite',
-        'cherche' => 'Cherche un schema par son nom',
+        'cherche' => 'Cherche un schéma par son nom',
         'comparer' => 'Comparer',
-        'aide' => "Tape un nom, ou colle la fin d'une adresse apres /s/.",
+        'aide' => "Tape un nom, ou colle la fin d'une adresse après /s/.",
         'trouves' => 'Ce qui porte ce nom',
         'blocs' => 'blocs',
         'par' => 'par',
@@ -135,8 +135,8 @@ return [
         'mettre-a-gauche' => 'a gauche',
         'mettre-a-droite' => 'a droite',
         'comparer-avec' => 'Comparer avec un autre',
-        'a-choisir' => 'Des schemas a comparer',
-        'rien-a-comparer' => "Rien de publie pour l'instant.",
+        'a-choisir' => 'Des schémas à comparer',
+        'rien-a-comparer' => "Rien de publié pour l'instant.",
         'energie' => 'Énergie',
 
         /*
@@ -147,17 +147,17 @@ return [
          * whole subject is two pictures showed neither of them, at any point, and Corentin's
          * words for it were "on ne voit pas les schemas".
          */
-        'vide' => 'Rien de choisi de ce cote',
+        'vide' => 'Rien de choisi de ce côté',
         'dessin' => 'Dessin du plan...',
         'enlever' => 'enlever',
-        'echanger' => 'Echanger les deux cotes',
+        'echanger' => 'Échanger les deux côtés',
         'ouvrir' => 'ouvrir sa page',
 
         'ce-quils-font' => "Ce qu'ils font tous les deux",
         'lun-pas-lautre' => "Ce que l'un fait et pas l'autre",
         'la-place' => 'La place et le courant',
         'le-cout' => "Ce qu'ils coutent a poser",
-        'ce-qui-bloque' => 'Ce qui les arrete',
+        'ce-qui-bloque' => 'Ce qui les arrête',
         'rien-ne-bloque' => 'rien de signale',
 
         'mesure-blocs' => 'Blocs poses',
@@ -175,17 +175,17 @@ return [
          * A single figure mixing things that do not belong on one axis reads as a verdict,
          * which is exactly the fault repaired on the net-power ranking.
          */
-        'rien-en-commun' => "Ces deux schemas ne produisent rien en commun, donc il n'y a pas
-            de vainqueur a designer. Classer du graphite contre du silicium reviendrait a
-            decreter qu'un graphite vaut un silicium.",
-        'plafond' => "Ces chiffres sont des plafonds, pas des mesures : personne n'a dit a ces
-            schemas ou ils se branchent, donc c'est ce qu'ils feraient au mieux.",
+        'rien-en-commun' => "Ces deux schémas ne produisent rien en commun, donc il n'y a pas
+            de vainqueur à désigner. Classer du graphite contre du silicium reviendrait à
+            décréter qu'un graphite vaut un silicium.",
+        'plafond' => "Ces chiffres sont des plafonds, pas des mesures : personne n'a dit à ces
+            schémas où ils se branchent, donc c'est ce qu'ils feraient au mieux.",
         'kinds-melanges' => "Un des deux chiffres est une mesure et l'autre un plafond. Ils
-            sont montres cote a cote et volontairement pas soustraits : leur difference ne
+            sont montrés côte à côte et volontairement pas soustraits : leur difference ne
             voudrait rien dire.",
-        'pas-de-verdict' => "Aucun vainqueur n'est designe. Un schema qui produit plus et
-            coute trois fois plus cher n'est pas meilleur, c'est un autre marche, et vous
-            etes seul a savoir lequel vous voulez.",
+        'pas-de-verdict' => "Aucun vainqueur n'est désigné. Un schéma qui produit plus et
+            coûte trois fois plus cher n'est pas meilleur, c'est un autre marché, et vous
+            êtes seul a savoir lequel vous voulez.",
     ],
 
     'gestion' => [
