@@ -592,7 +592,17 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     const out = {};
     for (const [x, y] of cells) {
       const key = `${x},${y}`;
-      if (brush.tool === "eraser") { out[key] = null; continue; }
+      /* The layer being edited, not the whole tile. Rubbing out an ore took away the
+         floor painted under it, so correcting one mistake made another, and the panel
+         offers four families precisely so that they can be worked on apart.
+
+         The whole tile is still one gesture away: erase on the floor family and the ore
+         above it goes too, since an overlay with no floor under it does not exist (see
+         just below, where painting one brings stone along). */
+      if (brush.tool === "eraser") {
+        out[key] = brush.layer === "floor" ? null : { [brush.layer]: null };
+        continue;
+      }
       if (!brush.block) continue;
       /* Ore dropped on a bare tile brings stone along with it: the game has no floating
          ore, and an overlay with no floor under it does not exist. */
