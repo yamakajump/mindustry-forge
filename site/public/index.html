@@ -918,6 +918,10 @@ async function run() {
     return;
   }
   montrerAccueil(false);
+  /* Before anything is drawn, and not after: what is running belongs to the report about
+     to be thrown away. */
+  haltRun?.();
+  haltRun = null;
   if (payload !== lastPayload) {
     marked = {};
     sealed = false;
@@ -966,6 +970,11 @@ let kept = null;
 let keptFor = null;
 
 async function enterEditor(tiles = null) {
+  /* Editing does not empty `#out`, so a simulation left running would go on stepping a
+     world nobody is looking at for as long as the editor is open. */
+  haltRun?.();
+  haltRun = null;
+
   /* The catalogue is asked for explicitly: `catalogueOf` only returns something after a
      first analysis, and "build from scratch" is precisely the path where no analysis has
      taken place. */
@@ -998,8 +1007,20 @@ async function leaveEditor(board) {
   document.body.style.overflow = "";
   mounted.destroy();
 
+  /* Taken off here rather than at the foot of this function, because the guard below
+     returns before ever reaching it. `forge.css` hides `<main>` under this class for as
+     long as the document is serving /editer, so an early return left the page showing
+     nothing at all: no editor, no report, and a message written into an element nobody
+     could see. Every exit from the editor passes through here, so every exit takes it. */
+  document.documentElement.classList.remove("route-editeur");
+  document.title = "Forge - analyser un schéma Mindustry";
+
   if (!built.length) {
-    out.innerHTML = `<div class="card">Rien a analyser : le plateau est vide.</div>`;
+    /* Ground is not a block, so a board covered in painted floor satisfies this and is not
+       empty in any sense its author would recognise. Said in the terms they used. */
+    out.innerHTML = `<div class="card">${escape(t(board.ground
+      && Object.keys(board.ground).length
+      ? "analyse.plateau.sol-seul" : "analyse.plateau.vide"))}</div>`;
     return;
   }
   /* The schematic becomes again the string the game reads, which stays the source of truth
@@ -1021,12 +1042,6 @@ async function leaveEditor(board) {
      to, and which the first gesture writes over their saved draft. */
   kept = workbenchOf(board);
   keptFor = lastPayload;
-  /* The head's inline guard hides <main> for as long as this document is serving
-     /editer. Leaving the editor here does not reload the page, so this is the one
-     place every exit from the editor passes through, and the only place that can take
-     the class (and the tab's title) back off. */
-  document.documentElement.classList.remove("route-editeur");
-  document.title = "Forge - analyser un schéma Mindustry";
   await run();
 }
 
@@ -1130,6 +1145,17 @@ let measures = { sizeOf: () => 1, roleOf: () => "" };
  * afterwards. `stepped` rides along with it: the renderer needs to know how many of the
  * game's ticks went by since the last picture, not how many pictures went by. */
 let living = null;
+
+/**
+ * How to stop whatever is running, from outside the render that started it.
+ *
+ * `wireRun` keeps its loop, its `Live` and its clock in a closure, which is right: they
+ * belong to one report and die with it. What was missing is the way to say so. Analysing
+ * again rewrites `#out` and builds a fresh canvas, and the previous loop went on stepping
+ * the previous world and painting it into the new canvas, sixty times a second, over the
+ * report the reader had just asked for. It won, because it painted last.
+ */
+let haltRun = null;
 
 const rateLine = (label, rates, unit = "/ min", factor = 60) => {
   const rows = Object.entries(rates || {}).filter(([, v]) => v > 0.001);
@@ -1311,12 +1337,19 @@ function wireRun(report, repaint) {
       ? `${seconds.toFixed(1)} s de jeu` : "";
   };
 
-  const stop = () => {
+  /* The machinery alone: no words, no repaint. Called from outside when this whole report
+     is about to be replaced, where repainting would draw the outgoing schematic into the
+     incoming one's canvas. */
+  const halt = () => {
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     live?.pause();
-    play.textContent = "Faire tourner";
     living = null;
+  };
+
+  const stop = () => {
+    halt();
+    play.textContent = "Faire tourner";
     repaint();
   };
 
@@ -1351,6 +1384,8 @@ function wireRun(report, repaint) {
     $("run-speed-box").hidden = true;
     $("run-clock").textContent = "";
   });
+
+  haltRun = halt;
 
   $("run-speed")?.addEventListener("input", (event) => {
     const rate = Number(event.target.value);

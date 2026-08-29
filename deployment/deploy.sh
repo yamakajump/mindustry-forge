@@ -91,6 +91,16 @@ main() {
     sudo -u "$APP_USER" php artisan route:clear
     sudo -u "$APP_USER" php artisan view:clear
     sudo -u "$APP_USER" php artisan migrate --force || echec "database migration"
+
+    # The link `public/storage` -> `storage/app/public`, without which every preview a
+    # member's own save wrote answers 404. The page's guard asks the disk whether the file
+    # is there and the browser asks nginx, which serves this directory and no other, so a
+    # missing link does not degrade to "no preview": it shows a broken image.
+    #
+    # `--force` because a deployment onto a tree that already has the link must not fail on
+    # it, and run as $APP_USER so the link is not left root-owned in a tree the application
+    # rewrites.
+    sudo -u "$APP_USER" php artisan storage:link --force || echec "storage link"
     sudo -u "$APP_USER" php artisan config:cache
     sudo -u "$APP_USER" php artisan route:cache
     sudo -u "$APP_USER" php artisan view:cache

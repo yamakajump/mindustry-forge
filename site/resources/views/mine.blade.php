@@ -22,7 +22,7 @@
 @else
   <div class="grid">
     @foreach($schematics as $schematic)
-      <article class="tile" data-slug="{{ $schematic->slug }}">
+      <article class="tile">
         <a href="/s/{{ $schematic->slug }}">
           @php $preview = \Illuminate\Support\Facades\Storage::disk('public')
                  ->exists("apercus/{$schematic->slug}.png") @endphp

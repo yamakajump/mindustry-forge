@@ -200,7 +200,7 @@ class BlockController extends Controller
         $sources = [];
         foreach (array_unique($wanted) as $thing) {
             $sources[$thing] = [
-                'made' => BlockCatalogue::makersOf($thing),
+                'made' => BlockCatalogue::makersOf($thing, $block->planet()),
                 'mined' => BlockCatalogue::minedFrom($thing),
             ];
         }
@@ -217,7 +217,7 @@ class BlockController extends Controller
     {
         $destinations = [];
         foreach ($block->everythingItMakes() as $thing) {
-            $takers = BlockCatalogue::takersOf($thing);
+            $takers = BlockCatalogue::takersOf($thing, $block->planet());
             // Not itself. A block that eats what it makes is a rarity, and listing it under
             // its own outputs reads as a mistake rather than as a fact about the game.
             unset($takers[$block->name]);

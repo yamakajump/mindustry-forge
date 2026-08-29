@@ -94,6 +94,20 @@ it('says where to find what the block consumes, the ground included', function (
         ->assertDontSee('/blocs/sand-floor');
 });
 
+it('offers makers from its own planet and no other', function () {
+    app()->setLocale('fr');
+
+    // A Serpulo turret that drinks water. Three of the four blocks that make water are
+    // Erekir's, and they were all offered here: a reader was told to get their water from
+    // a vent condenser, on the page of a turret they can only build on the other planet.
+    $page = $this->get('/blocs/foreshadow')->assertOk();
+
+    $page->assertSee('/blocs/water-extractor')
+        ->assertDontSee('/blocs/vent-condenser')
+        ->assertDontSee('/blocs/turbine-condenser')
+        ->assertDontSee('/blocs/pyrolysis-generator');
+});
+
 it('links the block to the public schematics that hold it', function () {
     $held = Schematic::factory()->create([
         'visibility' => Schematic::PUBLIC,

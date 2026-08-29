@@ -63,7 +63,7 @@ document.addEventListener("click", async (event) => {
     box.querySelector(".share").hidden = wanted === "private";
 
     try {
-      await send(box.dataset.slug, "PATCH", { visibility: wanted });
+      await send(box.dataset.schema, "PATCH", { visibility: wanted });
       say(box, t(SAID[wanted]));
     } catch (error) {
       for (const button of box.querySelectorAll(".seg button")) {
@@ -94,7 +94,7 @@ document.addEventListener("click", async (event) => {
 
   button.disabled = true;
   try {
-    await send(box.dataset.slug, "DELETE");
+    await send(box.dataset.schema, "DELETE");
     // On a grid the tile goes; on the schematic's own page there is nowhere left to be.
     if (button.dataset.gone) window.location.href = button.dataset.gone;
     else (box.closest(".tile") || box).remove();

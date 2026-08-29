@@ -320,8 +320,13 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 @media (max-width: 860px) {
   .side { position: static; max-height: none; }
 }
+/* `height: auto` is what keeps the drawing square. The renderer sets both dimensions in
+   pixels (`render.js`), so `max-width` alone shrank the width against the column and left
+   the height as written: an 84 by 84 schematic was drawn markedly taller than it was wide,
+   and only the plans too big for the column were affected, which is why it went unseen. */
 .stage canvas, .stage img {
-  display: block; image-rendering: pixelated; border-radius: 4px; max-width: 100%;
+  display: block; image-rendering: pixelated; border-radius: 4px;
+  max-width: 100%; height: auto;
 }
 
 .title { margin: 0 0 4px; font-size: 23px; font-weight: 400; letter-spacing: .3px; }
@@ -362,7 +367,11 @@ label.file:focus-within {
   outline: 2px solid var(--accent); outline-offset: 2px;
 }
 
-textarea, input[type=text] {
+/* `search` beside `text`: a search field is a text field wearing a different type, and
+   leaving it out of this rule left the editor's palette showing the browser's own widget,
+   a flat pale rectangle in a dark panel. Listed here rather than skinned again beside its
+   own geometry, so the next field type added inherits rather than repeats. */
+textarea, input[type=text], input[type=search] {
   width: 100%; background: var(--bg); color: var(--ink);
   border: 2px solid var(--edge); border-radius: 6px; padding: 10px 12px;
   font: 12.5px/1.5 var(--mono); min-height: 44px;
@@ -383,7 +392,12 @@ textarea, input[type=text] {
   image-rendering: pixelated; background: var(--stage); border-radius: 4px;
 }
 .tile .noimg { display: grid; place-items: center; color: var(--dim); font-size: 12px; }
-.tile h3 { margin: 8px 0 2px; font-size: 15px; font-weight: 400; }
+/* Names come from imported catalogues, so a forty-character word with no space in it is
+   not hypothetical: one ran out of its card and over the tile beside it. Wrapped rather
+   than truncated, so a name that only differs at its end can still be told apart. */
+.tile h3 {
+  margin: 8px 0 2px; font-size: 15px; font-weight: 400; overflow-wrap: anywhere;
+}
 .tile .meta { margin: 0; color: var(--dim); font-size: 12px; }
 
 /* The analyser page ---------------------------------------------------------------
@@ -741,6 +755,9 @@ select {
   position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
   width: 15px; height: 15px; color: var(--dim); pointer-events: none;
 }
+/* Its own geometry, and only that: 36 rather than 44 because the rail is 260 px and a
+   44 px field eats a row of swatches, and the horizontal padding is the room the magnifier
+   and the clear button are positioned into. The skin comes from the rule above. */
 .editor-rail .search input[type="search"] {
   width: 100%; min-height: 36px; padding: 0 32px; font-size: 12.5px;
 }

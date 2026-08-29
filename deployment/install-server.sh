@@ -123,6 +123,8 @@ fi
 COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction
 grep -q '^APP_KEY=base64:' .env || php artisan key:generate --force
 php artisan migrate --force
+# Previews are written to storage/app/public and served from public/storage. See deploy.sh.
+php artisan storage:link --force
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 
 echo "→ Permissions..."
