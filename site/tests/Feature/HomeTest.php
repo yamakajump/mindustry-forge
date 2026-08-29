@@ -35,10 +35,19 @@ function produisant(string $nom, float $debit, string $item = 'silicon', ?float 
      * a ranking by rate under code that ranks by yield: 100 over 5 blocks beats 900 over
      * 60. It passes most of the time and fails without warning, which is what happened.
      */
+    /* And a block count the showcase will look at.
+     *
+     * It puts forward what a player would open, so it refuses anything under twenty blocks
+     * and anything that fills less than a twentieth of its own frame - a tap of one block
+     * and a 127-tile frame holding one were what it used to lead with. The factory draws
+     * between 4 and 200 at random, so a test that did not pin this passed or failed on the
+     * roll of a die. */
     $s = Schematic::factory()->create(array_filter([
         'visibility' => 'public',
         'name' => $nom,
-        'blocks' => $blocs,
+        'blocks' => $blocs ?? 40,
+        'width' => 12,
+        'height' => 12,
     ], fn ($v) => $v !== null));
     $s->items()->delete();
     $s->items()->create([
@@ -88,11 +97,17 @@ it('features only what produces a quantified amount', function () {
 
     /* The sandbox makes nothing, so it cannot surface. That is a side effect of the
        criterion and not a blacklist to keep up to date. */
-    Schematic::factory()->create(['visibility' => 'public', 'name' => 'Fps Droper']);
+    Schematic::factory()->create([
+        'visibility' => 'public', 'name' => 'Fps Droper',
+        'blocks' => 40, 'width' => 12, 'height' => 12,
+    ]);
 
     /* What it consumes is not what it produces. A schematic carrying input rows only moves
        nothing forward and has nothing to show in the catalogue. */
-    $consomme = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Ne fait que manger']);
+    $consomme = Schematic::factory()->create([
+        'visibility' => 'public', 'name' => 'Ne fait que manger',
+        'blocks' => 40, 'width' => 12, 'height' => 12,
+    ]);
     $consomme->items()->delete();
     $consomme->items()->create([
         'item' => 'silicon', 'sens' => 'consomme',
@@ -179,6 +194,7 @@ it('states the same figure as the catalogue, for the same schematic', function (
        for the same schematic, on a site whose argument is that its figures are provable. */
     $s = Schematic::factory()->create([
         'visibility' => 'public', 'name' => 'Turbine', 'produces' => ['water' => 39700],
+        'blocks' => 40, 'width' => 12, 'height' => 12,
     ]);
     $s->items()->delete();
     $s->items()->create([
@@ -200,7 +216,10 @@ it('states power per second, as everywhere else on the site', function () {
     /* `rate` carries power per second and items per minute in the same column. Multiplying
        both by sixty gave a power figure that contradicted every other page, and a water
        rate sixty times too fast. */
-    $s = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Centrale']);
+    $s = Schematic::factory()->create([
+        'visibility' => 'public', 'name' => 'Centrale',
+        'blocks' => 40, 'width' => 12, 'height' => 12,
+    ]);
     $s->items()->delete();
     $s->items()->create([
         'item' => SchematicItem::POWER, 'sens' => SchematicItem::PRODUIT,
@@ -266,7 +285,10 @@ it('shows one schematic per product, not the best one six times', function () {
  * it visibly empty.
  */
 it('mixes no measurement into a catalogue of ceilings', function () {
-    $mesure = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Mesuree seule']);
+    $mesure = Schematic::factory()->create([
+        'visibility' => 'public', 'name' => 'Mesuree seule',
+        'blocks' => 40, 'width' => 12, 'height' => 12,
+    ]);
     $mesure->items()->delete();
     $mesure->items()->create([
         'item' => 'titanium',
@@ -345,4 +367,40 @@ it('never shows the same plan twice under two products', function () {
            than disappearing: an empty slot would cost the catalogue a product. */
         ->and($tuiles->pluck('nom'))->toContain('Fait les deux')
         ->and($tuiles->pluck('produit')->duplicates())->toBeEmpty();
+});
+
+it('keeps a tap and a copy accident out of the showcase', function () {
+    /* Ranking on rate per block put the worst possible tiles at the top: the fewer blocks,
+       the better the ratio, so the front door led with "6 300 energie/s, 127 x 127, 1 blocs"
+       and "190 800 cryofluide/min". Both are real schematics in the catalogue and neither is
+       a factory. */
+    $tap = Schematic::factory()->create([
+        'visibility' => 'public', 'name' => 'Une seule source',
+        'blocks' => 1, 'width' => 1, 'height' => 1,
+    ]);
+    $tap->items()->delete();
+    $tap->items()->create([
+        'item' => 'silicon', 'sens' => SchematicItem::PRODUIT,
+        'kind' => SchematicItem::PLAFOND, 'rate' => 190800, 'rate_per_block' => 190800,
+    ]);
+
+    // Mindustry caps a schematic at 128 tiles a side, so this shape really does arrive.
+    $vide = Schematic::factory()->create([
+        'visibility' => 'public', 'name' => 'Un bloc dans un desert',
+        'blocks' => 25, 'width' => 127, 'height' => 127,
+    ]);
+    $vide->items()->delete();
+    $vide->items()->create([
+        'item' => 'silicon', 'sens' => SchematicItem::PRODUIT,
+        'kind' => SchematicItem::PLAFOND, 'rate' => 99999, 'rate_per_block' => 4000,
+    ]);
+
+    // Both out-rank it on the figure the showcase sorts by, and it is the one shown.
+    produisant('Vraie usine', 800.0, 'silicon');
+
+    $noms = collect(ilot($this->get('/')->getContent())['schemas'])->pluck('nom');
+
+    expect($noms)->not->toContain('Une seule source');
+    expect($noms)->not->toContain('Un bloc dans un desert');
+    expect($noms)->toContain('Vraie usine');
 });
