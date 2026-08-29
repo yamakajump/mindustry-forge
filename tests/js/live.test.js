@@ -20,6 +20,7 @@ import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { World } from "../../site/public/forge/engine/core.js";
 import { behaviourOf } from "../../site/public/forge/engine/carriers.js";
 import { Live, absin, anchor, beltFrame, running } from "../../site/public/forge/live.js";
+import { gridsOf } from "../../site/public/forge/engine/power.js";
 
 const catalogue = loadCatalogue();
 useCatalogue(catalogue);
@@ -225,4 +226,38 @@ test("a belt pointing out of the schematic delivers rather than backing up", asy
      line itself holds, so anything above it is proof that the end is open. */
   assert.equal(live.drains.length, 1);
   assert.ok(delivered > 50, `only ${delivered} delivered`);
+});
+
+/**
+ * The page's run and the report above it make the same assumption about power.
+ *
+ * "Une fois nourrie a fond" prints what the machines would make at full tilt and lists the
+ * draw beside it, which is the right question: a schematic is a piece of a base and the
+ * base carries the current. The run assumed the opposite and said so nowhere, so pressing
+ * play on a good factory showed it doing nothing at all.
+ */
+test("a schematic with no generator runs as if plugged in", async () => {
+  // A smelter draws power and makes none. Fed sand and coal, and nothing else.
+  const tiles = [[0, 0, "silicon-smelter", 0]];
+  const graph = buildGraph((await fromBase64(paste(tiles))).tiles);
+  const live = new Live(graph, { catalogue, gridsOf, feeds: {} });
+
+  assert.equal(live.plugged.length, 1, "the one grid is plugged in");
+  live.tick();
+  assert.equal(live.world.grids[0].coverage, 1, "and covered");
+});
+
+test("a schematic that makes its own power is left to make it", async () => {
+  /* A combustion generator with nothing to burn produces nothing, and the battery beside
+     it stays flat. That is a fact about the design, measured against a real server, and
+     the mains must not paper over it: this is a grid with a producer, so it is left
+     alone. */
+  const tiles = [[0, 0, "combustion-generator", 0], [2, 0, "battery", 0],
+                 [1, 0, "power-node", 0]];
+  const graph = buildGraph((await fromBase64(paste(tiles))).tiles);
+  const live = new Live(graph, { catalogue, gridsOf, feeds: {} });
+
+  assert.equal(live.plugged.length, 0, "nothing was plugged in");
+  for (let i = 0; i < 60; i++) live.tick();
+  assert.equal(live.world.grids[0].made, 0, "an unfed generator makes nothing");
 });

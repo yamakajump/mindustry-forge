@@ -751,6 +751,9 @@ function render(report) {
           <span id="run-rate">x1</span>
         </label>
         <span class="dim" id="run-clock"></span>
+        <!-- Said only when it applies, and only once the run starts: a schematic that
+             carries its own generators is not being helped and must not be told it is. -->
+        <span class="dim" id="run-mains" hidden></span>
       </div>
       ${legend}
       <div id="block" class="card block-panel">
@@ -1396,6 +1399,13 @@ function wireRun(report, repaint) {
       });
       $("run-reset").hidden = false;
       $("run-speed-box").hidden = false;
+      /* The assumption the report above already makes, said out loud rather than left for
+         somebody to work out from a frozen picture. */
+      const mains = $("run-mains");
+      if (mains) {
+        mains.hidden = !live.plugged.length;
+        mains.textContent = live.plugged.length ? t("analyse.simulation.branche") : "";
+      }
     }
     live.play();
     play.textContent = "Arreter";
@@ -1408,6 +1418,8 @@ function wireRun(report, repaint) {
     $("run-reset").hidden = true;
     $("run-speed-box").hidden = true;
     $("run-clock").textContent = "";
+    const mains = $("run-mains");
+    if (mains) { mains.hidden = true; mains.textContent = ""; }
   });
 
   haltRun = halt;

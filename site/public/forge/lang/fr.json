@@ -42,6 +42,7 @@
   "analyse.ports.rien-marque": "Rien de marque pour l'instant.",
   "analyse.ports.scelle": "Rien n'entre ni ne sort",
   "analyse.ports.titre": "Entrees et sorties",
+  "analyse.simulation.branche": "Tourne comme branche sur ton reseau : ce schema ne fabrique pas son courant.",
   "analyse.unite.energie-par-seconde": "energie / s",
   "analyse.unite.par-minute": "/ min",
   "compte.barre.connexion": "Se connecter avec Discord",
