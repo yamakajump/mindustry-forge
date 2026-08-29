@@ -105,3 +105,30 @@ it('serves a code to a tile that asks for one', function () {
         ->assertOk()
         ->assertSee($gros->code);
 });
+
+it('leaves the management card alone', function () {
+    Storage::fake('public');
+    $owner = User::factory()->create();
+    $schematic = schema(['user_id' => $owner->id]);
+
+    $html = $this->actingAs($owner)->get("/s/{$schematic->slug}")->assertOk()->getContent();
+
+    /* `data-slug` is this drawer's contract: it takes every element carrying one for a tile
+       whose plan it must fetch and draw, and `replaceChildren`s a canvas into it. The
+       management card carried one for its own two verbs, so the whole card - the three
+       visibility buttons, the shareable link, the delete button - was replaced by a picture
+       of the schematic. Nobody could change who saw their own schematic, or delete it, from
+       its page.
+
+       It had already eaten the like buttons once, and the note above them says so. This
+       asserts the second occurrence stays fixed: the card announces itself with the same
+       attribute the like buttons settled on, and the drawer never hears about it. */
+    expect($html)->toContain('data-schema="'.$schematic->slug.'"');
+    expect($html)->toContain('data-visibility="public"');
+    expect($html)->toContain('data-delete');
+
+    /* One `data-slug` at most on this page, and it belongs to the plan: the panel that
+       draws it says so when the code is too big to travel in the markup. */
+    $slugs = substr_count($html, 'data-slug=');
+    expect($slugs)->toBe(0);
+});

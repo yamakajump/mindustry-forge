@@ -238,14 +238,46 @@ class BlockCatalogue
      * produces whatever it is standing on rather than a fixed thing; the ground answers
      * that question, and `minedFrom` asks it.
      *
+     * `$planet` narrows the answer to one world. A foreshadow page was offering a vent
+     * condenser and a pyrolysis generator as ways of getting its water: both are Erekir
+     * blocks, on a Serpulo turret's page, so three of the four answers on that row were
+     * things the reader cannot build anywhere near what they are reading about.
+     *
      * @return array<string, Block>
      */
-    public static function makersOf(string $thing): array
+    public static function makersOf(string $thing, ?string $planet = null): array
     {
         return array_filter(
             self::all(),
-            fn (Block $block) => isset($block->outputs()[$thing]) || isset($block->outputLiquids()[$thing]),
+            fn (Block $block) => (isset($block->outputs()[$thing]) || isset($block->outputLiquids()[$thing]))
+                && self::onPlanet($block, $planet),
         );
+    }
+
+    /**
+     * Whether a block belongs on the world being asked about.
+     *
+     * "The same planet, or none", and the second half is a guard rather than a formality.
+     * A planet is stamped by walking each planet's tech tree, so a block that is on no tree
+     * carries none: 154 of the 395, counted, and all of them out of sight today - 141
+     * hidden terrain (floors, static walls, ores, vents), 10 sandbox taps, 2 debug blocks,
+     * 1 legacy. None of those reaches these lists, so the clause changes nothing on any
+     * page as it stands.
+     *
+     * It is here for the case it is written for: an unknown planet is not a foreign one,
+     * and a block the dump could not place must not be hidden on that basis. The same
+     * applies from the other side, hence the null check above: a page that cannot say which
+     * world it is on has no grounds to filter anything.
+     */
+    private static function onPlanet(Block $block, ?string $planet): bool
+    {
+        if ($planet === null || $planet === '') {
+            return true;
+        }
+
+        $its = $block->planet();
+
+        return $its === null || $its === '' || $its === $planet;
     }
 
     /**
@@ -255,14 +287,15 @@ class BlockCatalogue
      *
      * @return array<string, Block>
      */
-    public static function takersOf(string $thing): array
+    public static function takersOf(string $thing, ?string $planet = null): array
     {
         return array_filter(
             self::all(),
-            fn (Block $block) => isset($block->inputs()[$thing])
+            fn (Block $block) => (isset($block->inputs()[$thing])
                 || isset($block->inputLiquids()[$thing])
                 || in_array($thing, $block->accepts(), true)
-                || in_array($thing, $block->drinks(), true),
+                || in_array($thing, $block->drinks(), true))
+                && self::onPlanet($block, $planet),
         );
     }
 
