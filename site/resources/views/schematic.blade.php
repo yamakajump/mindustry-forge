@@ -207,7 +207,10 @@
             <span class="num good">{{ number_format($power, 0, ',', ' ') }} / s</span></div>
         @endif
         @foreach($schematic->produces ?? [] as $item => $itemRate)
-          <div class="line"><span>{{ $item }}</span>
+          {{-- Named the way the block wiki names it, from the game's own French bundle. It
+               printed the identifier, so this page said "copper" three cards above another
+               that says "Cuivre". --}}
+          <div class="line"><span>{{ \App\Support\Thing::name($item) }}</span>
             <span class="num">{{ \App\Models\SchematicItem::debitAffiche($item, $itemRate) }} {{
               __('schema.unite.par-seconde') }}</span></div>
         @endforeach
@@ -228,7 +231,8 @@
         @foreach($schematic->cost() as $item => $amount)
           <div class="line">
             <span><img class="icone" src="/icone/objet/{{ $item }}.png?t=32"
-                       width="16" height="16" alt="" loading="lazy"> {{ $item }}</span>
+                       width="16" height="16" alt="" loading="lazy"> {{
+              \App\Support\Thing::name($item) }}</span>
             <span class="num">{{ number_format($amount, 0, ',', ' ') }}</span></div>
         @endforeach
         <p class="hint-line">{{ __('schema.page.cout-aide') }}</p>
@@ -253,7 +257,7 @@
               number_format($schematic->powerNeeded(), 0, ',', ' ') }} / s</span></div>
         @endif
         @foreach($schematic->needs ?? [] as $item => $needRate)
-          <div class="line"><span>{{ $item }}</span>
+          <div class="line"><span>{{ \App\Support\Thing::name($item) }}</span>
             <span class="num">{{ \App\Models\SchematicItem::debitAffiche($item, $needRate) }} {{
               __('schema.unite.par-seconde') }}</span></div>
         @endforeach
