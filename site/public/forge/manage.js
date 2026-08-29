@@ -10,6 +10,7 @@
  * `ready` before it says anything.
  */
 import { ready, t } from "./i18n.js";
+import { askToConfirm } from "./dialog.js";
 
 const token = () => decodeURIComponent(
   (document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || "");
@@ -90,7 +91,11 @@ document.addEventListener("click", async (event) => {
   if (!button) return;
   const box = button.closest(".manage");
   // Asked once, because it cannot be undone: the string is the only copy the site has.
-  if (!confirm(t("schema.gestion.confirmer-suppression", { nom: button.dataset.name }))) return;
+  if (!await askToConfirm({
+    title: t("schema.gestion.supprimer-titre"),
+    text: t("schema.gestion.confirmer-suppression", { nom: button.dataset.name }),
+    accept: t("schema.gestion.supprimer-bouton"), danger: true,
+  })) return;
 
   button.disabled = true;
   try {

@@ -9,6 +9,7 @@
  * until the server has it, and a folder must not vanish from the page before it is gone.
  */
 import { ready, t } from "./i18n.js";
+import { askForText, askToConfirm } from "./dialog.js";
 
 const token = () => decodeURIComponent(
   (document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || "");
@@ -95,16 +96,29 @@ document.addEventListener("click", async (event) => {
 
   try {
     if (button.hasAttribute("data-renommer")) {
-      const name = prompt(t("dossiers.gestion.nom"), button.dataset.nom || "");
+      const name = await askForText({
+        title: t("dossiers.gestion.nom"), label: t("dossiers.gestion.nom"),
+        value: button.dataset.nom || "",
+      });
       if (name === null || name.trim() === "") return;
       await send(`/api/dossiers/${slug}`, "PATCH", { name: name.trim() });
     } else if (button.hasAttribute("data-supprimer")) {
       /* What it holds does not go with it, and the question says so: a deletion believed
          to be recursive is the one that gets regretted. */
-      if (!confirm(t("dossiers.gestion.supprimer-confirme"))) return;
+      if (!await askToConfirm({
+        title: t("dossiers.gestion.supprimer-titre"),
+        text: t("dossiers.gestion.supprimer-confirme"),
+        accept: t("dossiers.gestion.supprimer-bouton"), danger: true,
+      })) return;
       await send(`/api/dossiers/${slug}`, "DELETE");
     } else if (button.hasAttribute("data-legender")) {
-      const note = prompt(t("dossiers.gestion.legender"), button.dataset.note || "");
+      /* Null and the empty string are different answers here, and `askForText` keeps them
+         apart the way `prompt` did: dismissing leaves the caption alone, emptying the field
+         clears it. */
+      const note = await askForText({
+        title: t("dossiers.gestion.legender"), label: t("dossiers.gestion.legender"),
+        value: button.dataset.note || "",
+      });
       if (note === null) return;
       await send(`/api/dossiers/${button.dataset.dossier}/schemas/${button.dataset.schema}`, "PATCH", { note });
     } else {

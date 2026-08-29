@@ -28,6 +28,7 @@ import { mountRail, showHelp, sizeGauge } from "./ui.js";
 import { choicesFor, configFor, readsAs } from "./configure.js";
 import { ageOf, describeDraft, dropDraft, keepDraft, readDraft } from "./draft.js";
 import * as spacesApi from "./spaces.js";
+import { askForText, askToConfirm } from "../dialog.js";
 
 const SHELL = `
   <div class="editor-bar">
@@ -297,7 +298,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   /** Save the current board as a new plan, then open it. */
   async function createSpaceFromCurrent() {
-    const name = window.prompt("Nom du plan", currentSpace?.name || "sans nom");
+    const name = await askForText({
+      title: "Garder ce plateau", label: "Nom du plan",
+      value: currentSpace?.name || "sans nom", accept: "Garder",
+    });
     if (!name) return;
     try {
       const created = await spacesApi.createSpace(name, board.snapshot());
@@ -312,7 +316,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
 
   async function renameSpaceBySlug(slug, row) {
     const label = row.querySelector('[data-space="open"]');
-    const name = window.prompt("Nom du plan", label.textContent);
+    const name = await askForText({
+      title: "Renommer le plan", label: "Nom du plan",
+      value: label.textContent, accept: "Renommer",
+    });
     if (!name || name === label.textContent) return;
     try {
       await spacesApi.renameSpace(slug, name);
@@ -329,7 +336,10 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   async function deleteSpaceBySlug(slug, row) {
     // Asked once, because it is final: the same caution as deleting a schematic elsewhere
     // on this site.
-    if (!window.confirm("Supprimer ce plan ? C'est définitif.")) return;
+    if (!await askToConfirm({
+      title: "Supprimer ce plan", text: "C'est définitif.",
+      accept: "Supprimer", danger: true,
+    })) return;
     try {
       await spacesApi.deleteSpace(slug);
       row.remove();
@@ -1414,8 +1424,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     onAnalyse(frameBoard({ board, frame, sizeOf }));
   }
 
-  function renameFrame(frame) {
-    const chosen = window.prompt("Nom du cadre", frame.name);
+  async function renameFrame(frame) {
+    const chosen = await askForText({
+      title: "Renommer le cadre", label: "Nom du cadre",
+      value: frame.name, accept: "Renommer",
+    });
     if (chosen === null) return;
     const name = chosen.trim();
     if (!name || name === frame.name) return;
@@ -1860,7 +1873,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
         commit({ place: kept.tiles, paint: kept.ground, addFrames: kept.frames });
         camera.frame(board.frames.length ? board.framesBox() : board.box(), viewportOf());
       } else if (button.dataset.draft === "keep") {
-        const name = window.prompt("Nom du plan", "sans nom");
+        const name = await askForText({
+          title: "Garder ce brouillon", label: "Nom du plan",
+          value: "sans nom", accept: "Garder",
+          hint: "Il quitte ce navigateur et suit ton compte.",
+        });
         if (!name) return;
         try {
           const created = await spacesApi.importLocalDraft(name);

@@ -1305,3 +1305,28 @@ select {
    a new selector rather than reusing that one, since a rule is not a cost and the two tabs
    should not have to agree on what a second line under a name means. */
 .editor-held .rule { color: var(--dim); font-size: 12.5px; margin-top: 4px; }
+
+/* The site's own question box, in place of the browser's `prompt` and `confirm`.
+ *
+ * A `<dialog>`, so the focus trap, the backdrop, Escape and giving the focus back are the
+ * browser's job rather than four things to get wrong by hand. Everything below is the skin.
+ *
+ * `::backdrop` gets its own colour rather than the default black wash: the page behind is
+ * dark already, and a black veil over a dark page reads as the screen having gone out. */
+.demande {
+  border: 2px solid var(--edge); border-radius: var(--radius);
+  background: var(--panel); color: var(--ink); padding: 0;
+  width: min(420px, calc(100vw - 32px));
+}
+.demande::backdrop { background: rgba(6, 8, 11, .62); }
+.demande form { display: flex; flex-direction: column; gap: 12px; padding: 18px; }
+.demande h2 {
+  margin: 0; font-size: 15px; font-weight: 400; letter-spacing: .7px;
+  text-transform: uppercase; color: var(--accent);
+}
+.demande .corps { display: flex; flex-direction: column; gap: 6px; }
+.demande .corps p { margin: 0; }
+.demande label { font-size: 12.5px; color: var(--dim); }
+/* Pushed to the right, and the accepting one last: the reading order of a question is the
+   sentence, then the way out, then the answer. */
+.demande .boutons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
