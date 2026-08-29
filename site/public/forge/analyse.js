@@ -1163,6 +1163,57 @@ function bottleneckOf(graph, solved) {
   return worst;
 }
 
+/**
+ * What is holding the starved block back, when the answer is a carrier at its ceiling.
+ *
+ * "graphite-press, nourri a 94%" is true and unhelpful: the press is fine. It wants 640
+ * coal a minute and the one titanium conveyor feeding it carries 600, which is where 94%
+ * comes from. The card named the machine and the reader widened the machine.
+ *
+ * A carrier running at exactly its ceiling while what it feeds is short is a constraint
+ * that binds, which is the same statement the flow solver makes when it caps that edge.
+ * Anything else - a machine short because its own supplier is short, a grid browning out -
+ * is not answered here: this returns null rather than guessing, and the card falls back to
+ * naming the starved block, which is what it always said.
+ *
+ * @returns {null|{index: number, name: string, x: number, y: number, item: string,
+ *   rate: number, ceiling: number}} rates per second, as everywhere in this module.
+ */
+function throttledBy(graph, solved, index) {
+  /* Walked back through the carriers rather than read off the one edge in front, because a
+     belt rarely touches the machine it starves: on any real layout there is a router, a
+     junction or a bridge between them, and stopping at the first neighbour finds nothing
+     precisely when the schematic is big enough for somebody to need the answer.
+
+     Only carriers are stepped through. Reaching a machine ends that branch: what a machine
+     hands on is what it made, so a shortfall behind it is a different question from the one
+     being asked, and the card falls back to naming the starved block. */
+  const seen = new Set([index]);
+  const queue = [...graph.into[index]];
+  let worst = null;
+
+  while (queue.length) {
+    const at = queue.shift();
+    if (seen.has(at)) continue;
+    seen.add(at);
+    const node = graph.nodes[at];
+    if (!node.block.carries) continue;
+    queue.push(...graph.into[at]);
+
+    const liquid = node.block.carries === "liquid";
+    for (const [item, rate] of Object.entries(solved.through[at] || {})) {
+      const ceiling = capacityFor(node, item, liquid);
+      // An infinite ceiling is a block this module declines to bound, not a full one.
+      if (!Number.isFinite(ceiling) || ceiling <= 0) continue;
+      if (rate < ceiling * 0.999) continue;
+      if (!worst || rate > worst.rate) {
+        worst = { index: at, name: node.name, x: node.x, y: node.y, item, rate, ceiling };
+      }
+    }
+  }
+  return worst;
+}
+
 /** What was handed in and neither came out nor was turned into something else. */
 function surplusOf(graph, solved, feeds) {
   const putIn = {};
@@ -1410,6 +1461,9 @@ export async function analyse(text, supply = {}, chosen = null,
     produced,
     perMinute,
     bottleneck: culprit ? [graph.nodes[culprit[0]].name, culprit[1]] : null,
+    /* And what is starving it, when that is a carrier at its ceiling rather than the
+       block the line above names. Null the rest of the time. */
+    throttle: culprit ? throttledBy(graph, solved, culprit[0]) : null,
     idle,
     surplus: surplusOf(graph, solved, feeds),
     unknown,

@@ -19,7 +19,7 @@ import { buildGraph, useCatalogue } from "../../site/public/forge/analyse.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { World } from "../../site/public/forge/engine/core.js";
 import { behaviourOf } from "../../site/public/forge/engine/carriers.js";
-import { absin, anchor, beltFrame, running } from "../../site/public/forge/live.js";
+import { Live, absin, anchor, beltFrame, running } from "../../site/public/forge/live.js";
 
 const catalogue = loadCatalogue();
 useCatalogue(catalogue);
@@ -191,4 +191,38 @@ test("the drawing chain comes from the game, not from a file name", () => {
   // And a heater gives its heat back in red, breathing at the game's own rate.
   const heat = catalogue.blocks["electric-heater"].drawers.find((one) => one.kind === "heat");
   assert.deepEqual([heat.color, heat.pulse, heat.scale], ["#ff3838", 0.3, 10]);
+});
+
+/**
+ * Where the schematic ends, in the picture as well as on the bench.
+ *
+ * The engine has always known this: a belt with nothing in front of it does not deliver,
+ * it fills up and stops, so `run.js` puts a drain on the tile it points at. The page's own
+ * simulation did not, so a design watched in the browser seized within seconds while the
+ * same design measured against a real server delivered steadily. Two answers to one
+ * question, and the one a player saw was the wrong one.
+ */
+test("a belt pointing out of the schematic delivers rather than backing up", async () => {
+  const tiles = [[0, 0, "titanium-conveyor", 0], [1, 0, "titanium-conveyor", 0],
+                 [2, 0, "titanium-conveyor", 0], [3, 0, "titanium-conveyor", 0]];
+  const graph = buildGraph((await fromBase64(paste(tiles))).tiles);
+  const first = graph.nodes.findIndex((node) => node.x === 0 && node.y === 0);
+
+  // Six a second, well under the ten a titanium conveyor carries: this test is about the
+  // end of the line, not about its ceiling.
+  const live = new Live(graph, { catalogue, feeds: { [first]: { copper: 6 } } });
+
+  // Ten seconds. A four-tile line holds three items a tile, so a line that could not
+  // deliver would have been full and refusing after two of them.
+  for (let i = 0; i < 600; i++) live.tick();
+
+  const delivered = live.drains.reduce((sum, drain) => sum + (drain.taken.get("copper") || 0), 0);
+
+  /* One drain, at (4, 0), and it has taken very nearly everything handed in: six a second
+     for ten seconds, less what is still sliding along the line. Asserted as a floor rather
+     than as a figure, because how many are in flight at the last tick is a sub-tile
+     position, which this repository does not compare against anything. Twelve is what the
+     line itself holds, so anything above it is proof that the end is open. */
+  assert.equal(live.drains.length, 1);
+  assert.ok(delivered > 50, `only ${delivered} delivered`);
 });

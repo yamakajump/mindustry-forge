@@ -258,3 +258,43 @@ export function requirements(graph, catalogue) {
   }
   return rows.sort((a, b) => b.rate - a.rate);
 }
+
+/**
+ * Whether the carriers somebody marked can physically bring what the layout asks for.
+ *
+ * The shopping list above says "1 440 sand a minute, on the belt marked at (3, 0)". A
+ * titanium conveyor carries ten items a second, so that instruction cannot be followed:
+ * the reader is told to do something impossible, on the one panel whose job is to say what
+ * to build. The same schematic then reports its graphite press as "fed at 94%", which is
+ * 600 over 640, so the belt is the constraint and the machine takes the blame.
+ *
+ * The figure is `items_per_second`, dumped from the game's own `displayedSpeed`, and the
+ * flow solver already caps a carrier with it. This is the same number, said out loud where
+ * the instruction is given.
+ *
+ * Silent rather than wrong in three cases, each of which would otherwise invent a ceiling:
+ * a liquid, whose pipes are not measured in items; a carrier the catalogue gives no rate
+ * for; and a marking that mixes several kinds of carrier, where "you need N of them" names
+ * no particular N.
+ *
+ * @returns {null|{ceiling: number, block: string|null, needed: number|null}} per minute.
+ */
+export function overCarried(ports, perMinute, catalogue) {
+  if (!ports?.length || !(perMinute > 0)) return null;
+  if (ports.some((port) => (port.carries || "item") !== "item")) return null;
+
+  let ceiling = 0;
+  for (const port of ports) {
+    const each = catalogue?.blocks?.[port.name]?.items_per_second;
+    if (!each) return null;
+    ceiling += each * 60;
+  }
+  // A tenth of an item a minute over is a rounding, not a shortfall.
+  if (perMinute <= ceiling + 0.1) return null;
+
+  const kinds = new Set(ports.map((port) => port.name));
+  const block = kinds.size === 1 ? ports[0].name : null;
+  const each = block ? catalogue.blocks[block].items_per_second * 60 : null;
+
+  return { ceiling, block, needed: each ? Math.ceil(perMinute / each) : null };
+}

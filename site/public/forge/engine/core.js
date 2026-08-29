@@ -581,6 +581,65 @@ export class Build {
  * footprint, with the game's own integer halves: a two wide block clamps into nought to
  * one, a three wide into minus one to one.
  */
+/**
+ * Where the line ends, counting what falls off it.
+ *
+ * A belt with nothing in front of it does not deliver in the game, it fills up and stops,
+ * which is correct and useless for both watching and measuring. So the empty tile a line
+ * points at gets something standing on it that takes everything and writes down what it
+ * took: the same thing a player would learn by putting a container there.
+ *
+ * Lives here rather than in `run.js` because both sides of this repository need it and
+ * there is one of it. The bench had it from the start; the page's own simulation did not,
+ * so a schematic watched in the browser choked on its own output after a few seconds while
+ * the same schematic measured against the game delivered. Two rules for one question.
+ */
+export class Drain {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.block = {};
+    this.role = "drain";
+    this.size = 1;
+    this.rotation = 0;
+    this.proximity = [];
+    this.taken = new Map();
+    this.items = { total: 0, counts: new Map(), get: () => 0, has: () => false };
+  }
+  acceptItem() { return true; }
+  handleItem(source, item) { this.taken.set(item, (this.taken.get(item) || 0) + 1); }
+  canDump() { return false; }
+  relativeTo() { return 0; }
+}
+
+/**
+ * Put one on every tile a line points at and nothing occupies.
+ *
+ * The rule is the schematic's own boundary rather than what the player marked: a belt torn
+ * out of a base stops at the edge of what was copied, and what reaches that edge is what
+ * the design delivers, whether or not anybody has said so on the picture. Marking an
+ * output says where to read the figure, not where the belt ends.
+ *
+ * Written into `world.tiles` and deliberately not into `world.builds`: a drain is not a
+ * block, nothing draws it, and nothing steps it.
+ *
+ * @returns {Drain[]} the drains, in the order they were placed, for whoever wants to read
+ *   what came out.
+ */
+export function placeDrains(world) {
+  const drains = [];
+  for (const build of world.builds) {
+    if (!build.block.carries || !build.block.rotate) continue;
+    const [dx, dy] = DIRECTIONS[build.rotation];
+    const ahead = [build.x + dx, build.y + dy];
+    if (world.at(ahead[0], ahead[1])) continue;
+    const drain = new Drain(ahead[0], ahead[1]);
+    world.tiles.set(`${ahead[0]},${ahead[1]}`, drain);
+    drains.push(drain);
+  }
+  return drains;
+}
+
 export function facingEdge(source, target) {
   if ((source.size || 1) <= 1) return [source.x, source.y];
   const low = -Math.trunc((source.size - 1) / 2);
