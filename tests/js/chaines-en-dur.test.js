@@ -25,7 +25,7 @@ import { readFileSync } from "node:fs";
    dropped by as much: the logic card and the planner added some in the meantime. That is
    the argument for this file rather than against it -- a chantier losing ground while it
    is being drained does not need to go faster, it needs the tap shut. */
-const RESTANT = 42;
+const RESTANT = 41;
 
 const MOTS = /(?<![\w-])(le|la|les|un|une|des|du|de|et|ou|qui|que|pas|sur|dans|pour|ce|il|elle|ne|se|est|sont|au|aux|en|par|plus|rien|tout|toute|avec|sans|son|sa|ses|cette|cet|tu|te|ton|ta|quoi|quand|comme|deja|encore|meme|leur|lui|on)(?![\w-])/i;
 

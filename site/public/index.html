@@ -998,8 +998,20 @@ async function leaveEditor(board) {
   document.body.style.overflow = "";
   mounted.destroy();
 
+  /* Taken off here rather than at the foot of this function, because the guard below
+     returns before ever reaching it. `forge.css` hides `<main>` under this class for as
+     long as the document is serving /editer, so an early return left the page showing
+     nothing at all: no editor, no report, and a message written into an element nobody
+     could see. Every exit from the editor passes through here, so every exit takes it. */
+  document.documentElement.classList.remove("route-editeur");
+  document.title = "Forge - analyser un schéma Mindustry";
+
   if (!built.length) {
-    out.innerHTML = `<div class="card">Rien a analyser : le plateau est vide.</div>`;
+    /* Ground is not a block, so a board covered in painted floor satisfies this and is not
+       empty in any sense its author would recognise. Said in the terms they used. */
+    out.innerHTML = `<div class="card">${escape(t(board.ground
+      && Object.keys(board.ground).length
+      ? "analyse.plateau.sol-seul" : "analyse.plateau.vide"))}</div>`;
     return;
   }
   /* The schematic becomes again the string the game reads, which stays the source of truth
@@ -1021,12 +1033,6 @@ async function leaveEditor(board) {
      to, and which the first gesture writes over their saved draft. */
   kept = workbenchOf(board);
   keptFor = lastPayload;
-  /* The head's inline guard hides <main> for as long as this document is serving
-     /editer. Leaving the editor here does not reload the page, so this is the one
-     place every exit from the editor passes through, and the only place that can take
-     the class (and the tab's title) back off. */
-  document.documentElement.classList.remove("route-editeur");
-  document.title = "Forge - analyser un schéma Mindustry";
   await run();
 }
 
