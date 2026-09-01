@@ -486,6 +486,9 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   const ground = options.ground || null;
   const painted = new Set();
 
+  /** Steam vent marks, gathered on the way and drawn once every floor is down. */
+  const ventMarks = [];
+
   /* One layer of ground on one tile, floor or overlay, with the variant this position takes.
      Hoisted out of the loop rather than written inline twice: a 64 by 64 board runs it 8192
      times a frame and it is the same six lines either way. */
@@ -546,12 +549,15 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
         const vent = soils?.floors?.[layers.floor]?.parent || null;
         paintLayer(vent || layers.floor, x, y, px, py, pw, ph);
 
+        /* Kept for a second pass rather than drawn here.
+         *
+         * The mark is three tiles wide and this loop walks tile by tile, so drawing it in
+         * place buries it under the columns that come after: on a painted field only the
+         * very last mark survived, which read as one vent in the corner of a large patch.
+         * The game builds its ground into a chunk cache and never meets this. */
         if (vent && ventCentre((ax, ay) => ground[`${ax},${ay}`]?.floor ?? null,
           x, y, layers.floor)) {
-          const [ox, oy, side] = ventMark();
-          const [mx] = tileSpan(x + ox - box.left, scale, dpr);
-          const [my] = tileSpan(box.height - (y + oy - box.bottom) - 1 - (side - 1), scale, dpr);
-          paintLayer(layers.floor, x, y, mx, my, scale * side, scale * side);
+          ventMarks.push([x, y, layers.floor]);
         }
 
         /* The boundary, drawn over this tile rather than over its neighbour: the game
@@ -597,6 +603,14 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
         }
       }
     }
+  }
+
+  /* Second pass: the vents' marks, over ground that is now complete. */
+  for (const [x, y, name] of ventMarks) {
+    const [ox, oy, side] = ventMark();
+    const [mx] = tileSpan(x + ox - box.left, scale, dpr);
+    const [my] = tileSpan(box.height - (y + oy - box.bottom) - 1 - (side - 1), scale, dpr);
+    paintLayer(name, x, y, mx, my, scale * side, scale * side);
   }
 
   const pattern = backing(context, scale);
