@@ -60,8 +60,15 @@
        browser of whoever saves their own work, and an import never goes down that path.
        Drawing it from the code costs one sprite sheet and 126 ms, and needs nothing
        backfilled for the fifteen thousand pages that had an empty panel. --}}
+  {{-- `data-marks` carries what the author said goes in and comes out. Stored with every
+       schematic since the first day and read back by nobody until now, which is what made a
+       described plan and an untouched one look the same. Only on the drawn path: a stored
+       preview is a PNG and cannot take a mark. --}}
   <div class="stage"
-       @unless($preview) data-code="{{ $schematic->code }}" @endunless>
+       @unless($preview)
+         data-code="{{ $schematic->code }}"
+         @if($marked !== []) data-marks="{{ json_encode($marked) }}" @endif
+       @endunless>
     @if($preview)
       <img src="{{ $preview }}" alt="Apercu de {{ $schematic->displayName() }}">
     @else

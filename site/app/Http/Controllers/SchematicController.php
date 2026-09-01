@@ -163,6 +163,11 @@ class SchematicController extends Controller
 
         return view('schematic', [
             'schematic' => $schematic,
+            /* What the author said goes in and comes out. Stored with the analysis since
+               the first day and served by the api since then, read back by no page: the
+               plan on this one looked the same whether somebody had described it or
+               nobody had ever touched it. */
+            'marked' => (array) ($schematic->analysis['marked'] ?? []),
             'aime' => $user !== null && SchematicLike::where('user_id', $user->id)
                 ->where('schematic_id', $schematic->id)->exists(),
             'favori' => $user !== null && Favorite::where('user_id', $user->id)
