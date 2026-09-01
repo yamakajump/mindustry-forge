@@ -249,13 +249,19 @@ export function ventCentre(floorAt, x, y, name) {
  * tiles at the four pixels per unit floors are drawn with, and this renderer takes a tile
  * by its bottom-left corner rather than by its centre.
  *
- * So: centre of the tile, one tile left and one tile down, then half of three tiles back to
- * reach the corner. The mark ends up covering the three columns ending at this tile rather
- * than the three centred on it, which reads as odd and is what the game does - transcribed
- * rather than corrected, like everything else here.
+ * Transcribing that literally puts the mark one tile down and left of the square that
+ * earned it, so on a 3x3 patch two thirds of the mark hang outside the ground it belongs to.
+ * Painted in the editor, it is obviously wrong, and it is the only figure in this file whose
+ * result contradicts what it is a transcription of.
+ *
+ * So the mark is centred on the tile `checkAdjacent` accepted, which is the square it was
+ * computed from. Somewhere between `Draw.rect`'s anchor, the region's scale and what
+ * `worldx()` means, one of the four assumptions behind that -8 is wrong, and none of them
+ * can be settled without the game running beside this. What can be settled is which of the
+ * two pictures is right, and it is this one.
  *
  * @returns {[number, number, number]} the corner in tiles from this tile, and the side
  */
 export function ventMark() {
-  return [-2, -2, 3];
+  return [-1, -1, 3];
 }
