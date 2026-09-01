@@ -215,3 +215,47 @@ export function tileSpan(at, scale, dpr = 1) {
   const to = Math.round((at + 1) * scale * ratio) / ratio;
   return [from, to - from];
 }
+
+/**
+ * The nine tiles a steam vent looks at, `SteamVent.offsets` in v159.7.
+ *
+ * Read out of the class initialiser of the pinned jar rather than guessed: it is the 3x3
+ * square centred on the tile, itself included, in this order.
+ */
+export const VENT_AROUND = [
+  [0, 0], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1],
+];
+
+/**
+ * Whether this tile is the one that draws the vent's mark.
+ *
+ * `SteamVent.checkAdjacent` requires the same vent on all nine, so a lone vent draws no
+ * mark at all - in the game it is its parent floor and nothing else - and a field of them
+ * draws one mark per full square rather than one per tile. The browser drew a mark on every
+ * tile, squeezed from three tiles wide into one, which is the ring standing on nothing
+ * somebody reported.
+ *
+ * `floorAt` answers with a floor's name, or null off the painted area.
+ */
+export function ventCentre(floorAt, x, y, name) {
+  return VENT_AROUND.every(([dx, dy]) => floorAt(x + dx, y + dy) === name);
+}
+
+/**
+ * Where the mark goes, in tiles, relative to the tile that draws it.
+ *
+ * `drawMain` draws it at `Draw.rect(region, tile.worldx() - 8f, tile.worldy() - 8f)`, and
+ * `Draw.rect` centres. Eight world units is one tile, the region is 96 px which is three
+ * tiles at the four pixels per unit floors are drawn with, and this renderer takes a tile
+ * by its bottom-left corner rather than by its centre.
+ *
+ * So: centre of the tile, one tile left and one tile down, then half of three tiles back to
+ * reach the corner. The mark ends up covering the three columns ending at this tile rather
+ * than the three centred on it, which reads as odd and is what the game does - transcribed
+ * rather than corrected, like everything else here.
+ *
+ * @returns {[number, number, number]} the corner in tiles from this tile, and the side
+ */
+export function ventMark() {
+  return [-2, -2, 3];
+}
