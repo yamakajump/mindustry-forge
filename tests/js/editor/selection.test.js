@@ -126,3 +126,50 @@ test("the game's only invert-flip block flips the other way around", () => {
   assert.notEqual(flip([inverse], "x", known)[0].rotation,
                   flip([{ ...normal, block: "conveyor" }], "x", known)[0].rotation);
 });
+
+/**
+ * A bridge points at the bridge it hands over to, and the arrow has to turn with the rest.
+ *
+ * `schematic.js` reads that as `{type: 7, dx, dy}`, an offset in tiles. Moving every block
+ * and leaving the offsets alone gives a selection that looks mirrored and is wired the way
+ * it was before: the game reads the vector, not the picture, so the defect only shows once
+ * the copy is pasted back into a real base.
+ */
+const pont = (x, y, dx, dy) => ({
+  x, y, block: "bridge-conveyor", rotation: 0, config: { type: 7, dx, dy },
+});
+
+test("a mirror turns the bridge's own arrow around", () => {
+  // One tile to the right, mirrored left-right: one tile to the left.
+  const [gauche] = flip([pont(0, 0, 1, 0)], "x", known);
+  assert.deepEqual({ dx: gauche.config.dx, dy: gauche.config.dy }, { dx: -1, dy: 0 });
+
+  // And the other axis leaves x alone.
+  const [bas] = flip([pont(0, 0, 0, 3)], "y", known);
+  assert.deepEqual({ dx: bas.config.dx, dy: bas.config.dy }, { dx: 0, dy: -3 });
+});
+
+test("a quarter turn takes the arrow with it", () => {
+  /* Anticlockwise, like the positions: a block one tile east of another ends up one tile
+     north of it, so an offset of (1, 0) becomes (0, 1). Checked against the positions
+     rather than assumed - the two have to agree or the bridge lands beside its partner. */
+  const deux = [pont(0, 0, 1, 0), { x: 1, y: 0, block: "conveyor", rotation: 0 }];
+  const [tourne, voisin] = rotateBy(deux, 1, known);
+
+  assert.deepEqual({ dx: tourne.config.dx, dy: tourne.config.dy }, { dx: 0, dy: 1 });
+  assert.deepEqual([voisin.x - tourne.x, voisin.y - tourne.y], [0, 1],
+    "the neighbour really did end up where the arrow now points");
+});
+
+test("four quarter turns bring the arrow back", () => {
+  const [meme] = rotateBy([pont(0, 0, 2, -1)], 4, known);
+  assert.deepEqual({ dx: meme.config.dx, dy: meme.config.dy }, { dx: 2, dy: -1 });
+});
+
+test("what does not point anywhere is left alone", () => {
+  // A sorter's item is content, not a direction, and a mirror must not touch it.
+  const trieur = { x: 0, y: 0, block: "sorter", rotation: 0,
+    config: { type: 5, content: 0, id: 3 } };
+  const [apres] = flip([trieur], "x", known);
+  assert.deepEqual(apres.config, trieur.config);
+});
