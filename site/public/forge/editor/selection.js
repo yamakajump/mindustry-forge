@@ -42,6 +42,43 @@ export function translate(tiles, dx, dy) {
  * bottom left corner, and the turned box is put back at that same corner. Four quarter turns
  * therefore give back exactly the selection it started from, which a test checks.
  */
+/**
+ * A bridge's configuration is a direction, and a direction turns with the rest.
+ *
+ * `schematic.js` reads it as `{type: 7, dx, dy}`: the offset from a bridge to the one it
+ * hands over to, in tiles. Rotating or mirroring a selection moved every block and left
+ * that vector where it was, so a bridge came out of a mirror pointing at whatever now
+ * happened to be on its right - and the game reads the vector, not the picture, so the
+ * copy pasted back in was wired differently from the one on screen.
+ *
+ * The quarter turn here is anticlockwise, the same one `rotateBy` applies to positions:
+ * (1, 0) becomes (0, 1). Derived from the position arithmetic rather than assumed, because
+ * a vector turning the wrong way is a defect that looks like a working schematic.
+ *
+ * Anything else is handed back untouched. A sorter's item, a processor's program: they do
+ * not point anywhere. The one shape this deliberately does not touch is `{type: 8, links}`,
+ * a processor's links, which are packed absolute positions rather than offsets - turning
+ * those needs the board they were packed against, which a selection does not carry.
+ */
+function turnedConfig(config, quarters) {
+  if (!config || config.type !== 7) return config;
+  let { dx, dy } = config;
+  for (let i = 0; i < ((quarters % 4) + 4) % 4; i++) {
+    // `0 - dy` rather than `-dy`: negating a zero gives -0, which survives into the draft's
+    // JSON and makes two identical selections compare unequal.
+    [dx, dy] = [0 - dy, dx];
+  }
+  return { ...config, dx, dy };
+}
+
+/** The same, mirrored: on the X axis the offset's own x changes sign, and only it. */
+function flippedConfig(config, axis) {
+  if (!config || config.type !== 7) return config;
+  return axis === "x"
+    ? { ...config, dx: 0 - config.dx }
+    : { ...config, dy: 0 - config.dy };
+}
+
 export function rotateBy(tiles, quarters, catalogue) {
   const turns = ((quarters % 4) + 4) % 4;
   if (!turns || !tiles.length) return tiles.map((tile) => ({ ...tile }));
@@ -66,6 +103,7 @@ export function rotateBy(tiles, quarters, catalogue) {
         y: box.bottom + ny - offset,
         rotation: catalogue.blocks[tile.block]?.rotate
           ? ((tile.rotation || 0) + 1) % 4 : (tile.rotation || 0),
+        config: turnedConfig(tile.config, 1),
       };
     });
   }
@@ -112,6 +150,7 @@ export function flip(tiles, axis, catalogue) {
       x: box.left + nx - offset,
       y: box.bottom + ny - offset,
       rotation: flipped((tile.rotation || 0) % 4, catalogue.blocks[tile.block]),
+      config: flippedConfig(tile.config, axis),
     };
   });
 }
