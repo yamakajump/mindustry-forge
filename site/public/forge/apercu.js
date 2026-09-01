@@ -113,10 +113,14 @@ export async function drawPlan(panel, fetched = null) {
     const roomWide = measured > 0 ? Math.max(24, measured - padding) : 120;
     const roomTall = panel.clientHeight;
 
+    const { inputs, outputs } = markedOn(panel);
+
     draw(canvas, parsed.tiles, sizeOf, roleOf, {
       width: roomWide,
       maxScale: roomTall > 0 ? Math.max(4, Math.floor(roomTall / box.height)) : 48,
       margin: 0,
+      inputs,
+      outputs,
     });
 
     /* Then made to fit, on both axes at once and with one factor.
@@ -153,6 +157,42 @@ function fail(panel, message) {
   line.className = "empty";
   line.textContent = message;
   panel.replaceChildren(line);
+}
+
+/**
+ * What the author said goes in and comes out, if the panel carries it.
+ *
+ * The marks are stored with the schematic and were read back by nobody: the endpoint that
+ * serves them says so in `routes/web.php`, and it has said so since the first day. Drawing
+ * them here is the difference between a plan somebody described and a plan nobody has
+ * touched, which is exactly what a reader is trying to tell.
+ *
+ * The shape stored is the analyser's own, `{"x,y": {side, resource}}`, and the renderer
+ * wants two lists. Nothing else is needed to draw one: `marker` reads a position and a
+ * resource, and the rest of a port - its rate, its block, what it carries - is analysis
+ * this page has not run.
+ *
+ * Silent on anything it cannot read. A panel with no marks, a coordinate that is not a
+ * pair of numbers, an attribute that is not JSON: the plan is still worth drawing.
+ */
+function markedOn(panel) {
+  const inputs = [];
+  const outputs = [];
+  let marked;
+  try {
+    marked = JSON.parse(panel.dataset.marks || "{}");
+  } catch {
+    return { inputs, outputs };
+  }
+  for (const [at, mark] of Object.entries(marked || {})) {
+    const [x, y] = String(at).split(",").map(Number);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+    const side = typeof mark === "string" ? mark : mark?.side;
+    const port = { x, y, resource: (typeof mark === "object" && mark?.resource) || null };
+    if (side === "in") inputs.push(port);
+    else if (side === "out") outputs.push(port);
+  }
+  return { inputs, outputs };
 }
 
 /** The code of one schematic, for a panel too big to have carried its own. */

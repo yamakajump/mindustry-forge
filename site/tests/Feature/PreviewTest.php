@@ -146,3 +146,31 @@ it('draws the plans on the member own list too', function () {
     expect($html)->toContain('/forge/apercu.js');
     expect($html)->toContain('data-code="'.$mine->code.'"');
 });
+
+it('hands the plan the marks its author left', function () {
+    Storage::fake('public');
+    $marked = schema(['analysis' => [
+        'marked' => ['3,0' => ['side' => 'in', 'resource' => 'sand'],
+                     '4,8' => ['side' => 'out', 'resource' => 'silicon']],
+    ]]);
+
+    $html = $this->get("/s/{$marked->slug}")->assertOk()->getContent();
+
+    /* Stored from the first day and read back by nobody: the endpoint that serves them says
+       exactly that in `routes/web.php`. A described plan and an untouched one looked the
+       same on the page a link opens. */
+    expect($html)->toContain('data-marks=');
+    expect($html)->toContain('3,0');
+    expect($html)->toContain('silicon');
+});
+
+it('says nothing about marks when there are none', function () {
+    Storage::fake('public');
+    $plain = schema();
+
+    $html = $this->get("/s/{$plain->slug}")->assertOk()->getContent();
+
+    // An empty attribute would make the drawer parse "{}" on fifteen thousand pages for
+    // nothing.
+    expect($html)->not->toContain('data-marks=');
+});
