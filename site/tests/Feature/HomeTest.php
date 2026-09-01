@@ -348,7 +348,14 @@ it('promises no icon for what the game does not draw', function () {
  * says so.
  */
 it('never shows the same plan twice under two products', function () {
-    $double = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Fait les deux']);
+    /* Sized, like every other schematic in this file that has to reach the showcase. The
+       factory draws a block count between 4 and 200 at random and the showcase refuses
+       anything under twenty, so this passed roughly eleven times in twelve - which is
+       exactly how it behaved: green on SQLite, red on the MySQL job, same commit. */
+    $double = Schematic::factory()->create([
+        'visibility' => 'public', 'name' => 'Fait les deux',
+        'blocks' => 40, 'width' => 12, 'height' => 12,
+    ]);
     $double->items()->delete();
     foreach (['silicon' => 9000, 'graphite' => 9000] as $item => $debit) {
         $double->items()->create([
