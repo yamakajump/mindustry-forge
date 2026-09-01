@@ -271,8 +271,8 @@
               {{ number_format($schematic->powerSpare(), 0, ',', ' ') }} / s pour le reste
               de ta base.
             @else
-              Il ne fabrique pas son courant&nbsp;: il faudra le brancher sur ton reseau,
-              sinon il reste a l'arret. Ce n'est pas compte contre lui dans les
+              Il ne fabrique pas son courant&nbsp;: il faudra le brancher sur ton réseau,
+              sinon il reste à l'arrêt. Ce n'est pas compté contre lui dans les
               classements.
             @endif
           </p>

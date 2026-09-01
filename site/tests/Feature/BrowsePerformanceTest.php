@@ -146,9 +146,9 @@ it('says on the page that it will need to be powered', function () {
         // The word comes from the dictionary now, with its accent and its mark beside it.
         ->assertSee(__('schema.unite.energie'))
         ->assertSee('600')
-        ->assertSee('il faudra le brancher sur ton reseau', escape: false)
+        ->assertSee('il faudra le brancher sur ton réseau', escape: false)
         // And it must be clear this is not held against it.
-        ->assertSee('Ce n\'est pas compte contre lui', escape: false);
+        ->assertSee('Ce n\'est pas compté contre lui', escape: false);
 });
 
 it('says instead what a power plant leaves to the rest of the base', function () {
