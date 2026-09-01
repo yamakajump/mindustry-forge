@@ -150,7 +150,31 @@ def main() -> None:
             # Rounded because `1 - 0.65` in binary floating point is 0.35000000000000004, and
             # that would reach the browser spelled out in full.
             "veil": round(1 - alpha_of(name, entry), 2) if entry.get("floor_liquid") else None,
+            # The floor a steam vent is drawn on top of.
+            #
+            # `SteamVent.drawMain` starts with `parent.asFloor().drawMain(tile)`, so a vent
+            # is its parent plus a mark, and drawing it as an ordinary floor produces a ring
+            # standing on nothing - which is what the browser did.
+            #
+            # `parent` is not in the dump, and it does not have to be: every one of the eight
+            # is declared `parent = blendGroup = <floor>`, one value pushed into both fields.
+            # Read out of the pinned jar, class by class, from `Blocks$38` to `Blocks$45`:
+            # rhyolite, carbonStone, arkyicStone, yellowStone, denseRedStone,
+            # crystallineStone, stone, basalt. The assertion below is what keeps that true:
+            # the day a vent's two fields part, this build stops rather than drawing the
+            # wrong ground under it.
+            "parent": entry.get("blend_group") if entry.get("kind") == "SteamVent" else None,
         }
+
+    # A vent whose parent is missing would be drawn on nothing at all, which is the defect
+    # this field exists to fix, so it is worth stopping the build over.
+    orphans = sorted(name for name, floor in floors.items()
+                     if raw["blocks"][name].get("kind") == "SteamVent"
+                     and (floor["parent"] is None or floor["parent"] not in floors))
+    if orphans:
+        raise SystemExit(
+            f"steam vents with no floor to stand on: {', '.join(orphans)}. Their `parent` "
+            "is read off `blend_group`; re-read SteamVent out of the pinned jar")
 
     strangers = sorted(name for name in OVERLAY_ALPHA
                        if not raw["blocks"].get(name, {}).get("floor_liquid"))
