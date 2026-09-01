@@ -14,7 +14,8 @@
 import {
   beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
 } from "./live.js";
-import { variantOf, blendersAt, D8, edgeCell, tileSpan, veilAt } from "./tiling.js";
+import { variantOf, blendersAt, D8, edgeCell, tileSpan, veilAt, ventCentre, ventMark }
+  from "./tiling.js";
 
 /** Mindustry counts rotations anticlockwise from east. */
 const DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -538,7 +539,20 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
            the one place a player is looking.
 
            The fourth follows the overlay, below, because that is where the game puts it. */
-        paintLayer(layers.floor, x, y, px, py, pw, ph);
+        /* A steam vent is its parent floor plus a mark, and the mark is three tiles wide
+           and drawn once per full 3x3. Painted as an ordinary floor it was a ring squeezed
+           into one tile, repeated on every tile of the patch, standing on nothing.
+           See `ventCentre` and `ventMark`. */
+        const vent = soils?.floors?.[layers.floor]?.parent || null;
+        paintLayer(vent || layers.floor, x, y, px, py, pw, ph);
+
+        if (vent && ventCentre((ax, ay) => ground[`${ax},${ay}`]?.floor ?? null,
+          x, y, layers.floor)) {
+          const [ox, oy, side] = ventMark();
+          const [mx] = tileSpan(x + ox - box.left, scale, dpr);
+          const [my] = tileSpan(box.height - (y + oy - box.bottom) - 1 - (side - 1), scale, dpr);
+          paintLayer(layers.floor, x, y, mx, my, scale * side, scale * side);
+        }
 
         /* The boundary, drawn over this tile rather than over its neighbour: the game
            bleeds inwards, so a patch of grass beside stone has grass creeping onto the

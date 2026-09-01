@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { tileSpan, variantOf } from "../../site/public/forge/tiling.js";
+import { VENT_AROUND, tileSpan, variantOf, ventCentre }
+  from "../../site/public/forge/tiling.js";
 
 test("a floor with one sprite always takes it", () => {
   for (const [x, y] of [[0, 0], [7, 3], [-4, 19]]) {
@@ -454,4 +455,51 @@ test("a span stays the size of a tile, give or take a pixel", () => {
     const [, span] = tileSpan(i - 0.37, 24, 1.5);
     assert.ok(Math.abs(span - 24) <= 1 / 1.5, `span ${span}`);
   }
+});
+
+/**
+ * A steam vent is its parent floor plus a mark, and the mark is drawn once.
+ *
+ * `SteamVent.drawMain` in the pinned jar: the parent floor first, then - only when
+ * `checkAdjacent` holds - one region three tiles wide. `checkAdjacent` walks
+ * `SteamVent.offsets`, the 3x3 square centred on the tile, and wants the same vent on all
+ * nine. So a lone vent shows nothing but the ground it stands on, and a field of them shows
+ * one mark per full square.
+ */
+test("a lone vent draws no mark at all", () => {
+  const sol = { "0,0": "basalt-vent" };
+  const at = (x, y) => sol[`${x},${y}`] ?? null;
+
+  assert.equal(ventCentre(at, 0, 0, "basalt-vent"), false);
+});
+
+test("only the centre of a full square draws it", () => {
+  const sol = {};
+  for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) sol[`${x},${y}`] = "basalt-vent";
+  const at = (x, y) => sol[`${x},${y}`] ?? null;
+
+  // The middle one has all nine; the eight around it are each missing some.
+  assert.equal(ventCentre(at, 1, 1, "basalt-vent"), true);
+  for (const [x, y] of [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]]) {
+    assert.equal(ventCentre(at, x, y, "basalt-vent"), false, `${x},${y}`);
+  }
+});
+
+test("a different vent beside it breaks the square", () => {
+  const sol = {};
+  for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) sol[`${x},${y}`] = "basalt-vent";
+  sol["0,0"] = "stone-vent";
+  const at = (x, y) => sol[`${x},${y}`] ?? null;
+
+  assert.equal(ventCentre(at, 1, 1, "basalt-vent"), false);
+});
+
+test("the nine offsets are the square, and each of them once", () => {
+  /* Transcribed from the class initialiser rather than written out from memory, so it is
+     worth asserting what was transcribed: nine distinct offsets, none further than one
+     tile, the tile itself included. */
+  assert.equal(VENT_AROUND.length, 9);
+  assert.equal(new Set(VENT_AROUND.map(String)).size, 9);
+  assert.ok(VENT_AROUND.every(([dx, dy]) => Math.abs(dx) <= 1 && Math.abs(dy) <= 1));
+  assert.ok(VENT_AROUND.some(([dx, dy]) => dx === 0 && dy === 0));
 });
