@@ -151,7 +151,7 @@ it('hands the plan the marks its author left', function () {
     Storage::fake('public');
     $marked = schema(['analysis' => [
         'marked' => ['3,0' => ['side' => 'in', 'resource' => 'sand'],
-                     '4,8' => ['side' => 'out', 'resource' => 'silicon']],
+            '4,8' => ['side' => 'out', 'resource' => 'silicon']],
     ]]);
 
     $html = $this->get("/s/{$marked->slug}")->assertOk()->getContent();
