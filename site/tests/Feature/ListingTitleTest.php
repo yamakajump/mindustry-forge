@@ -90,3 +90,59 @@ it('names one filter and not all of them at once', function () {
     $this->get('/schemas?produit=graphite&planete=erekir')->assertOk()
         ->assertSee('<title>Graphite : schémas Mindustry qui en produisent - Mindustry Forge</title>', false);
 });
+
+/*
+ * The pickers that replaced two dropdowns.
+ *
+ * A `<select name="consomme">` posts its value on its own. What replaced it has to as well,
+ * or the filter silently stops existing for a reader with no JavaScript and for anything
+ * that crawls the page. That is the whole reason it is radio buttons and not the grid of
+ * links the product filter uses.
+ */
+it('keeps the ingredient filter a form control that posts', function () {
+    schemaTitre(['needs' => ['coal' => 60.0]]);
+
+    $page = $this->get('/schemas?consomme=coal')->assertOk();
+
+    $page->assertSee('name="consomme" value="coal"', escape: false)
+        ->assertDontSee('<select name="consomme"', escape: false)
+        // The summary names what is chosen, which only happens when it is.
+        ->assertSee('<b>Charbon</b>', escape: false)
+        // And it shows the thing, which is what the dropdown could not do.
+        ->assertSee('/icone/objet/coal.png', escape: false);
+});
+
+it('keeps the planet filter a form control that posts', function () {
+    schemaTitre();
+
+    $this->get('/schemas?planete=erekir')->assertOk()
+        ->assertSee('name="planete" value="erekir"', escape: false)
+        ->assertSee('<b>Erekir</b>', escape: false)
+        ->assertDontSee('<select name="planete"', escape: false);
+});
+
+it('offers no ingredient nothing in the catalogue needs', function () {
+    // The picker lists what `Vitrine::eatsOnOffer()` allows, so a filter it offers can
+    // always come back with something. Offering the whole item table would not.
+    schemaTitre(['needs' => ['coal' => 60.0]]);
+
+    $this->get('/schemas')->assertOk()
+        ->assertSee('name="consomme" value="coal"', escape: false)
+        ->assertDontSee('name="consomme" value="graphite"', escape: false);
+});
+
+it('clears every constraint, including the ones added later', function () {
+    /* "Tout effacer" carried its own hand-written list of what to clear, beside the chips
+       that already knew. It had drifted: `consomme`, `favoris`, `aimes` and `miens` were
+       missing, so pressing it left the ingredient filter on and took away the chip that
+       said so. It is read off the chips now, which is why this test can be written at all. */
+    schemaTitre(['needs' => ['coal' => 60.0]]);
+
+    $page = $this->get('/schemas?consomme=coal&planete=erekir&blocs=40')->assertOk();
+
+    $lien = [];
+    preg_match('/class="puce vide" href="([^"]+)"/', $page->getContent(), $lien);
+    expect($lien[1] ?? '')->not->toContain('consomme=coal')
+        ->and($lien[1] ?? '')->not->toContain('planete=erekir')
+        ->and($lien[1] ?? '')->not->toContain('blocs=40');
+});

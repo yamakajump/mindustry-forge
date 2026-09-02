@@ -573,6 +573,14 @@ class BrowseController extends Controller
             'against' => $against,
             'held' => $held,
             'chips' => $chips,
+            /* What "clear everything" has to clear, read off the chips rather than typed
+               out beside them. Typed out, it was missing `consomme`, `favoris`, `aimes` and
+               `miens`: pressing it left the ingredient filter on and took the chip saying
+               so away with it, so the list stayed short with nothing left on screen to
+               explain why. A second list of the same thing drifts from the first the day a
+               filter is added, and this one had. */
+            'clearAll' => collect($chips)->pluck('clear')
+                ->reduce(fn (array $all, array $one) => $all + $one, ['page' => null]),
         ]);
     }
 
