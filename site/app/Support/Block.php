@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Services\BlockCatalogue;
 use App\Services\GameNames;
 
 /**
@@ -50,8 +51,26 @@ class Block
      */
     public function title(): string
     {
-        return GameNames::of('block', $this->name)
-            ?? ucfirst(str_replace('-', ' ', $this->name));
+        if ($said = GameNames::of('block', $this->name)) {
+            return $said;
+        }
+
+        /* An ore floor, built from the item's own name rather than left as an identifier.
+           The thirteen of them are the bulk of what reaches this fallback, and they are
+           exactly the ones a reader meets: "où trouve-t-on du charbon" answers with the
+           floor it is mined from, which was printed "Ore coal" in the middle of a French
+           sentence. The game names the item even though it names none of these floors. */
+        if (str_starts_with($this->name, 'ore-')) {
+            $item = substr($this->name, 4);
+            if (isset(BlockCatalogue::items()[$item])) {
+                /* `GameNames` and not `Thing`: `Thing::name` asks the catalogue for
+                   the family, the catalogue builds `Block`s, and we are inside one. The
+                   family is known here anyway, it is an item. */
+                return __('blocs.page.minerai-de').' '.(GameNames::of('item', $item) ?? $item);
+            }
+        }
+
+        return ucfirst(str_replace('-', ' ', $this->name));
     }
 
     public function category(): string
