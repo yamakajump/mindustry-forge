@@ -77,6 +77,7 @@ const HOMOGRAPHES = new Set([
   "propose",  // "il propose" against "proposé"
   "vise",     // "ce saut vise" against "visé"
   "dilate",   // "se dilate" against "dilaté"
+  "annonce",  // "sa page annonce" against "annoncé"
   "alimente", // "ce qui l'alimente" against "alimenté"
   "enregistre", // "il l'enregistre" against "enregistré"
   "aime",     // "j'aime" against "aimé"

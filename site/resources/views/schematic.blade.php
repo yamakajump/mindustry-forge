@@ -48,6 +48,7 @@
        script at all. --}}
   @auth
     <script src="/forge/keep.js" type="module" defer></script>
+    <script src="/forge/propositions.js" type="module" defer></script>
     <script src="/forge/dossiers.js" type="module" defer></script>
     <script src="/forge/notes.js" type="module" defer></script>
   @endauth
@@ -336,6 +337,45 @@
             les autres.
           @endif
         </p>
+      </div>
+    @endif
+
+    {{-- Markings offered by other players, waiting for somebody to weigh them.
+
+         The whole machinery for this was written and routed and had no interface at all:
+         a proposal could be made and never seen, so the queue only grew and the schematic
+         went on showing a ceiling. Their own proposal is listed too, without buttons: seeing
+         that it arrived is half of why anybody sends a second one, and the server already
+         refuses a vote on one's own. --}}
+    @if($propositions->isNotEmpty())
+      <div class="card"><h2>Des branchements proposés</h2>
+        <p class="hint-line">Ce schéma n'a pas de mesure. Quelqu'un a dit où il se branche ;
+          il faut d'autres avis avant que la page l'annonce.</p>
+        @foreach($propositions as $proposition)
+          <div class="proposition" data-proposition="{{ $proposition->id }}">
+            <p class="proposition-qui">
+              <strong>{{ $proposition->user?->name ?? 'quelqu\'un' }}</strong>
+              &middot; {{ $proposition->created_at?->diffForHumans() }}
+              &middot; {{ count($proposition->marks ?? []) }}
+              {{ count($proposition->marks ?? []) > 1 ? 'marques' : 'marque' }}
+            </p>
+            @if($proposition->note)
+              <p class="proposition-mot">{{ $proposition->note }}</p>
+            @endif
+            @if($proposition->user_id === auth()->id())
+              <p class="hint-line proposition-note">Ta proposition. En attente d'autres avis.</p>
+            @elseif(array_key_exists($proposition->id, $dejaPese))
+              <p class="hint-line proposition-note">{{ $dejaPese[$proposition->id]
+                ? 'Tu es d\'accord.' : 'Tu n\'es pas d\'accord.' }}</p>
+            @else
+              <p class="row">
+                <button type="button" data-accord="oui">C'est ça</button>
+                <button type="button" data-accord="non">Non</button>
+              </p>
+              <p class="hint-line proposition-note"></p>
+            @endif
+          </div>
+        @endforeach
       </div>
     @endif
 

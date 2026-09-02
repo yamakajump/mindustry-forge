@@ -747,6 +747,37 @@ function render(report) {
     <p class="hint-line" id="keep-note"></p>
   </div>`);
 
+  /* Fifteen thousand imported schematics carry no marking, so their pages show a ceiling
+     where a throughput belongs, and until now there was no way for anybody to fix one. The
+     server side was written, routed and reachable only with curl.
+
+     Offered here and not on the schematic's page, because here is where the marking is
+     made: `store` is written to take the analysis this browser just produced rather than
+     recompute it, and a form on another page would have to rebuild by hand what this one
+     is already holding. */
+  if (regarde) {
+    const marques = Object.keys(marked).length;
+    /* Through the dictionary and not written here. `chaines-en-dur.test.js` holds the
+       count of hand-written French in this report and only ever lets it fall; six new ones
+       would have been six more to migrate later, on the newest card in the file. The count
+       stays outside the sentence: `t` renders a missing key unsubstituted, and a figure
+       that disappears is worse than a word that does. */
+    right.push(`<div class="card"><h2>${escape(t("analyse.completer.titre"))}</h2>
+      <p class="hint-line" style="margin:0 0 10px"><strong>${escape(regarde.name)}</strong>
+        ${escape(t("analyse.completer.pourquoi"))}</p>
+      <div class="row">
+        <input type="text" id="offer-note"
+          placeholder="${escape(t("analyse.completer.mot"))}"
+          aria-label="${escape(t("analyse.completer.mot"))}">
+        <button class="primary" id="offer" type="button"${marques ? "" : " disabled"}>${
+          escape(marques
+            ? `${t("analyse.completer.envoyer")} (${marques})`
+            : t("analyse.completer.marque-dabord"))}</button>
+      </div>
+      <p class="hint-line" id="offer-note-out"></p>
+    </div>`);
+  }
+
   /* What the rings on the picture mean. They had no legend at all, and worse, half of them
      meant "Forge thinks maybe": a schematic came back under fourteen green squares, one
      slightly brighter than the others, and nothing anywhere said which was which. Now
@@ -829,6 +860,42 @@ function render(report) {
   wireKeep(report);
 
   $("to-editor")?.addEventListener("click", () => enterEditor(report.tiles));
+
+  /* Sends the analysis this page computed, whole, which is what the endpoint is written to
+     take. Its two refusals are answers a person has to read - the author got there first,
+     or the daily quota is spent - so the message comes back onto the page rather than into
+     the console. */
+  $("offer")?.addEventListener("click", async (event) => {
+    const bouton = event.currentTarget;
+    const dit = $("offer-note-out");
+    bouton.disabled = true;
+    dit.textContent = "";
+    try {
+      const answer = await fetch("/api/contributions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-XSRF-TOKEN": decodeURIComponent(
+            (document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || ""),
+        },
+        body: JSON.stringify({
+          schematique: regarde.slug,
+          marques: marked,
+          analysis: report,
+          note: $("offer-note").value.trim() || null,
+        }),
+      });
+      const data = await answer.json().catch(() => ({}));
+      dit.textContent = data.message
+        || t("analyse.completer.refuse", { code: answer.status });
+      if (answer.ok) bouton.textContent = t("analyse.completer.envoye");
+      else bouton.disabled = false;
+    } catch (error) {
+      dit.textContent = t("analyse.completer.pas-envoye", { raison: error.message });
+      bouton.disabled = false;
+    }
+  });
 
   $("ports-sealed")?.addEventListener("click", () => {
     marked = {};
@@ -1646,6 +1713,7 @@ peuplerVitrine();
 if (location.pathname === "/editer") enterEditor([]);
 
 /* Arriving from a schematic's page, to look at it or to change it. */
+let regarde = null;
 const asked = new URLSearchParams(location.search).get("s");
 if (asked) {
   fetch(`/api/schematiques/${encodeURIComponent(asked)}`, {
@@ -1663,6 +1731,11 @@ if (asked) {
       ground = { ...(found.ground || {}) };
       sealed = !!found.sealed;
       if (found.mine) opened = found;
+      /* Somebody else's, unmarked, and this reader is signed in: the one case where the
+         marking they are about to make is worth sending back. `read` answers it, because
+         `store` refuses a schematic its author has already marked and a button that gets
+         refused half the time is a button nobody presses twice. */
+      regarde = found.contribuable ? found : null;
       run();
     })
     .catch(() => {});
