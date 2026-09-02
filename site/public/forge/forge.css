@@ -333,6 +333,19 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 .sub { color: var(--dim); font-size: 13px; margin: 0 0 18px; }
 .desc { margin: 0 0 16px; white-space: pre-wrap; }
 
+/* The author's description, framed as theirs.
+   The height is capped because the longest one collected is sixteen thousand characters
+   over five hundred and sixty lines, and a card that pushes the site's own figures off the
+   screen answers the reader's question with somebody else's. Scrolling rather than
+   truncating: nothing here knows which part of a stranger's text is the part that matters.
+   The wrapping stays, so a long line reads; it costs the ASCII art its shape, and no
+   treatment keeps both. */
+.auteur .desc {
+  margin: 0; max-height: 18em; overflow: auto;
+  font-size: 13.5px; line-height: 1.5; color: var(--ink);
+}
+.auteur .hint-line { margin: 10px 0 0; }
+
 .card {
   background: var(--panel); border: 2px solid var(--edge);
   border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px;
@@ -1303,12 +1316,42 @@ a.stage:hover, a.stage:focus-visible { border-color: var(--accent); }
 .t-comparer.tenu { border-style: dashed; }
 
 /* The search written as a sentence, with its fields inside it. */
-.phrase { margin: 0; font-size: 17px; line-height: 2.4; color: var(--dim); }
+/* The search, written as a sentence.
+   A flex row rather than a run of inline spans: each clause is one item that never breaks
+   inside itself, so a narrow window wraps between "au moins 100 par seconde" and "qui tient
+   dans 20 x 15 tuiles" and never in the middle of either. The punctuation it used to carry
+   is gone with the need for it - a separator has no subject to agree with, which is what
+   made ", au moins 100 par minute" read as a sentence missing its beginning whenever no
+   item was chosen. */
+.phrase {
+  margin: 0; font-size: 17px; color: var(--dim);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+}
+.phrase .clause { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+/* A separator between clauses, and not a comma: read without it, "par seconde qui tient
+   dans" runs together into a phrase nobody wrote. A middot has no subject to agree with,
+   which is the whole reason the commas went. Drawn by CSS so it cannot end a line alone. */
+.phrase .clause + .clause::before {
+  content: "·"; color: var(--dim); margin-right: 9px; opacity: .6;
+}
+/* The product picker opens a grid, so it takes a row of its own rather than sitting inside
+   the run of clauses: a `<details>` that unfolds mid-line pushes everything after it. */
+.phrase .choisisseur { flex-basis: 100%; }
+.phrase .ph-tete { flex-basis: 100%; }
+
+/* Narrow: one clause per line, and no separator.
+   A dot drawn before a clause lands at the head of the line as soon as the clause wraps,
+   which is the orphaned punctuation this rework exists to remove, put back by the rework.
+   Stacked, the line break already separates them and the dot has nothing left to do. */
+@media (max-width: 720px) {
+  .phrase .clause { flex-basis: 100%; }
+  .phrase .clause + .clause::before { content: none; }
+  .phrase .primary { margin-left: 0; }
+}
 .phrase .ph-suite { color: var(--ink); }
 .phrase .ph-unite { font-size: 12.5px; color: var(--dim); }
 .phrase .ph-x { color: var(--dim); margin: 0 1px; }
-.phrase .ph-point { color: var(--dim); }
-.phrase .choisisseur { display: inline-block; margin: 0; vertical-align: middle; }
+.phrase .choisisseur { margin: 0; }
 .champ {
   display: inline-flex; align-items: center; background: #191c22;
   border: 1px solid var(--line); border-radius: 7px; padding: 1px 8px; margin: 0 2px;
@@ -1320,10 +1363,9 @@ a.stage:hover, a.stage:focus-visible { border-color: var(--accent); }
 }
 .champ.court input { width: 46px; }
 .champ select { width: auto; text-align: left; }
-.phrase .primary { margin-left: 8px; vertical-align: middle; }
+.phrase .primary { margin-left: auto; }
 /* The comma belongs to what comes before it: a line break in the template becomes a space
    on screen, and "tuiles , sur" reads as a typo. */
-.phrase .ph-virgule { color: var(--dim); margin-right: 3px; }
 
 /* The ground grid, a swatch grid rather than a list of text chips: a texture is recognised
    faster than a name is read. Sized like the BUILD tab's own `.editor-grid` chips so the
