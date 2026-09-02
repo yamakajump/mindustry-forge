@@ -64,7 +64,7 @@ class AuthController extends Controller
          * Discord id, which is the one identifier they cannot change.
          */
         if (Ban::refuses($profile['id'])) {
-            return redirect('/')->with('error', "Ce compte n'a plus acces au site.");
+            return redirect('/')->with('error', "Ce compte n'a plus accès au site.");
         }
 
         $user = User::updateOrCreate(

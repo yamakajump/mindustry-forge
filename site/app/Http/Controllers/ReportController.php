@@ -35,7 +35,7 @@ class ReportController extends Controller
 
         if ($today >= $standing->reportsPerDay()) {
             return response()->json([
-                'message' => 'Tu as signale beaucoup de choses aujourd hui. Reviens demain.',
+                'message' => 'Tu as signalé beaucoup de choses aujourd\'hui. Reviens demain.',
             ], 429);
         }
 
@@ -59,7 +59,7 @@ class ReportController extends Controller
          * into a probe. It also tells somebody reporting in bad faith that they succeeded.
          */
         return response()->json([
-            'message' => 'Signalement enregistre. Quelqu un va regarder.',
+            'message' => 'Signalement enregistré. Quelqu\'un va regarder.',
         ], 201);
     }
 

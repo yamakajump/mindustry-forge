@@ -22,7 +22,7 @@
   $tap = $schematic->fedBySandbox();
   $summary = trim(collect([
       $tap ? __('schema.page.bac-a-sable-court') : null,
-      ! $tap && $power > 0.5 ? number_format($power, 0, ',', ' ').' energie/s' : null,
+      ! $tap && $power > 0.5 ? number_format($power, 0, ',', ' ').' énergie/s' : null,
       $tap ? null : ($made->take(2)->implode(', ') ?: null),
       "{$schematic->blocks} blocs",
   ])->filter()->implode(' - '));
@@ -178,7 +178,7 @@
       <div class="card notice">
         <h2>Schéma importé</h2>
         <p>
-          Recuperee sur
+          Récupérée sur
           @if($schematic->sourceUrl())
             <a href="{{ $schematic->sourceUrl() }}" rel="noopener nofollow"
                target="_blank">{{ $schematic->sourceName() ?? $schematic->source }}</a>,
@@ -186,20 +186,20 @@
             {{ $schematic->sourceName() ?? $schematic->source }},
           @endif
           ou {{ $schematic->credit() }} l'a publié. Il ne vient pas d'ici et
-          personne ne l'a relu&nbsp;: il peut etre incomplet, cassé, ou fait pour
-          une version du jeu qui n'est plus la notre.
+          personne ne l'a relu&nbsp;: il peut être incomplet, cassé, ou fait pour
+          une version du jeu qui n'est plus la nôtre.
         </p>
         <p>
           Les chiffres ci-dessous sont ce que l'analyse en deduit, pas une promesse de
           l'auteur.
           @if($schematic->verified)
-            Celui-la a ete rejoue sur un vrai serveur.
+            Celui-là a été rejoué sur un vrai serveur.
           @else
-            Ils n'ont pas encore ete rejoues sur un vrai serveur.
+            Ils n'ont pas encore été rejoués sur un vrai serveur.
           @endif
         </p>
         @if($schematic->fetched_at)
-          <p class="hint-line">Recuperee le {{ $schematic->fetched_at->format('d/m/Y') }}.</p>
+          <p class="hint-line">Récupérée le {{ $schematic->fetched_at->format('d/m/Y') }}.</p>
         @endif
       </div>
     @endif
@@ -314,7 +314,7 @@
         <p class="hint-line">
           @if($schematic->user_id !== auth()->id())
             Tu vois ces boutons parce que tu tiens la vitrine, pas parce que le
-            schéma est a toi.
+            schéma est à toi.
           @else
             Privé, personne d'autre ne le voit. Par lien, il marche pour qui l'a et
             reste hors de la vitrine. Public, il est dans la vitrine et classé avec
@@ -362,7 +362,7 @@
 <script>
 document.getElementById("copy").addEventListener("click", async (e) => {
   await navigator.clipboard.writeText(document.getElementById("code").value);
-  e.target.textContent = "Copie";
+  e.target.textContent = "Copié";
   setTimeout(() => { e.target.textContent = "Copier"; }, 1600);
 });
 </script>

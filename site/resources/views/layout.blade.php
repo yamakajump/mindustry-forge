@@ -12,7 +12,7 @@
      @yield calls that need it twice. An apostrophe escaped inside a Blade directive stops
      the compiler mid-file: the whole layout then renders as literal text, @stack and
      @include included, and the page still returns 200 while showing its own source. */
-  $baseline = "Colle un schéma Mindustry, sache ce qu'il produit vraiment et ou il coince.";
+  $baseline = "Colle un schéma Mindustry, sache ce qu'il produit vraiment et où il coince.";
 @endphp
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

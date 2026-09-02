@@ -88,7 +88,7 @@ class Report extends Model
 
         Schematic::where('id', $id)->whereNull('hidden_at')->update([
             'hidden_at' => now(),
-            'hidden_reason' => 'Signale par plusieurs membres, en attente de relecture.',
+            'hidden_reason' => 'Signalé par plusieurs membres, en attente de relecture.',
         ]);
     }
 }

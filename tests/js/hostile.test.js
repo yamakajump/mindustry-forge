@@ -106,7 +106,7 @@ test("a decompression bomb is refused before it is allocated", async () => {
   const before = process.memoryUsage().rss;
   const { refused, ms } = await timed(() => read(bomb));
 
-  assert.match(refused?.message ?? "", /se dilate au-dela/);
+  assert.match(refused?.message ?? "", /se dilate au-delà/);
   assert.ok(ms < 5000, `${ms.toFixed(0)} ms`);
   assert.ok(process.memoryUsage().rss - before < 400 * 1024 * 1024,
     "the bound has to cut it off before the memory is taken");

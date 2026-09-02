@@ -42,7 +42,7 @@ class ContributionController extends Controller
          */
         if ($schematic->items()->where('kind', SchematicItem::MESURE)->exists()) {
             return response()->json([
-                'message' => 'Son auteur a deja dit ou elle se branche. Rien a completer ici.',
+                'message' => 'Son auteur a déjà dit où elle se branche. Rien à compléter ici.',
             ], 409);
         }
 
@@ -54,7 +54,7 @@ class ContributionController extends Controller
 
         if ($today >= $standing->contributionsPerDay()) {
             return response()->json([
-                'message' => 'Tu as propose beaucoup de branchements aujourd hui. Reviens demain.',
+                'message' => 'Tu as proposé beaucoup de branchements aujourd\'hui. Reviens demain.',
             ], 429);
         }
 
@@ -69,8 +69,8 @@ class ContributionController extends Controller
         return response()->json([
             'etat' => $contribution->state,
             'message' => $contribution->state === Contribution::APPLIED
-                ? 'En ligne. Le debit annonce dit desormais qu il vient de toi.'
-                : 'Propose. D autres joueurs vont dire s ils sont d accord.',
+                ? 'En ligne. Le débit annoncé dit désormais qu\'il vient de toi.'
+                : 'Proposé. D\'autres joueurs vont dire s\'ils sont d\'accord.',
         ], 201);
     }
 
