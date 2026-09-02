@@ -64,17 +64,23 @@
        schematic since the first day and read back by nobody until now, which is what made a
        described plan and an untouched one look the same. Only on the drawn path: a stored
        preview is a PNG and cannot take a mark. --}}
-  <div class="stage"
+  {{-- A link and not a panel: the plan is the first thing a visitor looks at and the first
+       thing they try to press, and pressing it did nothing. It carries the panel's own
+       class, so the layout is unchanged and `apercu.js` still finds it by `data-code`: the
+       drawing replaces this element's children, which a link holds as well as a div. Its
+       accessible name is written out because a canvas leaves it none. --}}
+  <a class="stage" href="/?s={{ $schematic->slug }}"
+     aria-label="Ouvrir {{ $schematic->displayName() }} dans l'analyse"
        @unless($preview)
          data-code="{{ $schematic->code }}"
          @if($marked !== []) data-marks="{{ json_encode($marked) }}" @endif
        @endunless>
     @if($preview)
-      <img src="{{ $preview }}" alt="Apercu de {{ $schematic->displayName() }}">
+      <img src="{{ $preview }}" alt="Aperçu de {{ $schematic->displayName() }}">
     @else
       <p class="empty">Dessin du plan...</p>
     @endif
-  </div>
+  </a>
 
   <div>
     <h1 class="title">{{ $schematic->displayName() }}</h1>
@@ -100,6 +106,21 @@
          contract, and it takes every element carrying one for a tile whose code it has to
          fetch so it can draw the plan. It replaced these two buttons with a canvas, on the
          real page, while the eleven tests were all going green. --}}
+    {{-- The gesture the page exists for, where the visitor lands.
+         It was at the very bottom, past the note, the import warning, the build cost, the
+         shopping list and the throughput, and it was called "Modifier" for whoever manages
+         the schematic and "Analyser chez moi" for everybody else: two names for one
+         destination, chosen by a permission that has nothing to do with where the link
+         goes. One name, said once, for what actually happens.
+
+         One button and not two. The editor is one click from the analysis, on a toggle that
+         is on screen the whole time, and a visitor who has not yet looked at the plan
+         cannot choose between reading it and changing it. --}}
+    <p class="ouvrir">
+      <a class="button primary" href="/?s={{ $schematic->slug }}">Ouvrir ce schéma</a>
+      <span class="hint-line">Les chiffres, les entrées, et de quoi le modifier.</span>
+    </p>
+
     <div class="keep" data-schema="{{ $schematic->slug }}">
       @auth
         <button type="button" data-aime aria-pressed="{{ $aime ? 'true' : 'false' }}">
@@ -306,9 +327,14 @@
     <div class="card"><h2>Prendre le schéma</h2>
       <textarea id="code" readonly rows="3">{{ $schematic->code }}</textarea>
       <div class="row">
-        <button class="primary" id="copy" type="button">Copier</button>
-        <a class="button" href="/?s={{ $schematic->slug }}">{{
-          $schematic->managedBy(auth()->user()) ? 'Modifier' : 'Analyser chez moi' }}</a>
+        {{-- Amber no longer: the page's rule is that its main gesture is the only amber
+             control on it (see `index.html`'s own note above "Parcourir"), and the main
+             gesture is now named at the top. This one keeps its meaning from the card's
+             title and from the code sitting right above it. --}}
+        <button id="copy" type="button">Copier</button>
+        {{-- What opened the schematic used to sit here too. It is at the top of the page
+             now, where somebody arriving looks; this card's subject is the code to paste
+             into the game, which is a different need, and it keeps the rest of its row. --}}
 
         {{-- The move starts here, not from an empty page. Nobody reaches the comparison
              page with two identifiers in mind: you are on a schematic and you wonder how

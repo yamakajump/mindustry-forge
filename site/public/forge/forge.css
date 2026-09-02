@@ -516,6 +516,19 @@ select {
    The pressed state reuses `.seg button.on`'s colours rather than choosing new ones: two
    ways of saying "this button is active" on the same page is one too many, and the colour
    lives in its own file beside it. */
+/* The main gesture, on its own line above the two small ones.
+   Beside them it read as a third of the same kind, which is what it is not: liking and
+   keeping act on a schematic you have already looked at, and this is what lets you look. */
+.ouvrir {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 0 6px;
+}
+.ouvrir .hint-line { margin: 0; }
+
+/* A picture that goes somewhere. The plan is the first thing a visitor presses, and it did
+   nothing; the border answering on hover is what says it is a door. */
+a.stage { text-decoration: none; transition: border-color .12s ease; }
+a.stage:hover, a.stage:focus-visible { border-color: var(--accent); }
+
 .keep { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
 .keep button { display: inline-flex; align-items: center; gap: 6px; }
 .keep button[aria-pressed="true"] {
