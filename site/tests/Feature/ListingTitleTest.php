@@ -146,3 +146,40 @@ it('clears every constraint, including the ones added later', function () {
         ->and($lien[1] ?? '')->not->toContain('planete=erekir')
         ->and($lien[1] ?? '')->not->toContain('blocs=40');
 });
+
+/*
+ * A family of blocks, which the catalogue could not be asked about.
+ *
+ * The block filter takes one identifier, and somebody looking for a schematic with a turret
+ * in it does not have one in mind. The categories are the game's own ten, the same the block
+ * wiki files by, so nothing here invents a taxonomy.
+ */
+it('finds schematics by the family of a block they contain', function () {
+    $avec = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Avec une tourelle']);
+    $avec->blocksHeld()->create(['block' => 'duo', 'count' => 2]);
+
+    $sans = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Sans tourelle']);
+    $sans->blocksHeld()->create(['block' => 'conveyor', 'count' => 9]);
+
+    $this->get('/schemas?type=turret')->assertOk()
+        ->assertSee('Avec une tourelle')
+        ->assertDontSee('Sans tourelle');
+});
+
+it('says which family is filtering, so a short list explains itself', function () {
+    $avec = Schematic::factory()->create(['visibility' => 'public']);
+    $avec->blocksHeld()->create(['block' => 'duo', 'count' => 2]);
+
+    // The chip, and the link that takes it off again.
+    $this->get('/schemas?type=turret')->assertOk()
+        ->assertSee('Tourelles')
+        ->assertSee('Recherche en cours');
+});
+
+it('drops a family that names nothing rather than refusing the page', function () {
+    // Every other filter here does the same: a shared link that has aged badly shows the
+    // catalogue, not an error.
+    Schematic::factory()->create(['visibility' => 'public', 'name' => 'Toujours la']);
+
+    $this->get('/schemas?type=nimportequoi')->assertOk()->assertSee('Toujours la');
+});

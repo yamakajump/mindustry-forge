@@ -16,6 +16,8 @@
 
 @push('head')
   <script src="/forge/apercu.js" type="module" defer></script>
+  {{-- Fetches nothing until the block picker is opened. --}}
+  <script src="/forge/bloc-choix.js" type="module" defer></script>
 @endpush
 
 @section('body')
@@ -223,19 +225,26 @@
     <summary>{{ __('vitrine.contraintes.titre') }}</summary>
 
     <div class="row">
-      <label class="lead" for="bloc">{{ __('vitrine.bloc.label') }}</label>
-      {{-- A `datalist` and not a grid of images, unlike the product: two hundred block
-           names do not fit in a grid, and typing is the only reasonable way in there. The
-           boundary runs between twenty and two hundred. --}}
-      <input name="bloc" id="bloc" list="blocs" value="{{ $holds }}"
-             placeholder="{{ __('vitrine.bloc.exemple') }}" autocomplete="off">
-      <datalist id="blocs">
-        @foreach($blocks as $block)
-          <option value="{{ $block }}"></option>
-        @endforeach
-      </datalist>
+      {{-- What it has to contain, at two granularities, because both questions get asked
+           and only one of them could be. "A schematic with a turret in it" had no way in:
+           the field takes one identifier, and somebody looking for a turret does not have
+           one in mind. The family is a real filter on the server; the block is the field
+           this row always had, now inside something you can browse. --}}
+      @include('partials.choix', [
+        'nom' => 'type',
+        'titre' => __('vitrine.bloc.type'),
+        'valeur' => $type,
+        'vide' => __('vitrine.bloc.type-peu-importe'),
+        'videCourt' => __('vitrine.contraintes.peu-importe'),
+        'options' => collect(\App\Services\BlockCatalogue::CATEGORY_KEYS)
+          ->map(fn ($cle, $famille) => [
+            'valeur' => $famille, 'libelle' => __($cle), 'famille' => null,
+          ])->values()->all(),
+      ])
 
-      <label class="lead" for="blocs" style="margin-left:10px">{{ __('vitrine.contraintes.au-plus') }}</label>
+      @include('partials.bloc-choix', ['holds' => $holds, 'blocks' => $blocks])
+
+      <label class="lead" for="blocs">{{ __('vitrine.contraintes.au-plus') }}</label>
       <input name="blocs" id="blocs" class="mini" inputmode="numeric" autocomplete="off"
              value="{{ $atMostBlocks ?: '' }}" placeholder="60">
       <span class="hint-line" style="margin:0">{{ __('vitrine.contraintes.unite.blocs') }}</span>
