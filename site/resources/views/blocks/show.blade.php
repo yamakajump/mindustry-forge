@@ -35,11 +35,14 @@
        width="96" height="96" decoding="async" alt="">
   <div>
     <h1>{{ $block->title() }}</h1>
-    <p class="bloc-id">{{ $block->name }}</p>
+    {{-- The identifier, and with it the game's class name. `kind` used to be a chip
+         next to « Usines » and « Serpulo »: `AttributeCrafter` offered to a player as a
+         third thing to recognise. It belongs here, on the technical line, where whoever
+         looks for it finds it and where nobody else trips over it. --}}
+    <p class="bloc-id" title="{{ $block->kind() }}">{{ $block->name }}</p>
     <p class="chips">
       <span class="chip">{{ __(BlockCatalogue::categoryKey($block->category())) }}</span>
       <span class="chip">{{ __(BlockCatalogue::planetKey($block->planet())) }}</span>
-      <span class="chip">{{ $block->kind() }}</span>
     </p>
   </div>
 </div>
@@ -156,12 +159,13 @@
             <span class="bloc-of">{{ __('blocs.page.entree') }}</span>
             @foreach($block->inputs() as $item => $amount)
               @include('blocks.partials.thing', [
-                'thing' => $item, 'label' => $number($amount).' '.$item])
+                'thing' => $item,
+                'label' => $number($amount).' '.\App\Support\Thing::name($item)])
             @endforeach
             @foreach($block->inputLiquids() as $liquid => $rate)
               @include('blocks.partials.thing', [
                 'thing' => $liquid,
-                'label' => $number($rate).__('blocs.unite.par-seconde').' '.$liquid])
+                'label' => $number($rate).__('blocs.unite.par-seconde').' '.\App\Support\Thing::name($liquid)])
             @endforeach
           </p>
         @endif
@@ -170,12 +174,13 @@
           <span class="bloc-of">{{ __('blocs.page.sortie') }}</span>
           @foreach($block->outputs() as $item => $amount)
             @include('blocks.partials.thing', [
-              'thing' => $item, 'label' => $number($amount).' '.$item])
+              'thing' => $item,
+                'label' => $number($amount).' '.\App\Support\Thing::name($item)])
           @endforeach
           @foreach($block->outputLiquids() as $liquid => $rate)
             @include('blocks.partials.thing', [
               'thing' => $liquid,
-              'label' => $number($rate).__('blocs.unite.par-seconde').' '.$liquid])
+              'label' => $number($rate).__('blocs.unite.par-seconde').' '.\App\Support\Thing::name($liquid)])
           @endforeach
         </p>
 

@@ -1,7 +1,8 @@
 # Les chaines que le serveur ecrit
 
 Un fichier par domaine, `<domaine>.<ecran>.<element>` pour les nommer. Les domaines sont
-fixes : `nav`, `vitrine`, `schema`, `analyse`, `edition`, `outils`, `blocs`, `compte`. Un
+fixes : `nav`, `vitrine`, `schema`, `analyse`, `edition`, `outils`, `blocs`, `compte`,
+`dossiers`, `erreurs`. Un
 chantier depose son fichier ici et ne touche pas a ceux des autres.
 
 L'autre moitie du site est dans `public/forge/lang/`. L'analyseur et l'editeur sont des

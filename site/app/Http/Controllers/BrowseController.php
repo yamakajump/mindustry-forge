@@ -515,7 +515,7 @@ class BrowseController extends Controller
         if ($atMostBlocks > 0) {
             $chips[] = [
                 'label' => __('vitrine.contraintes.au-plus').' '.self::plain($atMostBlocks).' '
-                    .__('vitrine.contraintes.unite.blocs'),
+                    .trans_choice('vitrine.contraintes.unite.bloc-compte', (int) $atMostBlocks),
                 'clear' => ['blocs' => null],
             ];
         }

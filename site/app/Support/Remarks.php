@@ -85,7 +85,8 @@ final class Remarks
         $found[] = [
             'question' => __('vitrine.verdict.blocs'),
             'schematic' => $light,
-            'figure' => self::number((float) $light->blocks).' '.__('vitrine.contraintes.unite.blocs'),
+            'figure' => self::number((float) $light->blocks).' '
+                .trans_choice('vitrine.contraintes.unite.bloc-compte', (int) $light->blocks),
         ];
 
         return $found;

@@ -1379,8 +1379,13 @@ a.stage:hover, a.stage:focus-visible { border-color: var(--accent); }
 .tris .tri:hover { text-decoration: none; color: var(--ink); }
 .tris .tri.on { color: var(--accent); border-bottom-color: var(--accent); }
 /* Visible but marked: a sort that compares outputs has nothing to compare while no item is
-   chosen. Hiding it would make the reason for its absence disappear too. */
-.tris .tri.gris { opacity: .45; }
+   chosen. Hiding it would make the reason for its absence disappear too.
+   Marked and still readable: at .45 the label fell under the contrast a body of text needs,
+   and three of the six tabs are in this state on a bare catalogue, so most of the row was
+   below it. The dotted underline says "not now" without spending the letters to say it. */
+.tris .tri.gris {
+  opacity: .72; text-decoration: underline dotted; text-underline-offset: 4px;
+}
 
 /* Which one wins at what: four named questions, before the grid. */
 .verdicts {
@@ -1441,15 +1446,14 @@ a.stage:hover, a.stage:focus-visible { border-color: var(--accent); }
    item was chosen. */
 .phrase {
   margin: 0; font-size: 17px; color: var(--dim);
-  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 30px;
 }
 .phrase .clause { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
-/* A separator between clauses, and not a comma: read without it, "par seconde qui tient
-   dans" runs together into a phrase nobody wrote. A middot has no subject to agree with,
-   which is the whole reason the commas went. Drawn by CSS so it cannot end a line alone. */
-.phrase .clause + .clause::before {
-  content: "·"; color: var(--dim); margin-right: 9px; opacity: .6;
-}
+/* The clauses are told apart by the space between them, and by nothing drawn.
+   A middot was tried first and it reintroduced the defect it was there to fix: drawn before
+   a clause, it lands at the head of the line as soon as that clause wraps, which is an
+   orphan again. Hidden below the width where the clauses stack, it still orphaned in the
+   band between, and every glyph would. A gap cannot start a line. */
 /* The product picker opens a grid, so it takes a row of its own rather than sitting inside
    the run of clauses: a `<details>` that unfolds mid-line pushes everything after it. */
 .phrase .choisisseur { flex-basis: 100%; }
@@ -1461,7 +1465,6 @@ a.stage:hover, a.stage:focus-visible { border-color: var(--accent); }
    Stacked, the line break already separates them and the dot has nothing left to do. */
 @media (max-width: 720px) {
   .phrase .clause { flex-basis: 100%; }
-  .phrase .clause + .clause::before { content: none; }
   .phrase .primary { margin-left: 0; }
 }
 .phrase .ph-suite { color: var(--ink); }
@@ -1557,3 +1560,9 @@ a.stage:hover, a.stage:focus-visible { border-color: var(--accent); }
 .proposition-mot { margin: 6px 0 0; font-size: 13.5px; }
 .proposition .row { margin: 8px 0 0; }
 .proposition-note { margin: 6px 0 0; }
+
+/* The card of an error page: centred and bounded, because it carries three sentences
+   and a full-width card holding three sentences reads as an empty page. */
+.card.erreur { max-width: 560px; margin: 40px auto; text-align: center; }
+.card.erreur .row { justify-content: center; }
+.card.erreur .sub { margin-bottom: 18px; }

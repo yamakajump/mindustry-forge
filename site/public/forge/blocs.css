@@ -118,3 +118,8 @@
 
 .bloc-monde-nom { font-size: 15px; }
 .bloc-monde-compte { color: var(--dim); font-size: 12px; font-family: var(--mono); }
+
+/* A floor has no page, so no box, and two in a row read as a single name:
+   « Sable Sable sombre ». The box is the separator for everything that has one; what has
+   none needs a separator of its own. */
+.bloc-nu + .bloc-nu::before { content: ", "; color: var(--dim); }

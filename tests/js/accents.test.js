@@ -69,6 +69,7 @@ const HOMOGRAPHES = new Set([
   "filtre", "filtres",        // "ce filtre" against "filtré"
   "indique", "indiques",      // "indique ici" against "indiqué"
   "refuse",   // "le jeu refuse" against "refusé"
+  "notre", "votre",      // the determiner, against the pronoun "le nôtre"
   "consomme", // "il consomme" against "consommé"
   "clique",   // "Clique une bande" against "cliqué"
   "glisse",   // "glisse pour sélectionner" against "glissé"

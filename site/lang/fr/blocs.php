@@ -87,6 +87,8 @@ return [
         'alimente-par' => 'Ce qui peut l\'alimenter',
         'alimente' => 'Ce qu\'il peut alimenter',
         'se-fabrique-dans' => 'se fabrique dans',
+        // The game names none of the thirteen ore floors, in any of its languages.
+        'minerai-de' => 'Minerai de',
         'se-mine-sur' => 'se mine sur',
         'sans-source' => 'rien dans le catalogue ne le produit',
         'sans-debouche' => 'aucun bloc ne le consomme',

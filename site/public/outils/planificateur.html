@@ -70,7 +70,20 @@
       <label class="lead" for="quantite" data-i18n="outils.planificateur.je-veux">Je veux</label>
       <input id="quantite" type="number" min="1" max="100000" step="1" value="100"
              inputmode="numeric">
-      <select id="objet"></select>
+      <!-- The fifth dropdown with the same flaw: on the tool most about the game's own
+           items, they were offered by name alone while the rest of the site draws them.
+           The value stays in a field, so everything reading `objet.value` or listening for
+           its `change` keeps working; the grid only writes into it. -->
+      <input type="hidden" id="objet">
+      <details class="choix" id="objet-choix">
+        <summary>
+          <span class="choix-quoi" data-i18n="outils.planificateur.je-veux-quoi">Quoi</span>
+          <img class="icone" id="objet-icone" width="20" height="20" alt="" hidden>
+          <b id="objet-nom"></b>
+          <span class="choix-changer" data-i18n="outils.planificateur.changer">changer</span>
+        </summary>
+        <div class="choix-grille" id="objet-grille"></div>
+      </details>
       <!-- A rate that is chosen rather than imposed. A late-game chain is thought about by
            the second, an early-game one by the minute, and converting in your head while
            sizing a factory is exactly the arithmetic this page exists to spare you. -->
@@ -157,7 +170,6 @@ function objetsProposes(planete) {
 function remplirObjets() {
   const planete = $("planete").value;
   const garde = $("objet").value;
-  $("objet").innerHTML = "";
   /* Sorted on the displayed name and not on the identifier: a French list arranged in
      English alphabetical order puts "Sable" before "Ferraille", because `sand` sorts before
      `scrap`, and that reads as disorder. */
@@ -165,14 +177,41 @@ function remplirObjets() {
     .map((nom) => ({ nom, affiche: lisible(nom) }))
     .sort((a, b) => a.affiche.localeCompare(b.affiche, "fr"));
 
-  for (const { nom, affiche } of objets) {
-    const option = document.createElement("option");
-    option.value = nom;
-    option.textContent = affiche;
-    $("objet").append(option);
+  const grille = $("objet-grille");
+  grille.replaceChildren();
+  for (const { nom } of objets) {
+    const bouton = document.createElement("button");
+    bouton.type = "button";
+    bouton.className = "choix-case";
+    bouton.dataset.objet = nom;
+    /* `chose` already carries the icon, the name, and the fallback when the picture
+       is missing. */
+    bouton.append(chose(nom, null, 24));
+    grille.append(bouton);
   }
-  if ([...$("objet").options].some((o) => o.value === garde)) $("objet").value = garde;
+
+  /* The kept choice if this planet still offers it, otherwise the first of the list:
+     going from Serpulo to Erekir left a value the grid no longer offers. */
+  choisirObjet(objets.some((o) => o.nom === garde) ? garde : objets[0]?.nom ?? "");
 }
+
+/** Writes the choice into the field, and says it in the summary. */
+function choisirObjet(nom) {
+  const champ = $("objet");
+  champ.value = nom;
+  $("objet-nom").textContent = nom ? lisible(nom) : "";
+  const icone = $("objet-icone");
+  icone.hidden = !nom;
+  if (nom) icone.src = `/icone/${familleDe(nom)}/${encodeURIComponent(nom)}.png?t=32`;
+  champ.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+document.addEventListener("click", (event) => {
+  const bouton = event.target.closest("[data-objet]");
+  if (!bouton) return;
+  choisirObjet(bouton.dataset.objet);
+  $("objet-choix").open = false;
+});
 
 const nombre = (valeur, decimales = 2) =>
   Number(valeur).toLocaleString("fr-FR", { maximumFractionDigits: decimales });
@@ -470,7 +509,7 @@ $("cadence").value = recall("planificateur.cadence", "seconde", ["seconde", "min
 $("demande").addEventListener("submit", calculer);
 
 remplirObjets();
-if ([...$("objet").options].some((o) => o.value === "silicon")) $("objet").value = "silicon";
+if ($("objet-grille").querySelector('[data-objet="silicon"]')) choisirObjet("silicon");
 translate(document);
 calculer();
 </script>

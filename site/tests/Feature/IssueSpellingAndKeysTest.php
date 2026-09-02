@@ -61,9 +61,9 @@ it('prints the block count through a translation key on both tile listings', fun
 
     $this->actingAs($user)->get('/mes-schemas')
         ->assertOk()
-        ->assertSee(__('schema.unite.blocs'));
+        ->assertSee(trans_choice('schema.unite.bloc-compte', 2));
 
     $this->get('/schemas')
         ->assertOk()
-        ->assertSee(__('schema.unite.blocs'));
+        ->assertSee(trans_choice('schema.unite.bloc-compte', 2));
 });

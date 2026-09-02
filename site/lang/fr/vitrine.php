@@ -82,7 +82,11 @@ return [
         'unite' => [
             'tuiles' => 'tuiles',
             'par-seconde' => 'par seconde',
+            /* Two forms, because the word follows a count in two places: the verdict
+               « le moins de blocs à poser » announced « 1 blocs ». The bare form stays for
+               the « au plus [ ] blocs » line, where there is no count. */
             'blocs' => 'blocs',
+            'bloc-compte' => 'bloc|blocs',
         ],
         /*
          * Pourquoi l'encombrement ne permute pas les deux cotes.
@@ -136,6 +140,11 @@ return [
      * exacte, posee la ou on demande autre chose.
      */
     'vide' => [
+        /* An empty list under a filtered search is not an empty catalogue. The message
+           sent the reader off to analyse and publish a schematic, when the only thing to
+           do is to loosen a constraint. */
+        'rien-ne-correspond' => 'Aucun schéma ne répond à toutes ces contraintes. Relâche-en une.',
+        'tout-effacer' => 'Effacer les contraintes',
         'catalogue' => 'Rien de publié qui corresponde. Analyse un schéma et publie-le.',
         'favoris' => "Tu n'as encore rien gardé. Le bouton se trouve sur la page d'un schéma.",
         'aimes' => "Tu n'as encore aimé aucun schéma.",

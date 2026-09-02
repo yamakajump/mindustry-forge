@@ -50,7 +50,7 @@
           <h3>{{ $schematic->displayName() }}</h3>
         </a>
         <p class="meta">
-          {{ $schematic->blocks }} {{ __('schema.unite.blocs') }}
+          {{ $schematic->blocks }} {{ trans_choice('schema.unite.bloc-compte', $schematic->blocks) }}
           @if($schematic->power_made > 0.5)
             &middot; @if($schematic->fedBySandbox()){{ __('schema.page.bac-a-sable-court') }}@else{{ number_format($schematic->power_made - $schematic->power_used, 0, ',', ' ') }} {{ __('schema.unite.energie-seconde') }}@endif
           @endif
