@@ -50,12 +50,12 @@ const MAX_BODY = MAX_TILES * MAX_TILE_BYTES + 64 * 1024;
 /** Bytes from what the clipboard carries, tolerating a paste wrapped by a chat client. */
 export function bytesFromBase64(text) {
   const clean = String(text).replace(/\s+/g, "");
-  if (!clean) throw new Error("aucune schematique fournie");
+  if (!clean) throw new Error("aucune schématique fournie");
   let binary;
   try {
     binary = atob(clean);
   } catch {
-    throw new Error("ce n'est pas une schematique : le texte n'est pas du base64");
+    throw new Error("ce n'est pas une schématique : le texte n'est pas du base64");
   }
   const out = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
@@ -124,7 +124,7 @@ async function pump(data, format) {
 
   if (overflowed) {
     chunks.length = 0;
-    throw new Error(`la schematique se dilate au-dela de ${MAX_BODY} octets`);
+    throw new Error(`la schématique se dilate au-delà de ${MAX_BODY} octets`);
   }
 
   const out = new Uint8Array(length);
@@ -142,7 +142,7 @@ async function inflate(bytes) {
   // the deflate stream directly gets the build back.
   const raw = await pump(bytes.slice(2), "deflate-raw");
   const best = raw.body.length >= zlib.body.length ? raw : zlib;
-  if (!best.body.length) throw new Error("la decompression n'a rien rendu");
+  if (!best.body.length) throw new Error("la décompression n'a rien rendu");
   return { body: best.body, altered: true };
 }
 
@@ -202,7 +202,7 @@ class Reader {
   }
   need(count) {
     if (this.at + count > this.view.byteLength) {
-      throw new Error("la schematique se termine au milieu d'un champ");
+      throw new Error("la schématique se termine au milieu d'un champ");
     }
   }
   u8() { this.need(1); return this.view.getUint8(this.at++); }
@@ -230,10 +230,10 @@ class Reader {
 export async function read(bytes) {
   const magic = new TextDecoder().decode(bytes.slice(0, 4));
   if (magic !== HEADER) {
-    throw new Error("ce n'est pas une schematique Mindustry");
+    throw new Error("ce n'est pas une schématique Mindustry");
   }
   if (bytes[4] > VERSION) {
-    throw new Error(`format de schematique ${bytes[4]}, plus recent que ${VERSION}`);
+    throw new Error(`format de schématique ${bytes[4]}, plus récent que ${VERSION}`);
   }
 
   let body, altered;
@@ -244,7 +244,7 @@ export async function read(bytes) {
        what the game could ever have written is refused on purpose, and a reader told only
        that "decompression failed" would go looking for a damaged copy that does not exist. */
     if (error.message.includes("se dilate")) throw error;
-    throw new Error("schematique illisible : la decompression a echoue");
+    throw new Error("schématique illisible : la décompression a échoué");
   }
 
   const reader = new Reader(body);
@@ -395,7 +395,7 @@ function writeConfig(writer, tile) {
 
 export async function write(tiles, { tags = {}, sizeOf = () => 1,
                                      priorityOf = () => 0 } = {}) {
-  if (!tiles.length) throw new Error("une schematique vide ne se copie pas");
+  if (!tiles.length) throw new Error("une schématique vide ne se copie pas");
 
   /* The order things are written in is the order they are built in, and the game uses it.
      `Block.schematicPriority` runs from +10 for a plastanium wall to -15 for an overdrive

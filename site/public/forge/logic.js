@@ -258,7 +258,7 @@ async function expand(bytes) {
     length += value.length;
     if (length > MAX_PROGRAM) {
       await reader.cancel().catch(() => {});
-      throw new Error(`configuration dilatee au-dela de ${MAX_PROGRAM} octets`);
+      throw new Error(`configuration dilatée au-delà de ${MAX_PROGRAM} octets`);
     }
   }
 

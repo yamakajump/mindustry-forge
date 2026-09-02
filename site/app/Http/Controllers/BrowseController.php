@@ -52,7 +52,7 @@ class BrowseController extends Controller
          * inside a ranking that claims to be computed. Two lists, each comparing like
          * with like.
          */
-        'declare' => 'Ceux qui produisent le plus (debit declare)',
+        'declare' => 'Ceux qui produisent le plus (débit déclaré)',
         'small' => 'Les plus compacts',
         'new' => 'Les plus récents',
         'seen' => 'Les plus vus',

@@ -62,7 +62,7 @@ export async function drawPlan(panel, fetched = null) {
      never corrects it. Nothing that arrives without a code can be drawn, and saying so is
      cheaper than looking broken. */
   if (!code.trim()) {
-    fail(panel, "Cette schematique n'a pas de code enregistre.");
+    fail(panel, "Cette schématique n'a pas de code enregistré.");
     return;
   }
 
@@ -72,12 +72,12 @@ export async function drawPlan(panel, fetched = null) {
     known = await assets();
     parsed = await fromBase64(code);
   } catch (error) {
-    fail(panel, "Cette schematique ne se dessine pas : son code est illisible.");
+    fail(panel, "Cette schématique ne se dessine pas : son code est illisible.");
     return;
   }
 
   if (!parsed?.tiles?.length) {
-    fail(panel, "Cette schematique est vide.");
+    fail(panel, "Cette schématique est vide.");
     return;
   }
 
@@ -202,7 +202,7 @@ async function fetchAndDraw(panel) {
     if (!answer.ok) throw new Error(String(answer.status));
     await drawPlan(panel, (await answer.text()).trim());
   } catch {
-    fail(panel, "Cette schematique n'a pas pu etre chargee.");
+    fail(panel, "Cette schématique n'a pas pu être chargée.");
   }
 }
 
