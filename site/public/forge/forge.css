@@ -965,26 +965,40 @@ select {
 /* The ground tab. A toolbar here and not on the building side: the game has none for
    placing a block, and its map editor has one for painting. The asymmetry comes from it. */
 .editor-ground { flex: 1; min-height: 0; overflow: auto; padding: 10px; }
-/* The brush's five tools, as icons rather than text: five buttons reading "Crayon",
-   "Rectangle", "Pot", "Gomme", "Pipette" wrapped onto a second line within the panel's
-   usable 260px, and ate height before the first swatch. Each keeps its name for a screen
-   reader (see `aria-label` in `ui.js`) and its description on hover (see `title`); only the
-   visible text goes. */
-.editor-ground .tools { display: flex; gap: 4px; }
-.editor-ground .tools .tool { min-height: 34px; min-width: 34px; padding: 0; justify-content: center; }
+/* The brush's five tools, named.
+   They were icons alone, because five buttons in a row reading "Crayon", "Rectangle",
+   "Pot", "Gomme", "Pipette" do not fit across the panel's usable 260px and wrapped badly.
+   The row was the wrong shape, not the labels: a hand-drawn 24px path for "Pot" is not a
+   vocabulary anybody arrives with, and putting the names in `aria-label` and `title` gave
+   them to the readers who do not need them, at the moment that comes too late. So the
+   button stacks its icon over its name and the row becomes a grid that fits what it can
+   per line, three at 260px and five when the rail is wider. */
+.editor-ground .tools {
+  display: grid; gap: 4px; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+}
+.editor-ground .tools .tool {
+  min-height: 48px; padding: 5px 2px; gap: 2px;
+  flex-direction: column; justify-content: center; font-size: 10.5px; line-height: 1.1;
+}
 .editor-ground .tools .tool .i { width: 16px; height: 16px; }
 .editor-ground .tools .tool[aria-pressed="true"] {
   color: var(--on-accent); background: var(--accent); border-color: var(--accent-strong);
 }
 
-/* The brush size and the blocks' transparency: a short label, the slider, the value, on one
-   line rather than three (the label, then the slider full width, then the value pushed
-   underneath). The full label stays in `title`. */
-.editor-ground .brushes { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 0; }
-.editor-ground .range { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--dim); }
-.editor-ground .range .tag { flex: none; width: 76px; }
-.editor-ground .range input { flex: 1; margin: 0; }
-.editor-ground .range .num { flex: none; width: 40px; text-align: right; color: var(--ink); }
+/* The brush size and the blocks' transparency: the name and the value on one line, the
+   slider full width under them.
+   They shared a line before, behind a label column 76px wide, which is enough for "Taille"
+   and not for "Transparence": the longer of the two words ran into its own slider. A fixed
+   width fitting one of its two contents is a width chosen from the wrong one, and any other
+   number would only move the day it bites. Two lines is what removes the guess. */
+.editor-ground .brushes { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 0; }
+.editor-ground .range { display: block; font-size: 11.5px; color: var(--dim); }
+.editor-ground .range .line {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  margin-bottom: 2px;
+}
+.editor-ground .range .num { color: var(--ink); }
+.editor-ground .range input { display: block; width: 100%; margin: 0; }
 .editor-ground h3 {
   margin: 16px 0 6px; font-size: 11.5px; letter-spacing: .7px; color: var(--dim);
   text-transform: uppercase;

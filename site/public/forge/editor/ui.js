@@ -136,8 +136,10 @@ export function storageLayerOf(familyKey) {
  *
  * `icon` is the inside of a 24x24 `<svg>`, drawn plain rather than fetched: these five
  * gestures have no sprite in the game's own atlas, unlike every block this file otherwise
- * draws from it. Each button carries its own accessible name in `aria-label` (see
- * `mountRail`), so the icon itself stays `aria-hidden`.
+ * draws from it. The icon stays `aria-hidden` and `label` is written under it, which is
+ * also what names the button: an `aria-label` alongside visible text would override the
+ * text for a screen reader and give two names to maintain instead of one. `hint` stays in
+ * `title`, where a longer sentence has room to say what the gesture actually does.
  */
 const TOOLS = [
   { key: "pencil", label: "Crayon", hint: "peindre à la main, taille réglable",
@@ -343,6 +345,8 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
   const all = buildables(catalogue);
   const groups = buildGroups(all);
   const layers = grounds(catalogue);
+  /* Floors, ores and walls together: what the ground tab's search actually walks. */
+  const groundCount = layers.reduce((total, layer) => total + layer.blocks.length, 0);
 
   /* Fetched once, here, so it has the best chance of being answered by the time anything
      asks for a name: the status bar reads it on a hover or a pick, never at mount, and
@@ -423,20 +427,20 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     </div>
     <div class="editor-ground" hidden>
       <div class="tools">
-        ${TOOLS.map((tool, i) => `<button type="button" class="tool" data-tool="${tool.key}"
-          title="${escape(tool.label)} · ${escape(tool.hint)}" aria-label="${escape(tool.label)}"
+        ${TOOLS.map((tool) => `<button type="button" class="tool" data-tool="${tool.key}"
+          title="${escape(tool.label)} · ${escape(tool.hint)}"
           aria-pressed="${tool.key === startTool}"><svg class="i" aria-hidden="true" viewBox="0 0 24 24">${
-          tool.icon}</svg></button>`).join("")}
+          tool.icon}</svg><span>${escape(tool.label)}</span></button>`).join("")}
       </div>
       <div class="brushes">
         <label class="range size" title="Taille du crayon">
-          <span class="tag">Taille</span>
-          <input type="range" min="1" max="9" step="2" value="${startSize}">
-          <span class="num">${startSize} × ${startSize}</span></label>
+          <span class="line"><span class="tag">Taille</span>
+            <span class="num">${startSize} × ${startSize}</span></span>
+          <input type="range" min="1" max="9" step="2" value="${startSize}"></label>
         <label class="range fade" title="Transparence des blocs, sur l'onglet sol">
-          <span class="tag">Transparence</span>
-          <input type="range" min="0" max="100" value="${startFade}">
-          <span class="num">${startFade} %</span></label>
+          <span class="line"><span class="tag">Transparence</span>
+            <span class="num">${startFade} %</span></span>
+          <input type="range" min="0" max="100" value="${startFade}"></label>
       </div>
       <p class="empty ground-empty" hidden>Aucun sol ne répond à ça.</p>
       ${layers.map((layer) => `<section data-layer="${layer.key}">
@@ -692,8 +696,11 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
     filters.hidden = !homes && onGround;
     /* The search box is shared: only what it searches, and what it says while empty,
        changes with the tab. */
+    /* Counted like the build tab's, and for the same reason: "Chercher un sol, un minerai
+       ou un mur" is wider than the 260px rail and was cut mid-word, at "un miner". A
+       placeholder the field cannot show is a placeholder that reads as broken. */
     search.placeholder = onGround
-      ? "Chercher un sol, un minerai ou un mur" : `Chercher dans ${all.length} blocs`;
+      ? `Chercher dans ${groundCount} sols` : `Chercher dans ${all.length} blocs`;
     search.setAttribute("aria-label", onGround ? "Chercher dans le sol" : "Chercher un bloc");
     sayCount(onGround ? paintGround() : paint());
     paintRecents();
