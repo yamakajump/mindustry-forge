@@ -14,6 +14,7 @@
 import {
   beltFrame, CARRIER_ROLES, drawCargo, drawFlyers, drawLayers, drawRunning, drawWreck,
 } from "./live.js";
+import { couleurDe, EPAISSEUR, etatDe, LISIBLE } from "./etat.js";
 import { variantOf, blendersAt, D8, edgeCell, tileSpan, veilAt, ventCentre, ventMark }
   from "./tiling.js";
 
@@ -802,7 +803,63 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
     if (roleOf(tile.name || tile.block) === "bridge") drawBridge(context, tile, box, scale);
   }
 
+  /* Only on a running plan: a still picture has no efficiency to report, and a bar drawn
+     from nothing would be a bar saying zero about a schematic that is simply not running. */
+  if (world) drawStates(context, tiles, sizeOf, box, scale, world);
+
   return { scale, box, missing: [...new Set(missing)] };
+}
+
+/**
+ * How each block is doing, on the block, while it runs.
+ *
+ * A pass of its own and the last one, for the same reason the vent marks are: the block
+ * loop returns early in several places, a drill draws itself and leaves, and anything drawn
+ * inside it would be missing exactly on the blocks worth watching. Drawn over everything
+ * means drawn over everything.
+ *
+ * A bar along the bottom edge and not a number: the canvas runs from eight to forty-eight
+ * pixels a tile, a bar reads at all of them, and a percentage at twenty-four is two grey
+ * pixels. Above `LISIBLE` there is room for the figure as well, and it is written only when
+ * it is not a hundred: a page of "100 %" is a page of noise around the one that says 40.
+ *
+ * The bottom edge and not the middle, because the middle is where the items slide past and
+ * that is the thing somebody is watching.
+ */
+function drawStates(context, tiles, sizeOf, box, scale, world) {
+  context.save();
+  for (const tile of tiles) {
+    const build = world.at?.(tile.x, tile.y);
+    const etat = etatDe(build);
+    if (!etat) continue;
+
+    const size = sizeOf(tile.name || tile.block);
+    const offset = Math.trunc(-(size - 1) / 2);
+    const px = (tile.x + offset - box.left) * scale;
+    const py = (box.height - (tile.y + offset - box.bottom) - size) * scale;
+    const large = size * scale;
+    const haut = py + large - EPAISSEUR;
+
+    context.globalAlpha = 0.35;
+    context.fillStyle = "#0b0d11";
+    context.fillRect(px, haut, large, EPAISSEUR);
+    context.globalAlpha = 0.9;
+    context.fillStyle = couleurDe(etat.part);
+    context.fillRect(px, haut, large * etat.part, EPAISSEUR);
+    context.globalAlpha = 1;
+
+    if (scale >= LISIBLE && etat.part < 0.995) {
+      const dit = `${Math.round(etat.part * 100)}%`;
+      context.font = `${Math.min(11, Math.round(scale / 3))}px system-ui, sans-serif`;
+      context.textAlign = "left";
+      context.textBaseline = "top";
+      context.fillStyle = "#0b0d11";
+      context.fillText(dit, px + 3, py + 3);
+      context.fillStyle = couleurDe(etat.part);
+      context.fillText(dit, px + 2, py + 2);
+    }
+  }
+  context.restore();
 }
 
 /**
