@@ -383,3 +383,51 @@ it('changes the ground of a schematic without touching the rest', function () {
     expect($kept->ground)->toEqual(['5,5' => ['floor' => 'sand', 'overlay' => 'ore-lead']])
         ->and($kept->name)->toBe('Avant');
 });
+
+/*
+ * Opening the schematic.
+ *
+ * The gesture the page exists for was at the very bottom of it, under a label that named
+ * something else, and no test looked at it: the whole thing could be renamed or deleted
+ * without a single assertion moving. These three are the assertions that were missing.
+ */
+it('offers to open the schematic where somebody lands, not at the bottom', function () {
+    $schematic = Schematic::factory()->create(['visibility' => 'public']);
+
+    $page = $this->get("/s/{$schematic->slug}")->assertOk();
+
+    $page->assertSee('Ouvrir ce schéma')
+        ->assertSee("/?s={$schematic->slug}", escape: false);
+
+    /* Where it sits is the whole issue, so where it sits is what is asserted: before the
+       card it used to be buried inside. Document order and not pixels, because that is what
+       decides the reading order on a phone, where the two columns become one. */
+    $page->assertSee('Prendre le schéma');
+    $html = $page->getContent();
+    expect(strpos($html, 'Ouvrir ce schéma'))
+        ->toBeLessThan(strpos($html, 'Prendre le schéma'));
+});
+
+it('calls it the same thing whoever is reading', function () {
+    $author = User::factory()->create();
+    $schematic = Schematic::factory()->for($author)->create(['visibility' => 'public']);
+
+    // It used to say "Modifier" to whoever manages it and "Analyser chez moi" to everybody
+    // else, for one destination, chosen by a permission that has nothing to do with where
+    // the link goes.
+    foreach ([null, $author] as $reader) {
+        $page = $reader ? $this->actingAs($reader) : $this;
+        $page->get("/s/{$schematic->slug}")
+            ->assertOk()
+            ->assertSee('Ouvrir ce schéma')
+            ->assertDontSee('Analyser chez moi');
+    }
+});
+
+it('makes the plan itself the door it looks like', function () {
+    $schematic = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Presse']);
+
+    $this->get("/s/{$schematic->slug}")
+        ->assertOk()
+        ->assertSee('<a class="stage" href="/?s='.$schematic->slug.'"', escape: false);
+});
