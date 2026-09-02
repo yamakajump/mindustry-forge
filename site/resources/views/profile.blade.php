@@ -66,7 +66,7 @@
     @foreach($posted as $schematic)
       <article class="tile">
         <a href="/s/{{ $schematic->slug }}">
-          <div class="noimg">pas d'apercu</div>
+          <div class="noimg">pas d'aperçu</div>
           <h3>{{ $schematic->displayName() }}</h3>
         </a>
         <p class="meta">{{ $schematic->blocks }} blocs</p>

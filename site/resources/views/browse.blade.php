@@ -25,13 +25,13 @@
      that all carry "at best". A cap is never shown without saying that it is one, and that
      rule holds for the sentence heading the list as much as for a tile's own line. --}}
 @if($order === 'declare')
-  <p class="sub">Chaque chiffre vient de l'analyse du schéma lui-meme, pas d'une
-    etiquette tapee a la main. Ici ce sont des débits déclarés : ce que le plan fait
+  <p class="sub">Chaque chiffre vient de l'analyse du schéma lui-même, pas d'une
+    étiquette tapée à la main. Ici ce sont des débits déclarés : ce que le plan fait
     branché comme un joueur l'a marqué, et non ce qu'il ferait alimenté à fond.</p>
 @else
-  <p class="sub">Chaque chiffre vient de l'analyse du schéma lui-meme, pas d'une
-    etiquette tapee a la main. Ce sont des plafonds : ce que le plan sortirait alimente a
-    fond, et non ce qu'il a ete mesure faisant.</p>
+  <p class="sub">Chaque chiffre vient de l'analyse du schéma lui-même, pas d'une
+    étiquette tapée à la main. Ce sont des plafonds : ce que le plan sortirait alimenté à
+    fond, et non ce qu'il a été mesuré faisant.</p>
 @endif
 
 {{-- The ordering, as tabs rather than inside a dropdown.
@@ -306,17 +306,17 @@
            ordered on declared rates would be the exact fault that sentence exists to
            prevent: a correct text, above figures that answer something else. --}}
       <p class="hint-line">Classés sur ce qu'ils sortent en
-        <strong>{{ $makes === $powerKey ? 'energie' : \App\Support\Thing::name($makes) }}</strong>
+        <strong>{{ $makes === $powerKey ? 'énergie' : \App\Support\Thing::name($makes) }}</strong>
         branchés comme un joueur les a marqués. Un débit déclaré et non une mesure&nbsp;: le
         calcul est exact, le branchement est la parole de celui qui l'a marqué, et son nom
         est sur la fiche.</p>
     @else
     <p class="hint-line">Classés sur ce qu'ils pourraient sortir en
-      <strong>{{ $makes === $powerKey ? 'energie' : \App\Support\Thing::name($makes) }}</strong>,
+      <strong>{{ $makes === $powerKey ? 'énergie' : \App\Support\Thing::name($makes) }}</strong>,
       alimentés à fond, rapporté à leur taille. Un plafond et non un relevé&nbsp;: un
       schéma arraché d'une base n'a pas la foreuse qui l'alimentait, donc ce qu'il
-      fait vraiment depend de la votre. L'electricite qu'il consomme ne le penalise
-      pas&nbsp;: c'est un prerequis, indique sur sa page.</p>
+      fait vraiment dépend de la vôtre. L'électricité qu'il consomme ne le pénalise
+      pas&nbsp;: c'est un prérequis, indiqué sur sa page.</p>
     @endif
   @endif
 
@@ -422,12 +422,12 @@
                  single 512 kB schematic would otherwise arrive in a list nobody asked it
                  from. Past the cap the tile says what it always said. --}}
             @if(strlen($schematic->code) <= 16384)
-              <div class="noimg" data-code="{{ $schematic->code }}">pas d'apercu</div>
+              <div class="noimg" data-code="{{ $schematic->code }}">pas d'aperçu</div>
             @else
               {{-- Past the cap the code is fetched instead of carried, and only once the
                    tile comes into view. The bound is what protects a list that asked for
                    none of this; a hole in the grid is not the price of keeping it. --}}
-              <div class="noimg" data-slug="{{ $schematic->slug }}">pas d'apercu</div>
+              <div class="noimg" data-slug="{{ $schematic->slug }}">pas d'aperçu</div>
             @endif
           @endif
           <h3>{{ $schematic->displayName() }}</h3>

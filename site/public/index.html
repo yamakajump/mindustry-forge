@@ -70,7 +70,7 @@ if (location.pathname === "/editer") {
 
   <nav id="nav">
     <a href="/" data-i18n="nav.barre.analyser">Analyser</a>
-    <a href="/editer" data-i18n="nav.barre.editer">Editer</a>
+    <a href="/editer" data-i18n="nav.barre.editer">Éditer</a>
     <details class="menu">
       <summary data-i18n="nav.barre.schematiques">Schémas</summary>
       <div class="menu-list">
@@ -97,12 +97,12 @@ if (location.pathname === "/editer") {
     <h1 data-i18n="vitrine.accueil.titre">Découvre ce que ton schéma produit vraiment</h1>
     <p class="lede" data-i18n="vitrine.accueil.accroche">Colle-le, et Forge te dit ce qui en
       sort par seconde, quel bloc limite toute la ligne, et ce qui se perd en route. Les
-      chiffres sont mesures contre un vrai serveur Mindustry, pas estimes.</p>
+      chiffres sont mesurés contre un vrai serveur Mindustry, pas estimés.</p>
   </section>
 
   <div class="drop" id="drop">
     <label class="lead" for="text">
-      Colle le schéma copié dans le jeu (ctrl+c sur une selection), ou depose un
+      Colle le schéma copié dans le jeu (ctrl+c sur une sélection), ou dépose un
       fichier <code>.msch</code>.
     </label>
     <textarea id="text" spellcheck="false" autocomplete="off"
@@ -120,7 +120,7 @@ if (location.pathname === "/editer") {
       </label>
       <button id="build" type="button">
         <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M17.5 14v7M14 17.5h7"/></svg>
-        Construire depuis zero
+        Construire depuis zéro
       </button>
       <button id="paste" type="button">
         <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/></svg>
@@ -129,15 +129,15 @@ if (location.pathname === "/editer") {
     </div>
 
     <details class="supply">
-      <summary>Simuler un apport reel plutot que le plein regime</summary>
+      <summary>Simuler un apport réel plutôt que le plein régime</summary>
       <p class="hint-line">
-Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que ca
-        donne avec moins que ca, indique ici ce qui arrive vraiment, par seconde. Le total
-        est reparti sur les entrees du reseau concerne.
+Forge calcule déjà ce qu'il faut pour tourner à fond. Si tu veux savoir ce que ça
+        donne avec moins que ça, indique ici ce qui arrive vraiment, par seconde. Le total
+        est réparti sur les entrées du réseau concerné.
       </p>
       <div class="row">
         <input type="text" id="supply" placeholder="water=120, coal=4" autocomplete="off"
-               aria-label="Ce qui arrive de l'exterieur, par seconde">
+               aria-label="Ce qui arrive de l'extérieur, par seconde">
       </div>
     </details>
   </div>
@@ -160,7 +160,7 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
        Empty and hidden until the server has laid its island down, like the block it
        replaces: this is the half of the page that depends on a database. -->
   <section class="vitrine-accueil" id="vitrine-accueil" hidden>
-    <h2 data-i18n="vitrine.accueil.rien-a-coller">Rien a coller ? Prends-en un</h2>
+    <h2 data-i18n="vitrine.accueil.rien-a-coller">Rien à coller ? Prends-en un</h2>
     <p class="hint-line" id="deja-compte"></p>
     <ul class="plans" id="plans"></ul>
     <p class="porte">
@@ -168,7 +168,7 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
            button on the page. A secondary door has no business shouting as loud as the
            main one, especially on a phone where it is wider. -->
       <a class="button" href="/schemas"
-         data-i18n="vitrine.accueil.parcourir">Parcourir les schémas deja analysés</a>
+         data-i18n="vitrine.accueil.parcourir">Parcourir les schémas déjà analysés</a>
     </p>
   </section>
 
@@ -188,29 +188,29 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
       <li><a href="/editer">
         <img src="/icone/bloc/router.png?t=64" width="48" height="48" alt=""
              loading="lazy" decoding="async" onerror="this.remove()">
-        <strong data-i18n="nav.barre.editer">Editer</strong>
+        <strong data-i18n="nav.barre.editer">Éditer</strong>
         <span data-i18n="vitrine.accueil.outil-editer">Construis ou retouche un plan dans le
-          navigateur, avec les regles de pose du jeu.</span>
+          navigateur, avec les règles de pose du jeu.</span>
       </a></li>
       <li><a href="/comparer">
         <img src="/icone/bloc/container.png?t=64" width="48" height="48" alt=""
              loading="lazy" decoding="async" onerror="this.remove()">
         <strong data-i18n="nav.menu.comparer">Comparer</strong>
-        <span data-i18n="vitrine.accueil.outil-comparer">Deux plans cote a cote, chiffre
+        <span data-i18n="vitrine.accueil.outil-comparer">Deux plans côte à côte, chiffre
           contre chiffre, sur ce qu'ils produisent vraiment.</span>
       </a></li>
       <li><a href="/outils/logique">
         <img src="/icone/bloc/micro-processor.png?t=64" width="48" height="48" alt=""
              loading="lazy" decoding="async" onerror="this.remove()">
         <strong data-i18n="nav.menu.logique">Logique</strong>
-        <span data-i18n="vitrine.accueil.outil-logique">Ecris et verifie du mlog sans lancer
-          le jeu, et repars avec le processeur pose.</span>
+        <span data-i18n="vitrine.accueil.outil-logique">Écris et vérifie du mlog sans lancer
+          le jeu, et repars avec le processeur posé.</span>
       </a></li>
       <li><a href="/outils/planificateur">
         <img src="/icone/bloc/silicon-smelter.png?t=64" width="48" height="48" alt=""
              loading="lazy" decoding="async" onerror="this.remove()">
         <strong data-i18n="nav.menu.planificateur">Planificateur</strong>
-        <span data-i18n="vitrine.accueil.outil-planificateur">L'analyse a l'envers : combien
+        <span data-i18n="vitrine.accueil.outil-planificateur">L'analyse à l'envers : combien
           de blocs pour sortir tant par seconde.</span>
       </a></li>
       <li><a href="/blocs">
@@ -218,7 +218,7 @@ Forge calcule deja ce qu'il faut pour tourner a fond. Si tu veux savoir ce que c
              loading="lazy" decoding="async" onerror="this.remove()">
         <strong data-i18n="nav.barre.blocs">Blocs</strong>
         <span data-i18n="vitrine.accueil.outil-blocs">Les blocs du jeu avec les chiffres que
-          le banc a mesures, pas ceux d'un wiki.</span>
+          le banc a mesurés, pas ceux d'un wiki.</span>
       </a></li>
     </ul>
   </section>

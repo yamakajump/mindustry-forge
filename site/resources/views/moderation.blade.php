@@ -7,13 +7,13 @@
 @section('title', 'Moderation - Mindustry Forge')
 
 @section('body')
-<h1 class="title">Moderation</h1>
-<p class="sub">Ce que des membres ont signale, le plus lourd en premier. Un signalement
-  retenu credite ceux qui l'ont fait ; un signalement rejete leur coute le double.</p>
+<h1 class="title">Modération</h1>
+<p class="sub">Ce que des membres ont signalé, le plus lourd en premier. Un signalement
+  retenu crédite ceux qui l'ont fait ; un signalement rejeté leur coûte le double.</p>
 
 @if($waiting->isEmpty())
   <div class="card">
-    <p class="empty">Rien a relire.</p>
+    <p class="empty">Rien à relire.</p>
   </div>
 @else
   @foreach($waiting as $row)
@@ -34,7 +34,7 @@
         {{ $row->reports }} signalement{{ $row->reports > 1 ? 's' : '' }},
         poids {{ (int) $row->weight }}
         @if($schematic?->hidden_at)
-          &middot; <strong>deja masque</strong>, en attente de cette decision
+          &middot; <strong>déjà masqué</strong>, en attente de cette decision
         @else
           &middot; encore visible : le poids n'a pas atteint le seuil
         @endif
