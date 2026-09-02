@@ -101,6 +101,12 @@ if (location.pathname === "/editer") {
   </section>
 
   <div class="drop" id="drop">
+    <!-- The way back into the card, once a report has folded it. Hidden while the card is
+         open, which is its whole state: `.drop.replie` swaps one for the other. -->
+    <button type="button" class="deplie" id="deplie">
+      <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Analyser un autre schéma
+    </button>
     <label class="lead" for="text">
       Colle le schéma copié dans le jeu (ctrl+c sur une sélection), ou dépose un
       fichier <code>.msch</code>.
@@ -691,13 +697,13 @@ function render(report) {
     }<p class="hint-line">Coût et énergie calculés avec les formules du jeu, à l'unité
       près : c'est l'encart que tu vois sur l'aperçu d'un schéma.</p>${
       boost
-        ? `<div class="line" style="margin-top:8px"><span>Forge compte plutot</span>
+        ? `<div class="line" style="margin-top:8px"><span>Forge compte plutôt</span>
              <span class="num good">${rate(report.potential.made)} énergie / s</span></div>
            <p class="hint-line">Le jeu ignore les accélérateurs. Ici
              <strong>${asGame.projectors}</strong> en couvre${asGame.projectors > 1 ? "nt" : ""}
              <strong>${asGame.boosted}</strong> bloc${asGame.boosted > 1 ? "s" : ""},
-             qui tournent moitie plus vite, et jusqu'a deux fois et quart plus vite si tu
-             les alimentes en matiere de phase.</p>`
+             qui tournent moitié plus vite, et jusqu'à deux fois et quart plus vite si
+             tu les alimentes en matière de phase.</p>`
         : ""
     }</div>`);
   }
@@ -749,8 +755,8 @@ function render(report) {
      says out loud which schematic is about to be overwritten. */
   right.push(`<div class="card"><h2>${editing ? "Mettre à jour" : "Garder"}</h2>${
     editing ? `<p class="hint-line" style="margin:0 0 10px">Tu modifies
-      <strong>${escape(editing.name)}</strong>, gardee le
-      ${escape(editing.kept || "")}. Le bouton ecrase ce qui est enregistre.</p>` : ""}
+      <strong>${escape(editing.name)}</strong>, gardée le
+      ${escape(editing.kept || "")}. Le bouton écrase ce qui est enregistré.</p>` : ""}
     <div class="row" id="keep-row">
       <input type="text" id="keep-name"
         value="${escape(editing ? editing.name : report.name)}"
@@ -812,9 +818,9 @@ function render(report) {
      there is only one kind of ring, it is only ever there because somebody put it there,
      and it carries the icon of what travels through it. */
   const legend = inputs.length || outlets.length ? `<p class="legend">${
-    inputs.length ? `<span class="dot in"></span>Par la que ca entre` : ""
+    inputs.length ? `<span class="dot in"></span>Par là que ça entre` : ""
   }${
-    outlets.length ? `<span class="dot out"></span>Par la que ca sort` : ""
+    outlets.length ? `<span class="dot out"></span>Par là que ça sort` : ""
   }<span class="dim">Clique une bande ou un tuyau pour en marquer un autre.</span></p>`
   : `<p class="legend"><span class="dim">Clique une bande ou un tuyau sur l'image pour dire
      par où ça entre et par où ça sort.</span></p>`;
@@ -1060,6 +1066,11 @@ function montrerAccueil(oui) {
     const bloc = $(id);
     if (bloc) bloc.hidden = !oui;
   }
+  /* The paste card folds with them. It holds the code that produced the report, which the
+     reader has no reason to read back, and it was the tallest thing between them and the
+     answer: three hundred and fifty pixels of it on a phone, four hundred and sixty on a
+     desktop. Folded and not emptied, because `run` reads the field again on every pass. */
+  drop.classList.toggle("replie", !oui);
 }
 
 async function run() {
@@ -1202,6 +1213,11 @@ const known = (name) => catalogueOf()?.blocks?.[name]?.size || 1;
 $("build").addEventListener("click", () => enterEditor([]));
 
 $("go").addEventListener("click", run);
+$("deplie").addEventListener("click", () => {
+  drop.classList.remove("replie");
+  text.focus();
+  text.select();
+});
 text.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === "Enter") run();
 });
@@ -1488,8 +1504,8 @@ function wireRun(report, repaint) {
   const clock = () => {
     const seconds = live ? live.world.tick / 60 : 0;
     $("run-clock").textContent = live
-      /* La virgule, comme partout ailleurs sur cette page : « 6.3 s » a cote de
-         « 26,7 / s » se lit comme une faute de frappe. */
+      /* The comma, as everywhere else on this page: « 6.3 s » next to « 26,7 / s »
+         reads as a typo. */
       ? `${seconds.toLocaleString("fr-FR", { minimumFractionDigits: 1,
           maximumFractionDigits: 1 })} s de jeu` : "";
   };
@@ -1598,6 +1614,12 @@ function wireBlocks(report, drawnNow, repaint) {
     });
     looking = hit ? `${hit.x},${hit.y}` : null;
     showBlock(report, hit || null);
+    /* Stacked, the panel sits under the report, so a tap on the picture filled something
+       the reader could not see. Only when stacked: side by side it is already in view, and
+       moving the page under a mouse that did not ask is rude. */
+    if (hit && !matchMedia("(min-width: 861px)").matches) {
+      $("block")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   });
 
   // Marking a block re-runs the analysis, which redraws the page. Without this the panel

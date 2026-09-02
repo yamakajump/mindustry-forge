@@ -319,6 +319,17 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 }
 @media (max-width: 860px) {
   .side { position: static; max-height: none; }
+
+  /* The answer before the tools.
+     Stacked, the left column put the drawing, the run controls, the legend and the block
+     panel above the report: one thousand three hundred and eighty pixels to scroll on a
+     phone before the first figure, on the page whose only job is to give that figure.
+     `display: contents` lifts the column's children into the single-column grid, so the
+     drawing and its legend can stay on top and the rest go under the report. */
+  .split .side { display: contents; }
+  .split .side > * { order: 3; }
+  .split .side > .stage, .split .side > .legend { order: 1; }
+  .split > div:last-child { order: 2; }
 }
 /* `height: auto` is what keeps the drawing square. The renderer sets both dimensions in
    pixels (`render.js`), so `max-width` alone shrank the width against the column and left
@@ -466,6 +477,13 @@ label.file input[type=file] {
   transition: border-color .15s, background .15s;
 }
 .drop.over { border-color: var(--accent); background: #ffd37f0f; }
+
+/* Folded, the card is nothing but the button that opens it again: a dashed frame around a
+   single button is a card announcing itself, and what the reader came for is underneath. */
+.drop .deplie { display: none; }
+.drop.replie { border: 0; padding: 0; background: none; }
+.drop.replie > :not(.deplie) { display: none; }
+.drop.replie .deplie { display: inline-flex; }
 label.lead { display: block; color: var(--dim); font-size: 13px; margin: 0 2px 8px; }
 .drop textarea { min-height: 96px; resize: vertical; }
 
