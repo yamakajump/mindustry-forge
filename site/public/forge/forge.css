@@ -350,6 +350,19 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
   background: var(--panel); border: 2px solid var(--edge);
   border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px;
 }
+/* The new-folder form: one row, each control under its own label.
+   A field is sized for what it holds. The name field took the full width of the page for a
+   name of two words, which is the one thing that made this card look assembled rather than
+   written: everything else on the site sizes its fields. */
+.creer-dossier .rangee {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 14px;
+}
+.creer-dossier .champ-bloc { display: flex; flex-direction: column; gap: 5px; }
+.creer-dossier .champ-bloc label { font-size: 12.5px; color: var(--dim); }
+.creer-dossier #nom { width: 300px; max-width: 100%; }
+.creer-dossier #icone { min-width: 190px; }
+.creer-dossier .note { margin: 12px 0 0; }
+
 .card h2 {
   margin: 0 0 10px; font-size: 12px; letter-spacing: .12em;
   text-transform: uppercase; color: var(--accent); font-weight: 400; opacity: .85;
