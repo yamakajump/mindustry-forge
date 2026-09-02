@@ -91,8 +91,14 @@
 
        The product picker is a grid of links, so it lives outside the form as far as data
        goes: it is the hidden field above that submits it when a constraint is applied. --}}
-  <p class="phrase">
-    {{ __('vitrine.phrase.je-cherche') }}
+  {{-- A div and not a paragraph.
+       It held a `<details>`, and a `<p>` cannot: the parser closes the paragraph the moment
+       it meets one, so the picker, the three clauses and the button were siblings after the
+       `<p>`, not inside it. Every rule written for `.phrase > *` addressed one span, which
+       is why the layout never held together and why the punctuation drifted wherever the
+       line happened to end. Nothing in the markup said so and no test could see it. --}}
+  <div class="phrase">
+    <span class="ph-tete">{{ __('vitrine.phrase.je-cherche') }}</span>
     {{-- Produces what: a single control, and it is the one that carries the images.
 
          There were two, a row of pills and a dropdown, doing exactly the same thing.
@@ -156,7 +162,15 @@
           @endforeach
         </div>
       </details>
-    @endif<span class="ph-virgule">,</span>
+    @endif
+    {{-- One clause per field, and no punctuation between them.
+         The sentence used to carry its own commas and a full stop, in spans. On screen it
+         started with a comma on a line of its own, because the subject sits in a box above
+         it, and ended with a full stop floating three pixels from the button. It also broke
+         wherever the window happened to end, so the punctuation landed somewhere different
+         at every width. A clause is a flex item that never breaks inside itself: the line
+         wraps between clauses or not at all, and there is nothing left to orphan. --}}
+    <span class="clause">
     <span class="ph-suite">{{ __('vitrine.phrase.au-moins') }}</span>
     <span class="champ"><input name="min" id="min" inputmode="numeric" autocomplete="off"
       value="{{ $atLeast ? rtrim(rtrim(number_format($atLeast, 2, '.', ''), '0'), '.') : '' }}"
@@ -173,7 +187,9 @@
       @else
         {{ \App\Support\Thing::name($makes) }}/s
       @endif
-    </span><span class="ph-virgule">,</span>
+    </span>
+    </span>
+    <span class="clause">
     <span class="ph-suite">{{ __('vitrine.phrase.qui-tient-dans') }}</span>
     <span class="champ court"><input name="large" id="large" inputmode="numeric"
       autocomplete="off" value="{{ $fitsWide ?: '' }}" placeholder="20"
@@ -182,7 +198,9 @@
     <span class="champ court"><input name="haut" id="haut" inputmode="numeric"
       autocomplete="off" value="{{ $fitsTall ?: '' }}" placeholder="15"
       aria-label="{{ __('vitrine.contraintes.tient-dans') }}"></span>
-    <span class="ph-unite">{{ __('vitrine.contraintes.unite.tuiles') }}</span><span class="ph-virgule">,</span>
+    <span class="ph-unite">{{ __('vitrine.contraintes.unite.tuiles') }}</span>
+    </span>
+    <span class="clause">
     <span class="ph-suite">{{ __('vitrine.phrase.sur') }}</span>
     <span class="champ"><select name="planete" id="planete"
       aria-label="{{ __('vitrine.contraintes.planete') }}">
@@ -190,10 +208,11 @@
       @foreach($planets as $world)
         <option value="{{ $world }}" @selected($planet === $world)>{{ ucfirst($world) }}</option>
       @endforeach
-    </select></span><span class="ph-point">.</span>
+    </select></span>
+    </span>
 
     <button class="primary" type="submit">{{ __('vitrine.contraintes.chercher') }}</button>
-  </p>
+  </div>
 
   {{-- The constraints, folded away but never hidden: the panel opens by itself as soon as
        a constraint is active, or a reader arriving from a shared link would see a filtered
