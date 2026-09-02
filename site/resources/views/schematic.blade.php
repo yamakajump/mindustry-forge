@@ -416,9 +416,21 @@
 
 <script>
 document.getElementById("copy").addEventListener("click", async (e) => {
-  await navigator.clipboard.writeText(document.getElementById("code").value);
-  e.target.textContent = "Copié";
-  setTimeout(() => { e.target.textContent = "Copier"; }, 1600);
+  /* A refusal is said out loud. Without this catch, a denied write left the button
+     reading "Copier" without a word: on the card whose only gesture this is, the reader
+     could not tell whether the code had gone or not. The field sits right above, so the
+     fallback is to select it: one ctrl+C left to do, rather than a dead end. */
+  const zone = document.getElementById("code");
+  try {
+    await navigator.clipboard.writeText(zone.value);
+    e.target.textContent = "Copié";
+    setTimeout(() => { e.target.textContent = "Copier"; }, 1600);
+  } catch {
+    zone.focus();
+    zone.select();
+    e.target.textContent = "Copie-le avec ctrl+C";
+    setTimeout(() => { e.target.textContent = "Copier"; }, 4000);
+  }
 });
 </script>
 @endsection
