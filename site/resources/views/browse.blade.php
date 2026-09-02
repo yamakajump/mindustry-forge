@@ -65,10 +65,8 @@
       <a class="puce" href="{{ request()->fullUrlWithQuery($chip['clear'] + ['page' => null]) }}"
          title="{{ __('vitrine.puces.retirer') }}">{{ $chip['label'] }} <b>&times;</b></a>
     @endforeach
-    <a class="puce vide" href="{{ request()->fullUrlWithQuery([
-        'large' => null, 'haut' => null, 'min' => null, 'blocs' => null,
-        'planete' => null, 'autonome' => null, 'verifie' => null, 'bloc' => null,
-        'page' => null]) }}">{{ __('vitrine.puces.tout-effacer') }}</a>
+    <a class="puce vide" href="{{ request()->fullUrlWithQuery($clearAll) }}">{{
+      __('vitrine.puces.tout-effacer') }}</a>
   </div>
 @endif
 
@@ -202,13 +200,15 @@
     </span>
     <span class="clause">
     <span class="ph-suite">{{ __('vitrine.phrase.sur') }}</span>
-    <span class="champ"><select name="planete" id="planete"
-      aria-label="{{ __('vitrine.contraintes.planete') }}">
-      <option value="">{{ __('vitrine.contraintes.planete-peu-importe') }}</option>
-      @foreach($planets as $world)
-        <option value="{{ $world }}" @selected($planet === $world)>{{ ucfirst($world) }}</option>
-      @endforeach
-    </select></span>
+    @include('partials.choix', [
+      'nom' => 'planete',
+      'titre' => __('vitrine.contraintes.planete'),
+      'valeur' => $planet,
+      'vide' => __('vitrine.contraintes.peu-importe'),
+      'options' => collect($planets)->map(fn ($world) => [
+        'valeur' => $world, 'libelle' => ucfirst($world), 'famille' => null,
+      ])->all(),
+    ])
     </span>
 
     <button class="primary" type="submit">{{ __('vitrine.contraintes.chercher') }}</button>
@@ -244,19 +244,24 @@
     <div class="row">
       {{-- What has to be brought to it, the site's question the other way round.
 
-           A `<select>` here and a grid of images for "produces what": the difference is
-           not an oversight. The product is the page's main question and is chosen before
-           anything else; this one is a second-rank constraint, inside a folded panel, and
-           a native dropdown keeps typing on the keyboard and the phone's picker there for
-           no screen cost at all. --}}
-      <label class="lead" for="consomme">{{ __('vitrine.contraintes.consomme') }}</label>
-      <select name="consomme" id="consomme">
-        <option value="">{{ __('vitrine.contraintes.consomme-rien') }}</option>
-        @foreach($eatsOnOffer as $need)
-          <option value="{{ $need }}" @selected($eats === $need)>{{
-            \App\Support\Thing::name($need) }}</option>
-        @endforeach
-      </select>
+           The same picker as "produces what", for the same reason: a player recognises
+           pyratite by its sprite before they read the word, and this used to be twenty
+           lines of text in the browser's own list widget, matching nothing else on the
+           page. It is not a copy of that picker: this one is radio buttons, so it posts
+           with the form rather than applying on click, which is what a constraint inside a
+           folded panel should do. --}}
+      @include('partials.choix', [
+        'nom' => 'consomme',
+        'titre' => __('vitrine.contraintes.consomme'),
+        'valeur' => $eats,
+        'vide' => __('vitrine.contraintes.consomme-rien'),
+        'videCourt' => __('vitrine.contraintes.peu-importe'),
+        'options' => collect($eatsOnOffer)->map(fn ($need) => [
+          'valeur' => $need,
+          'libelle' => \App\Support\Thing::name($need),
+          'famille' => \App\Support\Thing::family($need),
+        ])->all(),
+      ])
 
       <label class="coche"><input type="checkbox" name="autonome" value="oui"
         @checked($selfPowered)> {{ __('vitrine.contraintes.autonome') }}</label>

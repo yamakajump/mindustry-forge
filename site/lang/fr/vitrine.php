@@ -70,7 +70,8 @@ return [
         'consomme' => 'Il faut lui amener',
         'consomme-rien' => "peu importe ce qu'il faut lui amener",
         'planete' => 'Planète',
-        'planete-peu-importe' => 'peu importe',
+        // Shared by the planet and the ingredient pickers: both say it, and neither owns it.
+        'peu-importe' => 'peu importe',
         'autonome' => 'autonome en énergie',
         'verifie' => 'vérifié par le banc',
         'chercher' => 'Appliquer',

@@ -30,14 +30,23 @@
         <input id="nom" name="nom" type="text" maxlength="80" required>
       </div>
 
+      {{-- The same picker as the catalogue's filters, and for the same reason: this is a
+           list of the game's items, offered as their own names in a browser dropdown while
+           every other surface on the site draws them. The value it posts keeps its
+           `objet/` prefix, which is what the icon endpoint wants. --}}
       <div class="champ-bloc">
-        <label for="icone">{{ __('dossiers.gestion.icone') }}</label>
-        <select id="icone" name="icone">
-          <option value="">{{ __('dossiers.gestion.sans-icone') }}</option>
-          @foreach($icons as $item)
-            <option value="objet/{{ $item }}">{{ $item }}</option>
-          @endforeach
-        </select>
+        @include('partials.choix', [
+          'nom' => 'icone',
+          'titre' => __('dossiers.gestion.icone'),
+          'valeur' => '',
+          'vide' => __('dossiers.gestion.sans-icone'),
+          'options' => collect($icons)->map(fn ($item) => [
+            'valeur' => 'objet/'.$item,
+            'libelle' => \App\Support\Thing::name($item),
+            'famille' => 'objet',
+            'icone' => $item,
+          ])->all(),
+        ])
       </div>
 
       <button class="primary" type="submit">{{ __('dossiers.gestion.creer') }}</button>

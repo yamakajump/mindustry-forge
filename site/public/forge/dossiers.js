@@ -55,7 +55,9 @@ document.addEventListener("submit", async (event) => {
   const name = form.querySelector("#nom").value.trim();
   if (!name) return;
 
-  const icon = form.querySelector("#icone").value;
+  /* The picker is a group of radios, not a `<select>`: read the one that is checked. The
+     empty option is checked by default and carries "", which is what "no icon" posts. */
+  const icon = form.querySelector('input[name="icone"]:checked')?.value ?? "";
 
   try {
     await send("/api/dossiers", "POST", { name, icon: icon || null });
