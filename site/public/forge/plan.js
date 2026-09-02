@@ -193,6 +193,9 @@ export function plan(catalogue, { item, perMinute, planet = null, choices = {} }
     const count = need / perBlock;
     const whole = Math.ceil(count - SETTLED);
 
+    /** What this step asks of other things, filled by the two loops below. */
+    const edges = [];
+
     steps.push({
       item: current,
       block: source.block,
@@ -209,6 +212,9 @@ export function plan(catalogue, { item, perMinute, planet = null, choices = {} }
       // sized on the average dims the moment the line runs full, and a planner that
       // understates power is a planner that browns out a base.
       power: whole * (block.power || 0),
+      // The same array the loops below push into: the step is already in `steps` by then,
+      // and a reference costs nothing where a second pass would cost a second walk.
+      inputs: edges,
     });
 
     power += whole * (block.power || 0);
@@ -218,13 +224,20 @@ export function plan(catalogue, { item, perMinute, planet = null, choices = {} }
     }
 
     for (const [input, amount] of Object.entries(block.input || {})) {
-      demand[input] = (demand[input] || 0) + amount * craftsPerSecond(block) * count;
+      const asked = amount * craftsPerSecond(block) * count;
+      demand[input] = (demand[input] || 0) + asked;
+      /* Kept on the step and not only added to the total. This is what *this* step asks
+         of that item, which is the number that belongs on an edge of the chain: a smelter
+         fed by two lines does not want half of each, it wants what its recipe says, and a
+         tree drawn with the totals instead invites exactly that mistake. */
+      edges.push({ item: input, perSecond: asked, perMinute: asked * 60 });
     }
     // Liquid rates are stated per second already, so they scale with the count of blocks
     // and never with the craft rate. Multiplying them by crafts a second was how an early
     // reading of the catalogue asked for sixty times the water a line drinks.
     for (const [liquid, rate] of Object.entries(block.input_liquid || {})) {
       liquids[liquid] = (liquids[liquid] || 0) + rate * count;
+      edges.push({ item: liquid, perSecond: rate * count, perMinute: rate * count * 60 });
     }
   }
 
@@ -277,4 +290,65 @@ function empty(item, perMinute) {
         cycles: [],
         assumptions: [],
     };
+}
+
+/**
+ * The chain the computation already walked, kept instead of flattened.
+ *
+ * `plan()` answers with a list of counts, and a list is the half a player cannot build
+ * from: what they need is what feeds what. Sand goes into the smelter, coal goes into the
+ * smelter, coal comes out of a drill, and the shape of that is the shape of the base.
+ *
+ * **The rates are the point, and they are on the edges.** A number on a node is that
+ * thing's total across the whole plan; a number on an edge is what one step asks of it.
+ * They differ as soon as two steps want the same item, which is most plans worth drawing,
+ * and drawing the total on an edge is how somebody sizes a belt for a factory that is only
+ * asking for half of it.
+ *
+ * **It is a graph and it is drawn as a tree.** Coal feeds the smelter and the graphite
+ * press both; laid out as a tree, coal appears twice. Repeating the whole subtree under it
+ * would state the drill count twice and invite adding them up, so the second appearance is
+ * marked `repris` and carries no children. The first one carries them, and the raw totals
+ * at the bottom of `plan()` are where the sum lives.
+ *
+ * **It stops where `plan()` stops**, at what comes out of the ground. A root under a drill
+ * would be a root that means nothing.
+ */
+export function chaine(result) {
+  const byItem = new Map((result.steps || []).map((step) => [step.item, step]));
+  const raw = new Map((result.raw || []).map((one) => [one.resource, one]));
+  const seen = new Set();
+
+  const node = (item, perSecond) => {
+    const brut = raw.get(item);
+    if (brut) {
+      return {
+        item, perSecond, perMinute: perSecond * 60, kind: "raw",
+        // The whole plan's demand for it, which is what the drills at the bottom answer.
+        total: brut.perSecond, options: brut.options, inputs: [],
+      };
+    }
+
+    const step = byItem.get(item);
+    if (!step) return { item, perSecond, perMinute: perSecond * 60, kind: "unknown", inputs: [] };
+
+    if (seen.has(item)) {
+      return {
+        item, perSecond, perMinute: perSecond * 60, kind: "repris",
+        block: step.block, total: step.need, inputs: [],
+      };
+    }
+    seen.add(item);
+
+    return {
+      item, perSecond, perMinute: perSecond * 60, kind: "fait",
+      block: step.block, count: step.count, whole: step.whole, load: step.load,
+      total: step.need,
+      inputs: (step.inputs || []).map((edge) => node(edge.item, edge.perSecond)),
+    };
+  };
+
+  if (!result.target?.item) return null;
+
+  return node(result.target.item, result.target.perSecond);
 }

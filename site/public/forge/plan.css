@@ -63,3 +63,17 @@
 
 /* The rows now carry icons, so they no longer line up on the baseline of text alone. */
 #sortie .line { align-items: center; }
+
+/* The chain: nested lists, and the indentation is the tree.
+   A drawing would be prettier and unreadable at 380 pixels, which is where this page is
+   read. The rule down the left is what makes a level legible without counting spaces. */
+.plan-chaine, .plan-chaine ul { list-style: none; margin: 0; padding: 0; }
+.plan-chaine ul {
+  margin-left: 11px; padding-left: 13px; border-left: 1px solid var(--edge);
+}
+.plan-noeud > .line { padding: 4px 0; }
+/* What it takes, in front of the rate, because the count is the reason the line is read. */
+.plan-combien { color: var(--ink); font-weight: 500; margin-right: 8px; }
+.plan-dit { color: var(--dim); font-style: normal; font-size: 11.5px; margin-right: 8px; }
+/* Already counted higher up: said, and dimmed, so nobody adds it to the one above. */
+.plan-repris > .line { opacity: .62; }
