@@ -369,6 +369,7 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
      renamed or a size that came back as a string falls back to the default instead of
      leaving a control nobody can find again. */
   const startTool = recall("editeur.outil", TOOLS[0].key, TOOLS.map((t) => t.key));
+  const startTab = recall("editeur.onglet", "build", ["build", "ground"]);
   const startSize = recallNumber("editeur.taille", 1, 1, 9);
   const startFade = recallNumber("editeur.transparence", 35, 0, 100);
 
@@ -720,8 +721,17 @@ export function mountRail({ host, catalogue, onPick, onTab, onBrush }) {
 
   host.querySelector(".editor-tabs").addEventListener("click", (event) => {
     const tab = event.target.closest("[data-tab]");
-    if (tab) showTab(tab.dataset.tab);
+    if (!tab) return;
+    showTab(tab.dataset.tab);
+    remember("editeur.onglet", tab.dataset.tab);
   });
+
+  /* Somebody laying a field of sand opens on SOL every time and was sent to BÂTIR every
+     time. Applied here rather than in the markup, so the two buttons still ship pressed and
+     unpressed the way a page with no script would want them, and `showTab` does the whole
+     switch it always did: the panel, the search, the fade, and the callback that melts the
+     blocks. */
+  if (startTab === "ground") showTab("ground");
 
   groundPanel.querySelector(".tools").addEventListener("click", (event) => {
     const button = event.target.closest("[data-tool]");
