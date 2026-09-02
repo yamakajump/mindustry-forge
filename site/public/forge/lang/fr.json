@@ -12,6 +12,8 @@
   "analyse.besoins.titre": "Il lui faut",
   "analyse.besoins.tuyau": "tuyau",
   "analyse.besoins.tuyaux": "tuyaux",
+  "analyse.bloc.retirer-aide": "Le retirer refait l'analyse sans lui, pour voir ce qu'il apportait. Le schéma d'origine n'est pas touché.",
+  "analyse.bloc.retirer-titre": "Le retire du plan et refait l'analyse sans lui",
   "analyse.completer.envoye": "Proposé",
   "analyse.completer.envoyer": "Proposer ce branchement",
   "analyse.completer.marque-dabord": "Marque d'abord une entrée",
