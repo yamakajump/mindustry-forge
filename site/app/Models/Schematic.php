@@ -478,6 +478,21 @@ class Schematic extends Model
     }
 
     /**
+     * The author's own words, cleaned the same way their title is.
+     *
+     * Two hundred and twenty-four of the collected descriptions carry the game's colour
+     * markup, for the same reason a thousand names do: they were written inside the game.
+     * Stripping the title and printing the description raw made one page show both.
+     *
+     * The edit form shows the raw text, exactly as it does for the name: somebody rewriting
+     * their own description has to see what they wrote.
+     */
+    public function displayDescription(): string
+    {
+        return GameMarkup::strip((string) $this->description);
+    }
+
+    /**
      * What a tile should print about what it makes, biggest first.
      *
      * The ceiling when there is one, because that is what the listing filters and ranks on:

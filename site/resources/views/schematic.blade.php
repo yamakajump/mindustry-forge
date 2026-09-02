@@ -178,19 +178,19 @@
       <div class="card notice">
         <h2>Schéma importé</h2>
         <p>
-          Récupérée sur
+          Récupéré sur
           @if($schematic->sourceUrl())
             <a href="{{ $schematic->sourceUrl() }}" rel="noopener nofollow"
                target="_blank">{{ $schematic->sourceName() ?? $schematic->source }}</a>,
           @else
             {{ $schematic->sourceName() ?? $schematic->source }},
           @endif
-          ou {{ $schematic->credit() }} l'a publié. Il ne vient pas d'ici et
+          où {{ $schematic->credit() }} l'a publié. Il ne vient pas d'ici et
           personne ne l'a relu&nbsp;: il peut être incomplet, cassé, ou fait pour
           une version du jeu qui n'est plus la nôtre.
         </p>
         <p>
-          Les chiffres ci-dessous sont ce que l'analyse en deduit, pas une promesse de
+          Les chiffres ci-dessous sont ce que l'analyse en déduit, pas une promesse de
           l'auteur.
           @if($schematic->verified)
             Celui-là a été rejoué sur un vrai serveur.
@@ -199,13 +199,28 @@
           @endif
         </p>
         @if($schematic->fetched_at)
-          <p class="hint-line">Récupérée le {{ $schematic->fetched_at->format('d/m/Y') }}.</p>
+          <p class="hint-line">Récupéré le {{ $schematic->fetched_at->format('d/m/Y') }}.</p>
         @endif
       </div>
     @endif
 
+    {{-- Somebody else's words, in a frame that says so.
+         Printed bare between the site's own cards, a description reads like something this
+         page computed. Plenty of them imitate one: the schematic that prompted this one
+         opens with "Input: 22 Sand/s / 11 Coal/s" in English, three cards above the site's
+         own answer to that exact question, in French, which may well disagree with it.
+
+         Fifteen thousand of these arrived from other catalogues and none was written for
+         this page: one is a line, one is sixteen thousand characters, one is ASCII art. So
+         the frame promises nothing about the shape inside it and simply gives the long ones
+         somewhere to scroll, which is the only treatment all four survive. --}}
     @if($schematic->description)
-      <p class="desc">{{ $schematic->description }}</p>
+      <div class="card auteur">
+        <h2>Ce qu'en dit {{ $schematic->credit() }}</h2>
+        <p class="desc">{{ $schematic->displayDescription() }}</p>
+        <p class="hint-line">Ses mots, pas une mesure de Forge. Les chiffres de cette page
+          sont plus bas.</p>
+      </div>
     @endif
 
     {{-- A sandbox tap is said, never given a figure.

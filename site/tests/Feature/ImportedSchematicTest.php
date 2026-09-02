@@ -200,3 +200,50 @@ it('changes version as soon as an engine source changes', function () {
     expect($after)->not->toBe($before)
         ->and(EngineVersion::compute())->not->toBe($after);
 });
+
+/*
+ * The author's own description.
+ *
+ * Fifteen thousand of them arrived from other catalogues, written for other pages, and
+ * plenty imitate a data panel: "Input: 22 Sand/s" in English, printed bare between this
+ * site's own cards, three of them above this site's own answer to the same question, in
+ * French, which may well disagree with it. A reader has no way to tell one from the other.
+ */
+it('frames a description as its author\'s words, not as a measurement', function () {
+    $imported = Schematic::factory()->imported()->create([
+        'visibility' => 'public', 'author' => 'lorD',
+        'description' => "Input:\n22 Sand/s\n\nOutput:\n11 Silicon/s",
+    ]);
+
+    $this->get("/s/{$imported->slug}")
+        ->assertOk()
+        ->assertSee("Ce qu'en dit lorD", escape: false)
+        ->assertSee('22 Sand/s')
+        // Said next to it, because the figures look exactly like the ones this site makes.
+        ->assertSee('pas une mesure de Forge');
+});
+
+it('cleans a description the way it cleans a title', function () {
+    /* Two hundred and twenty-four of the collected descriptions carry the game's colour
+       markup, for the same reason a thousand names do: they were written inside the game.
+       Stripping the title and printing the description raw showed both on one page. */
+    $imported = Schematic::factory()->imported()->create([
+        'visibility' => 'public',
+        'name' => '[accent]Presse',
+        'description' => '[accent]Silicium[] par seconde',
+    ]);
+
+    $page = $this->get("/s/{$imported->slug}")->assertOk();
+
+    $page->assertSee('Silicium par seconde')->assertDontSee('[accent]');
+    // And a bracket that is not a colour is text, exactly as it is in a title.
+    expect($imported->fresh()->description)->toContain('[accent]');
+});
+
+it('does not open an author card when there is no description', function () {
+    $bare = Schematic::factory()->imported()->create([
+        'visibility' => 'public', 'description' => null,
+    ]);
+
+    $this->get("/s/{$bare->slug}")->assertOk()->assertDontSee("Ce qu'en dit", escape: false);
+});
