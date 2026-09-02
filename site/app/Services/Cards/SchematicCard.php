@@ -66,7 +66,7 @@ class SchematicCard extends Card
         $power = round($schematic->power_made - $schematic->power_used);
         if (abs($power) >= 1 || $schematic->power_used > 0) {
             $lines[] = [
-                ($power > 0 ? '+' : '').$this->number($power).' energie / s',
+                ($power > 0 ? '+' : '').$this->number($power).' énergie / s',
                 $power < 0 ? self::BAD : self::GOOD,
             ];
         }

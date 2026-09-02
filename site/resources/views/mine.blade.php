@@ -15,7 +15,7 @@
 
 @section('body')
 <h1 class="title">Mes schémas</h1>
-<p class="sub">Tout ce que tu as garde. Publie ce que tu veux montrer, garde le reste.</p>
+<p class="sub">Tout ce que tu as gardé. Publie ce que tu veux montrer, garde le reste.</p>
 
 @if($schematics->isEmpty())
   <div class="card">
@@ -36,15 +36,15 @@
             {{-- Drawn in the browser from the schematic's own code, exactly as the catalogue
                  does it. A stored preview is written when somebody saves their own work from
                  the analyser; anything imported has none, and this page showed every one of
-                 them as an empty black panel saying "pas d'apercu" - on the page where a
+                 them as an empty black panel saying "pas d'aperçu" - on the page where a
                  member looks for their own schematics and recognises them by their shape.
 
                  Same cap as the catalogue: past 16 kB the tile carries its slug and fetches
                  its own code once it comes into view. --}}
             @if(strlen($schematic->code) <= 16384)
-              <div class="noimg" data-code="{{ $schematic->code }}">pas d'apercu</div>
+              <div class="noimg" data-code="{{ $schematic->code }}">pas d'aperçu</div>
             @else
-              <div class="noimg" data-slug="{{ $schematic->slug }}">pas d'apercu</div>
+              <div class="noimg" data-slug="{{ $schematic->slug }}">pas d'aperçu</div>
             @endif
           @endif
           <h3>{{ $schematic->displayName() }}</h3>

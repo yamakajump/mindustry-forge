@@ -11,7 +11,7 @@
 return [
     'barre' => [
         'analyser' => 'Analyser',
-        'editer' => 'Editer',
+        'editer' => 'Éditer',
         'schematiques' => 'Schémas',
         'outils' => 'Outils',
         'blocs' => 'Blocs',
