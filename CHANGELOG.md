@@ -1,5 +1,62 @@
 # Changelog
 
+## [0.4.0](https://github.com/yamakajump/mindustry-forge/compare/v0.3.1...v0.4.0) (2026-09-02)
+
+
+### Features
+
+* **catalogue:** browse the blocks instead of naming one ([#243](https://github.com/yamakajump/mindustry-forge/issues/243)) ([971c45a](https://github.com/yamakajump/mindustry-forge/commit/971c45aadf01cb8d5a32b6137f5209c101d97d9b))
+* **contribution:** give the API the screens it never had ([#246](https://github.com/yamakajump/mindustry-forge/issues/246)) ([58bc5ed](https://github.com/yamakajump/mindustry-forge/commit/58bc5edcf9be9dd2a9c964372e49244b4fd66430))
+* **editor:** filter the floor palette by planet ([#167](https://github.com/yamakajump/mindustry-forge/issues/167)) ([2cd4aa6](https://github.com/yamakajump/mindustry-forge/commit/2cd4aa695dbe1319ee4c8f2eaf60ec9d285aab61))
+* **editor:** open on Serpulo, and remember what was chosen ([#206](https://github.com/yamakajump/mindustry-forge/issues/206)) ([ef8d17f](https://github.com/yamakajump/mindustry-forge/commit/ef8d17f3142ebdec129994485633f061bd0dedca)), closes [#171](https://github.com/yamakajump/mindustry-forge/issues/171)
+* **editor:** say how to get a plan out of the editor ([#234](https://github.com/yamakajump/mindustry-forge/issues/234)) ([e2e3a6f](https://github.com/yamakajump/mindustry-forge/commit/e2e3a6f4e49299b015c86a497d50b6f76c00ca1f))
+* **engine:** charge a battery carried as cargo ([#166](https://github.com/yamakajump/mindustry-forge/issues/166)) ([6459b45](https://github.com/yamakajump/mindustry-forge/commit/6459b456933e06c0df4df90c44afd4daf3f8637d)), closes [#122](https://github.com/yamakajump/mindustry-forge/issues/122)
+* **memory:** remember the rail's tab and the sort ([#248](https://github.com/yamakajump/mindustry-forge/issues/248)) ([d6313e8](https://github.com/yamakajump/mindustry-forge/commit/d6313e8908bccaa16628e23b1cdfdd1eb9bdf329))
+* **planner:** keep the chain the plan already walks ([#244](https://github.com/yamakajump/mindustry-forge/issues/244)) ([73ee0c6](https://github.com/yamakajump/mindustry-forge/commit/73ee0c6bfa31f812ef3a51813e52847bc4b49d1d))
+* **render:** say on the plan how each block is doing ([#245](https://github.com/yamakajump/mindustry-forge/issues/245)) ([e9a3017](https://github.com/yamakajump/mindustry-forge/commit/e9a3017451905270a3f588a059f8ddb7eef077a7))
+* **schematic:** draw the marks its author left ([#226](https://github.com/yamakajump/mindustry-forge/issues/226)) ([5ed496a](https://github.com/yamakajump/mindustry-forge/commit/5ed496adabd70aec33b4d1a45bb7fce98b0a1e42))
+* **schematic:** offer to open the plan where somebody lands ([#237](https://github.com/yamakajump/mindustry-forge/issues/237)) ([9e4df67](https://github.com/yamakajump/mindustry-forge/commit/9e4df67ab009636f1bb502cda4719a26799e4f3b))
+* **seo:** give every page one canonical address ([#159](https://github.com/yamakajump/mindustry-forge/issues/159)) ([ca2f440](https://github.com/yamakajump/mindustry-forge/commit/ca2f44034ccb3877f254eab0d460b91dff2a2ac8))
+* **seo:** list the site's pages in a sitemap ([#157](https://github.com/yamakajump/mindustry-forge/issues/157)) ([4b9b5da](https://github.com/yamakajump/mindustry-forge/commit/4b9b5da0d72ef32f05265f5d8aff81470e59126f))
+* **seo:** name a filtered listing by its filter ([#160](https://github.com/yamakajump/mindustry-forge/issues/160)) ([f546d38](https://github.com/yamakajump/mindustry-forge/commit/f546d38c1bf9d87bb2ba829e9ee1ede28583fcf7))
+* show the blocks, drop the silhouette ([#212](https://github.com/yamakajump/mindustry-forge/issues/212)) ([685276f](https://github.com/yamakajump/mindustry-forge/commit/685276f93657c22b85bf50a68cc00bd1351abb1a)), closes [#200](https://github.com/yamakajump/mindustry-forge/issues/200)
+* **site:** ask in the site's own voice ([#213](https://github.com/yamakajump/mindustry-forge/issues/213)) ([4acaf59](https://github.com/yamakajump/mindustry-forge/commit/4acaf59a4b4c0dfa6a7fde5955bc17492bb31539)), closes [#177](https://github.com/yamakajump/mindustry-forge/issues/177)
+* **site:** give power a mark of its own ([#209](https://github.com/yamakajump/mindustry-forge/issues/209)) ([74a6ecf](https://github.com/yamakajump/mindustry-forge/commit/74a6ecf86cdb47f53953848a4e563d16c1f3ea11)), closes [#186](https://github.com/yamakajump/mindustry-forge/issues/186)
+* **site:** state every rate per second, like the game ([#211](https://github.com/yamakajump/mindustry-forge/issues/211)) ([9ac4738](https://github.com/yamakajump/mindustry-forge/commit/9ac4738d53df42dd8819f8772b73f2441a208809)), closes [#185](https://github.com/yamakajump/mindustry-forge/issues/185)
+* **site:** take the power mark from the game ([#224](https://github.com/yamakajump/mindustry-forge/issues/224)) ([5831ace](https://github.com/yamakajump/mindustry-forge/commit/5831acedf4792a855b4d9114389f8a2cf5a39ddf)), closes [#220](https://github.com/yamakajump/mindustry-forge/issues/220)
+* **ui:** show the thing in the pickers that hid it ([#242](https://github.com/yamakajump/mindustry-forge/issues/242)) ([ee7dadd](https://github.com/yamakajump/mindustry-forge/commit/ee7daddf4a223ae4473472d2a68ba0d6f97ffce9))
+
+
+### Bug Fixes
+
+* **analyser:** put the answer above the tools ([#251](https://github.com/yamakajump/mindustry-forge/issues/251)) ([9a425f6](https://github.com/yamakajump/mindustry-forge/commit/9a425f65e654790d932ebb34b6ab6134406ebc4a))
+* **analyser:** run the simulation as if plugged in ([#208](https://github.com/yamakajump/mindustry-forge/issues/208)) ([ce2f468](https://github.com/yamakajump/mindustry-forge/commit/ce2f468bc7f1a4e716135fb2af0e9555d489212f)), closes [#181](https://github.com/yamakajump/mindustry-forge/issues/181)
+* **bench:** join the scenario list to what was measured ([#162](https://github.com/yamakajump/mindustry-forge/issues/162)) ([7cea113](https://github.com/yamakajump/mindustry-forge/commit/7cea11385337bc38734c90e7b2b44abb30558681)), closes [#132](https://github.com/yamakajump/mindustry-forge/issues/132)
+* **css:** give two forms the rhythm of the site ([#241](https://github.com/yamakajump/mindustry-forge/issues/241)) ([66251fd](https://github.com/yamakajump/mindustry-forge/commit/66251fda913dffdcd658f1bcdbf53668e5c6737a))
+* **editeur:** keep the workbench when analysing a frame ([#163](https://github.com/yamakajump/mindustry-forge/issues/163)) ([f615a2a](https://github.com/yamakajump/mindustry-forge/commit/f615a2a4f82550442ec39aedc39a8e4516b4b670)), closes [#121](https://github.com/yamakajump/mindustry-forge/issues/121)
+* **editor:** erase the layer being edited, not the whole tile ([#207](https://github.com/yamakajump/mindustry-forge/issues/207)) ([77030da](https://github.com/yamakajump/mindustry-forge/commit/77030da82c7681c6ec46b6e44cc7b84620d252c3)), closes [#176](https://github.com/yamakajump/mindustry-forge/issues/176)
+* **editor:** name the ground tools and unstack its sliders ([#235](https://github.com/yamakajump/mindustry-forge/issues/235)) ([083ac48](https://github.com/yamakajump/mindustry-forge/commit/083ac48972b3d69438dc3c5a1067ef0ea1c87b8b))
+* **editor:** turn a bridge's arrow with the selection ([#228](https://github.com/yamakajump/mindustry-forge/issues/228)) ([ea4ed5f](https://github.com/yamakajump/mindustry-forge/commit/ea4ed5fba5057eec574263ee00d348ade9e5bfc0)), closes [#227](https://github.com/yamakajump/mindustry-forge/issues/227)
+* eight defects from the first pass over the site ([#202](https://github.com/yamakajump/mindustry-forge/issues/202)) ([b382750](https://github.com/yamakajump/mindustry-forge/commit/b382750beaedd30572dd8a8c586802d9255b06e3)), closes [#199](https://github.com/yamakajump/mindustry-forge/issues/199)
+* French names, and the last of the minutes ([#216](https://github.com/yamakajump/mindustry-forge/issues/216)) ([7f2bb1a](https://github.com/yamakajump/mindustry-forge/commit/7f2bb1a5e994754b02a39805028500104a1938f1)), closes [#215](https://github.com/yamakajump/mindustry-forge/issues/215)
+* give the test suite the memory it now needs ([#165](https://github.com/yamakajump/mindustry-forge/issues/165)) ([0633e79](https://github.com/yamakajump/mindustry-forge/commit/0633e79189cd13b130fe6a60da681279700a1c45))
+* **home:** a real schematic, and a headline in French ([#210](https://github.com/yamakajump/mindustry-forge/issues/210)) ([a3ddc04](https://github.com/yamakajump/mindustry-forge/commit/a3ddc041c9d7d2506e310fda670e0e56e62ed338)), closes [#190](https://github.com/yamakajump/mindustry-forge/issues/190)
+* **interface:** the details a reader trips on ([#250](https://github.com/yamakajump/mindustry-forge/issues/250)) ([281477b](https://github.com/yamakajump/mindustry-forge/commit/281477b74394690f191cbd32f5da2e8b41c93ba5))
+* **lang:** accent the report and the error messages ([#239](https://github.com/yamakajump/mindustry-forge/issues/239)) ([0079c07](https://github.com/yamakajump/mindustry-forge/commit/0079c076a24ea7888cf74144889da425ae5fca4b))
+* **lang:** give back the accents fifty sentences had lost ([#233](https://github.com/yamakajump/mindustry-forge/issues/233)) ([51da698](https://github.com/yamakajump/mindustry-forge/commit/51da698f153b8b11ae755741fbf42378acda5a5b))
+* **lang:** write the accents, as the rule says ([#223](https://github.com/yamakajump/mindustry-forge/issues/223)) ([aed4176](https://github.com/yamakajump/mindustry-forge/commit/aed4176c3ed0d9427c66ac4f212e7465a699641b)), closes [#222](https://github.com/yamakajump/mindustry-forge/issues/222)
+* **render:** centre a vent's mark on the square it belongs to ([#232](https://github.com/yamakajump/mindustry-forge/issues/232)) ([240f79f](https://github.com/yamakajump/mindustry-forge/commit/240f79f9a99e1f117fa2668f6c53b007fd006ac7))
+* **render:** close the seams between painted tiles ([#205](https://github.com/yamakajump/mindustry-forge/issues/205)) ([9938b92](https://github.com/yamakajump/mindustry-forge/commit/9938b92499ade9d861ca2f7d33bbb3897c98e9e5)), closes [#174](https://github.com/yamakajump/mindustry-forge/issues/174)
+* **render:** draw a steam vent the way the game draws it ([#230](https://github.com/yamakajump/mindustry-forge/issues/230)) ([e518cd4](https://github.com/yamakajump/mindustry-forge/commit/e518cd4787673893723bf4074cf2176382db75aa)), closes [#175](https://github.com/yamakajump/mindustry-forge/issues/175)
+* **render:** draw ore submerged under a liquid ([#164](https://github.com/yamakajump/mindustry-forge/issues/164)) ([886299b](https://github.com/yamakajump/mindustry-forge/commit/886299bc38d7ac03d68540cc0cbb06a18a350f78)), closes [#118](https://github.com/yamakajump/mindustry-forge/issues/118)
+* **render:** draw the vent marks after the floors ([#231](https://github.com/yamakajump/mindustry-forge/issues/231)) ([0a9a0c0](https://github.com/yamakajump/mindustry-forge/commit/0a9a0c06af57d661eb9eb8c315776bee2970f249))
+* **report:** say the names the game says, and the rest ([#249](https://github.com/yamakajump/mindustry-forge/issues/249)) ([6200584](https://github.com/yamakajump/mindustry-forge/commit/62005849fbd23451fa6c67f5346dd652ba6b6b1b))
+* **schema:** route text through translation keys ([#161](https://github.com/yamakajump/mindustry-forge/issues/161)) ([a021b49](https://github.com/yamakajump/mindustry-forge/commit/a021b4937ce2a14ee3657feebbc8690fbbb9661a))
+* **schematic:** accent the sentence about power ([#225](https://github.com/yamakajump/mindustry-forge/issues/225)) ([76e8f97](https://github.com/yamakajump/mindustry-forge/commit/76e8f9789b531ab9c0f4e2628a1f3a14ff27ced5))
+* **schematic:** show what it makes and what it needs ([#221](https://github.com/yamakajump/mindustry-forge/issues/221)) ([cb8b7ec](https://github.com/yamakajump/mindustry-forge/commit/cb8b7ece5df67059a1da99ec89700129d2e9b33d)), closes [#217](https://github.com/yamakajump/mindustry-forge/issues/217)
+* **site:** frame a description, hold the search line ([#240](https://github.com/yamakajump/mindustry-forge/issues/240)) ([16db35c](https://github.com/yamakajump/mindustry-forge/commit/16db35c4b3d25a7c79f442d718a516463e0c87d0))
+* three answers the analysis gave wrong ([#204](https://github.com/yamakajump/mindustry-forge/issues/204)) ([6c94a33](https://github.com/yamakajump/mindustry-forge/commit/6c94a33ffbe9ae2bf0237efb6229bb85f7492348)), closes [#184](https://github.com/yamakajump/mindustry-forge/issues/184)
+
 ## [0.3.1](https://github.com/yamakajump/mindustry-forge/compare/v0.3.0...v0.3.1) (2026-08-28)
 
 
