@@ -80,6 +80,7 @@ const HOMOGRAPHES = new Set([
   "dilate",   // "se dilate" against "dilaté"
   "annonce",  // "sa page annonce" against "annoncé"
   "touche",   // "la touche I" against "touché"
+  "alimentes", // "si tu les alimentes" against "alimentés"
   "alimente", // "ce qui l'alimente" against "alimenté"
   "enregistre", // "il l'enregistre" against "enregistré"
   "aime",     // "j'aime" against "aimé"
@@ -141,6 +142,64 @@ const lire = (chemin) => readFileSync(new URL(chemin, racine), "utf8");
 
 /** Script and style hold code, and code is written in English. */
 const sansCode = (source) => source.replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, " ");
+
+/**
+ * Every string literal of a piece of JavaScript, read character by character.
+ *
+ * A regular expression cannot pair the quotes: a `${...}` hole carries backticks of its
+ * own, so the pair after it starts in the wrong place and everything downstream of the
+ * first nested literal is read as code. On `index.html` that regexp saw 57 strings where
+ * there are 752, and the whole report is built inside one of the literals it lost, which
+ * is how « Par la que ca entre » sat under the picture on the busiest page of the site.
+ *
+ * The pieces of a template literal come back separately, one per run of text between two
+ * holes, which is what this file wants anyway: a hole is not French.
+ */
+export function stringsIn(source) {
+  const out = [];
+  const holes = [];
+  let i = 0;
+  let start = -1;
+  let quote = "";
+  while (i < source.length) {
+    const c = source[i];
+    if (!quote) {
+      /* Comments, outside a string: an apostrophe in one would otherwise open a literal
+         that swallows the rest of the file. */
+      if (c === "/" && source[i + 1] === "/") {
+        const stop = source.indexOf("\n", i);
+        if (stop < 0) break;
+        i = stop;
+        continue;
+      }
+      if (c === "/" && source[i + 1] === "*") {
+        const stop = source.indexOf("*/", i);
+        if (stop < 0) break;
+        i = stop + 2;
+        continue;
+      }
+      if (c === "'" || c === '"' || c === "`") { quote = c; start = i + 1; i++; continue; }
+      /* The closing brace of a `${...}`, which puts us back inside the template. */
+      if (c === "}" && holes.length) { quote = holes.pop(); start = i + 1; i++; continue; }
+      i++;
+      continue;
+    }
+    if (c === "\\") { i += 2; continue; }
+    if (quote === "`" && c === "$" && source[i + 1] === "{") {
+      out.push(source.slice(start, i));
+      holes.push(quote);
+      quote = "";
+      i += 2;
+      continue;
+    }
+    if (c === quote) { out.push(source.slice(start, i)); quote = ""; i++; continue; }
+    /* An unterminated quote is a division sign or an apostrophe in prose, not a string. */
+    if (quote !== "`" && c === "\n") { quote = ""; i++; continue; }
+    i++;
+  }
+
+  return out;
+}
 
 /**
  * Everything a player reads, with where it was found.
@@ -212,8 +271,9 @@ function chaines() {
   const litteraux = (source) => [
     ...source.matchAll(/"((?:[^"\\\n]|\\.)*)"/g),
     ...source.matchAll(/'((?:[^'\\\n]|\\.)*)'/g),
-    ...source.matchAll(/`((?:[^`\\]|\\.)*)`/g),
   ].map(([, texte]) => texte).filter((texte) => FRANCAIS.test(texte));
+
+  const litterauxJs = (source) => stringsIn(source).filter((texte) => FRANCAIS.test(texte));
 
   const sansCommentaire = (source) => source
     .replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
@@ -222,9 +282,11 @@ function chaines() {
     for (const entree of readdirSync(new URL(dossier, racine), { withFileTypes: true })) {
       if (entree.isDirectory()) walk(`${dossier}${entree.name}/`, suffixe, `${prefixe}${entree.name}/`);
       else if (entree.name.endsWith(suffixe)) {
-        for (const texte of litteraux(sansCommentaire(lire(`${dossier}${entree.name}`)))) {
-          prendre(texte, `${prefixe}${entree.name}`);
-        }
+        const source = lire(`${dossier}${entree.name}`);
+        const lus = suffixe === ".js"
+          ? litterauxJs(source)
+          : litteraux(sansCommentaire(source));
+        for (const texte of lus) prendre(texte, `${prefixe}${entree.name}`);
       }
     }
   };
@@ -233,7 +295,14 @@ function chaines() {
 
   for (const nom of ["public/index.html", "public/outils/logique.html",
     "public/outils/planificateur.html"]) {
-    for (const texte of litteraux(sansCommentaire(lire(nom)))) prendre(texte, nom);
+    /* The script, read as script. These three pages carry their code inline, and it is
+       where the sentences are: the report is assembled in template literals, nine tenths
+       of what a player reads on the busiest page of the site. */
+    const source = lire(nom);
+    for (const [, code] of source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
+      for (const texte of litterauxJs(code)) prendre(texte, nom);
+    }
+    for (const texte of litteraux(sansCommentaire(sansCode(source)))) prendre(texte, nom);
   }
 
   return trouvees;
@@ -278,4 +347,20 @@ test("it sees a missing accent, and lets a real homograph through", () => {
   assert.deepEqual(juger("le réseau est plein"), []);
   // "compte" is a verb as often as it is a past participle, so it stays out of the way.
   assert.deepEqual(juger("le programme en compte trois"), []);
+});
+
+test("it reads a string that lives inside a template hole", () => {
+  /* The shape that hid five missing accents on the busiest page of the site. Pairing
+     backticks with a regexp, the second one here closes against the backtick opened inside
+     the hole, and everything after it is read as code. */
+  const source = "const a = `debut ${x ? `dedans, la ou ca compte` : \"\"} fin`;";
+
+  assert.deepEqual(stringsIn(source), ["debut ", "dedans, la ou ca compte", "", " fin"]);
+});
+
+test("it does not take an apostrophe in a comment for a quote", () => {
+  // Without this, a comment saying "l'ordre" opens a literal that eats the rest of the file.
+  const source = "// ce qui suit n'est pas une chaine\nconst b = \"une vraie\";";
+
+  assert.deepEqual(stringsIn(source), ["une vraie"]);
 });
