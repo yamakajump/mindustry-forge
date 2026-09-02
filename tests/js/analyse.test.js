@@ -119,7 +119,7 @@ test("an unknown block blocks its tile rather than vanishing", async () => {
 
 test("something that is not a schematic is refused by name", async () => {
   await assert.rejects(() => analyse(Buffer.from("pas une schematique").toString("base64")),
-    /schematique Mindustry/);
+    /schématique Mindustry/);
 });
 
 test("text that is not base64 is refused by name", async () => {

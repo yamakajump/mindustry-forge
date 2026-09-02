@@ -17,12 +17,12 @@
      both / and /editer, so og:url says / even when /editer is the link being shared: an
      editor link unfurls with the analyser's thumbnail. One line to fix the day the editor
      deserves a thumbnail of its own, and worth knowing before discovering it. -->
-<meta name="description" content="Colle un schéma Mindustry, sache ce qu'il produit vraiment et ou il coince.">
+<meta name="description" content="Colle un schéma Mindustry, sache ce qu'il produit vraiment et où il coince.">
 <meta property="og:site_name" content="Mindustry Forge">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Forge - analyser un schéma Mindustry">
-<meta property="og:description" content="Colle un schéma Mindustry, sache ce qu'il produit vraiment et ou il coince.">
+<meta property="og:description" content="Colle un schéma Mindustry, sache ce qu'il produit vraiment et où il coince.">
 <meta property="og:url" content="https://mindustryforge.com/">
 <meta property="og:image" content="https://mindustryforge.com/og.jpg">
 <meta property="og:image:width" content="1200">
@@ -503,7 +503,7 @@ function render(report) {
 
   if (answered) right.push(`<div class="card"><h2>${
     report.sealed || report.selfFed ? "Avec ses propres sources"
-    : report.fedItself ? "Branché comme il est" : "Avec ce que tu as indique"}</h2>${
+    : report.fedItself ? "Branché comme il est" : "Avec ce que tu as indiqué"}</h2>${
     power.made > 0.01
       ? `<div class="out-rate" style="color:var(--accent)">${bolt}
            <b>${rate(power.net)}</b><span>energie / s &nbsp;<span style="color:var(--dim)">
@@ -515,7 +515,7 @@ function render(report) {
   }${
     !made.length && power.made <= 0.01
       ? `<p class="empty">Rien tant qu'on ne lui donne rien. Indique un apport
-         au-dessus pour voir ce que ca donne.</p>`
+         au-dessus pour voir ce que ça donne.</p>`
       : ""
   }${
     power.made <= 0.01 && power.spent > 0.01
@@ -535,7 +535,7 @@ function render(report) {
         `<div class="line"><span>${withIcon(item)}${escape(item)}</span>
           <span class="num">${perSecond(n)} / s</span></div>`).join("")
     }<p class="hint-line">Ces objets ne sortent pas : ils alimentent les machines du
-      schéma lui-meme.</p></div>`);
+      schéma lui-même.</p></div>`);
   }
 
   const fedSomething = made.length || (report.power && report.power.made > 0.01);
@@ -543,19 +543,19 @@ function render(report) {
     const [name, share] = report.bottleneck;
     right.push(`<div class="card"><h2>Goulot</h2>
       <div class="line"><span>${escape(name)}</span>
-        <span class="num bad">nourri a ${Math.round(share * 100)}%</span></div>
+        <span class="num bad">nourri à ${Math.round(share * 100)}%</span></div>
       ${report.throttle ? `<p class="hint-line">${t("analyse.goulot.plafonne", {
         bloc: `<strong>${escape(report.throttle.name)}</strong>`,
         x: report.throttle.x, y: report.throttle.y,
         plafond: `${perSecond(report.throttle.ceiling)} ${
           escape(t("analyse.unite.par-seconde"))}`,
       })}</p>` : ""}
-      <p class="hint-line">C'est ce bloc qui limite toute la ligne. Elargis ce qui
-        l'alimente avant d'ajouter des machines derriere.</p>
+      <p class="hint-line">C'est ce bloc qui limite toute la ligne. Élargis ce qui
+        l'alimente avant d'ajouter des machines derrière.</p>
     </div>`);
   } else if (made.length) {
     right.push(`<div class="card"><h2>Goulot</h2>
-      <div class="line"><span class="good">Aucun, tout tourne a plein regime.</span></div>
+      <div class="line"><span class="good">Aucun, tout tourne à plein régime.</span></div>
     </div>`);
   }
 
@@ -583,10 +583,10 @@ function render(report) {
   if (surplus.length || idle.length) {
     const rows = [
       ...surplus.map(([item, n]) =>
-        `<div class="line"><span>${withIcon(item)}${escape(item)} arrive sans pouvoir etre
-          consomme</span><span class="num warn">+${perSecond(n)} / s</span></div>`),
+        `<div class="line"><span>${withIcon(item)}${escape(item)} arrive sans pouvoir être
+          consommé</span><span class="num warn">+${perSecond(n)} / s</span></div>`),
       ...idle.map(([name, n]) =>
-        `<div class="line"><span>${escape(name)} relie a rien</span>
+        `<div class="line"><span>${escape(name)} relié à rien</span>
           <span class="num bad">x${n}</span></div>`),
     ];
     right.push(`<div class="card"><h2>Gaspille</h2>${rows.join("")}</div>`);
@@ -660,12 +660,12 @@ function render(report) {
              <span class="good">+${rate(asGame.made)}</span>
              &nbsp;<span class="warn">-${rate(asGame.spent)}</span></span></div>`
         : ""
-    }<p class="hint-line">Cout et energie calcules avec les formules du jeu, a l'unite
-      pres : c'est l'encart que tu vois sur l'apercu d'un schéma.</p>${
+    }<p class="hint-line">Coût et énergie calculés avec les formules du jeu, à l'unité
+      près : c'est l'encart que tu vois sur l'aperçu d'un schéma.</p>${
       boost
         ? `<div class="line" style="margin-top:8px"><span>Forge compte plutot</span>
              <span class="num good">${rate(report.potential.made)} energie / s</span></div>
-           <p class="hint-line">Le jeu ignore les accelerateurs. Ici
+           <p class="hint-line">Le jeu ignore les accélérateurs. Ici
              <strong>${asGame.projectors}</strong> en couvre${asGame.projectors > 1 ? "nt" : ""}
              <strong>${asGame.boosted}</strong> bloc${asGame.boosted > 1 ? "s" : ""},
              qui tournent moitie plus vite, et jusqu'a deux fois et quart plus vite si tu
@@ -676,22 +676,22 @@ function render(report) {
 
   const notes = [];
   for (const [name, n] of Object.entries(report.unknown || {})) {
-    notes.push(`<li>${escape(name)} x${n} : inconnu de ce catalogue, traite comme un mur.</li>`);
+    notes.push(`<li>${escape(name)} x${n} : inconnu de ce catalogue, traité comme un mur.</li>`);
   }
   if (!report.settled) {
-    notes.push(`<li>La disposition boucle sur elle-meme, le debit affiche n'est pas un
-      regime stable.</li>`);
+    notes.push(`<li>La disposition boucle sur elle-même, le débit affiché n'est pas un
+      régime stable.</li>`);
   }
   if (report.altered) {
-    notes.push(`<li>La chaine collee est legerement abimee, probablement par le
-      copier-coller. Elle a ete lue quand meme.</li>`);
+    notes.push(`<li>La chaîne collée est légèrement abîmée, probablement par le
+      copier-coller. Elle a été lue quand même.</li>`);
   }
   if (report.truncated) {
-    notes.push(`<li><strong>${report.truncated} blocs</strong> n'ont pas pu etre lus : la
-      chaine s'arrete avant la fin. Recopie-la directement depuis le jeu.</li>`);
+    notes.push(`<li><strong>${report.truncated} blocs</strong> n'ont pas pu être lus : la
+      chaîne s'arrête avant la fin. Recopie-la directement depuis le jeu.</li>`);
   }
   if (notes.length) {
-    right.push(`<div class="card"><h2>A savoir</h2><ul class="notes">${notes.join("")}</ul></div>`);
+    right.push(`<div class="card"><h2>À savoir</h2><ul class="notes">${notes.join("")}</ul></div>`);
   }
 
   /* Putting a block down.
@@ -710,7 +710,7 @@ function render(report) {
      palette of 253 pills and a brush that painted under blocks without seeing them. It now
      has a mode of its own, full screen, with the game's placement mechanics.
 
-     The "Editer ce schéma" button, at the top of the left column, leads there. */
+     The "Éditer ce schéma" button, at the top of the left column, leads there. */
 
   const editing = opened.slug ? opened : null;
   const chosen = editing ? editing.visibility : "private";
@@ -719,7 +719,7 @@ function render(report) {
      open schematic is the point of editing one - a paste that lost five blocks is exactly
      what a player wants to fix - so the string is allowed to change under it, and the card
      says out loud which schematic is about to be overwritten. */
-  right.push(`<div class="card"><h2>${editing ? "Mettre a jour" : "Garder"}</h2>${
+  right.push(`<div class="card"><h2>${editing ? "Mettre à jour" : "Garder"}</h2>${
     editing ? `<p class="hint-line" style="margin:0 0 10px">Tu modifies
       <strong>${escape(editing.name)}</strong>, gardee le
       ${escape(editing.kept || "")}. Le bouton ecrase ce qui est enregistre.</p>` : ""}
@@ -758,21 +758,21 @@ function render(report) {
     outlets.length ? `<span class="dot out"></span>Par la que ca sort` : ""
   }<span class="dim">Clique une bande ou un tuyau pour en marquer un autre.</span></p>`
   : `<p class="legend"><span class="dim">Clique une bande ou un tuyau sur l'image pour dire
-     par ou ca entre et par ou ca sort.</span></p>`;
+     par où ça entre et par où ça sort.</span></p>`;
 
   out.innerHTML = `<div class="split">
     <div class="side">
       <div class="row" style="margin:0 0 10px">
         <button type="button" id="to-editor">
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-          Editer ce schéma
+          Éditer ce schéma
         </button>
       </div>
       <div class="stage"><canvas id="view" role="img"
-        aria-label="Apercu de ${escape(report.name)}, ${report.blocks} blocs"></canvas></div>
+        aria-label="Aperçu de ${escape(report.name)}, ${report.blocks} blocs"></canvas></div>
       <div class="row run-row">
         <button type="button" id="run-play" class="primary">Faire tourner</button>
-        <button type="button" id="run-reset" hidden>Remettre a zero</button>
+        <button type="button" id="run-reset" hidden>Remettre à zéro</button>
         <label class="run-speed" hidden id="run-speed-box">
           Vitesse
           <input type="range" id="run-speed" min="1" max="16" step="1" value="1">
@@ -787,7 +787,7 @@ function render(report) {
       <div id="block" class="card block-panel">
         <h2>Un bloc</h2>
         <p class="empty">Clique un bloc sur l'image pour voir ce qu'il fait, et pour dire
-          si c'est par la que ca entre ou que ca sort.</p>
+          si c'est par là que ça entre ou que ça sort.</p>
       </div>
     </div>
     <div>${right.join("")}</div>
@@ -970,7 +970,7 @@ function montrerAccueil(oui) {
 async function run() {
   const payload = String(text.value).replace(/\s+/g, "");
   if (!payload) {
-    out.innerHTML = `<div class="card error">Colle un schéma, ou depose un fichier.</div>`;
+    out.innerHTML = `<div class="card error">Colle un schéma, ou dépose un fichier.</div>`;
     return;
   }
   montrerAccueil(false);
@@ -1123,7 +1123,7 @@ $("paste").addEventListener("click", async () => {
     text.value = (await navigator.clipboard.readText()).trim();
     run();
   } catch {
-    out.innerHTML = `<div class="card error">Le navigateur a refuse l'acces au
+    out.innerHTML = `<div class="card error">Le navigateur a refusé l'accès au
       presse-papiers. Colle dans le champ avec ctrl+v.</div>`;
     text.focus();
   }
@@ -1225,7 +1225,7 @@ function showBlock(report, tile) {
   const panel = $("block");
   if (!tile) {
     panel.innerHTML = `<h2>Un bloc</h2><p class="empty">Clique un bloc sur l'image pour
-      voir ce qu'il fait, et pour dire si c'est par la que ca entre ou que ca sort.</p>`;
+      voir ce qu'il fait, et pour dire si c'est par là que ça entre ou que ça sort.</p>`;
     return;
   }
 
@@ -1249,7 +1249,7 @@ function showBlock(report, tile) {
     if (tile.dug.covered !== undefined) {
       parts.push(`<p class="hint-line" style="margin:2px 0 8px">Couvre
         <strong>${tile.dug.covered}</strong> case${tile.dug.covered > 1 ? "s" : ""}
-        sur ${tile.dug.of} : c'est ce rapport qui fixe le debit.</p>`);
+        sur ${tile.dug.of} : c'est ce rapport qui fixe le débit.</p>`);
     }
   } else if (tile.role === "drill" || tile.role === "pump") {
     parts.push(`<p class="hint-line" style="margin:2px 0 8px">Rien dessous. Peins le sol
@@ -1258,7 +1258,7 @@ function showBlock(report, tile) {
 
   if (tile.fed !== undefined) {
     const share = Math.round(tile.fed * 100);
-    parts.push(`<div class="line"><span>Tourne a</span>
+    parts.push(`<div class="line"><span>Tourne à</span>
       <span class="num ${share > 99 ? "good" : share > 0 ? "warn" : "bad"}">${share}%</span>
       </div>`);
   }
@@ -1279,8 +1279,8 @@ function showBlock(report, tile) {
     parts.push(`<div class="line"><span>Consomme</span>
       <span class="num warn">${rate(tile.power)} energie / s</span></div>`);
   }
-  parts.push(`<div class="line"><span>Relie a</span>
-    <span class="num">${tile.fedBy} en entree, ${tile.feeds} en sortie</span></div>`);
+  parts.push(`<div class="line"><span>Relié à</span>
+    <span class="num">${tile.fedBy} en entrée, ${tile.feeds} en sortie</span></div>`);
 
   /* Marking, which is the one thing on this panel the schematic cannot answer by itself.
 
@@ -1312,14 +1312,14 @@ function showBlock(report, tile) {
                    escape(resource)}">${withIcon(resource, 15)}${escape(resource)}</button>`
                  ).join("")}</div>`
             : `<p class="hint-line" style="margin:10px 0 0">Ce schéma ne manque de
-               rien qui puisse passer par la.</p>`)
+               rien qui puisse passer par là.</p>`)
         : mark?.side === "out"
           ? `<p class="hint-line" style="margin:10px 0 0">Ce qui sort n'est pas un choix :
-             c'est ce qui arrive jusqu'ici. Toi tu dis ou, le schéma dit quoi.</p>`
+             c'est ce qui arrive jusqu'ici. Toi tu dis où, le schéma dit quoi.</p>`
           : ""
     }</div>
-    <p class="hint-line">Garde avec le schéma. Forge ne devine pas les entrees :
-      sur une conception un peu grosse c'est un coup de de.</p>`);
+    <p class="hint-line">Garde avec le schéma. Forge ne devine pas les entrées :
+      sur une conception un peu grosse c'est un coup de dé.</p>`);
   }
 
   /* Editing, which turns a viewer into a tool. Rewriting the string rather than keeping a
@@ -1628,10 +1628,10 @@ function wireKeep(report) {
   };
 
   button.addEventListener("click",
-    run(opened.slug || null, opened.slug ? "A jour." : "Gardee."));
+    run(opened.slug || null, opened.slug ? "À jour." : "Gardée."));
   // Same schematic, kept a second time: a variant worth keeping beside the original
   // rather than instead of it.
-  $("keep-new")?.addEventListener("click", run(null, "Gardee comme une nouvelle."));
+  $("keep-new")?.addEventListener("click", run(null, "Gardée comme une nouvelle."));
 }
 
 /* Fetched while the player is still pasting, so the picture appears with the numbers

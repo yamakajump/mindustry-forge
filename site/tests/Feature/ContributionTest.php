@@ -187,7 +187,7 @@ it('turns away a contribution from somebody signed out', function () {
 });
 
 it('does not offer the declared sort before it can fill a page', function () {
-    $this->get('/schemas')->assertDontSee('debit declare');
+    $this->get('/schemas')->assertDontSee('débit déclaré');
 });
 
 it('offers the declared sort once a page of them exists', function () {
@@ -199,7 +199,7 @@ it('offers the declared sort once a page of them exists', function () {
         ]);
     }
 
-    $this->get('/schemas')->assertSee('debit declare');
+    $this->get('/schemas')->assertSee('débit déclaré');
 });
 
 it('names a declared figure as declared, never as measured', function () {
