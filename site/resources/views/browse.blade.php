@@ -18,6 +18,8 @@
   <script src="/forge/apercu.js" type="module" defer></script>
   {{-- Fetches nothing until the block picker is opened. --}}
   <script src="/forge/bloc-choix.js" type="module" defer></script>
+  {{-- Acts only on an address that says nothing, so a shared link keeps its meaning. --}}
+  <script src="/forge/classement.js" type="module" defer></script>
 @endpush
 
 @section('body')
