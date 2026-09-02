@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Schematic;
 use App\Services\BlockCatalogue;
 use App\Support\Block;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -130,6 +132,38 @@ class BlockController extends Controller
         }
 
         return $counts;
+    }
+
+    /**
+     * The whole catalogue, named and filed, small enough to fetch on demand.
+     *
+     * The catalogue page filters on the server and says why: shipping 254 tiles to hide 220
+     * of them makes a player on a phone pay for the whole catalogue to look at one
+     * category. The block picker in the schematic listing has the same problem and cannot
+     * take the same answer, since it is a control inside a form and not a page of its own.
+     *
+     * So nothing is shipped until somebody opens it: four fields per block, 19 kB, 3.4 kB
+     * over the wire, fetched once and cached for a day. Without JavaScript the picker keeps
+     * its text field and its `datalist`, which is what it was before and still works.
+     *
+     * The identifiers are short on purpose. They are read by one script and never by a
+     * person, and spelling them out doubles the payload for nothing.
+     */
+    public function catalogue(): JsonResponse
+    {
+        $blocks = Cache::remember('blocs.catalogue.'.BlockCatalogue::gameVersion(), 86400,
+            fn () => collect(BlockCatalogue::all())
+                ->map(fn (Block $block, string $name) => [
+                    'n' => $name,
+                    't' => $block->title(),
+                    'c' => $block->category(),
+                    'p' => $block->planet(),
+                ])
+                ->values()
+                ->all());
+
+        return response()->json($blocks)
+            ->header('Cache-Control', 'public, max-age=86400');
     }
 
     public function show(string $name): View

@@ -22,6 +22,10 @@ return [
      */
     'bloc' => [
         'label' => 'Qui contient',
+        // The picker's summary, where "no block chosen" has to read as an answer.
+        'aucun' => 'n\'importe lequel',
+        'type' => 'Un type de bloc',
+        'type-peu-importe' => 'peu importe le type de bloc',
         'exemple' => 'thorium-reactor',
         'filtrees' => 'Uniquement ceux qui contiennent',
         'enlever' => 'Enlever ce filtre',

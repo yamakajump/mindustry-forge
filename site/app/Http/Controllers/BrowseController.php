@@ -125,6 +125,19 @@ class BrowseController extends Controller
             $holds = '';
         }
 
+        /* A family of blocks rather than one of them. "Show me schematics with a turret in
+           them" is a question the catalogue could not be asked, and the block field could
+           not answer it: it takes one identifier, and a player looking for a turret does
+           not have one in mind. The categories are the game's own, the same ten the block
+           wiki files by and the editor's palette shows as tabs.
+
+           Dropped rather than refused when it names nothing, like every other filter here:
+           a shared link that has aged badly shows the catalogue, not an error page. */
+        $type = (string) $request->query('type', '');
+        if ($type !== '' && ! array_key_exists($type, BlockCatalogue::CATEGORY_KEYS)) {
+            $type = '';
+        }
+
         /* The constraints, which are the half of this page no other Mindustry site has.
            "A hundred graphite a minute under thirty blocks" is the sentence this repository
            opens with, and until now not one of its three clauses could be typed.
@@ -254,6 +267,18 @@ class BrowseController extends Controller
                 ->from('schematic_blocks')
                 ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
                 ->where('schematic_blocks.block', $holds));
+        }
+
+        /* The same test against a list rather than a name. The list comes from the
+           catalogue in memory, so this stays one query: joining a category table would mean
+           having one, and the category is a property of the game and not of this database. */
+        if ($type !== '') {
+            $ofType = array_keys(BlockCatalogue::byCategory()[$type] ?? []);
+            $query->whereExists(fn ($sub) => $sub
+                ->selectRaw('1')
+                ->from('schematic_blocks')
+                ->whereColumn('schematic_blocks.schematic_id', 'schematics.id')
+                ->whereIn('schematic_blocks.block', $ofType));
         }
 
         /* The footprint, and it is strict on purpose: no rotation, no swapping the two
@@ -506,6 +531,12 @@ class BrowseController extends Controller
         if ($holds !== '') {
             $chips[] = ['label' => Thing::name($holds), 'clear' => ['bloc' => null]];
         }
+        if ($type !== '') {
+            $chips[] = [
+                'label' => __(BlockCatalogue::categoryKey($type)),
+                'clear' => ['type' => null],
+            ];
+        }
         /* The three personal lists get their chip like everything else.
 
            Without it, `/mes-favoris` rendered a list without saying anywhere that it was
@@ -549,6 +580,7 @@ class BrowseController extends Controller
             // player picks from what is actually there instead of guessing a spelling.
             'items' => Vitrine::itemsOnOffer(),
             'holds' => $holds,
+            'type' => $type,
             // Offered from what is actually in the catalogue, same reason as the items: a
             // player picks a name that exists instead of guessing how it is spelled.
             'blocks' => Vitrine::blocksOnOffer(),

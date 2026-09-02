@@ -133,6 +133,9 @@ Route::get('/s/{schematic}/carte.jpg', [SocialCardController::class, 'show']);
 Route::get('/sitemap.xml', [SitemapController::class, 'show']);
 
 Route::get('/blocs', [BlockController::class, 'index']);
+/* Read by the block picker in the schematic listing, and by nothing else. Before the
+   listing's own page, so `/blocs/{name}` does not swallow it. */
+Route::get('/api/blocs', [BlockController::class, 'catalogue']);
 Route::get('/blocs/{name}', [BlockController::class, 'show']);
 
 /* The thumbnail the page above unfurls into. Two hundred and fifty-four pages all shared

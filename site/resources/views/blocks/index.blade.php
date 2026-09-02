@@ -20,14 +20,27 @@
      a phone mid-game, and shipping 254 tiles to hide 220 of them makes a player pay for the
      whole catalogue's bandwidth to look at one category. --}}
 <form method="get" class="bloc-filters">
-  <label for="categorie">{{ __('blocs.index.categorie') }}</label>
-  <select name="categorie" id="categorie">
-    <option value="">{{ __('blocs.index.toutes') }}</option>
-    @foreach($allCategories as $key)
-      <option value="{{ $key }}" @selected($chosen === $key)>{{
-        __(\App\Services\BlockCatalogue::categoryKey($key)) }}</option>
-    @endforeach
-  </select>
+  {{-- The same picker as the catalogue's filters. It was the fourth native `<select>` of
+       things this site draws elsewhere, on the very page whose job is to draw them.
+       The world is not in it: it is the first question a player asks, it has its own
+       address, and it is right underneath in large type. --}}
+  @include('partials.choix', [
+    'nom' => 'categorie',
+    'titre' => __('blocs.index.categorie'),
+    'valeur' => $chosen,
+    'vide' => __('blocs.index.toutes'),
+    'options' => collect($allCategories)->map(fn ($key) => [
+      'valeur' => $key,
+      'libelle' => __(\App\Services\BlockCatalogue::categoryKey($key)),
+      'famille' => null,
+    ])->all(),
+  ])
+
+  {{-- The world travels with the category, or filtering by category would send a reader
+       back to Serpulo without saying so. --}}
+  @if($planet !== \App\Http\Controllers\BlockController::DEFAULT_PLANET)
+    <input type="hidden" name="planete" value="{{ $planet === '' ? 'tout' : $planet }}">
+  @endif
 
   <button class="primary" type="submit">{{ __('blocs.index.filtrer') }}</button>
 </form>
