@@ -342,3 +342,33 @@ export function frameBoard({ board, frame, sizeOf }) {
 export function workbenchOf(board) {
   return board.workbench || board;
 }
+
+/**
+ * The frame every measurement and every export is about: the active one, or failing that
+ * the last drawn, so nothing is ever left pointing at nothing once a frame exists.
+ *
+ * `null` when the board carries no frame at all, which is not a missing answer: with no
+ * frame the board is itself the single implicit one, and `orphans()` returns nothing for
+ * exactly the same reason.
+ */
+export function currentFrameOf(board, activeFrameId = null) {
+  return board.frames.find((frame) => frame.id === activeFrameId)
+    || board.frames[board.frames.length - 1]
+    || null;
+}
+
+/**
+ * What "the plan" means when nobody has selected anything: the blocks a copy or a download
+ * should carry, and the name to write on them.
+ *
+ * The same unit the gauge measures and the analysis reads. Answering anything else would
+ * let a button hand over blocks the export refuses, which is the one way to give somebody
+ * a schematic that is not what they were looking at. A board with frames therefore exports
+ * one frame and not the workbench, and a board without them exports itself whole.
+ */
+export function exportUnit(board, activeFrameId = null) {
+  const frame = currentFrameOf(board, activeFrameId);
+  return frame
+    ? { tiles: board.tilesIn(frame), name: frame.name, frame }
+    : { tiles: board.tiles, name: "plan", frame: null };
+}

@@ -719,7 +719,9 @@ select {
 /* The size gauge. Permanent, because the limit of 64 is hard and is not something to
    discover at the moment it bites. */
 .editor-size { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-.editor-size .num { font-size: 13px; color: var(--dim); }
+/* `nowrap`: flex was allowed to shrink the gauge before the bar wrapped, and
+   "0 x 0 / 64 x 64" broke onto two lines, making the whole bar taller for nothing. */
+.editor-size .num { font-size: 13px; color: var(--dim); white-space: nowrap; }
 .editor-size .bar {
   width: 90px; height: 8px; border-radius: 4px; background: var(--raised);
   border: 1px solid var(--edge); overflow: hidden;
@@ -730,6 +732,37 @@ select {
 
 .editor-undo { display: flex; gap: 6px; }
 .editor-undo button { min-height: 36px; padding: 0 12px; }
+
+/* What to do with the plan once it is built, said in words rather than left on ctrl+C.
+   The copy is the one that matters and reads as the primary: an editor you cannot get a
+   schematic out of is a drawing tool. `Vider` sits apart in the same group because it is
+   the only destructive one, and the confirmation is what actually protects it. */
+.editor-plan { display: flex; gap: 6px; margin-left: 6px; }
+.editor-plan button { min-height: 36px; padding: 0 12px; white-space: nowrap; }
+.editor-plan button[data-plan="copy"] {
+  background: var(--raised); border-color: var(--accent-strong); color: var(--accent);
+}
+.editor-plan button[data-plan="copy"]:hover { background: var(--accent); color: var(--on-accent); }
+.editor-plan button[data-plan="clear"]:hover { border-color: var(--bad); color: var(--bad); }
+
+/* Three more buttons is about 250 px, and the bar only wrapped below 560: between the two
+   it overflowed, taking the size gauge off the right edge with it. The gauge is the one
+   thing on this bar that must never be cut, since the limit of 64 is hard.
+   So the label gives up its two least useful words first, and the bar wraps second. */
+@media (max-width: 1320px) { .editor-plan .long { display: none; } }
+@media (max-width: 1240px) {
+  .editor-bar { flex-wrap: wrap; }
+  /* Same reason as in the 560 query below: an automatic margin on a wrapping bar throws
+     the gauge alone onto its own line, hard right, where it reads as an oversight. */
+  .editor-size { margin-left: 0; }
+}
+
+/* A sentence inside a drop-down, which no menu had before: the plans menu has something to
+   explain to a visitor with no account, and a list of links cannot explain anything. */
+.menu-note {
+  margin: 0; padding: 0 10px 6px; max-width: 260px;
+  font-size: 12px; line-height: 1.45; color: var(--dim);
+}
 
 .editor-rail {
   grid-area: rail; background: var(--panel); border-right: 2px solid var(--edge);

@@ -10,7 +10,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { BOARD_SIZE, createBoard, legalFrame, MAX_SIZE }
+import { BOARD_SIZE, createBoard, currentFrameOf, exportUnit, legalFrame, MAX_SIZE }
   from "../../../site/public/forge/editor/state.js";
 import { loadCatalogue } from "../helpers.js";
 
@@ -394,4 +394,49 @@ test("a cell erased layer by layer ends up gone, not empty", () => {
   // painted cells, and one holding an empty object would be walked for nothing.
   plateau.apply({ paint: { "0,0": { wall: null } } });
   assert.equal(plateau.ground["0,0"], undefined);
+});
+
+/* ------------------------------------------------------------------------------------
+   What a copy or a download hands over.
+
+   The editor gained a button that copies the plan without selecting it first, and the
+   question that button had to answer is the one the gauge and the analysis already
+   answered separately: with frames, one frame; without, the board. Written down once here
+   rather than three times in `mount.js`, which no test can reach.
+   ------------------------------------------------------------------------------------ */
+
+const FRAME = { id: "a", name: "usine", left: 0, bottom: 0, width: 8, height: 8 };
+const AILLEURS = { id: "b", name: "coin", left: 20, bottom: 20, width: 8, height: 8 };
+
+test("with no frame at all, the plan is the whole board", () => {
+  const plateau = board([{ x: 1, y: 1, block: "conveyor", rotation: 0 }]);
+  const unit = exportUnit(plateau);
+
+  assert.equal(unit.frame, null);
+  assert.equal(unit.tiles.length, 1);
+  assert.equal(unit.name, "plan", "a name the file can carry, since no frame names it");
+});
+
+test("with frames, the plan is one frame and never the workbench", () => {
+  const plateau = createBoard({
+    tiles: [{ x: 1, y: 1, block: "conveyor", rotation: 0 },
+      { x: 21, y: 21, block: "conveyor", rotation: 0 }],
+    ground: {}, frames: [FRAME, AILLEURS], sizeOf,
+  });
+
+  const unit = exportUnit(plateau, "a");
+  assert.equal(unit.name, "usine");
+  assert.deepEqual(unit.tiles.map((tile) => tile.x), [1],
+    "the block in the other frame is not this plan's, and the export refuses it too");
+});
+
+test("no active frame falls back to the last drawn, not to nothing", () => {
+  const plateau = createBoard({
+    tiles: [], ground: {}, frames: [FRAME, AILLEURS], sizeOf,
+  });
+
+  assert.equal(currentFrameOf(plateau, null).id, "b");
+  assert.equal(exportUnit(plateau, null).name, "coin");
+  // An id that no longer names a frame is the same case: it was deleted, not chosen.
+  assert.equal(exportUnit(plateau, "parti").name, "coin");
 });
