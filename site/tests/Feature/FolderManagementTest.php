@@ -114,3 +114,19 @@ it('shows each member their root folders and not those of others', function () {
 it('refuses the page to a visitor who is not signed in', function () {
     $this->get('/mes-dossiers')->assertRedirect('/auth/discord');
 });
+
+it('offers the icons as their own sprites, not as their names', function () {
+    /* The icon list was a native `<select>` of item identifiers, which is the same defect
+       filed against the catalogue's filters: a player recognises copper by its sprite
+       before they read the word. It is the shared picker now, and it is still a form
+       control, so the folder is created without a line of JavaScript. */
+    $mine = User::factory()->create();
+
+    $page = $this->actingAs($mine)->get('/mes-dossiers')->assertOk();
+
+    $page->assertSee('name="icone" value="objet/copper"', escape: false)
+        ->assertSee('/icone/objet/copper.png', escape: false)
+        ->assertDontSee('<select id="icone"', escape: false)
+        // Named as a player names it, not as the game files it.
+        ->assertSee('Cuivre');
+});

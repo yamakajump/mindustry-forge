@@ -33,7 +33,9 @@ return [
         'renommer' => 'Renommer',
         'icone' => 'Choisir une icône',
         'sans-icone' => 'Sans icône',
-        'supprimer' => 'Supprimer le dossier',
+        // Inside a folder's own card, so "le dossier" repeats what the card already says,
+        // and the confirmation that follows is titled "Supprimer le dossier" in full.
+        'supprimer' => 'Supprimer',
         // `supprimer-confirme` n'est pas ici : seul dossiers.js la prononce, et une cle que
         // le PHP ne demande jamais est une orpheline. Elle vit dans forge/lang/fr.json.
         'ajouter-ici' => 'Mettre dans ce dossier',
