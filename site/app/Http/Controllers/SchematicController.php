@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contribution;
+use App\Models\ContributionVote;
 use App\Models\Favorite;
 use App\Models\Folder;
 use App\Models\Schematic;
+use App\Models\SchematicItem;
 use App\Models\SchematicLike;
 use App\Models\SchematicNote;
 use Illuminate\Http\JsonResponse;
@@ -92,6 +95,15 @@ class SchematicController extends Controller
             // its drills mute: "at best, on a full patch".
             'ground' => (array) ($schematic->ground ?? []),
             'kept' => $schematic->created_at?->format('d/m/Y'),
+            /* Whether this reader could say where it plugs in.
+               The whole machinery for it was written and nothing ever called it, because
+               nothing on the page could tell whether calling it would be refused: `store`
+               answers 409 for a schematic its author has already marked, and a button that
+               is refused half the time is a button nobody presses twice. The three
+               conditions are the controller's own, asked here so the interface can exist. */
+            'contribuable' => $request->user() !== null
+                && ! $schematic->managedBy($request->user())
+                && ! $schematic->items()->where('kind', SchematicItem::MESURE)->exists(),
         ]);
     }
 
@@ -168,6 +180,22 @@ class SchematicController extends Controller
                plan on this one looked the same whether somebody had described it or
                nobody had ever touched it. */
             'marked' => (array) ($schematic->analysis['marked'] ?? []),
+            /* The markings other players have offered and nobody has weighed.
+               `Contribution::weigh` was written, routed and reachable only with curl: a
+               proposal could be made and never seen, so the queue only ever grew. Their own
+               is in the list too, greyed by the view: seeing that it arrived is half of why
+               somebody sends a second one, and `weigh` already refuses their own vote. */
+            'propositions' => $user === null ? collect() : Contribution::query()
+                ->where('schematic_id', $schematic->id)
+                ->where('state', Contribution::PENDING)
+                ->with('user')
+                ->latest()
+                ->get(),
+            'dejaPese' => $user === null ? [] : ContributionVote::query()
+                ->where('user_id', $user->id)
+                ->whereIn('contribution_id', Contribution::where('schematic_id', $schematic->id)
+                    ->where('state', Contribution::PENDING)->pluck('id'))
+                ->pluck('agree', 'contribution_id')->all(),
             'aime' => $user !== null && SchematicLike::where('user_id', $user->id)
                 ->where('schematic_id', $schematic->id)->exists(),
             'favori' => $user !== null && Favorite::where('user_id', $user->id)

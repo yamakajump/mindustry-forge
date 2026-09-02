@@ -249,3 +249,93 @@ it('says the list is on declared throughputs when it is', function () {
     $this->get('/schemas?produit=graphite&tri=output')->assertOk()
         ->assertSee('Ce sont des plafonds', false);
 });
+
+/*
+ * The interface, which did not exist.
+ *
+ * The endpoints were written, routed and reachable only with curl: grepping the whole of
+ * `public/` and `resources/views/` for `api/contributions` returned nothing. So the site
+ * held the machinery for turning its imported half from a catalogue of ceilings into a
+ * catalogue of measurements, and never offered it to anybody.
+ */
+it('tells the analyser whether this reader could complete a schematic', function () {
+    $author = User::factory()->create();
+    $passant = User::factory()->create();
+    $imported = imported();
+
+    // Signed out: no.
+    $this->getJson("/api/schematiques/{$imported->slug}")
+        ->assertOk()->assertJsonPath('contribuable', false);
+
+    // Somebody else, and nothing measured yet: yes.
+    $this->actingAs($passant)->getJson("/api/schematiques/{$imported->slug}")
+        ->assertOk()->assertJsonPath('contribuable', true);
+
+    // Its own manager has the edit form instead, and `store` would refuse them anyway.
+    $mine = Schematic::factory()->for($author)->create(['visibility' => 'public']);
+    $this->actingAs($author)->getJson("/api/schematiques/{$mine->slug}")
+        ->assertOk()->assertJsonPath('contribuable', false);
+});
+
+it('says nothing to complete once a measurement is on it', function () {
+    $passant = User::factory()->create();
+    $imported = imported();
+    $imported->items()->create([
+        'item' => 'graphite', 'sens' => SchematicItem::PRODUIT,
+        'kind' => SchematicItem::MESURE, 'rate' => 90.0, 'rate_per_block' => 3.0,
+    ]);
+
+    // The same 409 `store` answers, asked before the button is drawn rather than after it
+    // is pressed: a button refused half the time is a button nobody presses twice.
+    $this->actingAs($passant)->getJson("/api/schematiques/{$imported->slug}")
+        ->assertOk()->assertJsonPath('contribuable', false);
+});
+
+it('puts a waiting marking on the page, with a way to weigh it', function () {
+    $offrant = User::factory()->create();
+    $lecteur = User::factory()->create();
+    $imported = imported();
+
+    $this->actingAs($offrant)->postJson('/api/contributions', [
+        'schematique' => $imported->slug,
+        'marques' => ['3,4' => ['side' => 'in', 'resource' => 'coal']],
+        'analysis' => ['perMinute' => ['graphite' => 90.0]],
+        'note' => 'Le charbon entre par la gauche.',
+    ])->assertCreated();
+
+    $page = $this->actingAs($lecteur)->get("/s/{$imported->slug}")->assertOk();
+
+    $page->assertSee('Des branchements proposés')
+        ->assertSee('Le charbon entre par la gauche.')
+        ->assertSee('data-accord="oui"', escape: false);
+});
+
+it('offers the offerer no vote on their own', function () {
+    $offrant = User::factory()->create();
+    $imported = imported();
+
+    $this->actingAs($offrant)->postJson('/api/contributions', [
+        'schematique' => $imported->slug,
+        'marques' => ['3,4' => ['side' => 'in', 'resource' => 'coal']],
+        'analysis' => ['perMinute' => ['graphite' => 90.0]],
+    ])->assertCreated();
+
+    // Listed, so they can see it arrived, and without the buttons `weigh` would ignore.
+    $this->actingAs($offrant)->get("/s/{$imported->slug}")->assertOk()
+        ->assertSee('Ta proposition')
+        ->assertDontSee('data-accord="oui"', escape: false);
+});
+
+it('shows a signed-out reader no waiting markings at all', function () {
+    $offrant = User::factory()->create();
+    $imported = imported();
+
+    $this->actingAs($offrant)->postJson('/api/contributions', [
+        'schematique' => $imported->slug,
+        'marques' => ['3,4' => ['side' => 'in', 'resource' => 'coal']],
+        'analysis' => ['perMinute' => ['graphite' => 90.0]],
+    ])->assertCreated();
+
+    $this->post('/deconnexion');
+    $this->get("/s/{$imported->slug}")->assertOk()->assertDontSee('Des branchements proposés');
+});

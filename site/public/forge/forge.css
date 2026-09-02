@@ -1548,3 +1548,12 @@ a.stage:hover, a.stage:focus-visible { border-color: var(--accent); }
 /* Pushed to the right, and the accepting one last: the reading order of a question is the
    sentence, then the way out, then the answer. */
 .demande .boutons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
+
+/* A marking somebody offered, waiting to be weighed. Its own block inside the card, so two
+   proposals do not read as one paragraph with two sets of buttons. */
+.proposition { padding: 10px 0; border-top: 1px solid var(--edge); }
+.proposition:first-of-type { border-top: 0; padding-top: 0; }
+.proposition-qui { margin: 0; font-size: 12.5px; color: var(--dim); }
+.proposition-mot { margin: 6px 0 0; font-size: 13.5px; }
+.proposition .row { margin: 8px 0 0; }
+.proposition-note { margin: 6px 0 0; }
