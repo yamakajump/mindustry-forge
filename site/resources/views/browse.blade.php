@@ -395,6 +395,14 @@
     @elseif($mine)
       <p class="empty">{{ __('vitrine.vide.miens') }}</p>
       <p class="row"><a class="button primary" href="/">{{ __('vitrine.vide.analyser') }}</a></p>
+    @elseif($chips !== [])
+      {{-- Filtered and empty: it is not the catalogue that is short of schematics, it
+           is the search that is too tight. Sending the reader off to analyse and publish
+           a plan answered a question nobody had asked. --}}
+      <p class="empty">{{ __('vitrine.vide.rien-ne-correspond') }}</p>
+      <p class="row"><a class="button primary"
+        href="{{ request()->fullUrlWithQuery($clearAll) }}">{{
+        __('vitrine.vide.tout-effacer') }}</a></p>
     @else
       <p class="empty">{{ __('vitrine.vide.catalogue') }}</p>
       <p class="row"><a class="button primary" href="/">{{ __('vitrine.vide.analyser') }}</a></p>
@@ -522,7 +530,7 @@
                  beside it more precisely. --}}
             <strong>{{ $schematic->width }}&times;{{ $schematic->height }}</strong> &middot;
           @endif
-          {{ $schematic->blocks }} {{ __('schema.unite.blocs') }} &middot; {{ $schematic->credit() }}
+          {{ $schematic->blocks }} {{ trans_choice('schema.unite.bloc-compte', $schematic->blocks) }} &middot; {{ $schematic->credit() }}
           {{-- Said in the list too, not only on the page. Somebody scrolling a hundred
                tiles should be able to tell what this site collected from what its members
                made, without opening anything. --}}

@@ -23,9 +23,12 @@
           ? '<img class="icone" src="/icone/bloc/'.e($blockName).'.png?t=32" width="18"'
             .' height="18" loading="lazy" decoding="async" alt="">'
           : '';
+      /* A floor has no box, so two of them in a row ran together: "Sable Sable sombre"
+         read as one name. The box is the separator for everything that has one; what has
+         none needs a comma of its own. */
       $parts[] = $known
           ? '<a href="/blocs/'.e($blockName).'">'.$icon.e($one->title()).'</a>'
-          : e($one->title());
+          : '<span class="bloc-nu">'.e($one->title()).'</span>';
   }
 @endphp
 {!! implode(' ', $parts) !!}

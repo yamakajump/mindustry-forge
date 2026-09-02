@@ -28,7 +28,9 @@ return [
         'energie-seconde' => 'énergie/s',
         // Invariable au pluriel, d'ou une seule cle : « 1 j'aime », « 12 j'aime ».
         'jaime' => "j'aime",
-        'blocs' => 'blocs',
+        /* Two forms, because here the word always follows a count: a one-block tile
+           announced « 1 blocs ». The bare form had no reader left. */
+        'bloc-compte' => 'bloc|blocs',
     ],
 
     /*

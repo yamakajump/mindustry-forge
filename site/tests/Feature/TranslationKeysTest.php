@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\File;
  */
 
 /** The domains the naming convention allows, from the conventions in CLAUDE.md. */
-const DOMAINS = ['nav', 'vitrine', 'schema', 'analyse', 'edition', 'outils', 'blocs', 'compte', 'dossiers'];
+const DOMAINS = ['nav', 'vitrine', 'schema', 'analyse', 'edition', 'outils', 'blocs', 'compte', 'dossiers', 'erreurs'];
 
 /**
  * `<domaine>.<ecran>.<element>` wherever it appears, quoted or not.

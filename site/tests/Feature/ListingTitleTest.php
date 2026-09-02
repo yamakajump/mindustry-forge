@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Schematic;
+use App\Models\SchematicItem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -182,4 +183,36 @@ it('drops a family that names nothing rather than refusing the page', function (
     Schematic::factory()->create(['visibility' => 'public', 'name' => 'Toujours la']);
 
     $this->get('/schemas?type=nimportequoi')->assertOk()->assertSee('Toujours la');
+});
+
+it('says the filter is too tight, rather than that the catalogue is empty', function () {
+    /* "Rien de publié qui corresponde. Analyse un schéma et publie-le." is the right
+       sentence under a bare catalogue and the wrong one under a search: nothing is missing
+       from the catalogue, the search is simply too narrow, and the only useful thing to do
+       is loosen it. */
+    schemaTitre();
+
+    $this->get('/schemas?blocs=1')->assertOk()
+        ->assertSee('Aucun schéma ne répond à toutes ces contraintes')
+        ->assertSee('Effacer les contraintes')
+        ->assertDontSee('Analyse un schéma et publie-le');
+});
+
+it('keeps the other sentence when nothing is filtered at all', function () {
+    // No chips, so nothing to loosen: the catalogue really is what is empty.
+    $this->get('/schemas')->assertOk()->assertSee('Analyse un schéma et publie-le');
+});
+
+it('counts one block as one block', function () {
+    $seul = Schematic::factory()->create([
+        'visibility' => 'public', 'name' => 'Un seul bloc', 'blocks' => 1,
+    ]);
+    $seul->items()->create([
+        'item' => 'graphite', 'sens' => SchematicItem::PRODUIT,
+        'kind' => SchematicItem::PLAFOND, 'rate' => 60.0, 'rate_per_block' => 60.0,
+    ]);
+
+    // The verdict "le moins de blocs à poser" announced "1 blocs".
+    $this->get('/schemas?produit=graphite')->assertOk()
+        ->assertSee('1 bloc')->assertDontSee('1 blocs');
 });
