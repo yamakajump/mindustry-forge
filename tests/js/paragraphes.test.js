@@ -93,9 +93,9 @@ test("no paragraph opens a block element the parser would close it on", () => {
       const coupable = contenu.match(OUVRE);
       if (!coupable) continue;
       const ligne = source.slice(0, ou).split("\n").length;
-      fautes.push(`${nom}:${ligne} — a <p> holding a <${coupable[1].toLowerCase()}>:`
-        + ` the parser closes the paragraph there, and everything after it`
-        + ` becomes a sibling. Use a <div>.`);
+      fautes.push(`${nom}:${ligne} opens a <p> that holds a`
+        + ` <${coupable[1].toLowerCase()}>. The parser closes the paragraph there, and`
+        + ` everything after it becomes a sibling. Use a <div>.`);
     }
   }
 
