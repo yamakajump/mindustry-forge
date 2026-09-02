@@ -19,18 +19,29 @@
        what it is. --}}
   <form class="card creer-dossier" data-creer>
     <h2>{{ __('dossiers.gestion.creer') }}</h2>
-    <label for="nom">{{ __('dossiers.gestion.nom') }}</label>
-    <input id="nom" name="nom" type="text" maxlength="80" required>
+    {{-- One row, each control under its own label.
+         Stacked, they were three block-level elements with no rhythm between them: a text
+         field a thousand pixels wide for a name of two words, then a label, a dropdown and
+         a button sharing a line for no reason but the order they were written in. The card
+         held three controls and looked like three unrelated ones. --}}
+    <div class="rangee">
+      <div class="champ-bloc">
+        <label for="nom">{{ __('dossiers.gestion.nom') }}</label>
+        <input id="nom" name="nom" type="text" maxlength="80" required>
+      </div>
 
-    <label for="icone">{{ __('dossiers.gestion.icone') }}</label>
-    <select id="icone" name="icone">
-      <option value="">{{ __('dossiers.gestion.sans-icone') }}</option>
-      @foreach($icons as $item)
-        <option value="objet/{{ $item }}">{{ $item }}</option>
-      @endforeach
-    </select>
+      <div class="champ-bloc">
+        <label for="icone">{{ __('dossiers.gestion.icone') }}</label>
+        <select id="icone" name="icone">
+          <option value="">{{ __('dossiers.gestion.sans-icone') }}</option>
+          @foreach($icons as $item)
+            <option value="objet/{{ $item }}">{{ $item }}</option>
+          @endforeach
+        </select>
+      </div>
 
-    <button class="primary" type="submit">{{ __('dossiers.gestion.creer') }}</button>
+      <button class="primary" type="submit">{{ __('dossiers.gestion.creer') }}</button>
+    </div>
     <p class="hint-line note" hidden></p>
   </form>
 

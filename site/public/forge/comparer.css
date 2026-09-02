@@ -161,7 +161,12 @@
   margin: 22px 0 10px; font-size: 12px; letter-spacing: .12em;
   text-transform: uppercase; color: var(--accent); font-weight: 400; opacity: .85;
 }
-.cmp-propositions .tile a { display: block; }
+/* The plan and its title, and only those.
+   Written `.tile a`, it also caught the two buttons underneath, whose own rule asks for
+   `inline-flex` and is one class less specific: they were laid out as blocks, so the
+   `justify-content: center` on them did nothing and their labels sat hard left with
+   twenty-seven pixels of nothing on the right. The child combinator says what was meant. */
+.cmp-propositions .tile > a { display: block; }
 .cmp-propositions .tile h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* The two gestures the tile exists to offer. They led to `/s/` and nowhere else, so
