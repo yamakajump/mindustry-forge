@@ -102,7 +102,7 @@
  * on its own side would be a second answer to the same question.
  */
 import { loadCatalogue } from "../forge/analyse.js";
-import { plan } from "../forge/plan.js";
+import { chaine, plan } from "../forge/plan.js";
 import { t, translate, ready } from "../forge/i18n.js";
 import { loadNames, nameOf } from "../forge/noms.js";
 import { recall, remember } from "../forge/settings.js";
@@ -133,6 +133,12 @@ await Promise.all([loadNames(), ready]);
    to extract. Offered rather than typed, so that a player picks from what exists instead of
    guessing at a spelling. */
 /** Which unit the player chose. Read from the same place by the computation and the display. */
+/* One block is a block. Two keys and not a plural mechanism: the dictionary keeps units
+   as bare words so that a number can never disappear into a missing translation, and a
+   rule that reads a count out of a string would give that up for one letter. */
+const unBloc = (combien) =>
+  (combien === 1 ? "outils.planificateur.bloc" : "outils.planificateur.blocs");
+
 function parSeconde() {
   return $("cadence").value === "seconde";
 }
@@ -259,6 +265,69 @@ function carte(titreCle) {
   return div;
 }
 
+/**
+ * The chain, drawn as nested lists.
+ *
+ * The list of counts underneath answers "how many"; this answers "what feeds what", which
+ * is the half a player builds from. The rate written on a line is what the block above it
+ * asks of that thing, and not the plan's total for it: they differ the moment two steps
+ * want the same item, and the total on an edge is how somebody sizes a belt for a factory
+ * that is only asking for half of it.
+ *
+ * A `<ul>` and not a drawing: it reads on a phone, it survives being copied into a message,
+ * and the indentation is the tree. A canvas here would be prettier and unreadable at
+ * 380 pixels.
+ */
+function branche(noeud, profond = 0) {
+  const li = document.createElement("li");
+  li.className = `plan-noeud plan-${noeud.kind}`;
+
+  const gauche = document.createElement("span");
+  gauche.className = "plan-paire";
+  if (noeud.kind === "fait") {
+    gauche.append(chose(noeud.block, "bloc"), fleche(), chose(noeud.item));
+  } else {
+    gauche.append(chose(noeud.item));
+  }
+
+  const droite = document.createElement("span");
+  droite.className = "plan-paire";
+  droite.append(document.createTextNode(parSeconde()
+    ? `${nombre(noeud.perMinute / 60, 2)}${t("outils.planificateur.par-sec")}`
+    : `${nombre(noeud.perMinute, 1)}${t("outils.planificateur.par-min")}`));
+
+  /* What it takes to make it, on the same line as the rate: the count is the reason the
+     line is there, and sending the eye to another card to find it is what this whole card
+     exists to stop. */
+  if (noeud.kind === "fait") {
+    const combien = document.createElement("b");
+    combien.className = "plan-combien";
+    combien.textContent = `${noeud.whole} ${t(unBloc(noeud.whole))}`;
+    droite.prepend(combien);
+  }
+  if (noeud.kind === "raw") {
+    const dit = document.createElement("i");
+    dit.className = "plan-dit";
+    dit.textContent = t("outils.planificateur.du-sol");
+    droite.prepend(dit);
+  }
+  if (noeud.kind === "repris") {
+    const dit = document.createElement("i");
+    dit.className = "plan-dit";
+    dit.textContent = t("outils.planificateur.deja-compte");
+    droite.prepend(dit);
+  }
+
+  li.append(ligne(gauche, droite, noeud.kind === "raw" ? "good" : ""));
+
+  if (noeud.inputs.length) {
+    const sous = document.createElement("ul");
+    for (const enfant of noeud.inputs) sous.append(branche(enfant, profond + 1));
+    li.append(sous);
+  }
+  return li;
+}
+
 function dessiner(resultat) {
   sortie.replaceChildren();
 
@@ -299,6 +368,17 @@ function dessiner(resultat) {
     sortie.append(dit);
   }
 
+  /* Before the counts, because it is the question they are an answer to. */
+  const arbre = chaine(resultat);
+  if (arbre && arbre.inputs.length) {
+    const chaineCarte = carte("outils.planificateur.chaine");
+    const racine = document.createElement("ul");
+    racine.className = "plan-chaine";
+    racine.append(branche(arbre));
+    chaineCarte.append(racine);
+    sortie.append(chaineCarte);
+  }
+
   const usines = carte("outils.planificateur.a-construire");
   for (const etape of resultat.steps) {
     /* The whole number and the fraction, always both: 3.2 smelters means 4 smelters at
@@ -306,7 +386,7 @@ function dessiner(resultat) {
        slipped into a translated string: when a key is missing, `t` renders the key without
        substituting, and the figure would disappear. A lost figure is worse than an
        unreadable word on a site that sells nothing but numbers. */
-    const droite = `${etape.whole} ${t("outils.planificateur.blocs")}`
+    const droite = `${etape.whole} ${t(unBloc(etape.whole))}`
       + ` - ${nombre(etape.load * 100, 0)} ${t("outils.planificateur.de-charge")}`;
     const gauche = document.createElement("span");
     gauche.className = "plan-paire";
