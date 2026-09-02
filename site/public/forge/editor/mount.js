@@ -18,11 +18,12 @@
  */
 
 import { draw, itemIcon, spriteOf } from "../render.js";
-import { createBoard, footprint, frameBoard, legalFrame, MAX_SIZE } from "./state.js";
+import { createBoard, currentFrameOf, exportUnit, footprint, frameBoard, legalFrame, MAX_SIZE }
+  from "./state.js";
 import { lineOf, linksByConfig, reachOf } from "./lines.js";
 import { canPlace } from "./rules.js";
 import { flip, inBox, rotateBy, translate } from "./selection.js";
-import { fromBase64, toBase64 } from "../schematic.js";
+import { fromBase64, toBase64, write } from "../schematic.js";
 import { createCamera } from "./camera.js";
 import { mountRail, showHelp, sizeGauge } from "./ui.js";
 import { choicesFor, configFor, readsAs } from "./configure.js";
@@ -37,7 +38,7 @@ const SHELL = `
       <summary>Site</summary>
       <div class="menu-list"></div>
     </details>
-    <details class="menu editor-spaces" hidden>
+    <details class="menu editor-spaces">
       <summary>Mes plans</summary>
       <div class="menu-list"></div>
     </details>
@@ -48,6 +49,13 @@ const SHELL = `
     <span class="editor-undo">
       <button type="button" data-do="undo" title="Annuler (ctrl+Z)">↶</button>
       <button type="button" data-do="redo" title="Refaire (ctrl+Y)">↷</button>
+    </span>
+    <span class="editor-plan">
+      <button type="button" data-plan="copy"
+              title="Copier le plan, à coller dans le jeu avec ctrl+V">Copier<span
+              class="long"> le plan</span></button>
+      <button type="button" data-plan="file" title="Télécharger un fichier .msch">.msch</button>
+      <button type="button" data-plan="clear" title="Vider le plateau">Vider</button>
     </span>
     <span class="editor-size"></span>
   </div>
@@ -213,14 +221,18 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
    * Plans: the boards an account keeps on the server, one step above the local draft of
    * `draft.js`.
    *
-   * An anonymous visitor never sees this menu: `spacesApi.whoAmI()` answers `null`, and
-   * they keep exactly what they had before this feature, the local draft alone, on one
-   * machine, for seven days. Signing in is what buys the plans; nothing here gates the
-   * editor itself, which builds the same either way.
+   * The menu shows for everyone, and what it says depends on who is reading. Hiding it from
+   * an anonymous visitor was the tidier choice and the wrong one: somebody who cannot see
+   * the menu cannot learn that signing in would keep their work, so the answer to "where do
+   * I save this?" was nowhere on screen. Open, it says what is already kept for them
+   * locally and what an account adds. Nothing here gates the editor itself, which builds
+   * the same either way.
    */
   const spacesMenu = host.querySelector(".editor-spaces");
   const spacesMenuList = spacesMenu.querySelector(".menu-list");
   const spacesSummary = spacesMenu.querySelector("summary");
+  /** Whether this session has an account, answered once at mount by `initSpaces`. */
+  let signedIn = false;
 
   /** The open space, or nothing while none has been chosen: the local draft serves then. */
   let currentSpace = null;
@@ -243,6 +255,20 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   async function renderSpacesMenu() {
+    if (!signedIn) {
+      /* No request: an anonymous visitor has no plans to list, and asking would only cost
+         a round trip to be told what `initSpaces` already established. */
+      spacesMenuList.innerHTML = `
+        <span class="menu-heading">Ce plateau est déjà gardé</span>
+        <p class="menu-note">Sur cette machine, pendant sept jours. Il revient tout seul
+          quand tu rouvres l'éditeur.</p>
+        <span class="menu-heading">Avec un compte</span>
+        <p class="menu-note">Plusieurs plans nommés, gardés sur le serveur, retrouvés depuis
+          n'importe quelle machine.</p>
+        <a class="child" href="/auth/discord">Se connecter avec Discord</a>`;
+      return;
+    }
+
     let mine = [];
     try {
       mine = await spacesApi.listSpaces();
@@ -503,13 +529,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
      while placing, and the board becomes the bounded unit, at 256.
      ------------------------------------------------------------------------------------ */
 
-  /** The frame the gauge and the dimming should show: the active one, or failing that the
-      last drawn, so the gauge is never left empty once a frame exists. */
-  function currentFrame() {
-    return board.frames.find((frame) => frame.id === activeFrameId)
-      || board.frames[board.frames.length - 1]
-      || null;
-  }
+  /** The frame the gauge and the dimming should show. The rule lives in `state.js`, where
+      the copy and the download read it too: three places asking the same question. */
+  const currentFrame = () => currentFrameOf(board, activeFrameId);
 
   /** An identifier that survives a page reload is of no use here: it only serves to find a
       frame again across its own renamings, for the length of one session. */
@@ -1317,6 +1339,66 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   const copyFrame = (frame) => copyTiles(board.tilesIn(frame), frame.name);
 
   /**
+   * Copy the whole plan, without having to select it first.
+   *
+   * This is the one gesture the editor was missing, and missing it made the tool look like
+   * a toy: you could build, and not get what you built into the game. It existed, on
+   * ctrl+C, and only after an F drag over the entire board - which nobody guesses, and the
+   * shortcut panel is behind a button in a corner.
+   */
+  async function copyPlan() {
+    const { tiles, name } = exportUnit(board, activeFrameId);
+    if (!tiles.length) return flash("le plateau est vide");
+    await copyTiles(tiles, name);
+  }
+
+  /**
+   * The same plan as a file.
+   *
+   * The clipboard is the fast path and it is the one the game wants; a file is what
+   * survives a machine that refuses clipboard writes, and what gets sent to somebody else.
+   */
+  async function downloadPlan() {
+    const { tiles, name } = exportUnit(board, activeFrameId);
+    if (!tiles.length) return flash("le plateau est vide");
+    try {
+      const bytes = await write(tiles, {
+        tags: { name },
+        sizeOf,
+        priorityOf: (block) => catalogue.blocks[block]?.schematic_priority || 0,
+      });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(new Blob([bytes], { type: "application/octet-stream" }));
+      link.download = `${name.replace(/[^\p{L}\p{N} _-]/gu, "") || "plan"}.msch`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      flash(`${tiles.length} bloc${tiles.length > 1 ? "s" : ""} dans ${link.download}`);
+    } catch (error) {
+      flash(`pas téléchargé : ${error.message}`);
+    }
+  }
+
+  /** Empty the board, asked first: it is one gesture against everything drawn so far. */
+  async function clearPlan() {
+    if (!board.tiles.length && !board.frames.length) return flash("le plateau est déjà vide");
+    const yes = await askToConfirm({
+      title: "Vider le plateau",
+      text: "Tout ce qui est posé part, cadres compris. Ctrl+Z ramène le dernier geste, pas celui-ci.",
+      accept: "Vider", danger: true,
+    });
+    if (!yes) return;
+    board.load({ tiles: [], ground: {}, frames: [] });
+    activeFrameId = null;
+    selection = null;
+    picking = null;
+    pasting = null;
+    orphanWarned = false;
+    saveProgress();
+    say();
+    paint();
+  }
+
+  /**
    * Paste what was copied, from the editor or from the game.
    *
    * The system clipboard arrives through the browser's `paste` event, further down, and
@@ -1830,6 +1912,9 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   host.querySelector('[data-do="redo"]').onclick = () => { board.redo(); settle(); };
   host.querySelector('[data-mode="analyse"]').onclick = () => onAnalyse(board);
   host.querySelector('[data-do="help"]').onclick = () => showHelp(host);
+  host.querySelector('[data-plan="copy"]').onclick = copyPlan;
+  host.querySelector('[data-plan="file"]').onclick = downloadPlan;
+  host.querySelector('[data-plan="clear"]').onclick = clearPlan;
   /* The rotation button for touch, where there is no wheel to stand in for it. It only
      appears when it is of use, which is while a rotatable block is held. */
   const turnButton = host.querySelector('[data-do="turn-held"]');
@@ -1900,11 +1985,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
   }
 
   /**
-   * Who is signed in, and therefore whether plans have a place in this session.
+   * Who is signed in, and therefore what the plans menu has to say.
    *
-   * An anonymous visitor comes out of here exactly as before this feature: the menu stays
-   * hidden, and `offerDraft` offers only its two original choices. The editor itself is
-   * never gated on this answer, only this top bar is.
+   * An anonymous visitor keeps exactly what they had: the local draft, on one machine, for
+   * seven days, and `offerDraft` offers only its two original choices. The editor itself is
+   * never gated on this answer, only this menu's contents are.
    */
   async function initSpaces() {
     let me = null;
@@ -1914,8 +1999,8 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
       /* Offline at mount time: stay anonymous for this session rather than holding the
          editor up on a request that serves only this menu. */
     }
-    spacesMenu.hidden = !me;
-    offerDraft(!!me);
+    signedIn = !!me;
+    offerDraft(signedIn);
   }
 
   /* ------------------------------------------------------------------------------------
