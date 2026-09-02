@@ -68,18 +68,66 @@ const HOMOGRAPHES = new Set([
   "programme", "programmes",  // "le programme" against "programmé"
   "filtre", "filtres",        // "ce filtre" against "filtré"
   "indique", "indiques",      // "indique ici" against "indiqué"
+  "refuse",   // "le jeu refuse" against "refusé"
+  "consomme", // "il consomme" against "consommé"
+  "clique",   // "Clique une bande" against "cliqué"
+  "glisse",   // "glisse pour sélectionner" against "glissé"
+  "survole",  // "Survole ou choisis" against "survolé"
+  "branche",  // "où elle se branche" against "branché"
+  "propose",  // "il propose" against "proposé"
+  "vise",     // "ce saut vise" against "visé"
+  "dilate",   // "se dilate" against "dilaté"
+  "alimente", // "ce qui l'alimente" against "alimenté"
+  "enregistre", // "il l'enregistre" against "enregistré"
+  "aime",     // "j'aime" against "aimé"
+  "affiche",  // "le chiffre s'affiche" against "affiché"
 ]);
 
 /** A word, apostrophes and hyphens included: "lui-même" and "l'analyse" are one each. */
 const MOT = /[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'-]*/g;
 
+/** The elisions French glues onto the front of a word: `l'`, `d'`, `qu'`, and the rest. */
+const ELISION = /^(?:[cdjlmnst]|qu)'/i;
+
 /**
- * A sentence with its parameter names taken out.
+ * The words of a sentence, with elisions taken off the front.
  *
- * `{debit}` is a key, not a word: `i18n.test.js` checks that a translation carries the same
- * holes as the French, so accenting one silently empties the hole it was meant to fill.
+ * `d'aperçu` is one token to the expression above, and that is what made this file miss an
+ * `aria-label="Apercu de ..."` sitting three files away from a `pas d'aperçu`: the corpus
+ * knew `d'aperçu` and was never asked about `aperçu`. The article is not part of the word.
  */
-const sansTrous = (texte) => texte.replace(/\{[^{}]*\}/g, " ");
+function mots(texte) {
+  return (texte.match(MOT) ?? []).map((mot) => mot.replace(ELISION, ""))
+    .filter((mot) => mot.length > 1);
+}
+
+/**
+ * A sentence with everything that is not a sentence taken out.
+ *
+ * Four kinds of thing look like French words and are not, and each of them would be
+ * forgiven for the wrong reason if it went into HOMOGRAPHES: the list is meant to hold real
+ * French, and an identifier parked in it stops the check on a word that also is one. So
+ * they come out here instead, structurally.
+ *
+ *   - `{debit}` and `${count}` are parameter names. `i18n.test.js` checks that a
+ *     translation carries the same holes as the French, so accenting one empties the hole.
+ *   - `class="range size"` and `id="to-editor"` are CSS and DOM names, in the HTML these
+ *     files build as strings. `range` is not `rangé`, `active` is not `activé`.
+ *   - `schema.comparer.par` is a translation key. `schema` there is not `schéma`, and
+ *     forgiving it everywhere would forgive it in a sentence too, where it would be one.
+ *   - `$recent` is a PHP variable.
+ */
+const sansTrous = (texte) => texte
+  .replace(/\$\{[^{}]*\}/g, " ")
+  .replace(/\{[^{}]*\}/g, " ")
+  /* `aria-label` is deliberately absent from this list: it is read out loud, so it is
+     French like any other, and an `aria-label="Apercu de ..."` is exactly the kind this
+     file exists to catch. Only the aria attributes that carry a state or a reference go. */
+  .replace(new RegExp('\\b(?:class|id|for|name|type|rel|href|src|viewBox|d|style'
+    + '|data-[\\w-]+|aria-hidden|aria-pressed|aria-expanded|aria-controls'
+    + '|aria-labelledby)="[^"]*"', "g"), " ")
+  .replace(/\b[a-z][\w-]*(?:\.[a-z][\w-]*)+\b/gi, " ")
+  .replace(/\$[A-Za-z_]\w*/g, " ");
 
 const accentue = (mot) => /[À-ÿ]/.test(mot);
 
@@ -137,14 +185,53 @@ function chaines() {
         continue;
       }
       if (!entree.name.endsWith(".blade.php")) continue;
-      // `{{ }}` and `@if` hold PHP, so a text run is cut at either of them.
-      const source = sansCode(lire(`${dossier}${entree.name}`));
-      for (const [, texte] of source.matchAll(/>([^<>{}@]+)</g)) {
-        prendre(texte, `${prefixe}${entree.name}`);
+      /* The expressions come out rather than cutting the sentence in two.
+         Reading `>([^<>{}@]+)<` skipped every paragraph holding a `{{ }}`, which is most of
+         the interesting ones: "il peut etre incomplet" sat in one for months, on the page
+         with the most traffic on the site, invisible to this file. */
+      const source = sansCode(lire(`${dossier}${entree.name}`))
+        .replace(/\{\{--[\s\S]*?--\}\}/g, " ");
+      for (const [, texte] of source.matchAll(/>([^<>]+)</g)) {
+        prendre(texte.replace(/\{\{[\s\S]*?\}\}|\{!![\s\S]*?!!\}|@\w+/g, " "),
+          `${prefixe}${entree.name}`);
       }
     }
   };
   parcourir("resources/views/", "");
+
+  /* What the browser and the server say at the moment something goes wrong.
+     An error message is French a reader meets on their worst day, and it is written in a
+     string literal, where no scan of text nodes will ever find it: "Cette schematique n'a
+     pas pu etre chargee" was there from the first day. Only strings that look like a
+     sentence are kept, since a literal in this codebase is as often a key or a class. */
+  const FRANCAIS = /(?<![\w-])(le|la|les|un|une|des|du|de|et|ou|qui|que|pas|sur|dans|pour|ce|il|elle|ne|se|est|sont|au|aux|en|par|plus|rien|tout|avec|sans|son|sa|ses|cette|tu|te|ton|quoi|quand|comme|leur|lui|on)(?![\w-])/i;
+
+  const litteraux = (source) => [
+    ...source.matchAll(/"((?:[^"\\\n]|\\.)*)"/g),
+    ...source.matchAll(/'((?:[^'\\\n]|\\.)*)'/g),
+    ...source.matchAll(/`((?:[^`\\]|\\.)*)`/g),
+  ].map(([, texte]) => texte).filter((texte) => FRANCAIS.test(texte));
+
+  const sansCommentaire = (source) => source
+    .replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
+
+  const walk = (dossier, suffixe, prefixe) => {
+    for (const entree of readdirSync(new URL(dossier, racine), { withFileTypes: true })) {
+      if (entree.isDirectory()) walk(`${dossier}${entree.name}/`, suffixe, `${prefixe}${entree.name}/`);
+      else if (entree.name.endsWith(suffixe)) {
+        for (const texte of litteraux(sansCommentaire(lire(`${dossier}${entree.name}`)))) {
+          prendre(texte, `${prefixe}${entree.name}`);
+        }
+      }
+    }
+  };
+  walk("public/forge/", ".js", "");
+  walk("app/", ".php", "app/");
+
+  for (const nom of ["public/index.html", "public/outils/logique.html",
+    "public/outils/planificateur.html"]) {
+    for (const texte of litteraux(sansCommentaire(lire(nom)))) prendre(texte, nom);
+  }
 
   return trouvees;
 }
@@ -157,7 +244,7 @@ test("a word the site writes accented is never written bare next to it", () => {
      as soon as one sentence spells it properly, which is the whole mechanism. */
   const connues = new Map();
   for (const [, texte] of textes) {
-    for (const mot of texte.match(MOT) ?? []) {
+    for (const mot of mots(texte)) {
       if (!accentue(mot)) continue;
       const cle = nu(mot);
       if (!connues.has(cle)) connues.set(cle, new Set());
@@ -167,7 +254,7 @@ test("a word the site writes accented is never written bare next to it", () => {
 
   const fautes = [];
   for (const [source, texte] of textes) {
-    for (const mot of texte.match(MOT) ?? []) {
+    for (const mot of mots(texte)) {
       if (accentue(mot) || HOMOGRAPHES.has(mot.toLowerCase())) continue;
       const bonnes = connues.get(nu(mot));
       if (!bonnes) continue;
@@ -181,7 +268,7 @@ test("a word the site writes accented is never written bare next to it", () => {
 
 test("it sees a missing accent, and lets a real homograph through", () => {
   const connues = new Map([["reseau", new Set(["réseau"])], ["compte", new Set(["compté"])]]);
-  const juger = (texte) => (texte.match(MOT) ?? []).filter((mot) =>
+  const juger = (texte) => mots(texte).filter((mot) =>
     !accentue(mot) && !HOMOGRAPHES.has(mot.toLowerCase()) && connues.has(nu(mot)));
 
   assert.deepEqual(juger("le reseau est plein"), ["reseau"]);

@@ -29,7 +29,7 @@ class EndBannedSessions
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect('/')->with('error', "Ce compte n'a plus acces au site.");
+            return redirect('/')->with('error', "Ce compte n'a plus accès au site.");
         }
 
         return $next($request);

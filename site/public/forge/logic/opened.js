@@ -50,9 +50,9 @@ export async function schematicNamed(slug) {
   const answer = await fetch(`/api/schematiques/${encodeURIComponent(slug)}/code`, {
     headers: { Accept: "text/plain" },
   });
-  if (!answer.ok) throw new Error(`schematique introuvable (${answer.status})`);
+  if (!answer.ok) throw new Error(`schématique introuvable (${answer.status})`);
 
   const code = (await answer.text()).trim();
-  if (!code) throw new Error("cette schematique est vide");
+  if (!code) throw new Error("cette schématique est vide");
   return code;
 }
