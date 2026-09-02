@@ -11,7 +11,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { plan, makersOf, minables } from "../../site/public/forge/plan.js";
+import { chaine, plan, makersOf, minables } from "../../site/public/forge/plan.js";
 import { loadCatalogue } from "./helpers.js";
 
 const known = loadCatalogue();
@@ -230,4 +230,72 @@ test("no plan advises a block the chosen world cannot build", () => {
   // without anybody noticing.
   const serpulo = plan(known, { item: "silicon", perMinute: 100, planet: "serpulo" });
   assert.ok(serpulo.raw.every((row) => row.options.length), "Serpulo keeps its own drills");
+});
+
+/* ------------------------------------------------------------------------------------
+   The chain, which is the half a player builds from.
+
+   The list of counts says a hundred silicon a minute needs two smelters and so much sand.
+   It never says that the sand goes into the smelter. That shape is walked during the
+   computation and was thrown away on the way out.
+   ------------------------------------------------------------------------------------ */
+
+test("the chain hangs the inputs under the block that asks for them", () => {
+  const out = plan(known, { item: "silicon", perMinute: 100, planet: "serpulo" });
+  const arbre = chaine(out);
+
+  assert.equal(arbre.item, "silicon");
+  assert.equal(arbre.block, "silicon-smelter");
+  close(arbre.perMinute, 100, "the target is what was asked for");
+
+  // One coal and two sand per craft, so the sand edge is twice the coal edge.
+  const sous = Object.fromEntries(arbre.inputs.map((one) => [one.item, one.perMinute]));
+  close(sous.coal, 100, "one coal per silicon");
+  close(sous.sand, 200, "two sand per silicon");
+});
+
+test("it stops at what comes out of the ground, and says how to get it", () => {
+  const out = plan(known, { item: "silicon", perMinute: 100, planet: "serpulo" });
+  const sable = chaine(out).inputs.find((one) => one.item === "sand");
+
+  assert.equal(sable.kind, "raw", "sand is dug, and the chain has no root under a drill");
+  assert.deepEqual(sable.inputs, []);
+  assert.ok(sable.options.length > 0, "and the drills that would do it are named");
+});
+
+test("an edge carries what one step asks, not the whole plan's total", () => {
+  /* The trap this whole shape has to avoid. Coal feeds the smelter and the graphite press
+     alike; a belt sized on the total when the smelter only wants half of it is a belt sized
+     for a factory nobody built. */
+  const out = plan(known, { item: "silicon", perMinute: 100, planet: "serpulo" });
+  const arbre = chaine(out);
+  const charbon = arbre.inputs.find((one) => one.item === "coal");
+
+  close(charbon.perMinute, 100, "what the smelter asks");
+  close(charbon.total, rawFor(out, "coal").perSecond, "and the total is said apart");
+});
+
+test("a thing wanted twice is drawn once, and marked the second time", () => {
+  /* Graphite and silicon both come back to coal. Repeating the subtree would state the
+     drill count twice, and two numbers on a page get added up. */
+  const out = plan(known, { item: "phase-fabric", perMinute: 10, planet: "serpulo" });
+  const arbre = chaine(out);
+
+  const vus = [];
+  const marcher = (noeud) => { vus.push(noeud); noeud.inputs.forEach(marcher); };
+  marcher(arbre);
+
+  const repris = vus.filter((one) => one.kind === "repris");
+  for (const one of repris) {
+    assert.deepEqual(one.inputs, [], "a second appearance carries no children");
+    assert.ok(vus.some((autre) => autre.item === one.item && autre.kind !== "repris"),
+      `${one.item} is drawn in full somewhere`);
+  }
+
+  const complets = vus.filter((one) => one.kind === "fait").map((one) => one.item);
+  assert.equal(new Set(complets).size, complets.length, "and nothing is drawn in full twice");
+});
+
+test("nothing asked for gives no chain at all, rather than an empty node", () => {
+  assert.equal(chaine(plan(known, { item: "", perMinute: 100 })), null);
 });
