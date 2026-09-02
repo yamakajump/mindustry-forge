@@ -416,10 +416,10 @@
 
 <script>
 document.getElementById("copy").addEventListener("click", async (e) => {
-  /* Le refus se dit. Sans ce catch, une ecriture refusee laissait le bouton sur
-     "Copier" sans un mot : sur la carte dont c'est le seul geste, le lecteur ne
-     savait pas si le code etait parti ou non. Le champ est juste au-dessus, donc le
-     repli est de le selectionner : il reste un ctrl+C a faire, pas une impasse. */
+  /* A refusal is said out loud. Without this catch, a denied write left the button
+     reading "Copier" without a word: on the card whose only gesture this is, the reader
+     could not tell whether the code had gone or not. The field sits right above, so the
+     fallback is to select it: one ctrl+C left to do, rather than a dead end. */
   const zone = document.getElementById("code");
   try {
     await navigator.clipboard.writeText(zone.value);
