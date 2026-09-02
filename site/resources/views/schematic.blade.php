@@ -84,8 +84,8 @@
       {{ $schematic->blocks }} blocs &middot;
       {{ $schematic->views }} vues
       @unless($schematic->verified)
-        &middot; <span title="Chiffres calcules par le navigateur, pas encore rejoues
-        sur un vrai serveur">chiffres non verifies</span>
+        &middot; <span title="Chiffres calculés par le navigateur, pas encore rejoués
+        sur un vrai serveur">chiffres non vérifiés</span>
       @endunless
     </p>
 
@@ -288,7 +288,7 @@
     @endif
 
     @if($schematic->managedBy(auth()->user()))
-      <div class="card"><h2>Gerer</h2>
+      <div class="card"><h2>Gérer</h2>
         @include('partials.manage', ['gone' => '/mes-schemas'])
         <p class="hint-line">
           @if($schematic->user_id !== auth()->id())

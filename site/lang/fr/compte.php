@@ -10,6 +10,6 @@
 return [
     'barre' => [
         'connexion' => 'Se connecter avec Discord',
-        'deconnexion' => 'Deconnexion',
+        'deconnexion' => 'Déconnexion',
     ],
 ];

@@ -161,6 +161,38 @@ test("every key in the dictionary is asked for somewhere", () => {
     "a key nobody asks for anymore is a line translated for nothing");
 });
 
+/**
+ * The pages that carry French of their own, waiting for the dictionary to be fetched.
+ *
+ * `data-i18n` marks an element whose text the dictionary replaces, and what sits inside it
+ * meanwhile is what a reader sees for the first frame, and all of what a crawler sees.
+ */
+const PAGES = ["public/index.html", "public/outils/logique.html",
+  "public/outils/planificateur.html"];
+
+test("what a page shows before the dictionary arrives is what the dictionary says", () => {
+  /* Two copies of a sentence drift, and the copy nobody tests is the one that drifts. It
+     happened: three tool-page sentences kept an unaccented spelling months after the
+     dictionary was corrected, and nothing showed it because the fix is invisible one frame
+     later. Whitespace is not compared - the page wraps its paragraphs to fit a column. */
+  const serre = (texte) => texte.trim().replace(/\s+/g, " ");
+  const ecarts = [];
+
+  for (const page of PAGES) {
+    const source = read(page);
+    for (const [, key, texte] of source.matchAll(/data-i18n="([^"]+)"[^>]*>([^<]*)</g)) {
+      if (!serre(texte)) continue;
+      if (!(key in DICTIONARY)) continue;  // the test above is the one that says so
+      if (serre(texte) !== serre(DICTIONARY[key])) {
+        ecarts.push(`${page} ${key}\n    page : ${serre(texte)}`
+          + `\n    dict : ${serre(DICTIONARY[key])}`);
+      }
+    }
+  }
+
+  assert.deepEqual(ecarts, [], `\n  ${ecarts.join("\n  ")}\n`);
+});
+
 test("the dictionary follows the naming convention", () => {
   const shape = new RegExp("^" + DOMAIN + "(?:[.][a-z0-9-]+){2,}$");
   const wrong = Object.keys(DICTIONARY).filter((key) => !shape.test(key));

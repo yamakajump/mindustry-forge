@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Forge - editeur de logique Mindustry</title>
-<meta name="description" content="Ecris le programme d'un processeur Mindustry avec coloration, autocompletion et verification, puis repars avec le schéma a coller dans le jeu.">
+<title>Forge - éditeur de logique Mindustry</title>
+<meta name="description" content="Écris le programme d'un processeur Mindustry avec coloration, autocomplétion et vérification, puis repars avec le schéma à coller dans le jeu.">
 <!-- Three icon formats, because three families of client ask for one differently: the
      .ico for whatever hits /favicon.ico without reading the head, the SVG for any current
      browser, the square PNG for the iOS home screen. -->
@@ -37,7 +37,7 @@
 
   <nav id="nav">
     <a href="/" data-i18n="nav.barre.analyser">Analyser</a>
-    <a href="/editer" data-i18n="nav.barre.editer">Editer</a>
+    <a href="/editer" data-i18n="nav.barre.editer">Éditer</a>
     <details class="menu">
       <summary data-i18n="nav.barre.schematiques">Schémas</summary>
       <div class="menu-list">
@@ -58,9 +58,9 @@
 
 <div class="outil">
   <header class="titre">
-    <h1 data-i18n="outils.logique.titre">Editeur de logique</h1>
+    <h1 data-i18n="outils.logique.titre">Éditeur de logique</h1>
     <p class="lede" data-i18n="outils.logique.sous-titre">
-      Ecris le programme d'un processeur, et repars avec le schéma a coller dans le jeu.
+      Écris le programme d'un processeur, et repars avec le schéma à coller dans le jeu.
     </p>
   </header>
 
@@ -97,8 +97,8 @@
           Passer par un schéma de processeur
         </summary>
         <p class="hint-line" data-i18n="outils.logique.par-schematique-aide">
-          Utile pour poser le processeur deja programme, avec ses liens, plutot que de
-          recopier le code dans un processeur que tu as deja construit.
+          Utile pour poser le processeur déjà programmé, avec ses liens, plutôt que de
+          recopier le code dans un processeur que tu as déjà construit.
         </p>
         <div class="row">
           <button id="copier" type="button">
@@ -107,7 +107,7 @@
           </button>
           <button id="telecharger" type="button">
             <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 19h16"/></svg>
-            <span data-i18n="outils.logique.telecharger">Telecharger le .msch</span>
+            <span data-i18n="outils.logique.telecharger">Télécharger le .msch</span>
           </button>
           <button id="coller" type="button">
             <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3M4 12h16M8 16h8"/></svg>
@@ -122,9 +122,9 @@
 
         <h3 data-i18n="outils.logique.liens">Liens</h3>
         <p class="hint-line" data-i18n="outils.logique.liens-aide">
-          Ce que le processeur pose dans le schéma sera relie a ces blocs. Le nom est
-          celui que le programme emploie, et les deux nombres disent de combien de cases le
-          bloc est a droite et au-dessus du processeur.
+          Ce que le processeur pose dans le schéma sera relié à ces blocs. Le nom est
+          celui que le programme emploie, et les deux nombres disent de combien de cases
+          le bloc est à droite et au-dessus du processeur.
         </p>
         <ul class="liens" id="liens"></ul>
         <div class="row">
@@ -145,7 +145,7 @@
       </section>
 
       <section class="card">
-        <h2 id="titre-problemes">Verification</h2>
+        <h2 id="titre-problemes">Vérification</h2>
         <ul class="problemes" id="problemes"></ul>
         <p class="hint-line" id="provenance"></p>
       </section>

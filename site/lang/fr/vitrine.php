@@ -25,8 +25,8 @@ return [
         'exemple' => 'thorium-reactor',
         'filtrees' => 'Uniquement ceux qui contiennent',
         'enlever' => 'Enlever ce filtre',
-        'inconnu' => "Ce nom n'est pas un bloc du jeu, donc rien n'est filtre. Choisis dans
-            la liste proposee : elle ne contient que des noms qui existent.",
+        'inconnu' => "Ce nom n'est pas un bloc du jeu, donc rien n'est filtré. Choisis dans
+            la liste proposée : elle ne contient que des noms qui existent.",
     ],
 
     /*
@@ -222,7 +222,7 @@ return [
             se posent pas en partie normale.',
         'montrer' => 'Les afficher quand même',
         'affichees' => 'Les schémas de bac à sable sont affichés.',
-        'remettre' => 'Revenir a ceux qui se posent en partie',
+        'remettre' => 'Revenir à ceux qui se posent en partie',
         'etiquette' => 'bac à sable',
     ],
 
@@ -259,7 +259,7 @@ return [
            right size, and a screen reader reads them. The default view's chevron drew
            at the width of the page here, because its Tailwind classes do nothing. */
         'titre' => 'Pages de résultats',
-        'precedent' => 'Precedente',
+        'precedent' => 'Précédente',
         'suivant' => 'Suivante',
         'sur' => 'sur',
         'schematiques' => 'schémas',

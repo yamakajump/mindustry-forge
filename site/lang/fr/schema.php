@@ -77,7 +77,7 @@ return [
         'bac-a-sable-court' => 'source de bac à sable',
         'cout' => 'Ce qu\'il coûte',
         'cout-aide' => "Ce que le jeu retire de ton noyau quand tu le poses, à l'unité
-            pres : c'est `Block.requirements` additionne bloc par bloc, pas une estimation.",
+            près : c'est `Block.requirements` additionné bloc par bloc, pas une estimation.",
         /*
          * Le courant affiche vient de `analysis['potential']`, donc du plafond, et le
          * dire est la moitie de la correction : l'autre moitie est de ne plus le ranger
@@ -108,8 +108,8 @@ return [
             ce que ce schéma sort n'est pas une mesure de ce que ses blocs font :
             c'est ce qu'un robinet permet. Il reste lisible et analysable, il n'est
             simplement pas classé parmi les producteurs.",
-        'bac-a-sable-courant' => "Son courant vient d'une source de bac a sable, pas de ses
-            generateurs : il n'y a rien a en conclure sur ce qu'il rendrait a ta base.",
+        'bac-a-sable-courant' => "Son courant vient d'une source de bac à sable, pas de ses
+            générateurs : il n'y a rien à en conclure sur ce qu'il rendrait à ta base.",
     ],
 
     /*
@@ -121,10 +121,10 @@ return [
      */
     'comparer' => [
         'titre' => 'Comparer deux schémas',
-        'sous-titre' => "Les deux ont été lus par le même moteur, donc la difference se
+        'sous-titre' => "Les deux ont été lus par le même moteur, donc la différence se
             soustrait au lieu de se deviner sur deux captures d'écran.",
-        'gauche' => 'A gauche',
-        'droite' => 'A droite',
+        'gauche' => 'À gauche',
+        'droite' => 'À droite',
         'cherche' => 'Cherche un schéma par son nom',
         'comparer' => 'Comparer',
         'aide' => "Tape un nom, ou colle la fin d'une adresse après /s/.",
@@ -132,8 +132,8 @@ return [
         'blocs' => 'blocs',
         'par' => 'par',
         'rien-trouve' => 'Rien ne porte ce nom.',
-        'mettre-a-gauche' => 'a gauche',
-        'mettre-a-droite' => 'a droite',
+        'mettre-a-gauche' => 'à gauche',
+        'mettre-a-droite' => 'à droite',
         'comparer-avec' => 'Comparer avec un autre',
         'a-choisir' => 'Des schémas à comparer',
         'rien-a-comparer' => "Rien de publié pour l'instant.",
@@ -156,18 +156,18 @@ return [
         'ce-quils-font' => "Ce qu'ils font tous les deux",
         'lun-pas-lautre' => "Ce que l'un fait et pas l'autre",
         'la-place' => 'La place et le courant',
-        'le-cout' => "Ce qu'ils coutent a poser",
+        'le-cout' => "Ce qu'ils coûtent à poser",
         'ce-qui-bloque' => 'Ce qui les arrête',
-        'rien-ne-bloque' => 'rien de signale',
+        'rien-ne-bloque' => 'rien de signalé',
 
-        'mesure-blocs' => 'Blocs poses',
+        'mesure-blocs' => 'Blocs posés',
         'mesure-emprise' => 'Emprise au sol',
-        'mesure-energie' => 'Énergie a fournir',
+        'mesure-energie' => 'Énergie à fournir',
 
-        'ecart-lecture' => "L'ecart est celui de gauche moins celui de droite : en vert, la
+        'ecart-lecture' => "L'écart est celui de gauche moins celui de droite : en vert, la
             gauche en fait plus.",
         'non-soustrait' => 'pas soustrait',
-        'ecart' => 'ecart',
+        'ecart' => 'écart',
 
         /*
          * The three refusals, and they are what makes the page worth having.
@@ -181,11 +181,11 @@ return [
         'plafond' => "Ces chiffres sont des plafonds, pas des mesures : personne n'a dit à ces
             schémas où ils se branchent, donc c'est ce qu'ils feraient au mieux.",
         'kinds-melanges' => "Un des deux chiffres est une mesure et l'autre un plafond. Ils
-            sont montrés côte à côte et volontairement pas soustraits : leur difference ne
+            sont montrés côte à côte et volontairement pas soustraits : leur différence ne
             voudrait rien dire.",
         'pas-de-verdict' => "Aucun vainqueur n'est désigné. Un schéma qui produit plus et
             coûte trois fois plus cher n'est pas meilleur, c'est un autre marché, et vous
-            êtes seul a savoir lequel vous voulez.",
+            êtes seul à savoir lequel vous voulez.",
     ],
 
     'gestion' => [
