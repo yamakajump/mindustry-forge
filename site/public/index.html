@@ -257,6 +257,7 @@ import { mountEditor } from "./forge/editor/mount.js";
 import { workbenchOf } from "./forge/editor/state.js";
 import { ready as dictionary, t } from "./forge/i18n.js";
 import { watch } from "./forge/apercu.js";
+import { loadNames, nameOf } from "./forge/noms.js";
 
 const $ = (id) => document.getElementById(id);
 const text = $("text"), out = $("out"), drop = $("drop");
@@ -326,6 +327,24 @@ const blockIcon = (name, size = 16, folder = "") => {
 const BOLT = (size = 18) => `<svg class="i" viewBox="0 0 1043 1043" aria-hidden="true"
   style="width:${size}px;height:${size}px;fill:currentColor;stroke:none"><path d="M652.13 105 261.13 474 522.13 625 392.13 938 782.13 568 522.13 418ZM652.13 0Q695.13 0 725.13 31Q755.13 62 756.13 105Q756.13 127 746.13 149L653.13 373L835.13 478Q878.13 503 885.13 555Q892.13 607 853.13 644L463.13 1014Q432.13 1043 391.13 1043Q335.13 1043 305.13 996Q275.13 949 296.13 898L391.13 670L210.13 565Q166.13 540 158.13 489Q150.13 438 190.13 399L580.13 29Q611.13 0 652.13 0Z"/></svg>`;
 
+/* Le nom que le jeu donne, dans la langue du lecteur.
+
+   Le rapport etait le seul ecran du site a montrer les identifiants : il annoncait
+   « sand 160 / s » et « 400 mechanical-drill » a cote d'un catalogue qui dit « Sable » et
+   d'un planificateur qui dit « Foreuse Mecanique ». `nameOf` existait et n'etait appelee
+   que par le planificateur.
+
+   La famille est demandee au catalogue et jamais tenue a la main : une liste ecrite ici
+   commencerait a mentir le jour ou le jeu ajoute un objet. Hors de `render`, parce que le
+   panneau d'un bloc en a besoin autant que le rapport, et il est ailleurs. */
+const familleDe = (nom) => {
+  const cat = catalogueOf();
+  if (cat?.items?.[nom]) return "objet";
+  if (cat?.liquids?.[nom]) return "liquide";
+  return "bloc";
+};
+const lisible = (nom) => nameOf(familleDe(nom), nom);
+
 const withIcon = (item, size = 18) => {
   const src = itemIcon(item, size * 2);
   return src ? `<img src="${src}" alt="" width="${size}" height="${size}">` : "";
@@ -335,9 +354,14 @@ function render(report) {
   const made = Object.entries(report.perMinute).sort((a, b) => b[1] - a[1]);
   const right = [];
 
+  /* Le catalogue porte la version telle que le jeu la donne, « release build 159.7 ».
+     Precede de « Mindustry », cela faisait « Mindustry release build 159.7 » sous le nom
+     du schema : du jargon la ou un numero suffit. */
+  const versionLisible = (dite) => String(dite).replace(/^(release\s+)?build\s+/i, "");
+
   right.push(`<h2 class="title">${escape(report.name)}</h2>
     <p class="sub">${report.width}x${report.height} &middot; ${report.blocks} blocs
-      &middot; jeu ${escape(report.gameVersion)}</p>`);
+      &middot; Mindustry ${escape(versionLisible(report.gameVersion))}</p>`);
 
   /* Power alongside the items, because for a whole class of schematics it is the only
      answer. One of them was reported as producing coal and spore pods, which are
@@ -411,12 +435,12 @@ function render(report) {
       const best = need.options.slice(0, 4);
       const label = need.resource.startsWith("*")
         ? escape(t("analyse.besoins.combustible"))
-        : `${withIcon(need.resource)}${escape(need.resource)}`;
+        : `${withIcon(need.resource)}${escape(lisible(need.resource))}`;
       const where = sockets[need.resource] || [];
       return `<div class="line"><span>${label}</span>
         <span class="num">${perSecond(need.perMinute / 60)} / s</span></div>` + (best.length
         ? `<div class="chips" style="margin:6px 0 8px">${best.map((o) =>
-            `<span class="chip"><span class="num">${o.count}</span> ${escape(o.block)}</span>`)
+            `<span class="chip"><span class="num">${o.count}</span> ${escape(lisible(o.block))}</span>`)
             .join(`<span style="color:var(--dim);align-self:center">${
               escape(t("analyse.besoins.ou"))}</span>`)}</div>`
         : "") + (where.length
@@ -472,7 +496,7 @@ function render(report) {
     right.push(`<div class="card"><h2>${escape(t("analyse.plafond.titre"))}</h2>
       ${ceiling.map(([item, n]) => `<div class="line"><span>${
            escape(t("analyse.plafond.au-mieux"))} ${withIcon(item)}
-           ${escape(item)}</span>
+           ${escape(lisible(item))}</span>
          <span class="num good">${perSecond(n / 60)} ${
            escape(t("analyse.unite.par-seconde"))}</span></div>`).join("")}
       ${ceiling.length && needs.length
@@ -506,12 +530,12 @@ function render(report) {
     : report.fedItself ? "Branché comme il est" : "Avec ce que tu as indiqué"}</h2>${
     power.made > 0.01
       ? `<div class="out-rate" style="color:var(--accent)">${bolt}
-           <b>${rate(power.net)}</b><span>energie / s &nbsp;<span style="color:var(--dim)">
+           <b>${rate(power.net)}</b><span>énergie / s &nbsp;<span style="color:var(--dim)">
            (${rate(power.made)} produits, ${rate(power.spent)} consommes)</span></span></div>`
       : ""
   }${
     made.map(([item, n]) => `<div class="out-rate">${withIcon(item, 22)}
-      <b>${perSecond(n / 60)}</b><span>${escape(item)} / s</span></div>`).join("")
+      <b>${perSecond(n / 60)}</b><span>${escape(lisible(item))} / s</span></div>`).join("")
   }${
     !made.length && power.made <= 0.01
       ? `<p class="empty">Rien tant qu'on ne lui donne rien. Indique un apport
@@ -519,7 +543,7 @@ function render(report) {
       : ""
   }${
     power.made <= 0.01 && power.spent > 0.01
-      ? `<div class="line"><span>${BOLT()} Consomme de l'energie sans en produire</span>
+      ? `<div class="line"><span>${BOLT()} Consomme de l'énergie sans en produire</span>
          <span class="num warn">${rate(power.spent)} / s</span></div>`
       : ""
   }</div>`);
@@ -532,7 +556,7 @@ function render(report) {
   if (inside.length && answered) {
     right.push(`<div class="card"><h2>Fabrique et consomme sur place</h2>${
       inside.map(([item, n]) =>
-        `<div class="line"><span>${withIcon(item)}${escape(item)}</span>
+        `<div class="line"><span>${withIcon(item)}${escape(lisible(item))}</span>
           <span class="num">${perSecond(n)} / s</span></div>`).join("")
     }<p class="hint-line">Ces objets ne sortent pas : ils alimentent les machines du
       schéma lui-même.</p></div>`);
@@ -542,7 +566,7 @@ function render(report) {
   if (report.bottleneck && fedSomething && answered) {
     const [name, share] = report.bottleneck;
     right.push(`<div class="card"><h2>Goulot</h2>
-      <div class="line"><span>${escape(name)}</span>
+      <div class="line"><span>${escape(lisible(name))}</span>
         <span class="num bad">nourri à ${Math.round(share * 100)}%</span></div>
       ${report.throttle ? `<p class="hint-line">${t("analyse.goulot.plafonne", {
         bloc: `<strong>${escape(report.throttle.name)}</strong>`,
@@ -583,10 +607,10 @@ function render(report) {
   if (surplus.length || idle.length) {
     const rows = [
       ...surplus.map(([item, n]) =>
-        `<div class="line"><span>${withIcon(item)}${escape(item)} arrive sans pouvoir être
+        `<div class="line"><span>${withIcon(item)}${escape(lisible(item))} arrive sans pouvoir être
           consommé</span><span class="num warn">+${perSecond(n)} / s</span></div>`),
       ...idle.map(([name, n]) =>
-        `<div class="line"><span>${escape(name)} relié à rien</span>
+        `<div class="line"><span>${escape(lisible(name))} relié à rien</span>
           <span class="num bad">x${n}</span></div>`),
     ];
     right.push(`<div class="card"><h2>Gaspille</h2>${rows.join("")}</div>`);
@@ -651,12 +675,16 @@ function render(report) {
     right.push(`<div class="card"><h2>Ce que dit le jeu</h2>${
       cost.length
         ? `<div class="chips" style="margin-bottom:10px">${cost.map(([item, n]) =>
-            `<span class="chip">${withIcon(item, 15)}<span class="num">${n}</span></span>`)
+            /* Le nom a cote du nombre. Neuf pastilles de seize pixels avec un chiffre
+               et rien d'autre demandaient de reconnaitre le sprite pour savoir que 2 600
+               etait du cuivre. */
+            `<span class="chip">${withIcon(item, 15)}<span class="num">${n}</span> ${
+              escape(lisible(item))}</span>`)
             .join("")}</div>`
         : ""
     }${
       asGame && (asGame.made > 0.01 || asGame.spent > 0.01)
-        ? `<div class="line"><span>Energie</span><span class="num">
+        ? `<div class="line"><span>Énergie</span><span class="num">
              <span class="good">+${rate(asGame.made)}</span>
              &nbsp;<span class="warn">-${rate(asGame.spent)}</span></span></div>`
         : ""
@@ -664,7 +692,7 @@ function render(report) {
       près : c'est l'encart que tu vois sur l'aperçu d'un schéma.</p>${
       boost
         ? `<div class="line" style="margin-top:8px"><span>Forge compte plutot</span>
-             <span class="num good">${rate(report.potential.made)} energie / s</span></div>
+             <span class="num good">${rate(report.potential.made)} énergie / s</span></div>
            <p class="hint-line">Le jeu ignore les accélérateurs. Ici
              <strong>${asGame.projectors}</strong> en couvre${asGame.projectors > 1 ? "nt" : ""}
              <strong>${asGame.boosted}</strong> bloc${asGame.boosted > 1 ? "s" : ""},
@@ -676,7 +704,7 @@ function render(report) {
 
   const notes = [];
   for (const [name, n] of Object.entries(report.unknown || {})) {
-    notes.push(`<li>${escape(name)} x${n} : inconnu de ce catalogue, traité comme un mur.</li>`);
+    notes.push(`<li>${escape(lisible(name))} x${n} : inconnu de ce catalogue, traité comme un mur.</li>`);
   }
   if (!report.settled) {
     notes.push(`<li>La disposition boucle sur elle-même, le débit affiché n'est pas un
@@ -1284,7 +1312,7 @@ const rateLine = (label, rates, unit = "/ s", factor = 1) => {
   const rows = Object.entries(rates || {}).filter(([, v]) => v > 0.001);
   if (!rows.length) return "";
   return rows.map(([item, value]) =>
-    `<div class="line"><span>${withIcon(item)}${escape(item)} ${label}</span>
+    `<div class="line"><span>${withIcon(item)}${escape(lisible(item))} ${label}</span>
       <span class="num">${rate(value * factor)} ${unit}</span></div>`).join("");
 };
 
@@ -1303,7 +1331,7 @@ function showBlock(report, tile) {
     crafter: "usine", generator: "generateur", sink: "consommateur", power: "reseau electrique",
   }[tile.role] || tile.role || "bloc";
 
-  const parts = [`<h2>${escape(tile.name)}</h2>
+  const parts = [`<h2>${escape(lisible(tile.name))}</h2>
     <p class="sub" style="margin:0 0 10px">${role} &middot; ${tile.size}x${tile.size}
       &middot; en (${tile.x}, ${tile.y})</p>`];
 
@@ -1340,11 +1368,11 @@ function showBlock(report, tile) {
   parts.push(rateLine(makes ? "produit" : "porte", tile.through, "/ s", 1));
   if (tile.powerOut) {
     parts.push(`<div class="line"><span>Produit</span>
-      <span class="num good">${rate(tile.powerOut)} energie / s</span></div>`);
+      <span class="num good">${rate(tile.powerOut)} énergie / s</span></div>`);
   }
   if (tile.power) {
     parts.push(`<div class="line"><span>Consomme</span>
-      <span class="num warn">${rate(tile.power)} energie / s</span></div>`);
+      <span class="num warn">${rate(tile.power)} énergie / s</span></div>`);
   }
   parts.push(`<div class="line"><span>Relié à</span>
     <span class="num">${tile.fedBy} en entrée, ${tile.feeds} en sortie</span></div>`);
@@ -1368,7 +1396,7 @@ function showBlock(report, tile) {
       class="${mark?.side === which ? "primary" : ""}">${label}</button>`;
 
     parts.push(`<div class="mark">
-      <div class="row">${side("in", "Entree")}${side("out", "Sortie")}${
+      <div class="row">${side("in", "Entrée")}${side("out", "Sortie")}${
         mark ? `<button type="button" data-side="">Retirer</button>` : ""}</div>${
       mark?.side === "in"
         ? (offered.length
@@ -1376,7 +1404,8 @@ function showBlock(report, tile) {
                <div class="chips">${offered.map((resource) =>
                  `<button type="button" class="chip pick ${
                    mark.resource === resource ? "on" : ""}" data-resource="${
-                   escape(resource)}">${withIcon(resource, 15)}${escape(resource)}</button>`
+                   escape(lisible(resource))}">${withIcon(resource, 15)}${
+                     escape(lisible(resource))}</button>`
                  ).join("")}</div>`
             : `<p class="hint-line" style="margin:10px 0 0">Ce schéma ne manque de
                rien qui puisse passer par là.</p>`)
@@ -1395,8 +1424,10 @@ function showBlock(report, tile) {
   const spins = catalogueOf()?.blocks?.[tile.name]?.rotate;
   parts.push(`<div class="row edit">
     ${spins ? `<button type="button" id="spin">Tourner</button>` : ""}
-    <button type="button" id="scrap">Retirer ce bloc</button>
-  </div>`);
+    <button type="button" id="scrap"
+      title="${escape(t("analyse.bloc.retirer-titre"))}">Retirer ce bloc</button>
+  </div>
+  <p class="hint-line" style="margin:6px 0 0">${escape(t("analyse.bloc.retirer-aide"))}</p>`);
 
   panel.innerHTML = parts.join("");
 
@@ -1457,7 +1488,10 @@ function wireRun(report, repaint) {
   const clock = () => {
     const seconds = live ? live.world.tick / 60 : 0;
     $("run-clock").textContent = live
-      ? `${seconds.toFixed(1)} s de jeu` : "";
+      /* La virgule, comme partout ailleurs sur cette page : « 6.3 s » a cote de
+         « 26,7 / s » se lit comme une faute de frappe. */
+      ? `${seconds.toLocaleString("fr-FR", { minimumFractionDigits: 1,
+          maximumFractionDigits: 1 })} s de jeu` : "";
   };
 
   /* The machinery alone: no words, no repaint. Called from outside when this whole report
@@ -1503,7 +1537,7 @@ function wireRun(report, repaint) {
       }
     }
     live.play();
-    play.textContent = "Arreter";
+    play.textContent = "Arrêter";
     frame = requestAnimationFrame(loop);
   });
 
@@ -1706,6 +1740,10 @@ function wireKeep(report) {
 loadSprites().catch(() => {});
 whoAmI();
 peuplerVitrine();
+/* Dix-huit kilo-octets, demandes une fois et jamais attendus : `nameOf` rend l'identifiant
+   degrossi tant que la table n'est pas la, donc un rapport calcule avant la reponse
+   s'affiche quand meme, avec les noms du jeu au rendu suivant. */
+loadNames();
 
 /* `/editer` serves this same page, and the page reads its own path. An address rather than
    a fragment: a fragment never reaches the server, so it does not share into a thread and

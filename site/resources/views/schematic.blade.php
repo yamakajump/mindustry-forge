@@ -416,9 +416,21 @@
 
 <script>
 document.getElementById("copy").addEventListener("click", async (e) => {
-  await navigator.clipboard.writeText(document.getElementById("code").value);
-  e.target.textContent = "Copié";
-  setTimeout(() => { e.target.textContent = "Copier"; }, 1600);
+  /* Le refus se dit. Sans ce catch, une ecriture refusee laissait le bouton sur
+     "Copier" sans un mot : sur la carte dont c'est le seul geste, le lecteur ne
+     savait pas si le code etait parti ou non. Le champ est juste au-dessus, donc le
+     repli est de le selectionner : il reste un ctrl+C a faire, pas une impasse. */
+  const zone = document.getElementById("code");
+  try {
+    await navigator.clipboard.writeText(zone.value);
+    e.target.textContent = "Copié";
+    setTimeout(() => { e.target.textContent = "Copier"; }, 1600);
+  } catch {
+    zone.focus();
+    zone.select();
+    e.target.textContent = "Copie-le avec ctrl+C";
+    setTimeout(() => { e.target.textContent = "Copier"; }, 4000);
+  }
 });
 </script>
 @endsection
