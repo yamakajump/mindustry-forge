@@ -50,3 +50,8 @@ docs/plans/
 
 # The working notes a tooled session keeps as it goes: drafts, regenerable from git log.
 .superpowers/
+
+# The session scratch: a manual test plan filled in by hand, and the worktrees a
+# tooled session cuts. Both belong to whoever is at the keyboard that day.
+.claude/tests-manuels.md
+.claude/worktrees/
