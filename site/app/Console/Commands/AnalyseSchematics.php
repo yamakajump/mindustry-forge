@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Process;
  *     php artisan forge:analyser --tout       redo everything, even what is already current
  *
  * There is only one implementation of the analysis in this repository, and it is
- * `site/public/forge/analyse.js`. Running that file under Node does not make a second one:
+ * `site/public/forge/bilan.js`. Running that file under Node does not make a second one:
  * it is the same file, with the same catalogue, rendering the same figures. Rewriting it in
  * PHP would make a second one, and a second thing to have wrong. So the orchestration and
  * the database stay here, the arithmetic stays there, and what passes between the two fits

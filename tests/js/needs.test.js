@@ -8,7 +8,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { analyse, buildGraph } from "../../site/public/forge/analyse.js";
+import { analyse, buildGraph } from "../../site/public/forge/bilan.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { overCarried } from "../../site/public/forge/needs.js";
 import { demand, fuels, producers } from "../../site/public/forge/needs.js";
@@ -160,7 +160,7 @@ test("the same question comes back in the same order", () => {
 
 test("a schematic's own blocks say which world its shopping list is for", async () => {
   const { requirements, planetOf } = await import("../../site/public/forge/needs.js");
-  const { buildGraph } = await import("../../site/public/forge/analyse.js");
+  const { buildGraph } = await import("../../site/public/forge/bilan.js");
 
   const erekir = await analyse(paste([[0, 0, "carbide-crucible", 0]]));
   const graphite = erekir.needs.find((n) => n.resource === "graphite");

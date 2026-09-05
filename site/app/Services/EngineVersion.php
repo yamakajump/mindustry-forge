@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
  * other, and a corrected block changes every answer that block appears in.
  *
  * This is the only place the version is computed. The ingestion pass runs the analysis
- * under Node, because `analyse.js` is the one implementation and Node can run it as it
+ * under Node, because `bilan.js` is the one implementation and Node can run it as it
  * stands, but the surrounding orchestration stays here in PHP: Node does the arithmetic,
  * this side owns the database and the version stamped into it.
  */
@@ -32,7 +32,7 @@ class EngineVersion
      * fifteen thousand analyses over a change of colour.
      */
     private const SOURCES = [
-        'analyse.js',
+        'bilan.js',
         'schematic.js',
         'needs.js',
         'marks.js',

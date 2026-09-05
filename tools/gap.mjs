@@ -7,7 +7,7 @@
  * This repository holds two models of the same thing in JavaScript. The tick engine under
  * `engine/` is a transcription of Mindustry's update loop, and `npm run oracle` holds it
  * against a real v159.7 headless server on every scenario in `bench/data/oracle`: it is at
- * zero per cent. The steady-state solve in `analyse.js` is a maximum flow, it answers a
+ * zero per cent. The steady-state solve in `bilan.js` is a maximum flow, it answers a
  * different way, and it is the one whose numbers reach the player.
  *
  * Nobody had ever asked the second one the questions the first one has already answered.
@@ -26,7 +26,7 @@ import { join } from "node:path";
 
 const { KEPT, groundOf, measured, paintedFor } = await import(
   new URL("./compare.mjs", import.meta.url));
-const { analyse } = await import(new URL("../site/public/forge/analyse.js", import.meta.url));
+const { analyse } = await import(new URL("../site/public/forge/bilan.js", import.meta.url));
 
 const everything = process.argv.includes("--all");
 

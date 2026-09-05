@@ -14,11 +14,11 @@ Everything else is preference. These two are not.
 
 ### 1. One implementation of the analysis
 
-The analysis lives in `site/public/forge/analyse.js`, in JavaScript, and runs in the
+The analysis lives in `site/public/forge/bilan.js`, in JavaScript, and runs in the
 visitor's browser. A second one, in another language, for a command line or a backend,
 would be a second thing to be wrong.
 
-This is why the ingestion pass runs `analyse.js` under Node rather than reimplementing it
+This is why the ingestion pass runs `bilan.js` under Node rather than reimplementing it
 in PHP, and why the schematic renderer is not redrawn server-side. When you find yourself
 about to compute a game figure in a second place, stop and read
 [`docs/known-gaps.md`](docs/known-gaps.md) first: the answer is usually already written

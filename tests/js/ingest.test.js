@@ -1,7 +1,7 @@
 /**
  * The bridge between the artisan command and the browser's analysis.
  *
- * `tools/ingest.mjs` computes nothing: it imports `analyse.js` as it is and hands it the
+ * `tools/ingest.mjs` computes nothing: it imports `bilan.js` as it is and hands it the
  * schematics the collector brought back. What is tested here is therefore not the
  * arithmetic, which has its own tests and the bench behind them, but the contract the PHP
  * side relies on: one line in, one line out, a line that blows up does not take the others

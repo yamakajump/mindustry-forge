@@ -6,13 +6,32 @@ rather than a copy of them.
 
 ## One implementation
 
-The analysis is `analyse.js`, here, in JavaScript. A second version, in another language,
+The analysis is `bilan.js`, here, in JavaScript. A second version, in another language,
 for a command line or a backend, would be a second thing to be wrong. Do not write one,
 here or anywhere else in the repository.
 
 The `.msch` format is implemented in `schematic.js` from `Schematics.write` and `TypeIO` in
 the pinned Mindustry version, rather than from a wiki: a format read off a wiki is how a
 tool ends up disagreeing with the game about what the player just pasted.
+
+## A served file is named against the filter lists
+
+`bilan.js` was `analyse.js` until EasyPrivacy was found to block it: rule 246 of that list
+is the bare path `/analyse.js`, on any host, and EasyPrivacy is on by default in uBlock
+Origin. The analyser was therefore a blank page for a large part of its own audience, and
+nothing here could tell: a blocked request never reaches the server, so no log holds it and
+no error reaches a `catch`. It was reported by a player, in a screenshot, on Discord.
+
+Anything under `public/` is fetched by a browser that runs those lists, so a new name there
+is checked against them first:
+
+```bash
+curl -s https://easylist.to/easylist/easyprivacy.txt | grep '<the name>'
+curl -s https://easylist.to/easylist/easylist.txt    | grep '<the name>'
+```
+
+"analyse", "stats", "track", "collect", "pixel", "beacon" and their neighbours are words
+those lists match on a path, whatever the file actually does.
 
 ## Editing a hashed source ages the whole catalogue
 
@@ -26,7 +45,7 @@ What decides an answer belongs in the hashed sources; what only decides how a pa
 does not. The list is explicit rather than a glob, in `EngineVersion::SOURCES`, and it is
 these twenty files, reproduced here to be read at a glance:
 
-    analyse.js  schematic.js  needs.js  marks.js  ground.js  maxflow.js  logic.js
+    bilan.js  schematic.js  needs.js  marks.js  ground.js  maxflow.js  logic.js
     blocks.json
     engine/assembler.js  engine/blast.js  engine/cargo.js  engine/carriers.js
     engine/core.js  engine/liquids.js  engine/machines.js  engine/massdriver.js
@@ -53,7 +72,7 @@ identical means the change touched nothing hashed.
 Compute it from the committed content, not from the working tree:
 
 ```bash
-git cat-file blob <ref>:site/public/forge/analyse.js | md5sum
+git cat-file blob <ref>:site/public/forge/bilan.js | md5sum
 ```
 
 `EngineVersion::compute()` reads files from disk, and on Windows a file an editor rewrote

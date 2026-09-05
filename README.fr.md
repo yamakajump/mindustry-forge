@@ -72,7 +72,7 @@ deux ne s'accordent pas encore. C'est écrit ici plutôt que laissé à trouver 
 - `site/public/forge/engine/**` avance le jeu tic par tic, et bride une machine selon le
   courant qu'elle reçoit vraiment. C'est ce que le banc mesure, et ce que la vue animée fait
   tourner.
-- `site/public/forge/analyse.js` résout un état stationnaire par flot maximum. Le courant
+- `site/public/forge/bilan.js` résout un état stationnaire par flot maximum. Le courant
   n'entre jamais dans la résolution, donc le goulot qu'il rapporte y est aveugle.
 
 **Celui qu'on montre au joueur est le second. Celui qui est prouvé contre le jeu est le

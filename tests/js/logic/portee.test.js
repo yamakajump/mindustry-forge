@@ -15,7 +15,7 @@
  *
  * - `Mathf.within` is `fcmpg` then `ifge`, so the comparison is **strict**. A link laid
  *   exactly at the range is refused. The game lets a player place it and saves it, then
- *   refuses it for ever, which is the same trap `analyse.js` already documents for the mass
+ *   refuses it for ever, which is the same trap `bilan.js` already documents for the mass
  *   driver, where it cost a working figure to find.
  * - the radius takes the **target's** half-size, so a bigger block is reachable from
  *   further away. The processor's own size does not enter it.
@@ -32,7 +32,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { buildGraph } from "../../../site/public/forge/analyse.js";
+import { buildGraph } from "../../../site/public/forge/bilan.js";
 import { logicOf, readProgram, writeProgram } from "../../../site/public/forge/logic.js";
 import { loadCatalogue } from "../helpers.js";
 

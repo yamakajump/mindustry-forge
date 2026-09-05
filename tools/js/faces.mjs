@@ -1,5 +1,5 @@
 /** Which faces of each carrier open onto nothing, outside the bounding box. */
-import { analyse } from "../../site/public/forge/analyse.js";
+import { analyse } from "../../site/public/forge/bilan.js";
 import { loadCatalogue } from "../../tests/js/helpers.js";
 
 loadCatalogue();

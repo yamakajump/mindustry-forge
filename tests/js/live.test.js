@@ -15,7 +15,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { loadCatalogue, paste } from "./helpers.js";
-import { buildGraph, useCatalogue } from "../../site/public/forge/analyse.js";
+import { buildGraph, useCatalogue } from "../../site/public/forge/bilan.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { World } from "../../site/public/forge/engine/core.js";
 import { behaviourOf } from "../../site/public/forge/engine/carriers.js";

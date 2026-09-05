@@ -10,7 +10,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { analyse } from "../../site/public/forge/analyse.js";
+import { analyse } from "../../site/public/forge/bilan.js";
 import { yieldOf } from "../../site/public/forge/ground.js";
 import { loadCatalogue, paste } from "./helpers.js";
 

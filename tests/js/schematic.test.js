@@ -12,7 +12,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { fromBase64, read, toBase64, write } from "../../site/public/forge/schematic.js";
-import { analyse } from "../../site/public/forge/analyse.js";
+import { analyse } from "../../site/public/forge/bilan.js";
 import { loadCatalogue, paste } from "./helpers.js";
 
 const known = loadCatalogue();
