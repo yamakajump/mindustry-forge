@@ -42,7 +42,7 @@ class ContributionController extends Controller
          */
         if ($schematic->items()->where('kind', SchematicItem::MESURE)->exists()) {
             return response()->json([
-                'message' => 'Son auteur a déjà dit où elle se branche. Rien à compléter ici.',
+                'message' => 'Son auteur a déjà dit où il se branche. Rien à compléter ici.',
             ], 409);
         }
 

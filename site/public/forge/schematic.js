@@ -50,12 +50,12 @@ const MAX_BODY = MAX_TILES * MAX_TILE_BYTES + 64 * 1024;
 /** Bytes from what the clipboard carries, tolerating a paste wrapped by a chat client. */
 export function bytesFromBase64(text) {
   const clean = String(text).replace(/\s+/g, "");
-  if (!clean) throw new Error("aucune schématique fournie");
+  if (!clean) throw new Error("aucun schéma fourni");
   let binary;
   try {
     binary = atob(clean);
   } catch {
-    throw new Error("ce n'est pas une schématique : le texte n'est pas du base64");
+    throw new Error("ce n'est pas un schéma : le texte n'est pas du base64");
   }
   const out = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
@@ -124,7 +124,7 @@ async function pump(data, format) {
 
   if (overflowed) {
     chunks.length = 0;
-    throw new Error(`la schématique se dilate au-delà de ${MAX_BODY} octets`);
+    throw new Error(`le schéma se dilate au-delà de ${MAX_BODY} octets`);
   }
 
   const out = new Uint8Array(length);
@@ -202,7 +202,7 @@ class Reader {
   }
   need(count) {
     if (this.at + count > this.view.byteLength) {
-      throw new Error("la schématique se termine au milieu d'un champ");
+      throw new Error("le schéma se termine au milieu d'un champ");
     }
   }
   u8() { this.need(1); return this.view.getUint8(this.at++); }
@@ -230,10 +230,10 @@ class Reader {
 export async function read(bytes) {
   const magic = new TextDecoder().decode(bytes.slice(0, 4));
   if (magic !== HEADER) {
-    throw new Error("ce n'est pas une schématique Mindustry");
+    throw new Error("ce n'est pas un schéma Mindustry");
   }
   if (bytes[4] > VERSION) {
-    throw new Error(`format de schématique ${bytes[4]}, plus récent que ${VERSION}`);
+    throw new Error(`format de schéma ${bytes[4]}, plus récent que ${VERSION}`);
   }
 
   let body, altered;
@@ -244,7 +244,7 @@ export async function read(bytes) {
        what the game could ever have written is refused on purpose, and a reader told only
        that "decompression failed" would go looking for a damaged copy that does not exist. */
     if (error.message.includes("se dilate")) throw error;
-    throw new Error("schématique illisible : la décompression a échoué");
+    throw new Error("schéma illisible : la décompression a échoué");
   }
 
   const reader = new Reader(body);
@@ -395,7 +395,7 @@ function writeConfig(writer, tile) {
 
 export async function write(tiles, { tags = {}, sizeOf = () => 1,
                                      priorityOf = () => 0 } = {}) {
-  if (!tiles.length) throw new Error("une schématique vide ne se copie pas");
+  if (!tiles.length) throw new Error("un schéma vide ne se copie pas");
 
   /* The order things are written in is the order they are built in, and the game uses it.
      `Block.schematicPriority` runs from +10 for a plastanium wall to -15 for an overdrive
@@ -426,7 +426,7 @@ export async function write(tiles, { tags = {}, sizeOf = () => 1,
   for (const tile of tiles) {
     if (!palette.includes(tile.block)) palette.push(tile.block);
   }
-  if (palette.length > 255) throw new Error("plus de 255 blocs differents");
+  if (palette.length > 255) throw new Error("plus de 255 blocs différents");
 
   const body = new Writer();
   body.i16(right - left + 1).i16(top - bottom + 1);

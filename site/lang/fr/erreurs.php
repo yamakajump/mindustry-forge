@@ -15,8 +15,8 @@ return [
         /* The three true reasons, in the order they happen. A schematic taken out of the
            showcase is still on the server and simply not visible any more, and that is the
            commonest of the three: saying only "deleted" would be wrong half the time. */
-        'explication' => 'Le schéma a peut-être été supprimé, remis en privé, ou l\'adresse '
-            .'a été recopiée de travers.',
+        'explication' => 'Ce schéma a peut-être été supprimé ou remis en privé. Sinon, '
+            .'c\'est l\'adresse qui a été recopiée de travers.',
         'analyser' => 'Analyser un schéma',
         'parcourir' => 'Parcourir le catalogue',
     ],

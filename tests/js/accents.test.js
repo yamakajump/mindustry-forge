@@ -57,6 +57,7 @@ const HOMOGRAPHES = new Set([
   "copie", "copies",      // "il copie" against "copié"
   "calcule", "calcules",  // "il calcule" against "calculé"
   "importe",  // "peu importe" against "importé"
+  "charge", "charges",    // "la charge maximale" against "chargé"
   "marche",   // "il marche" against "marché"
   "note", "notes",        // "ma note" against "noté"
   "page", "pages",        // the page against "pagé", which the sheet spells accented

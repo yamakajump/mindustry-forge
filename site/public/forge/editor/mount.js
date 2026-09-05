@@ -67,7 +67,7 @@ const SHELL = `
             title="Tourner ce qu'on tient">↻</button>
     <div class="editor-pick" hidden>
       <button type="button" data-pick="copy" title="Copier (ctrl+C)">Copier</button>
-      <button type="button" data-pick="turn" title="Tourner d un quart">↻</button>
+      <button type="button" data-pick="turn" title="Tourner d'un quart de tour">↻</button>
       <button type="button" data-pick="flipx" title="Miroir gauche-droite">↔</button>
       <button type="button" data-pick="flipy" title="Miroir haut-bas">↕</button>
       <button type="button" data-pick="drop" title="Supprimer (suppr)">Supprimer</button>
@@ -1335,7 +1335,7 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
     }
   }
 
-  const copy = () => copyTiles(picked(), "selection");
+  const copy = () => copyTiles(picked(), "sélection");
   const copyFrame = (frame) => copyTiles(board.tilesIn(frame), frame.name);
 
   /**

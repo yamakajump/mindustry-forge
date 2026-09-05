@@ -62,7 +62,7 @@ class BrowseController extends Controller
         'aimes' => 'Les plus aimés',
         // Only makes sense under the favorites filter, and is only offered there:
         // elsewhere it would sort on a date the list does not carry. Asymmetry accepted.
-        'garde' => "Dans l'ordre où je les ai gardés",
+        'garde' => "Dans l'ordre où tu les as gardés",
     ];
 
     /** The four that compare schematics on their output, so the four that need an item. */

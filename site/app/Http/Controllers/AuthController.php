@@ -31,7 +31,7 @@ class AuthController extends Controller
     {
         $discord = Discord::fromConfig();
         if (! $discord->configured()) {
-            return redirect('/')->with('error', "La connexion Discord n'est pas configuree.");
+            return redirect('/')->with('error', "La connexion Discord n'est pas configurée.");
         }
 
         // Checked on the way back, not merely sent. An OAuth flow that generates a state
@@ -46,13 +46,13 @@ class AuthController extends Controller
     {
         $expected = $request->session()->pull('discord_state');
         if (! $expected || ! hash_equals($expected, (string) $request->query('state'))) {
-            return redirect('/')->with('error', 'Connexion expiree, reessaie.');
+            return redirect('/')->with('error', 'Connexion expirée, réessaie.');
         }
 
         $code = (string) $request->query('code');
         $profile = $code ? Discord::fromConfig()->identify($code) : null;
         if (! $profile) {
-            return redirect('/')->with('error', "Discord n'a pas confirme la connexion.");
+            return redirect('/')->with('error', "Discord n'a pas confirmé la connexion.");
         }
 
         /*

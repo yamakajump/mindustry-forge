@@ -24,8 +24,14 @@ import { readFileSync } from "node:fs";
 /* Forty-two when this ratchet was set, after migrating three cards. The count has not
    dropped by as much: the logic card and the planner added some in the meantime. That is
    the argument for this file rather than against it -- a chantier losing ground while it
-   is being drained does not need to go faster, it needs the tap shut. */
-const RESTANT = 41;
+   is being drained does not need to go faster, it needs the tap shut.
+
+   Thirty-seven since the bottleneck and waste cards moved to the dictionary. They did not
+   move to lower this number: two of their sentences agreed in gender with a block name
+   that supplies its own, so the page said « Foreuse Mécanique relié à rien » and « Eau
+   arrive sans pouvoir être consommé ». A sentence that has to agree with a word it is
+   handed cannot be written into the code around it. */
+const RESTANT = 37;
 
 const MOTS = /(?<![\w-])(le|la|les|un|une|des|du|de|et|ou|qui|que|pas|sur|dans|pour|ce|il|elle|ne|se|est|sont|au|aux|en|par|plus|rien|tout|toute|avec|sans|son|sa|ses|cette|cet|tu|te|ton|ta|quoi|quand|comme|deja|encore|meme|leur|lui|on)(?![\w-])/i;
 

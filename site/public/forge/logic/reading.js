@@ -66,8 +66,8 @@ export function readingOf(entry) {
          writes the two unused operands out anyway, and repeating them would say that the
          jump depends on them. */
       return how.name === "always"
-        ? `aller a ${word(1)}`
-        : `si ${word(3)} ${how.symbol} ${word(4)}, aller a ${word(1)}`;
+        ? `aller à ${word(1)}`
+        : `si ${word(3)} ${how.symbol} ${word(4)}, aller à ${word(1)}`;
     }
 
     case "sensor":
