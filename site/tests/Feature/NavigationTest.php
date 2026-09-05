@@ -269,3 +269,43 @@ it('draws power with one mark, not two', function () {
     expect($inline)->not->toBeNull('index.html no longer holds a BOLT path');
     expect($inline)->toBe($blade, 'the two copies of the power mark have drifted apart');
 });
+
+it("wears Discord's own mark, in one shape", function () {
+    /* Same duplication as the bolt above, same reason: the header is rendered by Blade on
+       the server's pages and written out in `public/index.html`, which is served as a file.
+
+       What is checked here is not only that the two agree, but that they agree on the
+       official mark. The site drew a hand-made approximation of it for a long while, on a
+       square 24 by 24 grid where Clyde is a third wider than it is tall, with the two
+       notches at the top of the head reduced to a hairline and the eyes half their size. It
+       read as a blob with two dots, and a player said so: nobody recognises a login button
+       by its label, they recognise it by the mark, and a wrong mark on a sign-in button is
+       the one place a visitor is entitled to be suspicious.
+
+       Recognised by the viewBox, which is Discord's own and is what a hand-drawn one will
+       not have: the proportions are the whole difference. */
+    $mark = function (string $svg) {
+        preg_match('~<svg[^>]*viewBox="([^"]+)"[^>]*>\s*<path d="([^"]+)"~', $svg, $m);
+
+        return $m ? ['box' => $m[1], 'path' => $m[2]] : null;
+    };
+
+    $blade = File::get(resource_path('views/partials/nav.blade.php'));
+    $page = File::get(public_path('index.html'));
+
+    preg_match('~<a class="discord".*?</a>~s', $blade, $one);
+    preg_match('~class="discord" href="/auth/discord">.*?</a>~s', $page, $two);
+
+    expect($one)->not->toBeEmpty('the header no longer holds a Discord button');
+    expect($two)->not->toBeEmpty('index.html no longer holds a Discord button');
+
+    $rendered = $mark($one[0]);
+    $inline = $mark($two[0]);
+
+    expect($rendered)->not->toBeNull('the header button holds no mark');
+    expect($inline)->not->toBeNull('the page button holds no mark');
+    expect($inline)->toBe($rendered, 'the two Discord marks have drifted apart');
+    expect($rendered['box'])->toBe('0 0 127.14 96.36',
+        "this is not Discord's own mark: its viewBox is 127.14 by 96.36, and a square one "
+        .'is a redrawing');
+});
