@@ -17,7 +17,7 @@
      src="https://github.com/yamakajump/mindustry-forge/actions/workflows/dependency-audit.yml/badge.svg" alt="audit des dependances"></a>
 </p>
 
-**Colle une schématique. Sache ce qu'elle fait vraiment.**
+**Colle un schéma. Sache ce qu'il fait vraiment.**
 
 Tous les calculateurs Mindustry du web répondent à la même question : combien de machines
 pour un ratio propre. C'est de l'arithmétique, et quatre sites la font déjà. Aucun d'eux ne
@@ -30,19 +30,19 @@ En ligne sur **[mindustryforge.com](https://mindustryforge.com)**.
 
 <p align="center">
   <img src="docs/captures/rapport-analyse.png" width="900"
-       alt="L'analyseur sur une vraie schématique : le plan dessiné depuis le code collé, 240 graphite à la minute, et un puits à objets branché sur rien.">
+       alt="L'analyseur sur un vrai schéma : le plan dessiné depuis le code collé, 4 graphite par seconde, et un destructeur de ressources branché sur rien.">
 </p>
 
 <p align="center">
-  <em>Une vraie schématique du catalogue, analysée dans le navigateur. Elle sort 240 graphite
-  à la minute, et l'un de ses 23 blocs est un puits à objets connecté à rien.</em>
+  <em>Un vrai schéma du catalogue, analysé dans le navigateur. Il sort 4 graphite par
+  seconde, et l'un de ses 23 blocs est un destructeur de ressources connecté à rien.</em>
 </p>
 
 ## Pourquoi tu peux vérifier les chiffres au lieu de les croire
 
 Tous les autres outils calculent leurs chiffres à la main et te demandent d'y croire. Ce
 dépôt livre un banc qui **fait tourner le vrai jeu** : un serveur Mindustry headless, un
-monde figé, un nombre de secondes figé, la schématique estampillée dedans, et un décompte de
+monde figé, un nombre de secondes figé, le schéma estampillé dedans, et un décompte de
 ce qui en sort.
 
 L'analyseur n'est donc pas la source de vérité. C'est une approximation rapide de la vérité,
@@ -110,12 +110,12 @@ pour une ligne de commande ou un serveur, serait une deuxième chose à avoir to
 
 <p align="center">
   <img src="docs/captures/fiche-bloc.png" width="900"
-       alt="La page du four à silicium : encombrement, résistance, coût de construction, recette, énergie, et ce qui peut l'alimenter.">
+       alt="La page de la Fonderie de Silicium : encombrement, résistance, coût de construction, recette et énergie.">
 </p>
 
 <p align="center">
   <em>Les débits d'une page de bloc sont des plafonds nominaux, et la page le dit. Ce qu'un
-  bloc fait dans une vraie schématique est mesuré par l'analyse, et c'est presque toujours
+  bloc fait dans un vrai schéma est mesuré par l'analyse, et c'est presque toujours
   moins.</em>
 </p>
 
@@ -127,7 +127,7 @@ L'analyseur est une page statique et n'a besoin d'aucun serveur à lui :
 cd site/public && python -m http.server 8770
 ```
 
-Puis ouvre <http://127.0.0.1:8770/> et colle une schématique. N'importe quel serveur de
+Puis ouvre <http://127.0.0.1:8770/> et colle un schéma. N'importe quel serveur de
 fichiers statiques fera l'affaire. Ouvrir le HTML directement depuis le disque est la seule
 chose qui ne marche pas : un navigateur refuse un import de module par `file://`.
 
@@ -205,7 +205,7 @@ Utilise `npm test` plutôt qu'un motif à toi. `node --test "tests/js/*.test.js"
 | `site/public/forge/editor/` | l'éditeur, avec les mécaniques de pose du jeu |
 | `site/public/index.html` | la page, qui ne porte aucun calcul |
 | `site/app/`, `site/routes/` | ce à quoi un serveur sert vraiment : se souvenir, et laisser partager |
-| `bench/` | fait tourner le vrai jeu et mesure la même schématique |
+| `bench/` | fait tourner le vrai jeu et mesure le même schéma |
 | `tests/js/` | l'analyse, lancée exactement comme la page la lance |
 | `tools/` | l'oracle, l'écart, et les générateurs du catalogue et des sprites |
 | `docs/` | la feuille de route, les manques qu'on connaît par leur nom, et les pièges déjà payés |
@@ -251,5 +251,5 @@ le code sur un serveur accessible publiquement oblige à en publier la source.
 Ce qui est partagé, c'est le moteur d'analyse et le banc qui le vérifie. C'est la partie
 difficile, et c'est celle dont la communauté Mindustry n'a aucune autre copie.
 
-Les schématiques ne sont pas couvertes par cette licence. Elles appartiennent à leurs
-auteurs, et celles collectées ailleurs portent leur origine dans la base et sur leur page.
+Les schémas ne sont pas couverts par cette licence. Ils appartiennent à leurs
+auteurs, et ceux collectés ailleurs portent leur origine dans la base et sur leur page.
