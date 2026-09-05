@@ -1,5 +1,5 @@
 /** Trace who feeds whom, for diagnosing a layout that reports nothing. */
-import { analyse } from "../../site/public/forge/analyse.js";
+import { analyse } from "../../site/public/forge/bilan.js";
 import { loadCatalogue } from "../../tests/js/helpers.js";
 
 loadCatalogue();

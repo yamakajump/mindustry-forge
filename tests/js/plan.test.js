@@ -172,7 +172,7 @@ test("an item nothing makes and nothing drops is simply asked for", () => {
 
 test("the recipe rate matches the engine on every block in the catalogue", () => {
   // `plan.js` carries its own copy of `craftsPerSecond`, as `needs.js` does, because
-  // `analyse.js` does not export it and adding an export would restamp every stored
+  // `bilan.js` does not export it and adding an export would restamp every stored
   // analysis on the site. A copy is only acceptable while it cannot drift, so this walks
   // the whole catalogue rather than a sample.
   for (const [name, block] of Object.entries(known.blocks)) {

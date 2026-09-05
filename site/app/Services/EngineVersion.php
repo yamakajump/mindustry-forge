@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
  * other, and a corrected block changes every answer that block appears in.
  *
  * This is the only place the version is computed. The ingestion pass runs the analysis
- * under Node, because `analyse.js` is the one implementation and Node can run it as it
+ * under Node, because `bilan.js` is the one implementation and Node can run it as it
  * stands, but the surrounding orchestration stays here in PHP: Node does the arithmetic,
  * this side owns the database and the version stamped into it.
  */
@@ -32,13 +32,14 @@ class EngineVersion
      * fifteen thousand analyses over a change of colour.
      */
     private const SOURCES = [
-        'analyse.js',
+        'bilan.js',
         'schematic.js',
         'needs.js',
         'marks.js',
         'ground.js',
         'maxflow.js',
         'logic.js',
+        'geometry.js',
         'blocks.json',
         'engine/core.js',
         'engine/carriers.js',
@@ -73,7 +74,13 @@ class EngineVersion
        A missing file is the silent failure this class exists to prevent - the version stays
        the same while the answers change, so every stored figure reads as current and none of
        them is. `EngineVersionTest` now fails if a source appears in `public/forge/engine`
-       without appearing here. */
+       without appearing here.
+
+       Scanning that directory was not enough either. `geometry.js` sits beside the analysis
+       rather than under `engine/`, and it holds the formula for where a block sits and what
+       the game measures ranges between: every mass driver answer goes through it, and it was
+       outside this list. So the test walks the imports out of the entry file as well, and
+       anything the analysis can reach has to appear here. */
 
     /** How wide the stored stamp is. Matches the column. */
     public const WIDTH = 12;

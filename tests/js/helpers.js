@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs";
 import { deflateSync, inflateSync } from "node:zlib";
 
-import { useCatalogue } from "../../site/public/forge/analyse.js";
+import { useCatalogue } from "../../site/public/forge/bilan.js";
 
 export function loadCatalogue() {
   return useCatalogue(JSON.parse(

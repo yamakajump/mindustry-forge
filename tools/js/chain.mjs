@@ -1,5 +1,5 @@
 /** Follow a resource from its source to the machine that eats it. */
-import { buildGraph } from "../../site/public/forge/analyse.js";
+import { buildGraph } from "../../site/public/forge/bilan.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { loadCatalogue } from "../../tests/js/helpers.js";
 

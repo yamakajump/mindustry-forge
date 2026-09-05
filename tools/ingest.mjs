@@ -4,7 +4,7 @@
  *     echo '{"id":1,"code":"bXNjaAF4nD..."}' | node tools/ingest.mjs
  *
  * One JSON line in, one JSON line out. This repository has a single implementation of the
- * analysis and it is `site/public/forge/analyse.js`: this file computes nothing, it
+ * analysis and it is `site/public/forge/bilan.js`: this file computes nothing, it
  * imports that one as it stands and hands it the catalogue the browser would have fetched.
  * The PHP side orchestrates and holds the database; the arithmetic stays here.
  *
@@ -23,7 +23,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FORGE = join(ROOT, "site", "public", "forge");
 
 const { analyse, useCatalogue } = await import(
-  new URL("../site/public/forge/analyse.js", import.meta.url));
+  new URL("../site/public/forge/bilan.js", import.meta.url));
 
 useCatalogue(JSON.parse(readFileSync(join(FORGE, "blocks.json"), "utf8")));
 

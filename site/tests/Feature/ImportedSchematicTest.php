@@ -175,7 +175,7 @@ it('changes version as soon as an engine source changes', function () {
      */
     $fake = sys_get_temp_dir().'/forge-version-'.bin2hex(random_bytes(6));
     mkdir($fake.'/forge/engine', 0777, true);
-    foreach (['analyse.js', 'schematic.js', 'needs.js', 'marks.js', 'ground.js',
+    foreach (['bilan.js', 'schematic.js', 'needs.js', 'marks.js', 'ground.js',
         'maxflow.js', 'blocks.json'] as $file) {
         file_put_contents("{$fake}/forge/{$file}", "// {$file}");
     }

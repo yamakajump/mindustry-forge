@@ -7,8 +7,8 @@
  * between two blocks is measured between those centres, not between the stored tiles, and
  * the two differ by half a tile for every block of even size.
  *
- * Written here rather than in `analyse.js` because `logic.js` needs the same answer and
- * cannot import `analyse.js`, which imports it. A second copy of this formula would be a
+ * Written here rather than in `bilan.js` because `logic.js` needs the same answer and
+ * cannot import `bilan.js`, which imports it. A second copy of this formula would be a
  * second thing to have wrong, and it would be wrong only on even sizes, which is the kind
  * of error that cancels itself out on a pair of odd blocks and appears at the first vault.
  */

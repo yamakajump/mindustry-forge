@@ -27,7 +27,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { analyse, buildGraph } from "../../site/public/forge/analyse.js";
+import { analyse, buildGraph } from "../../site/public/forge/bilan.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { TICKS, World } from "../../site/public/forge/engine/core.js";
 import { behaviourOf } from "../../site/public/forge/engine/carriers.js";

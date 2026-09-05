@@ -2,12 +2,12 @@
  * What a block holds, and what it can be made to hold.
  *
  * A sorter holds the item it lets through, a source the one it makes, an unloader the one
- * it pulls. It is written into the format and `analyse.js` can already read it back; the
+ * it pulls. It is written into the format and `bilan.js` can already read it back; the
  * editor could not write it, so a schematic built here came out with empty sorters, which
  * is to say with lines that sort nothing.
  *
  * The encoding comes from `TypeIO.writeObject` in v159.7: type 5, one byte of content
- * family, then the id over two bytes. The families are the ones `analyse.js` already reads,
+ * family, then the id over two bytes. The families are the ones `bilan.js` already reads,
  * and they live here rather than elsewhere so that there is only one list of them.
  */
 

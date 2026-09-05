@@ -7,11 +7,11 @@ use App\Support\Block;
  * The PHP copy of the game's arithmetic must answer exactly what the engine answers.
  *
  * This repository has one rule above the others: one implementation of the analysis, in
- * `analyse.js`, because a second one in another language is a second thing to have wrong.
+ * `bilan.js`, because a second one in another language is a second thing to have wrong.
  * `Block::craftsPerSecond()` is a deliberate exception of one line, since a Blade page
  * cannot call a browser module, and an exception is only acceptable while it cannot drift.
  *
- * So this runs the real thing. Node reads `analyse.js`, lifts the current definition out of
+ * So this runs the real thing. Node reads `bilan.js`, lifts the current definition out of
  * it, applies it to every block in the catalogue, and PHP checks it agrees on all of them.
  * The day somebody corrects the formula for a boost or a warmup, this fails on the same
  * commit instead of the wiki quietly printing last month's number.
@@ -23,7 +23,7 @@ it('gives exactly the same figures as the engine', function () {
     $command = sprintf(
         'node %s %s %s %s',
         escapeshellarg(base_path('tests/Fixtures/engine-figures.mjs')),
-        escapeshellarg(public_path('forge/analyse.js')),
+        escapeshellarg(public_path('forge/bilan.js')),
         escapeshellarg(public_path('forge/blocks.json')),
         escapeshellarg(public_path('forge/ground.js')),
     );

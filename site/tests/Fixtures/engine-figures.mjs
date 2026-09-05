@@ -10,7 +10,7 @@
  * `drillTimeOf` is exported from `engine/ground.js`, so it is imported. Nothing is copied
  * and nothing can go stale.
  *
- * `craftsPerSecond` is not exported from `analyse.js`, so its definition is lifted out of
+ * `craftsPerSecond` is not exported from `bilan.js`, so its definition is lifted out of
  * the source text. Adding an `export` would change that file's hash, which changes
  * `EngineVersion`, which marks every stored analysis on the site stale: a wiki detail is not
  * worth re-analysing fifteen thousand schematics. If the line is ever reformatted the match
@@ -29,7 +29,7 @@ const definition = source.match(/const craftsPerSecond = ([^;]+);/);
 
 if (!ticks || !definition) {
   process.stderr.write(
-    "craftsPerSecond or TICKS not found in analyse.js: the shape has changed, "
+    "craftsPerSecond or TICKS not found in bilan.js: the shape has changed, "
     + "and the PHP copy in Block::craftsPerSecond needs reading again.\n",
   );
   process.exit(2);

@@ -132,7 +132,7 @@ class Block
     /**
      * How many times a second it completes its recipe, fed perfectly.
      *
-     * This is `craftsPerSecond` in `analyse.js`, which is the one implementation of the
+     * This is `craftsPerSecond` in `bilan.js`, which is the one implementation of the
      * game's arithmetic in this repository. It is repeated here rather than imported
      * because a Blade page cannot call a browser module, and `BlockRatesTest` runs the JS
      * over the whole catalogue and fails if the two ever answer differently. A copy that

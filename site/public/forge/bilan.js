@@ -13,6 +13,18 @@
  * side of the repository runs the real game and measures the same schematic; the two are
  * compared in CI. A second implementation of the calculation would be a second thing to be
  * wrong, which is the failure this repository is built around avoiding.
+ *
+ * The name is load bearing, and it is not the obvious one. This file was `analyse.js`,
+ * which EasyPrivacy blocks outright: rule 246 of that list is the bare path `/analyse.js`,
+ * matching any host. EasyPrivacy is on by default in uBlock Origin, so the whole site was
+ * a blank page for a large share of its own audience, and nothing said so. The request
+ * never reaches the server, so no log records it, no error is thrown that a page could
+ * catch, and the only report came from a player pasting a screenshot into Discord.
+ *
+ * So a file served from `public/` is named against the filter lists, not only against the
+ * dictionary. Before renaming anything here, search `easylist.txt` and `easyprivacy.txt`
+ * for the candidate: a word like "analyse", "stats", "track" or "collect" in a served
+ * path is a page that silently does not load.
  */
 
 import { fromBase64 } from "./schematic.js";

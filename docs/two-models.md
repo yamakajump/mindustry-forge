@@ -7,7 +7,7 @@ This repository holds two models of the same thing in JavaScript:
 | | |
 |---|---|
 | `site/public/forge/engine/**` | a transcription of Mindustry's update loop, tick by tick. `npm run oracle` holds it against a real v159.7 headless server on every scenario in `bench/data/oracle`, and it is at **0.00%**. |
-| `analyse.js` | a steady-state maximum flow. It answers a different way, it is much faster, and **it is the one whose numbers reach the player**. |
+| `bilan.js` | a steady-state maximum flow. It answers a different way, it is much faster, and **it is the one whose numbers reach the player**. |
 
 Nobody had ever asked the second one the questions the first one has already answered. `node tools/gap.mjs` does that, and only that.
 

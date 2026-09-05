@@ -2,7 +2,7 @@
  * What a block remembers, and what we can make it remember.
  *
  * A sorter remembers the item it lets through. That is written into the format,
- * `analyse.js` can read it back, and the editor did not know how to write it: a schematic
+ * `bilan.js` can read it back, and the editor did not know how to write it: a schematic
  * built here came out with its sorters empty, so with its lines sorting nothing.
  */
 

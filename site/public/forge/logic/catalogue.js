@@ -9,7 +9,7 @@
  * A hand-kept instruction table does not break, it drifts: an instruction appears in a
  * build, nobody notices, and working programs get painted red for a year.
  *
- * Loaded the same way `analyse.js` loads its block registry, and for the same reason: the
+ * Loaded the same way `bilan.js` loads its block registry, and for the same reason: the
  * page fetches one JSON, the tests read the same file off disk, and there is only ever one
  * copy of the truth.
  */

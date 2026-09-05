@@ -51,6 +51,15 @@ afterwards. Carry the slug under another name, and open the page to check.
 answers **200 while printing its own source**, `@stack` and `@include` included. No test
 caught it. One does now: no `@yield` may appear in the served HTML.
 
+**An ad blocker blocks a file on its name, and nothing on this side can tell.** The
+analysis was served as `analyse.js`, and rule 246 of EasyPrivacy is the bare path
+`/analyse.js` on any host. EasyPrivacy is on by default in uBlock Origin, so the analyser
+was a blank page for a large share of its own audience. A blocked request never reaches the
+server, so there is no log line, no status code and no `catch` to run: every test passed,
+the page returned 200, and the report came from a player's screenshot on Discord. Check a
+new name in `public/` against `easyprivacy.txt` and `easylist.txt` before choosing it, and
+stay away from "analyse", "stats", "track" and "collect" in a served path.
+
 ## Game data
 
 **`consumes_power` can be true with no consumption at all.** The graphite press is

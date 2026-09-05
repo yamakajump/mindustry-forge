@@ -22,7 +22,7 @@
  * subtree rather than at the whole document.
  */
 
-import { catalogueOf, loadCatalogue } from "./analyse.js";
+import { catalogueOf, loadCatalogue } from "./bilan.js";
 import { bounds, draw, loadSprites } from "./render.js";
 import { fromBase64 } from "./schematic.js";
 
