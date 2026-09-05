@@ -60,9 +60,9 @@ it('never leaves the panel claiming it is still drawing', function () {
     $html = $this->get("/s/{$schematic->slug}")->assertOk()->getContent();
 
     /* The placeholder is only honest while the script is on its way. Shipping it without
-       the script would leave "drawing the plan..." on screen for ever, which is worse than
-       the empty panel it replaced: it is an empty panel that lies about why. */
-    expect($html)->toContain('Dessin du plan');
+       the script would leave "drawing the schematic..." on screen for ever, which is worse
+       than the empty panel it replaced: it is an empty panel that lies about why. */
+    expect($html)->toContain('Dessin du schéma');
     expect($html)->toContain('/forge/apercu.js');
 });
 
