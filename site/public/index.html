@@ -387,12 +387,17 @@ function render(report) {
   const inputs = report.ports?.inputs || [];
   const outlets = report.ports?.outputs || [];
 
+  /* A port names its block and its resource with the game's identifiers, because that is
+     what the engine keys on. This card is the one place a reader meets them, and it read
+     "titanium-conveyor en (4, 12) titanium" under a heading that says « Entrées et
+     sorties » and above a panel that says « Convoyeur en titane ». Same two things, twice,
+     in two languages, one line apart. */
   const markLine = (port, colour) => {
     const label = port.resource
-      ? `${withIcon(port.resource)}${escape(port.resource)}`
+      ? `${withIcon(port.resource)}${escape(lisible(port.resource))}`
       : `<span style="color:var(--dim)">${escape(t("analyse.ports.a-preciser"))}</span>`;
     return `<div class="line"><span><span class="pin ${colour}"></span>
-      ${escape(port.name)} en (${port.x}, ${port.y})</span>
+      ${escape(lisible(port.name))} en (${port.x}, ${port.y})</span>
       <span class="num">${label}${port.rate > 0.001
         ? ` &nbsp;${perSecond(port.rate)} / s` : ""}</span></div>`;
   };
@@ -445,8 +450,14 @@ function render(report) {
       const where = sockets[need.resource] || [];
       return `<div class="line"><span>${label}</span>
         <span class="num">${perSecond(need.perMinute / 60)} / s</span></div>` + (best.length
+        /* With the block's own sprite, like every other chip on the page. This card names
+           four drills a player has to tell apart, and their French names differ by one
+           word: read at a glance, "Foreuse à explosion" and "Foreuse Pneumatique" are the
+           same chip twice. The picture is what a Mindustry player actually recognises, and
+           it was already beside the resource one line above. */
         ? `<div class="chips" style="margin:6px 0 8px">${best.map((o) =>
-            `<span class="chip"><span class="num">${o.count}</span> ${escape(lisible(o.block))}</span>`)
+            `<span class="chip">${blockIcon(o.block, 15)}<span class="num">${o.count}</span> ${
+              escape(lisible(o.block))}</span>`)
             .join(`<span style="color:var(--dim);align-self:center">${
               escape(t("analyse.besoins.ou"))}</span>`)}</div>`
         : "") + (where.length
@@ -476,7 +487,10 @@ function render(report) {
         + ((over) => over
           ? `<p class="hint-line warn" style="margin:-4px 0 10px">${over.block
              ? t("analyse.besoins.au-dessus", {
-                 bloc: escape(over.block),
+                 // `over.block` is a port's `name`, which is the game's identifier, so the
+                 // warning read "Une titanium-conveyor ne porte que 11 / s" on a page where
+                 // every other line says « Convoyeur en titane ».
+                 bloc: escape(lisible(over.block)),
                  plafond: `${perSecond(over.ceiling / 60)} ${escape(t("analyse.unite.par-seconde"))}`,
                  compte: `<strong>${over.needed}</strong>`,
                  besoin: `${perSecond(need.perMinute / 60)} ${escape(t("analyse.unite.par-seconde"))}`,
@@ -509,7 +523,7 @@ function render(report) {
         ? `<p class="hint-line" style="margin:6px 0 10px">${
              escape(t("analyse.plafond.avertissement"))}
              ${needs.filter((n) => !n.resource.startsWith("*"))
-                .map((n) => escape(n.resource)).join(", ")
+                .map((n) => escape(lisible(n.resource))).join(", ")
                 || escape(t("analyse.plafond.ce-qui-manque"))}.
              ${escape(t(answered
                ? "analyse.plafond.plus-bas"
@@ -575,7 +589,7 @@ function render(report) {
       <div class="line"><span>${escape(lisible(name))}</span>
         <span class="num bad">nourri à ${Math.round(share * 100)}%</span></div>
       ${report.throttle ? `<p class="hint-line">${t("analyse.goulot.plafonne", {
-        bloc: `<strong>${escape(report.throttle.name)}</strong>`,
+        bloc: `<strong>${escape(lisible(report.throttle.name))}</strong>`,
         x: report.throttle.x, y: report.throttle.y,
         plafond: `${perSecond(report.throttle.ceiling)} ${
           escape(t("analyse.unite.par-seconde"))}`,
@@ -1355,7 +1369,7 @@ function showBlock(report, tile) {
      a full patch" was the tool saying it did not know. */
   if (tile.dug) {
     parts.push(`<div class="line"><span>${withIcon(tile.dug.resource)}
-      ${escape(tile.dug.resource)} sorti du sol</span>
+      ${escape(lisible(tile.dug.resource))} sorti du sol</span>
       <span class="num good">${perSecond(tile.dug.rate)} / s</span></div>`);
     if (tile.dug.covered !== undefined) {
       parts.push(`<p class="hint-line" style="margin:2px 0 8px">Couvre
@@ -1418,9 +1432,19 @@ function showBlock(report, tile) {
         ? (offered.length
             ? `<p class="hint-line" style="margin:10px 0 6px">Qu'est-ce qui arrive ici ?</p>
                <div class="chips">${offered.map((resource) =>
+                 /* The identifier in the attribute, the name in the button. They are read
+                    by two different things: the handler below puts what it finds here
+                    straight into the mark, and the engine looks that up in the catalogue,
+                    which is keyed by identifier. Sending the French name instead stored
+                    "Titane" where "titanium" was expected, so nothing matched, the marked
+                    intake fed nothing, and the page came back saying the schematic wanted
+                    something nobody had marked. It only bit where there was a choice to
+                    make: on a block offering one resource the mark is filled from the
+                    offer itself, with the identifier, and that is the path a belt takes.
+                    A turret offers its ammunition, so a turret always took the broken one. */
                  `<button type="button" class="chip pick ${
                    mark.resource === resource ? "on" : ""}" data-resource="${
-                   escape(lisible(resource))}">${withIcon(resource, 15)}${
+                   escape(resource)}">${withIcon(resource, 15)}${
                      escape(lisible(resource))}</button>`
                  ).join("")}</div>`
             : `<p class="hint-line" style="margin:10px 0 0">Ce schéma ne manque de
