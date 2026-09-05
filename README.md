@@ -30,12 +30,12 @@ Live at **[mindustryforge.com](https://mindustryforge.com)**.
 
 <p align="center">
   <img src="docs/captures/rapport-analyse.png" width="900"
-       alt="The analyser on a real schematic: the plan drawn from the pasted code, 240 graphite a minute, and an item void wired to nothing.">
+       alt="The analyser on a real schematic: the plan drawn from the pasted code, 4 graphite a second, and an item void wired to nothing.">
 </p>
 
 <p align="center">
-  <em>A real schematic from the catalogue, analysed in the browser. It makes 240 graphite a
-  minute, and one of its 23 blocks is an item void connected to nothing.</em>
+  <em>A real schematic from the catalogue, analysed in the browser. It makes 4 graphite a
+  second, and one of its 23 blocks is an item void connected to nothing.</em>
 </p>
 
 ## Why you can check the numbers instead of trusting them
@@ -106,7 +106,7 @@ command line or a backend, would be a second thing to be wrong.
 
 <p align="center">
   <img src="docs/captures/fiche-bloc.png" width="900"
-       alt="The silicon smelter's page: size, health, build cost, recipe, energy, and what can feed it.">
+       alt="The silicon smelter's page: size, health, build cost, recipe and energy.">
 </p>
 
 <p align="center">

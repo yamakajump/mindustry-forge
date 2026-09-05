@@ -59,14 +59,14 @@ test("an old spelling reads like the one that replaced it", () => {
 });
 
 test("a jump states its condition before its target", () => {
-  assert.equal(lecture("jump 4 lessThan i 10"), "si i < 10, aller a 4");
-  assert.equal(lecture("jump boucle greaterThanEq a b"), "si a >= b, aller a boucle");
+  assert.equal(lecture("jump 4 lessThan i 10"), "si i < 10, aller à 4");
+  assert.equal(lecture("jump boucle greaterThanEq a b"), "si a >= b, aller à boucle");
 });
 
 test("an unconditional jump does not mention its unused operands", () => {
   /* The game writes `jump 0 always x false`: the last two serve no purpose, and repeating
      them would suggest the jump depends on them. */
-  assert.equal(lecture("jump 0 always x false"), "aller a 0");
+  assert.equal(lecture("jump 0 always x false"), "aller à 0");
 });
 
 test("accesses read like accesses", () => {

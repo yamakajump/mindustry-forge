@@ -350,7 +350,7 @@
       <strong>{{ $makes === $powerKey ? 'énergie' : \App\Support\Thing::name($makes) }}</strong>,
       alimentés à fond, rapporté à leur taille. Un plafond et non un relevé&nbsp;: un
       schéma arraché d'une base n'a pas la foreuse qui l'alimentait, donc ce qu'il
-      fait vraiment dépend de la vôtre. L'électricité qu'il consomme ne le pénalise
+      fait vraiment dépend de la tienne. L'électricité qu'il consomme ne le pénalise
       pas&nbsp;: c'est un prérequis, indiqué sur sa page.</p>
     @endif
   @endif

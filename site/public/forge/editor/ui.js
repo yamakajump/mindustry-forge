@@ -965,7 +965,7 @@ const DIVERGENCES = [
     + "absente ici ; sur l'onglet sol, la touche recharge plutôt le pinceau avec la case "
     + "survolée (mur, sinon minerai, sinon sol), ce que fait le pick de l'éditeur du jeu, "
     + "lui sur la touche I"],
-  ["Les cadres", "le jeu n'a pas de plateau plus grand qu'une schématique ; ici le plateau "
+  ["Les cadres", "le jeu n'a pas de plateau plus grand qu'un schéma ; ici le plateau "
     + "est un établi, et un cadre en marque un chantier"],
 ];
 

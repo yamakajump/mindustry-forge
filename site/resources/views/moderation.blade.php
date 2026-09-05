@@ -4,7 +4,7 @@
 
      Scope: waiting, schematics, reasons. --}}
 @extends('layout')
-@section('title', 'Moderation - Mindustry Forge')
+@section('title', 'Modération - Mindustry Forge')
 
 @section('body')
 <h1 class="title">Modération</h1>
@@ -26,7 +26,7 @@
         @if($schematic)
           <a href="/s/{{ $schematic->slug }}">{{ $schematic->displayName() }}</a>
         @else
-          Contenu supprime (#{{ $row->target_id }})
+          Contenu supprimé (#{{ $row->target_id }})
         @endif
       </h2>
 
@@ -34,7 +34,7 @@
         {{ $row->reports }} signalement{{ $row->reports > 1 ? 's' : '' }},
         poids {{ (int) $row->weight }}
         @if($schematic?->hidden_at)
-          &middot; <strong>déjà masqué</strong>, en attente de cette decision
+          &middot; <strong>déjà masqué</strong>, en attente de cette décision
         @else
           &middot; encore visible : le poids n'a pas atteint le seuil
         @endif
