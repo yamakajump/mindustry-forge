@@ -43,10 +43,10 @@ roughly fifteen thousand stored analyses stale and asks for a full re-measuremen
 
 What decides an answer belongs in the hashed sources; what only decides how a page reads
 does not. The list is explicit rather than a glob, in `EngineVersion::SOURCES`, and it is
-these twenty files, reproduced here to be read at a glance:
+these twenty-one files, reproduced here to be read at a glance:
 
     bilan.js  schematic.js  needs.js  marks.js  ground.js  maxflow.js  logic.js
-    blocks.json
+    geometry.js  blocks.json
     engine/assembler.js  engine/blast.js  engine/cargo.js  engine/carriers.js
     engine/core.js  engine/liquids.js  engine/machines.js  engine/massdriver.js
     engine/payloads.js  engine/power.js  engine/run.js  engine/units.js
@@ -57,6 +57,12 @@ plus one file outside this directory, `tools/ingest.mjs`, listed apart in
 Adding a file under `engine/` means adding it to that list, and `EngineVersionTest` fails
 when a `.js` there is missing from it: four of them sat outside for four commits, so the
 version stayed put while the answers changed and every stored figure read as current.
+
+Scanning that directory missed the other half. `geometry.js` is not under `engine/`, and it
+holds where a block sits and what the game measures ranges between, which every mass driver
+answer goes through: it was outside the list too. So the test also walks the imports out of
+`bilan.js`, and anything the analysis can reach has to be listed, wherever it lives.
+
 Everything else here is out on purpose, the renderer and the colour registry first. They
 decide what a schematic looks like, not what it produces, and hashing them would
 re-measure the catalogue over a change of colour.
