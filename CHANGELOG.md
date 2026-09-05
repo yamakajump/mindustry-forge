@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.5.0](https://github.com/yamakajump/mindustry-forge/compare/v0.4.0...v0.5.0) (2026-09-05)
+
+
+### Features
+
+* **catalogue:** take the collected showcase off the wall ([#258](https://github.com/yamakajump/mindustry-forge/issues/258)) ([dc978e9](https://github.com/yamakajump/mindustry-forge/commit/dc978e98407359bb407c7cff7d1afd6b8737bf7a))
+
+
+### Bug Fixes
+
+* **analyser:** rename the engine off a filter list ([#253](https://github.com/yamakajump/mindustry-forge/issues/253)) ([5394f7b](https://github.com/yamakajump/mindustry-forge/commit/5394f7bc4ee9cba330dd9d72ea006eebedb8d32b))
+* **interface:** the French a player actually reads ([#257](https://github.com/yamakajump/mindustry-forge/issues/257)) ([681c711](https://github.com/yamakajump/mindustry-forge/commit/681c711331f4356ce266cbcf3479b33d96de73cf))
+* **interface:** the last four plans that meant schema ([#260](https://github.com/yamakajump/mindustry-forge/issues/260)) ([7945d98](https://github.com/yamakajump/mindustry-forge/commit/7945d9846f09013502ffaae5fbe6cbcf1e828830))
+* **interface:** wear Discord's own mark ([#259](https://github.com/yamakajump/mindustry-forge/issues/259)) ([5efdd69](https://github.com/yamakajump/mindustry-forge/commit/5efdd69e2f284687bd662ad09263aa2d7206549a))
+* **report:** mark the whole block, and name it ([#254](https://github.com/yamakajump/mindustry-forge/issues/254)) ([d0516ca](https://github.com/yamakajump/mindustry-forge/commit/d0516cac42ccdea219ce40d7d60f0d035d6a2b57))
+
 ## [0.4.0](https://github.com/yamakajump/mindustry-forge/compare/v0.3.1...v0.4.0) (2026-09-02)
 
 
