@@ -551,7 +551,7 @@ function render(report) {
     power.made > 0.01
       ? `<div class="out-rate" style="color:var(--accent)">${bolt}
            <b>${rate(power.net)}</b><span>énergie / s &nbsp;<span style="color:var(--dim)">
-           (${rate(power.made)} produits, ${rate(power.spent)} consommes)</span></span></div>`
+           (production ${rate(power.made)}, consommation ${rate(power.spent)})</span></span></div>`
       : ""
   }${
     made.map(([item, n]) => `<div class="out-rate">${withIcon(item, 22)}
@@ -713,30 +713,31 @@ function render(report) {
       boost
         ? `<div class="line" style="margin-top:8px"><span>Forge compte plutôt</span>
              <span class="num good">${rate(report.potential.made)} énergie / s</span></div>
-           <p class="hint-line">Le jeu ignore les accélérateurs. Ici
-             <strong>${asGame.projectors}</strong> en couvre${asGame.projectors > 1 ? "nt" : ""}
+           <p class="hint-line">Le jeu ignore les projecteurs accélérants. Ici
+             <strong>${asGame.projectors}</strong> projecteur${asGame.projectors > 1 ? "s" : ""}
+             couvre${asGame.projectors > 1 ? "nt" : ""}
              <strong>${asGame.boosted}</strong> bloc${asGame.boosted > 1 ? "s" : ""},
-             qui tournent moitié plus vite, et jusqu'à deux fois et quart plus vite si
-             tu les alimentes en matière de phase.</p>`
+             qui tournent 50 % plus vite, et jusqu'à 2,25 fois plus vite si
+             tu les alimentes en tissu phasé.</p>`
         : ""
     }</div>`);
   }
 
   const notes = [];
   for (const [name, n] of Object.entries(report.unknown || {})) {
-    notes.push(`<li>${escape(lisible(name))} x${n} : inconnu de ce catalogue, traité comme un mur.</li>`);
+    notes.push(`<li>${escape(lisible(name))} x${n} : ce catalogue ne connaît pas ce bloc, Forge le compte comme un mur.</li>`);
   }
   if (!report.settled) {
-    notes.push(`<li>La disposition boucle sur elle-même, le débit affiché n'est pas un
+    notes.push(`<li>La disposition boucle sur elle-même : le débit affiché n'est pas un
       régime stable.</li>`);
   }
   if (report.altered) {
-    notes.push(`<li>La chaîne collée est légèrement abîmée, probablement par le
-      copier-coller. Elle a été lue quand même.</li>`);
+    notes.push(`<li>Le texte est légèrement abîmé, probablement par le
+      copier-coller. Il a été lu quand même.</li>`);
   }
   if (report.truncated) {
-    notes.push(`<li><strong>${report.truncated} blocs</strong> n'ont pas pu être lus : la
-      chaîne s'arrête avant la fin. Recopie-la directement depuis le jeu.</li>`);
+    notes.push(`<li><strong>${report.truncated} blocs</strong> n'ont pas pu être lus : le
+      texte s'arrête avant la fin. Recopie-le directement depuis le jeu.</li>`);
   }
   if (notes.length) {
     right.push(`<div class="card"><h2>À savoir</h2><ul class="notes">${notes.join("")}</ul></div>`);
@@ -769,7 +770,7 @@ function render(report) {
      says out loud which schematic is about to be overwritten. */
   right.push(`<div class="card"><h2>${editing ? "Mettre à jour" : "Garder"}</h2>${
     editing ? `<p class="hint-line" style="margin:0 0 10px">Tu modifies
-      <strong>${escape(editing.name)}</strong>, gardée le
+      <strong>${escape(editing.name)}</strong>, gardé le
       ${escape(editing.kept || "")}. Le bouton écrase ce qui est enregistré.</p>` : ""}
     <div class="row" id="keep-row">
       <input type="text" id="keep-name"
@@ -778,8 +779,8 @@ function render(report) {
       <button class="primary" id="keep" type="button">${
         editing ? "Enregistrer" : "Garder"}</button>
       <label style="display:inline-flex;align-items:center;gap:7px;color:var(--dim)">
-        qui la voit
-        <select id="keep-visibility" aria-label="Qui peut la voir">
+        qui le voit
+        <select id="keep-visibility" aria-label="Qui peut le voir">
           <option value="private" ${chosen === "private" ? "selected" : ""}>moi seul</option>
           <option value="unlisted" ${chosen === "unlisted" ? "selected" : ""}>par lien</option>
           <option value="public" ${chosen === "public" ? "selected" : ""}>tout le monde</option>
@@ -789,7 +790,7 @@ function render(report) {
     <textarea id="keep-desc" rows="2" placeholder="Une ligne pour dire ce qu'il fait"
       aria-label="Description">${escape(editing?.description || "")}</textarea>
     ${editing ? `<div class="row" style="margin-top:8px">
-      <button type="button" id="keep-new">Garder comme une nouvelle</button>
+      <button type="button" id="keep-new">Garder comme un nouveau</button>
       <a class="button" href="/s/${escape(editing.slug)}">Voir sa page</a>
     </div>` : ""}
     <p class="hint-line" id="keep-note"></p>
@@ -832,11 +833,11 @@ function render(report) {
      there is only one kind of ring, it is only ever there because somebody put it there,
      and it carries the icon of what travels through it. */
   const legend = inputs.length || outlets.length ? `<p class="legend">${
-    inputs.length ? `<span class="dot in"></span>Par là que ça entre` : ""
+    inputs.length ? `<span class="dot in"></span>C'est par là que ça entre` : ""
   }${
-    outlets.length ? `<span class="dot out"></span>Par là que ça sort` : ""
-  }<span class="dim">Clique une bande ou un tuyau pour en marquer un autre.</span></p>`
-  : `<p class="legend"><span class="dim">Clique une bande ou un tuyau sur l'image pour dire
+    outlets.length ? `<span class="dot out"></span>C'est par là que ça sort` : ""
+  }<span class="dim">Clique sur un convoyeur ou un conduit pour en marquer un autre.</span></p>`
+  : `<p class="legend"><span class="dim">Clique sur un convoyeur ou un conduit de l'image pour dire
      par où ça entre et par où ça sort.</span></p>`;
 
   out.innerHTML = `<div class="split">
@@ -1356,9 +1357,9 @@ function showBlock(report, tile) {
 
   const at = `${tile.x},${tile.y}`;
   const role = {
-    conveyor: "convoyeur", conduit: "tuyau", junction: "jonction", router: "routeur",
+    conveyor: "convoyeur", conduit: "conduit", junction: "jonction", router: "routeur",
     bridge: "pont", sorter: "trieur", drill: "foreuse", pump: "pompe",
-    crafter: "usine", generator: "generateur", sink: "consommateur", power: "reseau electrique",
+    crafter: "usine", generator: "générateur", sink: "consommateur", power: "réseau électrique",
   }[tile.role] || tile.role || "bloc";
 
   const parts = [`<h2>${escape(lisible(tile.name))}</h2>
@@ -1775,10 +1776,10 @@ function wireKeep(report) {
   };
 
   button.addEventListener("click",
-    run(opened.slug || null, opened.slug ? "À jour." : "Gardée."));
+    run(opened.slug || null, opened.slug ? "À jour." : "Gardé."));
   // Same schematic, kept a second time: a variant worth keeping beside the original
   // rather than instead of it.
-  $("keep-new")?.addEventListener("click", run(null, "Gardée comme une nouvelle."));
+  $("keep-new")?.addEventListener("click", run(null, "Gardé comme un nouveau schéma."));
 }
 
 /* Fetched while the player is still pasting, so the picture appears with the numbers

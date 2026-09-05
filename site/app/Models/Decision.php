@@ -69,7 +69,7 @@ class Decision extends Model
                 if ($schematic !== null && $verdict === self::UPHELD) {
                     $schematic->update([
                         'hidden_at' => $schematic->hidden_at ?? now(),
-                        'hidden_reason' => $reason ?: 'Retire apres relecture.',
+                        'hidden_reason' => $reason ?: 'Retiré après relecture.',
                     ]);
                 } elseif ($schematic !== null) {
                     $schematic->update(['hidden_at' => null, 'hidden_reason' => null]);
