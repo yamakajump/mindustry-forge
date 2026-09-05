@@ -19,7 +19,7 @@ uses(RefreshDatabase::class);
  * gets cut off, and there will be no second chance, because these two catalogues are run by
  * lone maintainers who will see the traffic.
  *
- * The analysis tests run the real Node on the real `analyse.js`. That is the point: this
+ * The analysis tests run the real Node on the real `bilan.js`. That is the point: this
  * repository has one implementation of the analysis, so the only thing worth checking is
  * that the command runs it as it stands.
  */
@@ -224,7 +224,7 @@ it('refuses a source that does not exist rather than doing nothing', function ()
 
 it('analyses what was collected with the browser engine', function () {
     /*
-     * The real Node on the real `analyse.js`. This repository has one implementation of the
+     * The real Node on the real `bilan.js`. This repository has one implementation of the
      * analysis and the command does nothing but launch it: faking Node here would no longer
      * test anything at all, beyond the command knowing how to talk to a ghost.
      */
@@ -324,7 +324,7 @@ const PRESSE = 'bXNjaAF4nGNgYmBiZGDJS8xNZWArKEotLk5lZOBLL0osyMgsSdUFizAwMDAyQAAA
 it('carries the ceiling all the way from Node to the search index', function () {
     /*
      * The chain this test walks is exactly the one that was broken, and it was broken by a
-     * single missing word. `analyse.js` computed the ceiling, the model was wired to index
+     * single missing word. `bilan.js` computed the ceiling, the model was wired to index
      * it, and `tools/ingest.mjs` dropped it in between because its whitelist did not name
      * it. Nothing failed, nothing warned: 317 of 15 533 published schematics carried a
      * production figure, two per cent, on a site whose promise is finding one by what it

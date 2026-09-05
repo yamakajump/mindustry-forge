@@ -95,7 +95,7 @@ export const drives = (program) => Boolean(program?.code && WRITERS.test(program
  *   half further than a 1x1 conveyor standing in the same place. The processor's own size
  *   does not enter it;
  * - the comparison is **strict**. The game lets a player lay a link at exactly the range,
- *   saves it, and then refuses it for ever. `analyse.js` documents the same trap for the
+ *   saves it, and then refuses it for ever. `bilan.js` documents the same trap for the
  *   mass driver, which it cost a working figure to find.
  */
 function reaches(processor, target) {

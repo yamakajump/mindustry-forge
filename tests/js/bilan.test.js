@@ -9,7 +9,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { analyse, buildGraph, solve } from "../../site/public/forge/analyse.js";
+import { analyse, buildGraph, solve } from "../../site/public/forge/bilan.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { inAt, loadCatalogue, paste } from "./helpers.js";
 import { drives, logicOf, readProgram } from "../../site/public/forge/logic.js";

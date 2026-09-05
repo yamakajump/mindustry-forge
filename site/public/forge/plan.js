@@ -39,7 +39,7 @@ const SETTLED = 1e-9;
 /**
  * How many times a second a block completes its recipe, fed perfectly.
  *
- * The same line as `analyse.js` and `needs.js`, which both carry their own copy for the
+ * The same line as `bilan.js` and `needs.js`, which both carry their own copy for the
  * same reason: it is not exported, and exporting it would change that file's hash, which
  * marks every stored analysis on the site stale. `plan.test.js` checks this file against
  * the engine's own answer on every block in the catalogue.

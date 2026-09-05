@@ -16,7 +16,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const KEPT = join(ROOT, "bench", "data", "oracle");
 
 const { buildGraph, useCatalogue } = await import(
-  new URL("../site/public/forge/analyse.js", import.meta.url));
+  new URL("../site/public/forge/bilan.js", import.meta.url));
 const { fromBase64 } = await import(
   new URL("../site/public/forge/schematic.js", import.meta.url));
 const { World } = await import(new URL("../site/public/forge/engine/core.js", import.meta.url));

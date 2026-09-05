@@ -1,5 +1,5 @@
 /** Where to plug a schematic in, worked out from the schematic itself. */
-import { analyse } from "../../site/public/forge/analyse.js";
+import { analyse } from "../../site/public/forge/bilan.js";
 import { loadCatalogue } from "../../tests/js/helpers.js";
 
 loadCatalogue();

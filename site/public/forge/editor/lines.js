@@ -290,7 +290,7 @@ export function lineOf(from, to, block, catalogue, rotation = 0,
       const next = plans[i + 1];
       if (Math.max(Math.abs(here.x - next.x), Math.abs(here.y - next.y)) <= reach) {
         /* Type 7 of the format is a relative point written as two integers. It is the shape
-           `schematic.js` reads and writes, and the one `analyse.js` follows to draw the
+           `schematic.js` reads and writes, and the one `bilan.js` follows to draw the
            link: inventing another shape here would have given three different ideas of the
            same link. */
         here.config = { type: 7, dx: next.x - here.x, dy: next.y - here.y };

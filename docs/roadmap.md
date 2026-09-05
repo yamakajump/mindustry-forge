@@ -6,7 +6,7 @@ its reasoning is a list somebody will reorder by taste.
 
 ## What already exists
 
-- **The analysis engine**, `site/public/forge/analyse.js`, and the bench that holds it
+- **The analysis engine**, `site/public/forge/bilan.js`, and the bench that holds it
   against a real headless Mindustry server. Worst recorded gap: three percent.
 - **The simulator**, `live.js`: the schematic runs in the browser, drawn from the same
   engine as the report. An animation driven by `Date.now()` would look identical and mean
@@ -70,7 +70,7 @@ picked up when tiers one and two hold.
 ## Unowned work
 
 - **The English conversion pass**, roughly 910 comments. It has to happen cold, when no
-  branch is writing in the files concerned. `analyse.js` is hashed by `EngineVersion`, so
+  branch is writing in the files concerned. `bilan.js` is hashed by `EngineVersion`, so
   rewording a comment there marks every stored analysis stale and triggers a full
   re-measurement of the catalogue.
 - **`bench/bench.py`**, which imports `forge.bridge`, `forge.spec` and `forge.layout`, none

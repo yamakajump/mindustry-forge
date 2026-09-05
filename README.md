@@ -70,7 +70,7 @@ two do not agree yet. That is written here rather than left for a reader to find
 - `site/public/forge/engine/**` steps the game tick by tick, and throttles a machine by the
   power it actually receives. This is what the bench measures, and what the animated view
   runs.
-- `site/public/forge/analyse.js` solves a steady state by maximum flow. Power never enters
+- `site/public/forge/bilan.js` solves a steady state by maximum flow. Power never enters
   the solve, so the bottleneck it reports is blind to it.
 
 **The one shown to the player is the second. The one proven against the game is the first.**

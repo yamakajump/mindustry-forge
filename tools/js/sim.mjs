@@ -1,5 +1,5 @@
 /** Run a schematic tick by tick and watch what comes out of it. */
-import { analyse, buildGraph, useCatalogue } from "../../site/public/forge/analyse.js";
+import { analyse, buildGraph, useCatalogue } from "../../site/public/forge/bilan.js";
 import { simulate } from "../../site/public/forge/simulate.js";
 import { fromBase64 } from "../../site/public/forge/schematic.js";
 import { loadCatalogue } from "../../tests/js/helpers.js";

@@ -1,5 +1,5 @@
 /** What each liquid carrier holds, to check the one-liquid rule. */
-import { analyse } from "../../site/public/forge/analyse.js";
+import { analyse } from "../../site/public/forge/bilan.js";
 import { loadCatalogue } from "../../tests/js/helpers.js";
 
 loadCatalogue();

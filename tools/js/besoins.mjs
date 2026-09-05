@@ -1,5 +1,5 @@
 /** What has to be installed to feed a schematic. */
-import { analyse } from "../../site/public/forge/analyse.js";
+import { analyse } from "../../site/public/forge/bilan.js";
 import { loadCatalogue } from "../../tests/js/helpers.js";
 
 loadCatalogue();

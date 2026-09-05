@@ -1,5 +1,5 @@
 /** Analyse a schematic from the command line, using the same modules the page loads. */
-import { analyse } from "../../site/public/forge/analyse.js";
+import { analyse } from "../../site/public/forge/bilan.js";
 import { loadCatalogue } from "../../tests/js/helpers.js";
 
 loadCatalogue();
