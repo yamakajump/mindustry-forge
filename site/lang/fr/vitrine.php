@@ -21,7 +21,7 @@ return [
      * thorium ». Le site ne savait pas y repondre tant que `schematic_blocks` etait vide.
      */
     'bloc' => [
-        'label' => 'Qui contient',
+        'label' => 'Contient le bloc',
         // The picker's summary, where "no block chosen" has to read as an answer.
         'aucun' => 'n\'importe lequel',
         'type' => 'Un type de bloc',
@@ -56,7 +56,7 @@ return [
     'phrase' => [
         'je-cherche' => 'Je cherche un schéma qui produit',
         'au-moins' => 'au moins',
-        'qui-tient-dans' => 'qui tient dans',
+        'qui-tient-dans' => 'et qui tient dans',
         'sur' => 'sur',
     ],
 
@@ -77,7 +77,7 @@ return [
         // Shared by the planet and the ingredient pickers: both say it, and neither owns it.
         'peu-importe' => 'peu importe',
         'autonome' => 'autonome en énergie',
-        'verifie' => 'vérifié par le banc',
+        'verifie' => 'vérifié dans le jeu',
         'chercher' => 'Appliquer',
         'unite' => [
             'tuiles' => 'tuiles',
@@ -96,9 +96,10 @@ return [
          * par `BaseBuilderAI` et `BaseGenerator`. Un miroir ne change pas l'encombrement.
          */
         'sans-rotation' => 'Le jeu ne permet pas de faire pivoter un schéma à la pose, donc
-            un plan plus large que haut ne rentre pas dans un trou plus haut que large.',
-        'debit-sans-objet' => "Choisis d'abord ce que tu cherches : un débit minimum n'a rien
-            contre quoi se mesurer tant qu'aucun objet n'est choisi.",
+            un schéma plus large que haut ne rentre pas dans un emplacement plus haut
+            que large.',
+        'debit-sans-objet' => "Choisis d'abord ce que tu cherches : un débit minimum ne veut
+            rien dire tant qu'aucun objet n'est choisi.",
     ],
 
     /*
@@ -156,10 +157,10 @@ return [
     'a-moi' => [
         'titre' => 'À moi',
         'favoris' => 'mes favoris',
-        'aimes' => "ceux que j'ai aimés",
-        'miens' => "ceux que j'ai publiés",
-        'tout-garde' => "Dans une liste à moi, rien n'est mis de côté : un schéma de bac à
-            sable que j'ai gardé, je le revois.",
+        'aimes' => 'ceux que tu as aimés',
+        'miens' => 'ceux que tu as publiés',
+        'tout-garde' => "Dans tes listes, rien n'est mis de côté : un schéma de bac à
+            sable que tu as gardé, tu le revois.",
     ],
 
     /*
@@ -194,7 +195,7 @@ return [
     ],
 
     'note' => [
-        'rentable' => 'Rentable à la surface',
+        'rentable' => "Rentable pour la place qu'il prend",
         'etale' => "Étalé pour ce qu'il rend",
         'la-mediane' => 'la médiane de cette liste',
         'contre' => 'contre',
@@ -212,7 +213,7 @@ return [
          * Le joueur lit le fait et conclut « tot » lui-meme.
          */
         'rien-a-fabriquer' => 'Rien à fabriquer avant de le poser',
-        'a-fabriquer' => "Demande d'abord de fabriquer",
+        'a-fabriquer' => "Il faut d'abord fabriquer",
         'coute' => 'coûte',
         'autonome' => "S'alimente tout seul",
         'a-brancher' => 'À brancher',
@@ -236,7 +237,7 @@ return [
             se posent pas en partie normale.',
         'montrer' => 'Les afficher quand même',
         'affichees' => 'Les schémas de bac à sable sont affichés.',
-        'remettre' => 'Revenir à ceux qui se posent en partie',
+        'remettre' => 'Revenir à ceux qui se posent en partie normale',
         'etiquette' => 'bac à sable',
     ],
 
@@ -265,7 +266,7 @@ return [
         /* Ni « mesure » ni « mesures » : une liste peut porter des debits declares, et
            `ContributionTest` refuse le mot sur une page qui en montre. La phrase dit ce qui
            est vrai des deux, que le chiffre sort du plan et non d'une etiquette. */
-        'analyses' => 'schémas analysés, chiffres tirés du plan lui-même.',
+        'analyses' => 'schémas analysés, chiffres tirés du schéma lui-même.',
     ],
 
     'pagination' => [

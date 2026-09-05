@@ -106,11 +106,11 @@ return [
          * faux. C'est le défaut que ce dépôt collectionne, et le voici évité en un mot.
          */
         'declaree' => 'déclaré par un joueur',
-        'bac-a-sable-aide' => "Un robinet de bac à sable donne autant qu'on lui demande, donc
+        'bac-a-sable-aide' => "Une source de bac à sable donne autant qu'on lui demande, donc
             ce que ce schéma sort n'est pas une mesure de ce que ses blocs font :
-            c'est ce qu'un robinet permet. Il reste lisible et analysable, il n'est
+            c'est ce qu'une source permet. Il reste lisible et analysable, il n'est
             simplement pas classé parmi les producteurs.",
-        'bac-a-sable-courant' => "Son courant vient d'une source de bac à sable, pas de ses
+        'bac-a-sable-courant' => "Son énergie vient d'une source de bac à sable, pas de ses
             générateurs : il n'y a rien à en conclure sur ce qu'il rendrait à ta base.",
     ],
 
@@ -123,13 +123,13 @@ return [
      */
     'comparer' => [
         'titre' => 'Comparer deux schémas',
-        'sous-titre' => "Les deux ont été lus par le même moteur, donc la différence se
-            soustrait au lieu de se deviner sur deux captures d'écran.",
+        'sous-titre' => "Les deux ont été lus par le même moteur : la différence se calcule
+            au lieu de se deviner sur deux captures d'écran.",
         'gauche' => 'À gauche',
         'droite' => 'À droite',
         'cherche' => 'Cherche un schéma par son nom',
         'comparer' => 'Comparer',
-        'aide' => "Tape un nom, ou colle la fin d'une adresse après /s/.",
+        'aide' => "Tape un nom, ou colle ce qui suit /s/ dans l'adresse d'un schéma.",
         'trouves' => 'Ce qui porte ce nom',
         'blocs' => 'blocs',
         'par' => 'par',
@@ -150,14 +150,14 @@ return [
          * words for it were "on ne voit pas les schemas".
          */
         'vide' => 'Rien de choisi de ce côté',
-        'dessin' => 'Dessin du plan...',
+        'dessin' => 'Dessin du schéma…',
         'enlever' => 'enlever',
         'echanger' => 'Échanger les deux côtés',
         'ouvrir' => 'ouvrir sa page',
 
         'ce-quils-font' => "Ce qu'ils font tous les deux",
         'lun-pas-lautre' => "Ce que l'un fait et pas l'autre",
-        'la-place' => 'La place et le courant',
+        'la-place' => "La place et l'énergie",
         'le-cout' => "Ce qu'ils coûtent à poser",
         'ce-qui-bloque' => 'Ce qui les arrête',
         'rien-ne-bloque' => 'rien de signalé',
@@ -166,8 +166,8 @@ return [
         'mesure-emprise' => 'Emprise au sol',
         'mesure-energie' => 'Énergie à fournir',
 
-        'ecart-lecture' => "L'écart est celui de gauche moins celui de droite : en vert, la
-            gauche en fait plus.",
+        'ecart-lecture' => "L'écart, c'est la valeur de gauche moins celle de droite : en vert,
+            c'est la gauche qui en fait plus.",
         'non-soustrait' => 'pas soustrait',
         'ecart' => 'écart',
 
@@ -186,8 +186,8 @@ return [
             sont montrés côte à côte et volontairement pas soustraits : leur différence ne
             voudrait rien dire.",
         'pas-de-verdict' => "Aucun vainqueur n'est désigné. Un schéma qui produit plus et
-            coûte trois fois plus cher n'est pas meilleur, c'est un autre marché, et vous
-            êtes seul à savoir lequel vous voulez.",
+            coûte trois fois plus cher n'est pas meilleur, c'est un autre compromis, et toi seul
+            sais lequel tu veux.",
     ],
 
     'gestion' => [

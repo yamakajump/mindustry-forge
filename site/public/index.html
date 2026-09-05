@@ -97,7 +97,7 @@ if (location.pathname === "/editer") {
     <h1 data-i18n="vitrine.accueil.titre">Découvre ce que ton schéma produit vraiment</h1>
     <p class="lede" data-i18n="vitrine.accueil.accroche">Colle-le, et Forge te dit ce qui en
       sort par seconde, quel bloc limite toute la ligne, et ce qui se perd en route. Les
-      chiffres sont mesurés contre un vrai serveur Mindustry, pas estimés.</p>
+      chiffres sont mesurés sur un vrai serveur Mindustry, pas estimés.</p>
   </section>
 
   <div class="drop" id="drop">
@@ -223,8 +223,8 @@ Forge calcule déjà ce qu'il faut pour tourner à fond. Si tu veux savoir ce qu
         <img src="/icone/bloc/core-shard.png?t=64" width="48" height="48" alt=""
              loading="lazy" decoding="async" onerror="this.remove()">
         <strong data-i18n="nav.barre.blocs">Blocs</strong>
-        <span data-i18n="vitrine.accueil.outil-blocs">Les blocs du jeu avec les chiffres que
-          le banc a mesurés, pas ceux d'un wiki.</span>
+        <span data-i18n="vitrine.accueil.outil-blocs">Les blocs du jeu avec les chiffres
+          relevés dans le jeu lui-même, pas ceux d'un wiki.</span>
       </a></li>
     </ul>
   </section>
@@ -585,21 +585,21 @@ function render(report) {
   const fedSomething = made.length || (report.power && report.power.made > 0.01);
   if (report.bottleneck && fedSomething && answered) {
     const [name, share] = report.bottleneck;
-    right.push(`<div class="card"><h2>Goulot</h2>
+    right.push(`<div class="card"><h2>${escape(t("analyse.goulot.titre"))}</h2>
       <div class="line"><span>${escape(lisible(name))}</span>
-        <span class="num bad">nourri à ${Math.round(share * 100)}%</span></div>
+        <span class="num bad">${Math.round(share * 100)}&nbsp;% ${
+          escape(t("analyse.goulot.regime"))}</span></div>
       ${report.throttle ? `<p class="hint-line">${t("analyse.goulot.plafonne", {
         bloc: `<strong>${escape(lisible(report.throttle.name))}</strong>`,
         x: report.throttle.x, y: report.throttle.y,
         plafond: `${perSecond(report.throttle.ceiling)} ${
           escape(t("analyse.unite.par-seconde"))}`,
       })}</p>` : ""}
-      <p class="hint-line">C'est ce bloc qui limite toute la ligne. Élargis ce qui
-        l'alimente avant d'ajouter des machines derrière.</p>
+      <p class="hint-line">${escape(t("analyse.goulot.conseil"))}</p>
     </div>`);
   } else if (made.length) {
-    right.push(`<div class="card"><h2>Goulot</h2>
-      <div class="line"><span class="good">Aucun, tout tourne à plein régime.</span></div>
+    right.push(`<div class="card"><h2>${escape(t("analyse.goulot.titre"))}</h2>
+      <div class="line"><span class="good">${escape(t("analyse.goulot.aucun"))}</span></div>
     </div>`);
   }
 
@@ -627,13 +627,16 @@ function render(report) {
   if (surplus.length || idle.length) {
     const rows = [
       ...surplus.map(([item, n]) =>
-        `<div class="line"><span>${withIcon(item)}${escape(lisible(item))} arrive sans pouvoir être
-          consommé</span><span class="num warn">+${perSecond(n)} / s</span></div>`),
+        `<div class="line"><span>${withIcon(item)}${escape(lisible(item))} ${
+          escape(t("analyse.gaspille.sans-preneur"))}</span>
+          <span class="num warn">+${perSecond(n)} / s</span></div>`),
       ...idle.map(([name, n]) =>
-        `<div class="line"><span>${escape(lisible(name))} relié à rien</span>
+        `<div class="line"><span>${escape(lisible(name))} ${
+          escape(t("analyse.gaspille.sans-suite"))}</span>
           <span class="num bad">x${n}</span></div>`),
     ];
-    right.push(`<div class="card"><h2>Gaspille</h2>${rows.join("")}</div>`);
+    right.push(`<div class="card"><h2>${
+      escape(t("analyse.gaspille.titre"))}</h2>${rows.join("")}</div>`);
   }
 
   /* What the processors amount to, which until now was computed on every analysis and
