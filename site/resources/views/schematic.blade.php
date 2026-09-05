@@ -79,7 +79,7 @@
     @if($preview)
       <img src="{{ $preview }}" alt="Aperçu de {{ $schematic->displayName() }}">
     @else
-      <p class="empty">Dessin du plan...</p>
+      <p class="empty">Dessin du schéma…</p>
     @endif
   </a>
 
