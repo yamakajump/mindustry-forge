@@ -249,33 +249,67 @@ function drawBridge(context, node, box, scale) {
 }
 
 /**
- * A ring on a tile, for a socket.
+ * Where a mark goes on the canvas, given the block it is on.
+ *
+ * Separate from the drawing, and exported, because this is arithmetic and the drawing is
+ * not: a canvas needs a browser, and the mistake this fixes was a rectangle, not a stroke.
+ * A ring drawn one tile wide on a three by three block sat on the middle ninth of it.
+ *
+ * Mindustry stores a block on its centre and offsets by `-(size - 1) / 2`, truncated
+ * towards zero, which is what `geometry.js` states for the analysis and what `bounds`
+ * above has used since the first picture was drawn. The truncation is the part worth
+ * watching: it only bites on even sizes, so a pair of odd blocks agrees either way and the
+ * error appears at the first four wide turret.
+ */
+export function markBox(port, box, scale, blockSize = 1) {
+  const offset = Math.trunc(-(blockSize - 1) / 2);
+  return {
+    x: (port.x + offset - box.left) * scale,
+    /* From the top row of the footprint, because a canvas counts down from the top and the
+       game counts up from the bottom. Measuring from the stored tile instead puts the ring
+       a block too low on everything wider than a single tile. */
+    y: (box.height - (port.y + offset + blockSize - 1 - box.bottom) - 1) * scale,
+    span: blockSize * scale,
+  };
+}
+
+/**
+ * A ring on a block, for a socket.
  *
  * Drawn rather than listed. A player reading "the pipe at 0,7 wants water" beside a
- * picture has to count tiles to find it; a mark on the tile itself is the same fact
+ * picture has to count tiles to find it; a mark on the block itself is the same fact
  * without the counting.
+ *
+ * Around the whole block, not around one tile of it. A schematic marks its intakes on
+ * belts, which are one tile, so a one tile ring was right until somebody marked something
+ * bigger: a mass driver is three by three and a turret goes to four, and the ring then sat
+ * on the middle ninth of a block with the eight tiles around it unmarked. It read as a mark
+ * on the floor behind the block rather than on the block, which is the counting the mark
+ * exists to remove. Mindustry stores a block on its centre, so the footprint comes from
+ * there, by the same formula `geometry.js` states once for the analysis.
  */
-function marker(context, port, box, scale, colour) {
-  const x = (port.x - box.left) * scale;
-  const y = (box.height - (port.y - box.bottom) - 1) * scale;
+function marker(context, port, box, scale, colour, blockSize = 1) {
+  const { x, y, span } = markBox(port, box, scale, blockSize);
   const width = Math.max(2, scale * 0.11);
 
   context.save();
   context.strokeStyle = colour;
   context.lineWidth = width;
-  context.strokeRect(x + width / 2, y + width / 2, scale - width, scale - width);
+  context.strokeRect(x + width / 2, y + width / 2, span - width, span - width);
 
   // What travels through it, drawn on it. A ring says "here"; a ring with a drop of water
   // in it says "water, here", which is the whole of what the mark is for. Drawn at a bit
-  // over half a tile and floated above the block, so the block underneath stays readable.
+  // over half a tile and floated above the block, so the block underneath stays readable,
+  // and at that size whatever the block: one mark has to look like the next, and an icon
+  // scaled to a four by four turret would be a different sign for the same thing.
   const icon = port.resource && atlas?.sprites?.[`item/${port.resource}`];
   if (icon && sheet) {
     const size = scale * 0.62;
-    const left = x + (scale - size) / 2;
-    const top = y + (scale - size) / 2;
+    const left = x + (span - size) / 2;
+    const top = y + (span - size) / 2;
     context.fillStyle = "rgba(10, 12, 16, .72)";
     context.beginPath();
-    context.arc(x + scale / 2, y + scale / 2, size * 0.62, 0, Math.PI * 2);
+    context.arc(x + span / 2, y + span / 2, size * 0.62, 0, Math.PI * 2);
     context.fill();
     context.drawImage(sheet, icon.x, icon.y, icon.w, icon.h, left, top, size, size);
   }
@@ -789,11 +823,19 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   // Only what the player said, drawn solid. There used to be a second, faded ring on every
   // tile that could have been an intake, which on a real schematic meant fourteen green
   // squares with one of them slightly brighter, and no way to tell which was which.
+  /* The block under a mark, so the ring can be drawn around all of it. Read from the tiles
+     rather than taken from the port, because the two callers describe a port differently:
+     the analyser knows the block's name, and a stored schematic's marks are a coordinate
+     and a resource and nothing else. Both know where the tiles are. */
+  const marked = new Map(tiles.map((tile) =>
+    [`${tile.x},${tile.y}`, sizeOf(tile.name || tile.block) || 1]));
+  const spanOf = (port) => marked.get(`${port.x},${port.y}`) || 1;
+
   for (const port of options.inputs || []) {
-    marker(context, port, box, scale, "#84d98b");
+    marker(context, port, box, scale, "#84d98b", spanOf(port));
   }
   for (const port of options.outputs || []) {
-    marker(context, port, box, scale, "#ffd37f");
+    marker(context, port, box, scale, "#ffd37f", spanOf(port));
   }
 
   drawPowerLinks(context, tiles, sizeOf, box, scale);
