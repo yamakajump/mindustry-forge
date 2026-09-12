@@ -84,16 +84,26 @@ test("the throughput falls in the same proportion as the current", async () => {
   close(short.perMinute.silicon / plenty.perMinute.silicon, 2 / 3, "the ratio is exact");
 });
 
-test("what a layout asks for is not what it manages to run at", async () => {
-  /* No generator at all, which is the blunt version of the same thing. The smelters run at
-     nothing and still need their ninety a second: that is the number a player builds
-     against, and it survives being unmet. */
+test("a plan that brought no generator is read as plugged into the base", async () => {
+  /* Three smelters and no generator anywhere, which is not a plan that fails: it is a
+     module, and nobody copies a silicon plant together with the reactor farm behind it.
+
+     This asserted the opposite until 12/09/2026, and it was wrong in the ordinary case.
+     Nine thousand one hundred and twenty-five of the catalogue's fifteen thousand
+     schematics draw current and generate none, and every one of them reported producing
+     nothing: a perfectly good factory, stopped, naming itself as its own bottleneck. The
+     simulation had already been fixed, so "Faire tourner" ran the picture flat out beside a
+     column of figures saying zero, out of one analysis.
+
+     The demand still holds at ninety, and that is the point of keeping this test: what a
+     layout asks the grid for is the number a player builds against, and it must not be
+     measured on the throttled rate. */
   const out = await analyse(paste(smelters()));
-  close(out.power.spent, 90, "the demand holds even with nothing covering it");
-  close(out.power.made, 0, "and nothing covers it");
-  assert.ok(out.bottleneck, "the smelters are stopped and it says so");
-  close(out.bottleneck[1], 0, "stopped means zero");
-  assert.deepEqual(out.perMinute, {}, "a smelter with no power smelts nothing");
+
+  close(out.power.spent, 90, "the demand holds, and is what there is to cover");
+  close(out.power.made, 0, "the plan itself still makes none, and says so");
+  close(out.perMinute.silicon, 270, "and it smelts, because a base has current");
+  assert.equal(out.bottleneck, null, "nothing is starving it");
 });
 
 test("two grids that never touch are two grids", async () => {
