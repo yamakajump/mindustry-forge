@@ -241,6 +241,51 @@ export function producers(catalogue, resource, rate, planet = null) {
     || (catalogue.blocks[a.block]?.id ?? Infinity) - (catalogue.blocks[b.block]?.id ?? Infinity));
 }
 
+/**
+ * What would carry a rate to the schematic, which is a different question from what makes
+ * it.
+ *
+ * `producers` answers "where does this come from": drills and pumps, things that turn a
+ * patch of ore into a rate. This answers "how does it get here", and the two were never
+ * told apart, so a schematic fed by mass drivers was handed a shopping list of drills it
+ * already had and told nothing about the artillery that actually feeds it. A mass driver
+ * makes nothing; it delivers thirty-six items a second across fifty-five tiles, which is
+ * the whole reason a base uses one.
+ *
+ * Items and liquids are kept apart because the blocks are: nothing carries both, and a
+ * conduit offered for coal is an instruction that cannot be followed.
+ *
+ * Fewest blocks first, then the game's own numbering, so two options needing the same count
+ * come back in the same order every time.
+ */
+export function carriers(catalogue, resource, rate, planet = null) {
+  /* Items only, and no answer at all for a liquid. A conduit's ceiling is its whole
+     capacity a tick, which is far above any pump and never binds on a real layout: offering
+     "one conduit" for any rate whatsoever would be a row that is always true and therefore
+     says nothing. Which pump brings the water is the question, and it is asked elsewhere. */
+  if (!catalogue.items?.[resource]) return [];
+
+  /* The blocks somebody actually runs a line of, plus the one that throws. A junction is a
+     crossing and a router is a fork; both state a rate, neither is an answer to "how does
+     this get here", and leaving them in put "5 junctions" at the top of the list. */
+  const LIGNES = new Set(["conveyor", "duct", "stack-conveyor", "mass-driver"]);
+
+  const options = [];
+  for (const [name, block] of Object.entries(catalogue.blocks)) {
+    if (!LIGNES.has(block.role)) continue;
+    if (!buildableOn(block, planet)) continue;
+    if (block.build_visibility && block.build_visibility !== "shown") continue;
+
+    const each = block.items_per_second;
+    if (!each || each <= 0) continue;
+
+    options.push({ block: name, each, count: Math.ceil(rate / each) });
+  }
+
+  return options.sort((a, b) => a.count - b.count
+    || (catalogue.blocks[a.block]?.id ?? Infinity) - (catalogue.blocks[b.block]?.id ?? Infinity));
+}
+
 /** What it takes to feed the whole layout, ready to show. */
 export function requirements(graph, catalogue) {
   const { outside } = demand(graph);

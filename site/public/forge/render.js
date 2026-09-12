@@ -288,6 +288,30 @@ export function markBox(port, box, scale, blockSize = 1) {
  * exists to remove. Mindustry stores a block on its centre, so the footprint comes from
  * there, by the same formula `geometry.js` states once for the analysis.
  */
+/**
+ * The outline on a block that COULD be marked, while the player is choosing one.
+ *
+ * Dashed, thin, and only ever drawn while marking is armed. A ghost ring in the mark's own
+ * shape was tried here before and removed: on a real schematic it meant fourteen green
+ * squares with one of them slightly brighter, and no way to tell which was which. The
+ * lesson is that a candidate must not look like a mark, so this shares neither the line
+ * style nor the weight, and it disappears the moment the choice is made.
+ *
+ * Without it a player is told to click a conveyor and given no way to know which of the two
+ * hundred blocks in front of them will answer.
+ */
+function candidate(context, port, box, scale, blockSize = 1) {
+  const { x, y, span } = markBox(port, box, scale, blockSize);
+  const width = Math.max(1, scale * 0.06);
+
+  context.save();
+  context.strokeStyle = "rgba(233, 237, 243, .55)";
+  context.lineWidth = width;
+  context.setLineDash([Math.max(2, scale * 0.18), Math.max(2, scale * 0.14)]);
+  context.strokeRect(x + width / 2, y + width / 2, span - width, span - width);
+  context.restore();
+}
+
 function marker(context, port, box, scale, colour, blockSize = 1) {
   const { x, y, span } = markBox(port, box, scale, blockSize);
   const width = Math.max(2, scale * 0.11);
@@ -830,6 +854,12 @@ export function draw(canvas, tiles, sizeOf, roleOf, options = {}) {
   const marked = new Map(tiles.map((tile) =>
     [`${tile.x},${tile.y}`, sizeOf(tile.name || tile.block) || 1]));
   const spanOf = (port) => marked.get(`${port.x},${port.y}`) || 1;
+
+  /* Under the marks, so a block that is both a candidate and already marked reads as
+     marked. The dashes are the offer; the ring is the answer. */
+  for (const port of options.candidates || []) {
+    candidate(context, port, box, scale, spanOf(port));
+  }
 
   for (const port of options.inputs || []) {
     marker(context, port, box, scale, "#84d98b", spanOf(port));
