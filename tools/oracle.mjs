@@ -1393,6 +1393,54 @@ export const SCENARIOS = {
       [1, 2, 3, 4].map((y) => `ore-beryllium@${x},${y}`)),
   }),
 
+  /* Two liquid routers in line, and not enough water for both the machines they feed.
+
+     The question is what a router does when the branch beside it and the branch beyond it
+     both want more than is arriving. Splitting evenly starves the far machine on a long
+     line; sharing it out flat gives every machine the same fraction. A maximum flow
+     naturally does the second, so the first would be a real disagreement, and the report
+     for a real six-mixer cryofluid plant hangs on it: it says all six run at two thirds,
+     and the alternative is that the near pair run flat out while the far pair get nothing.
+
+     A mechanical pump and not a sandbox tap, because a tap pours six hundred thousand a
+     second and nothing downstream is ever short: with an unlimited supply both cultivators
+     run flat out whatever the router does, and the scenario measures nothing at all. Seven
+     a second into two cultivators that want about eleven each is the shortage the question
+     needs.
+
+     Read on the spore pods in the two vaults rather than on the pools: a settled pipeline
+     is a gradient the two engines approach from different sides, and what was made is a
+     fact about the machines. */
+  "liquid-router-in-line": () => ({
+    tiles: [
+      // One tile, standing on its own water. Seven a second, and no power of its own.
+      { x: 3, y: -2, block: "mechanical-pump", rotation: 0 },
+      { x: 3, y: -1, block: "conduit", rotation: 1 },
+      { x: 3, y: 0, block: "liquid-router", rotation: 0 },
+      // Covers 1..2 by 0..1, touching the first router at (2,0).
+      { x: 1, y: 0, block: "cultivator", rotation: 0 },
+      { x: 3, y: 1, block: "conduit", rotation: 1 },
+      { x: 3, y: 2, block: "liquid-router", rotation: 0 },
+      /* Covers 1..2 by 2..3, touching the second router at (2,2) and the first cultivator
+         at (1,1). They share a grid because they touch, so one source powers both. */
+      { x: 1, y: 2, block: "cultivator", rotation: 0 },
+      { x: 0, y: 0, block: "power-source", rotation: 0 },
+
+      // What the near cultivator made.
+      { x: 2, y: -1, block: "conveyor", rotation: 3 },
+      { x: 2, y: -2, block: "conveyor", rotation: 3 },
+      // Covers 0..2 by -5..-3.
+      { x: 1, y: -4, block: "vault", rotation: 0 },
+
+      // And the far one, taken the other way so the two answers cannot be confused.
+      { x: 1, y: 4, block: "conveyor", rotation: 1 },
+      { x: 1, y: 5, block: "conveyor", rotation: 1 },
+      // Covers 0..2 by 6..8.
+      { x: 1, y: 7, block: "vault", rotation: 0 },
+    ],
+    ground: ["shallow-water@3,-2"],
+  }),
+
   /* A rotary pump on water, powered and unpowered.
 
      `edelta()`, where the port read `delta()`: an unpowered pump pumped forty-eight a

@@ -1,0 +1,230 @@
+{
+  "game_version": "release build 159.7",
+  "ticks": 1800,
+  "seconds": 30,
+  "pools": [
+    {
+      "block": "mechanical-pump",
+      "x": 15,
+      "y": 15,
+      "liquid": "water",
+      "amount": 0.12638888
+    },
+    {
+      "block": "conduit",
+      "x": 15,
+      "y": 16,
+      "liquid": "water",
+      "amount": 0.009722218
+    },
+    {
+      "block": "liquid-router",
+      "x": 15,
+      "y": 17,
+      "liquid": "water",
+      "amount": 0.05833333
+    },
+    {
+      "block": "conduit",
+      "x": 15,
+      "y": 18,
+      "liquid": "water",
+      "amount": 0.004861111
+    },
+    {
+      "block": "liquid-router",
+      "x": 15,
+      "y": 19,
+      "liquid": "water",
+      "amount": 0.02916667
+    }
+  ],
+  "batteries": [],
+  "payloads": [],
+  "units":{},
+  "running": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13,
+      "efficiency": 0,
+      "holds":{
+        "spore-pod": 5
+      }
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "mechanical-pump",
+      "x": 15,
+      "y": 15,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 16,
+      "efficiency": 1
+    },
+    {
+      "block": "conduit",
+      "x": 15,
+      "y": 16,
+      "efficiency": 1
+    },
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 17,
+      "efficiency": 0
+    },
+    {
+      "block": "cultivator",
+      "x": 13,
+      "y": 17,
+      "efficiency": 0.2916667
+    },
+    {
+      "block": "liquid-router",
+      "x": 15,
+      "y": 17,
+      "efficiency": 1
+    },
+    {
+      "block": "conduit",
+      "x": 15,
+      "y": 18,
+      "efficiency": 1
+    },
+    {
+      "block": "cultivator",
+      "x": 13,
+      "y": 19,
+      "efficiency": 0.097222224
+    },
+    {
+      "block": "liquid-router",
+      "x": 15,
+      "y": 19,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 21,
+      "efficiency": 1
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 22,
+      "efficiency": 1
+    },
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 24,
+      "efficiency": 0,
+      "holds":{
+        "spore-pod": 1
+      }
+    }
+  ],
+  "standing": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 15
+    },
+    {
+      "block": "mechanical-pump",
+      "x": 15,
+      "y": 15
+    },
+    {
+      "block": "conveyor",
+      "x": 14,
+      "y": 16
+    },
+    {
+      "block": "conduit",
+      "x": 15,
+      "y": 16
+    },
+    {
+      "block": "power-source",
+      "x": 12,
+      "y": 17
+    },
+    {
+      "block": "cultivator",
+      "x": 13,
+      "y": 17
+    },
+    {
+      "block": "liquid-router",
+      "x": 15,
+      "y": 17
+    },
+    {
+      "block": "conduit",
+      "x": 15,
+      "y": 18
+    },
+    {
+      "block": "cultivator",
+      "x": 13,
+      "y": 19
+    },
+    {
+      "block": "liquid-router",
+      "x": 15,
+      "y": 19
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 21
+    },
+    {
+      "block": "conveyor",
+      "x": 13,
+      "y": 22
+    },
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 24
+    }
+  ],
+  "containers": [
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 13,
+      "items":{
+        "spore-pod": 5
+      }
+    },
+    {
+      "block": "vault",
+      "x": 13,
+      "y": 24,
+      "items":{
+        "spore-pod": 1
+      }
+    }
+  ],
+  "per_second":{
+    "spore-pod": 0.2
+  }
+}
