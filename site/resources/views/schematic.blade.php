@@ -240,8 +240,21 @@
           <span>{{ implode(', ', $schematic->sandboxTaps()) }}</span></div>
         <p class="hint-line">{{ __('schema.page.bac-a-sable-aide') }}</p>
       </div>
+    @elseif($schematic->jammed() !== [])
+      {{-- It runs and its output has nowhere to go, which is a different answer from a rate
+           and had to be told apart from one. This page printed "au mieux 8 verre / s" while
+           the analyser one click away said nothing came out at all: two pages, one
+           analysis, opposite answers. --}}
+      <div class="card"><h2>{{ __('schema.page.sortie') }}</h2>
+        @foreach($schematic->jammed() as $item => $itemRate)
+          <div class="line"><span>@include('blocks.partials.thing', ['thing' => $item])</span>
+            <span class="num warn">{{ \App\Models\SchematicItem::debitAffiche($item, $itemRate) }} {{
+              __('schema.unite.par-seconde') }}</span></div>
+        @endforeach
+        <p class="hint-line">{{ __('schema.page.coince') }}</p>
+      </div>
     @elseif($power > 0.5 || $made->isNotEmpty())
-      <div class="card"><h2>Sortie</h2>
+      <div class="card"><h2>{{ __('schema.page.sortie') }}</h2>
         {{-- "At best", because the column comes from `analysis['potential']`: it is what
              the layout would do fed at full rate, not what it was measured doing. The same
              word the comparison page already uses, and for the same reason: a cap is never
@@ -291,7 +304,10 @@
          schematic: a base has current, or you run a wire to it. It is a prerequisite, and
          it gets said. --}}
     @if($schematic->needs || $schematic->powerNeeded() > 0.5)
-      <div class="card"><h2>Il lui faut</h2>
+      {{-- The same heading the analyser uses for the same list. They said "Il lui faut"
+           and "Ce qu'il faut lui amener", which reads as two different facts about one
+           schematic and was reported as exactly that. --}}
+      <div class="card"><h2>{{ __('schema.page.amener') }}</h2>
         @if($schematic->powerNeeded() > 0.5)
           {{-- The mark and the word from the dictionary. It said "electricite", written
                into the markup and without its accent, on a site whose own rule is that a

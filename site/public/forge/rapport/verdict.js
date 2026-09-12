@@ -212,6 +212,17 @@ export function verdict(report, what, answered, outils) {
       ${autres(figure.reste, outils)}
       <p class="pourquoi bride">${escape(t(bouche
         ? "analyse.verdict.bouche" : "analyse.verdict.a-larret"))}</p>
+      ${/* And the way to answer it, here, where the problem is stated.
+
+            Telling somebody nothing comes out and giving them no way to say where it comes
+            out is the same defect as asking a display where it plugs in: an instruction
+            that cannot be followed. There was no route to marking an outlet at all once an
+            intake had been marked, because the only button that armed the choosing said
+            "dis-lui par ou ca entre" and disappeared as soon as anything was marked. */
+        bouche
+          ? `<div class="row"><button type="button" class="primary" id="verdict-sortie">${
+              escape(t("analyse.verdict.dis-par-ou-sort"))}</button></div>`
+          : ""}
       ${ecartAvecLeJeu(report, outils)}
     </div>`;
   }

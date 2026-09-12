@@ -431,3 +431,40 @@ it('makes the plan itself the door it looks like', function () {
         ->assertOk()
         ->assertSee('<a class="stage" href="/?s='.$schematic->slug.'"', escape: false);
 });
+
+it('says a jammed plan is jammed, rather than printing a rate that does not flow', function () {
+    /*
+     * Its own page printed "au mieux 8 verre / s" while the analyser one click away said
+     * nothing came out at all: two pages, one analysis, opposite answers, and a reader with
+     * no way to tell which to believe. `4x Kiln` is the case.
+     */
+    $jammed = Schematic::factory()->create([
+        'visibility' => 'public',
+        'produces' => ['metaglass' => 480.0],
+        'analysis' => ['bloque' => ['metaglass' => 480.0]],
+    ]);
+
+    $this->get("/s/{$jammed->slug}")
+        ->assertOk()
+        /* On a fragment without an apostrophe. Blade escapes them to `&#039;` and the
+           dictionary returns them raw, so the whole sentence never matches either way
+           round: with the needle escaped it carries entities the sentence does not, and
+           without it the page carries entities the needle does not. */
+        ->assertSee('rien ne ressort du schéma', false)
+        // And not the ordinary production wording, which would say the opposite one line up.
+        ->assertDontSee(__('schema.page.energie-plafond'), false);
+});
+
+it('leaves a plan whose output flows alone', function () {
+    // `bloque` is empty on every row analysed before the engine learned to tell the two
+    // apart, which is most of them: they must read as "nothing to say", not as "jammed".
+    $fine = Schematic::factory()->create([
+        'visibility' => 'public',
+        'produces' => ['graphite' => 240.0],
+        'analysis' => [],
+    ]);
+
+    $this->get("/s/{$fine->slug}")
+        ->assertOk()
+        ->assertDontSee('rien ne ressort du schéma', false);
+});

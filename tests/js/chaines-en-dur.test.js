@@ -58,8 +58,13 @@ import { readFileSync } from "node:fs";
    own panel was reworked, so its vocabulary went with it, and the sentence about overdrive
    projectors needed four keys rather than one: it agrees with two counts at once, and a
    single wording produced « 1 projecteurs couvrent 1 blocs » on the commonest case there
-   is. */
-const RESTANT = 13;
+   is.
+
+   Eleven once the block panel became the bubble. It carried the empty state nobody reads
+   twice and the two editing buttons, and both went: the buttons moved onto the bubble
+   beside the marking ones, because both are things you do to the block you just clicked,
+   and the empty state has nowhere left to be shown. */
+const RESTANT = 11;
 
 const MOTS = /(?<![\w-])(le|la|les|un|une|des|du|de|et|ou|qui|que|pas|sur|dans|pour|ce|il|elle|ne|se|est|sont|au|aux|en|par|plus|rien|tout|toute|avec|sans|son|sa|ses|cette|cet|tu|te|ton|ta|quoi|quand|comme|deja|encore|meme|leur|lui|on)(?![\w-])/i;
 

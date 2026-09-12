@@ -131,6 +131,28 @@ class Schematic extends Model
             ->first();
     }
 
+    /**
+     * What it makes that has nowhere to go, per minute.
+     *
+     * Its own page printed a rate as though it flowed, while the analyser one click away
+     * said nothing came out at all: two pages, one analysis, opposite answers, and a reader
+     * with no way to tell which to believe. `4x Kiln` is the case that showed it, four kilns
+     * at a hundred per cent whose metaglass nothing eats and no belt carries out.
+     *
+     * Empty on every row analysed before the engine learned to tell a jammed plan from a
+     * starving one, which is most of them, so a page reads it as "nothing to say" rather
+     * than as "nothing is stuck".
+     *
+     * @return array<string, float>
+     */
+    public function jammed(): array
+    {
+        return array_filter(
+            (array) ($this->analysis['bloque'] ?? []),
+            fn ($rate) => is_numeric($rate) && $rate > 0.5,
+        );
+    }
+
     /** In the public list. Unlisted schematics are reachable and not listed. */
     public function scopeListed($query)
     {

@@ -77,6 +77,15 @@ return [
     'page' => [
         'bac-a-sable' => 'Alimenté par une source de bac à sable',
         'bac-a-sable-court' => 'source de bac à sable',
+        /* The same headings the analyser uses for the same facts. They read « Sortie »
+           and « Il lui faut » here and « Ce qu'il sort » and « Ce qu'il faut lui amener »
+           one click away, which reads as two different facts about one schematic and was
+           reported as exactly that. */
+        'sortie' => "Ce qu'il sort",
+        'amener' => "Ce qu'il faut lui amener",
+        'coince' => "Il tourne, mais rien ne ressort du schéma : ça s'accumule sur place et
+            les machines finissent par s'arrêter. Il lui faut une bande ou un conduit vers
+            l'extérieur.",
         'cout' => 'Ce qu\'il coûte',
         'cout-aide' => "Ce que le jeu retire de ton noyau quand tu le poses, à l'unité
             près : c'est `Block.requirements` additionné bloc par bloc, pas une estimation.",

@@ -990,11 +990,6 @@ function render(report) {
         <span class="dim" id="run-mains" hidden></span>
       </div>
       ${legend}
-      <div id="block" class="card block-panel">
-        <h2>Un bloc</h2>
-        <p class="empty">Clique un bloc sur l'image pour voir ce qu'il fait, et pour dire
-          si c'est par là que ça entre ou que ça sort.</p>
-      </div>
     </div>
     <div>${right.join("")}</div>
   </div>`;
@@ -1102,13 +1097,17 @@ function render(report) {
     enMarquage = true;
     repaindre?.();
     $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    $("block")?.classList.add("waiting");
   };
 
   $("ports-sealed")?.addEventListener("click", scelle);
   $("verdict-scelle")?.addEventListener("click", scelle);
   $("ports-mark")?.addEventListener("click", versLimage);
   $("verdict-marquer")?.addEventListener("click", versLimage);
+  /* The same arming, from the other question. A plan whose output is stuck is told so in
+     the verdict, and until now the only button that armed the choosing said "par ou ca
+     entre" and disappeared the moment anything was marked: the page stated a problem and
+     offered no way to answer it. */
+  $("verdict-sortie")?.addEventListener("click", versLimage);
   $("ports-clear")?.addEventListener("click", () => {
     marked = {};
     sealed = false;
@@ -1533,14 +1532,20 @@ const rateLine = (label, rates, unit = "/ s", factor = 1) => {
       <span class="num">${rate(value * factor)} ${unit}</span></div>`).join("");
 };
 
-function showBlock(report, tile) {
-  const panel = $("block");
-  if (!tile) {
-    panel.innerHTML = `<h2>Un bloc</h2><p class="empty">Clique un bloc sur l'image pour
-      voir ce qu'il fait, et pour dire si c'est par là que ça entre ou que ça sort.</p>`;
-    return;
-  }
-
+/**
+ * What a block is and what it is doing, as markup for the bubble that opens on it.
+ *
+ * It used to write itself into a card in the left column, and marking happened somewhere
+ * else again. Two behaviours for one click, one of them behind a mode that had to be armed
+ * first, and the answer three hundred pixels from the thing it was about. Now a click opens
+ * one bubble on the block, holding both, and this builds the reading half of it.
+ *
+ * Returns markup and touches nothing: the handlers are wired by `ouvrirBulle`, once, on the
+ * element it has just inserted. A function that both built HTML and attached listeners to
+ * ids inside it could only ever be called for one panel at a time, which is exactly the
+ * constraint that kept this in a single card.
+ */
+function detailsDuBloc(report, tile) {
   const at = `${tile.x},${tile.y}`;
   const role = {
     conveyor: "convoyeur", conduit: "conduit", junction: "jonction", router: "routeur",
@@ -1548,9 +1553,10 @@ function showBlock(report, tile) {
     crafter: "usine", generator: "générateur", sink: "consommateur", power: "réseau électrique",
   }[tile.role] || tile.role || "bloc";
 
-  const parts = [`<h2>${escape(lisible(tile.name))}</h2>
-    <p class="sub" style="margin:0 0 10px">${role} &middot; ${tile.size}x${tile.size}
-      &middot; en (${tile.x}, ${tile.y})</p>`];
+  /* No name here: the bubble's own header carries it, and printing it twice made a panel
+     that said "Routeur" over "Routeur". What is left is what the header cannot hold. */
+  const parts = [`<p class="sub" style="margin:0 0 10px">${role} &middot; ${
+    tile.size}x${tile.size} &middot; en (${tile.x}, ${tile.y})</p>`];
 
   /* What the ground gives it, which is the whole reason for painting one. "Best case, on
      a full patch" was the tool saying it did not know. */
@@ -1603,27 +1609,13 @@ function showBlock(report, tile) {
      anchored on the block it marks, which is the rule the whole report follows: the
      picture is what you act on, the column beside it is what you read. */
 
-  /* Editing, which turns a viewer into a tool. Rewriting the string rather than keeping a
-     second copy of the schematic beside it: one source of truth, and it is the same string
-     the game reads. */
-  const spins = catalogueOf()?.blocks?.[tile.name]?.rotate;
-  parts.push(`<div class="row edit">
-    ${spins ? `<button type="button" id="spin">Tourner</button>` : ""}
-    <button type="button" id="scrap"
-      title="${escape(t("analyse.bloc.retirer-titre"))}">Retirer ce bloc</button>
-  </div>
-  <p class="hint-line" style="margin:6px 0 0">${escape(t("analyse.bloc.retirer-aide"))}</p>`);
+  /* The two editing buttons live on the bubble, beside the marking ones, because both are
+     things you do to the block you clicked and splitting them across two cards was the
+     confusion this whole change removes. `ouvrirBulle` adds them and wires them. */
+  parts.push(`<p class="hint-line" style="margin:6px 0 0">${
+    escape(t("analyse.bloc.retirer-aide"))}</p>`);
 
-  panel.innerHTML = parts.join("");
-
-  $("spin")?.addEventListener("click", () => edit((tiles) => tiles.map((t) =>
-    t.x === tile.x && t.y === tile.y
-      ? { ...t, rotation: ((t.rotation | 0) + 1) % 4 } : t)));
-  $("scrap")?.addEventListener("click", () => {
-    looking = null;
-    edit((tiles) => tiles.filter((t) => !(t.x === tile.x && t.y === tile.y)));
-  });
-
+  return parts.join("");
 }
 
 /** Map a click on the picture back to the block under it. */
@@ -1743,12 +1735,14 @@ function ouvrirBulle(report, tile, drawn) {
     : null;
   const offert = report.offers?.[at] || [];
 
-  stage.insertAdjacentHTML("beforeend",
-    bulle(tile, mark, offert, { escape, t, lisible, withIcon }));
+  stage.insertAdjacentHTML("beforeend", bulle(
+    tile, mark, offert, { escape, t, lisible, withIcon },
+    detailsDuBloc(report, tile), Boolean(catalogueOf()?.blocks?.[tile.name]?.rotate)));
 
   const box = stage.querySelector(".bulle");
   const où = ancrage(tile, drawn, {
     width: stage.clientWidth,
+    height: stage.clientHeight,
     bulle: { width: box.offsetWidth, height: box.offsetHeight },
   });
   /* Positioned after it is in the document, because where it goes depends on how big it
@@ -1762,7 +1756,22 @@ function ouvrirBulle(report, tile, drawn) {
 
     if (button.dataset.fermer !== undefined) {
       enMarquage = false;
+      looking = null;
       fermerBulle();
+      return;
+    }
+
+    /* Editing, which turns a viewer into a tool. The string is rewritten rather than kept
+       beside a second copy of the schematic: one source of truth, and it is the same string
+       the game reads. */
+    if (button.dataset.tourner !== undefined) {
+      edit((tiles) => tiles.map((one) => (one.x === tile.x && one.y === tile.y
+        ? { ...one, rotation: ((one.rotation | 0) + 1) % 4 } : one)));
+      return;
+    }
+    if (button.dataset.retirer !== undefined) {
+      looking = null;
+      edit((tiles) => tiles.filter((one) => !(one.x === tile.x && one.y === tile.y)));
       return;
     }
 
@@ -1831,29 +1840,19 @@ function wireBlocks(report, drawnNow, repaint) {
     });
     looking = hit ? `${hit.x},${hit.y}` : null;
 
-    /* Choosing what to mark, which is the one gesture that belongs on the picture. The
-       panel below goes on saying what the block is; the bubble says what to do with it,
-       over the block itself rather than in the other column. */
-    if (enMarquage && hit && Object.prototype
-        .hasOwnProperty.call(report.offers || {}, `${hit.x},${hit.y}`)) {
-      ouvrirBulle(report, hit, drawn);
-      return;
-    }
-
-    fermerBulle();
-    showBlock(report, hit || null);
-    /* Stacked, the panel sits under the report, so a tap on the picture filled something
-       the reader could not see. Only when stacked: side by side it is already in view, and
-       moving the page under a mouse that did not ask is rude. */
-    if (hit && !matchMedia("(min-width: 861px)").matches) {
-      $("block")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
+    /* One click, one place. It used to depend on a mode: armed, a click opened a bubble;
+       otherwise it filled a card in the other column. Two behaviours for one gesture, and
+       the second of them answering three hundred pixels away from the block it was about.
+       The bubble now holds both, so there is nothing to arm and nothing to learn. */
+    if (hit) ouvrirBulle(report, hit, drawn);
+    else fermerBulle();
   });
 
-  // Marking a block re-runs the analysis, which redraws the page. Without this the panel
-  // came back empty every time, so picking what arrives meant finding the block again.
+  /* Marking re-runs the analysis, which redraws everything. Without this the bubble
+     vanished on every press, so picking what arrives meant finding the block again. */
   if (looking) {
-    showBlock(report, report.detail.find((t) => `${t.x},${t.y}` === looking) || null);
+    const encore = report.detail.find((t) => `${t.x},${t.y}` === looking);
+    if (encore) ouvrirBulle(report, encore, drawnNow());
   }
 }
 

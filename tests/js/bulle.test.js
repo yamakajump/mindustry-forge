@@ -118,3 +118,22 @@ test("the chosen resource is the one that reads as chosen", () => {
   assert.ok(html.includes('class="chip pick on" data-resource="sand"')
     || sable.includes("on"), "the picked chip is not marked as picked");
 });
+
+test("it stays inside the stage vertically as well as horizontally", () => {
+  /* The horizontal clamp was there from the start and this was not. It did not show while
+     the panel held two buttons; it showed the moment it also held what the block is and
+     what it is doing, because a bubble on the bottom row of a short picture is then taller
+     than the room under it and hung out of the frame entirely. */
+  const court = { width: 300, height: 200, bulle: { width: 210, height: 180 } };
+  const où = ancrage(tile(5, 0), drawn, court);
+
+  assert.ok(où.top >= 0, `it went above the stage: ${où.top}`);
+  assert.ok(où.top + 180 <= 200 + 1, `it hung out of the bottom: ${où.top}`);
+});
+
+test("a bubble taller than the stage lands at the top rather than off it", () => {
+  // A dialog is allowed to cover the picture. It is not allowed to be unreachable.
+  const où = ancrage(tile(5, 5), drawn, { width: 300, height: 100, bulle: { width: 210, height: 300 } });
+
+  assert.ok(où.top >= 0, `it went negative: ${où.top}`);
+});
