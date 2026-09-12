@@ -106,6 +106,21 @@ function pourquoi(report, answered, what, outils) {
       <p class="pourquoi">${escape(t("analyse.goulot.conseil"))}</p>`;
   }
 
+  /* Nothing starved, and still short of the ceiling: the way out is full. Said here rather
+     than left to "rien ne le bride", which is what the block printed over a plan whose
+     output had just been cut from eight a second to six and a half by the copper conveyor
+     the report itself had offered to put down. */
+  if (report.throttle) {
+    const { name, x, y, ceiling } = report.throttle;
+    // The parameters are escaped and the result is not, which is how `plafonne` above is
+    // built: the sentence itself comes from the dictionary and carries its own markup-free
+    // punctuation, and escaping it a second time would print the entities.
+    return `<p class="pourquoi bride">${t("analyse.goulot.sortie", {
+      bloc: escape(lisible(name)), x, y,
+      plafond: `${perSecond(ceiling)} / ${t("analyse.unite.seconde")}`,
+    })}</p>`;
+  }
+
   return `<p class="pourquoi libre">${escape(t("analyse.verdict.rien-ne-bride"))}</p>`;
 }
 

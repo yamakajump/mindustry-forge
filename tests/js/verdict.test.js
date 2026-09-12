@@ -110,6 +110,24 @@ test("nothing throttling it is said, rather than left silent", () => {
   assert.ok(html.includes("analyse.verdict.rien-ne-bride"));
 });
 
+test("a full way out is named, and not called free because nothing is starved", () => {
+  /* The case the placement button creates: the first chip is a copper conveyor, six and a
+     half a second, and a plan making eight now measures six and a half with every machine
+     of it running at a hundred per cent. `bottleneck` is empty, because it only ever knows
+     about starved machines, and the block used to print "rien ne le bride" over a figure it
+     had just cut by a fifth. */
+  const html = verdict(bilan({
+    perMinute: { graphite: 100 },
+    bottleneck: null,
+    throttle: { name: "conveyor", x: 2, y: 0, ceiling: 6.5 },
+  }), usine, true, outils);
+
+  assert.ok(html.includes("analyse.goulot.sortie"));
+  assert.ok(html.includes("<conveyor>"));
+  assert.ok(!html.includes("analyse.verdict.rien-ne-bride"),
+    "it called the plan unrestricted and named what restricts it, in the same block");
+});
+
 test("power wins over the trickle of intermediates a plant also shows", () => {
   /* One power plant was reported as producing coal and spore pods, which are intermediates
      it eats itself, while the electricity in its own name went unmentioned. */

@@ -663,3 +663,36 @@ test("the bottleneck card names the carrier that is starving the machine", async
   close(out.throttle.ceiling, 6.5, "a conveyor carries six and a half a second");
   assert.equal(out.throttle.item, "sand");
 });
+
+test("a full way out is named, though it starves nothing", async () => {
+  /* A hundred sand a second poured into one copper conveyor, which carries six and a half.
+     Nothing is starved: there is no machine in this layout to starve. The belt is still
+     what decides what comes out, and `bottleneckOf` cannot see it, because it only ever
+     looks at machines running under a hundred per cent.
+
+     This is the shape the report creates for itself: the placement bubble offers a copper
+     conveyor first, and most things worth building make more than six and a half a second.
+     Without this the block said "rien ne le bride" over a figure the belt had just cut. */
+  const sand = { content: 0, id: known.items["sand"].id };
+  const out = await analyse(paste([
+    [0, 0, "item-source", 0, sand], [1, 0, "conveyor", 0]]));
+
+  assert.equal(out.bottleneck, null, "it invented a starved machine");
+  assert.equal(out.throttle.name, "conveyor");
+  assert.equal(out.throttle.item, "sand");
+  close(out.throttle.ceiling, 6.5, "a conveyor carries six and a half a second");
+});
+
+test("a way out with room to spare is not named", async () => {
+  /* A press fed straight from a source, onto a plastanium conveyor that carries forty a
+     second. The press makes far less than that, so the belt is not full and nothing about
+     it is worth saying. Silence here is the whole reason the sentence means something in
+     the test above. */
+  const coal = { content: 0, id: known.items["coal"].id };
+  const out = await analyse(paste([
+    [0, 0, "item-source", 0, coal], [1, 0, "graphite-press", 0],
+    [3, 0, "plastanium-conveyor", 0]]));
+
+  assert.equal(out.bottleneck, null, "the press is short of coal, which is a different test");
+  assert.equal(out.throttle, null);
+});
