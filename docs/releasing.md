@@ -154,7 +154,18 @@ php artisan forge:analyser          # from site/, as the application user
 ```
 
 `Schematic::stale()` selects exactly the rows whose fingerprint is not the current one, and
-that command re-measures them. It runs as the application user rather than as root, which
+that command re-measures them, **minus everything that is off the wall**.
+
+That exclusion is the whole of what this paragraph is for. The collected catalogue was
+hidden on 05/09/2026 and nothing on the site shows it, so an engine change makes fifteen
+thousand rows stale that no reader will ever meet. Following this runbook without the
+exclusion queued exactly that, on 12/09/2026, and it ran to six thousand on the production
+machine before it was stopped by hand. `--caches` puts them back in, for the day the shelf
+goes back on the wall.
+
+So the honest expectation after a hashed change today is **a handful of rows, not fifteen
+thousand**. A run that announces thousands means either the catalogue is back up or the
+exclusion has been lost, and both are worth stopping for. It runs as the application user rather than as root, which
 is `mforge` on the server: `deploy.sh` runs every other `artisan` call through
 `sudo -u "$APP_USER"` for the same reason, so that nothing in `storage/` ends up owned by
 root and unwritable by PHP-FPM afterwards. Nothing schedules it: there is no scheduler in

@@ -423,3 +423,39 @@ it('removes an uploaded schematic without recording a takedown', function () {
 it('says so rather than pretending when the address is wrong', function () {
     $this->artisan('forge:retirer', ['slug' => 'jamaisvu123'])->assertFailed();
 });
+
+it('never measures what is off the wall, because nothing displays it', function () {
+    /*
+     * The collected catalogue came off the wall on 05/09/2026 and nothing on the site shows
+     * it: not the showcase, not the block pages, not the comparison, not the sitemap. Any
+     * change to a hashed source makes every one of those rows stale, so following the
+     * release runbook queued fifteen thousand measurements nobody would ever read. That
+     * happened on 12/09/2026 and ran to six thousand on the production machine before it was
+     * stopped by hand.
+     *
+     * Held here rather than in a promise to be careful, because the promise is what failed.
+     */
+    $sur = Schematic::factory()->imported()->create(['code' => PANNEAUX]);
+    $decroche = Schematic::factory()->imported()->create([
+        'code' => PANNEAUX,
+        'hidden_at' => now(),
+    ]);
+
+    $this->artisan('forge:analyser')->assertSuccessful();
+
+    expect($sur->refresh()->engine_version)->toBe(EngineVersion::current())
+        ->and($decroche->refresh()->engine_version)->toBeNull();
+});
+
+it('measures what is off the wall when it is asked to, and only then', function () {
+    // The way back, for the day the shelf goes up again. The expensive direction is the one
+    // that has to be asked for.
+    $decroche = Schematic::factory()->imported()->create([
+        'code' => PANNEAUX,
+        'hidden_at' => now(),
+    ]);
+
+    $this->artisan('forge:analyser', ['--caches' => true])->assertSuccessful();
+
+    expect($decroche->refresh()->engine_version)->toBe(EngineVersion::current());
+});

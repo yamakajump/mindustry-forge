@@ -10,9 +10,10 @@ use Illuminate\Support\Facades\Process;
 /**
  * Measure what the collector brought back, with the browser's own engine.
  *
- *     php artisan forge:analyser              everything the current engine has not seen
+ *     php artisan forge:analyser              everything on the wall the engine has not seen
  *     php artisan forge:analyser --lot=200    in bigger batches
  *     php artisan forge:analyser --tout       redo everything, even what is already current
+ *     php artisan forge:analyser --caches     including what is off the wall, which nothing shows
  *
  * There is only one implementation of the analysis in this repository, and it is
  * `site/public/forge/bilan.js`. Running that file under Node does not make a second one:
@@ -32,7 +33,8 @@ class AnalyseSchematics extends Command
     protected $signature = 'forge:analyser
         {--lot=50 : How many schematics per call to Node}
         {--limite=0 : Stop after this many schematics}
-        {--tout : Redo everything, not just what is stale}';
+        {--tout : Redo everything, not just what is stale}
+        {--caches : Include the schematics that are off the wall, which nothing displays}';
 
     protected $description = 'Analyse the schematics the current engine has not seen';
 
@@ -109,11 +111,29 @@ class AnalyseSchematics extends Command
      * head would return the same fifty rows forever. Hence the cursor on the id, which is
      * used only for this case.
      */
+    /**
+     * What is worth measuring, which never includes what is off the wall.
+     *
+     * `hidden_at` is excluded here rather than left to whoever runs the command. On
+     * 05/09/2026 the whole collected catalogue came off the wall, 15 533 rows of it, and
+     * `docs/decisions/2026-09-05-empty-the-showcase.md` is why: nothing on the site shows
+     * them, not the showcase, not the block pages, not the comparison, not the sitemap. Any
+     * engine change makes every one of them stale, so the next correction to a hashed source
+     * silently queued fifteen thousand measurements nobody would ever read. That happened,
+     * on 12/09/2026, and it ran to six thousand before it was stopped by hand.
+     *
+     * `--caches` is the way back, for the day the shelf is put back on the wall. Spelled out
+     * rather than assumed, because the expensive direction is the one that has to be asked
+     * for: a flag nobody passes costs nothing, and a default nobody questions cost an hour
+     * of a production machine.
+     */
     private function pending(int $after)
     {
-        return $this->option('tout')
+        $query = $this->option('tout')
             ? Schematic::query()->where('id', '>', $after)->orderBy('id')
             : Schematic::stale();
+
+        return $this->option('caches') ? $query : $query->whereNull('hidden_at');
     }
 
     /**
