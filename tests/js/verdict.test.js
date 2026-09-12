@@ -189,3 +189,33 @@ test("a factory stopped for want of an ingredient says so too", () => {
   assert.ok(html.includes("2.67"));
   assert.ok(html.includes("analyse.verdict.a-larret"));
 });
+
+test("a plan whose output has nowhere to go is running, and is told so", () => {
+  /* Reported on `4x Kiln`: four kilns at a hundred per cent, the block panel saying so, and
+     this block announcing that the plan was not running and something was missing. Nothing
+     was missing. The metaglass had no way out, and "il lui manque quelque chose" sends its
+     author looking for an ingredient that is already there. */
+  const html = verdict(bilan({
+    perMinute: {},
+    potentialPerMinute: { metaglass: 480 },
+    bloque: { metaglass: 8 },
+  }), usine, true, outils);
+
+  assert.ok(html.includes("analyse.verdict.bouche"));
+  assert.ok(!html.includes("analyse.verdict.a-larret"),
+    "it told a plan running flat out that it was stopped");
+  assert.ok(!html.includes("analyse.plafond.au-mieux"),
+    "the figure is what it makes, not a ceiling it might reach");
+});
+
+test("a plan that is genuinely short of an ingredient still says so", () => {
+  // The other half: nothing is made at all, so nothing can be stuck.
+  const html = verdict(bilan({
+    perMinute: {},
+    potentialPerMinute: { graphite: 160 },
+    bloque: {},
+  }), usine, true, outils);
+
+  assert.ok(html.includes("analyse.verdict.a-larret"));
+  assert.ok(!html.includes("analyse.verdict.bouche"));
+});
