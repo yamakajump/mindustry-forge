@@ -264,6 +264,12 @@ import { workbenchOf } from "./forge/editor/state.js";
 import { ready as dictionary, t } from "./forge/i18n.js";
 import { watch } from "./forge/apercu.js";
 import { loadNames, nameOf } from "./forge/noms.js";
+/* The report's own modules. Imported here and never from `bilan.js`, which is the line that
+   keeps them outside `EngineVersion::SOURCES`: how a page reads is not what a schematic
+   produces, and hashing them would re-measure fifteen thousand analyses over a reworded
+   sentence. `EngineVersionTest` walks the imports out of `bilan.js` and would catch it. */
+import { typeOf, seBranche } from "./forge/rapport/type.js";
+import { verdict } from "./forge/rapport/verdict.js";
 
 const $ = (id) => document.getElementById(id);
 const text = $("text"), out = $("out"), drop = $("drop");
@@ -357,7 +363,6 @@ const withIcon = (item, size = 18) => {
 };
 
 function render(report) {
-  const made = Object.entries(report.perMinute).sort((a, b) => b[1] - a[1]);
   const right = [];
 
   /* Le catalogue porte la version telle que le jeu la donne, « release build 159.7 ».
@@ -368,6 +373,21 @@ function render(report) {
   right.push(`<h2 class="title">${escape(report.name)}</h2>
     <p class="sub">${report.width}x${report.height} &middot; ${report.blocks} blocs
       &middot; Mindustry ${escape(versionLisible(report.gameVersion))}</p>`);
+
+  /*
+   * The answer, the size of an answer, and first.
+   *
+   * It replaces three cards that said one thing between them, sitting fourth, fifth and
+   * eighth in a column of thirteen: a page whose whole promise is "find out what it really
+   * produces" put what it produces past the fold. `rapport/verdict.js` holds what it says
+   * and `rapport/type.js` decides what kind of thing it is saying it about, because the old
+   * report had one shape and assumed every schematic was a factory.
+   */
+  const answered = !report.awaiting;
+  const what = typeOf(report, catalogueOf());
+  right.push(verdict(report, what, answered, {
+    escape, t, lisible, withIcon, perSecond, rate, bolt: BOLT,
+  }));
 
   /*
    * Sharing, immediately under the name, rather than twelve cards down.
@@ -430,21 +450,17 @@ function render(report) {
       : escape(t("analyse.partage.sans-marque"))}</p>
   </div>`);
 
-  /* Power alongside the items, because for a whole class of schematics it is the only
-     answer. One of them was reported as producing coal and spore pods, which are
-     intermediates it eats itself, while the electricity it exists to make went unmentioned
-     and was in its own name. */
-  const power = report.power || { made: 0, spent: 0, net: 0 };
-  const bolt = BOLT(20);
-
   /* Where it plugs in, asked rather than assumed.
 
      Guessing is a coin toss: a design has one intake and a dozen pipes that could
      physically be it, and nothing in the file says which the author meant. Guessing wrong
      does not produce a blank, it produces a page of throughputs that look computed and are
      not, which is worse than producing nothing. So it is asked, once, and everything that
-     depends on it waits for the answer. */
-  const answered = !report.awaiting;
+     depends on it waits for the answer.
+
+     `answered` is declared with the verdict above, which is now where the question is put:
+     the request used to live in this card, three cards further down than the figure it
+     unlocks. */
   const inputs = report.ports?.inputs || [];
   const outlets = report.ports?.outputs || [];
 
@@ -463,24 +479,26 @@ function render(report) {
         ? ` &nbsp;${perSecond(port.rate)} / s` : ""}</span></div>`;
   };
 
-  if (!answered || inputs.length || outlets.length) {
-    right.push(`<div class="card ${answered ? "" : "ask"}">
-      <h2>${escape(t("analyse.ports.titre"))}</h2>${
-      inputs.length || outlets.length
-        ? inputs.map((p) => markLine(p, "in")).join("")
-          + outlets.map((p) => markLine(p, "out")).join("")
-        : `<p class="hint-line" style="margin-top:0">${escape(t("analyse.ports.rien-marque"))}</p>`
-    }<div class="row" style="margin-top:12px">
-      <button type="button" class="${answered ? "" : "primary"}" id="ports-mark">${
-        escape(t(inputs.length || outlets.length
-          ? "analyse.ports.marquer-autre" : "analyse.ports.marquer"))}</button>
-      <button type="button" id="ports-sealed">${escape(t("analyse.ports.scelle"))}</button>
-      ${inputs.length || outlets.length
-        ? `<button type="button" id="ports-clear">${escape(t("analyse.ports.effacer"))}</button>` : ""}
+  /* The marks, and only once anything has been marked.
+
+     The empty state used to live here, with the same two buttons the verdict now carries
+     and an `ask` border in the same amber. On a fresh analysis the page therefore asked the
+     same question twice, four hundred pixels apart, in two different wordings, and lit two
+     things in the colour the art direction reserves for one. The question belongs where the
+     figure it unlocks is, which is the verdict; what belongs here is the answer once it has
+     been given, and the means to correct it. */
+  const marquage = [];
+  if (inputs.length || outlets.length) {
+    marquage.push(`<p class="sous-titre">${escape(t("analyse.ports.titre"))}</p>`);
+    marquage.push(inputs.map((p) => markLine(p, "in")).join(""));
+    marquage.push(outlets.map((p) => markLine(p, "out")).join(""));
+    marquage.push(`<div class="row">
+      <button type="button" id="ports-mark">${
+        escape(t("analyse.ports.marquer-autre"))}</button>
+      <button type="button" id="ports-clear">${
+        escape(t("analyse.ports.effacer"))}</button>
     </div>
-    <p class="hint-line">${escape(t(answered
-      ? "analyse.ports.aide-marquee" : "analyse.ports.aide-vierge"))}</p>
-    </div>`);
+    <p class="hint-line">${escape(t("analyse.ports.aide-marquee"))}</p>`);
   }
 
   /* What it takes to feed this, computed rather than asked for. Nobody knows offhand that
@@ -496,9 +514,14 @@ function render(report) {
     if (port.resource) (sockets[port.resource] = sockets[port.resource] || []).push(port);
   }
 
+  /* Ce qu'il faut lui amener: what it eats, and where the player said it arrives.
+     Two cards until now, and the second one only ever made sense as the answer to the
+     first. What a layout eats is a fact its machines state; where it plugs in is its
+     author's intent. Different halves of one question, so one card and two sub-headings
+     rather than two cards and two borders. */
   const needs = report.needs || [];
-  if (needs.length) {
-    right.push(`<div class="card"><h2>${escape(t("analyse.besoins.titre"))}</h2>${needs.map((need) => {
+  if (needs.length || marquage.length) {
+    right.push(`<div class="card"><h2>${escape(t("analyse.amener.titre"))}</h2>${needs.map((need) => {
       /* Four, like the planner. Three always dropped the option that is cheapest to
          unlock, the list being sorted by increasing block count: the mechanical drill was
          never offered. Four is one planet's pool, so a schematic whose world is recognised
@@ -562,143 +585,106 @@ function render(report) {
                  besoin: `${perSecond(need.perMinute / 60)} ${escape(t("analyse.unite.par-seconde"))}`,
                })}</p>`
           : "")(overCarried(where, need.perMinute, catalogueOf()));
-    }).join("")}<p class="hint-line">${escape(t("analyse.besoins.tache-pleine"))}</p></div>`);
+    }).join("")}${needs.length
+      ? `<p class="hint-line">${escape(t("analyse.besoins.tache-pleine"))}</p>` : ""
+    }${marquage.join("")}</div>`);
   }
 
-  /* And what it gives back once it has all that, which is what a player is shopping for.
-
-     The card reads straight after "Il lui faut", and that is not an accident: the ceiling
-     below only holds under the conditions the card above enumerates. Separating them, or
-     putting this figure at the top of the page, would turn it into a rate quoted without
-     its conditions. It is announced "au mieux" for the same reason. */
+  /*
+   * Ce qu'il sort: the output side, in one card instead of five.
+   *
+   * "Une fois alimente a fond", "Branche comme il est", "Goulot", "Fabrique et consomme sur
+   * place" and "Ce qui se perd" were five headings for one subject, and the first two
+   * printed the same figure one card apart whenever nothing throttled the layout.
+   *
+   * The headline moved to the verdict, so what is left here is deliberately the
+   * COUNTERPART of whatever the verdict is showing: the verdict states the measurement and
+   * this states the ceiling, or the verdict states the ceiling and this states nothing
+   * twice. That is the rule that keeps a figure from appearing on the page in two places
+   * under two names, which is what sent a reader hunting for the difference between 2,67
+   * and 2,67.
+   */
   const full = report.potential || { made: 0, spent: 0 };
   const ceiling = Object.entries(report.potentialPerMinute || {}).sort((a, b) => b[1] - a[1]);
-  if (full.made > 0.01 || full.spent > 0.01 || ceiling.length) {
-    right.push(`<div class="card"><h2>${escape(t("analyse.plafond.titre"))}</h2>
-      ${ceiling.map(([item, n]) => `<div class="line"><span>${
-           escape(t("analyse.plafond.au-mieux"))} ${withIcon(item)}
-           ${escape(lisible(item))}</span>
-         <span class="num good">${perSecond(n / 60)} ${
-           escape(t("analyse.unite.par-seconde"))}</span></div>`).join("")}
-      ${ceiling.length && needs.length
-        ? `<p class="hint-line" style="margin:6px 0 10px">${
-             escape(t("analyse.plafond.avertissement"))}
-             ${needs.filter((n) => !n.resource.startsWith("*"))
-                .map((n) => escape(lisible(n.resource))).join(", ")
-                || escape(t("analyse.plafond.ce-qui-manque"))}.
-             ${escape(t(answered
-               ? "analyse.plafond.plus-bas"
-               : "analyse.plafond.marque-tes-entrees"))}</p>`
-        : ""}
-      ${full.made > 0.01
-        ? `<div class="line"><span>${BOLT()} ${escape(t("analyse.plafond.produit"))}</span>
-             <span class="num good">${rate(full.made)} ${
-               escape(t("analyse.unite.energie-par-seconde"))}</span></div>` : ""}
-      ${full.spent > 0.01
-        ? `<div class="line"><span>${BOLT()} ${escape(t("analyse.plafond.consomme"))}</span>
-             <span class="num warn">${rate(full.spent)} ${
-               escape(t("analyse.unite.energie-par-seconde"))}</span></div>` : ""}
-      ${full.made > 0.01
-        ? `<div class="line"><span><strong>${escape(t("analyse.plafond.net"))}</strong></span>
-             <span class="num ${full.made - full.spent >= 0 ? "good" : "bad"}">
-             ${rate(full.made - full.spent)} ${
-               escape(t("analyse.unite.energie-par-seconde"))}</span></div>` : ""}
-    </div>`);
-  }
-
-  if (answered) right.push(`<div class="card"><h2>${
-    report.sealed || report.selfFed ? "Avec ses propres sources"
-    : report.fedItself ? "Branché comme il est" : "Avec ce que tu as indiqué"}</h2>${
-    power.made > 0.01
-      ? `<div class="out-rate" style="color:var(--accent)">${bolt}
-           <b>${rate(power.net)}</b><span>énergie / s &nbsp;<span style="color:var(--dim)">
-           (production ${rate(power.made)}, consommation ${rate(power.spent)})</span></span></div>`
-      : ""
-  }${
-    made.map(([item, n]) => `<div class="out-rate">${withIcon(item, 22)}
-      <b>${perSecond(n / 60)}</b><span>${escape(lisible(item))} / s</span></div>`).join("")
-  }${
-    !made.length && power.made <= 0.01
-      ? `<p class="empty">Rien tant qu'on ne lui donne rien. Indique un apport
-         au-dessus pour voir ce que ça donne.</p>`
-      : ""
-  }${
-    power.made <= 0.01 && power.spent > 0.01
-      ? `<div class="line"><span>${BOLT()} Consomme de l'énergie sans en produire</span>
-         <span class="num warn">${rate(power.spent)} / s</span></div>`
-      : ""
-  }</div>`);
-
-  /* What the chain makes on the way and eats itself. Worth saying, and worth not
-     confusing with what comes out. */
   const inside = Object.entries(report.internal || {})
     .filter(([, n]) => n * 60 > 0.5)
     .sort((a, b) => b[1] - a[1]);
-  if (inside.length && answered) {
-    right.push(`<div class="card"><h2>Fabrique et consomme sur place</h2>${
-      inside.map(([item, n]) =>
-        `<div class="line"><span>${withIcon(item)}${escape(lisible(item))}</span>
-          <span class="num">${perSecond(n)} / s</span></div>`).join("")
-    }<p class="hint-line">Ces objets ne sortent pas : ils alimentent les machines du
-      schéma lui-même.</p></div>`);
-  }
-
-  const fedSomething = made.length || (report.power && report.power.made > 0.01);
-  if (report.bottleneck && fedSomething && answered) {
-    const [name, share] = report.bottleneck;
-    right.push(`<div class="card"><h2>${escape(t("analyse.goulot.titre"))}</h2>
-      <div class="line"><span>${escape(lisible(name))}</span>
-        <span class="num bad">${Math.round(share * 100)}&nbsp;% ${
-          escape(t("analyse.goulot.regime"))}</span></div>
-      ${report.throttle ? `<p class="hint-line">${t("analyse.goulot.plafonne", {
-        bloc: `<strong>${escape(lisible(report.throttle.name))}</strong>`,
-        x: report.throttle.x, y: report.throttle.y,
-        plafond: `${perSecond(report.throttle.ceiling)} ${
-          escape(t("analyse.unite.par-seconde"))}`,
-      })}</p>` : ""}
-      <p class="hint-line">${escape(t("analyse.goulot.conseil"))}</p>
-    </div>`);
-  } else if (made.length) {
-    right.push(`<div class="card"><h2>${escape(t("analyse.goulot.titre"))}</h2>
-      <div class="line"><span class="good">${escape(t("analyse.goulot.aucun"))}</span></div>
-    </div>`);
-  }
-
-  /* A grid that does not cover what the plan asks of it, said before the throughput below
-     is read rather than after.
-
-     Shown whatever else is on the page, and on purpose: for a long while the report could
-     say "-30 power" on one card and "nothing wrong, everything flat out" on the next, and
-     both came from the same analysis. The throughput now falls with the current, so the
-     figures no longer contradict each other - but a figure that has been throttled and one
-     that has not look exactly alike, and the difference is the whole reason the player is
-     reading the page. */
-  if (report.power && report.power.coverage < 0.999) {
-    right.push(`<div class="card"><h2>${escape(t("analyse.energie.titre"))}</h2>
-      <div class="line"><span>${escape(t("analyse.energie.couverture"))}</span>
-        <span class="num bad">${Math.round(report.power.coverage * 100)}&nbsp;%</span></div>
-      <p class="hint-line">${escape(t("analyse.energie.aide"))}</p>
-    </div>`);
-  }
-
   // "Connected to nothing" holds whatever the intake turns out to be; "arrives without
   // being drunk" does not, so the first is shown at once and the second waits.
   const surplus = answered ? Object.entries(report.surplus || {}) : [];
   const idle = Object.entries(report.idle || {});
-  if (surplus.length || idle.length) {
-    const rows = [
-      ...surplus.map(([item, n]) =>
-        `<div class="line"><span>${withIcon(item)}${escape(lisible(item))} ${
-          escape(t("analyse.gaspille.sans-preneur"))}</span>
-          <span class="num warn">+${perSecond(n)} / s</span></div>`),
-      ...idle.map(([name, n]) =>
-        `<div class="line"><span>${escape(lisible(name))} ${
-          escape(t("analyse.gaspille.sans-suite"))}</span>
-          <span class="num bad">x${n}</span></div>`),
-    ];
-    right.push(`<div class="card"><h2>${
-      escape(t("analyse.gaspille.titre"))}</h2>${rows.join("")}</div>`);
+  const power = report.power || { made: 0, spent: 0, net: 0, coverage: 1 };
+
+  const sortie = [];
+
+  /* The ceiling, only once something has been marked. Before that it IS the verdict, and
+     repeating it here under another heading is the defect this card was merged to end. */
+  if (answered && ceiling.length) {
+    sortie.push(...ceiling.map(([item, n]) => `<div class="line"><span>${
+      escape(t("analyse.plafond.au-mieux"))} ${withIcon(item)} ${escape(lisible(item))}</span>
+      <span class="num">${perSecond(n / 60)} ${
+        escape(t("analyse.unite.par-seconde"))}</span></div>`));
   }
+
+  /* What the power adds up to. The verdict carries the net, so this carries the two figures
+     it is made of: a reader who wants to know why the net is what it is finds it here, and
+     a reader who does not never has to step over it. */
+  if (full.made > 0.01 || full.spent > 0.01) {
+    if (full.made > 0.01) {
+      sortie.push(`<div class="line"><span>${BOLT()} ${
+        escape(t("analyse.plafond.produit"))}</span>
+        <span class="num good">${rate(full.made)} ${
+          escape(t("analyse.unite.energie-par-seconde"))}</span></div>`);
+    }
+    if (full.spent > 0.01) {
+      sortie.push(`<div class="line"><span>${BOLT()} ${
+        escape(t("analyse.plafond.consomme"))}</span>
+        <span class="num warn">${rate(full.spent)} ${
+          escape(t("analyse.unite.energie-par-seconde"))}</span></div>`);
+    }
+  }
+
+  /* A grid that does not cover what the plan asks of it.
+
+     Kept whatever else is on the card, and on purpose: for a long while the report could
+     say "-30 power" on one card and "nothing wrong, everything flat out" on the next. The
+     throughput now falls with the current, so the figures no longer contradict each other,
+     but a figure that has been throttled and one that has not look exactly alike, and the
+     difference is the whole reason the player is reading the page. */
+  if (power.coverage < 0.999) {
+    sortie.push(`<div class="line"><span>${escape(t("analyse.energie.couverture"))}</span>
+      <span class="num bad">${Math.round(power.coverage * 100)}&nbsp;%</span></div>
+      <p class="hint-line">${escape(t("analyse.energie.aide"))}</p>`);
+  }
+
+  // What the chain makes on the way and eats itself. Worth saying, and worth not confusing
+  // with what comes out.
+  if (inside.length && answered) {
+    sortie.push(`<p class="sous-titre">${escape(t("analyse.sortie.sur-place"))}</p>`);
+    sortie.push(...inside.map(([item, n]) =>
+      `<div class="line"><span>${withIcon(item)}${escape(lisible(item))}</span>
+        <span class="num">${perSecond(n)} ${
+          escape(t("analyse.unite.par-seconde"))}</span></div>`));
+  }
+
+  if (surplus.length || idle.length) {
+    sortie.push(`<p class="sous-titre">${escape(t("analyse.gaspille.titre"))}</p>`);
+    sortie.push(...surplus.map(([item, n]) =>
+      `<div class="line"><span>${withIcon(item)}${escape(lisible(item))} ${
+        escape(t("analyse.gaspille.sans-preneur"))}</span>
+        <span class="num warn">+${perSecond(n)} ${
+          escape(t("analyse.unite.par-seconde"))}</span></div>`));
+    sortie.push(...idle.map(([name, n]) =>
+      `<div class="line"><span>${escape(lisible(name))} ${
+        escape(t("analyse.gaspille.sans-suite"))}</span>
+        <span class="num bad">x${n}</span></div>`));
+  }
+
+  if (sortie.length) {
+    right.push(`<div class="card"><h2>${escape(t("analyse.sortie.titre"))}</h2>${
+      sortie.join("")}</div>`);
+  }
+
 
   /* What the processors amount to, which until now was computed on every analysis and
      thrown away: `report.logic` had no reader anywhere on the site.
@@ -861,13 +847,19 @@ function render(report) {
      slightly brighter than the others, and nothing anywhere said which was which. Now
      there is only one kind of ring, it is only ever there because somebody put it there,
      and it carries the icon of what travels through it. */
+  /* What the rings mean, and how to add one, under the picture rather than beside a figure.
+     The rule the report now follows: the picture is what you act on, the column beside it
+     is what you read. The long explanation of why Forge asks at all used to sit in the
+     ports card, on the reading side, three hundred pixels from the thing it tells you to
+     click; it says the same thing here and is finally next to the click. */
   const legend = inputs.length || outlets.length ? `<p class="legend">${
-    inputs.length ? `<span class="dot in"></span>C'est par là que ça entre` : ""
+    inputs.length ? `<span class="dot in"></span>${
+      escape(t("analyse.ports.par-la-entre"))}` : ""
   }${
-    outlets.length ? `<span class="dot out"></span>C'est par là que ça sort` : ""
-  }<span class="dim">Clique sur un convoyeur ou un conduit pour en marquer un autre.</span></p>`
-  : `<p class="legend"><span class="dim">Clique sur un convoyeur ou un conduit de l'image pour dire
-     par où ça entre et par où ça sort.</span></p>`;
+    outlets.length ? `<span class="dot out"></span>${
+      escape(t("analyse.ports.par-la-sort"))}` : ""
+  }<span class="dim">${escape(t("analyse.ports.aide-marquee"))}</span></p>`
+  : `<p class="legend"><span class="dim">${escape(t("analyse.ports.aide-vierge"))}</span></p>`;
 
   out.innerHTML = `<div class="split">
     <div class="side">
@@ -975,19 +967,28 @@ function render(report) {
     }
   });
 
-  $("ports-sealed")?.addEventListener("click", () => {
+  /* Two buttons for each gesture, because the question moved and the card it used to live
+     in still answers it. The verdict is where a reader is told nothing has been marked, so
+     it is where the answer is offered; the ports card keeps its own pair for somebody who
+     is already down there correcting a mark. Same handlers, so the two can never drift. */
+  const scelle = () => {
     marked = {};
     sealed = true;
     run();
-  });
+  };
+  const versLimage = () => {
+    $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    $("block")?.classList.add("waiting");
+  };
+
+  $("ports-sealed")?.addEventListener("click", scelle);
+  $("verdict-scelle")?.addEventListener("click", scelle);
+  $("ports-mark")?.addEventListener("click", versLimage);
+  $("verdict-marquer")?.addEventListener("click", versLimage);
   $("ports-clear")?.addEventListener("click", () => {
     marked = {};
     sealed = false;
     run();
-  });
-  $("ports-mark")?.addEventListener("click", () => {
-    $("view")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    $("block")?.classList.add("waiting");
   });
 }
 

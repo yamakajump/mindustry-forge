@@ -1,0 +1,139 @@
+/**
+ * The answer block, and the four things it must never say.
+ *
+ * It must not ask a wall of displays where it plugs in, it must not print a ceiling as
+ * though it were a measurement, it must not blame the reader for what it could not compute,
+ * and it must not print the same figure twice. The first three were live defects; the
+ * fourth is what the three cards it replaces did between them.
+ */
+
+import test from "node:test";
+import assert from "node:assert/strict";
+
+import { verdict } from "../../site/public/forge/rapport/verdict.js";
+import { COURANT, FABRIQUE, MONTRE, RIEN } from "../../site/public/forge/rapport/type.js";
+
+/* Six stubs, which is the whole reason `verdict` takes its helpers as an argument: the real
+   ones need a sprite atlas and the game's name table, and neither exists under Node. `t`
+   returns the key, so a test can assert on a key rather than on French that may be
+   reworded. */
+const outils = {
+  escape: (s) => String(s),
+  t: (key, values) => (values
+    ? `${key}(${Object.values(values).join(",")})`
+    : key),
+  lisible: (name) => `<${name}>`,
+  withIcon: () => "[icone]",
+  perSecond: (n) => String(Math.round(n * 100) / 100),
+  rate: (n) => String(Math.round(n)),
+  bolt: () => "[eclair]",
+};
+
+const bilan = (extra = {}) => ({
+  perMinute: {},
+  potentialPerMinute: {},
+  power: { made: 0, spent: 0, net: 0 },
+  potential: { made: 0, spent: 0 },
+  bottleneck: null,
+  throttle: null,
+  ...extra,
+});
+
+const ecran = { kind: MONTRE, ecrans: 4, processeurs: 2 };
+const usine = { kind: FABRIQUE, ecrans: 0, processeurs: 0 };
+
+test("a display wall is never asked where it plugs in", () => {
+  // The defect the screenshots exposed. `answered` is false, which on a factory is exactly
+  // what triggers the request, so this is the case that used to get it wrong.
+  const html = verdict(bilan({ potential: { made: 0, spent: 12 } }), ecran, false, outils);
+
+  assert.ok(!html.includes("dis-par-ou"), "it asked a display where its intake is");
+  assert.ok(html.includes("analyse.verdict.ecran"), "it did not say what it is");
+});
+
+test("a display says what it is, not what the tool failed to do", () => {
+  const html = verdict(bilan({ potential: { made: 0, spent: 12 } }), ecran, false, outils);
+
+  assert.ok(html.includes("4 analyse.verdict.unite.ecrans"));
+  assert.ok(html.includes("2 analyse.verdict.unite.processeurs"));
+  // Never the failure colour: this is a category of build, not a broken reading.
+  assert.ok(!html.includes("bad"), "a display is not an error");
+});
+
+test("the count agrees with the sentence beside it, both ways round", () => {
+  const un = verdict(bilan(), { kind: MONTRE, ecrans: 1, processeurs: 1 }, false, outils);
+
+  assert.ok(un.includes("1 analyse.verdict.unite.ecran"), "singular");
+  assert.ok(!un.includes("unite.ecrans"), "it pluralised a single display");
+});
+
+test("nothing marked shows a ceiling, and says out loud that it is one", () => {
+  const html = verdict(
+    bilan({ potentialPerMinute: { graphite: 160 } }), usine, false, outils);
+
+  assert.ok(html.includes("analyse.plafond.au-mieux"), "a ceiling passed as a measurement");
+  assert.ok(html.includes("analyse.verdict.plafond"));
+  assert.ok(html.includes("verdict-marquer"), "a factory must be asked where it plugs in");
+});
+
+test("marked shows the measurement, and drops the ceiling wording", () => {
+  const html = verdict(
+    bilan({ perMinute: { graphite: 160 }, potentialPerMinute: { graphite: 300 } }),
+    usine, true, outils);
+
+  assert.ok(!html.includes("analyse.plafond.au-mieux"));
+  assert.ok(html.includes("2.67"), "it did not print the measured rate");
+  assert.ok(!html.includes("5"), "it printed the ceiling beside the measurement");
+});
+
+test("the figure appears once, which is the whole point of merging three cards", () => {
+  const html = verdict(bilan({ perMinute: { graphite: 160 } }), usine, true, outils);
+
+  assert.equal(html.split("2.67").length - 1, 1);
+});
+
+test("what throttles it is named, with how hard", () => {
+  const html = verdict(bilan({
+    perMinute: { graphite: 100 },
+    bottleneck: ["titanium-conveyor", 0.62],
+    throttle: { name: "conveyor", x: 4, y: 12, ceiling: 13.2 },
+  }), usine, true, outils);
+
+  assert.ok(html.includes("<titanium-conveyor>"));
+  assert.ok(html.includes("62"));
+  assert.ok(html.includes("analyse.goulot.plafonne"));
+});
+
+test("nothing throttling it is said, rather than left silent", () => {
+  const html = verdict(bilan({ perMinute: { graphite: 100 } }), usine, true, outils);
+
+  assert.ok(html.includes("analyse.verdict.rien-ne-bride"));
+});
+
+test("power wins over the trickle of intermediates a plant also shows", () => {
+  /* One power plant was reported as producing coal and spore pods, which are intermediates
+     it eats itself, while the electricity in its own name went unmentioned. */
+  const html = verdict(bilan({
+    power: { made: 2970, spent: 568, net: 2402 },
+    perMinute: { coal: 12, "spore-pod": 3 },
+  }), { kind: COURANT, ecrans: 0, processeurs: 0 }, true, outils);
+
+  const chiffre = html.slice(html.indexOf('class="chiffre"'));
+  assert.ok(chiffre.includes("2402"), "the power net is not the headline");
+  assert.ok(html.includes("analyse.unite.energie-par-seconde"));
+});
+
+test("a schematic that makes several things lists the rest under the headline", () => {
+  const html = verdict(
+    bilan({ perMinute: { graphite: 160, silicon: 60 } }), usine, true, outils);
+
+  assert.ok(html.includes("ligne-aussi"));
+  assert.ok(html.includes("<silicon>"));
+});
+
+test("a schematic that makes nothing at all still says something true", () => {
+  const html = verdict(bilan(), { kind: RIEN, ecrans: 0, processeurs: 0 }, false, outils);
+
+  assert.ok(html.includes("analyse.verdict.rien"));
+  assert.ok(!html.includes("verdict-marquer"), "nothing to plug in, nothing to ask");
+});

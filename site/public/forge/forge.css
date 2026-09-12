@@ -394,10 +394,59 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 .creer-dossier #icone { min-width: 190px; }
 .creer-dossier .note { margin: 12px 0 0; }
 
+/* `--dim` and not `--accent`.
+
+   `docs/direction-artistique.md` says the accent is "the brand, and one thing per screen".
+   This rule put it on every card heading, and a report carries seven to thirteen of them,
+   so the page shouted thirteen times and ranked nothing. The amber is left to the verdict's
+   figure, which is the one thing per screen the direction asks for. `.card.ask h2` further
+   down keeps it, and is the single deliberate exception. */
 .card h2 {
   margin: 0 0 10px; font-size: 12px; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--accent); font-weight: 400; opacity: .85;
+  text-transform: uppercase; color: var(--dim); font-weight: 400; opacity: .9;
 }
+
+/* A sub-heading inside a merged card, for the groups that swallowed a card of their own.
+   Smaller than an h2 and not one: it divides a list, it does not open a section. */
+.sous-titre {
+  margin: 14px 0 2px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--dim); opacity: .7;
+}
+
+/*
+ * The verdict: the answer, the size of an answer.
+ *
+ * Deliberately not a `.card`. It is not one item in a list of eleven, it is what the page
+ * is for, and giving it the same border and padding as "Ce que dit le jeu" is precisely
+ * how the answer ended up indistinguishable from its own footnotes.
+ */
+.verdict {
+  background: var(--panel); border: 2px solid var(--edge); border-left: 4px solid var(--accent);
+  border-radius: var(--radius); padding: 20px 22px; margin-bottom: 14px;
+}
+.verdict .quoi { margin: 0 0 6px; font-size: 19px; color: var(--ink); }
+.verdict .au-mieux {
+  margin: 0 0 2px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--dim);
+}
+.verdict .chiffre { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.verdict .chiffre b {
+  font-size: 40px; line-height: 1.05; color: var(--accent); font-weight: 400;
+}
+.verdict .chiffre > span { font-size: 15px; color: var(--dim); }
+/* The icon rides the baseline of a 40px number, so it is nudged rather than centred. */
+.verdict .chiffre img, .verdict .chiffre svg { align-self: center; }
+.verdict .ligne-aussi {
+  display: flex; align-items: baseline; gap: 8px; margin-top: 6px; font-size: 14px;
+}
+.verdict .ligne-aussi b { color: var(--ink); font-weight: 400; }
+.verdict .ligne-aussi span { color: var(--dim); }
+.verdict .pourquoi { margin: 12px 0 0; font-size: 13.5px; color: var(--dim); }
+.verdict .pourquoi.libre { color: var(--good); }
+.verdict .pourquoi.bride { color: var(--warn); }
+/* A schematic that makes nothing has no figure to be amber about, so the rail goes quiet
+   rather than pointing at an empty box. This is the display art and the walls. */
+.verdict.montre, .verdict.rien { border-left-color: var(--edge); }
 .line { display: flex; justify-content: space-between; gap: 14px; padding: 6px 0; align-items: center; }
 .line + .line { border-top: 1px solid var(--edge); }
 .line img { width: 18px; height: 18px; image-rendering: pixelated; vertical-align: -3px; margin-right: 6px; }
