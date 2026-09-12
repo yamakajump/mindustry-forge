@@ -58,10 +58,38 @@ conserves the whole and is free to choose the split, and the split is what a rea
 looking at. On a real six-mixer cryofluid plant the report therefore says all six run at two
 thirds, where the game would run the near pair far harder and the far pair far less.
 
-Not fixed. Reproducing the game's rule means modelling `Building.moveLiquid`, which pushes
-towards the emptier neighbour by the difference in fill, and that is a scheduling problem
-rather than a flow one: it is not a constant to nudge, and guessing at it would replace a
-wrong number with a wrong number nobody could check.
+Not fixed, and the three ways out have been measured rather than guessed at.
+
+**It is not a constant to nudge.** The game's rule is `Building.moveLiquid`: the flow to a
+neighbour is proportional to the difference in how full the two are, so a consumer that
+keeps itself empty pulls harder than a pipe that is passing liquid on. A maximum flow has no
+notion of pressure at all. Fudging a ratio into the splitter would fit this one scenario and
+mean nothing on the next.
+
+**The simulation already gets it exactly right, and costs too much to ask.** `engine/` is
+proven against the game by 166 scenarios, and on this one it lands on five spore pods and
+one, which is the game's own answer to the item. Timed here, on this machine:
+
+| blocks | the analysis | 1800 ticks of simulation |
+|---|---|---|
+| 14 | under a millisecond | 4 ms |
+| 501 | 18 ms | 23 ms |
+| 1501 | 76 ms | 693 ms |
+| 3122 | 201 ms | 1 514 ms |
+
+A second and a half on a large plan, and the analysis re-runs on every mark a player places.
+There is a second obstacle behind the first: production is quantised, so a short run reads
+zero and the ratio only appears once whole items have accumulated. At 300 ticks this
+scenario reads nothing at all, at 1200 it reads three and one, at 1800 five and one. Reading
+`efficiency` at a single frame instead does not help: it is instantaneous and noisy, which is
+why the bench compares what ended up in containers.
+
+**The principled fix is a pressure network.** `moveLiquid` is Ohm's law: fill is voltage,
+flow is current, every link is a resistor. Solving that linear system for the fills would
+reproduce the gradient, and therefore the split, without simulating a single tick. It applies
+to liquids only - items are handed over one at a time under a different rule - so it would
+sit beside the maximum flow rather than replace it. That is the shape of the work, and it is
+a project rather than a fix.
 
 **The oracle does not guard the analysis.** `ported()` in `tools/compare.mjs` builds a
 `World` and steps it, so all 166 recorded scenarios prove `engine/`, the tick-by-tick
