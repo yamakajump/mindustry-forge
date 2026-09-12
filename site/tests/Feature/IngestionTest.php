@@ -459,3 +459,38 @@ it('measures what is off the wall when it is asked to, and only then', function 
 
     expect($decroche->refresh()->engine_version)->toBe(EngineVersion::current());
 });
+
+it('hands an author their own marks back rather than deleting them', function () {
+    /*
+     * `apply` replaces `analysis` whole, so an answer carrying no marks erased where a
+     * schematic's author had said it plugs in. The collected catalogue carries none, which
+     * is why this never showed until a member's marked schematic was re-measured: the page
+     * then asked its own author a question they had already answered and published, over a
+     * ceiling, on a schematic they had marked months before.
+     */
+    $mine = Schematic::factory()->create([
+        'code' => PANNEAUX,
+        'analysis' => ['marked' => ['1,0' => ['side' => 'in', 'resource' => 'copper']]],
+    ]);
+
+    $this->artisan('forge:analyser')->assertSuccessful();
+
+    expect($mine->refresh()->analysis['marked'])
+        ->toBe(['1,0' => ['side' => 'in', 'resource' => 'copper']]);
+});
+
+it('measures a schematic on the ground its author painted', function () {
+    // Measured without it, a plan standing on ore is measured as though it stood on
+    // nothing, and its drills come back at "at best, on a full patch".
+    $painted = Schematic::factory()->create([
+        'code' => PANNEAUX,
+        'ground' => ['0,0' => ['floor' => 'sand-floor']],
+    ]);
+
+    $this->artisan('forge:analyser')->assertSuccessful();
+
+    // The ground column is untouched, and it reached the engine: the run succeeded with it
+    // rather than throwing on a shape it did not expect.
+    expect($painted->refresh()->ground)->toBe(['0,0' => ['floor' => 'sand-floor']])
+        ->and($painted->engine_version)->toBe(EngineVersion::current());
+});

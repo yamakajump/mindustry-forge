@@ -147,8 +147,27 @@ class AnalyseSchematics extends Command
      */
     private function askNode(string $script, $rows): array
     {
+        /* Everything its author said about it goes with the string.
+         *
+         * Only the code did, and that lost two things at once. The marks came back empty,
+         * because `apply` replaces `analysis` whole and the answer carries no marks, so
+         * re-measuring a member's schematic silently deleted where its author had said it
+         * plugs in; the collected catalogue carries none, which is why this never showed
+         * until a marked schematic was re-measured. And the figures were computed without
+         * the ground its author painted, so a plan standing on ore was measured as though
+         * it stood on nothing.
+         *
+         * Both are the author's input rather than the engine's output. Handing them back is
+         * what makes a re-measurement a measurement of the same schematic.
+         */
         $asked = $rows
-            ->map(fn (Schematic $one) => json_encode(['id' => $one->id, 'code' => $one->code]))
+            ->map(fn (Schematic $one) => json_encode([
+                'id' => $one->id,
+                'code' => $one->code,
+                'marks' => (object) ($one->analysis['marked'] ?? []),
+                'ground' => (object) ($one->ground ?? []),
+                'sealed' => (bool) ($one->analysis['sealed'] ?? false),
+            ]))
             ->implode("\n");
 
         $ran = Process::timeout(600)->input($asked)->run(['node', $script]);
