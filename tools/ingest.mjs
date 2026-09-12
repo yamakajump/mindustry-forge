@@ -79,7 +79,25 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
   }
 
   try {
-    say({ id: asked.id, analyse: kept(await analyse(String(asked.code ?? ""))) });
+    /* With everything its author said about it. Measured without the ground they painted,
+       a plan standing on ore is measured as though it stood on nothing, and its drills come
+       back at "at best, on a full patch". */
+    const bilan = await analyse(String(asked.code ?? ""), {}, asked.marks ?? {}, {
+      sealed: Boolean(asked.sealed),
+      ground: asked.ground ?? {},
+    });
+
+    /* Handed back under the name the database has always used for it. The analysis calls
+       the normalised marks `marks` and the stored analysis calls them `marked`, and the two
+       have to meet somewhere; here, spelled out, rather than in a `KEPT` entry that would
+       silently match nothing.
+
+       Without this line `apply` replaces `analysis` whole with an answer carrying no marks,
+       so re-measuring a member's schematic deletes where its author said it plugs in. The
+       collected catalogue carries none, which is why it never showed until the first marked
+       schematic was re-measured, and what it looked like was the page asking an author a
+       question they had already answered and published. */
+    say({ id: asked.id, analyse: { ...kept(bilan), marked: bilan.marks ?? {} } });
   } catch (raison) {
     say({ id: asked.id, erreur: String(raison?.message || raison) });
   }
