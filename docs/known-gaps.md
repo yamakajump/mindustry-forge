@@ -46,14 +46,28 @@ and the bench measures it.
 can carry a dead link, and the page says so, but the engine does not model what the driven
 block would have done.
 
-**A marked liquid intake on a perimeter ring may not reach what the ring encloses.** Found
-on `6x CryoFluid Mixer`, a real catalogue schematic: water marked on the outer conduit is
-carried all the way round the perimeter, ends in the router at the far corner, and the three
-liquid routers inside the ring are left at zero, so six mixers standing on a fed ring all
-report zero. The titanium and the current both arrive; only the water does not. Not yet
-traced to a line, and not yet known whether it is the conduit facing rule, the router
-sharing, or the schematic genuinely needing the mark elsewhere. Worth a bench run against
-the real game before anything is changed.
+**The steady-state analysis shares a shortage evenly; the game does not.** Measured, not
+supposed: `bench/data/oracle/liquid-router-in-line` is a mechanical pump giving seven water
+a second to two cultivators that want about eleven each, through two liquid routers in line.
+The real v159.7 server runs the near one at **0.2917** and the far one at **0.0972**, three
+to one, and the same figures come back over 180 seconds as over 30, so it is a settled state
+and not a transient. `solveFlow` in `bilan.js` gives both **0.1944**.
+
+The totals agree exactly, 0.3889 either way, which is the signature: a maximum flow
+conserves the whole and is free to choose the split, and the split is what a reader is
+looking at. On a real six-mixer cryofluid plant the report therefore says all six run at two
+thirds, where the game would run the near pair far harder and the far pair far less.
+
+Not fixed. Reproducing the game's rule means modelling `Building.moveLiquid`, which pushes
+towards the emptier neighbour by the difference in fill, and that is a scheduling problem
+rather than a flow one: it is not a constant to nudge, and guessing at it would replace a
+wrong number with a wrong number nobody could check.
+
+**The oracle does not guard the analysis.** `ported()` in `tools/compare.mjs` builds a
+`World` and steps it, so all 166 recorded scenarios prove `engine/`, the tick-by-tick
+simulation behind "Faire tourner". Every figure the site actually prints comes from
+`solveFlow`, and no scenario compares that against anything. The gap above was found by
+running both halves over one scenario by hand; nothing in the suite would have reported it.
 
 ## Code that has not been re-reviewed since it landed
 
