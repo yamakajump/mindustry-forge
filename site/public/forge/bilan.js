@@ -1552,6 +1552,39 @@ export async function analyse(text, supply = {}, chosen = null,
     }
   }
 
+  /*
+   * What is made here, does not leave, and nothing here eats either: it is not internal, it
+   * is stuck.
+   *
+   * `internal` was named for one case and silently held two. A press making graphite that
+   * the smelter behind it eats is genuinely internal, and saying so is useful. Four kilns
+   * making metaglass that nothing consumes and no belt carries out is not internal at all:
+   * it is a plan whose output has nowhere to go, and the page told its author it was
+   * "fabrique et consomme sur place", which nothing in the schematic does.
+   *
+   * Reported by a player on `4x Kiln`, where the four kilns run at a hundred per cent, the
+   * panel says so, and the verdict above it said the plan was not running.
+   */
+  const mange = new Set();
+  /* A container swallows whatever reaches it, and so does a core. A plan carrying one has
+     somewhere to put anything, so nothing in it can be called stuck. */
+  const avale = graph.nodes.some((node) => node.role === "store" || node.role === "core"
+    || node.role === "sink");
+  for (const node of graph.nodes) {
+    for (const item of Object.keys(appetite(node.block))) mange.add(item);
+    for (const item of node.block.ammo || []) mange.add(item);
+  }
+
+  const bloque = {};
+  if (!avale) {
+    for (const [item, rate] of Object.entries(internal)) {
+      if (!mange.has(item)) {
+        bloque[item] = rate;
+        delete internal[item];
+      }
+    }
+  }
+
   // Below a tenth of an item a minute, a rate rounds to zero on screen and reads as a
   // product the layout does not make. It is a rounding crumb at a dead end, not an output.
   const perMinute = {};
@@ -1667,6 +1700,9 @@ export async function analyse(text, supply = {}, chosen = null,
     }, {}),
     cost,
     internal,
+    /* Made here, leaving nowhere, and eaten by nothing here either. A plan whose output
+       has no way out, which is not the same thing as a plan that is not running. */
+    bloque,
     power,
     // What has to arrive for the layout to run flat out, said in pumps and drills rather
     // than in rates. Computed rather than asked for: nobody knows offhand that a layout

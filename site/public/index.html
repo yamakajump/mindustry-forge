@@ -657,8 +657,12 @@ function render(report) {
      so the unconditional version brought the defect straight back in a narrower case: a
      graphite line read « 4 Graphite / s » in the verdict and « Au mieux Graphite 4 / s »
      three centimetres below it. */
-  if (answered && ceiling.length) {
-    const mesure = report.perMinute || {};
+  const mesure = report.perMinute || {};
+  /* And not at all when nothing is measured, because that is the case where the verdict
+     falls back to the ceiling itself: a plan whose output is stuck showed « 8 Verre Trempé
+     / s » in the answer and « Au mieux Verre Trempé 8 / s » directly under it. Comparing
+     against the measurement is not enough when there is no measurement to compare to. */
+  if (answered && ceiling.length && Object.keys(mesure).length) {
     const differe = ceiling.filter(([item, n]) => Math.abs((mesure[item] || 0) - n) > 0.5);
     sortie.push(...differe.map(([item, n]) => `<div class="line"><span>${
       escape(t("analyse.plafond.au-mieux"))} ${withIcon(item)} ${escape(lisible(item))}</span>
@@ -705,6 +709,21 @@ function render(report) {
       `<div class="line"><span>${withIcon(item)}${escape(lisible(item))}</span>
         <span class="num">${perSecond(n)} ${
           escape(t("analyse.unite.par-seconde"))}</span></div>`));
+  }
+
+  /* And what it makes that has nowhere to go, which is not the same thing and was being
+     called the same thing. `4x Kiln` makes eight metaglass a second, nothing in it eats
+     metaglass and no belt carries any out, and the page said it was "fabrique et consomme
+     sur place": a sentence about a machine that does not exist in that schematic. */
+  const bloque = Object.entries(report.bloque || {})
+    .filter(([, n]) => n * 60 > 0.5).sort((a, b) => b[1] - a[1]);
+  if (bloque.length && answered) {
+    sortie.push(`<p class="sous-titre">${escape(t("analyse.sortie.bloque"))}</p>`);
+    sortie.push(...bloque.map(([item, n]) =>
+      `<div class="line"><span>${withIcon(item)}${escape(lisible(item))}</span>
+        <span class="num warn">${perSecond(n)} ${
+          escape(t("analyse.unite.par-seconde"))}</span></div>`));
+    sortie.push(`<p class="hint-line">${escape(t("analyse.sortie.bloque-aide"))}</p>`);
   }
 
   if (surplus.length || idle.length) {

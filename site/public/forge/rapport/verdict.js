@@ -193,6 +193,12 @@ export function verdict(report, what, answered, outils) {
   const arrete = !figure && (what.kind === FABRIQUE || what.kind === COURANT);
   if (arrete) figure = principal(report, false, outils);
 
+  /* And a plan that IS running, whose output simply has nowhere to go, is a third thing
+     again. Reported on `4x Kiln`: four kilns at a hundred per cent, the block panel saying
+     so, and this block above it announcing that the plan was not running and something was
+     missing. Nothing was missing. The metaglass had no way out. */
+  const bouche = arrete && Object.keys(report.bloque || {}).length > 0;
+
   if (!figure) {
     return `<div class="verdict ${escape(what.kind)}">${
       sansChiffre(what, report, outils)}</div>`;
@@ -200,11 +206,12 @@ export function verdict(report, what, answered, outils) {
 
   if (arrete) {
     return `<div class="verdict ${escape(what.kind)}">
-      <p class="au-mieux">${escape(t("analyse.plafond.au-mieux"))}</p>
+      ${bouche ? "" : `<p class="au-mieux">${escape(t("analyse.plafond.au-mieux"))}</p>`}
       <div class="chiffre">${figure.icone}<b>${figure.chiffre}</b>
         <span>${figure.unite}</span></div>
       ${autres(figure.reste, outils)}
-      <p class="pourquoi bride">${escape(t("analyse.verdict.a-larret"))}</p>
+      <p class="pourquoi bride">${escape(t(bouche
+        ? "analyse.verdict.bouche" : "analyse.verdict.a-larret"))}</p>
       ${ecartAvecLeJeu(report, outils)}
     </div>`;
   }
