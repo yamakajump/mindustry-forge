@@ -1370,6 +1370,44 @@ function throttledBy(graph, solved, index) {
   return worst;
 }
 
+/**
+ * The way out, when the way out is what binds.
+ *
+ * `bottleneckOf` only ever looks at starved machines, and a plan whose exit is too narrow
+ * has none: every kiln is fed, every kiln runs, and the belt carrying the glass away is
+ * simply full. So the report found nothing holding the layout back and said "rien ne le
+ * bride" over a figure it had just cut from eight a second to six and a half.
+ *
+ * That case used to be rare enough to leave alone, because a plan with no exit at all is
+ * reported as blocked rather than throttled. It stopped being rare the day the report
+ * offered to put a belt down: the first chip is a copper conveyor, which carries 6.5 items
+ * a second, and most things worth building make more than that.
+ *
+ * Only carriers with nothing downstream, which is what an exit is here. A saturated belt in
+ * the middle of a layout starves whatever is behind it, and that is `throttledBy`'s answer
+ * to a question this one is not being asked.
+ */
+function exitThrottle(graph, solved) {
+  let worst = null;
+
+  for (let at = 0; at < graph.nodes.length; at++) {
+    if (graph.out[at].length) continue;
+    const node = graph.nodes[at];
+    if (!node.block.carries) continue;
+
+    const liquid = node.block.carries === "liquid";
+    for (const [item, rate] of Object.entries(solved.through[at] || {})) {
+      const ceiling = capacityFor(node, item, liquid);
+      if (!Number.isFinite(ceiling) || ceiling <= 0) continue;
+      if (rate < ceiling * 0.999) continue;
+      if (!worst || rate > worst.rate) {
+        worst = { index: at, name: node.name, x: node.x, y: node.y, item, rate, ceiling };
+      }
+    }
+  }
+  return worst;
+}
+
 /** What was handed in and neither came out nor was turned into something else. */
 /**
  * What the plan pulls out of the base, per minute, so the page can say it out loud.
@@ -1684,8 +1722,9 @@ export async function analyse(text, supply = {}, chosen = null,
     perMinute,
     bottleneck: culprit ? [graph.nodes[culprit[0]].name, culprit[1]] : null,
     /* And what is starving it, when that is a carrier at its ceiling rather than the
-       block the line above names. Null the rest of the time. */
-    throttle: culprit ? throttledBy(graph, solved, culprit[0]) : null,
+       block the line above names. With nothing starved, the same question asked of the way
+       out: a full exit belt holds a layout back without starving anything at all. */
+    throttle: culprit ? throttledBy(graph, solved, culprit[0]) : exitThrottle(graph, solved),
     idle,
     surplus: surplusOf(graph, solved, feeds),
     /* What it takes out of the base, which is a different instruction to its reader than

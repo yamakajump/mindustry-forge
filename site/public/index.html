@@ -304,6 +304,7 @@ import { typeOf, seBranche } from "/forge/rapport/type.js";
 import { verdict } from "/forge/rapport/verdict.js";
 import { ancrage, bulle } from "/forge/rapport/bulle.js";
 import { repetable, repetitions } from "/forge/rapport/repeter.js";
+import { aPoser, poser, sensDeFuite } from "/forge/rapport/poser.js";
 
 const $ = (id) => document.getElementById(id);
 const text = $("text"), out = $("out"), drop = $("drop");
@@ -1063,9 +1064,15 @@ function render(report) {
          the game ships, which is a whole multiple and so still crisp; `draw` floors the
          scale to whole pixels anyway, and `fit` keeps a large plan where it always was. */
       maxScale: 96,
-      // Room to put something down beyond the edge, but only while something is waiting
-      // to be put down.
-      margin: 0,
+      /* One tile of room all round, always.
+
+         It used to be asked for only while the editor had something waiting to be placed,
+         and the analyser had nothing to place. It does now: a plan whose output has nowhere
+         to go is told so, and the answer is a belt on the tile beside it, which has to be
+         clickable to be placed. Packed schematics have no free tile inside their own box -
+         the first one tried had not one - so without this the answer the report gives could
+         not be carried out on the picture it gives it about. */
+      margin: 1,
       ground,
       inputs: report.ports?.inputs || [],
       outputs: report.ports?.outputs || [],
@@ -1533,6 +1540,17 @@ let sealed = false;
 let looking = null;
 
 /**
+ * Whether the block the panel is about was just put down rather than clicked on.
+ *
+ * The panel comes back either way, because "tourner" and "retirer ce bloc" are exactly what
+ * somebody wants next after laying a belt in the wrong direction. The bubble does not: the
+ * two questions it asks are about a block the schematic already had, and a belt that has
+ * just been placed on the edge IS the way out, so asking where the way out is, on it, right
+ * after, is the tool not following its own advice.
+ */
+let posed = false;
+
+/**
  * The ground the schematic is standing on, tile by tile.
  *
  * `{ "x,y": { floor, overlay, wall } }`, the game's own layers: an ore is laid over a floor
@@ -1801,6 +1819,76 @@ function montrerBloc(report, tile) {
   });
 }
 
+/**
+ * Offer to put a carrier on an empty tile, and put it there.
+ *
+ * The answer to "rien ne ressort du schéma", given on the picture the report says it about.
+ * A belt is a block and the analysis reads a block, so what comes out stops being a thing to
+ * declare and becomes a thing that happens.
+ *
+ * Only beside the plan. A tile out in the open, two squares from anything, is a click that
+ * missed rather than a place somebody meant to build, and offering a palette there would put
+ * a bubble in front of the picture every time a reader clicked the background.
+ */
+function ouvrirPose(report, tx, ty, drawn) {
+  fermerBulle();
+  const stage = $("view")?.parentElement;
+  if (!stage || !drawn) return;
+
+  const pris = new Set();
+  for (const tile of report.detail) {
+    const offset = Math.trunc(-(tile.size - 1) / 2);
+    for (let dx = 0; dx < tile.size; dx++) {
+      for (let dy = 0; dy < tile.size; dy++) {
+        pris.add(`${tile.x + offset + dx},${tile.y + offset + dy}`);
+      }
+    }
+  }
+  const occupe = (x, y) => pris.has(`${x},${y}`);
+  if (occupe(tx, ty)) return;
+
+  const rotation = sensDeFuite(tx, ty, occupe);
+  // Away from the plan means the plan is on the other side. On no side, nothing to do here.
+  const [dx, dy] = [[1, 0], [0, 1], [-1, 0], [0, -1]][rotation];
+  if (!occupe(tx - dx, ty - dy)) return;
+
+  /* A pipe against a pipe and a belt against a belt: what the neighbour carries decides,
+     because a conduit laid against a conveyor is a block that will never take anything. */
+  const voisin = report.detail.find((t) => t.x === tx - dx && t.y === ty - dy);
+  const liquide = catalogueOf()?.blocks?.[voisin?.name]?.carries === "liquid";
+
+  const offert = aPoser(report.held, catalogueOf(), liquide);
+  const html = poser(offert, { escape, t, lisible, blockIcon });
+  if (!html) return;
+
+  stage.insertAdjacentHTML("beforeend", html);
+  const box = stage.querySelector(".bulle");
+  const où = ancrage({ x: tx, y: ty, size: 1 }, drawn, {
+    width: stage.clientWidth,
+    height: stage.clientHeight,
+    bulle: { width: box.offsetWidth, height: box.offsetHeight },
+  });
+  box.style.left = `${où.left + $("view").offsetLeft}px`;
+  box.style.top = `${où.top + $("view").offsetTop}px`;
+
+  box.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    if (button.dataset.fermer !== undefined) { fermerBulle(); return; }
+    if (!button.dataset.poser) return;
+
+    /* `block`, not `name`: that is the field the decoder writes and the encoder reads back,
+       and a tile carrying the other one was written into the palette as `undefined`. The
+       belt was placed - the plan grew from 20 blocks to 21 - and the analysis read the
+       block the catalogue has never heard of, so it carried nothing and the plan was as
+       jammed as before. */
+    looking = `${tx},${ty}`;
+    posed = true;
+    edit((tiles) => [...tiles,
+      { x: tx, y: ty, block: button.dataset.poser, rotation, config: null }]);
+  });
+}
+
 /** Take the bubble off the picture, wherever it was opened from. */
 function fermerBulle() {
   document.querySelector(".stage .bulle")?.remove();
@@ -1919,7 +2007,7 @@ function wireBlocks(report, drawnNow, repaint) {
        The bubble now holds both, so there is nothing to arm and nothing to learn. */
     montrerBloc(report, hit);
     if (hit) ouvrirBulle(report, hit, drawn);
-    else fermerBulle();
+    else ouvrirPose(report, tx, ty, drawn);
   });
 
   /* Marking re-runs the analysis, which redraws everything. Without this the bubble
@@ -1927,8 +2015,9 @@ function wireBlocks(report, drawnNow, repaint) {
   if (looking) {
     const encore = report.detail.find((t) => `${t.x},${t.y}` === looking);
     montrerBloc(report, encore);
-    if (encore) ouvrirBulle(report, encore, drawnNow());
+    if (encore && !posed) ouvrirBulle(report, encore, drawnNow());
   }
+  posed = false;
 }
 
 /* Keeping a schematic ------------------------------------------------------------- */
