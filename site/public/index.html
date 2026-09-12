@@ -1030,6 +1030,14 @@ function render(report) {
         <span class="dim" id="run-mains" hidden></span>
       </div>
       ${legend}
+      <!-- What the block you clicked is, under the picture rather than over it.
+
+           It lived here, then moved onto the bubble so that one click would answer in one
+           place, and that turned out to be the wrong half to move: on a five-wide schematic
+           the bubble came to three hundred pixels over a plan two hundred and forty wide and
+           hid the block it was opened on. The gesture belongs on the block; what the block
+           IS belongs where there is room to read it, and this column is mostly empty. -->
+      <div id="block" class="card block-panel" hidden></div>
     </div>
     <div>${right.join("")}</div>
   </div>`;
@@ -1047,7 +1055,14 @@ function render(report) {
   const paint = () => {
     drawn = draw($("view"), report.tiles, sizeOf, roleOf, {
       width: stage.clientWidth - 32,
-      maxScale: 48,
+      /* Big enough to fill the stage a small plan sits in.
+      
+         Forty-eight capped a five-wide schematic at 240 pixels inside a 516 pixel frame,
+         so the subject of the page took less than a quarter of the room set aside for it
+         while the column under it stayed empty. Ninety-six is three times the 32 pixel art
+         the game ships, which is a whole multiple and so still crisp; `draw` floors the
+         scale to whole pixels anyway, and `fit` keeps a large plan where it always was. */
+      maxScale: 96,
       // Room to put something down beyond the edge, but only while something is waiting
       // to be put down.
       margin: 0,
@@ -1753,6 +1768,39 @@ function wireRun(report, repaint) {
   });
 }
 
+/**
+ * Fill the card under the picture, or hide it.
+ *
+ * Hidden rather than filled with an invitation: a card saying "click a block" under a
+ * picture that already says so is a second sentence for one instruction, and it took up the
+ * room the card needs when it has something to say.
+ */
+function montrerBloc(report, tile) {
+  const panel = $("block");
+  if (!panel) return;
+  panel.hidden = !tile;
+  if (!tile) return;
+
+  panel.innerHTML = `<h2>${escape(lisible(tile.name))}</h2>${detailsDuBloc(report, tile)}
+    <div class="row edit">
+      ${catalogueOf()?.blocks?.[tile.name]?.rotate
+        ? `<button type="button" id="spin">${escape(t("analyse.bloc.tourner"))}</button>` : ""}
+      <button type="button" id="scrap" title="${escape(t("analyse.bloc.retirer-titre"))}">${
+        escape(t("analyse.bloc.retirer"))}</button>
+    </div>`;
+
+  /* Editing, which turns a viewer into a tool. The string is rewritten rather than kept
+     beside a second copy of the schematic: one source of truth, and it is the same string
+     the game reads. */
+  $("spin")?.addEventListener("click", () => edit((tiles) => tiles.map((one) =>
+    (one.x === tile.x && one.y === tile.y
+      ? { ...one, rotation: ((one.rotation | 0) + 1) % 4 } : one))));
+  $("scrap")?.addEventListener("click", () => {
+    looking = null;
+    edit((tiles) => tiles.filter((one) => !(one.x === tile.x && one.y === tile.y)));
+  });
+}
+
 /** Take the bubble off the picture, wherever it was opened from. */
 function fermerBulle() {
   document.querySelector(".stage .bulle")?.remove();
@@ -1775,9 +1823,8 @@ function ouvrirBulle(report, tile, drawn) {
     : null;
   const offert = report.offers?.[at] || [];
 
-  stage.insertAdjacentHTML("beforeend", bulle(
-    tile, mark, offert, { escape, t, lisible, withIcon },
-    detailsDuBloc(report, tile), Boolean(catalogueOf()?.blocks?.[tile.name]?.rotate)));
+  stage.insertAdjacentHTML("beforeend",
+    bulle(tile, mark, offert, { escape, t, lisible, withIcon }));
 
   const box = stage.querySelector(".bulle");
   const où = ancrage(tile, drawn, {
@@ -1798,20 +1845,6 @@ function ouvrirBulle(report, tile, drawn) {
       enMarquage = false;
       looking = null;
       fermerBulle();
-      return;
-    }
-
-    /* Editing, which turns a viewer into a tool. The string is rewritten rather than kept
-       beside a second copy of the schematic: one source of truth, and it is the same string
-       the game reads. */
-    if (button.dataset.tourner !== undefined) {
-      edit((tiles) => tiles.map((one) => (one.x === tile.x && one.y === tile.y
-        ? { ...one, rotation: ((one.rotation | 0) + 1) % 4 } : one)));
-      return;
-    }
-    if (button.dataset.retirer !== undefined) {
-      looking = null;
-      edit((tiles) => tiles.filter((one) => !(one.x === tile.x && one.y === tile.y)));
       return;
     }
 
@@ -1884,6 +1917,7 @@ function wireBlocks(report, drawnNow, repaint) {
        otherwise it filled a card in the other column. Two behaviours for one gesture, and
        the second of them answering three hundred pixels away from the block it was about.
        The bubble now holds both, so there is nothing to arm and nothing to learn. */
+    montrerBloc(report, hit);
     if (hit) ouvrirBulle(report, hit, drawn);
     else fermerBulle();
   });
@@ -1892,6 +1926,7 @@ function wireBlocks(report, drawnNow, repaint) {
      vanished on every press, so picking what arrives meant finding the block again. */
   if (looking) {
     const encore = report.detail.find((t) => `${t.x},${t.y}` === looking);
+    montrerBloc(report, encore);
     if (encore) ouvrirBulle(report, encore, drawnNow());
   }
 }
