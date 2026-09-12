@@ -32,16 +32,9 @@ it('orders the cost the way the game does, not alphabetically', function () {
     expect(array_keys($kept->cost()))->toBe(['copper', 'lead', 'titanium']);
 });
 
-it('shows each resource with its icon', function () {
-    $kept = avecCout(['copper' => 320, 'lead' => 96]);
-
-    $page = $this->get("/s/{$kept->slug}")->assertOk();
-
-    $page->assertSee('Ce qu&#039;il coûte', escape: false);
-    $page->assertSee('/icone/objet/copper.png?t=32', escape: false);
-    $page->assertSee('/icone/objet/lead.png?t=32', escape: false);
-    $page->assertSee('320');
-});
+/* The card that printed those icons was on a schematic's own page, which serves the
+   analyser since 12/09/2026 and draws its own. What the cost still has to be right about is
+   the order and the arithmetic, which is what the rest of this file is for. */
 
 it('does not show an empty card when the cost is unknown', function () {
     /* An analysis stored before the field existed, or a schematic made of blocks no

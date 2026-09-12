@@ -8,12 +8,17 @@ use Illuminate\Support\Facades\Storage;
 uses(RefreshDatabase::class);
 
 /**
- * Whether a schematic page carries what it needs to draw its own plan.
+ * Whether a listing carries what it needs to draw its plans.
  *
  * The drawing itself is the renderer's job and is tested where the renderer is. What is
  * checked here is the wiring, which is where this breaks silently: a page that ships the
  * script without the code, or the code without the script, looks exactly like a page that
  * works until somebody opens it.
+ *
+ * A schematic's own page used to be checked here too and no longer is. It serves the
+ * analyser since 12/09/2026, which draws the plan from the string it fetches rather than
+ * from an attribute the server wrote, so there is no wiring left on it to come apart. The
+ * drawing there is covered by `tests/js`.
  */
 function schema(array $extra = []): Schematic
 {
@@ -26,45 +31,6 @@ function schema(array $extra = []): Schematic
         'width' => 5, 'height' => 13, 'blocks' => 23,
     ], $extra));
 }
-
-it('hands the page its own code when no preview was ever stored', function () {
-    Storage::fake('public');
-    $schematic = schema();
-
-    $html = $this->get("/s/{$schematic->slug}")->assertOk()->getContent();
-
-    /* Both, or neither. The fifteen thousand imported schematics have no stored preview,
-       and this pair is the only thing standing between them and an empty black panel. */
-    expect($html)->toContain('data-code="'.$schematic->code.'"');
-    expect($html)->toContain('/forge/apercu.js');
-});
-
-it('does not pay for a drawing when a preview is already stored', function () {
-    Storage::fake('public');
-    $schematic = schema();
-    Storage::disk('public')->put("apercus/{$schematic->slug}.png", 'pas vraiment un png');
-
-    $html = $this->get("/s/{$schematic->slug}")->assertOk()->getContent();
-
-    /* The sprite sheet is 1.28 MB. A page that already has its picture has no reason to
-       fetch it, so the script and the code both stay out. */
-    expect($html)->not->toContain('data-code=');
-    expect($html)->not->toContain('/forge/apercu.js');
-    expect($html)->toContain("apercus/{$schematic->slug}.png");
-});
-
-it('never leaves the panel claiming it is still drawing', function () {
-    Storage::fake('public');
-    $schematic = schema();
-
-    $html = $this->get("/s/{$schematic->slug}")->assertOk()->getContent();
-
-    /* The placeholder is only honest while the script is on its way. Shipping it without
-       the script would leave "drawing the schematic..." on screen for ever, which is worse
-       than the empty panel it replaced: it is an empty panel that lies about why. */
-    expect($html)->toContain('Dessin du schéma');
-    expect($html)->toContain('/forge/apercu.js');
-});
 
 it('hands the list its codes so the grid stops being grey rectangles', function () {
     Storage::fake('public');
@@ -106,33 +72,6 @@ it('serves a code to a tile that asks for one', function () {
         ->assertSee($gros->code);
 });
 
-it('leaves the management card alone', function () {
-    Storage::fake('public');
-    $owner = User::factory()->create();
-    $schematic = schema(['user_id' => $owner->id]);
-
-    $html = $this->actingAs($owner)->get("/s/{$schematic->slug}")->assertOk()->getContent();
-
-    /* `data-slug` is this drawer's contract: it takes every element carrying one for a tile
-       whose plan it must fetch and draw, and `replaceChildren`s a canvas into it. The
-       management card carried one for its own two verbs, so the whole card - the three
-       visibility buttons, the shareable link, the delete button - was replaced by a picture
-       of the schematic. Nobody could change who saw their own schematic, or delete it, from
-       its page.
-
-       It had already eaten the like buttons once, and the note above them says so. This
-       asserts the second occurrence stays fixed: the card announces itself with the same
-       attribute the like buttons settled on, and the drawer never hears about it. */
-    expect($html)->toContain('data-schema="'.$schematic->slug.'"');
-    expect($html)->toContain('data-visibility="public"');
-    expect($html)->toContain('data-delete');
-
-    /* One `data-slug` at most on this page, and it belongs to the plan: the panel that
-       draws it says so when the code is too big to travel in the markup. */
-    $slugs = substr_count($html, 'data-slug=');
-    expect($slugs)->toBe(0);
-});
-
 it('draws the plans on the member own list too', function () {
     Storage::fake('public');
     $owner = User::factory()->create();
@@ -145,32 +84,4 @@ it('draws the plans on the member own list too', function () {
        of them: the page carried neither the drawer nor the code it draws from. */
     expect($html)->toContain('/forge/apercu.js');
     expect($html)->toContain('data-code="'.$mine->code.'"');
-});
-
-it('hands the plan the marks its author left', function () {
-    Storage::fake('public');
-    $marked = schema(['analysis' => [
-        'marked' => ['3,0' => ['side' => 'in', 'resource' => 'sand'],
-            '4,8' => ['side' => 'out', 'resource' => 'silicon']],
-    ]]);
-
-    $html = $this->get("/s/{$marked->slug}")->assertOk()->getContent();
-
-    /* Stored from the first day and read back by nobody: the endpoint that serves them says
-       exactly that in `routes/web.php`. A described plan and an untouched one looked the
-       same on the page a link opens. */
-    expect($html)->toContain('data-marks=');
-    expect($html)->toContain('3,0');
-    expect($html)->toContain('silicon');
-});
-
-it('says nothing about marks when there are none', function () {
-    Storage::fake('public');
-    $plain = schema();
-
-    $html = $this->get("/s/{$plain->slug}")->assertOk()->getContent();
-
-    // An empty attribute would make the drawer parse "{}" on fifteen thousand pages for
-    // nothing.
-    expect($html)->not->toContain('data-marks=');
 });

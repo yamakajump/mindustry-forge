@@ -36,7 +36,9 @@ it('puts the guard before any stylesheet, in the head of the document', function
 
     $tete = strpos($html, '</head>');
     $garde = strpos($html, 'classList.add("route-editeur")');
-    $feuille = strpos($html, '<link rel="stylesheet" href="./forge/forge.css">');
+    /* Absolute since the document started being served at `/s/<slug>` as well as at `/` and
+       `/editer`: a relative href resolved against the schematic's own directory. */
+    $feuille = strpos($html, '<link rel="stylesheet" href="/forge/forge.css">');
 
     expect($garde)->not->toBeFalse('the guard has disappeared from the document')
         ->and($feuille)->not->toBeFalse('the stylesheet has disappeared from the document')

@@ -50,7 +50,10 @@ const SETTLED = 1e-4;
 let catalogue = null;
 
 /** Load the block registry the game itself printed. Cached, since it never changes. */
-export async function loadCatalogue(url = "./forge/blocks.json") {
+/* Absolute, for the reason `apercu.js` writes out over its own base: this page is served at
+   `/`, at `/editer` and, since the two screens became one, at `/s/<slug>`. A relative default
+   resolves against the document and asked for `/s/<slug>/forge/blocks.json`. */
+export async function loadCatalogue(url = "/forge/blocks.json") {
   if (catalogue) return catalogue;
   const answer = await fetch(url);
   if (!answer.ok) throw new Error("catalogue de blocs introuvable");

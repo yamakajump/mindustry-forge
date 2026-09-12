@@ -385,86 +385,93 @@ it('changes the ground of a schematic without touching the rest', function () {
 });
 
 /*
- * Opening the schematic.
+ * A schematic's address, which serves the analyser.
  *
- * The gesture the page exists for was at the very bottom of it, under a label that named
- * something else, and no test looked at it: the whole thing could be renamed or deleted
- * without a single assertion moving. These three are the assertions that were missing.
+ * It had a page of its own until 12/09/2026. One schematic described by two screens, calling
+ * the same facts different names a click apart, was the complaint; the analyser is the one
+ * that survived, because it is the one that does something. What the other page had and it
+ * lacked - the head a crawler reads, and the cards about the schematic as an object somebody
+ * keeps - is injected into it.
+ *
+ * So what is asserted here is the seam. The body is the analyser's and is drawn by the
+ * browser, which no test here runs, so there is nothing to assert about the figures: those
+ * are `tests/js`. What a server can be held to is that the right head went in, that the
+ * cards went in, and that neither hole was left as a comment.
  */
-it('offers to open the schematic where somebody lands, not at the bottom', function () {
-    $schematic = Schematic::factory()->create(['visibility' => 'public']);
+it('serves the analyser, not a page of its own', function () {
+    $mine = Schematic::factory()->create(['visibility' => 'public']);
 
-    $page = $this->get("/s/{$schematic->slug}")->assertOk();
-
-    $page->assertSee('Ouvrir ce schéma')
-        ->assertSee("/?s={$schematic->slug}", escape: false);
-
-    /* Where it sits is the whole issue, so where it sits is what is asserted: before the
-       card it used to be buried inside. Document order and not pixels, because that is what
-       decides the reading order on a phone, where the two columns become one. */
-    $page->assertSee('Prendre le schéma');
-    $html = $page->getContent();
-    expect(strpos($html, 'Ouvrir ce schéma'))
-        ->toBeLessThan(strpos($html, 'Prendre le schéma'));
-});
-
-it('calls it the same thing whoever is reading', function () {
-    $author = User::factory()->create();
-    $schematic = Schematic::factory()->for($author)->create(['visibility' => 'public']);
-
-    // It used to say "Modifier" to whoever manages it and "Analyser chez moi" to everybody
-    // else, for one destination, chosen by a permission that has nothing to do with where
-    // the link goes.
-    foreach ([null, $author] as $reader) {
-        $page = $reader ? $this->actingAs($reader) : $this;
-        $page->get("/s/{$schematic->slug}")
-            ->assertOk()
-            ->assertSee('Ouvrir ce schéma')
-            ->assertDontSee('Analyser chez moi');
-    }
-});
-
-it('makes the plan itself the door it looks like', function () {
-    $schematic = Schematic::factory()->create(['visibility' => 'public', 'name' => 'Presse']);
-
-    $this->get("/s/{$schematic->slug}")
+    $this->get("/s/{$mine->slug}")
         ->assertOk()
-        ->assertSee('<a class="stage" href="/?s='.$schematic->slug.'"', escape: false);
+        // The analyser's own body, which is what the reader lands in.
+        ->assertSee('id="out"', false)
+        ->assertSee('id="text"', false)
+        // And neither hole left showing.
+        ->assertDontSee('<!--TETE-->', false)
+        ->assertDontSee('<!--FICHE-->', false);
 });
 
-it('says a jammed plan is jammed, rather than printing a rate that does not flow', function () {
-    /*
-     * Its own page printed "au mieux 8 verre / s" while the analyser one click away said
-     * nothing came out at all: two pages, one analysis, opposite answers, and a reader with
-     * no way to tell which to believe. `4x Kiln` is the case.
-     */
-    $jammed = Schematic::factory()->create([
+it('puts the schematic in the head, where an unfurler and a crawler read', function () {
+    /* Neither ever runs a line of the body, so this is the whole of what they see, and it is
+       why one screen can be both the tool and the thing a link points at. */
+    $mine = Schematic::factory()->create([
         'visibility' => 'public',
-        'produces' => ['metaglass' => 480.0],
-        'analysis' => ['bloque' => ['metaglass' => 480.0]],
-    ]);
-
-    $this->get("/s/{$jammed->slug}")
-        ->assertOk()
-        /* On a fragment without an apostrophe. Blade escapes them to `&#039;` and the
-           dictionary returns them raw, so the whole sentence never matches either way
-           round: with the needle escaped it carries entities the sentence does not, and
-           without it the page carries entities the needle does not. */
-        ->assertSee('rien ne ressort du schéma', false)
-        // And not the ordinary production wording, which would say the opposite one line up.
-        ->assertDontSee(__('schema.page.energie-plafond'), false);
-});
-
-it('leaves a plan whose output flows alone', function () {
-    // `bloque` is empty on every row analysed before the engine learned to tell the two
-    // apart, which is most of them: they must read as "nothing to say", not as "jammed".
-    $fine = Schematic::factory()->create([
-        'visibility' => 'public',
+        'name' => 'Ligne a graphite',
+        'blocks' => 40,
         'produces' => ['graphite' => 240.0],
-        'analysis' => [],
     ]);
 
-    $this->get("/s/{$fine->slug}")
+    $this->get("/s/{$mine->slug}")
         ->assertOk()
-        ->assertDontSee('rien ne ressort du schéma', false);
+        ->assertSee('<title>Ligne a graphite - Mindustry Forge</title>', false)
+        ->assertSee('rel="canonical" href="'.url("/s/{$mine->slug}").'"', false)
+        ->assertSee('property="og:title" content="Ligne a graphite"', false)
+        ->assertSee('property="og:url" content="'.url("/s/{$mine->slug}").'"', false)
+        // The card, never the raw preview: an unfurler crops a plan without saying so.
+        ->assertSee(url("/s/{$mine->slug}/carte.jpg"), false)
+        // The figure travels in the description, which is most of why a link gets clicked.
+        ->assertSee('4,00 graphite/s - 40 blocs', false)
+        /* And the analyser's own head is gone rather than sitting beside it: a page that
+           kept it would unfurl every schematic as the home page. */
+        ->assertDontSee('content="https://mindustryforge.com/"', false);
+});
+
+it('keeps out of the index what is not on the wall', function () {
+    // A schematic shared by link is meant for whoever was given the link. A crawler that
+    // finds it anyway must not file it.
+    $parLien = Schematic::factory()->create(['visibility' => 'unlisted']);
+    $public = Schematic::factory()->create(['visibility' => 'public']);
+
+    $this->get("/s/{$parLien->slug}")->assertSee('name="robots" content="noindex"', false);
+    $this->get("/s/{$public->slug}")->assertDontSee('name="robots" content="noindex"', false);
+});
+
+it('carries the cards that belong to the schematic rather than to its plan', function () {
+    /* The ones that have nowhere else to be: who may see it, the code to take away, and the
+       note. What the plan does is the analyser's, and saying it twice under two headings is
+       what made one schematic read as two screens. */
+    $user = User::factory()->create();
+    $mine = Schematic::factory()->create(['user_id' => $user->id, 'visibility' => 'public']);
+
+    $this->actingAs($user)->get("/s/{$mine->slug}")
+        ->assertOk()
+        ->assertSee('Prendre le schéma', false)
+        ->assertSee('data-visibility="public"', false)
+        ->assertSee('data-schema="'.$mine->slug.'"', false);
+});
+
+it('sends the address it used to have to the one it has', function () {
+    /* `/?s=<slug>` opened a stored schematic while there were two screens, and it is in
+       Discord threads and bookmarks. Two live addresses for one page is the duplication that
+       was complained about, made real in the index, so it is a permanent redirect and not a
+       second answer. */
+    $mine = Schematic::factory()->create(['visibility' => 'public']);
+
+    $this->get("/?s={$mine->slug}")->assertRedirect("/s/{$mine->slug}");
+});
+
+it('still answers the home page when nothing is asked for', function () {
+    // The guard on that redirect: `/` is the analyser and must not be swallowed by it.
+    $this->get('/')->assertOk()->assertSee('id="out"', false);
+    $this->get('/?s=')->assertOk();
 });

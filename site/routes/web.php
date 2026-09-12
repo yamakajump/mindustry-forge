@@ -97,6 +97,17 @@ Route::get('/schematiques', fn (Request $request) => redirect(
    link would be sent to Discord and land on the login's own destination, losing the address
    they asked for. */
 Route::get('/mes-schematiques', fn () => redirect('/mes-schemas', 301));
+/* A schematic, which is the analyser with that schematic already in it.
+ *
+ * It had a page of its own until 12/09/2026 and that was the complaint: one schematic
+ * described by two screens, calling the same facts different names, a click apart. The
+ * analyser is the one that survived, and `SchematicController::show` serves it with this
+ * schematic's head and its own cards injected.
+ *
+ * The address does not move. It is what a Discord thread already holds and what a crawler
+ * already knows, and the whole point of keeping one screen is not making people relearn
+ * where it lives. See `docs/decisions/2026-09-12-un-seul-ecran.md`.
+ */
 Route::get('/s/{schematic}', [SchematicController::class, 'show']);
 
 /* A member's page. Accounts only: the imported catalogue credits author names with no

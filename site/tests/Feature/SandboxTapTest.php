@@ -119,7 +119,11 @@ it('does not quote the figure in the catalogue either', function () {
     $liste->assertDontSee('999 971 energie/s');
 });
 
-it('states the tap on the page instead of quoting its value', function () {
+it('never quotes a sandbox figure where a reader meets it without opening anything', function () {
+    /* The body of a schematic's address is the analyser's and is drawn by a browser, so what
+       a server can still be held to is the head: the description is the form of the figure
+       that travels furthest, into a Discord unfurl and a search result, and it is the only
+       one most readers ever meet. */
     $kept = Schematic::factory()->imported()->create([
         'blocks' => 3, 'visibility' => 'public',
         'analysis' => analyseAvecBlocs(['power-source', 'silicon-smelter', 'conveyor']),
@@ -129,11 +133,8 @@ it('states the tap on the page instead of quoting its value', function () {
     $page = $this->get("/s/{$kept->slug}");
 
     $page->assertOk();
-    $page->assertSee('Alimenté par une source de bac à sable');
-    $page->assertSee('power-source');
-    // The figure that started all this, in both forms the page can give it.
+    // The figure that started all this, in both forms the page could give it.
     $page->assertDontSee('479 999');
     $page->assertDontSee('999 999');
-    // The form that travels furthest: what social networks and search engines read.
     $page->assertSee('content="source de bac à sable - 3 blocs"', false);
 });
