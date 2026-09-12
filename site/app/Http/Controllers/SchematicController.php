@@ -281,8 +281,16 @@ class SchematicController extends Controller
      */
     private function summary(Schematic $schematic): string
     {
-        $made = collect($schematic->produces ?? [])
-            ->map(fn ($rate, $item) => SchematicItem::debitAffiche($item, $rate)." {$item}/s")
+        /* What it delivers, or what it would if it had anywhere to put it.
+         *
+         * A jammed plan delivers nothing, so `produces` is empty and the line that travels
+         * furthest read "20 blocs" and no figure at all: a Discord link with nothing in it
+         * to click for. What it makes is still the answer to "what is this", and saying so
+         * with the word that says it is stuck is truer than saying nothing. */
+        $jammed = $schematic->jammed();
+        $made = collect($schematic->produces ?: $jammed)
+            ->map(fn ($rate, $item) => SchematicItem::debitAffiche($item, $rate)." {$item}/s"
+                .($schematic->produces ? '' : ' '.__('schema.page.coince-court')))
             ->values();
         $power = $schematic->power_made - $schematic->power_used;
         $tap = $schematic->fedBySandbox();
