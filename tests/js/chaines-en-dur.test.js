@@ -36,8 +36,19 @@ import { readFileSync } from "node:fs";
    this file and the least touched, so it still carried its whole vocabulary in the markup:
    the two buttons, the three options of the visibility dropdown, both field labels and the
    sentence about overwriting. Rewriting a card is the cheap moment to migrate it, and the
-   only one anybody ever takes. */
-const RESTANT = 30;
+   only one anybody ever takes.
+
+   Twenty-five once five cards became one. "Une fois alimente a fond", "Branche comme il
+   est", "Goulot", "Fabrique et consomme sur place" and "Ce qui se perd" were merged into
+   the verdict and "Ce qu'il sort", and the three of them that still wrote their headings
+   and their empty states by hand went with them. The strings did not move to lower this
+   number; they had nowhere left to be.
+
+   Twenty-one once the picture's legend went through the dictionary. It was migrated
+   because the long explanation of why Forge asks where a schematic plugs in moved onto it
+   from the ports card, and a sentence arriving from `fr.json` next to two written by hand
+   is how a legend ends up half translated. */
+const RESTANT = 21;
 
 const MOTS = /(?<![\w-])(le|la|les|un|une|des|du|de|et|ou|qui|que|pas|sur|dans|pour|ce|il|elle|ne|se|est|sont|au|aux|en|par|plus|rien|tout|toute|avec|sans|son|sa|ses|cette|cet|tu|te|ton|ta|quoi|quand|comme|deja|encore|meme|leur|lui|on)(?![\w-])/i;
 

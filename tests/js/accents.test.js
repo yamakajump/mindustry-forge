@@ -48,6 +48,8 @@ const HOMOGRAPHES = new Set([
   "ce", "se", "ma", "sa", "ne",
   "sur",      // "sur le plan" against "sûr"
   "cote", "cotes",        // a mark on a drawing against "côté" and "côte"
+  "fabrique",             // "ca ne fabrique rien" against "fabriqué sur place"
+  "bride",                // "rien ne le bride" against "bridé par"
   "mesure", "mesures",    // "il mesure" against "mesuré"
   "compte", "comptes",    // "il compte" against "compté"
   "pose", "poses",        // "il pose" against "posé"
