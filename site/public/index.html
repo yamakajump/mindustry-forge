@@ -372,9 +372,20 @@ function render(report) {
      du schema : du jargon la ou un numero suffit. */
   const versionLisible = (dite) => String(dite).replace(/^(release\s+)?build\s+/i, "");
 
+  /* Where this came from, said once, at the top, whoever it belongs to.
+     
+     Opening somebody's schematic put its analysis on screen and never mentioned that it
+     was somebody's schematic: no name, no author, no way back to the page it came from.
+     The only link back was inside the save card and only when the reader owned it, so for
+     everybody else the two pages were two unrelated screens that happened to show the same
+     plan, which is exactly what "il y a plusieurs affichages donc ultra chelou" is about.
+     
+     A line rather than a card. It is provenance, not a finding. */
   right.push(`<h2 class="title">${escape(report.name)}</h2>
     <p class="sub">${report.width}x${report.height} &middot; ${report.blocks} blocs
-      &middot; Mindustry ${escape(versionLisible(report.gameVersion))}</p>`);
+      &middot; Mindustry ${escape(versionLisible(report.gameVersion))}${venuDe
+        ? ` &middot; <a href="/s/${escape(venuDe.slug)}">${
+            escape(t("analyse.venu-de.sa-page"))}</a>` : ""}</p>`);
 
   /*
    * The answer, the size of an answer, and first.
@@ -2082,6 +2093,16 @@ loadNames();
 if (location.pathname === "/editer") enterEditor([]);
 
 /* Arriving from a schematic's page, to look at it or to change it. */
+/**
+ * The published schematic this analysis was opened from, if it was opened from one.
+ *
+ * `opened` only ever holds a reader's own, and `regarde` only somebody else's that they
+ * could still contribute a marking to. Neither covers the ordinary case of reading a
+ * schematic that belongs to somebody else, which is most of them, so the page said nothing
+ * at all about where its plan had come from.
+ */
+let venuDe = null;
+
 let regarde = null;
 const asked = new URLSearchParams(location.search).get("s");
 if (asked) {
@@ -2108,6 +2129,7 @@ if (asked) {
          lost exactly what "stored from the first day and never read back" was written to
          restore, and the page asked its own author where their schematic plugs in. */
       lastPayload = String(found.code).replace(/\s+/g, "");
+      venuDe = { slug: found.slug, name: found.name };
       if (found.mine) opened = found;
       /* Somebody else's, unmarked, and this reader is signed in: the one case where the
          marking they are about to make is worth sending back. `read` answers it, because
