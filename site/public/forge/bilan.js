@@ -419,6 +419,30 @@ export function buildGraph(tiles) {
       // The container is no longer where the line ends: what arrives keeps going.
       nodes[store].drained = true;
     }
+
+    /* An unloader touching no container is standing against the base, and that is the whole
+       reason it was copied.
+
+       Nobody builds an unloader facing nothing. It is put against a core or a vault that
+       belongs to the base rather than to the schematic, which is exactly what does not come
+       across in a copy: the schematic carries the unloader and not the thing it pulls from.
+       Given nothing, it drew nothing, so every machine behind it starved and the report
+       came back at zero. Nine thousand one hundred and twenty-five of the fifteen thousand
+       schematics in the catalogue consume power without making any, and this shape is a
+       large part of them: a real one, six cryofluid mixers, reported producing nothing at
+       all and named itself as its own bottleneck, at zero per cent, with five unloaders
+       carrying zero titanium.
+
+       So it is read as what a player means by it, which is the rule the rest of this engine
+       follows about the game: it draws on the base's stock. What that means in quantity is
+       `fromBase`, below. */
+    if (!touching.size) nodes[index].fromBase = true;
+  }
+
+  /* A core inside the schematic is the base, present rather than implied, and it holds
+     everything for the same reason. */
+  for (const node of nodes) {
+    if (node.role === "core") node.fromBase = true;
   }
 
   /* A duct bridge aims rather than remembers. `DuctBridge` looks along its rotation and
@@ -598,7 +622,21 @@ function powerGrids(graph) {
  * false; in a rate model, running a third of the time means drawing a third of the current
  * on average, so the item share is the right weight rather than a flag.
  */
-function coverageOf(graph, grids, itemShare) {
+/**
+ * Whether the plan brought its own current.
+ *
+ * Asked of the whole schematic and not of one grid, which is the difference between reading
+ * a missing base and reading a missing wire. A plan carrying no generator anywhere was
+ * obviously meant to be plugged into something: nobody copies a silicon plant together with
+ * the reactor farm behind it. A plan carrying a generator was meant to run on it, so a
+ * machine of its own left off that grid is a wire its author forgot, and covering it from an
+ * imagined base would hide the one defect worth reporting.
+ */
+function brancheSurLaBase(graph) {
+  return !graph.nodes.some((node) => (node.block.power_out || 0) > 0);
+}
+
+function coverageOf(graph, grids, itemShare, surLaBase) {
   const coverage = graph.nodes.map(() => 1);
   const running = (index) => (itemShare[index] === undefined ? 1 : itemShare[index])
     * (graph.nodes[index].boost || 1);
@@ -612,6 +650,24 @@ function coverageOf(graph, grids, itemShare) {
       wanted += (block.power || 0) * running(index);
     }
     if (wanted <= SETTLED) continue;
+
+    /* A grid that draws current and generates none is plugged into the base, exactly as
+       `live.js` plugs it in before running the picture.
+
+       Nobody copies a silicon plant together with the reactor farm behind it. The schematic
+       carries the machines and the wire, and the current comes from a grid that was not
+       copied, so a grid with consumers and no producer of its own was covered at zero and
+       every machine on it ran at zero: a perfectly good factory reported producing nothing.
+       That was already true of the simulation and was already fixed there, so the animation
+       ran flat out beside a column of figures saying zero, from one analysis.
+
+       Asked of the whole plan and not of this grid. A plan that carries a generator was
+       meant to run on it, so one of its own machines left off that grid is a wire its
+       author forgot, and covering it out of an imagined base would hide the one defect
+       here worth reporting. A layout that browns out on its own current still browns out,
+       exactly as the bench measures it. */
+    if (surLaBase && made <= SETTLED) continue;
+
     const share = Math.min(1, made / wanted);
     for (const index of members) {
       if ((graph.nodes[index].block.power || 0) > 0) coverage[index] = share;
@@ -653,6 +709,12 @@ function solveFlow(graph, supply) {
     if (node.dug) resources.add(node.dug.resource);
   }
 
+  /* And what the base hands over, which is the output of nothing in the schematic and so
+     appeared in this set through no other door. Without this line the solve never asks the
+     question at all: titanium is nobody's output, so a mixer standing on five unloaders was
+     never solved for titanium, and reported zero however much of it the base held. */
+  for (const item of stockDeLaBase(graph)) resources.add(item);
+
   // Machines make things that other machines eat, so the chain is walked in order: what a
   // press produces becomes a source for whatever the press feeds. Bounded by the number of
   // stages a real recipe tree has, and stopped when a round adds nothing.
@@ -661,6 +723,11 @@ function solveFlow(graph, supply) {
   // carrier does and was missing from the report entirely.
   const carrying = graph.nodes.map(() => ({}));
   const fed = {};
+
+  /* What the base holds for it, found once and for the same reason: it comes from which
+     machines are in the schematic, and no amount of solving moves a machine. */
+  const depuisLaBase = stockDeLaBase(graph);
+  const surLaBase = brancheSurLaBase(graph);
 
   /* The grids, found once: they come from the shape of the schematic and nothing the solve
      does can move a wire. The coverage does change from round to round, and it starts at
@@ -687,6 +754,13 @@ function solveFlow(graph, supply) {
         const node = graph.nodes[index];
         if (node.role === "source" && node.configured === resource) {
           sources[index] = (sources[index] || 0) + sourceRate(graph, index, resource);
+        }
+        /* Out of the base's stock, through an unloader standing against it or a core the
+           schematic carries. Bounded by the block's own rate, which is eleven items a
+           second for a plain unloader, so a wall of them is a wall of them and one is one:
+           the quantity is the block's, only the availability is assumed. */
+        if (node.fromBase && !liquid && depuisLaBase.has(resource)) {
+          sources[index] = (sources[index] || 0) + baseRate(graph, index, resource);
         }
         if (node.dug?.resource === resource) {
           // A laser drill on a dim grid turns slower, and what it pulls up is the one
@@ -744,7 +818,7 @@ function solveFlow(graph, supply) {
        two multiplied and not the smaller of the two: in the game the items decide whether a
        frame happens at all and the current decides how far that frame gets, so a machine
        with half its coal on a grid at half strength runs at a quarter. */
-    coverage = coverageOf(graph, grids, itemShare);
+    coverage = coverageOf(graph, grids, itemShare, surLaBase);
 
     for (let index = 0; index < nodes; index++) {
       const node = graph.nodes[index];
@@ -885,6 +959,73 @@ function sourceRate(graph, index, resource) {
   // wanted, and the eleven-twelfths nobody drank ran out of the nearest open pipe and was
   // reported as a hundred thousand cryofluid a minute of production.
   return asked > 0 ? Math.min(declared, asked / Math.max(1, taps)) : declared;
+}
+
+/**
+ * What a schematic takes out of the base rather than out of itself.
+ *
+ * The raw materials, and only those: everything its machines ask for that nothing in it
+ * makes. A press turning coal into graphite in front of a smelter eating that graphite is
+ * short of coal and not of graphite, and handing it graphite out of the core would report a
+ * production the schematic does not perform.
+ *
+ * Ammunition counts. A turret standing next to an unloader is fed from the core in the
+ * game, and it was the one thing a defence schematic was never told it needed.
+ *
+ * Items only, at every call site. A core holds no liquid and an unloader moves none, so
+ * water still has to be pointed at by hand, which is right: water comes from a pump, and
+ * which pump is exactly the question no tool can answer for its author.
+ */
+function stockDeLaBase(graph) {
+  const demande = new Set();
+  const fabrique = new Set();
+
+  for (const node of graph.nodes) {
+    for (const item of Object.keys(node.block.input || {})) demande.add(item);
+    for (const item of node.block.ammo || []) demande.add(item);
+    for (const item of Object.keys(node.block.output || {})) fabrique.add(item);
+    if (node.dug) fabrique.add(node.dug.resource);
+  }
+  for (const item of fabrique) demande.delete(item);
+
+  return demande;
+}
+
+/**
+ * What one block actually pulls out of the base, per second.
+ *
+ * Capped by what the machines ask for, and zero when nothing asks. That second half is the
+ * difference between an unloader and a sandbox tap, and leaving it out cost a whole
+ * schematic: a press fed from the base drew its eleven coal a second whatever it ate, the
+ * surplus ran out of the far end of the output belt, and the report announced a graphite
+ * press producing five hundred and twenty coal a minute. A tap pours regardless because
+ * that is what a tap does; an unloader pulls only when the thing in front of it has room,
+ * and a full belt stops it.
+ *
+ * `appetiteFor(..., false)` counts machines and not open ends, exactly as `sourceRate`
+ * does: a belt pointing out of the schematic is a delivery, not an appetite, and counting
+ * it would put the leak straight back.
+ *
+ * Shared out between the blocks that could supply it, for the reason written over
+ * `sourceRate`: capped one by one, five unloaders against a core each promised the whole
+ * demand and the layout was handed five times what it wanted.
+ */
+function baseRate(graph, index, resource) {
+  const node = graph.nodes[index];
+  if (node.configured && node.configured !== resource) return 0;
+  const declared = (node.block.items_per_second || 11) * (node.boost || 1);
+
+  let asked = 0;
+  let taps = 0;
+  for (let other = 0; other < graph.nodes.length; other++) {
+    if (piecesOf[other] !== piecesOf[index]) continue;
+    const node2 = graph.nodes[other];
+    if (node2.fromBase && (!node2.configured || node2.configured === resource)) taps++;
+    const wants = appetiteFor(node2, resource, false);
+    if (Number.isFinite(wants)) asked += wants;
+  }
+
+  return asked > 0 ? Math.min(declared, asked / Math.max(1, taps)) : 0;
 }
 
 /** Everything the sandbox taps inside a schematic pour of one resource, per second. */

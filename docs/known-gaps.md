@@ -46,6 +46,15 @@ and the bench measures it.
 can carry a dead link, and the page says so, but the engine does not model what the driven
 block would have done.
 
+**A marked liquid intake on a perimeter ring may not reach what the ring encloses.** Found
+on `6x CryoFluid Mixer`, a real catalogue schematic: water marked on the outer conduit is
+carried all the way round the perimeter, ends in the router at the far corner, and the three
+liquid routers inside the ring are left at zero, so six mixers standing on a fed ring all
+report zero. The titanium and the current both arrive; only the water does not. Not yet
+traced to a line, and not yet known whether it is the conduit facing rule, the router
+sharing, or the schematic genuinely needing the mark elsewhere. Worth a bench run against
+the real game before anything is changed.
+
 ## Code that has not been re-reviewed since it landed
 
 The engine has had one systematic review against the game source, class by class. It ran
