@@ -2100,6 +2100,15 @@ if (asked) {
          had taken the trouble to paint the ground. */
       ground = { ...(found.ground || {}) };
       sealed = !!found.sealed;
+      /* Claimed before `run()` sees it, or `run()` throws all of that away.
+
+         It resets the marks whenever the string in the box is not the one it analysed last,
+         which is right for a paste and wrong here: this is the first payload of the
+         session, so it differs from nothing, and the marks that were just loaded were wiped
+         between being assigned and being used. Opening a schematic by its link therefore
+         lost exactly what "stored from the first day and never read back" was written to
+         restore, and the page asked its own author where their schematic plugs in. */
+      lastPayload = String(found.code).replace(/\s+/g, "");
       if (found.mine) opened = found;
       /* Somebody else's, unmarked, and this reader is signed in: the one case where the
          marking they are about to make is worth sending back. `read` answers it, because
