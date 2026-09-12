@@ -79,6 +79,27 @@ function flippedConfig(config, axis) {
     : { ...config, dy: 0 - config.dy };
 }
 
+/**
+ * The turned tile, with the bytes it was read from dropped once they disagree with it.
+ *
+ * A tile decoded from a `.msch` carries `raw`, the configuration bytes exactly as they were
+ * written, and `writeConfig` replays those in preference to `config`. That is what lets a
+ * unit factory's plan or a processor's program survive a round trip through a file this
+ * module cannot write. It also means that turning or mirroring a selection rewrote the
+ * offset the picture is drawn from and left the bytes the game reads untouched: the plan on
+ * screen was mirrored, the string copied out of it was wired the way it started, and the
+ * only place the difference showed was in the game, as bridges linked across the build to
+ * whatever now stood where their partner used to be.
+ *
+ * Dropped only when the offset actually moved, which is exactly when this file knows how to
+ * write the configuration back. Everything it does not touch keeps its bytes.
+ */
+function withConfig(tile, rest, config) {
+  const out = { ...tile, ...rest, config };
+  if (config !== tile.config) delete out.raw;
+  return out;
+}
+
 export function rotateBy(tiles, quarters, catalogue) {
   const turns = ((quarters % 4) + 4) % 4;
   if (!turns || !tiles.length) return tiles.map((tile) => ({ ...tile }));
@@ -97,14 +118,12 @@ export function rotateBy(tiles, quarters, catalogue) {
          the one that becomes the bottom left corner after the quarter turn. */
       const nx = box.height - 1 - (ry + size - 1);
       const ny = rx;
-      return {
-        ...tile,
+      return withConfig(tile, {
         x: box.left + nx - offset,
         y: box.bottom + ny - offset,
         rotation: catalogue.blocks[tile.block]?.rotate
           ? ((tile.rotation || 0) + 1) % 4 : (tile.rotation || 0),
-        config: turnedConfig(tile.config, 1),
-      };
+      }, turnedConfig(tile.config, 1));
     });
   }
   return out;
@@ -145,12 +164,10 @@ export function flip(tiles, axis, catalogue) {
     const ry = cy - box.bottom;
     const nx = axis === "x" ? box.width - size - rx : rx;
     const ny = axis === "y" ? box.height - size - ry : ry;
-    return {
-      ...tile,
+    return withConfig(tile, {
       x: box.left + nx - offset,
       y: box.bottom + ny - offset,
       rotation: flipped((tile.rotation || 0) % 4, catalogue.blocks[tile.block]),
-      config: flippedConfig(tile.config, axis),
-    };
+    }, flippedConfig(tile.config, axis));
   });
 }

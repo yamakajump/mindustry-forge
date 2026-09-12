@@ -1649,7 +1649,11 @@ export function mountEditor({ host, board: kept = null, tiles = [], ground = {},
         /* Clicking again on the bridge just armed cuts its link, which is the only way to
            undo a link without breaking the bridge. */
         if (under === armed && armed.config) {
-          commit({ remove: [armed], place: [{ ...armed, config: null, link: null }] });
+          /* `raw` goes with it. The writer replays those bytes in preference to `config`,
+             so cutting the link of a bridge that came in from a pasted schematic cleared
+             the arrow on screen and copied the old one straight back out. */
+          commit({ remove: [armed],
+                   place: [{ ...armed, config: null, link: null, raw: undefined }] });
         }
         say();
         paint();
