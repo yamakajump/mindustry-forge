@@ -69,7 +69,7 @@ export function ancrage(tile, drawn, stage) {
  * the page with the sprite atlas and the name table, and passing them keeps this a pure
  * function that a test can run under Node.
  */
-export function bulle(tile, mark, offert, outils, details = "", tourne = false) {
+export function bulle(tile, mark, offert, outils) {
   const { escape, t, lisible, withIcon } = outils;
 
   const cote = (which, key) => `<button type="button" data-side="${which}"
@@ -93,29 +93,27 @@ export function bulle(tile, mark, offert, outils, details = "", tourne = false) 
       ? `<p class="quoi dim">${escape(t("analyse.bulle.sortie-imposee"))}</p>`
       : "";
 
-  /* Markable or not, the bubble opens: it is the one place a block says anything now, and
-     a wall that answered nothing at all would read as a click that missed. What changes is
-     whether the two questions are in it. */
-  const marquable = offert.length > 0 || mark !== null;
-
+  /* Two questions and nothing else.
+  
+     It carried the block's identity, its figures and the two editing buttons as well, and on
+     a five-wide schematic that came to three hundred pixels floating over a plan two hundred
+     and forty wide: it covered eighty-four per cent of the picture, including the block it
+     had just been opened on. A panel that hides its own subject is not a panel.
+  
+     So what is on the block is what has to be on the block - the choice you are making about
+     that tile - and what the block IS goes under the picture, where the column has room and
+     where nothing has to move out of the way to be read. */
   return `<div class="bulle" role="dialog" aria-label="${escape(t("analyse.bulle.titre"))}">
     <div class="bulle-tete">
       <span>${escape(lisible(tile.name))}</span>
       <button type="button" class="fermer" data-fermer aria-label="${
         escape(t("analyse.bulle.fermer"))}">&times;</button>
     </div>
-    ${details}
-    ${marquable ? `<div class="row">
+    <div class="row">
       ${cote("in", "analyse.bulle.ca-entre")}${cote("out", "analyse.bulle.ca-sort")}
       ${mark ? `<button type="button" data-side="">${
         escape(t("analyse.bulle.retirer"))}</button>` : ""}
-    </div>${choix}` : ""}
-    <div class="row edit">
-      ${tourne ? `<button type="button" data-tourner>${
-        escape(t("analyse.bloc.tourner"))}</button>` : ""}
-      <button type="button" data-retirer title="${
-        escape(t("analyse.bloc.retirer-titre"))}">${
-        escape(t("analyse.bloc.retirer"))}</button>
     </div>
+    ${choix}
   </div>`;
 }
