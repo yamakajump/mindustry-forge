@@ -16,9 +16,11 @@
  * from the offer itself, with the identifier, which is the path a belt takes; a turret
  * offers every kind of ammunition it takes, so a turret always took the broken path.
  *
- * Checked on the source because that is where the bug lives: the handler is inline in
- * `index.html`, there is no module to import, and the two halves of this are eight hundred
- * lines apart. A test that reads the file is the only one that sees them together.
+ * Checked on the source because that is where the bug lives, and read across two files
+ * because that is where it now lives: the chips are written in `rapport/bulle.js` and the
+ * handler that reads them back is inline in `index.html`. They used to be eight hundred
+ * lines apart in one file; they are now in two, which is better to work in and no easier to
+ * keep in step by hand. A test that reads both is the only one that sees them together.
  */
 
 import test from "node:test";
@@ -26,11 +28,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const PAGE = readFileSync(
-  fileURLToPath(new URL("../../site/public/index.html", import.meta.url)), "utf8");
+const lire = (chemin) => readFileSync(
+  fileURLToPath(new URL(`../../site/public/${chemin}`, import.meta.url)), "utf8");
+
+const PAGE = lire("index.html");
+const BULLE = lire("forge/rapport/bulle.js");
 
 test("a mark chip carries the identifier, not the name it shows", () => {
-  const attribute = PAGE.match(/data-resource="\$\{([^}]*)\}/);
+  const attribute = BULLE.match(/data-resource="\$\{([^}]*)\}/);
   assert.ok(attribute, "the mark chips no longer carry data-resource");
 
   assert.doesNotMatch(attribute[1], /lisible|nameOf/,
@@ -40,7 +45,7 @@ test("a mark chip carries the identifier, not the name it shows", () => {
 test("the chip still shows the name a player reads", () => {
   // The other half of the same line, and the reason the mistake was easy to make: the
   // attribute and the label come from one expression and must not be the same value.
-  assert.match(PAGE, /data-resource="[^"]*"[^]{0,120}?lisible\(resource\)/,
+  assert.match(BULLE, /data-resource="[^"]*"[^]{0,160}?lisible\(resource\)/,
     "the mark chips no longer show a readable name");
 });
 

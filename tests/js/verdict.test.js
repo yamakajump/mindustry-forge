@@ -137,3 +137,55 @@ test("a schematic that makes nothing at all still says something true", () => {
   assert.ok(html.includes("analyse.verdict.rien"));
   assert.ok(!html.includes("verdict-marquer"), "nothing to plug in, nothing to ask");
 });
+
+test("where Forge and the game's own panel differ is said under the answer", () => {
+  /* The game's preview ignores overdrive projectors, so a farm under five of them is
+     understated by thousands in the game's own numbers. That is the single most interesting
+     thing this site can say, and it was the last line of the last card: a reader who never
+     scrolled that far read the difference as Forge being wrong. */
+  const html = verdict(bilan({
+    power: { made: 2970, spent: 0, net: 2970 },
+    potential: { made: 2970, spent: 0 },
+    asTheGameSaysIt: { made: 1980, spent: 0, boosted: 6, projectors: 2 },
+  }), { kind: COURANT, ecrans: 0, processeurs: 0 }, true, outils);
+
+  assert.ok(html.includes("analyse.verdict.le-jeu-dit"));
+  assert.ok(html.includes("1980"), "it did not print what the game says");
+});
+
+test("it says nothing when the two agree, which is almost every schematic", () => {
+  // A caveat printed on every page is a caveat nobody reads.
+  const html = verdict(bilan({
+    power: { made: 2970, spent: 0, net: 2970 },
+    potential: { made: 2970, spent: 0 },
+    asTheGameSaysIt: { made: 2970, spent: 0, boosted: 0, projectors: 0 },
+  }), { kind: COURANT, ecrans: 0, processeurs: 0 }, true, outils);
+
+  assert.ok(!html.includes("analyse.verdict.le-jeu-dit"));
+});
+
+test("a plant that makes nothing right now is not a plant that makes nothing", () => {
+  /* The commonest thing to do on a first attempt is mark an intake with the wrong resource.
+     A power plant whose fuel was marked wrongly measured zero, fell through to the block
+     for schematics that produce nothing, and said "Ca ne fabrique rien" under the name of a
+     schematic whose own title said it made two thousand. */
+  const html = verdict(bilan({
+    power: { made: 0, spent: 0, net: 0 },
+    potential: { made: 2970, spent: 568 },
+  }), { kind: COURANT, ecrans: 0, processeurs: 0 }, true, outils);
+
+  assert.ok(!html.includes("analyse.verdict.rien"), "it told a power plant it makes nothing");
+  assert.ok(html.includes("2402"), "it did not fall back to what the plan can do");
+  assert.ok(html.includes("analyse.plafond.au-mieux"), "the fallback is not labelled a ceiling");
+  assert.ok(html.includes("analyse.verdict.a-larret"), "it did not say why the figure is a ceiling");
+});
+
+test("a factory stopped for want of an ingredient says so too", () => {
+  const html = verdict(bilan({
+    perMinute: {},
+    potentialPerMinute: { graphite: 160 },
+  }), usine, true, outils);
+
+  assert.ok(html.includes("2.67"));
+  assert.ok(html.includes("analyse.verdict.a-larret"));
+});

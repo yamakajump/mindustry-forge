@@ -28,7 +28,7 @@
  */
 
 import { fromBase64 } from "./schematic.js";
-import { demand, fuels, requirements } from "./needs.js";
+import { demand, fuels, planetOf, requirements } from "./needs.js";
 import { candidates, feedFrom, markable, marksOf, readMarks } from "./marks.js";
 import { attributeOf, beamOf, dryTilesOf, wallSumOf, yieldOf } from "./ground.js";
 import { centre, footprint } from "./geometry.js";
@@ -1368,6 +1368,30 @@ function throttledBy(graph, solved, index) {
 }
 
 /** What was handed in and neither came out nor was turned into something else. */
+/**
+ * What the plan pulls out of the base, per minute, so the page can say it out loud.
+ *
+ * Computed rather than assumed a second time: it is what the unloaders and cores actually
+ * carried once the solve settled, so it is bounded by what the machines ate rather than by
+ * what the base could have handed over.
+ *
+ * Worth its own figure and not folded into "il lui faut". What a schematic needs on a belt
+ * is a shopping list of drills and pumps; what it takes out of a core is a different
+ * instruction to its reader, which is "your core has to hold this, at this rate", and a
+ * player who reads the first when the second was meant goes and builds drills they already
+ * have.
+ */
+function baseGiven(graph, solved) {
+  const total = {};
+  for (let index = 0; index < graph.nodes.length; index++) {
+    if (!graph.nodes[index].fromBase) continue;
+    for (const [item, rate] of Object.entries(solved.through[index] || {})) {
+      if (rate > SETTLED) addTo(total, item, rate * TICKS);
+    }
+  }
+  return total;
+}
+
 function surplusOf(graph, solved, feeds) {
   const putIn = {};
   for (const rates of Object.values(feeds)) {
@@ -1619,6 +1643,9 @@ export async function analyse(text, supply = {}, chosen = null,
     throttle: culprit ? throttledBy(graph, solved, culprit[0]) : null,
     idle,
     surplus: surplusOf(graph, solved, feeds),
+    /* What it takes out of the base, which is a different instruction to its reader than
+       what it wants on a belt: "your core has to hold this" and not "go and build drills". */
+    depuisLaBase: baseGiven(graph, solved),
     unknown,
     /* What it is built from, one entry per kind of block with its count.
      *
@@ -1645,6 +1672,11 @@ export async function analyse(text, supply = {}, chosen = null,
     // than in rates. Computed rather than asked for: nobody knows offhand that a layout
     // drinks eighteen water a second, and everybody can picture two mechanical pumps.
     needs: requirements(graph, catalogue),
+    /* Which world it is built for, so the page can narrow a shopping list the same way
+       `requirements` already does. Offered an Erekir duct for a Serpulo plan, a reader is
+       given a correct rate on a block they cannot place, which is the worst shape a wrong
+       answer takes: it reads as an instruction. */
+    planet: planetOf(graph),
     /* The processors, declared and not simulated: how many there are, how many of them
        drive anything rather than merely watch, and which blocks those drive. A layout whose
        three processors all only `sensor` and `print` changes no number, and saying so is

@@ -42,7 +42,6 @@ const ALLOWED = new Map([
   ["editing.name", "the same, on the schematic being edited"],
   ["regarde.name", "the same, on the one being looked at"],
   ["me.name", "the signed in account's name"],
-  ["resource", "the mark chip's data-resource, which the engine reads back as a key"],
 ]);
 
 /** Every `escape(...)` in the page, with its argument, balanced across one nesting level. */

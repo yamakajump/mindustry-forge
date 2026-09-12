@@ -101,11 +101,6 @@ export async function deleteSpace(slug) {
   await request(`/api/espaces/${slug}`, { method: "DELETE" });
 }
 
-/** Whether a local draft exists worth offering as a first space. Reads nothing else. */
-export function localDraftAvailable() {
-  return readDraft(Date.now()) !== null;
-}
-
 /**
  * Turn the local draft into a new space, named `name`.
  *

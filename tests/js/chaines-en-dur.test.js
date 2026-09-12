@@ -47,8 +47,19 @@ import { readFileSync } from "node:fs";
    Twenty-one once the picture's legend went through the dictionary. It was migrated
    because the long explanation of why Forge asks where a schematic plugs in moved onto it
    from the ports card, and a sentence arriving from `fr.json` next to two written by hand
-   is how a legend ends up half translated. */
-const RESTANT = 21;
+   is how a legend ends up half translated.
+
+   Seventeen once marking left this file. The two buttons, the question about what arrives,
+   the sentence about what comes out not being a choice and the one about a block with
+   nothing to offer all went to `rapport/bulle.js`, through the dictionary, because a card
+   being rewritten is the only moment anybody migrates its vocabulary.
+
+   Thirteen once "Ce que dit le jeu" went the same way. Its comparison against the game's
+   own panel was reworked, so its vocabulary went with it, and the sentence about overdrive
+   projectors needed four keys rather than one: it agrees with two counts at once, and a
+   single wording produced « 1 projecteurs couvrent 1 blocs » on the commonest case there
+   is. */
+const RESTANT = 13;
 
 const MOTS = /(?<![\w-])(le|la|les|un|une|des|du|de|et|ou|qui|que|pas|sur|dans|pour|ce|il|elle|ne|se|est|sont|au|aux|en|par|plus|rien|tout|toute|avec|sans|son|sa|ses|cette|cet|tu|te|ton|ta|quoi|quand|comme|deja|encore|meme|leur|lui|on)(?![\w-])/i;
 

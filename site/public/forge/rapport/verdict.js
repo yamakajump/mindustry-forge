@@ -110,6 +110,31 @@ function pourquoi(report, answered, what, outils) {
 }
 
 /**
+ * Where Forge and the game's own panel part company, said under the answer rather than in
+ * a footnote at the bottom of the page.
+ *
+ * The game's preview ignores overdrive projectors entirely, so a reactor farm under five of
+ * them is understated by eighteen thousand energy a second in the game's own numbers. The
+ * author of one such layout wrote the higher figure in its description while the panel in
+ * their game contradicted them.
+ *
+ * This is the single most interesting thing this site can tell a player, and it was the
+ * last line of the last card. A reader who never scrolled that far had no way of knowing
+ * that the two figures were supposed to differ, which reads as Forge being wrong.
+ */
+function ecartAvecLeJeu(report, outils) {
+  const { escape, t, rate } = outils;
+  const asGame = report.asTheGameSaysIt;
+  const ceiling = report.potential;
+  if (!asGame || !ceiling) return "";
+  if (Math.abs(ceiling.made - asGame.made) <= 0.01) return "";
+
+  return `<p class="pourquoi ecart">${escape(t("analyse.verdict.le-jeu-dit"))}
+    <strong>${rate(asGame.made)}</strong> ${escape(t("analyse.unite.energie-par-seconde"))}.
+    ${escape(t("analyse.verdict.ecart-projecteurs"))}</p>`;
+}
+
+/**
  * What a schematic that makes nothing is, said as what it IS.
  *
  * Never as what the tool failed to do. "Impossible d'analyser" on a display wall would be
@@ -154,11 +179,34 @@ function sansChiffre(what, report, outils) {
  */
 export function verdict(report, what, answered, outils) {
   const { escape, t } = outils;
-  const figure = principal(report, answered, outils);
+  let figure = principal(report, answered, outils);
+
+  /* A plan that makes things and is currently making none of them is not a plan that makes
+     nothing.
+
+     It happens the moment somebody marks an intake wrongly, which is the commonest thing to
+     do on the first try: a power plant whose fuel was marked as the wrong resource measured
+     zero, and the block fell through to "Ca ne fabrique rien" under the name of a schematic
+     whose own title said it made two thousand. Saying that to somebody who has just marked
+     their first tile is both false and rude. So the ceiling comes back, labelled as one,
+     and `pourquoi` says what is missing. */
+  const arrete = !figure && (what.kind === FABRIQUE || what.kind === COURANT);
+  if (arrete) figure = principal(report, false, outils);
 
   if (!figure) {
     return `<div class="verdict ${escape(what.kind)}">${
       sansChiffre(what, report, outils)}</div>`;
+  }
+
+  if (arrete) {
+    return `<div class="verdict ${escape(what.kind)}">
+      <p class="au-mieux">${escape(t("analyse.plafond.au-mieux"))}</p>
+      <div class="chiffre">${figure.icone}<b>${figure.chiffre}</b>
+        <span>${figure.unite}</span></div>
+      ${autres(figure.reste, outils)}
+      <p class="pourquoi bride">${escape(t("analyse.verdict.a-larret"))}</p>
+      ${ecartAvecLeJeu(report, outils)}
+    </div>`;
   }
 
   const sousLeTitre = what.kind === COURANT || what.kind === FABRIQUE
@@ -172,5 +220,6 @@ export function verdict(report, what, answered, outils) {
       <span>${figure.unite}</span></div>
     ${autres(figure.reste, outils)}
     ${pourquoi(report, answered, what, outils)}
+    ${ecartAvecLeJeu(report, outils)}
   </div>`;
 }
