@@ -142,7 +142,10 @@ it('says on the page that it will need to be powered', function () {
 
     $this->get("/s/{$usine->slug}")
         ->assertOk()
-        ->assertSee('Il lui faut')
+        // Through the key: the heading was aligned with the analyser's, which calls the
+        // same list « Ce qu'il faut lui amener », and a literal here would have to be
+        // chased every time the wording moves.
+        ->assertSee(__('schema.page.amener'))
         // The word comes from the dictionary now, with its accent and its mark beside it.
         ->assertSee(__('schema.unite.energie'))
         ->assertSee('600')

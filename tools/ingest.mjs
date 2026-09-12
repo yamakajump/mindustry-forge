@@ -43,6 +43,10 @@ useCatalogue(JSON.parse(readFileSync(join(FORGE, "blocks.json"), "utf8")));
 const KEPT = [
   "name", "width", "height", "blocks", "gameVersion",
   "perMinute", "produced", "internal", "surplus",
+  /* What it makes that has nowhere to go. Without it the schematic's own page prints a rate
+     as though it flowed, while the analyser one click away says nothing comes out at all:
+     two pages, one analysis, opposite answers. `4x Kiln` is the case. */
+  "bloque",
   "bottleneck", "idle", "unknown", "cost", "needs",
   // `potential` is the power ceiling and `potentialPerMinute` the matter one. They were
   // written together and only the first was listed here, so every collected schematic got

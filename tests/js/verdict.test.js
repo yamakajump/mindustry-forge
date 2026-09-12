@@ -219,3 +219,17 @@ test("a plan that is genuinely short of an ingredient still says so", () => {
   assert.ok(html.includes("analyse.verdict.a-larret"));
   assert.ok(!html.includes("analyse.verdict.bouche"));
 });
+
+test("a jammed plan is given the way to say where it comes out", () => {
+  /* Telling somebody nothing comes out and offering no way to say where it comes out is the
+     same defect as asking a display where it plugs in: an instruction that cannot be
+     followed. There was no route to marking an outlet at all once an intake was marked. */
+  const html = verdict(bilan({
+    perMinute: {},
+    potentialPerMinute: { metaglass: 480 },
+    bloque: { metaglass: 8 },
+  }), usine, true, outils);
+
+  assert.ok(html.includes("verdict-sortie"));
+  assert.ok(html.includes("analyse.verdict.dis-par-ou-sort"));
+});

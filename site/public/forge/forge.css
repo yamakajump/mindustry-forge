@@ -318,10 +318,19 @@ main { max-width: 1120px; margin: 0 auto; padding: 24px; }
  * it lands, this decides what it looks like.
  */
 .stage .bulle {
-  position: absolute; z-index: 5; min-width: 190px; max-width: 260px;
+  position: absolute; z-index: 5; min-width: 210px; max-width: 300px;
   background: var(--panel); border: 2px solid var(--accent); border-radius: var(--radius);
   padding: 10px 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, .55);
 }
+/* The block's own figures, which arrived with the panel this bubble replaced and were
+   written for a column twice as wide. `space-between` on 210 pixels put "Relié à" on two
+   lines above a value on two more; the label goes above its figure instead. */
+.stage .bulle .line {
+  display: block; padding: 4px 0; font-size: 12.5px;
+}
+.stage .bulle .line .num { display: block; }
+.stage .bulle .sub { font-size: 12px; }
+.stage .bulle .hint-line { font-size: 11.5px; }
 .stage .bulle .bulle-tete {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   font-size: 13px; color: var(--dim); margin-bottom: 8px;

@@ -41,14 +41,24 @@ export function ancrage(tile, drawn, stage) {
   const hauteur = stage.bulle?.height ?? 120;
   const milieu = left + (size * drawn.scale) / 2 - largeur / 2;
 
+  /* Above the block when there is room, below it when there is not. A panel that always
+     opened downwards covered the rest of the schematic on a mark near the top, which is
+     where an intake usually is. */
+  const dessus = top - hauteur - 8;
+  const dessous = top + size * drawn.scale + 8;
+
+  /* And then inside the stage whichever way it went, which the horizontal clamp did on its
+     own from the start and this did not. It did not show while the panel held two buttons;
+     it showed the moment it also held what the block is and what it is doing, because a
+     bubble on the bottom row of a short picture is then taller than the room under it and
+     hung out of the frame entirely. A tall bubble on a short stage lands at the top and
+     covers the picture, which is what a dialog is allowed to do. */
+  const haut = stage.height ?? Infinity;
+
   return {
     left: Math.max(4, Math.min(milieu, Math.max(4, stage.width - largeur - 4))),
-    /* Above the block when there is room, below it when there is not. A panel that always
-       opened downwards covered the rest of the schematic on a mark near the top, which is
-       where an intake usually is. */
-    top: top - hauteur - 8 >= 0
-      ? top - hauteur - 8
-      : top + size * drawn.scale + 8,
+    top: Math.max(4, Math.min(dessus >= 0 ? dessus : dessous,
+                             Math.max(4, haut - hauteur - 4))),
   };
 }
 
@@ -59,7 +69,7 @@ export function ancrage(tile, drawn, stage) {
  * the page with the sprite atlas and the name table, and passing them keeps this a pure
  * function that a test can run under Node.
  */
-export function bulle(tile, mark, offert, outils) {
+export function bulle(tile, mark, offert, outils, details = "", tourne = false) {
   const { escape, t, lisible, withIcon } = outils;
 
   const cote = (which, key) => `<button type="button" data-side="${which}"
@@ -83,17 +93,29 @@ export function bulle(tile, mark, offert, outils) {
       ? `<p class="quoi dim">${escape(t("analyse.bulle.sortie-imposee"))}</p>`
       : "";
 
+  /* Markable or not, the bubble opens: it is the one place a block says anything now, and
+     a wall that answered nothing at all would read as a click that missed. What changes is
+     whether the two questions are in it. */
+  const marquable = offert.length > 0 || mark !== null;
+
   return `<div class="bulle" role="dialog" aria-label="${escape(t("analyse.bulle.titre"))}">
     <div class="bulle-tete">
       <span>${escape(lisible(tile.name))}</span>
       <button type="button" class="fermer" data-fermer aria-label="${
         escape(t("analyse.bulle.fermer"))}">&times;</button>
     </div>
-    <div class="row">
+    ${details}
+    ${marquable ? `<div class="row">
       ${cote("in", "analyse.bulle.ca-entre")}${cote("out", "analyse.bulle.ca-sort")}
       ${mark ? `<button type="button" data-side="">${
         escape(t("analyse.bulle.retirer"))}</button>` : ""}
+    </div>${choix}` : ""}
+    <div class="row edit">
+      ${tourne ? `<button type="button" data-tourner>${
+        escape(t("analyse.bloc.tourner"))}</button>` : ""}
+      <button type="button" data-retirer title="${
+        escape(t("analyse.bloc.retirer-titre"))}">${
+        escape(t("analyse.bloc.retirer"))}</button>
     </div>
-    ${choix}
   </div>`;
 }
