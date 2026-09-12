@@ -70,7 +70,12 @@ export function stampOf(text) {
  * sprite names, positions and sizes over different pixels, which this packer cannot produce
  * from a different set of sprites. If it ever can, the stamp belongs in the build instead.
  */
-export async function loadSprites(base = "./forge/") {
+/* Absolute, and `apercu.js` has carried the note over its own copy of this constant since
+   before the analyser needed it: "the analyser gets away with a relative base because it is
+   served at the root; nothing else here is." It stopped being served only at the root on
+   12/09/2026, when a schematic's address became this same page, and a relative default then
+   asked the server for `/s/<slug>/forge/atlas.json`. */
+export async function loadSprites(base = "/forge/") {
   if (atlas && sheet) return { atlas, sheet };
   const [text, blends] = await Promise.all([
     fetch(base + "atlas.json").then((r) => {

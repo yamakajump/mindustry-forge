@@ -75,27 +75,11 @@ return [
      * done correctly on it.
      */
     'page' => [
-        'bac-a-sable' => 'Alimenté par une source de bac à sable',
         'bac-a-sable-court' => 'source de bac à sable',
         /* The same headings the analyser uses for the same facts. They read « Sortie »
            and « Il lui faut » here and « Ce qu'il sort » and « Ce qu'il faut lui amener »
            one click away, which reads as two different facts about one schematic and was
            reported as exactly that. */
-        'sortie' => "Ce qu'il sort",
-        'amener' => "Ce qu'il faut lui amener",
-        'coince' => "Il tourne, mais rien ne ressort du schéma : ça s'accumule sur place et
-            les machines finissent par s'arrêter. Il lui faut une bande ou un conduit vers
-            l'extérieur.",
-        'cout' => 'Ce qu\'il coûte',
-        'cout-aide' => "Ce que le jeu retire de ton noyau quand tu le poses, à l'unité
-            près : c'est `Block.requirements` additionné bloc par bloc, pas une estimation.",
-        /*
-         * Le courant affiche vient de `analysis['potential']`, donc du plafond, et le
-         * dire est la moitie de la correction : l'autre moitie est de ne plus le ranger
-         * parmi les mesures. Une ferme de reacteurs sans carburant declare a un plafond
-         * de 1 950 000 et une mesure de zero, et les deux sont vrais.
-         */
-        'energie-plafond' => 'Énergie nette, au mieux',
         'au-mieux' => 'au mieux',
         /*
          * Le contraire du precedent, et il se dit a voix haute. La vitrine classe sur
@@ -115,12 +99,6 @@ return [
          * faux. C'est le défaut que ce dépôt collectionne, et le voici évité en un mot.
          */
         'declaree' => 'déclaré par un joueur',
-        'bac-a-sable-aide' => "Une source de bac à sable donne autant qu'on lui demande, donc
-            ce que ce schéma sort n'est pas une mesure de ce que ses blocs font :
-            c'est ce qu'une source permet. Il reste lisible et analysable, il n'est
-            simplement pas classé parmi les producteurs.",
-        'bac-a-sable-courant' => "Son énergie vient d'une source de bac à sable, pas de ses
-            générateurs : il n'y a rien à en conclure sur ce qu'il rendrait à ta base.",
     ],
 
     /*

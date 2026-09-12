@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -189,7 +190,29 @@ class SchematicController extends Controller
     }
 
     /** The public page, which is also what a Discord link unfurls into. */
-    public function show(Schematic $schematic): View
+    /**
+     * A schematic, which is the analyser with that schematic already in it.
+     *
+     * It used to be a page of its own, and that was the complaint: one schematic described
+     * by two screens, calling the same facts different names, a click apart. The analyser is
+     * the one that survived, because it is the one that does something - the verdict, the
+     * marking, the simulation - and everything the other page had that it lacked has moved
+     * into it.
+     *
+     * Served by injection into `public/index.html` rather than by a Blade view of its own,
+     * which is the pattern `HomeController` already uses for the showcase and for the same
+     * reason: the markers are inert comments when the file is served as it lies, so the page
+     * still works without a server. It fails soft.
+     *
+     * Two holes. `<!--TETE-->` takes the head, which is the whole of what a crawler and a
+     * Discord unfurler ever read: they never run a line of the body, so losing the figures
+     * out of the rendered HTML costs the unfurl nothing. `<!--FICHE-->` takes the cards that
+     * belong to the schematic as an object somebody keeps - who may see it, the note, the
+     * code to take away, the markings other players offered - and none that describe what
+     * the plan does, because the analyser answers that and answering twice is what made one
+     * schematic read as two screens.
+     */
+    public function show(Schematic $schematic): Response
     {
         abort_unless($schematic->visibleTo(auth()->user()), 404);
         $schematic->increment('views');
@@ -200,13 +223,9 @@ class SchematicController extends Controller
            somebody who pressed nothing. */
         $user = auth()->user();
 
-        return view('schematic', [
+        $data = [
             'schematic' => $schematic,
-            /* What the author said goes in and comes out. Stored with the analysis since
-               the first day and served by the api since then, read back by no page: the
-               plan on this one looked the same whether somebody had described it or
-               nobody had ever touched it. */
-            'marked' => (array) ($schematic->analysis['marked'] ?? []),
+            'summary' => $this->summary($schematic),
             /* The markings other players have offered and nobody has weighed.
                `Contribution::weigh` was written, routed and reachable only with curl: a
                proposal could be made and never seen, so the queue only ever grew. Their own
@@ -239,7 +258,41 @@ class SchematicController extends Controller
                 ->where('folders.user_id', $user->id)
                 ->where('folder_items.schematic_id', $schematic->id)
                 ->pluck('folders.slug')->all(),
-        ]);
+        ];
+
+        $page = File::get(public_path('index.html'));
+        $page = preg_replace(
+            '/<!--TETE-->.*?<!--\/TETE-->/s',
+            view('partials.tete-schema', $data)->render(),
+            $page,
+            1,
+        );
+        $page = str_replace('<!--FICHE-->', view('partials.fiche', $data)->render(), $page);
+
+        return response($page)->header('Content-Type', 'text/html; charset=utf-8');
+    }
+
+    /**
+     * The one line that travels furthest.
+     *
+     * It goes into `description`, into `og:description` and into the social card's alt text:
+     * it is what a reader sees without having opened anything, and on Discord it is most of
+     * why a link gets clicked at all. `og:title` is the name, never this.
+     */
+    private function summary(Schematic $schematic): string
+    {
+        $made = collect($schematic->produces ?? [])
+            ->map(fn ($rate, $item) => SchematicItem::debitAffiche($item, $rate)." {$item}/s")
+            ->values();
+        $power = $schematic->power_made - $schematic->power_used;
+        $tap = $schematic->fedBySandbox();
+
+        return trim(collect([
+            $tap ? __('schema.page.bac-a-sable-court') : null,
+            ! $tap && $power > 0.5 ? number_format($power, 0, ',', ' ').' énergie/s' : null,
+            $tap ? null : ($made->take(2)->implode(', ') ?: null),
+            "{$schematic->blocks} blocs",
+        ])->filter()->implode(' - '));
     }
 
     /** The raw string, for the analyser's "analyse chez moi" link. */

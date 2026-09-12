@@ -3,6 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The head of a page that serves two things.
+
+     Served as it lies, at / and /editer, this is the analyser's own head. Served by
+     `SchematicController::show` for /s/<slug>, everything between the markers is replaced
+     with that schematic's title, description, canonical and unfurl card. A crawler and a
+     Discord unfurler read the head and never run a line of the page, so this is the whole
+     of what either of them needs, and it is why one screen can be both the tool and the
+     page a link points at.
+
+     Injected rather than templated, which is the pattern `HomeController` already uses for
+     the showcase and for the same reason: served from a static file server the markers stay
+     inert comments and the page still works. It fails soft; a conversion to Blade would take
+     the most string-heavy page on the site out of the tree the key-coverage scan walks. -->
+<!--TETE-->
 <title>Forge - analyser un schéma Mindustry</title>
 <!-- Three icon formats, because three families of client ask for one differently: the
      .ico for whatever hits /favicon.ico without reading the head, the SVG for any current
@@ -29,6 +43,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Mindustry Forge">
 <meta name="twitter:card" content="summary_large_image">
+<!--/TETE-->
 <script>
 /* Runs before any stylesheet, so <main> never gets a chance to paint on its way to
    /editer. That path serves this same document, and enterEditor() (further down this
@@ -47,8 +62,14 @@ if (location.pathname === "/editer") {
   document.title = "Forge - éditer un schéma Mindustry";
 }
 </script>
-<link rel="stylesheet" href="./forge/forge.css">
-<script src="./forge/nav.js" type="module" defer></script>
+<!-- Absolute, and it has to stay that way. This document is served at three depths: `/`,
+     `/editer`, and `/s/<slug>` since the two screens became one. A relative `./forge/` looked
+     right for two years and resolved to `/s/forge/bilan.js` the first time a schematic was
+     opened at its own address: nginx answered the 404 page, the browser was handed HTML where
+     it expected a module, and the whole analyser died on "Unexpected token '<'" with a blank
+     report and a picture that never drew. -->
+<link rel="stylesheet" href="/forge/forge.css">
+<script src="/forge/nav.js" type="module" defer></script>
 </head>
 <body>
 <header>
@@ -149,6 +170,17 @@ Forge calcule déjà ce qu'il faut pour tourner à fond. Si tu veux savoir ce qu
   </div>
 
   <div id="out" aria-live="polite"></div>
+
+  <!-- Where a stored schematic's own cards land: what it costs to keep, who may see it, the
+       note only its reader sees, the code to take away, and the markings other players have
+       offered. Outside `#out` on purpose, because `render` rewrites that on every analysis
+       and would take them with it.
+
+       Rendered by Laravel and injected here, rather than rebuilt in JavaScript. Every one of
+       them already exists as a Blade partial with its own tests and its own wiring in
+       `keep.js`, `manage.js` and `notes.js`; rebuilding them would be a second copy of five
+       things that work. -->
+  <div id="fiche"><!--FICHE--></div>
 
   <!-- Everything below disappears as soon as a report is shown: this is the welcome of an
        empty page, not a footer. `montrerAccueil` takes care of that. -->
@@ -253,25 +285,25 @@ Forge calcule déjà ce qu'il faut pour tourner à fond. Si tu veux savoir ce qu
 </div>
 
 <script type="module">
-import { analyse, catalogueOf, loadCatalogue } from "./forge/bilan.js";
-import { fromBase64, toBase64 } from "./forge/schematic.js";
-import { loadSprites, draw, itemIcon, bounds } from "./forge/render.js";
-import { Live } from "./forge/live.js";
-import { overCarried, carriers } from "./forge/needs.js";
-import { gridsOf } from "./forge/engine/power.js";
-import { mountEditor } from "./forge/editor/mount.js";
-import { workbenchOf } from "./forge/editor/state.js";
-import { ready as dictionary, t } from "./forge/i18n.js";
-import { watch } from "./forge/apercu.js";
-import { loadNames, nameOf } from "./forge/noms.js";
+import { analyse, catalogueOf, loadCatalogue } from "/forge/bilan.js";
+import { fromBase64, toBase64 } from "/forge/schematic.js";
+import { loadSprites, draw, itemIcon, bounds } from "/forge/render.js";
+import { Live } from "/forge/live.js";
+import { overCarried, carriers } from "/forge/needs.js";
+import { gridsOf } from "/forge/engine/power.js";
+import { mountEditor } from "/forge/editor/mount.js";
+import { workbenchOf } from "/forge/editor/state.js";
+import { ready as dictionary, t } from "/forge/i18n.js";
+import { watch } from "/forge/apercu.js";
+import { loadNames, nameOf } from "/forge/noms.js";
 /* The report's own modules. Imported here and never from `bilan.js`, which is the line that
    keeps them outside `EngineVersion::SOURCES`: how a page reads is not what a schematic
    produces, and hashing them would re-measure fifteen thousand analyses over a reworded
    sentence. `EngineVersionTest` walks the imports out of `bilan.js` and would catch it. */
-import { typeOf, seBranche } from "./forge/rapport/type.js";
-import { verdict } from "./forge/rapport/verdict.js";
-import { ancrage, bulle } from "./forge/rapport/bulle.js";
-import { repetable, repetitions } from "./forge/rapport/repeter.js";
+import { typeOf, seBranche } from "/forge/rapport/type.js";
+import { verdict } from "/forge/rapport/verdict.js";
+import { ancrage, bulle } from "/forge/rapport/bulle.js";
+import { repetable, repetitions } from "/forge/rapport/repeter.js";
 
 const $ = (id) => document.getElementById(id);
 const text = $("text"), out = $("out"), drop = $("drop");
@@ -372,20 +404,14 @@ function render(report) {
      du schema : du jargon la ou un numero suffit. */
   const versionLisible = (dite) => String(dite).replace(/^(release\s+)?build\s+/i, "");
 
-  /* Where this came from, said once, at the top, whoever it belongs to.
-     
-     Opening somebody's schematic put its analysis on screen and never mentioned that it
-     was somebody's schematic: no name, no author, no way back to the page it came from.
-     The only link back was inside the save card and only when the reader owned it, so for
-     everybody else the two pages were two unrelated screens that happened to show the same
-     plan, which is exactly what "il y a plusieurs affichages donc ultra chelou" is about.
-     
-     A line rather than a card. It is provenance, not a finding. */
+  /* No link back to "its page" any more: this is its page.
+
+     That line existed for as long as a schematic had two screens, and it was the only thing
+     admitting the other one was there. There is one now, so a link pointing at the address
+     already in the bar is the last trace of the split to go. */
   right.push(`<h2 class="title">${escape(report.name)}</h2>
     <p class="sub">${report.width}x${report.height} &middot; ${report.blocks} blocs
-      &middot; Mindustry ${escape(versionLisible(report.gameVersion))}${venuDe
-        ? ` &middot; <a href="/s/${escape(venuDe.slug)}">${
-            escape(t("analyse.venu-de.sa-page"))}</a>` : ""}</p>`);
+      &middot; Mindustry ${escape(versionLisible(report.gameVersion))}</p>`);
 
   /*
    * The answer, the size of an answer, and first.
@@ -2096,18 +2122,18 @@ loadNames();
 if (location.pathname === "/editer") enterEditor([]);
 
 /* Arriving from a schematic's page, to look at it or to change it. */
-/**
- * The published schematic this analysis was opened from, if it was opened from one.
- *
- * `opened` only ever holds a reader's own, and `regarde` only somebody else's that they
- * could still contribute a marking to. Neither covers the ordinary case of reading a
- * schematic that belongs to somebody else, which is most of them, so the page said nothing
- * at all about where its plan had come from.
- */
-let venuDe = null;
-
 let regarde = null;
-const asked = new URLSearchParams(location.search).get("s");
+/* From the path first, and from the query second.
+
+   `/s/<slug>` is the address a schematic has, and this page is what it serves: the head is
+   that schematic's, rendered by `SchematicController::show`, and the cards that belong to it
+   are already in the document. What is left is to put its string in the box and analyse it.
+
+   `?s=` was the address before the two screens became one, and it is still answered here
+   because a redirect cannot reach a page that is already open: somebody following an old
+   link from a Discord thread lands on `/` with the parameter, and it has to work. */
+const asked = location.pathname.match(/^\/s\/([a-z0-9]+)\/?$/i)?.[1]
+  ?? new URLSearchParams(location.search).get("s");
 if (asked) {
   fetch(`/api/schematiques/${encodeURIComponent(asked)}`, {
     headers: { Accept: "application/json" },
@@ -2132,7 +2158,6 @@ if (asked) {
          lost exactly what "stored from the first day and never read back" was written to
          restore, and the page asked its own author where their schematic plugs in. */
       lastPayload = String(found.code).replace(/\s+/g, "");
-      venuDe = { slug: found.slug, name: found.name };
       if (found.mine) opened = found;
       /* Somebody else's, unmarked, and this reader is signed in: the one case where the
          marking they are about to make is worth sending back. `read` answers it, because

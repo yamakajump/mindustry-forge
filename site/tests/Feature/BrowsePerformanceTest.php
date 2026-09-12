@@ -135,34 +135,12 @@ it('never ranks a yield without knowing what it is a yield of', function () {
     $page->assertSee('Classés par date, faute de mieux');
 });
 
-it('says on the page that it will need to be powered', function () {
-    // The page used to mention power only when there was a surplus, so a silicon line
-    // asking for six hundred energy a second said nothing at all about needing any.
-    $usine = ligne('Four a silicium', ['silicon' => 90.0], powerUsed: 600);
-
-    $this->get("/s/{$usine->slug}")
-        ->assertOk()
-        // Through the key: the heading was aligned with the analyser's, which calls the
-        // same list « Ce qu'il faut lui amener », and a literal here would have to be
-        // chased every time the wording moves.
-        ->assertSee(__('schema.page.amener'))
-        // The word comes from the dictionary now, with its accent and its mark beside it.
-        ->assertSee(__('schema.unite.energie'))
-        ->assertSee('600')
-        ->assertSee('il faudra le brancher sur ton réseau', escape: false)
-        // And it must be clear this is not held against it.
-        ->assertSee('Ce n\'est pas compté contre lui', escape: false);
-});
-
-it('says instead what a power plant leaves to the rest of the base', function () {
-    $centrale = ligne('Reacteur compact', [], powerUsed: 40, powerMade: 900, blocks: 30);
-
-    $this->get("/s/{$centrale->slug}")
-        ->assertOk()
-        ->assertSee('il s\'alimente', escape: false)
-        ->assertSee('860');
-});
-
+/* Two tests stood here about the power card on a schematic's own page. That page serves the
+   analyser since 12/09/2026, and the sentence they guarded - "il faudra le brancher sur ton
+   reseau, sinon il reste a l'arret" - stopped being true the same week: a plan carrying no
+   generator is now read as plugged into the base, so it does not stay stopped and the
+   throughput on the page is what it does once connected. The figure itself is still indexed
+   and still ranked, which is what the rest of this file holds. */
 it('keeps the index of what it makes up to date on every write', function () {
     $schematic = ligne('Chaine', ['graphite' => 40.0], powerMade: 300, blocks: 20);
 

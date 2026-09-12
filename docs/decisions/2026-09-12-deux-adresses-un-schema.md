@@ -1,5 +1,13 @@
 # Two addresses for one schematic
 
+> **Overruled the same day.** This decided to keep both screens and align their wording, and
+> the person who asked for it answered "you will not keep that screen, the other one is much
+> better." The decision that stands is
+> [`2026-09-12-un-seul-ecran.md`](2026-09-12-un-seul-ecran.md), and it says what was wrong
+> here: the SEO objection below conflates a page rendered by the server with the figures
+> being in the HTML, and a crawler reads the head. Kept rather than deleted, because the
+> reasoning about redirects and query strings is still the reasoning that applies.
+
 The request behind this decision: "there are several displays so it is really weird,
 refactor that", and then, when asked whether the workshop should get an address of its own:
 "make the decision yourself, I think you are just as well placed to know what is good."

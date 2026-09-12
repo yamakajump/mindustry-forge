@@ -6,6 +6,7 @@ use App\Models\Schematic;
 use App\Models\SchematicItem;
 use App\Support\Thing;
 use App\Support\Vitrine;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -46,8 +47,20 @@ class HomeController extends Controller
 
     private const MARQUEUR = '<!--VITRINE-->';
 
-    public function show()
+    public function show(Request $request)
     {
+        /* `/?s=<slug>` was how a stored schematic was opened while it had two screens, and
+           it is in Discord threads and in bookmarks. It goes to the one address a schematic
+           has now, permanently, rather than being answered here: two live addresses for one
+           page is the duplication that was complained about, made real in the index.
+
+           The page still reads the parameter itself, and has to: a redirect cannot reach a
+           tab somebody already has open. */
+        $slug = $request->query('s');
+        if (is_string($slug) && $slug !== '' && preg_match('/^[a-z0-9]+$/i', $slug)) {
+            return redirect("/s/{$slug}", 301);
+        }
+
         $page = File::get(public_path('index.html'));
 
         return response(str_replace(self::MARQUEUR, $this->island(), $page))
