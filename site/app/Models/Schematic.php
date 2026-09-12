@@ -63,7 +63,7 @@ class Schematic extends Model
     ];
 
     protected $fillable = [
-        'user_id', 'slug', 'name', 'description', 'code', 'visibility',
+        'user_id', 'slug', 'name', 'description', 'code', 'code_hash', 'visibility',
         'analysis', 'ground', 'width', 'height', 'blocks', 'power_made', 'power_used',
         'produces', 'needs',
         'source', 'source_id', 'author', 'fetched_at', 'source_meta',
@@ -94,6 +94,42 @@ class Schematic extends Model
         'analysed_at' => 'datetime',
         'hidden_at' => 'datetime',
     ];
+
+    /**
+     * The fingerprint of a schematic string, used to refuse publishing the same one twice.
+     *
+     * Whitespace goes first, because that is the one difference a copy-paste introduces on
+     * its own: a string carried through a Discord message comes back wrapped, and a player
+     * who wrapped it has not made a different schematic. It is the same normalisation
+     * `store` already applies before writing `code`, spelled once here so the fingerprint
+     * and the stored string can never be computed from different text.
+     *
+     * Nothing cleverer than the bytes. A structural fingerprint, blocks and positions
+     * rather than the string, would also catch a schematic re-exported by the game under
+     * another name, and it would need the analysis to compute, which the server does not
+     * run and is not about to start running. The exact string is the case that actually
+     * happens: people paste what they were given.
+     */
+    public static function hashOf(string $code): string
+    {
+        return hash('sha256', preg_replace('/\s+/', '', $code));
+    }
+
+    /**
+     * A schematic already on public display carrying this exact string, if there is one.
+     *
+     * Asked of `listed()` and not of the whole table on purpose. What is being protected is
+     * the public catalogue, so a private schematic sitting on the same string is not an
+     * obstacle to anybody: it is somebody's own library, and two people are allowed to keep
+     * the same design.
+     */
+    public static function publishedTwin(string $code, ?int $except = null): ?self
+    {
+        return self::query()->listed()
+            ->where('code_hash', self::hashOf($code))
+            ->when($except, fn ($query) => $query->whereKeyNot($except))
+            ->first();
+    }
 
     /** In the public list. Unlisted schematics are reachable and not listed. */
     public function scopeListed($query)

@@ -52,6 +52,17 @@ class SchematicController extends Controller
             'thumbnail' => ['nullable', 'string', 'max:4194304'],
         ]);
 
+        /* The default stays private here, and the page always sends a value.
+           A save that forgot to say who sees it is a save whose author did not decide,
+           and the only direction that can be wrong without anybody noticing is the
+           public one. */
+        $visibility = $data['visibility'] ?? Schematic::PRIVATE;
+
+        if ($visibility === Schematic::PUBLIC
+            && $twin = Schematic::publishedTwin($data['code'])) {
+            return $this->alreadyThere($twin);
+        }
+
         $schematic = new Schematic(Schematic::fromAnalysis($data['analysis']));
         $schematic->fill([
             'user_id' => $request->user()->id,
@@ -59,7 +70,8 @@ class SchematicController extends Controller
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'code' => preg_replace('/\s+/', '', $data['code']),
-            'visibility' => $data['visibility'] ?? Schematic::PRIVATE,
+            'code_hash' => Schematic::hashOf($data['code']),
+            'visibility' => $visibility,
             'analysis' => $data['analysis'],
             'ground' => $data['ground'] ?? null,
         ])->save();
@@ -124,12 +136,27 @@ class SchematicController extends Controller
             'thumbnail' => ['nullable', 'string', 'max:4194304'],
         ]);
 
+        /* The same refusal as on the way in, and it has to be here too.
+           Without it the guard is a screen door: keep it private, which is never refused,
+           then flip it to public from its own page, which is two clicks and lands the
+           duplicate in the catalogue anyway. Both the string and the visibility can move
+           in one call, so what is weighed is where the row would end up, not where it
+           came from. */
+        $becoming = $data['visibility'] ?? $schematic->visibility;
+        $carrying = $data['code'] ?? $schematic->code;
+
+        if ($becoming === Schematic::PUBLIC
+            && $twin = Schematic::publishedTwin($carrying, $schematic->id)) {
+            return $this->alreadyThere($twin);
+        }
+
         if (isset($data['analysis'])) {
             $schematic->fill(Schematic::fromAnalysis($data['analysis']));
             $schematic->analysis = $data['analysis'];
         }
         if (isset($data['code'])) {
             $schematic->code = preg_replace('/\s+/', '', $data['code']);
+            $schematic->code_hash = Schematic::hashOf($data['code']);
         }
         if (array_key_exists('ground', $data)) {
             $schematic->ground = $data['ground'];
@@ -230,6 +257,33 @@ class SchematicController extends Controller
      * second implementation of the renderer, in another language, and this repository has
      * spent two days learning what a second implementation of anything costs.
      */
+    /**
+     * Refusing to publish a schematic the catalogue already shows, and saying where it is.
+     *
+     * 409 and not 422: nothing about the request is malformed, and the page has something
+     * useful to do with the answer. It carries the twin's address so the refusal turns into
+     * a link, which is the whole difference between losing a contributor and gaining a
+     * reader: somebody who pasted a schematic they found is interested in that schematic,
+     * and the page that already analyses it is what they were looking for.
+     *
+     * `contribuable` is the same three conditions `read` answers, asked here for the same
+     * reason. Somebody who marked the intakes of a schematic already in the catalogue holds
+     * exactly what it is missing, and `/api/contributions` has existed to receive it since
+     * August. Told plainly, the refusal routes that work somewhere instead of dropping it.
+     */
+    private function alreadyThere(Schematic $twin): JsonResponse
+    {
+        return response()->json([
+            'twin' => [
+                'slug' => $twin->slug,
+                'url' => url("/s/{$twin->slug}"),
+                'name' => $twin->displayName(),
+                'contribuable' => ! $twin->managedBy(request()->user())
+                    && ! $twin->items()->where('kind', SchematicItem::MESURE)->exists(),
+            ],
+        ], 409);
+    }
+
     private function keepThumbnail(Schematic $schematic, ?string $data): void
     {
         if (! $data || ! str_starts_with($data, 'data:image/png;base64,')) {
