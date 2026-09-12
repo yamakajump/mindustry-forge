@@ -369,6 +369,67 @@ function render(report) {
     <p class="sub">${report.width}x${report.height} &middot; ${report.blocks} blocs
       &middot; Mindustry ${escape(versionLisible(report.gameVersion))}</p>`);
 
+  /*
+   * Sharing, immediately under the name, rather than twelve cards down.
+   *
+   * It used to sit last in this column, below the bottleneck, below what the game says and
+   * below the notes: on a schematic of any size it was a screen and a half past the fold,
+   * and the only people who ever found it were the ones already looking for it. The site
+   * lives or dies on the catalogue growing, and the gesture that grows it was the one thing
+   * on the page nobody could see.
+   *
+   * The visibility dropdown is gone, and the two buttons say what they do instead. A
+   * `<select>` left sitting on "tout le monde" produces the same default and publishes
+   * somebody's Discord name under a schematic they thought they were filing: the default
+   * belongs in which button is the primary one, where it cannot be missed. "Par lien" is
+   * not here at all. It is on the schematic's own page, where `partials/manage.blade.php`
+   * has carried all three for months, and a third choice in a bar is a third thing to read
+   * before a gesture that has to be instant.
+   */
+  const editing = opened.slug ? opened : null;
+  const marques = Object.keys(marked).length;
+
+  /* The name is on the card rather than left implied. Pasting a corrected string over an
+     open schematic is the point of editing one - a paste that lost five blocks is exactly
+     what a player wants to fix - so the string is allowed to change under it, and the card
+     says out loud which schematic is about to be overwritten. */
+  right.push(`<div class="card" id="keep-card">
+    <h2>${escape(t(editing ? "analyse.partage.titre-modifie" : "analyse.partage.titre"))}</h2>
+    ${editing ? `<p class="hint-line" style="margin:0 0 10px">${
+      escape(t("analyse.partage.tu-modifies"))} <strong>${escape(editing.name)}</strong>.
+      ${escape(t("analyse.partage.ecrase"))}</p>` : ""}
+    <input type="text" id="keep-name" class="keep-field"
+      value="${escape(typed.name ?? (editing ? editing.name : report.name))}"
+      aria-label="${escape(t("analyse.partage.nom"))}">
+    <textarea id="keep-desc" class="keep-field" rows="2"
+      placeholder="${escape(t("analyse.partage.mot"))}"
+      aria-label="${escape(t("analyse.partage.mot"))}">${
+      escape(typed.description ?? (editing?.description || ""))}</textarea>
+    <div class="row" id="keep-row">${editing
+      ? `<button class="primary" id="keep" type="button">${
+           escape(t("analyse.partage.mettre-a-jour"))}</button>
+         <button type="button" id="keep-new">${
+           escape(t("analyse.partage.copie-neuve"))}</button>
+         <a class="button" href="/s/${escape(editing.slug)}">${
+           escape(t("analyse.partage.voir"))}</a>`
+      : `<button class="primary" id="keep-public" type="button">${
+           escape(t("analyse.partage.publier"))}</button>
+         <button type="button" id="keep-private">${
+           escape(t("analyse.partage.garder"))}</button>`}</div>
+    <p class="hint-line" id="keep-note">${marques
+      /* The count stays outside the sentence. `t` renders a missing key unsubstituted, so
+         a figure passed through a placeholder disappears entirely, and a figure that
+         disappears is worse than a word that does.
+
+         Two keys and not one, because the sentence that follows the count agrees with it.
+         Written as one it read « 1 marques posées », which is what the page said the first
+         time anybody marked a single intake: a sentence handed a number has to be written
+         for both, and the singular is the case that actually happens first. */
+      ? `${marques} ${escape(t(marques > 1
+          ? "analyse.partage.marques-posees" : "analyse.partage.marque-posee"))}`
+      : escape(t("analyse.partage.sans-marque"))}</p>
+  </div>`);
+
   /* Power alongside the items, because for a whole class of schematics it is the only
      answer. One of them was reported as producing coal and spore pods, which are
      intermediates it eats itself, while the electricity it exists to make went unmentioned
@@ -764,41 +825,6 @@ function render(report) {
 
      The "Éditer ce schéma" button, at the top of the left column, leads there. */
 
-  const editing = opened.slug ? opened : null;
-  const chosen = editing ? editing.visibility : "private";
-
-  /* The name is on the card rather than left implied. Pasting a corrected string over an
-     open schematic is the point of editing one - a paste that lost five blocks is exactly
-     what a player wants to fix - so the string is allowed to change under it, and the card
-     says out loud which schematic is about to be overwritten. */
-  right.push(`<div class="card"><h2>${editing ? "Mettre à jour" : "Garder"}</h2>${
-    editing ? `<p class="hint-line" style="margin:0 0 10px">Tu modifies
-      <strong>${escape(editing.name)}</strong>, gardé le
-      ${escape(editing.kept || "")}. Le bouton écrase ce qui est enregistré.</p>` : ""}
-    <div class="row" id="keep-row">
-      <input type="text" id="keep-name"
-        value="${escape(editing ? editing.name : report.name)}"
-        aria-label="Nom du schéma">
-      <button class="primary" id="keep" type="button">${
-        editing ? "Enregistrer" : "Garder"}</button>
-      <label style="display:inline-flex;align-items:center;gap:7px;color:var(--dim)">
-        qui le voit
-        <select id="keep-visibility" aria-label="Qui peut le voir">
-          <option value="private" ${chosen === "private" ? "selected" : ""}>moi seul</option>
-          <option value="unlisted" ${chosen === "unlisted" ? "selected" : ""}>par lien</option>
-          <option value="public" ${chosen === "public" ? "selected" : ""}>tout le monde</option>
-        </select>
-      </label>
-    </div>
-    <textarea id="keep-desc" rows="2" placeholder="Une ligne pour dire ce qu'il fait"
-      aria-label="Description">${escape(editing?.description || "")}</textarea>
-    ${editing ? `<div class="row" style="margin-top:8px">
-      <button type="button" id="keep-new">Garder comme un nouveau</button>
-      <a class="button" href="/s/${escape(editing.slug)}">Voir sa page</a>
-    </div>` : ""}
-    <p class="hint-line" id="keep-note"></p>
-  </div>`);
-
   /* Fifteen thousand imported schematics carry no marking, so their pages show a ceiling
      where a throughput belongs, and until now there was no way for anybody to fix one. The
      server side was written, routed and reachable only with curl.
@@ -1104,6 +1130,7 @@ async function run() {
   haltRun = null;
   if (payload !== lastPayload) {
     marked = {};
+    typed = { name: null, description: null };
     sealed = false;
     looking = null;
     lastPayload = payload;
@@ -1281,6 +1308,22 @@ drop.addEventListener("drop", async (e) => {
  * author meant. So the guess is a default and this is the answer.
  */
 let marked = {};
+
+/**
+ * The name and the description the author typed, kept beside the marks rather than in the
+ * markup that holds them.
+ *
+ * Marking a port calls `run()`, which re-analyses and rebuilds the whole right column, so
+ * anything typed into the share card was destroyed by the next click on the picture. That
+ * was survivable while the card was the twelfth one down and nobody reached it before they
+ * had finished marking. It is not survivable now that the card is the first thing under
+ * the name, because the order it invites is exactly the order that lost the work: name it,
+ * mark the intakes, share it.
+ *
+ * Cleared with `marked` when a different schematic is pasted, and for the same reason: it
+ * describes the schematic that was in the box, not the box.
+ */
+let typed = { name: null, description: null };
 
 /**
  * Whether the player has said where the schematic plugs in.
@@ -1707,18 +1750,33 @@ async function whoAmI() {
 }
 
 function wireKeep(report) {
-  const button = $("keep");
+  const card = $("keep-card");
   const note = $("keep-note");
-  if (!button) return;
+  const row = $("keep-row");
+  if (!card || !note || !row) return;
 
   if (!me) {
-    button.disabled = true;
-    note.innerHTML = `<a href="/auth/discord">Connecte-toi avec Discord</a> pour garder tes
-      schémas et les publier.`;
+    /* The row is replaced rather than disabled. Two dead buttons above a sentence
+       explaining why they are dead is three things to read where one suffices, and the
+       sentence carries the only control that does anything here. */
+    for (const field of card.querySelectorAll(".keep-field")) field.hidden = true;
+    row.innerHTML = `<a class="button primary" href="/auth/discord">${
+      escape(t("compte.barre.connexion"))}</a>`;
+    note.textContent = t("analyse.partage.pour-partager");
     return;
   }
 
-  const save = async (slug) => {
+  /* Typed into module state on the way past, because marking a port re-renders this whole
+     column. Without it, naming a schematic and then marking its intake, which is the order
+     this card now invites, threw the name away. */
+  $("keep-name")?.addEventListener("input", (event) => {
+    typed.name = event.target.value;
+  });
+  $("keep-desc")?.addEventListener("input", (event) => {
+    typed.description = event.target.value;
+  });
+
+  const save = async (slug, visibility) => {
     /* Drawn again, clean, rather than photographing the canvas on screen.
 
        The picture on screen carries the analysis: green rings on every socket Forge thinks
@@ -1735,7 +1793,7 @@ function wireKeep(report) {
       name: $("keep-name").value.trim() || report.name,
       description: $("keep-desc").value.trim() || null,
       code: String(text.value).replace(/\s+/g, ""),
-      visibility: $("keep-visibility").value,
+      visibility,
       analysis: {
         width: report.width, height: report.height, blocks: report.blocks,
         perMinute: report.perMinute, needs: report.needs,
@@ -1750,6 +1808,10 @@ function wireKeep(report) {
       thumbnail: plate.toDataURL("image/png"),
     };
 
+    /* `undefined` and not a value: JSON.stringify drops the key, and the server reads
+       `visibility` with `sometimes`. That is how editing an existing schematic leaves its
+       visibility exactly where its author put it. Sending the current one back would work
+       until the day they change it on its own page while this tab is still open. */
     const answer = await fetch(slug ? `/api/schematiques/${slug}` : "/api/schematiques", {
       method: slug ? "PATCH" : "POST",
       headers: {
@@ -1759,30 +1821,93 @@ function wireKeep(report) {
       },
       body: JSON.stringify(body),
     });
-    const said = await answer.json();
-    if (!answer.ok) throw new Error(said.message || "refuse");
-    return said;
+
+    return { status: answer.status, said: await answer.json() };
   };
 
-  const run = (slug, done) => async () => {
-    button.disabled = true;
-    note.textContent = "Enregistrement...";
+  /**
+   * What the card becomes once the schematic is on the site: the link, and how to copy it.
+   *
+   * The old card answered a successful publication with one line of text, which is the
+   * least useful thing to do at the exact moment somebody has decided to share something.
+   * Same shape as `partials/manage.blade.php`, which has been doing this on the
+   * schematic's own page all along.
+   */
+  const shared = (url, publicly) => {
+    for (const field of card.querySelectorAll(".keep-field")) field.hidden = true;
+    row.innerHTML = `<input type="text" class="keep-link" readonly value="${escape(url)}"
+        aria-label="${escape(t("analyse.partage.lien"))}">
+      <button type="button" id="keep-copy">${escape(t("analyse.partage.copier"))}</button>
+      <a class="button primary" href="${escape(url)}">${
+        escape(t("analyse.partage.voir"))}</a>`;
+    note.textContent = t(publicly
+      ? "analyse.partage.visible-tous" : "analyse.partage.visible-moi");
+
+    $("keep-copy").addEventListener("click", async (event) => {
+      await navigator.clipboard.writeText(url);
+      event.target.textContent = t("analyse.partage.copie");
+    });
+  };
+
+  /**
+   * The refusal that is not a dead end.
+   *
+   * The server declines to publish a string the catalogue already shows, and hands back
+   * where it is. Somebody who pasted a schematic they were given is interested in that
+   * schematic, so the answer is the page they were looking for without knowing it, and,
+   * when they have marked its intakes, the one thing that page is missing.
+   */
+  const twinned = (twin) => {
+    for (const field of card.querySelectorAll(".keep-field")) field.hidden = true;
+    row.innerHTML = `<a class="button primary" href="${escape(twin.url)}">${
+        escape(t("analyse.partage.voir-celui-la"))}</a>
+      <button type="button" id="keep-anyway">${
+        escape(t("analyse.partage.garder"))}</button>`;
+    /* Under its name, which is usually not the one in hand: what is being refused is a
+       string, and the reader has no way of knowing they are holding the same schematic
+       somebody else posted as « Pyratite compact ». Said in the sentence rather than on
+       the button, where a hundred and twenty characters would make a button nobody can
+       lay out. */
+    const offering = twin.contribuable && Object.keys(marked).length > 0;
+    note.textContent = `${t("analyse.partage.deja")} « ${twin.name} ». ${t(offering
+      ? "analyse.partage.deja-propose" : "analyse.partage.deja-lire")}`;
+
+    $("keep-anyway").addEventListener("click", keep("private"));
+  };
+
+  const keep = (visibility) => async (event) => {
+    const pressed = event.currentTarget;
+    const slug = visibility === undefined ? opened.slug : null;
+    for (const other of row.querySelectorAll("button")) other.disabled = true;
+    note.textContent = t("analyse.partage.en-cours");
     try {
-      const said = await save(slug);
-      note.innerHTML = `${done} <a href="${said.url}">Voir la page</a>`;
-      if (!slug && said.slug) opened = { ...said, mine: true };
+      const { status, said } = await save(slug, visibility);
+      if (status === 409 && said.twin) return twinned(said.twin);
+      if (status >= 400) throw new Error(said.message || status);
+
+      if (slug) {
+        note.textContent = t("analyse.partage.a-jour");
+      } else {
+        opened = { ...said, mine: true };
+        shared(said.url, visibility === "public");
+      }
     } catch (error) {
-      note.textContent = `Impossible d'enregistrer : ${error.message}`;
+      note.textContent = `${t("analyse.partage.refuse")} ${error.message}`;
     } finally {
-      button.disabled = false;
+      for (const other of row.querySelectorAll("button")) other.disabled = false;
+      if (pressed.isConnected) pressed.disabled = false;
     }
   };
 
-  button.addEventListener("click",
-    run(opened.slug || null, opened.slug ? "À jour." : "Gardé."));
-  // Same schematic, kept a second time: a variant worth keeping beside the original
-  // rather than instead of it.
-  $("keep-new")?.addEventListener("click", run(null, "Gardé comme un nouveau schéma."));
+  $("keep-public")?.addEventListener("click", keep("public"));
+  $("keep-private")?.addEventListener("click", keep("private"));
+  // Editing an existing one: the string is overwritten and the visibility is not touched.
+  $("keep")?.addEventListener("click", keep(undefined));
+  /* Same schematic, kept a second time: a variant worth keeping beside the original rather
+     than instead of it. Private, whatever the original is. It is a variant nobody has
+     looked at yet, and publishing it straight away would also mean refusing it as a
+     duplicate of the schematic it was forked from whenever the string has not moved. */
+  $("keep-new")?.addEventListener("click", keep("private"));
 }
 
 /* Fetched while the player is still pasting, so the picture appears with the numbers

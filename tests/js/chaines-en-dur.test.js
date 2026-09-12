@@ -30,8 +30,14 @@ import { readFileSync } from "node:fs";
    move to lower this number: two of their sentences agreed in gender with a block name
    that supplies its own, so the page said « Foreuse Mécanique relié à rien » and « Eau
    arrive sans pouvoir être consommé ». A sentence that has to agree with a word it is
-   handed cannot be written into the code around it. */
-const RESTANT = 37;
+   handed cannot be written into the code around it.
+
+   Thirty since the share card went to the top of the report. It was the oldest card in
+   this file and the least touched, so it still carried its whole vocabulary in the markup:
+   the two buttons, the three options of the visibility dropdown, both field labels and the
+   sentence about overwriting. Rewriting a card is the cheap moment to migrate it, and the
+   only one anybody ever takes. */
+const RESTANT = 30;
 
 const MOTS = /(?<![\w-])(le|la|les|un|une|des|du|de|et|ou|qui|que|pas|sur|dans|pour|ce|il|elle|ne|se|est|sont|au|aux|en|par|plus|rien|tout|toute|avec|sans|son|sa|ses|cette|cet|tu|te|ton|ta|quoi|quand|comme|deja|encore|meme|leur|lui|on)(?![\w-])/i;
 

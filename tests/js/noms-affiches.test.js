@@ -37,7 +37,8 @@ const IDENTIFIER = /\b(resource|\w*\.block|\w*\.name|over\.\w+|throttle\.\w+|dug
  */
 const ALLOWED = new Map([
   ["report.name", "the schematic's own name, as its author typed it"],
-  ["editing ? editing.name : report.name", "the same, whichever of the two is in hand"],
+  ["typed.name ?? (editing ? editing.name : report.name)",
+    "the same, whichever of the three is in hand, the author's own typing first"],
   ["editing.name", "the same, on the schematic being edited"],
   ["regarde.name", "the same, on the one being looked at"],
   ["me.name", "the signed in account's name"],

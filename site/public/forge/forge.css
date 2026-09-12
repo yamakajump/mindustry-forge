@@ -603,6 +603,14 @@ a.stage:hover, a.stage:focus-visible { border-color: var(--accent); }
 .keep .compte { font-size: 12px; opacity: .75; }
 .keep .compte[hidden] { display: none; }
 
+/* The share card, first thing under the schematic's name.
+
+   The fields are stacked and full width rather than sharing a flex row with the button, as
+   the old card had them: on a phone that row put a 44px button beside a name field two
+   characters wide, and the name is the part somebody actually has to read back. */
+#keep-card .keep-field { margin-top: 10px; }
+#keep-card .keep-link { flex: 1; min-width: 12ch; font-size: 12px; }
+
 .manage .share { display: flex; gap: 6px; }
 .manage .share input {
   flex: 1; min-width: 0; font-size: 12px; min-height: 38px;
