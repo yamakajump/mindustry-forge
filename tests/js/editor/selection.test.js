@@ -173,3 +173,56 @@ test("what does not point anywhere is left alone", () => {
   const [apres] = flip([trieur], "x", known);
   assert.deepEqual(apres.config, trieur.config);
 });
+
+/**
+ * And the string that comes out of it, which is the only thing the game ever reads.
+ *
+ * A tile decoded from a `.msch` carries `raw`, the configuration bytes as they were
+ * written, and the writer replays those in preference to `config`: that is what carries a
+ * unit factory's plan through a file this repository cannot write. Turning or mirroring a
+ * selection rewrote the offset and left those bytes alone, so the picture was mirrored and
+ * the copy was wired the way it started. Reported from the game, where two bridges came out
+ * linked across the build - the site showed nothing wrong, because the site draws the
+ * offset and the game reads the bytes.
+ */
+test("a mirrored bridge is mirrored in the string too, not just in the picture", async () => {
+  const { fromBase64, toBase64 } = await import("../../../site/public/forge/schematic.js");
+
+  // Two bridges three tiles apart, the left one handing over to the right one, written and
+  // read back so that both carry the `raw` bytes a pasted schematic carries.
+  const depart = (await fromBase64(await toBase64([
+    pont(0, 0, 3, 0), pont(3, 0, 0, 0),
+  ], { sizeOf }))).tiles;
+  assert.ok(depart[0].raw?.length, "the fixture does not carry the bytes the defect needs");
+
+  const mire = flip(depart, "x", known);
+  const relu = (await fromBase64(await toBase64(mire, { sizeOf }))).tiles;
+  const pointe = relu.find((tile) => tile.config?.dx || tile.config?.dy);
+
+  assert.deepEqual({ dx: pointe.config.dx, dy: pointe.config.dy }, { dx: -3, dy: 0 });
+});
+
+test("a turned bridge keeps its arrow through the string", async () => {
+  const { fromBase64, toBase64 } = await import("../../../site/public/forge/schematic.js");
+
+  const depart = (await fromBase64(await toBase64([
+    pont(0, 0, 3, 0), pont(3, 0, 0, 0),
+  ], { sizeOf }))).tiles;
+  const relu = (await fromBase64(await toBase64(
+    rotateBy(depart, 1, known), { sizeOf }))).tiles;
+  const pointe = relu.find((tile) => tile.config?.dx || tile.config?.dy);
+
+  assert.deepEqual({ dx: pointe.config.dx, dy: pointe.config.dy }, { dx: 0, dy: 3 });
+});
+
+test("bytes this repository cannot write survive a mirror untouched", async () => {
+  /* The other half of the same rule. A configuration type the writer does not know is
+     carried through as bytes, and a mirror must not throw those away to move an offset it
+     did not move: that would turn "the arrow points the wrong way" into "the unit factory
+     forgot what it was building". */
+  const garde = { x: 0, y: 0, block: "ground-factory", rotation: 0,
+    config: { type: 21 }, raw: new Uint8Array([21, 0, 0, 0, 4]) };
+  const [apres] = flip([garde], "x", known);
+
+  assert.deepEqual(apres.raw, garde.raw);
+});
