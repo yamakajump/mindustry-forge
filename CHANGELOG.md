@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.6.0](https://github.com/yamakajump/mindustry-forge/compare/v0.5.0...v0.6.0) (2026-09-12)
+
+
+### Features
+
+* **analyser:** one bubble on the block, and one wording per fact ([a69cbc2](https://github.com/yamakajump/mindustry-forge/commit/a69cbc2d415494e5c817834f305df855fc59af22))
+* **analyser:** put a belt down where nothing comes out ([e728df7](https://github.com/yamakajump/mindustry-forge/commit/e728df71ee80665ace042701d7b4b370bce9a85e))
+* **analyser:** put sharing at the top ([c18ba46](https://github.com/yamakajump/mindustry-forge/commit/c18ba46846908fa5b0a61b980fc1fb831152d6b5))
+* **analyser:** read the base a schematic was copied from ([c584549](https://github.com/yamakajump/mindustry-forge/commit/c5845490cf8fe550af3d7776c6ac4a744ba8fb85))
+* **analyser:** say where the plan on screen came from ([b7aea65](https://github.com/yamakajump/mindustry-forge/commit/b7aea65f62ddf0d0295a98b1ec5b4ff43c5485de))
+* **report:** mark on the picture, and answer the other schematics ([b21689a](https://github.com/yamakajump/mindustry-forge/commit/b21689a6fd1132ddeafc33321400cbe2649fb5fc))
+* **report:** say what it is before how much ([72f5d0d](https://github.com/yamakajump/mindustry-forge/commit/72f5d0dcd0d7a0d571d2c74341a4a867c9ff55cd))
+* **schematics:** one screen for a schematic ([9702f54](https://github.com/yamakajump/mindustry-forge/commit/9702f54660e10433e055af20c41d16c4d04141dd))
+* **schematics:** refuse to publish a duplicate ([baa6fd5](https://github.com/yamakajump/mindustry-forge/commit/baa6fd536d89a67ec8e76211e455288880b69a3b))
+
+
+### Bug Fixes
+
+* **analyser:** keep the marks when a schematic is opened by its link ([20962b9](https://github.com/yamakajump/mindustry-forge/commit/20962b969356c6f061fa5fbcf1b56bf317e5c3e3))
+* **analyser:** state what is stuck per minute, like its neighbours ([360ae67](https://github.com/yamakajump/mindustry-forge/commit/360ae67ded3181c9748d5766a12b39dcd44f49b0))
+* **analyser:** stop the bubble covering the block it is about ([9543a79](https://github.com/yamakajump/mindustry-forge/commit/9543a79906992fd7dbf867ebf5bdb0d7ef8882df))
+* **catalogue:** never measure what is off the wall ([a8b0c74](https://github.com/yamakajump/mindustry-forge/commit/a8b0c748eea293b387480a831c02472bd51e35a0))
+* **catalogue:** stop a re-measurement deleting its author's marks ([24c760c](https://github.com/yamakajump/mindustry-forge/commit/24c760c8c0acfd5afa66c43609b5512c23167ffe))
+* **editor:** mirror the bridge links in the string, not only on screen ([5048c45](https://github.com/yamakajump/mindustry-forge/commit/5048c45b9fb7dae929adf26a8f48ee54dad62ffa))
+* **report:** tell a jammed plan from a starving one ([9e7810f](https://github.com/yamakajump/mindustry-forge/commit/9e7810f386e3fcc439dc0ea718cb4b7a8a4a65be))
+* **schematics:** give a jammed plan a figure to be shared by ([18ed0f2](https://github.com/yamakajump/mindustry-forge/commit/18ed0f225b488b840dff2aa1eb97c3eb5ee8025a))
+
 ## [0.5.0](https://github.com/yamakajump/mindustry-forge/compare/v0.4.0...v0.5.0) (2026-09-05)
 
 
