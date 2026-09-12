@@ -76,6 +76,10 @@ return [
      */
     'page' => [
         'bac-a-sable-court' => 'source de bac à sable',
+        /* For the one line that travels furthest. A jammed plan delivers nothing, so the
+           description carried no figure at all and a Discord link had nothing in it to
+           click for. What it makes is still the answer to "what is this". */
+        'coince-court' => 'bloqué dedans',
         /* The same headings the analyser uses for the same facts. They read « Sortie »
            and « Il lui faut » here and « Ce qu'il sort » and « Ce qu'il faut lui amener »
            one click away, which reads as two different facts about one schematic and was

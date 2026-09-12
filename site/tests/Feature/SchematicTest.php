@@ -475,3 +475,20 @@ it('still answers the home page when nothing is asked for', function () {
     $this->get('/')->assertOk()->assertSee('id="out"', false);
     $this->get('/?s=')->assertOk();
 });
+
+it('puts a figure in the line that travels furthest, even when nothing leaves', function () {
+    /* A jammed plan delivers nothing, so `produces` is empty and the description read
+       "20 blocs" and no figure: a Discord link with nothing in it to click for. What it
+       makes is still the answer to "what is this", said with the word that says it is
+       stuck. */
+    $jammed = Schematic::factory()->create([
+        'visibility' => 'public',
+        'blocks' => 20,
+        'produces' => [],
+        'analysis' => ['bloque' => ['metaglass' => 480.0]],
+    ]);
+
+    $this->get("/s/{$jammed->slug}")
+        ->assertOk()
+        ->assertSee('8,00 metaglass/s '.__('schema.page.coince-court').' - 20 blocs', false);
+});
