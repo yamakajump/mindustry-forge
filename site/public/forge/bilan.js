@@ -1575,11 +1575,20 @@ export async function analyse(text, supply = {}, chosen = null,
     for (const item of node.block.ammo || []) mange.add(item);
   }
 
+  /* Per MINUTE, unlike the `internal` it is taken from.
+  
+     Everything stored in `analysis` and read back by a page is per minute: `perMinute`,
+     `potentialPerMinute`, and `needs[].perMinute`. `internal` is the exception, per second,
+     and it has been read by one place that knew it. Storing this one in the exception's
+     unit put it in front of `SchematicItem::debitAffiche`, which divides by sixty because
+     every figure it has ever been handed was per minute, and the schematic's page announced
+     eight metaglass a second as 0,13 while the analyser said 8. A unit that is only right
+     where it was written is a unit that will be wrong on the first page that reads it. */
   const bloque = {};
   if (!avale) {
     for (const [item, rate] of Object.entries(internal)) {
       if (!mange.has(item)) {
-        bloque[item] = rate;
+        bloque[item] = rate * TICKS;
         delete internal[item];
       }
     }

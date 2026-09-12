@@ -726,13 +726,16 @@ function render(report) {
      called the same thing. `4x Kiln` makes eight metaglass a second, nothing in it eats
      metaglass and no belt carries any out, and the page said it was "fabrique et consomme
      sur place": a sentence about a machine that does not exist in that schematic. */
+  /* Per minute, like everything else the analysis stores, and unlike the `internal` above
+     it, which is per second. The two sit one block apart on this page on purpose: the one
+     that is stored and read back by another page carries the unit that page expects. */
   const bloque = Object.entries(report.bloque || {})
-    .filter(([, n]) => n * 60 > 0.5).sort((a, b) => b[1] - a[1]);
+    .filter(([, n]) => n > 0.5).sort((a, b) => b[1] - a[1]);
   if (bloque.length && answered) {
     sortie.push(`<p class="sous-titre">${escape(t("analyse.sortie.bloque"))}</p>`);
     sortie.push(...bloque.map(([item, n]) =>
       `<div class="line"><span>${withIcon(item)}${escape(lisible(item))}</span>
-        <span class="num warn">${perSecond(n)} ${
+        <span class="num warn">${perSecond(n / 60)} ${
           escape(t("analyse.unite.par-seconde"))}</span></div>`));
     sortie.push(`<p class="hint-line">${escape(t("analyse.sortie.bloque-aide"))}</p>`);
   }

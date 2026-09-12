@@ -27,6 +27,8 @@ import { loadCatalogue, paste } from "./helpers.js";
 const known = loadCatalogue();
 const close = (a, b, why) => assert.ok(Math.abs(a - b) < 1e-3, `${why}: ${a} vs ${b}`);
 const coal = { content: 0, id: known.items["coal"].id };
+const lead = { content: 0, id: known.items["lead"].id };
+const sand = { content: 0, id: known.items["sand"].id };
 
 /** A press that makes graphite out of coal, and a belt taking the graphite away. */
 const presse = (amont) => [
@@ -132,4 +134,32 @@ test("a plan carrying its own generator is not topped up from the base", async (
 
   close(out.power.made, 60, "the generator it carries is what it has");
   assert.ok(out.bottleneck, "the smelter on the dead grid was quietly plugged in");
+});
+
+/* `4x Kiln`, the schematic this was reported on, as its author published it. Written out
+   rather than rebuilt from tiles: the defect is a property of that arrangement - four kilns
+   handing metaglass round a closed loop, so nothing is terminal and nothing is delivered -
+   and a simplified stand-in kept turning into a kiln with a dead end, which delivers. */
+const QUATRE_FOURS = "bXNjaAF4nE1OS07DMBCdJnaLQIgNe7xj00qAusoVECdALNxmGqw6dmQ7LVXVGyFuw3FQmElSwUgz896bL0iYCbhce5fQpRfdwN3xoTha1GXxOI/alcVyXmPSldUxFk+nE0ytXqGNkL2+gXC6RpgtP9SzsQ6uSozrYJpkvINqVOfKIZYqJtp5oBRQ18pvFC9X7HysB21ElUzSzrS1opd2ePBB+fSOYW+oZpLae3fPMWxVE3yDwR4kiC0fv1kFU1a4OA/CNPqQkHLwLedrv8OwsX6/qHRCALiFwSbk2WwEg+UDkaxC13U/RCfURPCL/LunkmnX92dEp5KHcsK9QBIJ2YUYMAeqcRIALMrx0DjFyz773azmgyr/3uJxPiGIi6G9G98X/x/9Baw1c5s=";
+
+test("what is stuck is stated per minute, like everything else stored beside it", async () => {
+  /* The unit trap. Everything in `analysis` that a page reads back is per minute -
+     `perMinute`, `potentialPerMinute`, `needs[].perMinute` - and `internal` is the one
+     exception, per second, read by one place that knows it.
+
+     `bloque` is taken from `internal` and is stored, so it carries the stored unit. Written
+     in the exception's unit it landed in front of `SchematicItem::debitAffiche`, which
+     divides by sixty because every figure it has ever been handed was per minute, and the
+     schematic's own page announced eight metaglass a second as 0,13 while the analyser one
+     click away said 8. */
+  const out = await analyse(QUATRE_FOURS, {}, {
+    "1,6": { side: "in", resource: "lead" },
+    "3,6": { side: "in", resource: "sand" },
+  });
+
+  assert.ok(out.bloque.metaglass > 0, "four kilns in a closed loop were not read as stuck");
+  assert.equal(Math.round(out.bloque.metaglass), 480,
+    "eight a second, stated per minute: a per-second figure prints as 0,13 on the page "
+    + "that divides by sixty");
+  assert.deepEqual(out.perMinute, {}, "something left a plan with no way out");
 });
