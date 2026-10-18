@@ -109,3 +109,22 @@ it('keeps the filters while holding a schematic', function () {
         // The constraint is still there, stated by its chip.
         ->assertSee('Tient dans');
 });
+
+/*
+ * Comparing is a step a player takes, not a page to find.
+ *
+ * Every tile holds one schematic and every page reached that way offers the next pair, so a
+ * crawler following them walks millions of addresses: in October 2026 that was 84% of the
+ * requests the site served. The list without the held one stays the page to index.
+ */
+it('keeps crawlers out of the comparison steps', function () {
+    $first = listee('Le premier');
+    $second = listee('Le second');
+
+    $this->get('/schemas')->assertDontSee('name="robots"', false)->assertSee('class="t-comparer" rel="nofollow"', false);
+    $this->get("/schemas?comparer={$first->slug}")->assertSee('content="noindex, nofollow"', false);
+    $this->get("/comparer?a={$first->slug}&b={$second->slug}")->assertSee('content="noindex, nofollow"', false);
+
+    $robots = file_get_contents(public_path('robots.txt'));
+    expect($robots)->toContain("Disallow: /comparer\n")->toContain("Disallow: /*comparer=\n");
+});
