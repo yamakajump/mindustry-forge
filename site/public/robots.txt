@@ -1,6 +1,12 @@
 # Everything here is meant to be found: the catalogue is the site.
 User-agent: *
 Allow: /
+# Comparing is a step a player takes, not a page to find. Every tile on /schemas holds one
+# schematic for comparison, and every page reached that way offers the next pair, so a
+# crawler that follows them walks millions of addresses that say nothing new. In October
+# 2026 that was 84% of the requests the site served.
+Disallow: /comparer
+Disallow: /*comparer=
 
 # The pages a crawler would otherwise reach only by walking every page of /schemas and
 # following each tile, which is around five thousand pages down the slowest path it has.

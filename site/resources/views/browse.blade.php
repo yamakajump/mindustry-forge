@@ -15,6 +15,11 @@
 @endif
 
 @push('head')
+  {{-- Holding one for comparison changes the buttons, not the list: the address without it
+       is the one to index. --}}
+  @if(request()->filled('comparer'))
+    <meta name="robots" content="noindex, nofollow">
+  @endif
   <script src="/forge/apercu.js" type="module" defer></script>
   {{-- Fetches nothing until the block picker is opened. --}}
   <script src="/forge/bloc-choix.js" type="module" defer></script>
@@ -418,7 +423,7 @@
       {{ __('vitrine.comparer.retenu') }}
       <strong>{{ $held->displayName() }}</strong>.
       {{ __('vitrine.comparer.choisis-le-second') }}
-      <a href="{{ request()->fullUrlWithQuery(['comparer' => null]) }}">{{
+      <a rel="nofollow" href="{{ request()->fullUrlWithQuery(['comparer' => null]) }}">{{
         __('vitrine.comparer.annuler') }}</a>
     </p>
   @endif
@@ -548,11 +553,11 @@
              checkbox does nothing without a script, and a link keeps an address per
              step. --}}
         @if($held === null)
-          <a class="t-comparer" href="{{ request()->fullUrlWithQuery([
+          <a class="t-comparer" rel="nofollow" href="{{ request()->fullUrlWithQuery([
               'comparer' => $schematic->slug, 'page' => null]) }}">{{
             __('vitrine.comparer.retenir') }}</a>
         @elseif($held->slug !== $schematic->slug)
-          <a class="t-comparer on" href="/comparer?a={{ $held->slug }}&amp;b={{ $schematic->slug }}">{{
+          <a class="t-comparer on" rel="nofollow" href="/comparer?a={{ $held->slug }}&amp;b={{ $schematic->slug }}">{{
             __('vitrine.comparer.avec-celui-ci') }}</a>
         @else
           <span class="t-comparer tenu">{{ __('vitrine.comparer.tenu') }}</span>

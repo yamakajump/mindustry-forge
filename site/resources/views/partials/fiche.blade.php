@@ -192,7 +192,7 @@
              page with two identifiers in mind: you are on a schematic and you wonder how
              it stands. So one side is already filled in and only one is left to pick. --}}
         @if($schematic->visibility === \App\Models\Schematic::PUBLIC)
-          <a class="button" href="/comparer?a={{ $schematic->slug }}">{{
+          <a class="button" rel="nofollow" href="/comparer?a={{ $schematic->slug }}">{{
             __('schema.comparer.comparer-avec') }}</a>
         @endif
 
