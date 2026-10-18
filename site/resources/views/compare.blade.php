@@ -7,6 +7,8 @@
 @section('title', __('schema.comparer.titre').' - Mindustry Forge')
 
 @push('head')
+{{-- A pair is a question someone asked, not a page to find: see robots.txt. --}}
+<meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="/forge/comparer.css">
 <script src="/forge/comparer.js" type="module" defer></script>
 @endpush
