@@ -58,7 +58,7 @@ def pick(name: str, sprites: dict[str, str]) -> str | None:
     The game does not draw a block from one image. It stacks layers: a base, a rotator, a
     top plate, a team-coloured outline, a cell. Guessing at which single layer stands for
     the whole thing produced pictures that were recognisably wrong, and the schematic
-    yamakajump pasted made that obvious on its bridges.
+    the owner pasted made that obvious on its bridges.
 
     It turns out there is nothing to guess. Mindustry's own build composites those layers
     ahead of time into `generated/block-<name>-full.png`, which is exactly what the game

@@ -1,7 +1,7 @@
 /**
  * The cursor's line, said the way a player would say it.
  *
- * `op add result a b` is the form the game stores, and it is the complaint yamakajump summed
+ * `op add result a b` is the form the game stores, and it is the complaint the owner summed
  * up as "it's far from the game": Mindustry's logic dialog shows an addition as three boxes
  * with a `+` between them, and the text form is the serialization nobody was ever meant to
  * read.

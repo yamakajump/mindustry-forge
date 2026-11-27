@@ -104,7 +104,7 @@ class BrowseController extends Controller
         }
 
         /* Creative builds are set aside by default, and the page says so with a link that
-           brings them back. yamakajump asked for "a part", not "dehors": a catalogue that
+           brings them back. The owner asked for "a part", not "dehors": a catalogue that
            announces fifteen thousand schematics and quietly serves fourteen would be lying
            about its own size, which is the fault this repository spent a day closing.
 

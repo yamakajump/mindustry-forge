@@ -98,9 +98,9 @@ it('links back to the original page rather than citing without linking', functio
 });
 
 it('credits the member, failing that the original author, failing that nobody', function () {
-    $member = User::factory()->create(['name' => 'yamakajump']);
+    $member = User::factory()->create(['name' => 'Alice']);
 
-    expect(Schematic::factory()->for($member)->create()->credit())->toBe('yamakajump')
+    expect(Schematic::factory()->for($member)->create()->credit())->toBe('Alice')
         ->and(Schematic::factory()->imported()->create(['author' => 'sharrlotte'])->credit())
         ->toBe('sharrlotte')
         // Some entries on both catalogues record no author at all. Saying so beats

@@ -109,7 +109,7 @@
     {{-- Produces what: a single control, and it is the one that carries the images.
 
          There were two, a row of pills and a dropdown, doing exactly the same thing.
-         yamakajump: "you are putting produces-what back in twice". The duplicate existed for
+         The owner: "you are putting produces-what back in twice". The duplicate existed for
          a reason written down here: a native `<select>` carries no image in its `<option>`,
          and replacing it with a drawn list would have cost keyboard navigation, closing on
          Esc, the screen reader announcement, and the phone's native picker.

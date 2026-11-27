@@ -166,7 +166,7 @@ function backing(context, scale) {
  * The span a bridge throws, and the arrow along it.
  *
  * Without it, a line that hops a wall reads as two lines that both end in the air, which
- * is what yamakajump saw and said was wrong. The bridge remembers where it reaches, so this
+ * is what the owner saw and said was wrong. The bridge remembers where it reaches, so this
  * is drawing what the schematic already says rather than inferring anything.
  */
 /**

@@ -13,7 +13,7 @@ uses(RefreshDatabase::class);
  * silence. A panel with no code renders a black rectangle, and a page that ships the script
  * without the code looks exactly like a page that works until somebody opens it.
  *
- * The page it replaces was two text boxes over a list of names. yamakajump's words for it:
+ * The page it replaces was two text boxes over a list of names. The owner's words for it:
  * "tu ne vois pas les schemas, c'est pas du tout intuitif".
  */
 
