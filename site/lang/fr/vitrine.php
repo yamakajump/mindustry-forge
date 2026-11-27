@@ -107,7 +107,7 @@ return [
      *
      * Une liste qui se contente de trier laisse toute la comparaison au joueur : vingt-quatre
      * tuiles, quatre nombres chacune, et nulle part une phrase qui dise laquelle repond a sa
-     * question. Corentin : « dis quel est le plus rendement par rapport a la taille, lui est
+     * question. The owner: « dis quel est le plus rendement par rapport a la taille, lui est
      * plus pour le debut de jeu car moins de ressource demander ».
      *
      * La regle sous laquelle ces phrases vivent, et c'est celle du depot : une remarque n'est

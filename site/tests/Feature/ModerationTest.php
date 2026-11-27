@@ -148,14 +148,14 @@ it('is idempotent when nothing has drifted', function () {
 });
 
 it('hands somebody the keys to the queue', function () {
-    $corentin = User::factory()->create(['name' => 'yamakajump']);
+    $moderator = User::factory()->create(['name' => 'yamakajump']);
 
     $this->artisan('forge:moderateur', ['who' => 'yamakajump'])->assertSuccessful();
 
     // The proof that counts is not the column, it is the page: the flag is a means, and
     // access to the queue is the thing that was asked for.
-    expect($corentin->fresh()->moderator)->toBeTrue();
-    $this->actingAs($corentin->fresh())->get('/moderation')->assertOk();
+    expect($moderator->fresh()->moderator)->toBeTrue();
+    $this->actingAs($moderator->fresh())->get('/moderation')->assertOk();
 });
 
 it('takes the keys back', function () {

@@ -45,7 +45,7 @@
 {{-- The two sides, side by side, with their plan drawn as soon as they are filled in.
 
      It used to be two text fields above a list of names: a page whose entire subject is
-     two pictures showed neither, at any point. Corentin's words: "you cannot see the
+     two pictures showed neither, at any point. The owner's words: "you cannot see the
      schematics, it is not intuitive at all".
 
      What is left is a GET form, and only one. Picking from the dropdown is a link to that

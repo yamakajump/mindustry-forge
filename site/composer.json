@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "codwingz/mindustry-forge",
+    "name": "yamakajump/mindustry-forge",
     "type": "project",
     "description": "Le site de Mindustry Forge : garder une schematique, la publier, et chercher par ce qu elle produit.",
     "keywords": ["laravel", "framework"],

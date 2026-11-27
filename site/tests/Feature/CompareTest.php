@@ -177,7 +177,7 @@ it('does not take just anything as an identifier', function () {
  * Choosing a schematic rather than copying its key.
  *
  * The page used to take an identifier and nothing else: ten characters read off the list
- * printed right underneath, held in the head, typed into a box, twice. Corentin's words
+ * printed right underneath, held in the head, typed into a box, twice. The owner's words
  * were "nul pour rentrer des identifiants, pas du tout bien pense pour l'utilisateur", and
  * the list below the form was the proof: the site already knew which schematics it was
  * talking about and made the reader spell them out anyway.

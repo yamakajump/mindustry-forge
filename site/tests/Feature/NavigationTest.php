@@ -149,7 +149,7 @@ it('writes the same header in the static pages as in the views', function () {
 it('serves the same favicon on every page', function () {
     /* The two tool pages carried an inline icon, in `data:`, different from the one on the
        rest of the site: the tab icon therefore changed on the way to the planner. Reported
-       by Corentin before this test existed. */
+       by the owner before this test existed. */
     $reference = ['/favicon.ico', '/favicon.svg', '/apple-touch-icon.png'];
 
     foreach (['index.html', 'outils/logique.html', 'outils/planificateur.html'] as $page) {

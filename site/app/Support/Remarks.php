@@ -11,7 +11,7 @@ use App\Services\BlockCatalogue;
  *
  * A listing that only sorts leaves the whole comparison to the player: twenty-four tiles,
  * four numbers each, and no statement anywhere about which one answers their question.
- * Corentin, asking for this: "dis quel est le plus rendement par rapport a la taille, lui
+ * The owner, asking for this: "dis quel est le plus rendement par rapport a la taille, lui
  * est plus pour le debut de jeu car moins de ressource demander".
  *
  * The rule this class lives under, and it is the repository's own: a remark is never an

@@ -177,7 +177,7 @@ test("a stream that errors on its checksum still yields the schematic", async ()
 });
 
 test("a water to power schematic reports power, not the coal it makes on the way", async () => {
-  /* The bug Corentin caught by reading the answer rather than the code. His schematic
+  /* The bug the owner caught by reading the answer rather than the code. His schematic
      takes water and makes electricity; it was reported as producing coal and spore pods,
      which are intermediates every one of which is eaten inside. The cause ran deep: the
      block registry carried item inputs and nothing else, so a cultivator declared no

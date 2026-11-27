@@ -8,7 +8,7 @@ uses(RefreshDatabase::class);
 /*
  * Creative, set aside and never quietly dropped.
  *
- * Corentin's screenshot showed `pure sandbox stupidity`, `Fuck it quad nuke`,
+ * The owner's screenshot showed `pure sandbox stupidity`, `Fuck it quad nuke`,
  * `Server lagger` and `useless box` at the top of the power ranking. These are schematics
  * built for sandbox servers or to make a server lag: they cannot be placed in a normal
  * game, so they answer a different question from the one the list asks.

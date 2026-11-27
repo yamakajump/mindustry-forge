@@ -137,7 +137,7 @@ return [
          *
          * It used to be two text boxes asking for an identifier, above a list of names
          * proving the site already knew which schematics it was talking about. A page whose
-         * whole subject is two pictures showed neither of them, at any point, and Corentin's
+         * whole subject is two pictures showed neither of them, at any point, and the owner's
          * words for it were "on ne voit pas les schemas".
          */
         'vide' => 'Rien de choisi de ce côté',

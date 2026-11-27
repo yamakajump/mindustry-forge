@@ -5,8 +5,6 @@
 Please use GitHub's private vulnerability reporting on this repository, under **Security →
 Report a vulnerability**, rather than opening a public issue.
 
-If that is not available to you, `corentin@codwingz.com` works.
-
 Expect a first answer within a few days. This is a one-person project with a lot of help,
 not a company with a rota, and pretending otherwise would set an expectation nobody can
 hold.
